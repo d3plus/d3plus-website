@@ -1,0 +1,62 @@
+---
+layout: workshop
+title: D3plus
+image: cidade.png
+---
+
+<h2 class="bar">Getting Your Environment Setup</h2>
+<section class="topic-2">
+  <div class="example">
+    <h3>Step 1.</h3>
+  </div>
+  <div class="code">
+    <a class="button" href="/d3plus.v0.9.zip">Download D3plus v0.9</a>
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>Step 2.</h3>
+  </div>
+  <div class="code">
+    <h3>Run a Local Server</h3>
+    Because you will be testing these files locally, your browser will raise errors when trying to complete AJAX requests (which we will use to load our data files). The best way around this is to run a local server from the example folder you have just downloaded. If you have Python installed, use the command line to change into the directory of the project folder you just downloaded and run this command:
+    <br><br>
+    <code>python -m SimpleHTTPServer 8888 &</code>
+    <br><br>
+    or for Python 3+:<br><br>
+    <code>python -m http.server 8888 &</code>
+    <br><br>
+    Another alternative is using <a href="http://www.mamp.info/">MAMP</a> (on OSX) or <a href="http://www.wampserver.com/">WampServer</a> (on Windows), which will install a local version of the Apache web server.
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>Step 3.</h3>
+  </div>
+  <div class="code">
+    <h3>Test in Browser</h3>
+    Once your server is running, you should be able to go to <a href="http://localhost:8888/">http://localhost:8888/</a> and see your first Tree Map!
+  </div>
+</section>
+
+<h2 class="bar">Enabling the d3plus Development Environment</h2>
+<section class="topic-2">
+  <div class="example">
+    In order to help with our testing, we can enable logs in d3plus. This is accomplished by adding one simple line to our visualization (line 5):
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7693043.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Using the Inspector</h2>
+<section class="topic-2">
+  <div class="example">
+    Open your browser's web inspector to see what is going on.
+  </div>
+  <div class="code">
+    <img src="console.png">
+  </div>
+</section>

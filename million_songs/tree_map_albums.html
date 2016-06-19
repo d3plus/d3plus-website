@@ -1,0 +1,62 @@
+<!doctype html>
+<meta charset="utf-8">
+<link href="css/d3plus.css" media="screen" rel="stylesheet" type="text/css" />
+<script src="js/d3.js"></script>
+<script src="js/d3.geo.tile.js"></script>
+<script src="js/topojson.js"></script>
+<script src="js/modernizr.js"></script>
+<script src="js/d3plus.js"></script>
+<style>
+body {
+  margin: 0px; padding:0;
+}
+</style>
+
+<div id="viz"></div>
+
+<script>
+
+// instantiate our D3plus viz object
+var viz = d3plus.viz()
+
+// here we get all the data we need from the server, firt the raw data, then
+// each of the attribute files
+d3.json("data/artists.json", function(artists){
+  d3.json("data/albums.json", function(albums){
+    d3.json("data/songs.json", function(songs){
+      
+      // set up attributes look up dictionary
+      var attrs = {"artist_id": artists, "album_id": albums, "song_id": songs}
+      
+      // set attributes on our viz object
+      viz
+        .type("tree_map")
+        .attrs(attrs)
+        .aggs({"hotttnesss":"mean"})
+        .dev(true)
+        .value("hotttnesss")
+        .id(["artist_id","album_id","song_id"])
+        .text({"artist_id":"names","album_id":"name","song_id":["song_title","song_id","loudness"]})
+        .tooltip({"artist_id":["names"],"album_id":["name"],"song_id":["song_title"]})
+        .depth(0)
+        .year(2010)
+        .year_var("year")
+      
+      // call our viz on container DOM element with the ID of "viz"
+      d3.select("#viz")
+        .datum(songs)
+        .call(viz)
+      
+      // Update the nesting of our visuzliation via the depth method.
+      // We initialized our visualization's depth to 0 (artists), so
+      // now we can update this to 1 to see albums.
+      viz = viz.depth(1)
+
+      // We now to recall the viz function on our container DOM element.
+      d3.select("#viz").call(viz);
+  
+    })
+  })
+})
+
+</script>

@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+ 
+<head>
+  <meta charset="utf-8">
+  <title>Networks with D3plus</title>
+  
+  <!-- load D3plus CSS -->
+  <link href="/css/d3plus.css" media="screen" rel="stylesheet" type="text/css" />
+ 
+  <!-- load D3js -->
+  <script type="text/javascript" src="/js/d3.js"></script>
+ 
+  <!-- load D3plus after D3js -->
+  <script src="/js/d3plus.js"></script>
+</head>
+ 
+<body>
+  <div id="viz"></div>
+  
+  <script>
+  
+  d3.tsv("../data/edges.tsv", function(edges){
+    d3.tsv("../data/nodes.tsv", function(nodes){
+      
+      // cast our x, y coords to numbers
+      nodes.forEach(function(d){
+        d["x"] = parseFloat(d["x"])
+        d["y"] = parseFloat(d["y"])
+      })
+    
+      /* Now here's where we actually create the network */
+      var visualization = d3plus.viz()
+        .id("artist_id")    // the name of the id from our nodes file
+        .container("#viz")  // container DIV to hold the visualization
+        .type("network")    // visualization type
+        .nodes(nodes)       // nodes array with 'x' and 'y' coords
+        .edges(edges)       // the edges we'll use to create our network
+        .draw()             // finally, draw the visualization!
+      
+    })
+  })
+    
+  </script>
+</body>

@@ -1,0 +1,62 @@
+---
+layout: workshop
+title: Building a Stacked Area Chart
+image: cidade.png
+---
+
+<h2 class="bar">Data Over Time</h2>
+<section>
+  <p>
+    It is very common in the world of data visualization that you find yourself needing to show the evolution of your dataset over time. One way in which this can be achieved is with a stacked area chart. Similar to a typical X, Y chart the y axis represents a value while the x axis is devoted to a time series (in our case years).
+  </p>
+  <h3>How to Call Stacked</h3>
+  <p>
+    The structure of instantiating a D3plus visualization is the same for all the different types. The only difference is the the methods that can, and are sometime required to be called. For example, we saw the <code>.year()</code> method in use for the tree map example yet because stacked shows data for all years it would not make sense to use this method. The unique methods that are required for this visualization are <code>.yaxis()</code>, <code>.xaxis()</code> and <code>.xaxis_domain()</code>. In the example below we set our <code>.yaxis()</code> to song duration and <code>.xaxis()</code> to year. Therefore our <code>.xaxis_domain()</code> is a range of years with the bounds given in a 2 element array.
+  </p>
+  <h3>Soloing the data</h3>
+  <p>
+    One of the methods on viz that are available to all visualizations is <code>.solo()</code>. By passing an array of any of the id values (for any nesting level if your data is nested) the visualization will only show those data points. This can be extremely useful for trying to focus on a single aspect of the data or if you dataset is quite large to be able to show a more legible subset. To disable the soloing of a visualization set <code>.solo()</code> to an empty array.
+  </p>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <iframe style="height: 220px" src="/million_songs/stacked.html"></iframe>
+    <a class="button standalone" href="/million_songs/stacked.html" target="_blank">View standalone <i class="fa fa-angle-right"></i></a>
+    <br><br>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7536375.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Quiz</h2>
+<section class="topic-2">
+  <div class="example"><h3>Here are some other things to try out!</h3></div>
+  <div class="code">
+    <h3>Layout</h3>
+    <p>
+      The Stacked layout can be changed from "value" to "share" via <code>.layout()</code>, try changing this attribute and seeing what it does to the visualization.
+    </p>
+    <h3>Order</h3>
+    <p>
+      Be default stacked will order items based on what is passed to the <code>.value()</code> method, but this can be overridden via the <code>.order()</code> method. Try ordering the example with different attributes of the data.
+    </p>
+    <h3>Sort</h3>
+    <p>
+      The sorting can also be changed from ascending to descending via <code>.sort()</code>, trying changing this attribute to see which you prefer.
+    </p>
+  </div>
+</section>
+
+<h2 class="bar">Extra Credit</h2>
+<section class="topic-2">
+  <div class="example">Feeling adventurous? Let's look into the source to see some of the more advanced functions of D3plus.</div>
+  <div class="code">
+    <h3>Label Positioning</h3>
+    <p>
+    Positioning labels dynamically on any chart is tough work, just like the tree maps there are many edge cases that need to be tested. What happens when the area is too small? What happens when it is too close to the left or right hand sides? Take a look at the source code and see if you spot any inefficiencies or ways you could think to improve it!
+    <br><br>
+    <a href="https://github.com/alexandersimoes/d3plus/blob/master/src/apps/stacked.js#L371-L432" target="_blank">View the Source</a>
+    </p>
+  </div>
+</section>

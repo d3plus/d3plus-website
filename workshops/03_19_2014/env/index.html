@@ -1,0 +1,62 @@
+---
+layout: workshop
+title: Workshop Introduction
+---
+
+<h2 class="bar">Setting Up Our Local Environment</h2>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>File Structure</h3>
+  </div>
+  <div class="code">
+    <span style="color:#b35c1e"><i class="fa fa-folder-o"></i></span> <br />
+    &mdash; <span style="color:#b35c1e"><i class="fa fa-folder-o"></i> css</span><br />
+    &mdash; <span style="color:#b35c1e"><i class="fa fa-folder-o"></i> js</span><br />
+    &mdash; <span style="color:#b35c1e"><i class="fa fa-file-text-o"></i> index.html</span><br />
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3><i class="fa fa-file-text-o"></i> index.html</h3>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/9627134.js"></script>
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>Testing in the browser</h3>
+  </div>
+  <div class="code">
+    <p>
+      When developing locally, note that your browser may enforce strict permissions for reading files out of the local file system. If you use d3.xhr locally (including d3.json et al.), you must have a local web server. For example, you can run Python's built-in server:
+    </p>
+    <pre>
+      python -m SimpleHTTPServer 8888 &
+    </pre>
+    <p>
+      or for Python 3+
+    </p>
+    <pre>
+      python -m http.server 8888 &
+    </pre>
+    <p>
+      Once this is running, go to <a href="http://localhost:8888/">http://localhost:8888/</a> in a web browser.
+    </p>
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>"Hello World" to the Console</h3>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/9627192.js"></script>
+    <p>
+      Open your browser's web developer console and you should see our "Hello World" log.
+    </p>
+  </div>
+</section>

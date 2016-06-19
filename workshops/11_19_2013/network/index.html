@@ -1,0 +1,82 @@
+---
+layout: workshop
+title: Building a Network
+---
+
+<h2 class="bar">About</h2>
+<section>
+  <p>
+    The network visualization is a bit different from the rest of D3plus in that it requires an extra file besides the data and attribute lookups. It is important to note that THIS network visualization code does not attempt to create a dynamic layout based on a nodes and edges list. Instead it requires the user to create and curate their network ahead of time and produce a JSON file of X, Y coordinates. Born from a need to display a network of around 800 nodes and roughly 2000 edges (the Product Space), using this "hack" of precomputing the layout of the network allows the user to display much larger networks without hoggin all of the resources on the client's machine. Therefore, the D3plus network visualization is not a substitute for such network visualization libraries as <a href="http://arborjs.org/">Arbor.js</a>, <a href="http://sigmajs.org/">Sigma.js</a> or even D3's own built in <a href="http://bl.ocks.org/mbostock/4062045">force-directed graph</a> layout. Below is an excerpt of the artist network file we will be using in this workshop.
+  </p>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <h3>Example structure of <a href="https://gist.github.com/alexandersimoes/7519613">artist_similarity.json</a></h3>
+    <div class="note">
+      <h4>Where did this data come from?</h4>
+      <p>To clear up any confusion, D3plus does not calculate similarity of your data points. This data is all part of the <a href="http://labrosa.ee.columbia.edu/millionsong/">Million Song Dataset</a> stored in the <a href="https://github.com/tb2332/MSongsDB/blob/master/PythonSrc/hdf5_getters.py#L145-L154">get_similar_artists</a> attribute of each song.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7519613.js"></script>
+  </div>
+</section>
+
+
+<h2 class="bar">Building The Network</h2>
+<section>
+  <p>
+    Now that we know about this other file required to build the network, we can load this from our server and combine our knowledge of how the other visualizations are built to create an Artist Space. The only unique attributes to this visualization are the <code>.nodes()</code> and <code>.edges()</code> functions which each take arrays in the format specified above.
+  </p>
+  <h3>D3plus and Color</h3>
+  <p>
+    As we are working our way through the various methods of D3plus' viz object, you may be curious about the <code>.color()</code> attribute. This method expects a string of the key for the data value which you would like to set the color of each node based on. If the value of the specified key is a hex value it will simply use that to set the color. If the values are numbers with both negatives and positives D3plus will map these values to a spectrum of red to grey for negative values and grey to green for positives. On the other hand, if all numbers are positive, D3plus will use a standard heat map and interpolate RGB values as shown below. Finally if the color method is never set, or if the values are non-hex strings, the function will return a consistent random color based on <a href="https://github.com/mbostock/d3/wiki/Ordinal-Scales#wiki-category20b">D3's category20b</a> helper set of colors.
+  </p>
+  <p class="learn_more">
+    Learn more about how D3plus handles setting colors by <a href="https://github.com/alexandersimoes/d3plus/blob/master/src/utils/variables.js#L61-L89" target="_blank">taking a peek under the hood</a>.
+  </p>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <iframe style="height: 220px" src="/million_songs/network_artists.html"></iframe>
+    <a class="button standalone" href="/million_songs/network_artists.html" target="_blank">View standalone <i class="fa fa-angle-right"></i></a>
+    <br><br>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7519739.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Quiz</h2>
+<section class="topic-2">
+  <div class="example"><h3>Here are some other things to try out!</h3></div>
+  <div class="code">
+    <h3>Active</h3>
+    <p>
+    Network, along with some other D3plus apps, supports the <code>.active()</code> variable. When this variable is defined, the Network app will find this variable in the data, and darken nodes in the Network when it returns <code>true</code>. You'll have to loop through our sample dataset manually to set the active variable for each data point, but give it a try!
+    </p>
+    <h3>Spotlight</h3>
+    <p>
+    When an active variable is defined, the Network can "spotlight" only those active nodes by greying out all of the inactive nodes. Try setting <code>.spotlight(true)</code> after you've defined an active variable for your daya.
+    </p>
+  </div>
+</section>
+
+<h2 class="bar">Extra Credit</h2>
+<section class="topic-2">
+  <div class="example">Feeling adventurous? Let's look into the source to see some of the more advanced functions of D3plus.</div>
+  <div class="code">
+    <h3>Primary Connections</h3>
+    <p>
+    To help speed up showing a nodes primary connections on hover, we write a function to quickly create a dictionary of primary connections based on the links given. Take a look at the function and see if it can be improved!
+    <br><br>
+    <a href="https://github.com/alexandersimoes/d3plus/blob/master/src/utils/utils.js#L85-L113" target="_blank">View the Source</a>
+    </p>
+    <h3>Node Sizing</h3>
+    <p>
+    We wrote a quick function to determine the size scale of the nodes displayed in the Network. The idea being: the more spaced out the nodes are, the larger the max node size should be. We haven't had a chance to go back in and optimize this function, so give it a look and see if you can help out.
+    <br><br>
+    <a href="https://github.com/alexandersimoes/d3plus/blob/master/src/apps/network.js#L329-L357" target="_blank">View the Source</a>
+    </p>
+  </div>
+</section>

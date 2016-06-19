@@ -1,0 +1,57 @@
+<!doctype html>
+<meta charset="utf-8">
+<link href="css/d3plus.css" media="screen" rel="stylesheet" type="text/css" />
+<script src="js/d3.js"></script>
+<script src="js/d3.geo.tile.js"></script>
+<script src="js/topojson.js"></script>
+<script src="js/modernizr.js"></script>
+<script src="js/d3plus.js"></script>
+<style>
+body {
+  margin: 0px; padding:0;
+}
+</style>
+
+<div id="viz"></div>
+
+<script>
+
+// instantiate our D3plus viz object
+var viz = d3plus.viz()
+
+// here we get all the data we need from the server, firt the raw data, then
+// each of the attribute files
+d3.json("data/artists.json", function(artists){
+  d3.json("data/albums.json", function(albums){
+    d3.json("data/songs.json", function(songs){
+      d3.json("data/artist_similarity.json", function(network){
+    
+        var attrs = {"artist_id": artists, "album_id": albums, "song_id": songs}
+  
+        viz
+          .type("rings")
+          .attrs(attrs)
+          .aggs({"hotttnesss":"mean"})
+          .dev(true)
+          .value("hotttnesss")
+          .id("artist_id")
+          .text("names")
+          .tooltip(["names","location"])
+          .year(2010)
+          .year_var("year")
+          .nodes(network.nodes)
+          .links(network.edges)
+          .color("hotttnesss")
+          .highlight("ARJ7KF01187B98D717")
+
+        d3.select("#viz")
+          .datum(songs)
+          .call(viz)
+          
+  
+      })
+    })
+  })
+})
+
+</script>

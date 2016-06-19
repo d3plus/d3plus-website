@@ -1,0 +1,43 @@
+---
+layout: workshop
+title: D3plus
+---
+
+<h2 class="bar">What is D3?</h2>
+<section>
+  <p>
+    "D3.js is a JavaScript library for manipulating documents based on data. D3 helps you bring data to life using HTML, SVG and CSS. D3’s emphasis on web standards gives you the full capabilities of modern browsers without tying yourself to a proprietary framework, combining powerful visualization components and a data-driven approach to DOM manipulation." - <a href="http://d3js.org/" target="_blank">D3js.org</a>
+  </p>
+  <p>
+    D3plus is a library built to take advantage of the robust featureset of D3, while providing a fairly low barrier of entry to users new to code, design, and/or data visualization.
+  </p>
+</section>
+
+<h2 class="bar">How much D3 do I need to know?</h2>
+<section>
+  <p>
+    Not a lot. One of the goals of D3plus is to handle as much of the work as possible, so there are only a few concepts you need to know to get started.
+  </p>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <h3>Selecting a DOM element</h3>
+    <div class="note">
+      <p><code>d3.select()</code> will select a DOM element based on standard selector strings. In this example, we are creating a D3js element from a DIV with an ID of "container". You can read more about D3 selections <a href="https://github.com/mbostock/d3/wiki/Selections#wiki-d3_select" target="_blank">here</a>.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7535804.js"></script>
+  </div>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <h3>Calling a function on a D3 element</h3>
+    <div class="note">
+      <p><code>.call()</code> will invoke a specific function on a D3 selection. In this example, we are using the "call" ability to change the ID of our container DIV from "container" to "visualization". You can read more about the D3 call attribute <a href="https://github.com/mbostock/d3/wiki/Selections#wiki-call" target="_blank">here</a>.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7536038.js"></script>
+  </div>
+</section>

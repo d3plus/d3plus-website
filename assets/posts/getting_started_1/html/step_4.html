@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+*, body { margin: 0; padding: 0; }
+</style>
+<link href="http://www.d3plus.org/css/d3plus.css" rel="stylesheet" />
+<body>
+  <div class="step" id="step_2" style="height: 400px"></div>
+  
+  <script src="/assets/posts/getting_started_1/js/d3.min.js"></script>
+  <script src="/assets/posts/getting_started_1/js/d3plus.js"></script>
+  <script>
+
+  d3.tsv("/assets/posts/getting_started_1/data/state_crime.tsv", function(error, state_crime) {
+    if (error) return console.error(error);
+  
+    // Coerce data values to be numeric and
+    // Divide values by population to get crime "rate"
+    state_crime.forEach(function(d) {
+      d3.keys(d).forEach(function(k){
+        if(k != "State"){
+          d[k] = +d[k] 
+        }
+        if(k != "State" && k != "Population" && k != "Year"){
+          d[k] = d[k] / d['Population']
+        }
+      })
+    });
+    
+    state_crime = state_crime.filter(function(d){
+      return d.State != "United States-Total"
+    })
+  
+    make_viz(state_crime);
+  });
+
+  function make_viz(data){
+    var visualization = d3plus.viz()
+        .container("#step_2")
+        .data(data)
+        .type("tree_map")
+        .id("State")
+        .size("Assault")
+        .draw()
+  }
+
+  </script>
+</body>

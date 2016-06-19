@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+ 
+<head>
+  <meta charset="utf-8">
+  <title>Networks with D3plus</title>
+  
+  <!-- load D3plus CSS -->
+  <link href="/css/d3plus.css" media="screen" rel="stylesheet" type="text/css" />
+ 
+  <!-- load D3js -->
+  <script type="text/javascript" src="/js/d3.js"></script>
+ 
+  <!-- load D3plus after D3js -->
+  <script src="/js/d3plus.js"></script>
+</head>
+ 
+<body>
+  <div id="viz"></div>
+  
+  <script>
+  var visualization;
+  
+  d3.tsv("../data/artists.tsv", function(artists){
+    d3.tsv("../data/nodes.tsv", function(nodes){
+      d3.tsv("../data/edges.tsv", function(edges){
+        
+        // need to cast strength as number for proper label formatting
+        edges.forEach(function(d){
+          d["strength"] = parseFloat(d["strength"])
+        })
+      
+        /* Now here's where we actually create the network */
+        visualization = d3plus.viz()
+          .id("artist_id")              // set id to match on nodes
+          .attrs(artists)               // attrs e.g. names, colors etc.
+          .container("#viz")            // container DIV to hold the viz
+          .type("rings")                // visualization type
+          .focus("AR65K7A1187FB4DAA4")  // center node on Beyonce
+          .text("names")                // set text to display on nodes
+          .edges({
+            "value": edges,             // set data for edges (default)
+            "label": "strength",        // show edge labels
+            "arrows": true              // show directional arrows
+          })
+          .draw()                       // finally, draw the visualization!
+      })    
+    })
+  })
+  
+  </script>
+</body>

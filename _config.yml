@@ -1,0 +1,111 @@
+name: D3plus
+
+markdown: kramdown
+
+gems:
+- jekyll-redirect-from
+
+permalink: /blog/:categories/:year/:month/:day/:title/
+
+exclude:
+- node_modules
+- tests
+
+navigation:
+- text: Examples
+  url: /examples/
+- text: Blog
+  url: /blog/
+- text: Documentation
+  url: https://github.com/alexandersimoes/d3plus/wiki
+# - text: Workshops
+#   url: /workshops/
+- text: Download
+  url: /d3plus.zip
+- text: Source
+  url: https://github.com/alexandersimoes/d3plus
+
+github_api:
+  id: 85fd2434dd8ebd42c68d
+  secret: d3c1a4d9fb8752c9d6e9a4c8726fd9e6cfbd0067
+
+workshops:
+  nav_11_19_2013:
+    title: "Workshop 1: November 19th, 2013"
+    links:
+    - text: Intro
+      url: intro
+    - text: D3js
+      url: d3js
+    - text: Data and Attributes
+      url: d3plus
+    - text: Tree Map
+      url: tree_map
+    - text: Stacked
+      url: stacked
+    - text: Pie Scatter
+      url: pie_scatter/
+    - text: Network
+      url: network
+    - text: Rings
+      url: rings
+    - text: Future Development
+      url: future
+
+  nav_11_29_2013:
+    title: "Workshop 2: November 29th, 2013"
+    links:
+    - text: Intro
+      url: intro
+    - text: SVG
+      url: svg
+    - text: D3js
+      url: d3js
+    - text: Data and Attributes
+      url: d3plus
+    - text: Getting Started
+      url: started
+    - text: Tree Map
+      url: tree_map
+    - text: Stacked
+      url: stacked
+    - text: Pie Scatter
+      url: pie_scatter/
+    - text: Network
+      url: network
+    - text: Rings
+      url: rings
+    - text: Future Development
+      url: future
+
+  nav_03_19_2014:
+    title: "Workshop 3: March 19th, 2014 (Networks)"
+    links:
+    - text: Intro
+      url: intro
+    - text: Local Environment
+      url: env
+    - text: Downloading D3plus
+      url: download
+    - text: Formatting Edges
+      url: edges
+    - text: Viz
+      url: viz
+    - text: Your Data
+      url: your_data
+    - text: Rings
+      url: rings
+    - text: Customizing
+      url: customizing
+    - text: Tree Map
+      url: tree_map
+
+  nav_04_03_2015:
+    title: "Workshop 4: April 3rd, 2015 (Int'l Trade)"
+    links:
+    - text: Intro
+      url: intro
+    - text: Local Environment
+      url: env
+    - text: Downloading D3plus
+      url: download

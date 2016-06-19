@@ -1,0 +1,48 @@
+---
+layout: workshop
+title: Building a Ring Network
+---
+
+<h2 class="bar">What Is It?</h2>
+<section>
+  <p>
+    The rings visualization is a close cousin to the network, they both require an auxiliary file of nodes and edges. The difference here is that rings doesn't show the whole network but instead an "egocentric" view of a single node's primary and secondary connections. The user is able to then click on a different node to make that the center of attention and navigate through the network one node at a time.
+  </p>
+  <p>
+    Similar to the network, rings requires setting the <code>.nodes()</code> and <code>.edges()</code> functions which each take arrays in the format specified on the network page. A unique attribute of the rings function is <code>.highlight()</code> method which expects a value of the type specified by the <code>.id()</code> attribute. Thus in the example below we pass an "artist_id" to <code>.highlight()</code>, centering the visualization on <em>that</em> artist.
+  </p>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <iframe style="height: 220px" src="/million_songs/rings_artists.html"></iframe>
+    <a class="button standalone" href="/million_songs/rings_artists.html" target="_blank">View standalone <i class="fa fa-angle-right"></i></a>
+    <br><br>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7520330.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Quiz</h2>
+<section class="topic-2">
+  <div class="example"><h3>Here are some other things to try out!</h3></div>
+  <div class="code">
+    <h3>Highlight</h3>
+    <p>
+    In our example, we initiating the visualization centered on Coldplay. Try to highlight a different band on page load!
+    </p>
+  </div>
+</section>
+
+<h2 class="bar">Extra Credit</h2>
+<section class="topic-2">
+  <div class="example">Feeling adventurous? Let's look into the source to see some of the more advanced functions of D3plus.</div>
+  <div class="code">
+    <h3>Node Positioning</h3>
+    <p>
+    We wrote a big crazy function to determine how nodes should be positioned around the center. If a secondary node has 2 parents, it will be positioned closer to the parent that has less children, in order to improve spacing and legibility. Finally, each group of children is sorted by their color.
+    <br><br>
+    <a href="https://github.com/alexandersimoes/d3plus/blob/master/src/apps/rings.js#L386-L536" target="_blank">View the Source</a>
+    </p>
+  </div>
+</section>

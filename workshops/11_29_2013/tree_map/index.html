@@ -1,0 +1,134 @@
+---
+layout: workshop
+title: Building a Tree Map
+image: cidade.png
+---
+
+<h2 class="bar">Getting Started</h2>
+<section>
+  <p>
+    The following is an extremely minimal but complete example that will serve as the template for many of our visualizations for the rest of this workshop. We start by pulling in dependencies - the D3 library (required for all visualizations) and of course D3plus (js/css) on top of that. We also have 3 other files that are not required for this visualization but will be required for others, so it will be good to keep them in there so we are ready.
+  </p>
+  <p>
+    The first item in our javascript block is the data, a lean example showing the bare minimum of what's required but also the structure of how most of the other examples' data will look. Next we instantiate the d3plus.viz() object, add attributes specific to this visualization and then call it on our container DOM element. Easy!
+  </p>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <iframe style="height: 220px" src="tree_map_ex1.html"></iframe>
+    <a class="button standalone" href="tree_map_ex1.html" target="_blank">View standalone <i class="fa fa-angle-right"></i></a>
+    <br><br>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7516456.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Working With A Larger Dataset</h2>
+<section>
+  <p>
+    For this workshop we will be working with a subset of the <a href="http://labrosa.ee.columbia.edu/millionsong/">Million Song Dataset</a> containing 10,000 data points in the form of songs. We will be nesting our data in the following format: artists > albums > songs with an orthogonal time axis (years). Each nesting level has their own attributes (e.g. artists have names and locations while songs have hotttnesss and duration). The following is a slice of our data showing its structure.
+  </p>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <h3>Example data structure of <a href="https://gist.github.com/alexandersimoes/7517373">songs.json</a></h3>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7517373.js"></script>
+  </div>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <h3>Example attribute data structure of <a href="https://gist.github.com/alexandersimoes/7517462">artists.json</a></h3>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7517462.js"></script>
+  </div>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <h3>Example attribute data structure of <a href="https://gist.github.com/alexandersimoes/7517497">albums.json</a></h3>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7517497.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Putting It All Together</h2>
+<section>
+  <p>
+    We now have all the pieces to put together a basic tree map of our larger million song subset. The two main differences between the first rudimentary example and this full featured example is that the data is now being pulled in via asynchronous calls to the server and the new attributes used such as nesting. To learn more about the specific attribute functions that can be called on tree maps, see the <a href="https://github.com/alexandersimoes/d3plus/wiki/Visualization-Types#wiki-tree_map">wiki</a>.
+  </p>
+  <h3>A Word On Nesting</h3>
+  <p>
+    Utilizing the nesting feature of D3plus takes a bit more explanation. As mentioned previously we will be nesting songs within albums and albums within artists. D3plus is smart enough to handle any nesting specified so long as the <code>.id()</code> attribute is set with an array of the keys from our data ordered from highest to deepest nesting. Thus in our example below we set our nesting via <code>.id(["artist_id","album_id","song_id"])</code>.
+  </p>
+  <h3>Sizing A.K.A. Setting the Value</h3>
+  <p>
+    As expected, the attribute to set for the sizing of the nodes in our tree map (and throughout all the other D3plus visualizations) id <code>.value()</code>. The tricky part here is that our data only has a value attribute for the nodes at the deepest level. So how does D3plus know what size to make the shallower nested nodes? It will default to summing which ever attribute is specified in the <code>.value()</code>. But in our case we do not want to give a higher "hotttnesss" value to albums or artists simply because our dataset has more of their songs, instead we would like to use the average hotttnesss. Enter aggregations called via <code>.aggs()</code>. In this example we use the following: <code>.aggs({"hotttnesss":"mean"})</code>. To see a list of other possible aggregation function look at the <a href="https://github.com/alexandersimoes/d3plus/wiki/Visualization-Variables#wiki-aggs">wiki article</a>.
+  </p>
+  <h3>Pretty Text</h3>
+  <p>
+    Another key component to any successful data visualization are the labels used. These are set via the <code>.text()</code> attribute. This function can accept either a single string to be used for all levels of nesting, an array of keys to try depending on space available in the visualization or an object keyed by the level of nesting desired with values of either a string or array following the rules aforementioned. The best way of understanding this is by dissecting the example below. Here we see the following: <code>.text({"artist_id":"names","album_id":"name","song_id":["song_title","song_id","loudness"]})</code>. This means at the "artist_id" level the visualization will use the "names" key from that attribute lookup object, at the "album_id" level the visualization will use the "name" key from that attribute lookup. And for the deepest level of nesting it will start by trying to use the "song_title" attribute and fall back to the "song_id" or "loudness" depending on available space in the visualization.
+  </p>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <iframe style="height: 220px" src="/million_songs/tree_map.html"></iframe>
+    <a class="button standalone" href="/million_songs/tree_map.html" target="_blank">View standalone <i class="fa fa-angle-right"></i></a>
+    <br><br>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7517940.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Changing It Up</h2>
+<section>
+  <p>
+    It's one thing to build a pretty picture with your data but it's another to make it interactive. With many of the attributes discussed in the previous sections, we will want to update them to see different views of our data. Here is how we would do that.
+  </p>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <iframe style="height: 220px" src="/million_songs/tree_map_albums.html"></iframe>
+    <a class="button standalone" href="/million_songs/tree_map_albums.html" target="_blank">View standalone <i class="fa fa-angle-right"></i></a>
+    <br><br>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7518802.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Quiz</h2>
+<section class="topic-2">
+  <div class="example"><h3>Here are some other things to try out!</h3></div>
+  <div class="code">
+    <h3>Tooltip Data</h3>
+    <p>
+      Dive into the data and see what other values you can display in the tooltip.
+    </p>
+    <h3>Aggregation Math</h3>
+    <p>
+      D3plus apps that nest data can use any D3 array function that returns a single value. By default, D3plus uses <code>.sum()</code> as it's aggregation function. Try changing the aggregation values for different keys!
+    </p>
+    <h3>Nesting</h3>
+    <p>
+      Play around with modifying the nesting. How would you remove album nesting? Is there a way to remove nesting entirely?
+    </p>
+  </div>
+</section>
+
+<h2 class="bar">Extra Credit</h2>
+<section class="topic-2">
+  <div class="example">Feeling adventurous? Let's look into the source to see some of the more advanced functions of D3plus.</div>
+  <div class="code">
+    <h3>Word Wrapping</h3>
+    <p>
+    Much to our dismay, SVG text elements do not support word wrapping. This causes some problems for our lovely Tree Map visualization, as we'd like to have both word wrapping AND dynamic text sizing. We've written our own function to handle this, and while it works, it could always be improved. Take a look at the source code, experiment with some different thresholds, and see if you can help us improve D3plus!
+    <br><br>
+    <a href="https://github.com/alexandersimoes/d3plus/blob/master/src/utils/wordwrap.js" target="_blank">View the Source</a>
+    </p>
+  </div>
+</section>

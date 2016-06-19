@@ -1,0 +1,64 @@
+---
+layout: workshop
+title: Data and Attributes
+image: cidade.png
+---
+
+<h2 class="bar">Data Formatting</h2>
+<section class="topic-2">
+  <div class="example">
+    <h3>Example data structure</h3>
+    <div class="note">
+      <p>D3plus accepts an array of keyed objects as data. There are numerous ways to load data: JSON, CSV, etc. No matter which way you chose, any will work as long as it gets passed to D3plus as an array of keyed objects.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7535276.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Attribute Formatting</h2>
+<section class="topic-2">
+  <div class="example">
+    <h3>Simple Attributes (Array)</h3>
+    <div class="note">
+      <p>When you have multiple data points that may all have similar attributes, it becomes more efficient to pass attribute data that many data points can reference. In this example, the attribute data is in a similar format to the raw data, and they are matched at a specific key.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7535619.js"></script>
+  </div>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <h3>Simple Attributes (Dictionary)</h3>
+    <div class="note">
+      <p>Alternatively, attribute data can also be passed as a dictionary, keyed by the matching ID.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7535638.js"></script>
+  </div>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <h3>Complex Attributes</h3>
+    <div class="note">
+      <p>If you are managing multiple IDs (ex. nesting), it is also possible to pass multiple attribute lists, keyed by the appropriate IDs. This example shows Attribute Arrays, but can also be used with Attribute Dictionaries.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7535777.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Sample Dataset</h2>
+<section class="topic-2">
+  <div class="example">
+    <h3>Million Song Dataset</h3>
+    <div class="note">
+      <p>For today's workshop, we have prepared a sample dataset for you to use. Please download it now.</p>
+      <a href="/million_songs_json.zip" class="button">Download .ZIP</a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,55 @@
+<!doctype html>
+<meta charset="utf-8">
+<link href="css/d3plus.css" media="screen" rel="stylesheet" type="text/css" />
+<script src="js/d3.js"></script>
+<script src="js/d3.geo.tile.js"></script>
+<script src="js/topojson.js"></script>
+<script src="js/modernizr.js"></script>
+<script src="js/d3plus.js"></script>
+<style>
+body {
+  margin: 0px; padding:0;
+}
+</style>
+
+<div id="viz"></div>
+
+<script>
+
+// instantiate our D3plus viz object
+var viz = d3plus.viz()
+
+// here we get all the data we need from the server, firt the raw data, then
+// each of the attribute files
+d3.json("data/artists.json", function(artists){
+  d3.json("data/albums.json", function(albums){
+    d3.json("data/songs.json", function(songs){
+    
+      var attrs = {"artist_id": artists, "album_id": albums, "song_id": songs}
+      var coldplay = "ARJ7KF01187B98D717"
+      var foofighters = "AR6XPWV1187B9ADAEB"
+      
+      viz
+        .type("stacked")
+        .attrs(attrs)
+        .dev(true)
+        .yaxis("duration")
+        .xaxis("year")
+        .xaxis_domain([1994, 2008])
+        .id(["artist_id","album_id","song_id"])
+        .solo([coldplay, foofighters])
+        .text({"artist_id":"names", "album_id":"name", "song_id":["song_title","song_id","loudness"]})
+        .tooltip({"artist_id":["names"], "album_id":["name"], "song_id":["song_title"]})
+        .depth(0)
+        .unique_axis("x")
+        .color("artist_id")
+
+      d3.select("#viz")
+        .datum(songs)
+        .call(viz)
+    
+    })
+  })
+})
+
+</script>

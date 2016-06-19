@@ -1,0 +1,57 @@
+---
+layout: default
+title: Examples
+style: blog
+---
+
+<div id="example-intro">
+  <div class="page-header">
+    <h1 class="post-title">Live Code Examples<h1>
+  </div>
+  <p class="post-snippit">One of the best ways to learn what D3plus can do is by viewing live code samples. If you there are any features you would like clarification on, or you're not sure how to do something, please either post your code in the <a href="https://groups.google.com/forum/#!forum/d3plus">Google Group</a> or contact us through our <a href="https://github.com/alexandersimoes/d3plus/issues">Github Issues Page</a>.</p>
+  <p>
+  <input id="example-search" type="text" placeholder="Search" />
+  </p>
+</div>
+
+<div id="examples"></div>
+
+<script>
+
+  var width = 0, height = 0;
+
+  d3.select("input").on("keyup", function() {
+
+    var q = this.value.toLowerCase();
+
+    if (gistData) {
+
+      var visible = gistData.filter(function(g){
+        return q === "" || g.description.toLowerCase().indexOf(q) >= 0;
+      }).map(function(g){ return g.id; });
+
+      d3.selectAll("div.exampleWrapper").transition().duration(200)
+        .style("opacity",function(d){
+          if (!height) height = this.offsetHeight || Math.round(this.getBoundingClientRect().height)
+          if (!width) width = this.offsetWidth
+          return visible.indexOf(this.id.substring(4)) >= 0 ? 1 : 0
+        })
+        .style("width",function(d){
+          return visible.indexOf(this.id.substring(4)) >= 0 ? width+"px" : "0px"
+        })
+        .style("height",function(d){
+          return visible.indexOf(this.id.substring(4)) >= 0 ? height+"px" : "0px"
+        })
+
+      d3.selectAll("a.example").transition().duration(200)
+        .style(d3plus.client.prefix()+"transform",function(d){
+          return visible.indexOf(this.parentNode.id.substring(4)) >= 0 ? "scale(1)" : "scale(0)"
+        })
+
+    }
+
+  })
+
+</script>
+
+{% include examples.html hidden="10309148" container="div#examples" %}

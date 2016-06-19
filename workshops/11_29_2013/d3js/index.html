@@ -1,0 +1,100 @@
+---
+layout: workshop
+title: D3plus
+image: cidade.png
+---
+
+<h2 class="bar">What is D3?</h2>
+<section>
+  <p>
+    "D3.js is a JavaScript library for manipulating documents based on data. D3 helps you bring data to life using HTML, SVG and CSS. D3’s emphasis on web standards gives you the full capabilities of modern browsers without tying yourself to a proprietary framework, combining powerful visualization components and a data-driven approach to DOM manipulation." - <a href="http://d3js.org/" target="_blank">D3js.org</a>
+  </p>
+  <p>
+    D3plus is a library built to take advantage of the robust featureset of D3, while providing a fairly low barrier of entry to users new to code, design, and/or data visualization. Just as it is impossible to tell the story of Brazil without devoting a few lines to Portugal, it is also the case with D3 and D3plus. The project is built entirely dependent on the <a href="http://d3js.org/" target="_blank">D3</a> library and does not intend to duplicate any of its purpose but instead add atop a layer of ease for the user to access its powerful capabilities.
+  </p>
+</section>
+
+<h2 class="bar">How to use D3</h2>
+<section class="topic-2">
+  <div class="example">
+    <h3>Selecting a DOM element</h3>
+    <div class="note">
+      <p><code>d3.select()</code> will select a DOM element based on standard selector strings. In this example, we are creating a D3js element from an <code>&lt;svg&gt;</code> on the page with an ID of "viz". You can read more about D3 selections <a href="https://github.com/mbostock/d3/wiki/Selections#wiki-d3_select" target="_blank">here</a>.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7695588.js"></script>
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>Adding a DOM element to the page</h3>
+    <div class="note">
+      <p><code>.append()</code> will add a new element to the page. In this example, we are creating a <code>&lt;rect&gt;</code> node to add to the <code>&lt;svg&gt;</code> from the previous example. You can read more about how this works <a href="https://github.com/mbostock/d3/wiki/Selections#wiki-append" target="_blank">here</a>.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7695440.js"></script>
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>Binding Data to DOM elements</h3>
+    <div class="note">
+      <p>So far everything we've done could also be done via <a href="http://jquery.com/">jQuery</a>. <code>.data()</code> enables the binding of data to specific elements on the page, thus driving their appearance or disappearance. In this example, we are binding a simple array of values to our previous <code>&lt;rect&gt;</code> node that is already on the page. You can read more about how the data operator <a href="https://github.com/mbostock/d3/wiki/Selections#data">here</a>.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7695691.js"></script>
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>Dynamically Adding Elements New Elements With Data</h3>
+    <div class="note">
+      <p>Now you may be wondering what happens to the other 3 elements in the data array, since their is only 1 <code>&lt;rect&gt;</code> but 4 numbers in our array. Well, D3 was created to handle dynamic changing of data. D3 will apply the first number in our array to our previously build <code>&lt;rect&gt;</code>, and treat the other numbers as "new" rectangles. We can use the <code>.enter()</code> function to tell our page what to do with those new numbers. Here, we will create 3 new rectangles for the rest of the data.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7695749.js"></script>
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>Updating the Rectangles</h3>
+    <div class="note">
+      <p>Great, now we have 4 rectangles on the page. How are we able to modify all of the rectangles, whether they are the new ones or the old ones? It's simple, any styling that we apply to our "rect" variable will effect all active rectangles with data. Here, we set the size of the rectangles based on their data. D3 lets us use the data binded to each element as a variable passed through a function.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7695866.js"></script>
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>Updating the Data</h3>
+    <div class="note">
+      <p>What if we were to update our data? How can we tell our elements on the page about this update and view this change? In this example we change our data to remove one element and update the values of our other elements.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7696015.js"></script>
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>Getting Rid of Old Elements</h3>
+    <div class="note">
+      <p>Now that we've both added and updated our elements to the page, it is time to (sadly) see some go. In the last example we removed one element from our array and as such the corresponding element on the page should also disappear. The example here illustrates this practice via the <a href="https://github.com/mbostock/d3/wiki/Selections#wiki-enter" target="_blank"><code>.exit()</code></a> method. We select the rectangles that are leaving, and remove them.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7696025.js"></script>
+  </div>
+</section>

@@ -1,0 +1,107 @@
+ul.posts {
+  list-style: none;
+  padding: 0;
+}
+
+.post {
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding: 40px 0;
+}
+
+.post-title {
+  margin: 4px 0 8px 0;
+}
+
+.post-title > a {
+  display: block;
+  font-size: 28px;
+  line-height: 1.1;
+  color: rgba(0,0,0,0.8);
+  margin-bottom: 4px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.post-snippet {
+  margin: 0 0 10px 0;
+}
+
+.post-snippet > p {
+  font-size: 20px;
+  line-height: 1.2;
+  color: rgba(0,0,0,0.6);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.post-meta {
+  font-size: 14px;
+  color: rgba(0,0,0,0.3);
+}
+
+.avatar-image {
+  width: 32px;
+  height: 32px;
+  vertical-align: top;
+  -webkit-border-radius: 100%;
+  -moz-border-radius: 100%;
+  border-radius: 100%;
+}
+
+.avatar-span {
+  line-height: 32px;
+  margin-left: 10px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.post-meta {
+  margin: 10px 0 0 0;
+  white-space: nowrap;
+}
+
+.post-date {
+  margin-top: 3px;
+  margin-left: 15px;
+  white-space: nowrap;
+}
+
+.post-content{
+  margin: 40px 0 0 0;
+  padding: 0 200px 0 0;
+  position: relative;
+}
+
+.post-content > h2 {
+  margin: 50px 0 0 0;
+}
+
+table.highlighttable {
+  margin: 0 0 20px 0;
+  width: 100%;
+}
+
+.footnotes {
+  border-top: 1px solid black;
+  font-size:12px;
+}
+
+aside {
+  font-size: small;
+  line-height: 1.2;
+  position: absolute;
+  right: 0;
+  width: 180px;
+}
+
+.step {
+  margin: 20px 0 0 0;
+}
+
+#disqus_thread {
+  margin: 20px 0 0 0;
+  width: 800px;
+}

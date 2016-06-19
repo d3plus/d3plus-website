@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Tree Map with D3plus</title>
+
+  <!-- load D3plus CSS -->
+  <link href="/css/d3plus.css" media="screen" rel="stylesheet" type="text/css" />
+
+  <!-- load D3js -->
+  <script type="text/javascript" src="/js/d3.js"></script>
+
+  <!-- load D3plus after D3js -->
+  <script src="/js/d3plus.js"></script>
+</head>
+
+<body>
+  <div id="viz"></div>
+
+  <script>
+
+    // our data!
+    var data = [
+      {"value":100, "name":"alpha"},
+      {"value":70, "name":"beta"},
+      {"value":40, "name":"gamma"},
+      {"value":15, "name":"delta"},
+      {"value":5, "name":"epsilon"},
+      {"value":1, "name":"zeta"}
+    ]
+
+    // instantiate d3plus
+    var visualization = d3plus.viz()
+      .container("#viz")  // container DIV to hold the visualization
+      .data(data)         // our dataset
+      .type("tree_map")   // we're building a tree map
+      .id("name")         // key for which our data is unique on
+      .text("name")       // text to appear inside block
+      .size("value")     // sizing of blocks
+      .draw()             // finally, draw the visualization!
+
+  </script>
+</body>

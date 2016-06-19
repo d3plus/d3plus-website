@@ -1,0 +1,384 @@
+/*
+  GENERAL STUFF
+  -------------
+*/
+html, body {
+  height: 100%;
+}
+body {
+  background-color: white;
+  font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+}
+h1,h2,h3,h4,h5 {
+  font-weight: normal;
+}
+h5 {
+  color: #b35c1e;
+  margin: 0px;
+}
+a {
+  color: #b35c1e; /* rust */
+  text-decoration: none;
+  -webkit-transition: color .1s;
+          transition: color .1s;
+}
+a:hover {
+  color: #C9853A; /* orange */
+}
+.clear {
+  clear: both;
+  height: 0px;
+  font-size: 0;
+}
+
+
+/*
+  HEADER
+  ------
+*/
+header {
+  background-color: rgba(250,250,250,0.95);
+  box-shadow: 0px 0px 5px #eee;
+  font-size: 14px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #e0e0e0;
+  display: block;
+  margin-bottom: -10px;
+  padding: 10px 0px;
+  position: fixed;
+  top: 0px;
+  width: 100%;
+  z-index: 9999;
+}
+
+@media only screen and (max-device-width: 1000px) {
+  header {
+    position: absolute;
+  }
+}
+
+section header {
+  background-color: transparent;
+  box-shadow: none;
+  position: static;
+}
+
+nav {
+  margin: 0px auto;
+  width: 990px;
+}
+
+header h1 {
+  display: inline-block;
+  margin: 0;
+}
+header h1 a {
+  color: #404040;
+  font-size: 18px;
+  padding: 0.7em 1em;
+  display: inline-block;
+  font-weight: normal;
+}
+header h1 a:hover {
+  color: #808080;
+}
+header h2, section h2, footer h2 {
+  color: #b35c1e; /* rust */
+  padding: 12px 20px 14px;
+}
+header a {
+  color: #aaa;
+  padding: 0.5em 0.5em;
+}
+header a.active {
+  color: #b35c1e;
+  text-decoration: none;
+}
+
+p.example {
+  padding: 0px 20px;
+}
+
+div.exampleWrapper {
+  display: inline-block;
+}
+
+a.example {
+  /*background-color: #b35c1e;*/
+  border: 1px solid #ddd;
+  box-shadow: 0px 2px 5px #ccc;
+  display: inline-block;
+  height: 100px;
+  margin: 0px 0px 40px 37px;
+  padding: 0px;
+  position: relative;
+  text-align: left;
+  -webkit-transition: box-shadow .1s;
+          transition: box-shadow .1s;
+  vertical-align: top;
+  width: 150px;
+}
+
+a.example img {
+  border: 0px;
+  display: block;
+  height: 100px;
+  /*opacity: 0.8;*/
+  /*-webkit-transition: opacity .1s;*/
+          /*transition: opacity .1s;*/
+  width: 150px;
+}
+
+a.example div.title {
+  background-color: rgba(255,255,255,0.9);
+  border-top: 1px solid rgba(0,0,0,0.1);
+  bottom: 0px;
+  color: #444;
+  font-size: 12px;
+  padding: 3px 5px;
+  position: absolute;
+  /*-webkit-transition: background-color .1s;*/
+          /*transition: background-color .1s;*/
+  width: 140px;
+}
+
+a.example div.date {
+  color: #aaa;
+  font-size: 10px;
+  padding: 3px 5px;
+}
+
+a.example:hover {
+  box-shadow: 0px 2px 5px #999;
+}
+
+/*a.example:hover img {
+  opacity: 1;
+}*/
+
+/*a.example:hover div.title {
+  background-color: rgba(255,255,255,0.9);
+}*/
+
+a.example span.banner.New {
+  color: rgba(179,92,30,1);
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.button {
+  background-color: #b35c1e;
+    box-shadow: 0px 2px 5px #ccc;
+  color: #f7f7f7;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 13px;
+  line-height: 18px;
+  opacity: 0.8;
+  padding: 3px 10px 4px;
+  text-align: center;
+  -webkit-transition: box-shadow .1s, opacity .1s;
+          transition: box-shadow .1s, opacity .1s;
+}
+
+.button:hover {
+  box-shadow: 0px 2px 5px #999;
+  color: #f7f7f7;
+  opacity: 1;
+}
+
+.button.right {
+  position: absolute;
+  right: 25px;
+  top: -2px;
+}
+
+.moreButton {
+  display: block;
+  font-size: 13px;
+  margin-top: -15px;
+  margin-bottom: 20px;
+}
+
+footer {
+  background-color: #fcfcfc;
+  border-bottom: 1px solid #f0f0f0;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 75px;
+  padding-bottom: 40px;
+  text-align: center;
+}
+
+footer h4 {
+  color: #888;
+  margin-bottom: 5px;
+}
+
+footer a {
+  margin: 0px 10px;
+  opacity: 0.8;
+  -webkit-transition: opacity .1s;
+          transition: opacity .1s;
+}
+
+footer a:hover {
+  opacity: 1;
+}
+
+footer img {
+  border: 0;
+  vertical-align: middle;
+}
+
+
+/*
+  PAGE CONTENT
+  ------------
+*/
+#content {
+  min-height: 70%;
+  max-width: 990px;
+  padding: 0 10px 10px;
+  margin: 105px auto 35px;
+  font-size: 14px;
+  color: #282828;
+  line-height: 155%;
+}
+#content h2.bar {
+  background: rgba(179,92,30,0.15);
+  color: rgba(179,92,30,1);
+  margin: 10px 0px 20px;
+}
+
+img.background {
+  height: 145px;
+  opacity: 0.15;
+  position: absolute;
+  top: 65px;
+  width: 990px;
+}
+
+section {
+  position: relative;
+  text-align: left;
+}
+
+section#loading {
+  margin-bottom: 100px;
+}
+
+section#toggle {
+text-align: center;
+}
+
+section.topic-2,
+section.topic-3 {
+  display: table;
+  table-layout: fixed;
+  border-top: 1px solid #dedede;
+  margin-top: 2%;
+  width: 100%;
+}
+h2 + section.topic-2,
+h2 + section.topic-3 {
+  border: none;
+}
+
+#example-intro {
+  display: block;
+  margin: 0 auto;
+  width: 50%;
+}
+
+#example-search {
+  display: block;
+  font-size: 24px;
+  font-weight: 200;
+  letter-spacing: 1px;
+  margin: 30px auto;
+  padding: 5px;
+  text-align: center;
+  width: 100%;
+}
+
+#examples {
+  text-align: center;
+}
+
+section.topic-2 .example,
+section.topic-3 .example {
+  padding-top: 2%;
+  padding-right: 2%;
+  vertical-align: top;
+  display: table-cell;
+}
+iframe {
+  border: none;
+  overflow: hidden;
+  padding: 0;
+}
+iframe.example {
+  margin: 0px 12px 12px 12px;
+}
+section.topic-2 .example iframe,
+section.topic-3 .example iframe {
+  position: relative;
+  left: -5px;
+  width: 100%;
+  margin: 0;
+}
+section.topic-2 .code,
+section.topic-3 .code {
+  padding-top: 2%;
+  vertical-align: top;
+  display: table-cell;
+}
+section.topic-2 .example {
+  width: 33%
+}
+section.topic-2 .code {
+  width: 67%;
+}
+section.topic-3 .example {
+  width: 33%;
+}
+section .example iframe {
+  height: 110px;
+}
+section .example .button {
+  margin: 30px 0 0 0;
+}
+section.topic-3 .call {
+  padding-top: 2%;
+  display: table-cell;
+  width: 18%;
+  text-align: center;
+  vertical-align: middle;
+}
+section h3 {
+  color: #585858;
+  margin: 0 0 0.4em 0;
+}
+section.topic-2 .documentation {
+  display: table-cell;
+  width: 67%;
+}
+section.topic-2 .documentation pre {
+  font-family: 'Bitstream Vera Sans Mono','Courier',monospace;
+  padding: 1em;
+  background-color: #f0f0f0;
+  margin-bottom: 1.4em;
+}
+
+div.note {
+  font-style: italic;
+  font-size: 12px;
+  margin: 30px 0 0 0;
+}
+p.learn_more {
+  background: #f7f7f7fca;
+  padding: 10px;
+}

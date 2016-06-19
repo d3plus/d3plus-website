@@ -1,0 +1,50 @@
+---
+layout: workshop
+title: Workshop Introduction
+---
+
+<h2 class="bar">Formatting Edges</h2>
+
+<section class="topic-2">
+  <div class="example">
+    <h3><i class="fa fa-file-text-o"></i> edges.json</h3>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/9628212.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Attribute Formatting</h2>
+<section class="topic-2">
+  <div class="example">
+    <h3>Simple Attributes (Array)</h3>
+    <div class="note">
+      <p>When you have multiple data points that may all have similar attributes, it becomes more efficient to pass attribute data that many data points can reference. In this example, the attribute data is in a similar format to the raw data, and they are matched at a specific key.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7535619.js"></script>
+  </div>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <h3>Simple Attributes (Dictionary)</h3>
+    <div class="note">
+      <p>Alternatively, attribute data can also be passed as a dictionary, keyed by the matching ID.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7535638.js"></script>
+  </div>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <h3>Complex Attributes</h3>
+    <div class="note">
+      <p>If you are managing multiple IDs (ex. nesting), it is also possible to pass multiple attribute lists, keyed by the appropriate IDs. This example shows Attribute Arrays, but can also be used with Attribute Dictionaries.</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/davelandry/7535777.js"></script>
+  </div>
+</section>

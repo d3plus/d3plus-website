@@ -1,0 +1,158 @@
+---
+layout: workshop
+title: D3plus
+image: cidade.png
+---
+
+<h2 class="bar">What is SVG? And Why Use it?</h2>
+<section>
+  <p>
+    SVG is a text-based image format, that is, it is based on instructions that tell the computer how to draw the image upon request. This makes SVG resolution independent, since zoom in and zoom out actions involve re-drawing the graphic at the correct size. The resolution independence of SVGs is important for data visualization since it allows maximum flexibility when dealing with data that is not pre-specified.
+  </p>
+  <p>
+    D3plus is a library built to take advantage of the robust featureset of D3, while providing a fairly low barrier of entry to users new to code, design, and/or data visualization. Just as it is impossible to tell the story of Brazil without devoting a few lines to Portugal, it is also the case with D3 and D3plus. The project is built entirely dependent on the <a href="http://d3js.org/" target="_blank">D3</a> library and does not intend to duplicate any of its purpose but instead add atop a layer of ease for the user to access its powerful capabilities.
+  </p>
+</section>
+
+<h2 class="bar">What does it look like?</h2>
+<section class="topic-2">
+  <div class="example">
+    <h3>A Blue Rectangle</h3>
+    <div id="rect_ex1">
+      <?xml version="1.0"?>
+      <svg width="120" height="120"
+           viewPort="0 0 120 120" version="1.1"
+           xmlns="http://www.w3.org/2000/svg">
+           <rect x="10" y="10" width="100" height="100" fill="#0000ff" />
+      </svg>
+    </div>
+    <p>
+      SVG uses XML for its syntax and if you are comfortable with HTML you should be able to pick up SVG very easily. For a list of all the available tag names and attributes you can <a href="http://www.w3.org/TR/SVG/" title="SVG spec">view the spec</a>.
+    </p>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/df0d519c5052c5e89492.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Using Javascript With SVG</h2>
+<section class="topic-2">
+  <div class="example">
+    <h3>A Red Rectangle</h3>
+    <div id="rect_ex2">
+      <?xml version="1.0"?>
+      <svg width="120" height="120"
+           viewPort="0 0 120 120" version="1.1"
+           xmlns="http://www.w3.org/2000/svg">
+           <rect x="10" y="10" width="100" height="100" fill="#0000ff" />
+      </svg>
+    </div>
+    <script>
+      var rect = document.getElementById("rect_ex2")
+                  .getElementsByTagName("rect")[0];
+      rect.style.setProperty("fill", "red", "");
+    </script>
+    <p>
+      Just as using javascript to update HTML elements is a bit of a pain, so is updating SVG. Now we see use case for D3.
+    </p>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/cf7b39a1dca18c510d16.js"></script>
+  </div>
+</section>
+
+<!-- <h2 class="bar">Using D3 with SVG</h2>
+<section class="topic-2">
+  <div class="example">
+    <h3>Create and Add to the Page</h3>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/cd21519a203595fc49d7.js"></script>
+    <div id="rect_ex1"></div>
+    <script>
+    var svg = d3.select("#rect_ex1").append("svg")
+                .attr("width", 120)
+                .attr("height", 120)
+
+    svg.append("rect")
+      .attr("x", 10)
+      .attr("y", 10)
+      .attr("width", 100)
+      .attr("height", 100)
+      .attr("fill", "#0000ff")
+    </script>
+  </div>
+</section>
+
+<section class="topic-2">
+  <div class="example">
+    <h3>Update via D3</h3>
+    <div class="note">
+      <p>Here we are changing the color (fill) from blue to green. This works the same way as with HTML elements</p>
+    </div>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/cf7b39a1dca18c510d16.js"></script>
+    <div id="rect_ex2"></div>
+    <script>
+    var svg = d3.select("#rect_ex2").append("svg")
+                .attr("width", 120)
+                .attr("height", 120)
+
+    var rect = svg.append("rect")
+      .attr("x", 10)
+      .attr("y", 10)
+      .attr("width", 100)
+      .attr("height", 100)
+      .attr("fill", "#0000ff")
+
+    rect.attr("fill", "#00ff00")
+    </script>
+  </div>
+</section>
+
+<h2 class="bar">Putting It All Together</h2>
+<section class="topic-2">
+  <div class="example">
+    <h3>Enter, Update, Exit With SVG</h3>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/cf7b39a1dca18c510d16.js"></script>
+    <div id="rect_ex3"></div>
+    <script>
+    var svg = d3.select("#rect_ex3").append("svg")
+                .attr("width", 120)
+                .attr("height", 120)
+
+    var rect = svg.append("rect")
+      .attr("x", 10)
+      .attr("y", 10)
+      .attr("width", 100)
+      .attr("height", 100)
+      .attr("fill", "#0000ff")
+
+    rect.attr("fill", "#00ff00")
+
+    var data = [
+      {"value":100, "color":"DarkGoldenRod"},
+      {"value":70, "color":"DeepSkyBlue"},
+      {"value":40, "color":"MediumAquaMarine"},
+      {"value":15, "color":"OrangeRed"},
+      {"value":5, "color":"Orchid"},
+      {"value":1, "color":"PaleGreen"}
+    ]
+
+    rect = svg.selectAll("rect").data(data)
+
+    var enter = rect.enter().append("rect");
+
+    enter
+      .attr("x", function(d){ return d.value })
+      .attr("y", 10)
+      .attr("width", function(d){ return d.value })
+      .attr("height", function(d){ return d.value })
+      .attr("fill", function(d){ return d.color })
+
+    </script>
+  </div> -->
+</section>

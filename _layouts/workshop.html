@@ -1,0 +1,29 @@
+---
+layout: default
+---
+
+<script src="/js/d3.js"></script>
+
+{% if page.image == null %}
+  {% assign image = "mit.png" %}
+{% else %}
+  {% assign image = page.image %}
+{% endif %}
+
+<img class="background" src="/assets/img/backgrounds/{{image}}">
+
+<section class="content">
+  {% assign date = page.url|split:'/' %}
+  {% assign date = date[2]|prepend:'nav_' %}
+  <h2>{{ site.workshops.[date].title }}</h2>
+  {% assign url = page.url|remove:'index.html' %}
+  <header>
+    {% for link in site.workshops.[date].links %}
+      <a {% if url contains link.url %}class="active"{% endif %} href="/workshops/{{ date|remove:'nav_' }}/{{ link.url }}/">{{link.text}}</a>
+    {% endfor %}
+  </header>
+
+  <div class="post">
+  {{ content }}
+  </div>
+</section>

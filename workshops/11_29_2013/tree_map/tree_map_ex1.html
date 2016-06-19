@@ -1,0 +1,45 @@
+<!doctype html>
+<meta charset="utf-8">
+<link href="/css/d3plus.v0.9.css" media="screen" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="/js/d3.js"></script>
+<script src="/js/d3.geo.tile.js"></script>
+<script src="/js/topojson.js"></script>
+<script src="/js/modernizr.js"></script>
+<script src="/js/d3plus.v0.9.js"></script>
+
+<div id="viz"></div>
+
+<script>
+
+/*
+  The following is all boiler plate code to get you started, from the
+  d3plus wiki. You'll probably want to replace this once you get going
+  on some more in-depth examples.
+*/
+
+// our data!
+data = [
+  {"value":100, "name":"alpha"},
+  {"value":70, "name":"beta"},
+  {"value":40, "name":"gamma"},
+  {"value":15, "name":"delta"},
+  {"value":5, "name":"epsilon"},
+  {"value":1, "name":"zeta"}
+]
+
+// instantiate d3plus
+var visualization = d3plus.viz()
+
+visualization
+  .type("tree_map")   // we're building a tree map
+  .id("name")         // key for which our data is unique on
+  .text("name")       // text to appear inside block
+  .value("value")     // sizing of blocks
+  .depth(0)           // set the current depth
+
+// call visualization on our container element (where it will live)
+d3.select("#viz")
+  .datum(data)
+  .call(visualization)
+
+</script>

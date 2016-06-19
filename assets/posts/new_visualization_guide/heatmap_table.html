@@ -1,0 +1,33 @@
+<!doctype html>
+<meta charset="utf-8">
+
+<script src="http://d3plus.org/js/d3.js"></script>
+<script src="http://d3plus.org/js/d3plus.js"></script>
+
+<div id="viz"></div>
+
+<script>
+
+  // This is what a generic (simple) example of a dataset for a table would
+  // look like.
+  var data = [
+    {"index":"a", "foo":20, "bar":5, "baz":77},
+    {"index":"b", "foo":2, "bar":20},
+    {"index":"c", "foo":94, "bar":55, "baz":101},
+    {"index":"d", "bar":95, "baz":82}
+  ]
+
+  var viz = d3plus.viz();
+
+  viz
+    .container("#viz")
+    .cols(["foo", "bar", "baz"])
+    .data(data)
+    .type("table")
+    .shape("square")
+    .id("index")
+    .draw()
+
+</script>
+</body>
+</html>

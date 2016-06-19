@@ -1,0 +1,34 @@
+---
+layout: default
+title: Blog
+style: blog
+---
+
+
+<h2>Latest</h2>
+
+<ul class="posts">
+  
+  {% for post in site.posts %}
+  <li>
+    <div class="post">
+      <h3 class="post-title">
+        <a href="{{ post.url }}" title="{{ post.title }}" data-action="open-post" >{{ post.title }}</a>
+      </h3>
+      <a class="post-snippet" href="{{ post.url }}">
+        <p>{{ post.content | strip_html | truncatewords:50}}</p>
+      </a>
+      <div class="post-meta">
+        <span>
+          <a href="" class="avatar" title="Go to the profile of ">
+            <img src="{{ site.url }}/assets/img/people/{{ post.author|lower }}.gif" class="avatar-image">
+            <span class="avatar-span">{{ post.author|capitalize }}</span>
+          </a>
+        </span>
+        <span class="post-date">{{ post.date | date_to_string }}</span>
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+  
+</ul>

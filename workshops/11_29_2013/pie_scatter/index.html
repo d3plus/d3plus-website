@@ -1,0 +1,54 @@
+---
+layout: workshop
+title: Building a Pie Scatter
+image: cidade.png
+---
+
+<h2 class="bar">Scatter Plots of Nested Data</h2>
+<section>
+  <p>
+    Sometimes the best way of comparing two different attributes of your data is to simply plot them on an X, Y plane. Visually, large datasets can suffer from over crowding of nodes thus reducing legibility. One solution, used throughout the other visualizations is to allow nesting of nodes to get a clearer idea of the overall picture. What you sacrifice in accuracy, you gain in legibility.
+  </p>
+  <h3>A Note on Scale</h3>
+  <p>
+    The only specific methods for the pie scatter visualization are <code>.xaxis_scale()</code> and <code>.yaxis_scale()</code>. If these methods are not used, they will default to linear, they can also accept the the value "log".
+  </p>
+</section>
+<section class="topic-2">
+  <div class="example">
+    <iframe style="height: 220px" src="/million_songs/pie_scatter.html"></iframe>
+    <a class="button standalone" href="/million_songs/pie_scatter.html" target="_blank">View standalone <i class="fa fa-angle-right"></i></a>
+    <br><br>
+  </div>
+  <div class="code">
+    <script src="https://gist.github.com/alexandersimoes/7537249.js"></script>
+  </div>
+</section>
+
+<h2 class="bar">Quiz</h2>
+<section class="topic-2">
+  <div class="example"><h3>Here are some other things to try out!</h3></div>
+  <div class="code">
+    <h3>Static Axes</h3>
+    <p>
+      You may be wondering why your charts seem to have so much room on the right hand side that is empty. This is because, by default, the scatter visualization calculates the bounds of your data for all years so that if you were to move between years the axes would stay the same, thus allowing for a static point of reference and comparison. This may not be the desired behavior, try changing the <code>.static_axes()</code> method to <code>false</code> to see how your visualization looks.
+    </p>
+    <h3>Number Formatting</h3>
+    <p>
+      Another public method that D3plus gives the user access to is <code>.number_format()</code>. This function gets called any place is number is printed to the screen in the visualization, in tooltips, on axes, in headers, everywhere! This method is a bit complicated as you have to pass it a function that accepts 2 arguments, the first being the number itself and the second being the key of that value from your data. Try passing a function that will on format the "duration" attribute of your data from seconds (integers) to a timestamp format with minutes and seconds.
+    </p>
+  </div>
+</section>
+
+<h2 class="bar">Extra Credit</h2>
+<section class="topic-2">
+  <div class="example">Feeling adventurous? Let's look into the source to see some of the more advanced functions of D3plus.</div>
+  <div class="code">
+    <h3>Chart Bounds</h3>
+    <p>
+    One of the helpful things D3plus does behind the scenes in the scatter visualization is it sets the bounds of the chart to accomadate the largest node of your data. This way there are never any circles that run over and into the axes. Take a look at the source code and see if there is any way you could think of improving it.
+    <br><br>
+    <a href="https://github.com/alexandersimoes/d3plus/blob/master/src/apps/pie_scatter.js#L49-L68" target="_blank">View the Source</a>
+    </p>
+  </div>
+</section>

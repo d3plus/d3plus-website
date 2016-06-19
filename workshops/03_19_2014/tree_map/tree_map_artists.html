@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Tree Map of Artists D3plus</title>
+
+  <!-- load D3plus CSS -->
+  <link href="/css/d3plus.css" media="screen" rel="stylesheet" type="text/css" />
+
+  <!-- load D3js -->
+  <script type="text/javascript" src="/js/d3.js"></script>
+
+  <!-- load D3plus after D3js -->
+  <script src="/js/d3plus.js"></script>
+</head>
+
+<body>
+  <div id="viz"></div>
+
+  <script>
+
+    // instantiate our D3plus viz object
+    var visualization = d3plus.viz()
+
+    // here we get all the data we need from the server, firt the raw data, then
+    // each of the attribute files
+    d3.tsv("../data/artists.tsv", function(artists){
+      d3.tsv("../data/albums.tsv", function(albums){
+        d3.tsv("../data/songs.tsv", function(songs){
+
+          // set up attributes look up dictionary
+          var attrs = {"artist_id": artists, "album_id": albums, "song_id": songs}
+
+          // set attributes on our viz object
+          visualization
+            .container("#viz")
+            .data(songs)
+            .type("tree_map")
+            .attrs(attrs)
+            .aggs({"hotttnesss":"mean"})
+            .size("hotttnesss")
+            .id(["artist_id","album_id","song_id"])
+            .text({"artist_id":"names","album_id":"name","song_id":["song_title","song_id","loudness"]})
+            .tooltip({"artist_id":["names"],"album_id":["name"],"song_id":["song_title"]})
+            .depth(0)
+            .time("year")
+            .time({"solo": 2010})
+            .color("artist_id")
+            .style({"labels": {"align": "start"}})
+            .draw()
+
+        })
+      })
+    })
+
+  </script>
+</body>

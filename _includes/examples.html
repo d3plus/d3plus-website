@@ -1,0 +1,144 @@
+<script src="https://d3js.org/queue.v1.min.js"></script>
+
+<script>
+
+  var gistData = []
+
+  var categories = []
+    , limit = "{{ include.limit }}"
+    , hidden = "{{ include.hidden }}"
+    , gistCat = {}
+    , gists = []
+    , users = ["davelandry", "mattrdini"]
+
+  if ("{{ include.container }}") {
+    var container = d3.select("{{ include.container }}")
+  }
+  else {
+    var container = d3.select("#content")
+  }
+
+  var loading = container.append("section").attr("id","loading")
+  loading.append("h2").text("Loading...")
+
+  {% for p in site.pages %}
+
+    var url = "{{ p.url }}".split("/"),
+        layout = "{{p.layout}}"
+
+    if (layout && url.length === 5 && url[1] === "examples" && url[3] !== "simple") {
+      var gist = url[3].split(".")[0]
+      if (hidden.indexOf(gist) < 0) {
+        var category = url[2]
+        gistCat[gist] = category
+        if (categories.indexOf(category) < 0) categories.push(category)
+        gists.push(gist)
+      }
+    }
+  {% endfor %}
+
+  var q = queue()
+  users.forEach(function(user){
+    var url = "https://api.github.com/users/"
+    url += user
+    url += "/gists?client_id={{site.github_api.id}}&client_secret={{site.github_api.secret}}&per_page=100"
+    q.defer(d3.json,url)
+  })
+
+  q.awaitAll(function(error,data){
+
+    if (error || data.length == 0) {
+      loading.text("Error loading examples. Please try again later.")
+    }
+    else {
+
+      gistData = gistData.concat.apply(gistData,data).filter(function(g){
+        if ( g.public && gists.indexOf(g.id) >= 0 ) {
+          g.category = gistCat[g.id]
+          return true
+        }
+        return false
+      })
+
+      gistData.sort(function(a,b){ return new Date(b.created_at).getTime() - new Date(a.created_at).getTime() })
+
+      if (limit) gistData = gistData.slice(0,parseInt(limit))
+
+      function enter(elem) {
+
+        elem
+          .style("opacity",0)
+          .style(d3plus.client.prefix()+"transform","scale(0)")
+          .transition().duration(200)
+          // .delay(delay)
+            .style("opacity",1)
+            .style(d3plus.client.prefix()+"transform","scale(1)")
+
+        // delay += 25
+
+      }
+
+      loading.remove()
+
+      // var delay = 0
+      gistData.forEach(function(gist){
+
+        if (gist) {
+
+          var dateCreated = new Date(gist.created_at).getTime()
+            , dateUpdated = new Date(gist.updated_at).getTime()
+            , daysCreated = (Date.now() - dateCreated)/(24*60*60*1000)
+            , daysUpdated = (Date.now() - dateUpdated)/(24*60*60*1000)
+
+          if (daysCreated <= 14) {
+            var banner = "New"
+          }
+          else {
+            var banner = "Updated"
+          }
+
+          var title = gist.description || gist.id,
+              image = gist.files["thumbnail.png"]
+                ? gist.files["thumbnail.png"].raw_url
+                : "/assets/img/thumbnail.png"
+
+          var button = container.append("div")
+            .attr("class","exampleWrapper cat_"+gist.category)
+            .attr("id", "gist" + gist.id)
+            .append("a")
+              .attr("class","example cat_"+gist.category)
+              .attr("href","/examples/"+gist.category+"/"+gist.id)
+              .call(enter)
+
+          button.append("img")
+            .attr("src",image)
+            .attr("alt",title)
+
+          button.append("div")
+            .attr("class","title")
+            .text(title)
+
+          if (banner) {
+            var dateSlug = "<span class='banner "+banner+"'>"+banner+"</span> "
+            if (banner == "Updated") {
+              dateSlug += "on "
+            }
+            dateSlug += new Date(gist.updated_at).toLocaleDateString()
+          }
+
+          if (dateSlug) {
+
+            button.append("div")
+              .attr("class","date")
+              .html(dateSlug)
+
+          }
+
+        }
+
+      })
+
+    }
+  })
+
+</script>
