@@ -4,7 +4,7 @@
 	(factory((global.d3plus_common = global.d3plus_common || {}),global.d3_array,global.d3_collection,global.d3_selection));
 }(this, function (exports,d3Array,d3Collection,d3Selection) { 'use strict';
 
-	var version = "0.3.1";
+	var version = "0.3.2";
 
 	/**
 	    @function accessor
