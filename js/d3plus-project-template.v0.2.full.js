@@ -4,7 +4,7 @@
 	(factory((global.d3plus_project_template = global.d3plus_project_template || {})));
 }(this, function (exports) { 'use strict';
 
-	var version = "0.2.1";
+	var version = "0.2.2";
 
 	function ascending(a, b) {
 	  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
