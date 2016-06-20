@@ -4,7 +4,7 @@
 	(factory((global.d3plus_legend = global.d3plus_legend || {})));
 }(this, function (exports) { 'use strict';
 
-	var version = "0.2.0";
+	var version = "0.2.1";
 
 	/**
 	    @function accessor
@@ -5396,13 +5396,21 @@ var 	t1$1 = new Date;
 	    if (select === void 0) shape.select(d3Select("body").append("svg").attr("width", ((window.innerWidth) + "px")).attr("height", ((window.innerHeight) + "px")).node());
 	    if (lineHeight === void 0) lineHeight = function (d, i) { return fontSize(d, i) * 1.1; };
 
+	    // Background <g> Group
+	    var bgGroup = select.selectAll("g.d3plus-legend-bg-group")
+	      .data([0]);
+
+	    bgGroup = bgGroup.enter().append("g")
+	        .attr("class", "d3plus-legend-bg-group")
+	      .merge(bgGroup);
+
 	    // Background Rectangle
 	    rect()
 	      .data([{"id": "legend-background"}])
 	      .duration(duration)
 	      .fill(backgroundColor)
 	      .height(height)
-	      .select(select.node())
+	      .select(bgGroup.node())
 	      .width(width)
 	      .x(width / 2)
 	      .y(height / 2)

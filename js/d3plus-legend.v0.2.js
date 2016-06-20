@@ -4,7 +4,7 @@
 	(factory((global.d3plus_legend = global.d3plus_legend || {}),global.d3plus_common,global.d3_array,global.d3_selection,global.d3plus_shape,global.d3plus_text));
 }(this, function (exports,d3plusCommon,d3Array,d3Selection,d3plusShape,d3plusText) { 'use strict';
 
-	var version = "0.2.0";
+	var version = "0.2.1";
 
 	/**
 	    @function shape
@@ -100,13 +100,21 @@
 	    if (select === void 0) shape.select(d3Selection.select("body").append("svg").attr("width", ((window.innerWidth) + "px")).attr("height", ((window.innerHeight) + "px")).node());
 	    if (lineHeight === void 0) lineHeight = function (d, i) { return fontSize(d, i) * 1.1; };
 
+	    // Background <g> Group
+	    var bgGroup = select.selectAll("g.d3plus-legend-bg-group")
+	      .data([0]);
+
+	    bgGroup = bgGroup.enter().append("g")
+	        .attr("class", "d3plus-legend-bg-group")
+	      .merge(bgGroup);
+
 	    // Background Rectangle
 	    d3plusShape.rect()
 	      .data([{"id": "legend-background"}])
 	      .duration(duration)
 	      .fill(backgroundColor)
 	      .height(height)
-	      .select(select.node())
+	      .select(bgGroup.node())
 	      .width(width)
 	      .x(width / 2)
 	      .y(height / 2)
