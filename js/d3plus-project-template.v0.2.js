@@ -4,7 +4,7 @@
 	(factory((global.d3plus_project_template = global.d3plus_project_template || {}),global.d3plus_common));
 }(this, function (exports,d3plusCommon) { 'use strict';
 
-	var version = "0.2.0";
+	var version = "0.2.1";
 
 	/**
 	    A default accessor function.
