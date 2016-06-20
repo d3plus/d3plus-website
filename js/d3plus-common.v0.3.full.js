@@ -4,7 +4,7 @@
 	(factory((global.d3plus_common = global.d3plus_common || {})));
 }(this, function (exports) { 'use strict';
 
-	var version = "0.3.0";
+	var version = "0.3.1";
 
 	/**
 	    @function accessor
