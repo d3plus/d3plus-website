@@ -4,7 +4,7 @@
 	(factory((global.d3plus_shape = global.d3plus_shape || {})));
 }(this, function (exports) { 'use strict';
 
-	var version = "0.5.0";
+	var version = "0.5.1";
 
 	var xhtml = "http://www.w3.org/1999/xhtml";
 
@@ -2739,6 +2739,159 @@
 
 	var ascendingBisect = bisector(ascending$1);
 
+	function d3Max(array, f) {
+	  var i = -1,
+	      n = array.length,
+	      a,
+	      b;
+
+	  if (f == null) {
+	    while (++i < n) if ((b = array[i]) != null && b >= b) { a = b; break; }
+	    while (++i < n) if ((b = array[i]) != null && b > a) a = b;
+	  }
+
+	  else {
+	    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; }
+	    while (++i < n) if ((b = f(array[i], i, array)) != null && b > a) a = b;
+	  }
+
+	  return a;
+	}
+
+	function merge(arrays) {
+	  var n = arrays.length,
+	      m,
+	      i = -1,
+	      j = 0,
+	      merged,
+	      array;
+
+	  while (++i < n) j += arrays[i].length;
+	  merged = new Array(j);
+
+	  while (--n >= 0) {
+	    array = arrays[n];
+	    m = array.length;
+	    while (--m >= 0) {
+	      merged[--j] = array[m];
+	    }
+	  }
+
+	  return merged;
+	}
+
+	function d3Min(array, f) {
+	  var i = -1,
+	      n = array.length,
+	      a,
+	      b;
+
+	  if (f == null) {
+	    while (++i < n) if ((b = array[i]) != null && b >= b) { a = b; break; }
+	    while (++i < n) if ((b = array[i]) != null && a > b) a = b;
+	  }
+
+	  else {
+	    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; }
+	    while (++i < n) if ((b = f(array[i], i, array)) != null && a > b) a = b;
+	  }
+
+	  return a;
+	}
+
+	function d3Sum(array, f) {
+	  var s = 0,
+	      n = array.length,
+	      a,
+	      i = -1;
+
+	  if (f == null) {
+	    while (++i < n) if (a = +array[i]) s += a; // Note: zero and null are equivalent.
+	  }
+
+	  else {
+	    while (++i < n) if (a = +f(array[i], i, array)) s += a;
+	  }
+
+	  return s;
+	}
+
+	var prefix = "$";
+
+	function Map() {}
+
+	Map.prototype = map$1.prototype = {
+	  constructor: Map,
+	  has: function(key) {
+	    return (prefix + key) in this;
+	  },
+	  get: function(key) {
+	    return this[prefix + key];
+	  },
+	  set: function(key, value) {
+	    this[prefix + key] = value;
+	    return this;
+	  },
+	  remove: function(key) {
+	    var property = prefix + key;
+	    return property in this && delete this[property];
+	  },
+	  clear: function() {
+	    for (var property in this) if (property[0] === prefix) delete this[property];
+	  },
+	  keys: function() {
+	    var keys = [];
+	    for (var property in this) if (property[0] === prefix) keys.push(property.slice(1));
+	    return keys;
+	  },
+	  values: function() {
+	    var values = [];
+	    for (var property in this) if (property[0] === prefix) values.push(this[property]);
+	    return values;
+	  },
+	  entries: function() {
+	    var entries = [];
+	    for (var property in this) if (property[0] === prefix) entries.push({key: property.slice(1), value: this[property]});
+	    return entries;
+	  },
+	  size: function() {
+	    var size = 0;
+	    for (var property in this) if (property[0] === prefix) ++size;
+	    return size;
+	  },
+	  empty: function() {
+	    for (var property in this) if (property[0] === prefix) return false;
+	    return true;
+	  },
+	  each: function(f) {
+	    for (var property in this) if (property[0] === prefix) f(this[property], property.slice(1), this);
+	  }
+	};
+
+	function map$1(object, f) {
+	  var map = new Map;
+
+	  // Copy constructor.
+	  if (object instanceof Map) object.each(function(value, key) { map.set(key, value); });
+
+	  // Index array by numeric index or specified key function.
+	  else if (Array.isArray(object)) {
+	    var i = -1,
+	        n = object.length,
+	        o;
+
+	    if (f == null) while (++i < n) map.set(i, object[i]);
+	    else while (++i < n) map.set(f(o = object[i], i, object), o);
+	  }
+
+	  // Convert object to map.
+	  else if (object) for (var key in object) map.set(key, object[key]);
+
+	  return map;
+	}
+
+	var proto = map$1.prototype;
+
 	/**
 	    @function constant
 	    @desc Wraps non-function variables in a simple return function.
@@ -2967,121 +3120,6 @@
 
 	}
 
-	function ascending$3(a, b) {
-	  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-	}
-
-	function bisector$1(compare) {
-	  if (compare.length === 1) compare = ascendingComparator$1(compare);
-	  return {
-	    left: function(a, x, lo, hi) {
-	      if (lo == null) lo = 0;
-	      if (hi == null) hi = a.length;
-	      while (lo < hi) {
-	        var mid = lo + hi >>> 1;
-	        if (compare(a[mid], x) < 0) lo = mid + 1;
-	        else hi = mid;
-	      }
-	      return lo;
-	    },
-	    right: function(a, x, lo, hi) {
-	      if (lo == null) lo = 0;
-	      if (hi == null) hi = a.length;
-	      while (lo < hi) {
-	        var mid = lo + hi >>> 1;
-	        if (compare(a[mid], x) > 0) hi = mid;
-	        else lo = mid + 1;
-	      }
-	      return lo;
-	    }
-	  };
-	}
-
-	function ascendingComparator$1(f) {
-	  return function(d, x) {
-	    return ascending$3(f(d), x);
-	  };
-	}
-
-	var ascendingBisect$1 = bisector$1(ascending$3);
-
-	function d3Max(array, f) {
-	  var i = -1,
-	      n = array.length,
-	      a,
-	      b;
-
-	  if (f == null) {
-	    while (++i < n) if ((b = array[i]) != null && b >= b) { a = b; break; }
-	    while (++i < n) if ((b = array[i]) != null && b > a) a = b;
-	  }
-
-	  else {
-	    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; }
-	    while (++i < n) if ((b = f(array[i], i, array)) != null && b > a) a = b;
-	  }
-
-	  return a;
-	}
-
-	function merge$1(arrays) {
-	  var n = arrays.length,
-	      m,
-	      i = -1,
-	      j = 0,
-	      merged,
-	      array;
-
-	  while (++i < n) j += arrays[i].length;
-	  merged = new Array(j);
-
-	  while (--n >= 0) {
-	    array = arrays[n];
-	    m = array.length;
-	    while (--m >= 0) {
-	      merged[--j] = array[m];
-	    }
-	  }
-
-	  return merged;
-	}
-
-	function min$1(array, f) {
-	  var i = -1,
-	      n = array.length,
-	      a,
-	      b;
-
-	  if (f == null) {
-	    while (++i < n) if ((b = array[i]) != null && b >= b) { a = b; break; }
-	    while (++i < n) if ((b = array[i]) != null && a > b) a = b;
-	  }
-
-	  else {
-	    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; }
-	    while (++i < n) if ((b = f(array[i], i, array)) != null && a > b) a = b;
-	  }
-
-	  return a;
-	}
-
-	function d3Sum(array, f) {
-	  var s = 0,
-	      n = array.length,
-	      a,
-	      i = -1;
-
-	  if (f == null) {
-	    while (++i < n) if (a = +array[i]) s += a; // Note: zero and null are equivalent.
-	  }
-
-	  else {
-	    while (++i < n) if (a = +f(array[i], i, array)) s += a;
-	  }
-
-	  return s;
-	}
-
 	/**
 	    @function stringify
 	    @desc Coerces value into a String.
@@ -3151,7 +3189,7 @@
 	*/
 	function defaultSplit(sentence) {
 	  if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords);
-	  return merge$1(stringify(sentence).match(splitWords).map(function (d) {
+	  return merge(stringify(sentence).match(splitWords).map(function (d) {
 	    if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) return d.match(splitAllChars);
 	    return [d];
 	  }));
@@ -3325,7 +3363,7 @@
 
 	var d3$2 = {
 	  "max": d3Max,
-	  "min": min$1,
+	  "min": d3Min,
 	  "select": d3Select,
 	  "sum": d3Sum,
 	  "transition": transition
@@ -3838,94 +3876,18 @@
 
 	}
 
-	var prefix$1 = "$";
+	var array$2 = Array.prototype;
 
-	function Map$1() {}
-
-	Map$1.prototype = map$3.prototype = {
-	  constructor: Map$1,
-	  has: function(key) {
-	    return (prefix$1 + key) in this;
-	  },
-	  get: function(key) {
-	    return this[prefix$1 + key];
-	  },
-	  set: function(key, value) {
-	    this[prefix$1 + key] = value;
-	    return this;
-	  },
-	  remove: function(key) {
-	    var property = prefix$1 + key;
-	    return property in this && delete this[property];
-	  },
-	  clear: function() {
-	    for (var property in this) if (property[0] === prefix$1) delete this[property];
-	  },
-	  keys: function() {
-	    var keys = [];
-	    for (var property in this) if (property[0] === prefix$1) keys.push(property.slice(1));
-	    return keys;
-	  },
-	  values: function() {
-	    var values = [];
-	    for (var property in this) if (property[0] === prefix$1) values.push(this[property]);
-	    return values;
-	  },
-	  entries: function() {
-	    var entries = [];
-	    for (var property in this) if (property[0] === prefix$1) entries.push({key: property.slice(1), value: this[property]});
-	    return entries;
-	  },
-	  size: function() {
-	    var size = 0;
-	    for (var property in this) if (property[0] === prefix$1) ++size;
-	    return size;
-	  },
-	  empty: function() {
-	    for (var property in this) if (property[0] === prefix$1) return false;
-	    return true;
-	  },
-	  each: function(f) {
-	    for (var property in this) if (property[0] === prefix$1) f(this[property], property.slice(1), this);
-	  }
-	};
-
-	function map$3(object, f) {
-	  var map = new Map$1;
-
-	  // Copy constructor.
-	  if (object instanceof Map$1) object.each(function(value, key) { map.set(key, value); });
-
-	  // Index array by numeric index or specified key function.
-	  else if (Array.isArray(object)) {
-	    var i = -1,
-	        n = object.length,
-	        o;
-
-	    if (f == null) while (++i < n) map.set(i, object[i]);
-	    else while (++i < n) map.set(f(o = object[i], i, object), o);
-	  }
-
-	  // Convert object to map.
-	  else if (object) for (var key in object) map.set(key, object[key]);
-
-	  return map;
-	}
-
-	var proto$1 = map$3.prototype;
-
-	var array$3 = Array.prototype;
-
-	var slice$2 = array$3.slice;
+	var slice$1 = array$2.slice;
 
 	var implicit = {name: "implicit"};
 
 	function ordinal(range) {
-	  var index = map$3(),
+	  var index = map$1(),
 	      domain = [],
 	      unknown = implicit;
 
-	  range = range == null ? [] : slice$2.call(range);
+	  range = range == null ? [] : slice$1.call(range);
 
 	  function scale(d) {
 	    var key = d + "", i = index.get(key);
@@ -3938,14 +3900,14 @@
 
 	  scale.domain = function(_) {
 	    if (!arguments.length) return domain.slice();
-	    domain = [], index = map$3();
+	    domain = [], index = map$1();
 	    var i = -1, n = _.length, d, key;
 	    while (++i < n) if (!index.has(key = (d = _[i]) + "")) index.set(key, domain.push(d));
 	    return scale;
 	  };
 
 	  scale.range = function(_) {
-	    return arguments.length ? (range = slice$2.call(_), scale) : range.slice();
+	    return arguments.length ? (range = slice$1.call(_), scale) : range.slice();
 	  };
 
 	  scale.unknown = function(_) {
@@ -5041,7 +5003,7 @@ var 	t1$1 = new Date;
 
 	    var update = enter.merge(groups);
 
-	    update.selectAll("rect").transition().duration(duration)
+	    update.select("rect").transition().duration(duration)
 	      .call(rectStyle);
 
 	    update.call(contents);

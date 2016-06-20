@@ -4,7 +4,7 @@
 	(factory((global.d3plus_shape = global.d3plus_shape || {}),global.d3_selection,global.d3_transition,global.d3plus_common,global.d3plus_text,global.d3plus_color));
 }(this, function (exports,d3Selection,d3Transition,d3plusCommon,d3plusText,d3plusColor) { 'use strict';
 
-	var version = "0.5.0";
+	var version = "0.5.1";
 
 	var d3 = {
 	  "select": d3Selection.select,
@@ -392,7 +392,7 @@
 
 	    var update = enter.merge(groups);
 
-	    update.selectAll("rect").transition().duration(duration)
+	    update.select("rect").transition().duration(duration)
 	      .call(rectStyle);
 
 	    update.call(contents);
