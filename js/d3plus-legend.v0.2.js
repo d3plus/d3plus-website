@@ -4,7 +4,7 @@
 	(factory((global.d3plus_legend = global.d3plus_legend || {}),global.d3plus_common,global.d3_array,global.d3_selection,global.d3plus_shape,global.d3plus_text));
 }(this, function (exports,d3plusCommon,d3Array,d3Selection,d3plusShape,d3plusText) { 'use strict';
 
-	var version = "0.2.1";
+	var version = "0.2.2";
 
 	/**
 	    @function shape
@@ -86,6 +86,8 @@
 	      select,
 	      shapeImage = d3plusCommon.constant(false),
 	      size = d3plusCommon.constant(10),
+	      stroke = d3plusCommon.constant("black"),
+	      strokeWidth = d3plusCommon.constant(0),
 	      verticalAlign = "middle",
 	      width = 400,
 	      x = shapeX,
@@ -231,6 +233,8 @@
 	      .labelPadding(0)
 	      .lineHeight(lineHeight)
 	      .select(shapeGroup.node())
+	      .stroke(stroke)
+	      .strokeWidth(strokeWidth)
 	      .verticalAlign("top")
 	      .width(size)
 	      .x(x)
@@ -443,6 +447,32 @@
 	  */
 	  shape.size = function(_) {
 	    return arguments.length ? (size = typeof _ === "function" ? _ : d3plusCommon.constant(_), shape) : size;
+	  };
+
+	  /**
+	      @memberof shape
+	      @desc If *value* is specified, sets the stroke accessor to the specified function and returns this generator. If *value* is not specified, returns the current stroke accessor.
+	      @param {Function} [*value*]
+	      @example
+	function value(d) {
+	  return d.color;
+	}
+	  */
+	  shape.stroke = function(_) {
+	    return arguments.length ? (stroke = _, shape) : stroke;
+	  };
+
+	  /**
+	      @memberof shape
+	      @desc If *value* is specified, sets the stroke-width accessor to the specified function and returns this generator. If *value* is not specified, returns the current stroke-width accessor.
+	      @param {Function} [*value*]
+	      @example
+	function value(d) {
+	  return d.color;
+	}
+	  */
+	  shape.strokeWidth = function(_) {
+	    return arguments.length ? (strokeWidth = _, shape) : strokeWidth;
 	  };
 
 	  /**

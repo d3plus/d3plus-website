@@ -4,12 +4,13 @@
 	(factory((global.d3plus_legend = global.d3plus_legend || {})));
 }(this, function (exports) { 'use strict';
 
-	var version = "0.2.1";
+	var version = "0.2.2";
 
 	/**
 	    @function accessor
 	    @desc Wraps an object key in a simple accessor function.
 	    @param {String} key The key to be returned from each Object passed to the function.
+	    @param {*} [def] A default value to be returned if the key is not present.
 	    @example <caption>this</caption>
 	accessor("id");
 	    @example <caption>returns this</caption>
@@ -17,10 +18,9 @@
 	  return d["id"];
 	}
 	*/
-	function accessor(key) {
-	  return function accessor(d) {
-	    return d[key];
-	  };
+	function accessor(key, def) {
+	  if (def === void 0) return function (d) { return d[key]; };
+	  return function (d) { return d[key] === void 0 ? def : d[key]; };
 	}
 
 	function ascending(a, b) {
@@ -61,61 +61,6 @@
 
 	var ascendingBisect = bisector(ascending);
 
-	/**
-	    @function constant
-	    @desc Wraps non-function variables in a simple return function.
-	    @param {Array|Number|Object|String} value The value to be returned from the function.
-	    @example <caption>this</caption>
-	constant(42);
-	    @example <caption>returns this</caption>
-	function() {
-	  return 42;
-	}
-	*/
-	function constant$1(value) {
-	  return function constant() {
-	    return value;
-	  };
-	}
-
-	function ascending$2(a, b) {
-	  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-	}
-
-	function bisector$1(compare) {
-	  if (compare.length === 1) compare = ascendingComparator$1(compare);
-	  return {
-	    left: function(a, x, lo, hi) {
-	      if (lo == null) lo = 0;
-	      if (hi == null) hi = a.length;
-	      while (lo < hi) {
-	        var mid = lo + hi >>> 1;
-	        if (compare(a[mid], x) < 0) lo = mid + 1;
-	        else hi = mid;
-	      }
-	      return lo;
-	    },
-	    right: function(a, x, lo, hi) {
-	      if (lo == null) lo = 0;
-	      if (hi == null) hi = a.length;
-	      while (lo < hi) {
-	        var mid = lo + hi >>> 1;
-	        if (compare(a[mid], x) > 0) hi = mid;
-	        else lo = mid + 1;
-	      }
-	      return lo;
-	    }
-	  };
-	}
-
-	function ascendingComparator$1(f) {
-	  return function(d, x) {
-	    return ascending$2(f(d), x);
-	  };
-	}
-
-	var ascendingBisect$1 = bisector$1(ascending$2);
-
 	function d3Max(array, f) {
 	  var i = -1,
 	      n = array.length,
@@ -135,7 +80,7 @@
 	  return a;
 	}
 
-	function merge$1(arrays) {
+	function merge(arrays) {
 	  var n = arrays.length,
 	      m,
 	      i = -1,
@@ -193,81 +138,174 @@
 	  return s;
 	}
 
-	var xhtml$1 = "http://www.w3.org/1999/xhtml";
+	var prefix = "$";
 
-	var namespaces$1 = {
+	function Map() {}
+
+	Map.prototype = map$1.prototype = {
+	  constructor: Map,
+	  has: function(key) {
+	    return (prefix + key) in this;
+	  },
+	  get: function(key) {
+	    return this[prefix + key];
+	  },
+	  set: function(key, value) {
+	    this[prefix + key] = value;
+	    return this;
+	  },
+	  remove: function(key) {
+	    var property = prefix + key;
+	    return property in this && delete this[property];
+	  },
+	  clear: function() {
+	    for (var property in this) if (property[0] === prefix) delete this[property];
+	  },
+	  keys: function() {
+	    var keys = [];
+	    for (var property in this) if (property[0] === prefix) keys.push(property.slice(1));
+	    return keys;
+	  },
+	  values: function() {
+	    var values = [];
+	    for (var property in this) if (property[0] === prefix) values.push(this[property]);
+	    return values;
+	  },
+	  entries: function() {
+	    var entries = [];
+	    for (var property in this) if (property[0] === prefix) entries.push({key: property.slice(1), value: this[property]});
+	    return entries;
+	  },
+	  size: function() {
+	    var size = 0;
+	    for (var property in this) if (property[0] === prefix) ++size;
+	    return size;
+	  },
+	  empty: function() {
+	    for (var property in this) if (property[0] === prefix) return false;
+	    return true;
+	  },
+	  each: function(f) {
+	    for (var property in this) if (property[0] === prefix) f(this[property], property.slice(1), this);
+	  }
+	};
+
+	function map$1(object, f) {
+	  var map = new Map;
+
+	  // Copy constructor.
+	  if (object instanceof Map) object.each(function(value, key) { map.set(key, value); });
+
+	  // Index array by numeric index or specified key function.
+	  else if (Array.isArray(object)) {
+	    var i = -1,
+	        n = object.length,
+	        o;
+
+	    if (f == null) while (++i < n) map.set(i, object[i]);
+	    else while (++i < n) map.set(f(o = object[i], i, object), o);
+	  }
+
+	  // Convert object to map.
+	  else if (object) for (var key in object) map.set(key, object[key]);
+
+	  return map;
+	}
+
+	var proto = map$1.prototype;
+
+	/**
+	    @function constant
+	    @desc Wraps non-function variables in a simple return function.
+	    @param {Array|Number|Object|String} value The value to be returned from the function.
+	    @example <caption>this</caption>
+	constant(42);
+	    @example <caption>returns this</caption>
+	function() {
+	  return 42;
+	}
+	*/
+	function constant$1(value) {
+	  return function constant() {
+	    return value;
+	  };
+	}
+
+	var xhtml = "http://www.w3.org/1999/xhtml";
+
+	var namespaces = {
 	  svg: "http://www.w3.org/2000/svg",
-	  xhtml: xhtml$1,
+	  xhtml: xhtml,
 	  xlink: "http://www.w3.org/1999/xlink",
 	  xml: "http://www.w3.org/XML/1998/namespace",
 	  xmlns: "http://www.w3.org/2000/xmlns/"
 	};
 
-	function namespace$1(name) {
+	function namespace(name) {
 	  var prefix = name += "", i = prefix.indexOf(":");
 	  if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") name = name.slice(i + 1);
-	  return namespaces$1.hasOwnProperty(prefix) ? {space: namespaces$1[prefix], local: name} : name;
+	  return namespaces.hasOwnProperty(prefix) ? {space: namespaces[prefix], local: name} : name;
 	}
 
-	function creatorInherit$1(name) {
+	function creatorInherit(name) {
 	  return function() {
 	    var document = this.ownerDocument,
 	        uri = this.namespaceURI;
-	    return uri === xhtml$1 && document.documentElement.namespaceURI === xhtml$1
+	    return uri === xhtml && document.documentElement.namespaceURI === xhtml
 	        ? document.createElement(name)
 	        : document.createElementNS(uri, name);
 	  };
 	}
 
-	function creatorFixed$1(fullname) {
+	function creatorFixed(fullname) {
 	  return function() {
 	    return this.ownerDocument.createElementNS(fullname.space, fullname.local);
 	  };
 	}
 
-	function creator$1(name) {
-	  var fullname = namespace$1(name);
+	function creator(name) {
+	  var fullname = namespace(name);
 	  return (fullname.local
-	      ? creatorFixed$1
-	      : creatorInherit$1)(fullname);
+	      ? creatorFixed
+	      : creatorInherit)(fullname);
 	}
 
-	var matcher$2 = function(selector) {
+	var matcher = function(selector) {
 	  return function() {
 	    return this.matches(selector);
 	  };
 	};
 
 	if (typeof document !== "undefined") {
-	  var element$2 = document.documentElement;
-	  if (!element$2.matches) {
-	    var vendorMatches$1 = element$2.webkitMatchesSelector
-	        || element$2.msMatchesSelector
-	        || element$2.mozMatchesSelector
-	        || element$2.oMatchesSelector;
-	    matcher$2 = function(selector) {
+	  var element = document.documentElement;
+	  if (!element.matches) {
+	    var vendorMatches = element.webkitMatchesSelector
+	        || element.msMatchesSelector
+	        || element.mozMatchesSelector
+	        || element.oMatchesSelector;
+	    matcher = function(selector) {
 	      return function() {
-	        return vendorMatches$1.call(this, selector);
+	        return vendorMatches.call(this, selector);
 	      };
 	    };
 	  }
 	}
 
-	var matcher$3 = matcher$2;
+	var matcher$1 = matcher;
 
-	var filterEvents$1 = {};
+	var filterEvents = {};
 
-	var event$1 = null;
+	var event = null;
 
 	if (typeof document !== "undefined") {
-	  var element$3 = document.documentElement;
-	  if (!("onmouseenter" in element$3)) {
-	    filterEvents$1 = {mouseenter: "mouseover", mouseleave: "mouseout"};
+	  var element$1 = document.documentElement;
+	  if (!("onmouseenter" in element$1)) {
+	    filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
 	  }
 	}
 
-	function filterContextListener$1(listener, index, group) {
-	  listener = contextListener$1(listener, index, group);
+	function filterContextListener(listener, index, group) {
+	  listener = contextListener(listener, index, group);
 	  return function(event) {
 	    var related = event.relatedTarget;
 	    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
@@ -276,19 +314,19 @@
 	  };
 	}
 
-	function contextListener$1(listener, index, group) {
+	function contextListener(listener, index, group) {
 	  return function(event1) {
-	    var event0 = event$1; // Events can be reentrant (e.g., focus).
-	    event$1 = event1;
+	    var event0 = event; // Events can be reentrant (e.g., focus).
+	    event = event1;
 	    try {
 	      listener.call(this, this.__data__, index, group);
 	    } finally {
-	      event$1 = event0;
+	      event = event0;
 	    }
 	  };
 	}
 
-	function parseTypenames$1(typenames) {
+	function parseTypenames(typenames) {
 	  return typenames.trim().split(/^|\s+/).map(function(t) {
 	    var name = "", i = t.indexOf(".");
 	    if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
@@ -296,7 +334,7 @@
 	  });
 	}
 
-	function onRemove$1(typename) {
+	function onRemove(typename) {
 	  return function() {
 	    var on = this.__on;
 	    if (!on) return;
@@ -312,8 +350,8 @@
 	  };
 	}
 
-	function onAdd$1(typename, value, capture) {
-	  var wrap = filterEvents$1.hasOwnProperty(typename.type) ? filterContextListener$1 : contextListener$1;
+	function onAdd(typename, value, capture) {
+	  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
 	  return function(d, i, group) {
 	    var on = this.__on, o, listener = wrap(value, i, group);
 	    if (on) for (var j = 0, m = on.length; j < m; ++j) {
@@ -331,8 +369,8 @@
 	  };
 	}
 
-	function selection_on$1(typename, value, capture) {
-	  var typenames = parseTypenames$1(typename + ""), i, n = typenames.length, t;
+	function selection_on(typename, value, capture) {
+	  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
 
 	  if (arguments.length < 2) {
 	    var on = this.node().__on;
@@ -346,20 +384,20 @@
 	    return;
 	  }
 
-	  on = value ? onAdd$1 : onRemove$1;
+	  on = value ? onAdd : onRemove;
 	  if (capture == null) capture = false;
 	  for (i = 0; i < n; ++i) this.each(on(typenames[i], value, capture));
 	  return this;
 	}
 
-	function selector$1(selector) {
+	function selector(selector) {
 	  return function() {
 	    return this.querySelector(selector);
 	  };
 	}
 
-	function selection_select$1(select) {
-	  if (typeof select !== "function") select = selector$1(select);
+	function selection_select(select) {
+	  if (typeof select !== "function") select = selector(select);
 
 	  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
 	    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
@@ -370,17 +408,17 @@
 	    }
 	  }
 
-	  return new Selection$1(subgroups, this._parents);
+	  return new Selection(subgroups, this._parents);
 	}
 
-	function selectorAll$1(selector) {
+	function selectorAll(selector) {
 	  return function() {
 	    return this.querySelectorAll(selector);
 	  };
 	}
 
-	function selection_selectAll$1(select) {
-	  if (typeof select !== "function") select = selectorAll$1(select);
+	function selection_selectAll(select) {
+	  if (typeof select !== "function") select = selectorAll(select);
 
 	  for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
 	    for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
@@ -391,11 +429,11 @@
 	    }
 	  }
 
-	  return new Selection$1(subgroups, parents);
+	  return new Selection(subgroups, parents);
 	}
 
-	function selection_filter$1(match) {
-	  if (typeof match !== "function") match = matcher$3(match);
+	function selection_filter(match) {
+	  if (typeof match !== "function") match = matcher$1(match);
 
 	  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
 	    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
@@ -405,18 +443,18 @@
 	    }
 	  }
 
-	  return new Selection$1(subgroups, this._parents);
+	  return new Selection(subgroups, this._parents);
 	}
 
-	function constant$4(x) {
+	function constant$2(x) {
 	  return function() {
 	    return x;
 	  };
 	}
 
-	var keyPrefix$1 = "$"; // Protect against keys like “__proto__”.
+	var keyPrefix = "$"; // Protect against keys like “__proto__”.
 
-	function bindIndex$1(parent, group, enter, update, exit, data) {
+	function bindIndex(parent, group, enter, update, exit, data) {
 	  var i = 0,
 	      node,
 	      groupLength = group.length,
@@ -430,7 +468,7 @@
 	      node.__data__ = data[i];
 	      update[i] = node;
 	    } else {
-	      enter[i] = new EnterNode$1(parent, data[i]);
+	      enter[i] = new EnterNode(parent, data[i]);
 	    }
 	  }
 
@@ -442,7 +480,7 @@
 	  }
 	}
 
-	function bindKey$1(parent, group, enter, update, exit, data, key) {
+	function bindKey(parent, group, enter, update, exit, data, key) {
 	  var i,
 	      node,
 	      nodeByKeyValue = {},
@@ -455,7 +493,7 @@
 	  // If multiple nodes have the same key, the duplicates are added to exit.
 	  for (i = 0; i < groupLength; ++i) {
 	    if (node = group[i]) {
-	      keyValues[i] = keyValue = keyPrefix$1 + key.call(node, node.__data__, i, group);
+	      keyValues[i] = keyValue = keyPrefix + key.call(node, node.__data__, i, group);
 	      if (keyValue in nodeByKeyValue) {
 	        exit[i] = node;
 	      } else {
@@ -468,13 +506,13 @@
 	  // If there a node associated with this key, join and add it to update.
 	  // If there is not (or the key is a duplicate), add it to enter.
 	  for (i = 0; i < dataLength; ++i) {
-	    keyValue = keyPrefix$1 + key.call(parent, data[i], i, data);
+	    keyValue = keyPrefix + key.call(parent, data[i], i, data);
 	    if (node = nodeByKeyValue[keyValue]) {
 	      update[i] = node;
 	      node.__data__ = data[i];
 	      nodeByKeyValue[keyValue] = null;
 	    } else {
-	      enter[i] = new EnterNode$1(parent, data[i]);
+	      enter[i] = new EnterNode(parent, data[i]);
 	    }
 	  }
 
@@ -486,18 +524,18 @@
 	  }
 	}
 
-	function selection_data$1(value, key) {
+	function selection_data(value, key) {
 	  if (!value) {
 	    data = new Array(this.size()), j = -1;
 	    this.each(function(d) { data[++j] = d; });
 	    return data;
 	  }
 
-	  var bind = key ? bindKey$1 : bindIndex$1,
+	  var bind = key ? bindKey : bindIndex,
 	      parents = this._parents,
 	      groups = this._groups;
 
-	  if (typeof value !== "function") value = constant$4(value);
+	  if (typeof value !== "function") value = constant$2(value);
 
 	  for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
 	    var parent = parents[j],
@@ -523,13 +561,13 @@
 	    }
 	  }
 
-	  update = new Selection$1(update, parents);
+	  update = new Selection(update, parents);
 	  update._enter = enter;
 	  update._exit = exit;
 	  return update;
 	}
 
-	function EnterNode$1(parent, datum) {
+	function EnterNode(parent, datum) {
 	  this.ownerDocument = parent.ownerDocument;
 	  this.namespaceURI = parent.namespaceURI;
 	  this._next = null;
@@ -537,27 +575,27 @@
 	  this.__data__ = datum;
 	}
 
-	EnterNode$1.prototype = {
-	  constructor: EnterNode$1,
+	EnterNode.prototype = {
+	  constructor: EnterNode,
 	  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
 	  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
 	  querySelector: function(selector) { return this._parent.querySelector(selector); },
 	  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
 	};
 
-	function sparse$1(update) {
+	function sparse(update) {
 	  return new Array(update.length);
 	}
 
-	function selection_enter$1() {
-	  return new Selection$1(this._enter || this._groups.map(sparse$1), this._parents);
+	function selection_enter() {
+	  return new Selection(this._enter || this._groups.map(sparse), this._parents);
 	}
 
-	function selection_exit$1() {
-	  return new Selection$1(this._exit || this._groups.map(sparse$1), this._parents);
+	function selection_exit() {
+	  return new Selection(this._exit || this._groups.map(sparse), this._parents);
 	}
 
-	function selection_merge$1(selection) {
+	function selection_merge(selection) {
 
 	  for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
 	    for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
@@ -571,10 +609,10 @@
 	    merges[j] = groups0[j];
 	  }
 
-	  return new Selection$1(merges, this._parents);
+	  return new Selection(merges, this._parents);
 	}
 
-	function selection_order$1() {
+	function selection_order() {
 
 	  for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
 	    for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
@@ -588,8 +626,8 @@
 	  return this;
 	}
 
-	function selection_sort$1(compare) {
-	  if (!compare) compare = ascending$3;
+	function selection_sort(compare) {
+	  if (!compare) compare = ascending$1;
 
 	  function compareNode(a, b) {
 	    return a && b ? compare(a.__data__, b.__data__) : !a - !b;
@@ -604,27 +642,27 @@
 	    sortgroup.sort(compareNode);
 	  }
 
-	  return new Selection$1(sortgroups, this._parents).order();
+	  return new Selection(sortgroups, this._parents).order();
 	}
 
-	function ascending$3(a, b) {
+	function ascending$1(a, b) {
 	  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 	}
 
-	function selection_call$1() {
+	function selection_call() {
 	  var callback = arguments[0];
 	  arguments[0] = this;
 	  callback.apply(null, arguments);
 	  return this;
 	}
 
-	function selection_nodes$1() {
+	function selection_nodes() {
 	  var nodes = new Array(this.size()), i = -1;
 	  this.each(function() { nodes[++i] = this; });
 	  return nodes;
 	}
 
-	function selection_node$1() {
+	function selection_node() {
 
 	  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
 	    for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
@@ -636,17 +674,17 @@
 	  return null;
 	}
 
-	function selection_size$1() {
+	function selection_size() {
 	  var size = 0;
 	  this.each(function() { ++size; });
 	  return size;
 	}
 
-	function selection_empty$1() {
+	function selection_empty() {
 	  return !this.node();
 	}
 
-	function selection_each$1(callback) {
+	function selection_each(callback) {
 
 	  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
 	    for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
@@ -657,31 +695,31 @@
 	  return this;
 	}
 
-	function attrRemove$1(name) {
+	function attrRemove(name) {
 	  return function() {
 	    this.removeAttribute(name);
 	  };
 	}
 
-	function attrRemoveNS$1(fullname) {
+	function attrRemoveNS(fullname) {
 	  return function() {
 	    this.removeAttributeNS(fullname.space, fullname.local);
 	  };
 	}
 
-	function attrConstant$1(name, value) {
+	function attrConstant(name, value) {
 	  return function() {
 	    this.setAttribute(name, value);
 	  };
 	}
 
-	function attrConstantNS$1(fullname, value) {
+	function attrConstantNS(fullname, value) {
 	  return function() {
 	    this.setAttributeNS(fullname.space, fullname.local, value);
 	  };
 	}
 
-	function attrFunction$1(name, value) {
+	function attrFunction(name, value) {
 	  return function() {
 	    var v = value.apply(this, arguments);
 	    if (v == null) this.removeAttribute(name);
@@ -689,7 +727,7 @@
 	  };
 	}
 
-	function attrFunctionNS$1(fullname, value) {
+	function attrFunctionNS(fullname, value) {
 	  return function() {
 	    var v = value.apply(this, arguments);
 	    if (v == null) this.removeAttributeNS(fullname.space, fullname.local);
@@ -697,8 +735,8 @@
 	  };
 	}
 
-	function selection_attr$1(name, value) {
-	  var fullname = namespace$1(name);
+	function selection_attr(name, value) {
+	  var fullname = namespace(name);
 
 	  if (arguments.length < 2) {
 	    var node = this.node();
@@ -708,9 +746,9 @@
 	  }
 
 	  return this.each((value == null
-	      ? (fullname.local ? attrRemoveNS$1 : attrRemove$1) : (typeof value === "function"
-	      ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)
-	      : (fullname.local ? attrConstantNS$1 : attrConstant$1)))(fullname, value));
+	      ? (fullname.local ? attrRemoveNS : attrRemove) : (typeof value === "function"
+	      ? (fullname.local ? attrFunctionNS : attrFunction)
+	      : (fullname.local ? attrConstantNS : attrConstant)))(fullname, value));
 	}
 
 	function window$1(node) {
@@ -719,19 +757,19 @@
 	      || node.defaultView; // node is a Document
 	}
 
-	function styleRemove$1(name) {
+	function styleRemove(name) {
 	  return function() {
 	    this.style.removeProperty(name);
 	  };
 	}
 
-	function styleConstant$1(name, value, priority) {
+	function styleConstant(name, value, priority) {
 	  return function() {
 	    this.style.setProperty(name, value, priority);
 	  };
 	}
 
-	function styleFunction$1(name, value, priority) {
+	function styleFunction(name, value, priority) {
 	  return function() {
 	    var v = value.apply(this, arguments);
 	    if (v == null) this.style.removeProperty(name);
@@ -739,31 +777,31 @@
 	  };
 	}
 
-	function selection_style$1(name, value, priority) {
+	function selection_style(name, value, priority) {
 	  var node;
 	  return arguments.length > 1
 	      ? this.each((value == null
-	            ? styleRemove$1 : typeof value === "function"
-	            ? styleFunction$1
-	            : styleConstant$1)(name, value, priority == null ? "" : priority))
+	            ? styleRemove : typeof value === "function"
+	            ? styleFunction
+	            : styleConstant)(name, value, priority == null ? "" : priority))
 	      : window$1(node = this.node())
 	          .getComputedStyle(node, null)
 	          .getPropertyValue(name);
 	}
 
-	function propertyRemove$1(name) {
+	function propertyRemove(name) {
 	  return function() {
 	    delete this[name];
 	  };
 	}
 
-	function propertyConstant$1(name, value) {
+	function propertyConstant(name, value) {
 	  return function() {
 	    this[name] = value;
 	  };
 	}
 
-	function propertyFunction$1(name, value) {
+	function propertyFunction(name, value) {
 	  return function() {
 	    var v = value.apply(this, arguments);
 	    if (v == null) delete this[name];
@@ -771,29 +809,29 @@
 	  };
 	}
 
-	function selection_property$1(name, value) {
+	function selection_property(name, value) {
 	  return arguments.length > 1
 	      ? this.each((value == null
-	          ? propertyRemove$1 : typeof value === "function"
-	          ? propertyFunction$1
-	          : propertyConstant$1)(name, value))
+	          ? propertyRemove : typeof value === "function"
+	          ? propertyFunction
+	          : propertyConstant)(name, value))
 	      : this.node()[name];
 	}
 
-	function classArray$1(string) {
+	function classArray(string) {
 	  return string.trim().split(/^|\s+/);
 	}
 
-	function classList$1(node) {
-	  return node.classList || new ClassList$1(node);
+	function classList(node) {
+	  return node.classList || new ClassList(node);
 	}
 
-	function ClassList$1(node) {
+	function ClassList(node) {
 	  this._node = node;
-	  this._names = classArray$1(node.getAttribute("class") || "");
+	  this._names = classArray(node.getAttribute("class") || "");
 	}
 
-	ClassList$1.prototype = {
+	ClassList.prototype = {
 	  add: function(name) {
 	    var i = this._names.indexOf(name);
 	    if (i < 0) {
@@ -813,152 +851,152 @@
 	  }
 	};
 
-	function classedAdd$1(node, names) {
-	  var list = classList$1(node), i = -1, n = names.length;
+	function classedAdd(node, names) {
+	  var list = classList(node), i = -1, n = names.length;
 	  while (++i < n) list.add(names[i]);
 	}
 
-	function classedRemove$1(node, names) {
-	  var list = classList$1(node), i = -1, n = names.length;
+	function classedRemove(node, names) {
+	  var list = classList(node), i = -1, n = names.length;
 	  while (++i < n) list.remove(names[i]);
 	}
 
-	function classedTrue$1(names) {
+	function classedTrue(names) {
 	  return function() {
-	    classedAdd$1(this, names);
+	    classedAdd(this, names);
 	  };
 	}
 
-	function classedFalse$1(names) {
+	function classedFalse(names) {
 	  return function() {
-	    classedRemove$1(this, names);
+	    classedRemove(this, names);
 	  };
 	}
 
-	function classedFunction$1(names, value) {
+	function classedFunction(names, value) {
 	  return function() {
-	    (value.apply(this, arguments) ? classedAdd$1 : classedRemove$1)(this, names);
+	    (value.apply(this, arguments) ? classedAdd : classedRemove)(this, names);
 	  };
 	}
 
-	function selection_classed$1(name, value) {
-	  var names = classArray$1(name + "");
+	function selection_classed(name, value) {
+	  var names = classArray(name + "");
 
 	  if (arguments.length < 2) {
-	    var list = classList$1(this.node()), i = -1, n = names.length;
+	    var list = classList(this.node()), i = -1, n = names.length;
 	    while (++i < n) if (!list.contains(names[i])) return false;
 	    return true;
 	  }
 
 	  return this.each((typeof value === "function"
-	      ? classedFunction$1 : value
-	      ? classedTrue$1
-	      : classedFalse$1)(names, value));
+	      ? classedFunction : value
+	      ? classedTrue
+	      : classedFalse)(names, value));
 	}
 
-	function textRemove$1() {
+	function textRemove() {
 	  this.textContent = "";
 	}
 
-	function textConstant$1(value) {
+	function textConstant(value) {
 	  return function() {
 	    this.textContent = value;
 	  };
 	}
 
-	function textFunction$1(value) {
+	function textFunction(value) {
 	  return function() {
 	    var v = value.apply(this, arguments);
 	    this.textContent = v == null ? "" : v;
 	  };
 	}
 
-	function selection_text$1(value) {
+	function selection_text(value) {
 	  return arguments.length
 	      ? this.each(value == null
-	          ? textRemove$1 : (typeof value === "function"
-	          ? textFunction$1
-	          : textConstant$1)(value))
+	          ? textRemove : (typeof value === "function"
+	          ? textFunction
+	          : textConstant)(value))
 	      : this.node().textContent;
 	}
 
-	function htmlRemove$1() {
+	function htmlRemove() {
 	  this.innerHTML = "";
 	}
 
-	function htmlConstant$1(value) {
+	function htmlConstant(value) {
 	  return function() {
 	    this.innerHTML = value;
 	  };
 	}
 
-	function htmlFunction$1(value) {
+	function htmlFunction(value) {
 	  return function() {
 	    var v = value.apply(this, arguments);
 	    this.innerHTML = v == null ? "" : v;
 	  };
 	}
 
-	function selection_html$1(value) {
+	function selection_html(value) {
 	  return arguments.length
 	      ? this.each(value == null
-	          ? htmlRemove$1 : (typeof value === "function"
-	          ? htmlFunction$1
-	          : htmlConstant$1)(value))
+	          ? htmlRemove : (typeof value === "function"
+	          ? htmlFunction
+	          : htmlConstant)(value))
 	      : this.node().innerHTML;
 	}
 
-	function raise$1() {
+	function raise() {
 	  if (this.nextSibling) this.parentNode.appendChild(this);
 	}
 
-	function selection_raise$1() {
-	  return this.each(raise$1);
+	function selection_raise() {
+	  return this.each(raise);
 	}
 
-	function lower$1() {
+	function lower() {
 	  if (this.previousSibling) this.parentNode.insertBefore(this, this.parentNode.firstChild);
 	}
 
-	function selection_lower$1() {
-	  return this.each(lower$1);
+	function selection_lower() {
+	  return this.each(lower);
 	}
 
-	function selection_append$1(name) {
-	  var create = typeof name === "function" ? name : creator$1(name);
+	function selection_append(name) {
+	  var create = typeof name === "function" ? name : creator(name);
 	  return this.select(function() {
 	    return this.appendChild(create.apply(this, arguments));
 	  });
 	}
 
-	function constantNull$1() {
+	function constantNull() {
 	  return null;
 	}
 
-	function selection_insert$1(name, before) {
-	  var create = typeof name === "function" ? name : creator$1(name),
-	      select = before == null ? constantNull$1 : typeof before === "function" ? before : selector$1(before);
+	function selection_insert(name, before) {
+	  var create = typeof name === "function" ? name : creator(name),
+	      select = before == null ? constantNull : typeof before === "function" ? before : selector(before);
 	  return this.select(function() {
 	    return this.insertBefore(create.apply(this, arguments), select.apply(this, arguments) || null);
 	  });
 	}
 
-	function remove$1() {
+	function remove() {
 	  var parent = this.parentNode;
 	  if (parent) parent.removeChild(this);
 	}
 
-	function selection_remove$1() {
-	  return this.each(remove$1);
+	function selection_remove() {
+	  return this.each(remove);
 	}
 
-	function selection_datum$1(value) {
+	function selection_datum(value) {
 	  return arguments.length
 	      ? this.property("__data__", value)
 	      : this.node().__data__;
 	}
 
-	function dispatchEvent$1(node, type, params) {
+	function dispatchEvent(node, type, params) {
 	  var window = window$1(node),
 	      event = window.CustomEvent;
 
@@ -973,72 +1011,72 @@
 	  node.dispatchEvent(event);
 	}
 
-	function dispatchConstant$1(type, params) {
+	function dispatchConstant(type, params) {
 	  return function() {
-	    return dispatchEvent$1(this, type, params);
+	    return dispatchEvent(this, type, params);
 	  };
 	}
 
-	function dispatchFunction$1(type, params) {
+	function dispatchFunction(type, params) {
 	  return function() {
-	    return dispatchEvent$1(this, type, params.apply(this, arguments));
+	    return dispatchEvent(this, type, params.apply(this, arguments));
 	  };
 	}
 
-	function selection_dispatch$1(type, params) {
+	function selection_dispatch(type, params) {
 	  return this.each((typeof params === "function"
-	      ? dispatchFunction$1
-	      : dispatchConstant$1)(type, params));
+	      ? dispatchFunction
+	      : dispatchConstant)(type, params));
 	}
 
-	var root$1 = [null];
+	var root = [null];
 
-	function Selection$1(groups, parents) {
+	function Selection(groups, parents) {
 	  this._groups = groups;
 	  this._parents = parents;
 	}
 
-	function selection$1() {
-	  return new Selection$1([[document.documentElement]], root$1);
+	function selection() {
+	  return new Selection([[document.documentElement]], root);
 	}
 
-	Selection$1.prototype = selection$1.prototype = {
-	  constructor: Selection$1,
-	  select: selection_select$1,
-	  selectAll: selection_selectAll$1,
-	  filter: selection_filter$1,
-	  data: selection_data$1,
-	  enter: selection_enter$1,
-	  exit: selection_exit$1,
-	  merge: selection_merge$1,
-	  order: selection_order$1,
-	  sort: selection_sort$1,
-	  call: selection_call$1,
-	  nodes: selection_nodes$1,
-	  node: selection_node$1,
-	  size: selection_size$1,
-	  empty: selection_empty$1,
-	  each: selection_each$1,
-	  attr: selection_attr$1,
-	  style: selection_style$1,
-	  property: selection_property$1,
-	  classed: selection_classed$1,
-	  text: selection_text$1,
-	  html: selection_html$1,
-	  raise: selection_raise$1,
-	  lower: selection_lower$1,
-	  append: selection_append$1,
-	  insert: selection_insert$1,
-	  remove: selection_remove$1,
-	  datum: selection_datum$1,
-	  on: selection_on$1,
-	  dispatch: selection_dispatch$1
+	Selection.prototype = selection.prototype = {
+	  constructor: Selection,
+	  select: selection_select,
+	  selectAll: selection_selectAll,
+	  filter: selection_filter,
+	  data: selection_data,
+	  enter: selection_enter,
+	  exit: selection_exit,
+	  merge: selection_merge,
+	  order: selection_order,
+	  sort: selection_sort,
+	  call: selection_call,
+	  nodes: selection_nodes,
+	  node: selection_node,
+	  size: selection_size,
+	  empty: selection_empty,
+	  each: selection_each,
+	  attr: selection_attr,
+	  style: selection_style,
+	  property: selection_property,
+	  classed: selection_classed,
+	  text: selection_text,
+	  html: selection_html,
+	  raise: selection_raise,
+	  lower: selection_lower,
+	  append: selection_append,
+	  insert: selection_insert,
+	  remove: selection_remove,
+	  datum: selection_datum,
+	  on: selection_on,
+	  dispatch: selection_dispatch
 	};
 
 	function d3Select(selector) {
 	  return typeof selector === "string"
-	      ? new Selection$1([[document.querySelector(selector)]], [document.documentElement])
-	      : new Selection$1([[selector]], root$1);
+	      ? new Selection([[document.querySelector(selector)]], [document.documentElement])
+	      : new Selection([[selector]], root);
 	}
 
 	var noop = {value: function() {}};
@@ -1055,7 +1093,7 @@
 	  this._ = _;
 	}
 
-	function parseTypenames$2(typenames, types) {
+	function parseTypenames$1(typenames, types) {
 	  return typenames.trim().split(/^|\s+/).map(function(t) {
 	    var name = "", i = t.indexOf(".");
 	    if (i >= 0) name = t.slice(i + 1), t = t.slice(0, i);
@@ -1068,7 +1106,7 @@
 	  constructor: Dispatch,
 	  on: function(typename, callback) {
 	    var _ = this._,
-	        T = parseTypenames$2(typename + "", _),
+	        T = parseTypenames$1(typename + "", _),
 	        t,
 	        i = -1,
 	        n = T.length;
@@ -1913,7 +1951,7 @@
 	  }
 	}));
 
-	function constant$5(x) {
+	function constant$3(x) {
 	  return function() {
 	    return x;
 	  };
@@ -1933,18 +1971,18 @@
 
 	function hue(a, b) {
 	  var d = b - a;
-	  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$5(isNaN(a) ? b : a);
+	  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$3(isNaN(a) ? b : a);
 	}
 
 	function gamma(y) {
 	  return (y = +y) === 1 ? nogamma : function(a, b) {
-	    return b - a ? exponential(a, b, y) : constant$5(isNaN(a) ? b : a);
+	    return b - a ? exponential(a, b, y) : constant$3(isNaN(a) ? b : a);
 	  };
 	}
 
 	function nogamma(a, b) {
 	  var d = b - a;
-	  return d ? linear(a, d) : constant$5(isNaN(a) ? b : a);
+	  return d ? linear(a, d) : constant$3(isNaN(a) ? b : a);
 	}
 
 	var interpolateRgb = (function rgbGamma(y) {
@@ -2039,7 +2077,7 @@
 
 	var degrees = 180 / Math.PI;
 
-	var identity$2 = {
+	var identity$1 = {
 	  translateX: 0,
 	  translateY: 0,
 	  rotate: 0,
@@ -2069,7 +2107,7 @@
 	var cssView;
 	var svgNode;
 	function parseCss(value) {
-	  if (value === "none") return identity$2;
+	  if (value === "none") return identity$1;
 	  if (!cssNode) cssNode = document.createElement("DIV"), cssRoot = document.documentElement, cssView = document.defaultView;
 	  cssNode.style.transform = value;
 	  value = cssView.getComputedStyle(cssRoot.appendChild(cssNode), null).getPropertyValue("transform");
@@ -2261,19 +2299,19 @@
 	      : interpolateString)(a, b);
 	}
 
-	function attrRemove$2(name) {
+	function attrRemove$1(name) {
 	  return function() {
 	    this.removeAttribute(name);
 	  };
 	}
 
-	function attrRemoveNS$2(fullname) {
+	function attrRemoveNS$1(fullname) {
 	  return function() {
 	    this.removeAttributeNS(fullname.space, fullname.local);
 	  };
 	}
 
-	function attrConstant$2(name, interpolate, value1) {
+	function attrConstant$1(name, interpolate, value1) {
 	  var value00,
 	      interpolate0;
 	  return function() {
@@ -2284,7 +2322,7 @@
 	  };
 	}
 
-	function attrConstantNS$2(fullname, interpolate, value1) {
+	function attrConstantNS$1(fullname, interpolate, value1) {
 	  var value00,
 	      interpolate0;
 	  return function() {
@@ -2295,7 +2333,7 @@
 	  };
 	}
 
-	function attrFunction$2(name, interpolate, value) {
+	function attrFunction$1(name, interpolate, value) {
 	  var value00,
 	      value10,
 	      interpolate0;
@@ -2309,7 +2347,7 @@
 	  };
 	}
 
-	function attrFunctionNS$2(fullname, interpolate, value) {
+	function attrFunctionNS$1(fullname, interpolate, value) {
 	  var value00,
 	      value10,
 	      interpolate0;
@@ -2324,11 +2362,11 @@
 	}
 
 	function transition_attr(name, value) {
-	  var fullname = namespace$1(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate;
+	  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate;
 	  return this.attrTween(name, typeof value === "function"
-	      ? (fullname.local ? attrFunctionNS$2 : attrFunction$2)(fullname, i, tweenValue(this, "attr." + name, value))
-	      : value == null ? (fullname.local ? attrRemoveNS$2 : attrRemove$2)(fullname)
-	      : (fullname.local ? attrConstantNS$2 : attrConstant$2)(fullname, i, value));
+	      ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
+	      : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
+	      : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value));
 	}
 
 	function attrTweenNS(fullname, value) {
@@ -2358,7 +2396,7 @@
 	  if (arguments.length < 2) return (key = this.tween(key)) && key._value;
 	  if (value == null) return this.tween(key, null);
 	  if (typeof value !== "function") throw new Error;
-	  var fullname = namespace$1(name);
+	  var fullname = namespace(name);
 	  return this.tween(key, (fullname.local ? attrTweenNS : attrTween)(fullname, value));
 	}
 
@@ -2422,7 +2460,7 @@
 	}
 
 	function transition_filter(match) {
-	  if (typeof match !== "function") match = matcher$3(match);
+	  if (typeof match !== "function") match = matcher$1(match);
 
 	  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
 	    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
@@ -2500,7 +2538,7 @@
 	  var name = this._name,
 	      id = this._id;
 
-	  if (typeof select !== "function") select = selector$1(select);
+	  if (typeof select !== "function") select = selector(select);
 
 	  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
 	    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
@@ -2519,7 +2557,7 @@
 	  var name = this._name,
 	      id = this._id;
 
-	  if (typeof select !== "function") select = selectorAll$1(select);
+	  if (typeof select !== "function") select = selectorAll(select);
 
 	  for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
 	    for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
@@ -2538,13 +2576,13 @@
 	  return new Transition(subgroups, parents, name, id);
 	}
 
-	var Selection$2 = selection$1.prototype.constructor;
+	var Selection$1 = selection.prototype.constructor;
 
 	function transition_selection() {
-	  return new Selection$2(this._groups, this._parents);
+	  return new Selection$1(this._groups, this._parents);
 	}
 
-	function styleRemove$2(name, interpolate) {
+	function styleRemove$1(name, interpolate) {
 	  var value00,
 	      value10,
 	      interpolate0;
@@ -2564,7 +2602,7 @@
 	  };
 	}
 
-	function styleConstant$2(name, interpolate, value1) {
+	function styleConstant$1(name, interpolate, value1) {
 	  var value00,
 	      interpolate0;
 	  return function() {
@@ -2575,7 +2613,7 @@
 	  };
 	}
 
-	function styleFunction$2(name, interpolate, value) {
+	function styleFunction$1(name, interpolate, value) {
 	  var value00,
 	      value10,
 	      interpolate0;
@@ -2593,11 +2631,11 @@
 	function transition_style(name, value, priority) {
 	  var i = (name += "") === "transform" ? interpolateTransform$1 : interpolate;
 	  return value == null ? this
-	          .styleTween(name, styleRemove$2(name, i))
+	          .styleTween(name, styleRemove$1(name, i))
 	          .on("end.style." + name, styleRemoveEnd(name))
 	      : this.styleTween(name, typeof value === "function"
-	          ? styleFunction$2(name, i, tweenValue(this, "style." + name, value))
-	          : styleConstant$2(name, i, value), priority);
+	          ? styleFunction$1(name, i, tweenValue(this, "style." + name, value))
+	          : styleConstant$1(name, i, value), priority);
 	}
 
 	function styleTween(name, value, priority) {
@@ -2619,13 +2657,13 @@
 	  return this.tween(key, styleTween(name, value, priority == null ? "" : priority));
 	}
 
-	function textConstant$2(value) {
+	function textConstant$1(value) {
 	  return function() {
 	    this.textContent = value;
 	  };
 	}
 
-	function textFunction$2(value) {
+	function textFunction$1(value) {
 	  return function() {
 	    var value1 = value(this);
 	    this.textContent = value1 == null ? "" : value1;
@@ -2634,8 +2672,8 @@
 
 	function transition_text(value) {
 	  return this.tween("text", typeof value === "function"
-	      ? textFunction$2(tweenValue(this, "text", value))
-	      : textConstant$2(value == null ? "" : value + ""));
+	      ? textFunction$1(tweenValue(this, "text", value))
+	      : textConstant$1(value == null ? "" : value + ""));
 	}
 
 	function transition_transition() {
@@ -2670,14 +2708,14 @@
 	}
 
 	function transition(name) {
-	  return selection$1().transition(name);
+	  return selection().transition(name);
 	}
 
 	function newId() {
 	  return ++id;
 	}
 
-	var selection_prototype = selection$1.prototype;
+	var selection_prototype = selection.prototype;
 
 	Transition.prototype = transition.prototype = {
 	  constructor: Transition,
@@ -2868,8 +2906,8 @@
 	  return new Transition(groups, this._parents, name, id);
 	}
 
-	selection$1.prototype.interrupt = selection_interrupt;
-	selection$1.prototype.transition = selection_transition;
+	selection.prototype.interrupt = selection_interrupt;
+	selection.prototype.transition = selection_transition;
 
 	var d3 = {
 	  "select": d3Select,
@@ -3151,7 +3189,7 @@
 	*/
 	function defaultSplit(sentence) {
 	  if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords);
-	  return merge$1(stringify(sentence).match(splitWords).map(function (d) {
+	  return merge(stringify(sentence).match(splitWords).map(function (d) {
 	    if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) return d.match(splitAllChars);
 	    return [d];
 	  }));
@@ -3838,94 +3876,18 @@
 
 	}
 
-	var prefix$1 = "$";
+	var array$2 = Array.prototype;
 
-	function Map$1() {}
-
-	Map$1.prototype = map$3.prototype = {
-	  constructor: Map$1,
-	  has: function(key) {
-	    return (prefix$1 + key) in this;
-	  },
-	  get: function(key) {
-	    return this[prefix$1 + key];
-	  },
-	  set: function(key, value) {
-	    this[prefix$1 + key] = value;
-	    return this;
-	  },
-	  remove: function(key) {
-	    var property = prefix$1 + key;
-	    return property in this && delete this[property];
-	  },
-	  clear: function() {
-	    for (var property in this) if (property[0] === prefix$1) delete this[property];
-	  },
-	  keys: function() {
-	    var keys = [];
-	    for (var property in this) if (property[0] === prefix$1) keys.push(property.slice(1));
-	    return keys;
-	  },
-	  values: function() {
-	    var values = [];
-	    for (var property in this) if (property[0] === prefix$1) values.push(this[property]);
-	    return values;
-	  },
-	  entries: function() {
-	    var entries = [];
-	    for (var property in this) if (property[0] === prefix$1) entries.push({key: property.slice(1), value: this[property]});
-	    return entries;
-	  },
-	  size: function() {
-	    var size = 0;
-	    for (var property in this) if (property[0] === prefix$1) ++size;
-	    return size;
-	  },
-	  empty: function() {
-	    for (var property in this) if (property[0] === prefix$1) return false;
-	    return true;
-	  },
-	  each: function(f) {
-	    for (var property in this) if (property[0] === prefix$1) f(this[property], property.slice(1), this);
-	  }
-	};
-
-	function map$3(object, f) {
-	  var map = new Map$1;
-
-	  // Copy constructor.
-	  if (object instanceof Map$1) object.each(function(value, key) { map.set(key, value); });
-
-	  // Index array by numeric index or specified key function.
-	  else if (Array.isArray(object)) {
-	    var i = -1,
-	        n = object.length,
-	        o;
-
-	    if (f == null) while (++i < n) map.set(i, object[i]);
-	    else while (++i < n) map.set(f(o = object[i], i, object), o);
-	  }
-
-	  // Convert object to map.
-	  else if (object) for (var key in object) map.set(key, object[key]);
-
-	  return map;
-	}
-
-	var proto$1 = map$3.prototype;
-
-	var array$3 = Array.prototype;
-
-	var slice$2 = array$3.slice;
+	var slice$1 = array$2.slice;
 
 	var implicit = {name: "implicit"};
 
 	function ordinal(range) {
-	  var index = map$3(),
+	  var index = map$1(),
 	      domain = [],
 	      unknown = implicit;
 
-	  range = range == null ? [] : slice$2.call(range);
+	  range = range == null ? [] : slice$1.call(range);
 
 	  function scale(d) {
 	    var key = d + "", i = index.get(key);
@@ -3938,14 +3900,14 @@
 
 	  scale.domain = function(_) {
 	    if (!arguments.length) return domain.slice();
-	    domain = [], index = map$3();
+	    domain = [], index = map$1();
 	    var i = -1, n = _.length, d, key;
 	    while (++i < n) if (!index.has(key = (d = _[i]) + "")) index.set(key, domain.push(d));
 	    return scale;
 	  };
 
 	  scale.range = function(_) {
-	    return arguments.length ? (range = slice$2.call(_), scale) : range.slice();
+	    return arguments.length ? (range = slice$1.call(_), scale) : range.slice();
 	  };
 
 	  scale.unknown = function(_) {
@@ -5382,6 +5344,8 @@ var 	t1$1 = new Date;
 	      select,
 	      shapeImage = constant$1(false),
 	      size = constant$1(10),
+	      stroke = constant$1("black"),
+	      strokeWidth = constant$1(0),
 	      verticalAlign = "middle",
 	      width = 400,
 	      x = shapeX,
@@ -5527,6 +5491,8 @@ var 	t1$1 = new Date;
 	      .labelPadding(0)
 	      .lineHeight(lineHeight)
 	      .select(shapeGroup.node())
+	      .stroke(stroke)
+	      .strokeWidth(strokeWidth)
 	      .verticalAlign("top")
 	      .width(size)
 	      .x(x)
@@ -5739,6 +5705,32 @@ var 	t1$1 = new Date;
 	  */
 	  shape.size = function(_) {
 	    return arguments.length ? (size = typeof _ === "function" ? _ : constant$1(_), shape) : size;
+	  };
+
+	  /**
+	      @memberof shape
+	      @desc If *value* is specified, sets the stroke accessor to the specified function and returns this generator. If *value* is not specified, returns the current stroke accessor.
+	      @param {Function} [*value*]
+	      @example
+	function value(d) {
+	  return d.color;
+	}
+	  */
+	  shape.stroke = function(_) {
+	    return arguments.length ? (stroke = _, shape) : stroke;
+	  };
+
+	  /**
+	      @memberof shape
+	      @desc If *value* is specified, sets the stroke-width accessor to the specified function and returns this generator. If *value* is not specified, returns the current stroke-width accessor.
+	      @param {Function} [*value*]
+	      @example
+	function value(d) {
+	  return d.color;
+	}
+	  */
+	  shape.strokeWidth = function(_) {
+	    return arguments.length ? (strokeWidth = _, shape) : strokeWidth;
 	  };
 
 	  /**
