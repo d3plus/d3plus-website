@@ -4,12 +4,13 @@
 	(factory((global.d3plus_common = global.d3plus_common || {})));
 }(this, function (exports) { 'use strict';
 
-	var version = "0.3.3";
+	var version = "0.3.4";
 
 	/**
 	    @function accessor
 	    @desc Wraps an object key in a simple accessor function.
 	    @param {String} key The key to be returned from each Object passed to the function.
+	    @param {*} [def] A default value to be returned if the key is not present.
 	    @example <caption>this</caption>
 	accessor("id");
 	    @example <caption>returns this</caption>
@@ -17,10 +18,9 @@
 	  return d["id"];
 	}
 	*/
-	function accessor(key) {
-	  return function accessor(d) {
-	    return d[key];
-	  };
+	function accessor(key, def) {
+	  if (def === void 0) return function (d) { return d[key]; };
+	  return function (d) { return d[key] === void 0 ? def : d[key]; };
 	}
 
 	function ascending(a, b) {
