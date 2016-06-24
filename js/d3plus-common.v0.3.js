@@ -4,7 +4,7 @@
 	(factory((global.d3plus_common = global.d3plus_common || {}),global.d3_array,global.d3_collection,global.d3_selection));
 }(this, function (exports,d3Array,d3Collection,d3Selection) { 'use strict';
 
-	var version = "0.3.5";
+	var version = "0.3.6";
 
 	/**
 	    @function accessor
@@ -29,11 +29,11 @@
 	    @param {Array} objects The Array of objects to be merged together.
 	    @example <caption>this</caption>
 	merge([
-	  {"id": "foo", "group": "A", "value": 10},
-	  {"id": "bar", "group": "A", "value": 20}
+	  {id: "foo", group: "A", value: 10},
+	  {id: "bar", group: "A", value: 20}
 	]);
 	    @example <caption>returns this</caption>
-	{"id": ["bar", "foo"], "group": "A", "value": 30}
+	{id: ["bar", "foo"], group: "A", value: 30}
 	*/
 	function combine(objects) {
 

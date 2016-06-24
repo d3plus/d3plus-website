@@ -4,7 +4,7 @@
 	(factory((global.d3plus_common = global.d3plus_common || {})));
 }(this, function (exports) { 'use strict';
 
-	var version = "0.3.5";
+	var version = "0.3.6";
 
 	/**
 	    @function accessor
@@ -260,11 +260,11 @@
 	    @param {Array} objects The Array of objects to be merged together.
 	    @example <caption>this</caption>
 	merge([
-	  {"id": "foo", "group": "A", "value": 10},
-	  {"id": "bar", "group": "A", "value": 20}
+	  {id: "foo", group: "A", value: 10},
+	  {id: "bar", group: "A", value: 20}
 	]);
 	    @example <caption>returns this</caption>
-	{"id": ["bar", "foo"], "group": "A", "value": 30}
+	{id: ["bar", "foo"], group: "A", value: 30}
 	*/
 	function combine(objects) {
 
@@ -505,8 +505,10 @@
 	  return this;
 	}
 
+	function none() {}
+
 	function selector(selector) {
-	  return function() {
+	  return selector == null ? none : function() {
 	    return this.querySelector(selector);
 	  };
 	}
@@ -526,8 +528,12 @@
 	  return new Selection(subgroups, this._parents);
 	}
 
+	function empty() {
+	  return [];
+	}
+
 	function selectorAll(selector) {
-	  return function() {
+	  return selector == null ? empty : function() {
 	    return this.querySelectorAll(selector);
 	  };
 	}
@@ -560,6 +566,30 @@
 
 	  return new Selection(subgroups, this._parents);
 	}
+
+	function sparse(update) {
+	  return new Array(update.length);
+	}
+
+	function selection_enter() {
+	  return new Selection(this._enter || this._groups.map(sparse), this._parents);
+	}
+
+	function EnterNode(parent, datum) {
+	  this.ownerDocument = parent.ownerDocument;
+	  this.namespaceURI = parent.namespaceURI;
+	  this._next = null;
+	  this._parent = parent;
+	  this.__data__ = datum;
+	}
+
+	EnterNode.prototype = {
+	  constructor: EnterNode,
+	  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
+	  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
+	  querySelector: function(selector) { return this._parent.querySelector(selector); },
+	  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
+	};
 
 	function constant$2(x) {
 	  return function() {
@@ -680,30 +710,6 @@
 	  update._enter = enter;
 	  update._exit = exit;
 	  return update;
-	}
-
-	function EnterNode(parent, datum) {
-	  this.ownerDocument = parent.ownerDocument;
-	  this.namespaceURI = parent.namespaceURI;
-	  this._next = null;
-	  this._parent = parent;
-	  this.__data__ = datum;
-	}
-
-	EnterNode.prototype = {
-	  constructor: EnterNode,
-	  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
-	  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
-	  querySelector: function(selector) { return this._parent.querySelector(selector); },
-	  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
-	};
-
-	function sparse(update) {
-	  return new Array(update.length);
-	}
-
-	function selection_enter() {
-	  return new Selection(this._enter || this._groups.map(sparse), this._parents);
 	}
 
 	function selection_exit() {
