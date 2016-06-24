@@ -4,7 +4,7 @@
 	(factory((global.d3plus_text = global.d3plus_text || {}),global.d3_selection,global.d3_transition,global.d3_array,global.d3plus_common));
 }(this, function (exports,d3Selection,d3Transition,d3Array,d3plusCommon) { 'use strict';
 
-	var version = "0.6.0";
+	var version = "0.6.1";
 
 	/**
 	    @function stringify
@@ -174,7 +174,7 @@
 	    }
 
 	    return {
-	      "lines": lineData,
+	      lines: lineData,
 	      sentence: sentence, truncated: truncated, words: words
 	    };
 
@@ -248,20 +248,12 @@
 	}
 
 	var d3 = {
-	  "max": d3Array.max,
-	  "min": d3Array.min,
-	  "select": d3Selection.select,
-	  "sum": d3Array.sum,
-	  "transition": d3Transition.transition
+	  max: d3Array.max,
+	  min: d3Array.min,
+	  select: d3Selection.select,
+	  sum: d3Array.sum,
+	  transition: d3Transition.transition
 	};
-
-	/**
-	    The default height accessor function.
-	    @private
-	*/
-	function boxHeight(d) {
-	  return d.height || 200;
-	}
 
 	/**
 	    The default id accessor function.
@@ -269,30 +261,6 @@
 	*/
 	function boxId(d, i) {
 	  return d.id || ("" + i);
-	}
-
-	/**
-	    The default width accessor function.
-	    @private
-	*/
-	function boxWidth(d) {
-	  return d.width || 200;
-	}
-
-	/**
-	    The default x accessor function.
-	    @private
-	*/
-	function boxX(d) {
-	  return d.x || 0;
-	}
-
-	/**
-	    The default y accessor function.
-	    @private
-	*/
-	function boxY(d) {
-	  return d.y || 0;
 	}
 
 
@@ -339,7 +307,7 @@
 	      fontMin = d3plusCommon.constant(8),
 	      fontResize = d3plusCommon.constant(false),
 	      fontSize = d3plusCommon.constant(10),
-	      height = boxHeight,
+	      height = d3plusCommon.accessor("height", 200),
 	      id = boxId,
 	      lineHeight,
 	      overflow = d3plusCommon.constant(false),
@@ -348,9 +316,9 @@
 	      text = d3plusCommon.accessor("text"),
 	      textAnchor = d3plusCommon.constant("start"),
 	      verticalAlign = d3plusCommon.constant("top"),
-	      width = boxWidth,
-	      x = boxX,
-	      y = boxY;
+	      width = d3plusCommon.accessor("width", 200),
+	      x = d3plusCommon.accessor("x", 0),
+	      y = d3plusCommon.accessor("y", 0);
 
 	  /**
 	      The inner return object and draw function that gets assigned the public methods.
@@ -436,7 +404,7 @@
 
 	            var wrapResults = wrapper(t);
 	            lineData = wrapResults.lines;
-	            line = lineData.length + 1;
+	            line = lineData.length;
 
 	            if (wrapResults.truncated)
 

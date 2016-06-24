@@ -4,7 +4,7 @@
 	(factory((global.d3plus_text = global.d3plus_text || {})));
 }(this, function (exports) { 'use strict';
 
-	var version = "0.6.0";
+	var version = "0.6.1";
 
 	var xhtml = "http://www.w3.org/1999/xhtml";
 
@@ -165,8 +165,10 @@
 	  return this;
 	}
 
+	function none() {}
+
 	function selector(selector) {
-	  return function() {
+	  return selector == null ? none : function() {
 	    return this.querySelector(selector);
 	  };
 	}
@@ -186,8 +188,12 @@
 	  return new Selection(subgroups, this._parents);
 	}
 
+	function empty() {
+	  return [];
+	}
+
 	function selectorAll(selector) {
-	  return function() {
+	  return selector == null ? empty : function() {
 	    return this.querySelectorAll(selector);
 	  };
 	}
@@ -220,6 +226,30 @@
 
 	  return new Selection(subgroups, this._parents);
 	}
+
+	function sparse(update) {
+	  return new Array(update.length);
+	}
+
+	function selection_enter() {
+	  return new Selection(this._enter || this._groups.map(sparse), this._parents);
+	}
+
+	function EnterNode(parent, datum) {
+	  this.ownerDocument = parent.ownerDocument;
+	  this.namespaceURI = parent.namespaceURI;
+	  this._next = null;
+	  this._parent = parent;
+	  this.__data__ = datum;
+	}
+
+	EnterNode.prototype = {
+	  constructor: EnterNode,
+	  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
+	  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
+	  querySelector: function(selector) { return this._parent.querySelector(selector); },
+	  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
+	};
 
 	function constant(x) {
 	  return function() {
@@ -340,30 +370,6 @@
 	  update._enter = enter;
 	  update._exit = exit;
 	  return update;
-	}
-
-	function EnterNode(parent, datum) {
-	  this.ownerDocument = parent.ownerDocument;
-	  this.namespaceURI = parent.namespaceURI;
-	  this._next = null;
-	  this._parent = parent;
-	  this.__data__ = datum;
-	}
-
-	EnterNode.prototype = {
-	  constructor: EnterNode,
-	  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
-	  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
-	  querySelector: function(selector) { return this._parent.querySelector(selector); },
-	  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
-	};
-
-	function sparse(update) {
-	  return new Array(update.length);
-	}
-
-	function selection_enter() {
-	  return new Selection(this._enter || this._groups.map(sparse), this._parents);
 	}
 
 	function selection_exit() {
@@ -2238,9 +2244,9 @@
 	  if (typeof match !== "function") match = matcher$1(match);
 
 	  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-	    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
+	    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
 	      if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
-	        subgroup[i] = node;
+	        subgroup.push(node);
 	      }
 	    }
 	  }
@@ -2803,6 +2809,7 @@
 	    @function accessor
 	    @desc Wraps an object key in a simple accessor function.
 	    @param {String} key The key to be returned from each Object passed to the function.
+	    @param {*} [def] A default value to be returned if the key is not present.
 	    @example <caption>this</caption>
 	accessor("id");
 	    @example <caption>returns this</caption>
@@ -2810,10 +2817,9 @@
 	  return d["id"];
 	}
 	*/
-	function accessor(key) {
-	  return function accessor(d) {
-	    return d[key];
-	  };
+	function accessor(key, def) {
+	  if (def === void 0) return function (d) { return d[key]; };
+	  return function (d) { return d[key] === void 0 ? def : d[key]; };
 	}
 
 	/**
@@ -3001,7 +3007,7 @@
 	    }
 
 	    return {
-	      "lines": lineData,
+	      lines: lineData,
 	      sentence: sentence, truncated: truncated, words: words
 	    };
 
@@ -3075,20 +3081,12 @@
 	}
 
 	var d3 = {
-	  "max": d3Max,
-	  "min": min,
-	  "select": d3Select,
-	  "sum": sum,
-	  "transition": transition
+	  max: d3Max,
+	  min: min,
+	  select: d3Select,
+	  sum: sum,
+	  transition: transition
 	};
-
-	/**
-	    The default height accessor function.
-	    @private
-	*/
-	function boxHeight(d) {
-	  return d.height || 200;
-	}
 
 	/**
 	    The default id accessor function.
@@ -3096,30 +3094,6 @@
 	*/
 	function boxId(d, i) {
 	  return d.id || ("" + i);
-	}
-
-	/**
-	    The default width accessor function.
-	    @private
-	*/
-	function boxWidth(d) {
-	  return d.width || 200;
-	}
-
-	/**
-	    The default x accessor function.
-	    @private
-	*/
-	function boxX(d) {
-	  return d.x || 0;
-	}
-
-	/**
-	    The default y accessor function.
-	    @private
-	*/
-	function boxY(d) {
-	  return d.y || 0;
 	}
 
 
@@ -3166,7 +3140,7 @@
 	      fontMin = constant$3(8),
 	      fontResize = constant$3(false),
 	      fontSize = constant$3(10),
-	      height = boxHeight,
+	      height = accessor("height", 200),
 	      id = boxId,
 	      lineHeight,
 	      overflow = constant$3(false),
@@ -3175,9 +3149,9 @@
 	      text = accessor("text"),
 	      textAnchor = constant$3("start"),
 	      verticalAlign = constant$3("top"),
-	      width = boxWidth,
-	      x = boxX,
-	      y = boxY;
+	      width = accessor("width", 200),
+	      x = accessor("x", 0),
+	      y = accessor("y", 0);
 
 	  /**
 	      The inner return object and draw function that gets assigned the public methods.
@@ -3263,7 +3237,7 @@
 
 	            var wrapResults = wrapper(t);
 	            lineData = wrapResults.lines;
-	            line = lineData.length + 1;
+	            line = lineData.length;
 
 	            if (wrapResults.truncated)
 
