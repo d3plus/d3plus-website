@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.4.1
+  d3plus-common v0.4.2
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -1249,11 +1249,24 @@
     return [elementSize(elem, "width"), elementSize(elem, "height")];
   }
 
+  /**
+      @function stylize
+      @desc Applies each key/value in an object as a style.
+      @param {D3selection} The D3 element to apply the styles to.
+      @param {Object} An object of key/value style pairs.
+  */
+  function stylize(e, s) {
+    if ( s === void 0 ) s = {};
+
+    for (var k in s) if ({}.hasOwnProperty.call(s, k)) e.style(k, s[k]);
+  }
+
   exports.accessor = accessor;
   exports.colorNest = colorNest;
   exports.constant = constant$1;
   exports.getSize = getSize;
   exports.merge = combine;
+  exports.stylize = stylize;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
