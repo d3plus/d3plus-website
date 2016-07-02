@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.6.0
+  d3plus-shape v0.6.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5332,6 +5332,23 @@ var   t1$1 = new Date;
     */
     rect.backgroundImage = function(_) {
       return arguments.length ? (backgroundImage = typeof _ === "function" ? _ : constant$3(_), rect) : backgroundImage;
+    };
+
+    /**
+        @memberof rect
+        @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this generator. If *value* is not specified, returns the current configuration.
+        @param {Object} [*value*]
+    */
+    rect.config = function(_) {
+      if (arguments.length) {
+        for (var k in _) if ({}.hasOwnProperty.call(_, k)) rect[k](_[k]);
+        return rect;
+      }
+      else {
+        var config = {};
+        for (var k$1 in rect.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(rect, k$1)) config[k$1] = rect[k$1]();
+        return config;
+      }
     };
 
     /**
