@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.6.1
+  d3plus-shape v0.6.2
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5240,30 +5240,33 @@ var   t1$1 = new Date;
                   tA = textAnchor(d, i),
                   vA = verticalAlign(d, i);
 
-            console.log(vA);
-
             var labels = label(d, i);
-            if (labels.constructor !== Array) labels = [labels];
 
-            for (var l = 0; l < labels.length; l++) {
-              var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
-                    p = padding.constructor === Array ? padding[l] : padding;
-              b.height -= p * 2;
-              b.width -= p * 2;
-              b.x += p;
-              b.y += p;
-              b.id = (id(d, i)) + "_" + l;
-              b.text = labels[l];
+            if (labels !== false && labels !== void 0) {
 
-              b.fC = fC.constructor === Array ? fC[l] : fC;
-              b.fF = fF.constructor === Array ? fF[l] : fF;
-              b.fR = fR.constructor === Array ? fR[l] : fR;
-              b.fS = fS.constructor === Array ? fS[l] : fS;
-              b.lH = lH.constructor === Array ? lH[l] : lH;
-              b.tA = tA.constructor === Array ? tA[l] : tA;
-              b.vA = vA.constructor === Array ? vA[l] : vA;
+              if (labels.constructor !== Array) labels = [labels];
 
-              labelData.push(b);
+              for (var l = 0; l < labels.length; l++) {
+                var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
+                      p = padding.constructor === Array ? padding[l] : padding;
+                b.height -= p * 2;
+                b.width -= p * 2;
+                b.x += p;
+                b.y += p;
+                b.id = (id(d, i)) + "_" + l;
+                b.text = labels[l];
+
+                b.fC = fC.constructor === Array ? fC[l] : fC;
+                b.fF = fF.constructor === Array ? fF[l] : fF;
+                b.fR = fR.constructor === Array ? fR[l] : fR;
+                b.fS = fS.constructor === Array ? fS[l] : fS;
+                b.lH = lH.constructor === Array ? lH[l] : lH;
+                b.tA = tA.constructor === Array ? tA[l] : tA;
+                b.vA = vA.constructor === Array ? vA[l] : vA;
+
+                labelData.push(b);
+              }
+
             }
           }
 
