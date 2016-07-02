@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.3.0
+  d3plus-legend v0.3.1
   A collection of chart legends and keys.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -85,6 +85,7 @@
         labelBounds = shapeLabelBounds,
         lineData = [],
         lineHeight,
+        opacity = 1,
         orient = "horizontal",
         padding = 5,
         select,
@@ -219,27 +220,25 @@
 
       // Legend Shapes
       var legendShapes = d3plusShape.rect()
-        .backgroundImage(shapeImage)
-        .data(data)
-        .duration(duration)
-        .fill(fill)
-        .fontColor(fontColor)
-        .fontFamily(fontFamily)
-        .fontResize(fontResize)
-        .fontSize(fontSize)
-        .height(size)
-        .id(id)
-        .innerBounds(labelBounds)
-        .label(visibleLabels ? label : false)
-        .labelPadding(0)
-        .lineHeight(lineHeight)
-        .select(shapeGroup.node())
-        .stroke(stroke)
-        .strokeWidth(strokeWidth)
-        .verticalAlign("top")
-        .width(size)
-        .x(x)
-        .y(y);
+        .config({
+          backgroundImage: shapeImage,
+          data: data,
+          duration: duration,
+          fill: fill,
+          fontColor: fontColor, fontFamily: fontFamily, fontResize: fontResize, fontSize: fontSize,
+          height: size,
+          id: id,
+          lineHeight: lineHeight,
+          opacity: opacity,
+          innerBounds: labelBounds,
+          label: visibleLabels ? label : false,
+          labelPadding: 0,
+          select: shapeGroup.node(),
+          stroke: stroke, strokeWidth: strokeWidth,
+          verticalAlign: "top",
+          width: size,
+          x: x, y: y
+        });
 
       var events = Object.keys(on);
       for (var e = 0; e < events.length; e++) legendShapes.on(events[e], on[events[e]]);
@@ -410,6 +409,15 @@
     */
     shape.on = function(typenames, listener) {
       return arguments.length === 2 ? (on[typenames] = listener, shape) : arguments.length ? on[typenames] : on;
+    };
+
+    /**
+        @memberof shape
+        @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current opacity accessor, which by default returns a color that contrasts the fill color.
+        @param {Function|Number} [*value* = 1]
+    */
+    shape.opacity = function(_) {
+      return arguments.length ? (opacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), shape) : opacity;
     };
 
     /**
