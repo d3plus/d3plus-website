@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.1.0
+  d3plus-tooltip v0.1.1
   A javascript-only tooltip.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -57,6 +57,8 @@
     */
     function boxStyles(box) {
       box
+        .style("background", background)
+        .style((pre + "border-radius"), borderRadius)
         .style("padding", padding)
         .style("width", width)
         .style("height", height)
@@ -86,12 +88,14 @@
 
     var pre = prefix();
 
-    var body = d3plusCommon.accessor("body", ""),
+    var background = d3plusCommon.constant("rgba(255, 255, 255, 0.75)"),
+        body = d3plusCommon.accessor("body", ""),
         bodyStyle = {
           "font-size": "10px",
           "font-weight": "400"
         },
-        border = d3plusCommon.constant("1px solid #444"),
+        border = d3plusCommon.constant("1px solid rgba(0, 0, 0, 0.1)"),
+        borderRadius = d3plusCommon.constant("2px"),
         className = "d3plus-tooltip",
         duration = d3plusCommon.constant(200),
         footer = d3plusCommon.accessor("footer", ""),
@@ -200,6 +204,15 @@
 
     /**
         @memberof tooltip
+        @desc If *value* is specified, sets the background accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current background accessor.
+        @param {Function|String} [*value* = "1px solid #444"]
+    */
+    tooltip.background = function(_) {
+      return arguments.length ? (background = typeof _ === "function" ? _ : d3plusCommon.constant(_), tooltip) : background;
+    };
+
+    /**
+        @memberof tooltip
         @desc If *value* is specified, sets the body accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current body accessor.
         @param {Function|String} [*value*]
         @example <caption>default accessor</caption>
@@ -232,6 +245,15 @@
     */
     tooltip.border = function(_) {
       return arguments.length ? (border = typeof _ === "function" ? _ : d3plusCommon.constant(_), tooltip) : border;
+    };
+
+    /**
+        @memberof tooltip
+        @desc If *value* is specified, sets the border-radius accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current border-radius accessor.
+        @param {Function|String} [*value* = "1px solid #444"]
+    */
+    tooltip.borderRadius = function(_) {
+      return arguments.length ? (borderRadius = typeof _ === "function" ? _ : d3plusCommon.constant(_), tooltip) : borderRadius;
     };
 
     /**
