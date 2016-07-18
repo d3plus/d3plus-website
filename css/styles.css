@@ -222,7 +222,8 @@ footer h4 {
 }
 
 footer a {
-  margin: 0px 10px;
+  display: inline-block;
+  margin: 10px 10px 0;
   opacity: 0.8;
   -webkit-transition: opacity .1s;
           transition: opacity .1s;
