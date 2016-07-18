@@ -68,6 +68,7 @@ section header {
 
 nav {
   margin: 0px auto;
+  text-align: center;
   width: 990px;
 }
 
@@ -78,7 +79,7 @@ header h1 {
 header h1 a {
   color: #404040;
   font-size: 18px;
-  padding: 0.7em 1em;
+  padding: 0.7em 15px 0.7em 5px;
   display: inline-block;
   font-weight: normal;
 }
@@ -91,11 +92,14 @@ header h2, section h2, footer h2 {
 }
 header a {
   color: #aaa;
-  padding: 0.5em 0.5em;
+  padding: 10px 15px;
 }
 header a.active {
   color: #b35c1e;
   text-decoration: none;
+}
+header a i {
+  margin-right: 6px;
 }
 
 p.example {

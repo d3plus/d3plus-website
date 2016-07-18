@@ -14,7 +14,7 @@ style: blog
 
   section#logo {
     display: block;
-    margin: 70px auto;
+    margin: 70px auto 25px;
     padding: 0;
     text-align: center;
     width: 800px;
@@ -63,6 +63,7 @@ style: blog
   }
 
   section#links {
+    margin: 25px 3% 0;
     text-align: center;
   }
 
@@ -70,7 +71,7 @@ style: blog
     display: inline-block;
     font-size: 12px;
     margin: 0px;
-    width: 100px;
+    width: 125px;
   }
 
   section#links a i {
@@ -107,34 +108,11 @@ style: blog
 </section>
 
 <section id="links">
-  <a href="https://github.com/alexandersimoes/d3plus/">
-    <i class="fa fa-github"></i>
-    View Source
+  {% for link in site.navigation %}
+  <a href="{{link.url}}">
+    <i class="fa fa-{{link.icon}}"></i>{{link.text}}
   </a>
-  <a href="https://github.com/alexandersimoes/d3plus/wiki">
-    <i class="fa fa-book"></i>
-    Documentation
-  </a>
-  <a href="https://github.com/alexandersimoes/d3plus/issues?state=open">
-    <i class="fa fa-exclamation-circle"></i>
-    Issues<span id="issues"></span>
-  </a>
-  <a href="https://groups.google.com/forum/#!forum/d3plus">
-    <i class="fa fa-comments-o"></i>
-    Google Group
-  </a>
-  <a href="https://github.com/alexandersimoes/d3plus/stargazers">
-    <i class="fa fa-eye"></i>
-    Watchers<span id="watchers"></span>
-  </a>
-  <a href="https://github.com/alexandersimoes/d3plus/network/members">
-    <i class="fa fa-code-fork"></i>
-    Forks<span id="forks"></span>
-  </a>
-  <a href="https://github.com/alexandersimoes/d3plus/stargazers">
-    <i class="fa fa-star"></i>
-    Stargazers<span id="stars"></span>
-  </a>
+  {% endfor %}
 </section>
 
 <section class="half" id="examples">

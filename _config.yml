@@ -11,18 +11,26 @@ collections:
   - examples
 
 navigation:
+- text: Download
+  url: /d3plus.zip
+  icon: download
 - text: Examples
   url: /examples/
+  icon: code
 - text: Blog
   url: /blog/
+  icon: rss
+- text: Google Group
+  url: https://groups.google.com/forum/#!forum/d3plus
+  icon: comments-o
 - text: Documentation
   url: https://github.com/alexandersimoes/d3plus/wiki
 # - text: Workshops
 #   url: /workshops/
-- text: Download
-  url: /d3plus.zip
+  icon: book
 - text: Source
   url: https://github.com/alexandersimoes/d3plus
+  icon: github
 
 github_api:
   id: 85fd2434dd8ebd42c68d
