@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-text.v0.8.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var data = [
+    {text: "This is a sentence that will not be resized.", resize: false},
+    {text: "This is a sentence that will be resized.", resize: true}
+  ];
+
+  d3plus.textBox()
+    .data(data)
+    .fontFamily("Verdana")
+    .fontResize(function(d) { return d.resize; })
+    .height(100)
+    .width(200)
+    .x(function(d, i) { return i * 250; })
+    ();
+
+</script>
+
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-text.v0.8.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var data = [
+    {text: "Here is some sample text that has been wrapped using d3plus.textBox."},
+    {text: "...and here is a second sentence!"},
+    {text: "这是句3号。这也即使包装没有空格！"}
+  ];
+
+  d3plus.textBox()
+    .data(data)
+    .fontFamily("Verdana")
+    .fontSize(16)
+    .width(200)
+    .x(function(d, i) { return i * 250; })
+    ();
+
+</script>
+
+</html>
