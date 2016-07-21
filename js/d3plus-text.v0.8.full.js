@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.8.0
+  d3plus-text v0.8.1
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -3293,8 +3293,8 @@
       var update = boxes.enter().append("text")
           .attr("class", "d3plus-textBox")
           .attr("id", function (d) { return ("d3plus-textBox-" + (d.id)); })
-        .merge(boxes)
           .attr("y", function (d) { return ((d.y) + "px"); })
+        .merge(boxes)
           .attr("fill", function (d) { return d.fC; })
           .attr("text-anchor", function (d) { return d.tA; })
           .attr("font-family", function (d) { return d.fF; })
@@ -3303,8 +3303,8 @@
             var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
                   tB = d3.select(this);
 
-            if (duration === 0 || tB.attr("transform") === null) tB.attr("transform", ("translate(0," + (d.y) + ")"));
-            else tB.transition(t).attr("transform", ("translate(0," + (d.y) + ")"));
+            if (duration === 0) tB.attr("y", function (d) { return ((d.y) + "px"); });
+            else tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); });
 
             /**
                 Styles to apply to each <tspan> element.
