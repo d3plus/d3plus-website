@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.3.1
+  d3plus-legend v0.3.2
   A collection of chart legends and keys.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -49,9 +49,11 @@
     */
     function shapeX(d, i) {
       if (orient === "vertical") return outerBounds.x + size(d, i) / 2;
-      else return outerBounds.x + d3Array.sum(data.slice(0, i).map(function (b, i) { return size(b, i); })) +
-                  d3Array.sum(lineData.slice(0, i).map(function (l) { return l.width - fontSize(d, i); })) +
-                  size(d, i) / 2 + padding * 3 * i;
+      else {
+        return outerBounds.x + d3Array.sum(data.slice(0, i).map(function (b, i) { return size(b, i); })) +
+               d3Array.sum(lineData.slice(0, i).map(function (l) { return l.width - fontSize(d, i); })) +
+               size(d, i) / 2 + padding * 3 * i;
+      }
     }
 
     /**
@@ -132,8 +134,8 @@
         var f = fontFamily(d, i), lh = lineHeight(d, i), s = fontSize(d, i);
         var h = orient === "horizontal" ? height - (data.length + 1) * padding : height,
               w = orient === "vertical" ? width - padding * 3 - size(d, i) : width;
-        var res = d3plusText.wrap().fontFamily(f).fontSize(s).lineHeight(lh).width(w).height(h)(label(d, i));
-        res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.width(t, {"font-family": f, "font-size": s}); }))) + s;
+        var res = d3plusText.textWrap().fontFamily(f).fontSize(s).lineHeight(lh).width(w).height(h)(label(d, i));
+        res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); }))) + s;
         res.height = Math.ceil(res.lines.length * (lh + 1));
         res.og = {height: res.height, width: res.width};
         res.data = d;
@@ -162,10 +164,10 @@
               var loop = function ( x ) {
                 var label$1 = wrappable[x];
                 var h = label$1.og.height * line, w = label$1.og.width * (1.5 * (1 / line));
-                var res = d3plusText.wrap().fontFamily(label$1.f).fontSize(label$1.s).lineHeight(label$1.lh).width(w).height(h)(label$1.sentence);
+                var res = d3plusText.textWrap().fontFamily(label$1.f).fontSize(label$1.s).lineHeight(label$1.lh).width(w).height(h)(label$1.sentence);
                 if (!res.truncated) {
                   textSpace -= label$1.width;
-                  label$1.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.width(t, {"font-family": label$1.f, "font-size": label$1.s}); }))) + label$1.s;
+                  label$1.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": label$1.f, "font-size": label$1.s}); }))) + label$1.s;
                   label$1.height = res.lines.length * (label$1.lh + 1);
                   textSpace += label$1.width;
                   if (textSpace <= availableSpace) return 'break';
