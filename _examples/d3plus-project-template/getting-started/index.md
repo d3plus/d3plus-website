@@ -1,8 +1,11 @@
 ---
 title: Getting Started
-width: 400
-height: 300
+width: 1
+height: 1
 ---
+
+[width]: 1
+[height]: 1
 
 # Getting Started
 
