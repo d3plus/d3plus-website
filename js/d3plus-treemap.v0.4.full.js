@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.4.0
+  d3plus-treemap v0.4.1
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -4916,8 +4916,8 @@ var   t1$1 = new Date;
     var delay = 0,
         duration = 0,
         ellipsis = boxEllipsis,
-        fontColor,
-        fontFamily = constant$3("sans-serif"),
+        fontColor = constant$3("black"),
+        fontFamily = constant$3("Verdana"),
         fontMax = constant$3(50),
         fontMin = constant$3(8),
         fontResize = constant$3(false),
@@ -5091,6 +5091,9 @@ var   t1$1 = new Date;
           .attr("fill", function (d) { return d.fC; })
           .attr("text-anchor", function (d) { return d.tA; })
           .attr("font-family", function (d) { return d.fF; })
+          .style("font-family", function (d) { return d.fF; })
+          .attr("font-size", function (d) { return ((d.fS) + "px"); })
+          .style("font-size", function (d) { return ((d.fS) + "px"); })
           .each(function(d) {
 
             var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
@@ -5111,10 +5114,7 @@ var   t1$1 = new Date;
                 .attr("dy", ((d.lH) + "px"));
             }
 
-            var tspans = tB
-              .attr("font-size", ((d.fS) + "px"))
-              .style("font-size", ((d.fS) + "px"))
-              .selectAll("tspan").data(d.data);
+            var tspans = tB.selectAll("tspan").data(d.data);
 
             if (duration === 0) {
 
@@ -5216,7 +5216,7 @@ var   t1$1 = new Date;
     /**
         @memberof textBox
         @desc If *value* is specified, sets the font color accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font color accessor, which is inferred from the [container element](#textBox.select) by default.
-        @param {Function|String} [*value*]
+        @param {Function|String} [*value* = "black"]
     */
     textBox.fontColor = function(_) {
       return arguments.length ? (fontColor = typeof _ === "function" ? _ : constant$3(_), textBox) : fontColor;
@@ -5225,7 +5225,7 @@ var   t1$1 = new Date;
     /**
         @memberof textBox
         @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family accessor, which is inferred from the [container element](#textBox.select) by default.
-        @param {Function|String} [*value*]
+        @param {Function|String} [*value* = "Verdana"]
     */
     textBox.fontFamily = function(_) {
       return arguments.length ? (fontFamily = typeof _ === "function" ? _ : constant$3(_), textBox) : fontFamily;
@@ -5261,7 +5261,7 @@ var   t1$1 = new Date;
     /**
         @memberof textBox
         @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size accessor, which is inferred from the [container element](#textBox.select) by default.
-        @param {Function|Number} [*value*]
+        @param {Function|Number} [*value* = 10]
     */
     textBox.fontSize = function(_) {
       return arguments.length ? (fontSize = typeof _ === "function" ? _ : constant$3(_), textBox) : fontSize;
@@ -5327,14 +5327,7 @@ var   t1$1 = new Date;
         @param {String|HTMLElement} [*selector*]
     */
     textBox.select = function(_) {
-      if (arguments.length) {
-        select = d3$3.select(_);
-        if (fontColor === void 0) textBox.fontColor(select.style("font-color"));
-        if (fontFamily === void 0) textBox.fontFamily(select.style("font-family"));
-        if (fontSize === void 0) textBox.fontSize(parseFloat(select.style("font-size"), 10));
-        return textBox;
-      }
-      return select;
+      return arguments.length ? (select = d3$3.select(_), textBox) : select;
     };
 
     /**
@@ -5465,9 +5458,9 @@ var   t1$1 = new Date;
         duration = 600,
         fill = constant$3("black"),
         fontColor = rectFontColor,
-        fontFamily,
+        fontFamily = constant$3("Verdana"),
         fontResize = constant$3(false),
-        fontSize,
+        fontSize = constant$3(12),
         height = accessor("height"),
         id = rectId,
         innerBounds = rectInnerBounds,
@@ -5719,7 +5712,7 @@ var   t1$1 = new Date;
     /**
         @memberof rect
         @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-        @param {Function|String|Array} [*value*]
+        @param {Function|String|Array} [*value* = "Verdana"]
     */
     rect.fontFamily = function(_) {
       return arguments.length ? (fontFamily = typeof _ === "function" ? _ : constant$3(_), rect) : fontFamily;
@@ -5737,7 +5730,7 @@ var   t1$1 = new Date;
     /**
         @memberof rect
         @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-        @param {Function|String|Array} [*value*]
+        @param {Function|String|Array} [*value* = 12]
     */
     rect.fontSize = function(_) {
       return arguments.length ? (fontSize = typeof _ === "function" ? _ : constant$3(_), rect) : fontSize;
@@ -5848,13 +5841,7 @@ var   t1$1 = new Date;
         @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
     */
     rect.select = function(_) {
-      if (arguments.length) {
-        select = d3$2.select(_);
-        if (fontFamily === void 0) fontFamily = constant$3(select.style("font-family"));
-        if (fontSize === void 0) fontSize = constant$3(parseFloat(select.style("font-size"), 10));
-        return rect;
-      }
-      return select;
+      return arguments.length ? (select = d3$2.select(_), rect) : select;
     };
 
     /**
@@ -7459,28 +7446,8 @@ var   t1$1 = new Date;
 
   /**
       @function treemap
-      @desc Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout) to creates SVG rectangles based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns this generator. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method.
+      @desc Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout) to creates SVG rectangles based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns this generator. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
       @param {Array} [data = []]
-      @example <caption>using default key accessors</caption>
-  var data = [
-    {"id": 0, "value": 100},
-    {"id": 1, "value": 50}
-  ];
-
-  treemap(data);
-  @example <caption>using non-default key accessors</caption>
-  var data = [
-    {"name": 0, "value": 20},
-    {"name": 1, "value": 10}
-  ];
-
-  treemap()
-    .id(function(d) {
-      return d.name;
-    })
-    .value(function(d) {
-      return d.value * 5;
-    })();
   */
   function treemap(data) {
     if ( data === void 0 ) data = [];
@@ -7578,7 +7545,7 @@ var   t1$1 = new Date;
         labelResize = constant$3(true),
         legend = true,
         opacity = function (d, i) { return highlight ? highlight(d, i) ? 1 : 0.25 : 1; },
-        padding = 2,
+        padding = 1,
         rect = {},
         select,
         size,

@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.4.0
+  d3plus-treemap v0.4.1
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -27,28 +27,8 @@
 
   /**
       @function treemap
-      @desc Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout) to creates SVG rectangles based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns this generator. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method.
+      @desc Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout) to creates SVG rectangles based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns this generator. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
       @param {Array} [data = []]
-      @example <caption>using default key accessors</caption>
-  var data = [
-    {"id": 0, "value": 100},
-    {"id": 1, "value": 50}
-  ];
-
-  treemap(data);
-  @example <caption>using non-default key accessors</caption>
-  var data = [
-    {"name": 0, "value": 20},
-    {"name": 1, "value": 10}
-  ];
-
-  treemap()
-    .id(function(d) {
-      return d.name;
-    })
-    .value(function(d) {
-      return d.value * 5;
-    })();
   */
   function treemap$1(data) {
     if ( data === void 0 ) data = [];
@@ -146,7 +126,7 @@
         labelResize = d3plusCommon.constant(true),
         legend = true,
         opacity = function (d, i) { return highlight ? highlight(d, i) ? 1 : 0.25 : 1; },
-        padding = 2,
+        padding = 1,
         rect = {},
         select,
         size,
