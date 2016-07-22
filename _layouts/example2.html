@@ -5,9 +5,8 @@ layout: default
 <style>
 
   #exampleIframe {
-    border: 1px solid #f0f0f0;
-    height: 400px;
-    width: 100%;
+    display: block;
+    margin: 0 auto 40px;
   }
 
   #markdown {
@@ -16,7 +15,7 @@ layout: default
 
 </style>
 
-<iframe src="embed.html" id="exampleIframe"></iframe>
+<iframe src="embed.html" id="exampleIframe" width="{{ page.width }}" height="{{ page.height }}"></iframe>
 
 <div id="markdown">
   {{ content }}
