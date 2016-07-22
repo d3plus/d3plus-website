@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.8.1
+  d3plus-text v0.8.2
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -291,7 +291,7 @@
         duration = 0,
         ellipsis = boxEllipsis,
         fontColor,
-        fontFamily = d3plusCommon.constant("sans-serif"),
+        fontFamily = d3plusCommon.constant("Verdana"),
         fontMax = d3plusCommon.constant(50),
         fontMin = d3plusCommon.constant(8),
         fontResize = d3plusCommon.constant(false),
