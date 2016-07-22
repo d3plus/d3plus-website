@@ -23,7 +23,6 @@ Here, we can compare the output of using [fontResize](https://github.com/d3plus/
 ```js
 d3plus.textBox()
   .data(data)
-  .fontFamily("Verdana")
   .fontResize(function(d) { return d.resize; })
   .height(100)
   .width(200)
