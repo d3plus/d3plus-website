@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.7.0
+  d3plus-shape v0.7.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -250,9 +250,9 @@
         duration = 600,
         fill = d3plusCommon.constant("black"),
         fontColor = rectFontColor,
-        fontFamily,
+        fontFamily = d3plusCommon.constant("Verdana"),
         fontResize = d3plusCommon.constant(false),
-        fontSize,
+        fontSize = d3plusCommon.constant(12),
         height = d3plusCommon.accessor("height"),
         id = rectId,
         innerBounds = rectInnerBounds,
@@ -504,7 +504,7 @@
     /**
         @memberof rect
         @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-        @param {Function|String|Array} [*value*]
+        @param {Function|String|Array} [*value* = "Verdana"]
     */
     rect.fontFamily = function(_) {
       return arguments.length ? (fontFamily = typeof _ === "function" ? _ : d3plusCommon.constant(_), rect) : fontFamily;
@@ -522,7 +522,7 @@
     /**
         @memberof rect
         @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-        @param {Function|String|Array} [*value*]
+        @param {Function|String|Array} [*value* = 12]
     */
     rect.fontSize = function(_) {
       return arguments.length ? (fontSize = typeof _ === "function" ? _ : d3plusCommon.constant(_), rect) : fontSize;
@@ -633,13 +633,7 @@
         @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
     */
     rect.select = function(_) {
-      if (arguments.length) {
-        select = d3$1.select(_);
-        if (fontFamily === void 0) fontFamily = d3plusCommon.constant(select.style("font-family"));
-        if (fontSize === void 0) fontSize = d3plusCommon.constant(parseFloat(select.style("font-size"), 10));
-        return rect;
-      }
-      return select;
+      return arguments.length ? (select = d3$1.select(_), rect) : select;
     };
 
     /**

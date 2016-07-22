@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.7.0
+  d3plus-shape v0.7.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -3403,7 +3403,7 @@
         duration = 0,
         ellipsis = boxEllipsis,
         fontColor,
-        fontFamily = constant$3("sans-serif"),
+        fontFamily = constant$3("Verdana"),
         fontMax = constant$3(50),
         fontMin = constant$3(8),
         fontResize = constant$3(false),
@@ -5217,9 +5217,9 @@ var   t1$1 = new Date;
         duration = 600,
         fill = constant$3("black"),
         fontColor = rectFontColor,
-        fontFamily,
+        fontFamily = constant$3("Verdana"),
         fontResize = constant$3(false),
-        fontSize,
+        fontSize = constant$3(12),
         height = accessor("height"),
         id = rectId,
         innerBounds = rectInnerBounds,
@@ -5471,7 +5471,7 @@ var   t1$1 = new Date;
     /**
         @memberof rect
         @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-        @param {Function|String|Array} [*value*]
+        @param {Function|String|Array} [*value* = "Verdana"]
     */
     rect.fontFamily = function(_) {
       return arguments.length ? (fontFamily = typeof _ === "function" ? _ : constant$3(_), rect) : fontFamily;
@@ -5489,7 +5489,7 @@ var   t1$1 = new Date;
     /**
         @memberof rect
         @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-        @param {Function|String|Array} [*value*]
+        @param {Function|String|Array} [*value* = 12]
     */
     rect.fontSize = function(_) {
       return arguments.length ? (fontSize = typeof _ === "function" ? _ : constant$3(_), rect) : fontSize;
@@ -5600,13 +5600,7 @@ var   t1$1 = new Date;
         @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
     */
     rect.select = function(_) {
-      if (arguments.length) {
-        select = d3$1.select(_);
-        if (fontFamily === void 0) fontFamily = constant$3(select.style("font-family"));
-        if (fontSize === void 0) fontSize = constant$3(parseFloat(select.style("font-size"), 10));
-        return rect;
-      }
-      return select;
+      return arguments.length ? (select = d3$1.select(_), rect) : select;
     };
 
     /**
