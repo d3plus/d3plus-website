@@ -1,11 +1,11 @@
 ---
 title: Getting Started
-width: 1
-height: 1
+width: 100
+height: 100
 ---
 
-[width]: 1
-[height]: 1
+[width]: 100
+[height]: 100
 
 # Getting Started
 
@@ -88,6 +88,20 @@ Any `css`, `html`, or `js` code block present in an example will be extracted an
 A screenshot of each example is generated from the rendered HTML. By default, each screenshot is 990x400 in size, but specific dimensions can be given using markdown relative links:
 
 ```md
-[width]: 400
-[height]: 300
+[width]: 100
+[height]: 100
+```
+
+For the purposes of this example, let's make a red square that will be rendered in HTML.
+
+```css
+.square {
+  background-color: red;
+  height: 100px;
+  width: 100px;
+}
+```
+
+```html
+<div class="square"></div>
 ```
