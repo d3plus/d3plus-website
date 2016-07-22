@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-treemap.v0.4.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var data = [
+    {color: "cornflowerblue", parent: "Group 1", id: "alpha", value: 29},
+    {color: "cornflowerblue", parent: "Group 1", id: "beta", value: 10},
+    {color: "cornflowerblue", parent: "Group 1", id: "gamma", value: 2},
+    {color: "firebrick", parent: "Group 2", id: "delta", value: 29},
+    {color: "firebrick", parent: "Group 2", id: "eta", value: 25}
+  ];
+
+  d3plus.treemap()
+    .data(data)
+    .fill(function(d) { return d.color; })
+    .groupBy(["parent", "id"])
+    ();
+
+</script>
+
+</html>
