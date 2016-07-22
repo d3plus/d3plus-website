@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.8.2
+  d3plus-text v0.8.3
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -3123,7 +3123,7 @@
     var delay = 0,
         duration = 0,
         ellipsis = boxEllipsis,
-        fontColor,
+        fontColor = constant$3("black"),
         fontFamily = constant$3("Verdana"),
         fontMax = constant$3(50),
         fontMin = constant$3(8),
@@ -3298,6 +3298,9 @@
           .attr("fill", function (d) { return d.fC; })
           .attr("text-anchor", function (d) { return d.tA; })
           .attr("font-family", function (d) { return d.fF; })
+          .style("font-family", function (d) { return d.fF; })
+          .attr("font-size", function (d) { return ((d.fS) + "px"); })
+          .style("font-size", function (d) { return ((d.fS) + "px"); })
           .each(function(d) {
 
             var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
@@ -3318,10 +3321,7 @@
                 .attr("dy", ((d.lH) + "px"));
             }
 
-            var tspans = tB
-              .attr("font-size", ((d.fS) + "px"))
-              .style("font-size", ((d.fS) + "px"))
-              .selectAll("tspan").data(d.data);
+            var tspans = tB.selectAll("tspan").data(d.data);
 
             if (duration === 0) {
 
@@ -3423,7 +3423,7 @@
     /**
         @memberof textBox
         @desc If *value* is specified, sets the font color accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font color accessor, which is inferred from the [container element](#textBox.select) by default.
-        @param {Function|String} [*value*]
+        @param {Function|String} [*value* = "black"]
     */
     textBox.fontColor = function(_) {
       return arguments.length ? (fontColor = typeof _ === "function" ? _ : constant$3(_), textBox) : fontColor;
@@ -3432,7 +3432,7 @@
     /**
         @memberof textBox
         @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family accessor, which is inferred from the [container element](#textBox.select) by default.
-        @param {Function|String} [*value*]
+        @param {Function|String} [*value* = "Verdana"]
     */
     textBox.fontFamily = function(_) {
       return arguments.length ? (fontFamily = typeof _ === "function" ? _ : constant$3(_), textBox) : fontFamily;
@@ -3468,7 +3468,7 @@
     /**
         @memberof textBox
         @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size accessor, which is inferred from the [container element](#textBox.select) by default.
-        @param {Function|Number} [*value*]
+        @param {Function|Number} [*value* = 10]
     */
     textBox.fontSize = function(_) {
       return arguments.length ? (fontSize = typeof _ === "function" ? _ : constant$3(_), textBox) : fontSize;
@@ -3534,14 +3534,7 @@
         @param {String|HTMLElement} [*selector*]
     */
     textBox.select = function(_) {
-      if (arguments.length) {
-        select = d3.select(_);
-        if (fontColor === void 0) textBox.fontColor(select.style("font-color"));
-        if (fontFamily === void 0) textBox.fontFamily(select.style("font-family"));
-        if (fontSize === void 0) textBox.fontSize(parseFloat(select.style("font-size"), 10));
-        return textBox;
-      }
-      return select;
+      return arguments.length ? (select = d3.select(_), textBox) : select;
     };
 
     /**
