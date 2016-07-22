@@ -24,6 +24,7 @@ It can be passed to the [rectangle generator](#rect) like this:
 d3plus.rect()
   .data(data)
   .fill(function(d) { return d.color; })
+  .fontFamily("Verdana")
   .label(function(d) { return d.text; })
   ();
 ```
