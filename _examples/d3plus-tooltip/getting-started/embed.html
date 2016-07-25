@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-tooltip.v0.1.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var data = [
+    {"title": "D3plus Tooltip", "body": "Check out this cool table:", "x": 100, "y": 120, "label": "Position"}
+  ];
+  
+  d3plus.tooltip()
+    .data(data)
+    .thead(["Axis", function(d) { return d.label; }])
+    .tbody([
+      ["x", function(d) { return d.x; }],
+      ["y", function(d) { return d.y; }]
+    ])
+    ();
+
+</script>
+
+</html>
