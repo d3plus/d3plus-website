@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.1.2
+  d3plus-tooltip v0.1.3
   A javascript-only tooltip.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -939,8 +939,8 @@
   /**
       @function stylize
       @desc Applies each key/value in an object as a style.
-      @param {D3selection} The D3 element to apply the styles to.
-      @param {Object} An object of key/value style pairs.
+      @param {D3selection} elem The D3 element to apply the styles to.
+      @param {Object} styles An object of key/value style pairs.
   */
   function stylize(e, s) {
     if ( s === void 0 ) s = {};
@@ -2862,6 +2862,7 @@
     var background = constant$1("rgba(255, 255, 255, 0.75)"),
         body = accessor("body", ""),
         bodyStyle = {
+          "font-family": "Verdana",
           "font-size": "10px",
           "font-weight": "400"
         },
@@ -2871,6 +2872,7 @@
         duration = constant$1(200),
         footer = accessor("footer", ""),
         footerStyle = {
+          "font-family": "Verdana",
           "font-size": "10px",
           "font-weight": "400"
         },
@@ -2885,19 +2887,23 @@
         },
         tbody = [],
         tbodyStyle = {
+          "font-family": "Verdana",
           "font-size": "10px",
           "text-align": "center"
         },
         thead = [],
         theadStyle = {
+          "font-family": "Verdana",
           "font-size": "10px",
           "font-weight": "600",
           "text-align": "center"
         },
         title = accessor("title", ""),
         titleStyle = {
+          "font-family": "Verdana",
           "font-size": "12px",
-          "font-weight": "600"
+          "font-weight": "600",
+          "padding-bottom": "5px"
         },
         translate = tooltipTranslate,
         width = constant$1("auto");
@@ -3002,6 +3008,7 @@
         @param {Object} [*value*]
         @example <caption>default styles</caption>
   {
+    "font-family": "Verdana",
     "font-size": "10px",
     "font-weight": "400"
   }
@@ -3091,6 +3098,7 @@
         @param {Object} [*value*]
         @example <caption>default styles</caption>
   {
+    "font-family": "Verdana",
     "font-size": "10px",
     "font-weight": "400"
   }
@@ -3177,6 +3185,7 @@
         @param {Object} [*value*]
         @example <caption>default styles</caption>
   {
+    "font-family": "Verdana",
     "font-size": "10px",
     "font-weight": "600",
     "text-align": "center"
@@ -3201,6 +3210,7 @@
         @param {Object} [*value*]
         @example <caption>default styles</caption>
   {
+    "font-family": "Verdana",
     "font-size": "10px",
     "font-weight": "600",
     "text-align": "center"
@@ -3229,8 +3239,10 @@
         @param {Object} [*value*]
         @example <caption>default styles</caption>
   {
+    "font-family": "Verdana",
     "font-size": "12px",
-    "font-weight": "600"
+    "font-weight": "600",
+    "padding-bottom": "5px"
   }
     */
     tooltip.titleStyle = function(_) {
