@@ -4,7 +4,7 @@
 <head>
 
   <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-shape.v0.7.full.min.js"></script>
+  <script src="https://d3plus.org/js/d3plus-shape.v0.8.full.min.js"></script>
 
   <style>
 
@@ -25,11 +25,11 @@
     {text: "Box #2", width: 150, height: 100, x: 285, y: 100, color: "firebrick"}
   ];
 
-  d3plus.rect()
+  new d3plus.Rect()
     .data(data)
     .fill(function(d) { return d.color; })
     .label(function(d) { return d.text; })
-    ();
+    .render();
 
 </script>
 
