@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.0
+  d3plus-shape v0.8.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -405,7 +405,7 @@
       var this$1 = this;
 
     if (arguments.length) {
-      for (var k in _) if ({}.hasOwnProperty.call(_, k)) this$1[k](_[k]);
+      for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
       return this;
     }
     else {
