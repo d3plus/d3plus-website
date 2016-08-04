@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.4
+  d3plus-common v0.5.5
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -26,6 +26,38 @@
     if (def === void 0) return function (d) { return d[key]; };
     return function (d) { return d[key] === void 0 ? def : d[key]; };
   }
+
+  /**
+      @class BaseClass
+      @desc An abstract class that contains some global methods and functionality.
+  */
+  var BaseClass = function BaseClass() {
+
+    function s() {
+      return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    }
+
+    this._uuid = "" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s());
+  };
+
+  /**
+      @memberof BaseClass
+      @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
+      @param {Object} [*value*]
+  */
+  BaseClass.prototype.config = function config (_) {
+      var this$1 = this;
+
+    if (arguments.length) {
+      for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+      return this;
+    }
+      else {
+      var config = {};
+      for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+      return config;
+    }
+  };
 
   /**
       @function merge
@@ -177,6 +209,7 @@
   }
 
   exports.accessor = accessor;
+  exports.BaseClass = BaseClass;
   exports.colorNest = colorNest;
   exports.constant = constant;
   exports.getSize = getSize;
