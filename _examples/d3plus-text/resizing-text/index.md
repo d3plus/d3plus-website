@@ -27,7 +27,7 @@ new d3plus.TextBox()
   .height(100)
   .width(200)
   .x(function(d, i) { return i * 250; })
-  ();
+  .render();
 ```
 
 The [fontSize](https://github.com/d3plus/d3plus-text#textBox.fontSize) calculated by this method is constrained by the [fontMin](https://github.com/d3plus/d3plus-text#textBox.fontMin) and [fontMax](https://github.com/d3plus/d3plus-text#textBox.fontMax) values, which default to `8` and `50` respectively.
