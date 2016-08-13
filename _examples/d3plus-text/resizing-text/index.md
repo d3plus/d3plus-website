@@ -21,7 +21,7 @@ var data = [
 Here, we can compare the output of using [fontResize](https://github.com/d3plus/d3plus-text#textBox.fontResize) against the normal output, given a 200 x 100 rectangle boundary.
 
 ```js
-d3plus.textBox()
+new d3plus.TextBox()
   .data(data)
   .fontResize(function(d) { return d.resize; })
   .height(100)

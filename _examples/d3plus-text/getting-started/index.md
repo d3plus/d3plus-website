@@ -22,7 +22,7 @@ var data = [
 And finally, this is how that data array would be passed to the [textBox](https://github.com/d3plus/d3plus-text#textBox) generator.
 
 ```js
-d3plus.textBox()
+new d3plus.TextBox()
   .data(data)
   .fontSize(16)
   .width(200)

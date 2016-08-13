@@ -4,7 +4,7 @@
 <head>
 
   <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-text.v0.8.full.min.js"></script>
+  <script src="https://d3plus.org/js/d3plus-text.v0.9.full.min.js"></script>
 
   <style>
 
@@ -26,7 +26,7 @@
     {text: "这是句3号。这也即使包装没有空格！"}
   ];
 
-  d3plus.textBox()
+  new d3plus.TextBox()
     .data(data)
     .fontSize(16)
     .width(200)
