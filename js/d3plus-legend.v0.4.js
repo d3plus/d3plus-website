@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.4.1
+  d3plus-legend v0.4.2
   A collection of chart legends and keys.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -123,7 +123,7 @@
       this._scale = "linear";
       this._strokeWidth = 1;
       this._textBoxConfig = {
-        fontFamily: d3plusText.textBox().fontFamily(),
+        fontFamily: new d3plusText.TextBox().fontFamily(),
         fontResize: false,
         fontSize: d3plusCommon.constant(10)
       };
@@ -227,7 +227,7 @@
 
       this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
         .domain(this._domain)
-        .range([p, p + size]);
+        .rangeRound([p, p + size]);
 
       var values = this._ticks || this._d3Scale.ticks();
 
@@ -254,6 +254,7 @@
 
         res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); })));
         res.height = Math.ceil(res.lines.length * (lh + 1));
+        if (res.width % 2) res.width++;
         return res;
 
       }
@@ -264,7 +265,7 @@
             lastWidth = textData[textData.length - 1][width];
 
       size -= firstWidth / 2 + lastWidth / 2;
-      this._d3Scale.range([p + firstWidth / 2, p + firstWidth / 2 + size]);
+      this._d3Scale.rangeRound([p + firstWidth / 2, p + firstWidth / 2 + size]);
 
       var obj;
       this._outerBounds = ( obj = {}, obj[height] = this._tickSize + d3Array.max(textData, function (t) { return t[height]; }) + p * 2, obj[width] = this[("_" + width)] - p * 2, obj[x] = p, obj );
@@ -325,7 +326,8 @@
 
       var maxTextHeight = d3Array.max(textData, function (t) { return t.height; }),
             maxTextWidth = d3Array.max(textData, function (t, i) { return t.width + this$1._textBoxConfig.fontSize(values[i], i); });
-      d3plusText.textBox()
+
+      new d3plusText.TextBox()
         .data(valueData)
         .duration(this._duration)
         .height(maxTextHeight)
@@ -343,7 +345,7 @@
           return ["right", "bottom"].includes(this$1._orient) ? this$1._outerBounds.y + this$1._tickSize + p : this$1._outerBounds.y;
         })
         .config(this._textBoxConfig)
-        ();
+        .render();
 
       this._lastScale = this._d3Scale;
 
@@ -442,6 +444,7 @@
       var s = new d3plus.Shape();
 
       this._align = "center";
+      this._data = [];
       this._id = d3plusCommon.accessor("id");
       this._label = d3plusCommon.accessor("id");
       this._lineData = [];
@@ -454,8 +457,8 @@
         fontFamily: s.fontFamily(),
         fontSize: d3plusCommon.constant(10),
         height: d3plusCommon.constant(10),
-        labelBounds: function (s, i) {
-          var d = this$1._lineData[i],
+        labelBounds: function (dd, i, s) {
+          var d = this$1._lineData[dd.i],
                 w = s.r !== void 0 ? s.r : s.width / 2;
           return {width: d.width, height: d.height, x: w + this$1._padding, y: 1 - d.height / 2};
         },
@@ -518,6 +521,7 @@
         res.f = f;
         res.s = s;
         res.lh = lh;
+        res.id = this$1._id(d, i);
         return res;
       });
 
@@ -603,24 +607,49 @@
           .attr("class", "d3plus-ShapeLegend")
         .merge(shapeGroup);
 
+      var baseConfig = this._shapeConfig,
+            config = {
+              id: function (d) { return d.id; },
+              label: function (d) { return d.label; },
+              lineHeight: function (d) { return d.lH; }
+            };
+      var shapeData = this._data.map(function (d, i) {
+
+        var obj = {
+          data: d, i: i,
+          id: this$1._id(d, i),
+          label: visibleLabels ? this$1._label(d, i) : null,
+          lH: this$1._lineHeight(d, i),
+          shape: this$1._shape(d, i)
+        };
+
+        var loop = function ( k ) {
+          if (k !== "labelBounds" && {}.hasOwnProperty.call(baseConfig, k) && typeof baseConfig[k] === "function") {
+            obj[k] = baseConfig[k](d, i);
+            config[k] = function (d) { return d[k]; };
+          }
+        };
+
+        for (var k in baseConfig) loop( k );
+
+        return obj;
+
+      });
+
       // Legend Shapes
-      d3Collection.nest().key(this._shape).entries(this._data).forEach(function (d) {
+      d3Collection.nest().key(function (d) { return d.shape; }).entries(shapeData).forEach(function (d) {
 
         new d3plus[d.key]()
           .data(d.values)
           .duration(this$1._duration)
-          .id(this$1._id)
-          .lineHeight(this$1._lineHeight)
-          .label(visibleLabels ? this$1._label : false)
           .labelPadding(0)
           .select(shapeGroup.node())
           .verticalAlign("top")
-          .config(this$1._shapeConfig)
+          .config(baseConfig)
+          .config(config)
           .render();
 
       });
-
-      if (callback) setTimeout(callback, this._shapeConfig.duration + 100);
 
       return this;
 
