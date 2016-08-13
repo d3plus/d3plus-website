@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.1
+  d3plus-shape v0.8.2
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -7,15 +7,15 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-common'), require('d3-selection'), require('d3-transition'), require('d3plus-color'), require('d3plus-text'), require('d3-collection'), require('d3-shape')) :
   typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3plus-common', 'd3-selection', 'd3-transition', 'd3plus-color', 'd3plus-text', 'd3-collection', 'd3-shape'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3plusCommon,global.d3Selection,global.d3Transition,global.d3plusColor,global.d3plusText,global.d3Collection,global.d3Shape));
-}(this, function (exports,d3plusCommon,d3Selection,d3Transition,d3plusColor,d3plusText,d3Collection,d3Shape) { 'use strict';
+  (factory((global.d3plus = global.d3plus || {}),global.d3plusCommon,global.d3Selection,global.d3Transition,global.d3plusColor,global.d3plusText,global.d3Collection,global.paths));
+}(this, function (exports,d3plusCommon,d3Selection,d3Transition,d3plusColor,d3plusText,d3Collection,paths) { 'use strict';
 
   var d3$1 = {
     select: d3Selection.select,
     transition: d3Transition.transition
   };
   /**
-      @class image
+      @class Image
       @desc Creates SVG images based on an array of data.
       @example <caption>a sample row of data</caption>
   var data = {"url": "file.png", "width": "100", "height": "50"};
@@ -28,7 +28,7 @@
   @example <caption>which also allows a post-draw callback function</caption>
   image().data([data])(function() { alert("draw complete!"); })
   */
-  var Icon = function Icon() {
+  var Image = function Image() {
     this._duration = 600;
     this._height = d3plusCommon.accessor("height");
     this._id = d3plusCommon.accessor("url");
@@ -44,7 +44,7 @@
       @desc Renders the current Image to the page. If a *callback* is specified, it will be called once the images are done drawing.
       @param {Function} [*callback* = undefined]
   */
-  Icon.prototype.render = function render (callback) {
+  Image.prototype.render = function render (callback) {
       var this$1 = this;
 
 
@@ -101,106 +101,106 @@
 
   /**
       @memberof Image
-      @desc If *data* is specified, sets the data array to the specified array and returns this generator. If *data* is not specified, returns the current data array. An <image> tag will be drawn for each object in the array.
+      @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. An <image> tag will be drawn for each object in the array.
       @param {Array} [*data* = []]
   */
-  Icon.prototype.data = function data (_) {
+  Image.prototype.data = function data (_) {
     return arguments.length ? (this._data = _, this) : this._data;
   };
 
   /**
       @memberof Image
-      @desc If *ms* is specified, sets the animation duration to the specified number and returns this generator. If *ms* is not specified, returns the current animation duration.
+      @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
       @param {Number} [*ms* = 600]
   */
-  Icon.prototype.duration = function duration (_) {
+  Image.prototype.duration = function duration (_) {
     return arguments.length ? (this._duration = _, this) : this._duration;
   };
 
   /**
       @memberof Image
-      @desc If *value* is specified, sets the height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current height accessor.
+      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
       @param {Function|Number} [*value*]
       @example
   function(d) {
   return d.height;
   }
   */
-  Icon.prototype.height = function height (_) {
+  Image.prototype.height = function height (_) {
     return arguments.length ? (this._height = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._height;
   };
 
   /**
       @memberof Image
-      @desc If *value* is specified, sets the id accessor to the specified function and returns this generator. If *value* is not specified, returns the current id accessor. This is useful if you want to duplicate the same image.
+      @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor. This is useful if you want to duplicate the same image.
       @param {Function} [*value*]
       @example
   function(d) {
   return d.url;
   }
   */
-  Icon.prototype.id = function id (_) {
+  Image.prototype.id = function id (_) {
     return arguments.length ? (this._id = _, this) : this._id;
   };
 
   /**
       @memberof Image
-      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns this generator. If *selector* is not specified, returns the current SVG container element.
+      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
       @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
   */
-  Icon.prototype.select = function select (_) {
+  Image.prototype.select = function select (_) {
     return arguments.length ? (this._select = d3$1.select(_), this) : this._select;
   };
 
   /**
       @memberof Image
-      @desc If *value* is specified, sets the URL accessor to the specified function and returns this generator. If *value* is not specified, returns the current URL accessor.
+      @desc If *value* is specified, sets the URL accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current URL accessor.
       @param {Function} [*value*]
       @example
   function(d) {
   return d.url;
   }
   */
-  Icon.prototype.url = function url (_) {
+  Image.prototype.url = function url (_) {
     return arguments.length ? (this._url = _, this) : this._url;
   };
 
   /**
       @memberof Image
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current width accessor.
+      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
       @param {Function|Number} [*value*]
       @example
   function(d) {
   return d.width;
   }
   */
-  Icon.prototype.width = function width (_) {
+  Image.prototype.width = function width (_) {
     return arguments.length ? (this._width = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._width;
   };
 
   /**
       @memberof Image
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current x accessor.
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
       @param {Function|Number} [*value*]
       @example
   function(d) {
   return d.x || 0;
   }
   */
-  Icon.prototype.x = function x (_) {
+  Image.prototype.x = function x (_) {
     return arguments.length ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x;
   };
 
   /**
       @memberof Image
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current y accessor.
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
       @param {Function|Number} [*value*]
       @example
   function(d) {
   return d.y || 0;
   }
   */
-  Icon.prototype.y = function y (_) {
+  Image.prototype.y = function y (_) {
     return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
   };
 
@@ -275,7 +275,7 @@
         if (url) imageData.push({url: url});
       }
 
-      new Icon()
+      new Image()
         .data(imageData)
         .duration(that._duration)
         .height(h)
@@ -313,7 +313,7 @@
 
         if (that._labelBounds && labels !== false && labels !== void 0) {
 
-          var bounds = that._labelBounds(that._aes(d, i), i);
+          var bounds = that._labelBounds(d, i, that._aes(d, i));
 
           if (bounds) {
 
@@ -354,7 +354,7 @@
         }
       }
 
-      d3plusText.textBox()
+      new d3plusText.TextBox()
         .data(labelData)
         .delay(that._duration / 2)
         .duration(that._duration)
@@ -366,7 +366,7 @@
         .textAnchor(function (d) { return d.tA; })
         .verticalAlign(function (d) { return d.vA; })
         .select(this)
-        ();
+        .render();
 
     });
 
@@ -389,7 +389,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current background-image accessor.
+      @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
       @param {Function|String} [*value* = false]
   */
   Shape.prototype.backgroundImage = function backgroundImage (_) {
@@ -398,7 +398,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this generator. If *value* is not specified, returns the current configuration.
+      @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns the current class instance. If *value* is not specified, returns the current configuration.
       @param {Object} [*value*]
   */
   Shape.prototype.config = function config (_) {
@@ -417,7 +417,7 @@
 
   /**
       @memberof Shape
-      @desc If *data* is specified, sets the data array to the specified array and returns this generator. If *data* is not specified, returns the current data array. A shape will be drawn for each object in the array.
+      @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape will be drawn for each object in the array.
       @param {Array} [*data* = []]
   */
   Shape.prototype.data = function data (_) {
@@ -426,7 +426,7 @@
 
   /**
       @memberof Shape
-      @desc If *ms* is specified, sets the animation duration to the specified number and returns this generator. If *ms* is not specified, returns the current animation duration.
+      @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
       @param {Number} [*ms* = 600]
   */
   Shape.prototype.duration = function duration (_) {
@@ -435,7 +435,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the fill accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current fill accessor.
+      @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current fill accessor.
       @param {Function|String} [*value* = "black"]
   */
   Shape.prototype.fill = function fill (_) {
@@ -444,7 +444,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value*]
   */
   Shape.prototype.fontColor = function fontColor (_) {
@@ -453,7 +453,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value* = "Verdana"]
   */
   Shape.prototype.fontFamily = function fontFamily (_) {
@@ -462,7 +462,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns this generator. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|Boolean|Array} [*value*]
   */
   Shape.prototype.fontResize = function fontResize (_) {
@@ -471,7 +471,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value* = 12]
   */
   Shape.prototype.fontSize = function fontSize (_) {
@@ -480,7 +480,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the id accessor to the specified function and returns this generator. If *value* is not specified, returns the current id accessor.
+      @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
       @param {Function} [*value*]
   */
   Shape.prototype.id = function id (_) {
@@ -489,7 +489,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the label accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
+      @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
       @param {Function|String|Array} [*value*]
   */
   Shape.prototype.label = function label (_) {
@@ -498,10 +498,10 @@
 
   /**
       @memberof Shape
-      @desc If *bounds* is specified, sets the label bounds to the specified function and returns this generator. If *bounds* is not specified, returns the current inner bounds accessor.
-      @param {Function} [*bounds*] The given function is passed the properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`. If an array is returned from the function, each value will be used in conjunction with each label.
+      @desc If *bounds* is specified, sets the label bounds to the specified function and returns the current class instance. If *bounds* is not specified, returns the current inner bounds accessor.
+      @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`. If an array is returned from the function, each value will be used in conjunction with each label.
       @example
-  function(shape) {
+  function(d, i, shape) {
   return {
     "width": shape.width,
     "height": shape.height,
@@ -516,7 +516,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the label padding to the specified number and returns this generator. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|Number|Array} [*value* = 10]
   */
   Shape.prototype.labelPadding = function labelPadding (_) {
@@ -525,7 +525,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value*]
   */
   Shape.prototype.lineHeight = function lineHeight (_) {
@@ -544,7 +544,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current opacity accessor.
+      @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current opacity accessor.
       @param {Number} [*value* = 1]
   */
   Shape.prototype.opacity = function opacity (_) {
@@ -572,7 +572,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the scale accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current scale accessor.
+      @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current scale accessor.
       @param {Function|Number} [*value* = 1]
   */
   Shape.prototype.scale = function scale (_) {
@@ -581,7 +581,7 @@
 
   /**
       @memberof Shape
-      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns this generator. If *selector* is not specified, returns the current SVG container element.
+      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
       @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
   */
   Shape.prototype.select = function select (_) {
@@ -590,7 +590,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current stroke accessor.
+      @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke accessor.
       @param {Function|String} [*value* = "black"]
   */
   Shape.prototype.stroke = function stroke (_) {
@@ -599,7 +599,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current stroke-width accessor.
+      @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke-width accessor.
       @param {Function|Number} [*value* = 0]
   */
   Shape.prototype.strokeWidth = function strokeWidth (_) {
@@ -608,7 +608,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value* = "start"]
   */
   Shape.prototype.textAnchor = function textAnchor (_) {
@@ -617,7 +617,7 @@
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value* = "start"]
   */
   Shape.prototype.verticalAlign = function verticalAlign (_) {
@@ -626,6 +626,7 @@
 
   /**
       @class Circle
+      @extends Shape
       @desc Creates SVG circles based on an array of data.
   */
   var Circle = (function (Shape) {
@@ -724,7 +725,7 @@
 
     /**
         @memberof Circle
-        @desc If *value* is specified, sets the radius accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current radius accessor.
+        @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current radius accessor.
         @param {Function|Number} [*value*]
         @example
   function(d) {
@@ -737,7 +738,7 @@
 
     /**
         @memberof Circle
-        @desc Updates the style and positioning of the elements matching *selector* and returns this generator. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+        @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
         @param {String|HTMLElement} *selector*
     */
     Circle.prototype.update = function update (_) {
@@ -764,7 +765,7 @@
 
     /**
         @memberof Circle
-        @desc If *value* is specified, sets the x accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
+        @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
         @param {Function|Number} [*value*]
         @example
   function(d) {
@@ -777,7 +778,7 @@
 
     /**
         @memberof Circle
-        @desc If *value* is specified, sets the y accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
+        @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
         @param {Function|Number} [*value*]
         @example
   function(d) {
@@ -793,13 +794,15 @@
 
   /**
       @class Line
+      @extends Shape
       @desc Creates SVG lines based on an array of data.
   */
   var Line = (function (Shape) {
     function Line() {
       Shape.call(this);
+      this._curve = "linear";
       this._fill = d3plusCommon.constant("none");
-      this._path = d3Shape.line().defined(function (d) { return d; });
+      this._path = paths.line().defined(function (d) { return d; });
       this._strokeWidth = d3plusCommon.constant(1);
       this._x = d3plusCommon.accessor("x");
       this._y = d3plusCommon.accessor("y");
@@ -823,6 +826,7 @@
       var lines = d3Collection.nest().key(this._id).entries(this._data);
 
       this._path
+        .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
         .x(this._x)
         .y(this._y);
 
@@ -872,7 +876,16 @@
 
     /**
         @memberof Line
-        @desc Updates the style and positioning of the elements matching *selector* and returns this generator. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+        @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve. The number returned should correspond to the horizontal center of the rectangle.
+        @param {String} [*value* = "linear"]
+    */
+    Line.prototype.curve = function curve (_) {
+      return arguments.length ? (this._curve = _, this) : this._curve;
+    };
+
+    /**
+        @memberof Line
+        @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
         @param {String|HTMLElement} *selector*
     */
     Line.prototype.update = function update (_) {
@@ -896,7 +909,7 @@
 
     /**
         @memberof Line
-        @desc If *value* is specified, sets the x accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
+        @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
         @param {Function|Number} [*value*]
         @example
   function(d) {
@@ -909,7 +922,7 @@
 
     /**
         @memberof Line
-        @desc If *value* is specified, sets the y accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
+        @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
         @param {Function|Number} [*value*]
         @example
   function(d) {
@@ -925,13 +938,14 @@
 
   /**
       @class Rect
+      @extends Shape
       @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
   */
   var Rect = (function (Shape) {
     function Rect() {
       Shape.call(this);
       this._height = d3plusCommon.accessor("height");
-      this._labelBounds = function (s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
+      this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
       this._width = d3plusCommon.accessor("width");
       this._x = d3plusCommon.accessor("x");
       this._y = d3plusCommon.accessor("y");
@@ -1030,7 +1044,7 @@
 
     /**
         @memberof Rect
-        @desc If *value* is specified, sets the height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current height accessor.
+        @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
         @param {Function|Number} [*value*]
         @example
   function(d) {
@@ -1043,7 +1057,7 @@
 
     /**
         @memberof Rect
-        @desc Updates the style and positioning of the elements matching *selector* and returns this generator. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+        @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
         @param {String|HTMLElement} *selector*
     */
     Rect.prototype.update = function update (_) {
@@ -1070,7 +1084,7 @@
 
     /**
         @memberof Rect
-        @desc If *value* is specified, sets the width accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current width accessor.
+        @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
         @param {Function|Number} [*value*]
         @example
   function(d) {
@@ -1083,7 +1097,7 @@
 
     /**
         @memberof Rect
-        @desc If *value* is specified, sets the x accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
+        @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
         @param {Function|Number} [*value*]
         @example
   function(d) {
@@ -1096,7 +1110,7 @@
 
     /**
         @memberof Rect
-        @desc If *value* is specified, sets the y accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
+        @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
         @param {Function|Number} [*value*]
         @example
   function(d) {
@@ -1111,7 +1125,7 @@
   }(Shape));
 
   exports.Circle = Circle;
-  exports.Image = Icon;
+  exports.Image = Image;
   exports.Line = Line;
   exports.Rect = Rect;
   exports.Shape = Shape;
