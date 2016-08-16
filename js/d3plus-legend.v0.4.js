@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.4.2
+  d3plus-legend v0.4.3
   A collection of chart legends and keys.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -24,6 +24,12 @@
       this._height = 200;
       this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
       this._padding = 5;
+      this._titleConfig = {
+        fontFamily: "Verdana",
+        fontSize: 12,
+        lineHeight: 13,
+        textAnchor: "middle"
+      };
       this._width = 400;
 
     }
@@ -97,6 +103,24 @@
 
     /**
         @memberof BaseLegend
+        @desc If *value* is specified, sets the title of the legend and returns the current class instance. If *value* is not specified, returns the current title.
+        @param {String} [*value*]
+    */
+    BaseLegend.prototype.title = function title (_) {
+      return arguments.length ? (this._title = _, this) : this._title;
+    };
+
+    /**
+        @memberof BaseLegend
+        @desc If *value* is specified, sets the title configuration of the legend and returns the current class instance. If *value* is not specified, returns the current title configuration.
+        @param {Object} [*value*]
+    */
+    BaseLegend.prototype.titleConfig = function titleConfig (_) {
+      return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
+    };
+
+    /**
+        @memberof BaseLegend
         @desc If *value* is specified, sets the overall width of the legend and returns the current class instance. If *value* is not specified, returns the current width value.
         @param {Number} [*value* = 400]
     */
@@ -127,6 +151,7 @@
         fontResize: false,
         fontSize: d3plusCommon.constant(10)
       };
+      this._tickScale = scales.scaleSqrt().domain([10, 400]).range([10, 50]);
       this._tickSize = 5;
 
     }
@@ -223,52 +248,89 @@
       var clipId = "d3plus-ShapeLegend-clip-" + (this._uuid),
             p = this._padding;
 
-      var size = this[("_" + width)] - p * 2;
+      var size = this._range ? this._range[1] - this._range[0] : this[("_" + width)] - p * 2;
+
+      this._titleHeight = 0;
+      if (this._title) {
+        var lH = this._titleConfig.lineHeight ? this._titleConfig.lineHeight : this._titleConfig.fontSize * 1.1,
+              titleWrap = d3plusText.textWrap()
+                .fontFamily(this._titleConfig.fontFamily)
+                .fontSize(this._titleConfig.fontSize)
+                .lineHeight(lH)
+                .width(size)
+                .height(this._height - this._tickSize - p)
+                (this._title);
+        this._titleHeight = titleWrap.lines.length * lH + p;
+      }
 
       this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
         .domain(this._domain)
-        .rangeRound([p, p + size]);
+        .rangeRound(this._range || [p, p + size]);
 
-      var values = this._ticks || this._d3Scale.ticks();
+      var ticks = this._ticks || this._d3Scale.ticks(Math.floor(size / this._tickScale(size)));
+      var values = this._tickLabels || ticks;
 
       var space = 0;
-      for (var i = 0; i < values.length; i++) {
-        var s = this$1._d3Scale(values[i + 1]) - this$1._d3Scale(values[i]);
-        if (s > space) space = s;
+      if (values.length > 1) {
+        for (var i = 0; i < values.length; i++) {
+          var s = this$1._d3Scale(values[i + 1]) - this$1._d3Scale(values[i]);
+          if (s > space) space = s;
+        }
       }
-      space -= p;
+      else space = size;
 
-      function measureText(d, i) {
+      var textData = values.map(function (d, i) {
 
-        var f = this._textBoxConfig.fontFamily(d, i),
-              lh = this._lineHeight(d, i),
-              s = this._textBoxConfig.fontSize(d, i);
+        var f = this$1._textBoxConfig.fontFamily(d, i),
+              s = this$1._textBoxConfig.fontSize(d, i);
+
+        var lh = this$1._textBoxConfig.lineHeight ? this$1._textBoxConfig.lineHeight(d, i) : s * 1.1;
 
         var res = d3plusText.textWrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lh)
           .width(space)
-          .height(this._height - this._tickSize - p)
+          .height(this$1._height - this$1._tickSize - p)
           (d);
 
+        res.lines = res.lines.filter(function (d) { return d !== ""; });
+        res.d = d;
+        res.fS = s;
         res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); })));
         res.height = Math.ceil(res.lines.length * (lh + 1));
         if (res.width % 2) res.width++;
         return res;
 
+      });
+
+      if (this._range === void 0 && textData.length) {
+
+        var first = textData[0],
+              last = textData[textData.length - 1],
+              range = this._d3Scale.range();
+
+        var firstB = this._d3Scale(first.d) - first[width] / 2,
+              lastB = this._d3Scale(last.d) + last[width] / 2;
+
+        if (firstB < range[0]) {
+          var d = range[0] - firstB;
+          size -= d;
+          range[0] += d;
+        }
+        if (lastB > range[1]) {
+          var d$1 = lastB - range[1];
+          size -= d$1;
+          range[1] -= d$1;
+        }
+
+        this._d3Scale.rangeRound(range);
+
       }
 
-      var textData = values.map(measureText.bind(this));
-
-      var firstWidth = textData[0][width],
-            lastWidth = textData[textData.length - 1][width];
-
-      size -= firstWidth / 2 + lastWidth / 2;
-      this._d3Scale.rangeRound([p + firstWidth / 2, p + firstWidth / 2 + size]);
-
+      var tPad = textData.length ? p * 2 : 0;
       var obj;
-      this._outerBounds = ( obj = {}, obj[height] = this._tickSize + d3Array.max(textData, function (t) { return t[height]; }) + p * 2, obj[width] = this[("_" + width)] - p * 2, obj[x] = p, obj );
+      this._outerBounds = ( obj = {}, obj[height] = this._titleHeight + this._tickSize + (d3Array.max(textData, function (t) { return t[height]; }) || 0) + tPad, obj[width] = this[("_" + width)] - p * 2, obj[x] = p, obj );
       this._outerBounds[y] = this._align === "start" ? this._padding
                            : this._align === "end" ? this[("_" + height)] - this._outerBounds[height]
                            : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
@@ -305,44 +367,63 @@
           .attr("opacity", 1)
           .call(this._barPosition.bind(this));
 
-      var valueData = values.map(function (d) { return ({id: d}); });
+      var lines = group.selectAll("line.tick").data(ticks.map(function (d) { return ({id: d}); }), function (d) { return d.id; });
 
-      var ticks = group.selectAll("line.tick").data(valueData, function (d) { return d.id; });
-
-      ticks.exit().transition(this._transition)
+      lines.exit().transition(this._transition)
         .attr("opacity", 0)
         .call(this._tickPosition.bind(this))
         .remove();
 
-      ticks.enter().append("line")
+      lines.enter().append("line")
           .attr("class", "tick")
           .attr("stroke", "#000")
           .attr("opacity", 0)
           .attr("clip-path", ("url(#" + clipId + ")"))
           .call(this._tickPosition.bind(this), true)
-        .merge(ticks).transition(this._transition)
+        .merge(lines).transition(this._transition)
           .attr("opacity", 1)
           .call(this._tickPosition.bind(this));
 
-      var maxTextHeight = d3Array.max(textData, function (t) { return t.height; }),
-            maxTextWidth = d3Array.max(textData, function (t, i) { return t.width + this$1._textBoxConfig.fontSize(values[i], i); });
+      var maxTextHeight = d3Array.max(textData, function (t) { return t.height; }) || 0,
+            maxTextWidth = d3Array.max(textData, function (t) { return t.width + t.fS; }) || 0;
+
+      var titleGroup = group.selectAll("g.d3plus-scaleLegend-title").data([null]);
+      titleGroup = titleGroup.enter().append("g").attr("class", "d3plus-scaleLegend-title").merge(titleGroup);
 
       new d3plusText.TextBox()
-        .data(valueData)
+        .data(this._title ? [{text: this._title}] : [])
+        .duration(this._duration)
+        .height(this._outerBounds.height)
+        .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
+        .select(titleGroup.node())
+        .text(function (d) { return d.text; })
+        .textAnchor("middle")
+        .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
+        .width(this._outerBounds[width])
+        .x(["top", "bottom"].includes(this._orient) ? this._outerBounds.x : this._orient === "left" ? this._outerBounds.x + this._titleHeight / 2 - this._outerBounds[width] / 2 : this._outerBounds.x + this._outerBounds.width - this._titleHeight / 2 - this._outerBounds[width] / 2)
+        .y(["top", "bottom"].includes(this._orient) ? this._outerBounds.y : this._outerBounds.y - this._titleHeight / 2 + this._outerBounds[width] / 2)
+        .config(this._titleConfig)
+        .render();
+
+      var tickGroup = group.selectAll("g.d3plus-scaleLegend-ticks").data([null]);
+      tickGroup = tickGroup.enter().append("g").attr("class", "d3plus-scaleLegend-ticks").merge(tickGroup);
+
+      new d3plusText.TextBox()
+        .data(values.map(function (d) { return ({id: d}); }))
         .duration(this._duration)
         .height(maxTextHeight)
-        .select(group.node())
+        .select(tickGroup.node())
         .text(function (d) { return d.id; })
         .textAnchor(this._orient === "left" ? "end" : this._orient === "right" ? "start" : "middle")
         .verticalAlign(this._orient === "bottom" ? "top" : this._orient === "top" ? "bottom" : "middle")
         .width(maxTextWidth)
         .x(function (d, i) {
           if (["top", "bottom"].includes(this$1._orient)) return this$1._d3Scale(d.id) - maxTextWidth / 2;
-          return this$1._orient === "left" ? this$1._outerBounds.x - this$1._textBoxConfig.fontSize(values[i], i) / 2 : this$1._outerBounds.x + this$1._tickSize + this$1._padding;
+          return this$1._orient === "left" ? this$1._titleHeight + this$1._outerBounds.x - this$1._textBoxConfig.fontSize(values[i], i) / 2 : this$1._outerBounds.x + this$1._tickSize + this$1._padding;
         })
         .y(function (d) {
           if (["left", "right"].includes(this$1._orient)) return this$1._d3Scale(d.id) - maxTextHeight / 2;
-          return ["right", "bottom"].includes(this$1._orient) ? this$1._outerBounds.y + this$1._tickSize + p : this$1._outerBounds.y;
+          return this$1._orient === "bottom" ? this$1._outerBounds.y + this$1._tickSize + p : this$1._titleHeight + this$1._outerBounds.y;
         })
         .config(this._textBoxConfig)
         .render();
@@ -392,6 +473,15 @@
 
     /**
         @memberof ScaleLegend
+        @desc If *value* is specified, sets the scale range (in pixels) of the legend and returns the current class instance. If *value* is not specified, returns the current scale range.
+        @param {Array} [*value*]
+    */
+    ScaleLegend.prototype.range = function range (_) {
+      return arguments.length ? (this._range = _, this) : this._range;
+    };
+
+    /**
+        @memberof ScaleLegend
         @desc If *value* is specified, sets the scale of the legend and returns the current class instance. If *value* is not specified, returns the current this._d3Scale
         @param {String} [*value* = "linear"]
     */
@@ -406,6 +496,15 @@
     */
     ScaleLegend.prototype.textBoxConfig = function textBoxConfig (_) {
       return arguments.length ? (this._textBoxConfig = Object.assign(this._textBoxConfig, _), this) : this._textBoxConfig;
+    };
+
+    /**
+        @memberof ScaleLegend
+        @desc If *value* is specified, sets the visible tick labels of the legend and returns the current class instance. If *value* is not specified, returns the current visible tick labels, which defaults to showing all labels.
+        @param {Array} [*value*]
+    */
+    ScaleLegend.prototype.tickLabels = function tickLabels (_) {
+      return arguments.length ? (this._tickLabels = _, this) : this._tickLabels;
     };
 
     /**
@@ -476,12 +575,12 @@
         },
         y: function (d, i) {
           var s = this$1._shapeConfig.height;
-          if (this$1._orient === "horizontal") return this$1._outerBounds.y + d3Array.max(this$1._lineData.map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return s(l, x); }))) / 2;
+          if (this$1._orient === "horizontal") return this$1._titleHeight + this$1._outerBounds.y + d3Array.max(this$1._lineData.map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return s(l, x); }))) / 2;
           else {
             var h = s(d, i);
             var pad = this$1._lineData[i].height > h ? this$1._lineData[i].height / 2 : h / 2,
                   prev = d3Array.sum(this$1._lineData.slice(0, i), function (l, x) { return d3Array.max([l.height, s(l.data, x)]); });
-            return this$1._outerBounds.y + prev + pad + this$1._padding * i;
+            return this$1._titleHeight + this$1._outerBounds.y + prev + pad + this$1._padding * i;
           }
         }
       };
@@ -506,12 +605,31 @@
 
       if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
 
+      // Shape <g> Group
+      var shapeGroup = this._select.selectAll("g.d3plus-ShapeLegend")
+        .data([0]);
+
+      shapeGroup = shapeGroup.enter().append("g")
+          .attr("class", "d3plus-ShapeLegend")
+        .merge(shapeGroup);
+
+      var availableHeight = this._height;
+      this._titleHeight = 0;
+      if (this._title) {
+        var f = this._titleConfig.fontFamily,
+              lH = this._titleConfig.lineHeight,
+              s = this._titleConfig.fontSize;
+        var res = d3plusText.textWrap().fontFamily(f).fontSize(s).lineHeight(lH).width(this._width).height(this._height)(this._title);
+        this._titleHeight = lH + res.lines.length + this._padding;
+        availableHeight -= this._titleHeight;
+      }
+
       // Calculate Text Sizes
       this._lineData = this._data.map(function (d, i) {
         var f = this$1._shapeConfig.fontFamily(d, i),
               lh = this$1._lineHeight(d, i),
               s = this$1._shapeConfig.fontSize(d, i);
-        var h = this$1._orient === "horizontal" ? this$1._height - (this$1._data.length + 1) * this$1._padding : this$1._height,
+        var h = this$1._orient === "horizontal" ? availableHeight - (this$1._data.length + 1) * this$1._padding : this$1._height,
               w = this$1._orient === "vertical" ? this$1._width - this$1._padding * 3 - this$1._shapeConfig.width(d, i) : this$1._width;
         var res = d3plusText.textWrap().fontFamily(f).fontSize(s).lineHeight(lh).width(w).height(h)(this$1._label(d, i));
         res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); }))) + s;
@@ -535,7 +653,7 @@
             .filter(function (d) { return d.words.length > 1; })
             .sort(function (a, b) { return b.sentence.length - a.sentence.length; });
 
-          if (wrappable.length && this._height > wrappable[0].height * 2) {
+          if (wrappable.length && availableHeight > wrappable[0].height * 2) {
 
             var line = 2;
             while (line <= 5) {
@@ -544,11 +662,11 @@
               var loop = function ( x ) {
                 var label = wrappable[x];
                 var h = label.og.height * line, w = label.og.width * (1.5 * (1 / line));
-                var res = d3plusText.textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
-                if (!res.truncated) {
+                var res$1 = d3plusText.textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+                if (!res$1.truncated) {
                   textSpace -= label.width;
-                  label.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
-                  label.height = res.lines.length * (label.lh + 1);
+                  label.width = Math.ceil(d3Array.max(res$1.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+                  label.height = res$1.lines.length * (label.lh + 1);
                   textSpace += label.width;
                   if (textSpace <= availableSpace) return 'break';
                 }
@@ -583,7 +701,7 @@
         }
       }
 
-      var innerHeight = d3Array.max(this._lineData, function (d, i) { return d3Array.max([d.height, this$1._shapeConfig.height(d.data, i)]); }),
+      var innerHeight = d3Array.max(this._lineData, function (d, i) { return d3Array.max([d.height, this$1._shapeConfig.height(d.data, i)]); }) + this._titleHeight,
             innerWidth = this._orient === "horizontal"
                        ? textSpace + d3Array.sum(this._data, function (d, i) { return this$1._shapeConfig.width(d, i); }) + this._padding * (this._data.length * (visibleLabels ? 3 : 1) - 2)
                        : textSpace + d3Array.max(this._data, function (d, i) { return this$1._shapeConfig.width(d, i); }) + this._padding * 3;
@@ -599,13 +717,15 @@
       this._outerBounds.x = xOffset;
       this._outerBounds.y = yOffset;
 
-      // Shape <g> Group
-      var shapeGroup = this._select.selectAll("g.d3plus-ShapeLegend")
-        .data([0]);
-
-      shapeGroup = shapeGroup.enter().append("g")
-          .attr("class", "d3plus-ShapeLegend")
-        .merge(shapeGroup);
+      new d3plusText.TextBox()
+        .data(this._title ? [{text: this._title}] : [])
+        .duration(this._duration)
+        .select(shapeGroup.node())
+        .width(this._width)
+        .x(0)
+        .y(this._outerBounds.y)
+        .config(this._titleConfig)
+        .render();
 
       var baseConfig = this._shapeConfig,
             config = {
