@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.1.0
+  d3plus-axis v0.1.1
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -210,7 +210,8 @@ var Axis = (function (BaseClass) {
 
     if (this._select === void 0) this.select(d3Selection.select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node());
 
-    var t = d3Transition.transition().duration(this._duration);
+    var parent = this._select,
+          t = d3Transition.transition().duration(this._duration);
 
     if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._textBoxConfig.fontSize(d, i) * 1.1; };
 
@@ -326,20 +327,9 @@ var Axis = (function (BaseClass) {
                          : this._align === "end" ? this[("_" + height)] - this._outerBounds[height]
                          : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
 
-    var group = this._select.selectAll(("g#d3plus-Axis-" + clipId))
-      .data([0]);
-
-    group = group.enter().append("g")
-        .attr("id", ("d3plus-Axis-" + clipId))
-      .merge(group);
-
-    var defs = group.selectAll("defs").data([null]);
-    defs = defs.enter().append("defs").merge(defs);
-
-    var clip = defs.selectAll(("clipPath#" + clipId)).data([null]);
-    clip = clip.enter().append("clipPath")
-        .attr("id", clipId)
-      .merge(clip);
+    var group = d3plusCommon.elem(("g#d3plus-Axis-" + clipId), {parent: parent});
+    var defs = d3plusCommon.elem("defs", {parent: group});
+    var clip = d3plusCommon.elem(("clipPath#" + clipId), {parent: defs});
 
     var axisClip = clip.selectAll("rect").data([null]);
     axisClip.enter().append("rect")
@@ -378,15 +368,12 @@ var Axis = (function (BaseClass) {
     var maxTextHeight = d3Array.max(textData, function (t) { return t.height; }) || 0,
           maxTextWidth = d3Array.max(textData, function (t) { return t.width + t.fS; }) || 0;
 
-    var titleGroup = group.selectAll("g.d3plus-Axis-title").data([null]);
-    titleGroup = titleGroup.enter().append("g").attr("class", "d3plus-Axis-title").merge(titleGroup);
-
     new d3plusText.TextBox()
       .data(this._title ? [{text: this._title}] : [])
       .duration(this._duration)
       .height(this._outerBounds.height)
       .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
-      .select(titleGroup.node())
+      .select(d3plusCommon.elem("g.d3plus-Axis-title", {parent: group}).node())
       .text(function (d) { return d.text; })
       .textAnchor("middle")
       .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
@@ -396,14 +383,11 @@ var Axis = (function (BaseClass) {
       .config(this._titleConfig)
       .render();
 
-    var tickGroup = group.selectAll("g.d3plus-Axis-ticks").data([null]);
-    tickGroup = tickGroup.enter().append("g").attr("class", "d3plus-Axis-ticks").merge(tickGroup);
-
     new d3plusText.TextBox()
       .data(values.filter(function (d, i) { return textData[i].lines.length; }).map(function (d) { return ({id: d}); }))
       .duration(this._duration)
       .height(maxTextHeight)
-      .select(tickGroup.node())
+      .select(d3plusCommon.elem("g.d3plus-Axis-ticks", {parent: group}).node())
       .text(function (d) { return tickFormat(d.id); })
       .textAnchor(this._orient === "left" ? "end" : this._orient === "right" ? "start" : "middle")
       .verticalAlign(this._orient === "bottom" ? "top" : this._orient === "top" ? "bottom" : "middle")

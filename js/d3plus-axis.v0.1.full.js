@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.1.0
+  d3plus-axis v0.1.1
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -25,6 +25,18 @@ function(d) {
 function accessor(key, def) {
   if (def === void 0) return function (d) { return d[key]; };
   return function (d) { return d[key] === void 0 ? def : d[key]; };
+}
+
+/**
+    @function attrize
+    @desc Applies each key/value in an object as an attr.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} attrs An object of key/value attr pairs.
+*/
+function attrize(e, a) {
+  if ( a === void 0 ) a = {};
+
+  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
 }
 
 /**
@@ -59,251 +71,6 @@ BaseClass.prototype.config = function config (_) {
   }
 };
 
-function ascending(a, b) {
-  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-}
-
-function bisector(compare) {
-  if (compare.length === 1) compare = ascendingComparator(compare);
-  return {
-    left: function(a, x, lo, hi) {
-      if (lo == null) lo = 0;
-      if (hi == null) hi = a.length;
-      while (lo < hi) {
-        var mid = lo + hi >>> 1;
-        if (compare(a[mid], x) < 0) lo = mid + 1;
-        else hi = mid;
-      }
-      return lo;
-    },
-    right: function(a, x, lo, hi) {
-      if (lo == null) lo = 0;
-      if (hi == null) hi = a.length;
-      while (lo < hi) {
-        var mid = lo + hi >>> 1;
-        if (compare(a[mid], x) > 0) hi = mid;
-        else lo = mid + 1;
-      }
-      return lo;
-    }
-  };
-}
-
-function ascendingComparator(f) {
-  return function(d, x) {
-    return ascending(f(d), x);
-  };
-}
-
-var ascendingBisect = bisector(ascending);
-var bisectRight = ascendingBisect.right;
-
-function number(x) {
-  return x === null ? NaN : +x;
-}
-
-function sequence(start, stop, step) {
-  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
-
-  var i = -1,
-      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-      range = new Array(n);
-
-  while (++i < n) {
-    range[i] = start + i * step;
-  }
-
-  return range;
-}
-
-var e10 = Math.sqrt(50);
-var e5 = Math.sqrt(10);
-var e2 = Math.sqrt(2);
-function ticks(start, stop, count) {
-  var step = tickStep(start, stop, count);
-  return sequence(
-    Math.ceil(start / step) * step,
-    Math.floor(stop / step) * step + step / 2, // inclusive
-    step
-  );
-}
-
-function tickStep(start, stop, count) {
-  var step0 = Math.abs(stop - start) / Math.max(0, count),
-      step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
-      error = step0 / step1;
-  if (error >= e10) step1 *= 10;
-  else if (error >= e5) step1 *= 5;
-  else if (error >= e2) step1 *= 2;
-  return stop < start ? -step1 : step1;
-}
-
-function threshold(array, p, f) {
-  if (f == null) f = number;
-  if (!(n = array.length)) return;
-  if ((p = +p) <= 0 || n < 2) return +f(array[0], 0, array);
-  if (p >= 1) return +f(array[n - 1], n - 1, array);
-  var n,
-      h = (n - 1) * p,
-      i = Math.floor(h),
-      a = +f(array[i], i, array),
-      b = +f(array[i + 1], i + 1, array);
-  return a + (b - a) * (h - i);
-}
-
-function d3Max(array, f) {
-  var i = -1,
-      n = array.length,
-      a,
-      b;
-
-  if (f == null) {
-    while (++i < n) if ((b = array[i]) != null && b >= b) { a = b; break; }
-    while (++i < n) if ((b = array[i]) != null && b > a) a = b;
-  }
-
-  else {
-    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; }
-    while (++i < n) if ((b = f(array[i], i, array)) != null && b > a) a = b;
-  }
-
-  return a;
-}
-
-function merge(arrays) {
-  var n = arrays.length,
-      m,
-      i = -1,
-      j = 0,
-      merged,
-      array;
-
-  while (++i < n) j += arrays[i].length;
-  merged = new Array(j);
-
-  while (--n >= 0) {
-    array = arrays[n];
-    m = array.length;
-    while (--m >= 0) {
-      merged[--j] = array[m];
-    }
-  }
-
-  return merged;
-}
-
-function d3Min(array, f) {
-  var i = -1,
-      n = array.length,
-      a,
-      b;
-
-  if (f == null) {
-    while (++i < n) if ((b = array[i]) != null && b >= b) { a = b; break; }
-    while (++i < n) if ((b = array[i]) != null && a > b) a = b;
-  }
-
-  else {
-    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; }
-    while (++i < n) if ((b = f(array[i], i, array)) != null && a > b) a = b;
-  }
-
-  return a;
-}
-
-function d3Sum(array, f) {
-  var s = 0,
-      n = array.length,
-      a,
-      i = -1;
-
-  if (f == null) {
-    while (++i < n) if (a = +array[i]) s += a; // Note: zero and null are equivalent.
-  }
-
-  else {
-    while (++i < n) if (a = +f(array[i], i, array)) s += a;
-  }
-
-  return s;
-}
-
-var prefix = "$";
-
-function Map() {}
-
-Map.prototype = map$1.prototype = {
-  constructor: Map,
-  has: function(key) {
-    return (prefix + key) in this;
-  },
-  get: function(key) {
-    return this[prefix + key];
-  },
-  set: function(key, value) {
-    this[prefix + key] = value;
-    return this;
-  },
-  remove: function(key) {
-    var property = prefix + key;
-    return property in this && delete this[property];
-  },
-  clear: function() {
-    for (var property in this) if (property[0] === prefix) delete this[property];
-  },
-  keys: function() {
-    var keys = [];
-    for (var property in this) if (property[0] === prefix) keys.push(property.slice(1));
-    return keys;
-  },
-  values: function() {
-    var values = [];
-    for (var property in this) if (property[0] === prefix) values.push(this[property]);
-    return values;
-  },
-  entries: function() {
-    var entries = [];
-    for (var property in this) if (property[0] === prefix) entries.push({key: property.slice(1), value: this[property]});
-    return entries;
-  },
-  size: function() {
-    var size = 0;
-    for (var property in this) if (property[0] === prefix) ++size;
-    return size;
-  },
-  empty: function() {
-    for (var property in this) if (property[0] === prefix) return false;
-    return true;
-  },
-  each: function(f) {
-    for (var property in this) if (property[0] === prefix) f(this[property], property.slice(1), this);
-  }
-};
-
-function map$1(object, f) {
-  var map = new Map;
-
-  // Copy constructor.
-  if (object instanceof Map) object.each(function(value, key) { map.set(key, value); });
-
-  // Index array by numeric index or specified key function.
-  else if (Array.isArray(object)) {
-    var i = -1,
-        n = object.length,
-        o;
-
-    if (f == null) while (++i < n) map.set(i, object[i]);
-    else while (++i < n) map.set(f(o = object[i], i, object), o);
-  }
-
-  // Convert object to map.
-  else if (object) for (var key in object) map.set(key, object[key]);
-
-  return map;
-}
-
-var proto = map$1.prototype;
-
 /**
     @function constant
     @desc Wraps non-function variables in a simple return function.
@@ -315,7 +82,7 @@ function() {
   return 42;
 }
 */
-function constant$1(value) {
+function constant(value) {
   return function constant() {
     return value;
   };
@@ -566,7 +333,7 @@ EnterNode.prototype = {
   querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
 };
 
-function constant$2(x) {
+function constant$1(x) {
   return function() {
     return x;
   };
@@ -655,7 +422,7 @@ function selection_data(value, key) {
       parents = this._parents,
       groups = this._groups;
 
-  if (typeof value !== "function") value = constant$2(value);
+  if (typeof value !== "function") value = constant$1(value);
 
   for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
     var parent = parents[j],
@@ -723,7 +490,7 @@ function selection_order() {
 }
 
 function selection_sort(compare) {
-  if (!compare) compare = ascending$1;
+  if (!compare) compare = ascending;
 
   function compareNode(a, b) {
     return a && b ? compare(a.__data__, b.__data__) : !a - !b;
@@ -741,7 +508,7 @@ function selection_sort(compare) {
   return new Selection(sortgroups, this._parents).order();
 }
 
-function ascending$1(a, b) {
+function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
 
@@ -1175,17 +942,6 @@ function d3Select(selector) {
       : new Selection([[selector]], root);
 }
 
-/**
-    @function stringify
-    @desc Coerces value into a String.
-    @param {String} value
-*/
-function stringify(value) {
-  if (value === void 0) value = "undefined";
-  else if (!(typeof value === "string" || value instanceof String)) value = JSON.stringify(value);
-  return value;
-}
-
 var noop = {value: function() {}};
 
 function dispatch() {
@@ -1228,8 +984,8 @@ Dispatch.prototype = dispatch.prototype = {
     // Otherwise, if a null callback was specified, remove callbacks of the given name.
     if (callback != null && typeof callback !== "function") throw new Error("invalid callback: " + callback);
     while (++i < n) {
-      if (t = (typename = T[i]).type) _[t] = set$2(_[t], typename.name, callback);
-      else if (callback == null) for (t in _) _[t] = set$2(_[t], typename.name, null);
+      if (t = (typename = T[i]).type) _[t] = set$1(_[t], typename.name, callback);
+      else if (callback == null) for (t in _) _[t] = set$1(_[t], typename.name, null);
     }
 
     return this;
@@ -1258,7 +1014,7 @@ function get$1(type, name) {
   }
 }
 
-function set$2(type, name, callback) {
+function set$1(type, name, callback) {
   for (var i = 0, n = type.length; i < n; ++i) {
     if (type[i].name === name) {
       type[i] = noop, type = type.slice(0, i).concat(type.slice(i + 1));
@@ -1426,7 +1182,7 @@ function init(node, id) {
   return schedule;
 }
 
-function set$1(node, id) {
+function set(node, id) {
   var schedule = node.__transition;
   if (!schedule || !(schedule = schedule[id]) || schedule.state > STARTING) throw new Error("too late");
   return schedule;
@@ -2058,7 +1814,7 @@ define(Cubehelix, cubehelix, extend(Color, {
   }
 }));
 
-function constant$3(x) {
+function constant$2(x) {
   return function() {
     return x;
   };
@@ -2078,18 +1834,18 @@ function exponential(a, b, y) {
 
 function hue(a, b) {
   var d = b - a;
-  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$3(isNaN(a) ? b : a);
+  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$2(isNaN(a) ? b : a);
 }
 
 function gamma(y) {
   return (y = +y) === 1 ? nogamma : function(a, b) {
-    return b - a ? exponential(a, b, y) : constant$3(isNaN(a) ? b : a);
+    return b - a ? exponential(a, b, y) : constant$2(isNaN(a) ? b : a);
   };
 }
 
 function nogamma(a, b) {
   var d = b - a;
-  return d ? linear(a, d) : constant$3(isNaN(a) ? b : a);
+  return d ? linear(a, d) : constant$2(isNaN(a) ? b : a);
 }
 
 var interpolateRgb = (function rgbGamma(y) {
@@ -2114,7 +1870,7 @@ var interpolateRgb = (function rgbGamma(y) {
   return rgb;
 })(1);
 
-function array$1(a, b) {
+function array(a, b) {
   var nb = b ? b.length : 0,
       na = a ? Math.min(nb, a.length) : 0,
       x = new Array(nb),
@@ -2229,12 +1985,12 @@ function interpolateString(a, b) {
 
 function interpolateValue(a, b) {
   var t = typeof b, c;
-  return b == null || t === "boolean" ? constant$3(b)
+  return b == null || t === "boolean" ? constant$2(b)
       : (t === "number" ? reinterpolate
       : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
       : b instanceof color ? interpolateRgb
       : b instanceof Date ? date
-      : Array.isArray(b) ? array$1
+      : Array.isArray(b) ? array
       : isNaN(b) ? object
       : reinterpolate)(a, b);
 }
@@ -2247,7 +2003,7 @@ function interpolateRound(a, b) {
 
 var degrees = 180 / Math.PI;
 
-var identity$1 = {
+var identity = {
   translateX: 0,
   translateY: 0,
   rotate: 0,
@@ -2277,7 +2033,7 @@ var cssRoot;
 var cssView;
 var svgNode;
 function parseCss(value) {
-  if (value === "none") return identity$1;
+  if (value === "none") return identity;
   if (!cssNode) cssNode = document.createElement("DIV"), cssRoot = document.documentElement, cssView = document.defaultView;
   cssNode.style.transform = value;
   value = cssView.getComputedStyle(cssRoot.appendChild(cssNode), null).getPropertyValue("transform");
@@ -2287,10 +2043,10 @@ function parseCss(value) {
 }
 
 function parseSvg(value) {
-  if (value == null) return identity$1;
+  if (value == null) return identity;
   if (!svgNode) svgNode = document.createElementNS("http://www.w3.org/2000/svg", "g");
   svgNode.setAttribute("transform", value);
-  if (!(value = svgNode.transform.baseVal.consolidate())) return identity$1;
+  if (!(value = svgNode.transform.baseVal.consolidate())) return identity;
   value = value.matrix;
   return decompose(value.a, value.b, value.c, value.d, value.e, value.f);
 }
@@ -2386,7 +2142,7 @@ var interpolateCubehelixLong = cubehelix$1(nogamma);
 function tweenRemove(id, name) {
   var tween0, tween1;
   return function() {
-    var schedule = set$1(this, id),
+    var schedule = set(this, id),
         tween = schedule.tween;
 
     // If this node shared tween with the previous node,
@@ -2411,7 +2167,7 @@ function tweenFunction(id, name, value) {
   var tween0, tween1;
   if (typeof value !== "function") throw new Error;
   return function() {
-    var schedule = set$1(this, id),
+    var schedule = set(this, id),
         tween = schedule.tween;
 
     // If this node shared tween with the previous node,
@@ -2454,7 +2210,7 @@ function tweenValue(transition, name, value) {
   var id = transition._id;
 
   transition.each(function() {
-    var schedule = set$1(this, id);
+    var schedule = set(this, id);
     (schedule.value || (schedule.value = {}))[name] = value.apply(this, arguments);
   });
 
@@ -2596,13 +2352,13 @@ function transition_delay(value) {
 
 function durationFunction(id, value) {
   return function() {
-    set$1(this, id).duration = +value.apply(this, arguments);
+    set(this, id).duration = +value.apply(this, arguments);
   };
 }
 
 function durationConstant(id, value) {
   return value = +value, function() {
-    set$1(this, id).duration = value;
+    set(this, id).duration = value;
   };
 }
 
@@ -2619,7 +2375,7 @@ function transition_duration(value) {
 function easeConstant(id, value) {
   if (typeof value !== "function") throw new Error;
   return function() {
-    set$1(this, id).ease = value;
+    set(this, id).ease = value;
   };
 }
 
@@ -2672,7 +2428,7 @@ function start(name) {
 }
 
 function onFunction(id, name, listener) {
-  var on0, on1, sit = start(name) ? init : set$1;
+  var on0, on1, sit = start(name) ? init : set;
   return function() {
     var schedule = sit(this, id),
         on = schedule.on;
@@ -3081,6 +2837,307 @@ function selection_transition(name) {
 selection.prototype.interrupt = selection_interrupt;
 selection.prototype.transition = selection_transition;
 
+var defaultParams = {
+  condition: true,
+  enter: {},
+  exit: {},
+  parent: d3Select("body"),
+  transition: transition().duration(0),
+  update: {}
+};
+
+/**
+    @function elem
+    @desc Manages the enter/update/exit pattern for a single DOM element.
+    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
+    @param {Object} params Additional parameters.
+    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
+    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
+    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
+    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
+    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
+    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
+*/
+function elem(selector, p) {
+
+  p = Object.assign({}, defaultParams, p);
+
+  var className = (/\.([^#]+)/g).exec(selector),
+        id = (/#([^\.]+)/g).exec(selector),
+        tag = (/^([^.^#]+)/g).exec(selector)[1];
+
+  var elem = p.parent.selectAll(selector).data(p.condition ? [null] : []);
+
+  var enter = elem.enter().append(tag).call(attrize, p.enter);
+
+  if (id) enter.attr("id", id[1]);
+  if (className) enter.attr("class", className[1]);
+
+  elem.exit().transition(p.transition).call(attrize, p.exit).remove();
+
+  var update = enter.merge(elem);
+  update.transition(p.transition).call(attrize, p.update);
+
+  return update;
+
+}
+
+function ascending$1(a, b) {
+  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+}
+
+function bisector(compare) {
+  if (compare.length === 1) compare = ascendingComparator(compare);
+  return {
+    left: function(a, x, lo, hi) {
+      if (lo == null) lo = 0;
+      if (hi == null) hi = a.length;
+      while (lo < hi) {
+        var mid = lo + hi >>> 1;
+        if (compare(a[mid], x) < 0) lo = mid + 1;
+        else hi = mid;
+      }
+      return lo;
+    },
+    right: function(a, x, lo, hi) {
+      if (lo == null) lo = 0;
+      if (hi == null) hi = a.length;
+      while (lo < hi) {
+        var mid = lo + hi >>> 1;
+        if (compare(a[mid], x) > 0) hi = mid;
+        else lo = mid + 1;
+      }
+      return lo;
+    }
+  };
+}
+
+function ascendingComparator(f) {
+  return function(d, x) {
+    return ascending$1(f(d), x);
+  };
+}
+
+var ascendingBisect = bisector(ascending$1);
+var bisectRight = ascendingBisect.right;
+
+function number(x) {
+  return x === null ? NaN : +x;
+}
+
+function sequence(start, stop, step) {
+  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+
+  var i = -1,
+      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
+      range = new Array(n);
+
+  while (++i < n) {
+    range[i] = start + i * step;
+  }
+
+  return range;
+}
+
+var e10 = Math.sqrt(50);
+var e5 = Math.sqrt(10);
+var e2 = Math.sqrt(2);
+function ticks(start, stop, count) {
+  var step = tickStep(start, stop, count);
+  return sequence(
+    Math.ceil(start / step) * step,
+    Math.floor(stop / step) * step + step / 2, // inclusive
+    step
+  );
+}
+
+function tickStep(start, stop, count) {
+  var step0 = Math.abs(stop - start) / Math.max(0, count),
+      step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
+      error = step0 / step1;
+  if (error >= e10) step1 *= 10;
+  else if (error >= e5) step1 *= 5;
+  else if (error >= e2) step1 *= 2;
+  return stop < start ? -step1 : step1;
+}
+
+function threshold(array, p, f) {
+  if (f == null) f = number;
+  if (!(n = array.length)) return;
+  if ((p = +p) <= 0 || n < 2) return +f(array[0], 0, array);
+  if (p >= 1) return +f(array[n - 1], n - 1, array);
+  var n,
+      h = (n - 1) * p,
+      i = Math.floor(h),
+      a = +f(array[i], i, array),
+      b = +f(array[i + 1], i + 1, array);
+  return a + (b - a) * (h - i);
+}
+
+function d3Max(array, f) {
+  var i = -1,
+      n = array.length,
+      a,
+      b;
+
+  if (f == null) {
+    while (++i < n) if ((b = array[i]) != null && b >= b) { a = b; break; }
+    while (++i < n) if ((b = array[i]) != null && b > a) a = b;
+  }
+
+  else {
+    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; }
+    while (++i < n) if ((b = f(array[i], i, array)) != null && b > a) a = b;
+  }
+
+  return a;
+}
+
+function merge$1(arrays) {
+  var n = arrays.length,
+      m,
+      i = -1,
+      j = 0,
+      merged,
+      array;
+
+  while (++i < n) j += arrays[i].length;
+  merged = new Array(j);
+
+  while (--n >= 0) {
+    array = arrays[n];
+    m = array.length;
+    while (--m >= 0) {
+      merged[--j] = array[m];
+    }
+  }
+
+  return merged;
+}
+
+function d3Min(array, f) {
+  var i = -1,
+      n = array.length,
+      a,
+      b;
+
+  if (f == null) {
+    while (++i < n) if ((b = array[i]) != null && b >= b) { a = b; break; }
+    while (++i < n) if ((b = array[i]) != null && a > b) a = b;
+  }
+
+  else {
+    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; }
+    while (++i < n) if ((b = f(array[i], i, array)) != null && a > b) a = b;
+  }
+
+  return a;
+}
+
+function d3Sum(array, f) {
+  var s = 0,
+      n = array.length,
+      a,
+      i = -1;
+
+  if (f == null) {
+    while (++i < n) if (a = +array[i]) s += a; // Note: zero and null are equivalent.
+  }
+
+  else {
+    while (++i < n) if (a = +f(array[i], i, array)) s += a;
+  }
+
+  return s;
+}
+
+var prefix = "$";
+
+function Map() {}
+
+Map.prototype = map$1.prototype = {
+  constructor: Map,
+  has: function(key) {
+    return (prefix + key) in this;
+  },
+  get: function(key) {
+    return this[prefix + key];
+  },
+  set: function(key, value) {
+    this[prefix + key] = value;
+    return this;
+  },
+  remove: function(key) {
+    var property = prefix + key;
+    return property in this && delete this[property];
+  },
+  clear: function() {
+    for (var property in this) if (property[0] === prefix) delete this[property];
+  },
+  keys: function() {
+    var keys = [];
+    for (var property in this) if (property[0] === prefix) keys.push(property.slice(1));
+    return keys;
+  },
+  values: function() {
+    var values = [];
+    for (var property in this) if (property[0] === prefix) values.push(this[property]);
+    return values;
+  },
+  entries: function() {
+    var entries = [];
+    for (var property in this) if (property[0] === prefix) entries.push({key: property.slice(1), value: this[property]});
+    return entries;
+  },
+  size: function() {
+    var size = 0;
+    for (var property in this) if (property[0] === prefix) ++size;
+    return size;
+  },
+  empty: function() {
+    for (var property in this) if (property[0] === prefix) return false;
+    return true;
+  },
+  each: function(f) {
+    for (var property in this) if (property[0] === prefix) f(this[property], property.slice(1), this);
+  }
+};
+
+function map$1(object, f) {
+  var map = new Map;
+
+  // Copy constructor.
+  if (object instanceof Map) object.each(function(value, key) { map.set(key, value); });
+
+  // Index array by numeric index or specified key function.
+  else if (Array.isArray(object)) {
+    var i = -1,
+        n = object.length,
+        o;
+
+    if (f == null) while (++i < n) map.set(i, object[i]);
+    else while (++i < n) map.set(f(o = object[i], i, object), o);
+  }
+
+  // Convert object to map.
+  else if (object) for (var key in object) map.set(key, object[key]);
+
+  return map;
+}
+
+var proto = map$1.prototype;
+
+/**
+    @function stringify
+    @desc Coerces value into a String.
+    @param {String} value
+*/
+function stringify(value) {
+  if (value === void 0) value = "undefined";
+  else if (!(typeof value === "string" || value instanceof String)) value = JSON.stringify(value);
+  return value;
+}
+
 // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
 // and http://www.fileformat.info/info/unicode/category/Mn/list.htm
 // JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
@@ -3139,7 +3196,7 @@ var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSp
 */
 function defaultSplit(sentence) {
   if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords);
-  return merge(stringify(sentence).match(splitWords).map(function (d) {
+  return merge$1(stringify(sentence).match(splitWords).map(function (d) {
     if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) return d.match(splitAllChars);
     return [d];
   }));
@@ -3331,21 +3388,21 @@ var TextBox = (function (BaseClass) {
     this._delay = 0;
     this._duration = 0;
     this._ellipsis = function (_) { return (_ + "..."); };
-    this._fontColor = constant$1("black");
-    this._fontFamily = constant$1("Verdana");
-    this._fontMax = constant$1(50);
-    this._fontMin = constant$1(8);
-    this._fontResize = constant$1(false);
-    this._fontSize = constant$1(10);
+    this._fontColor = constant("black");
+    this._fontFamily = constant("Verdana");
+    this._fontMax = constant(50);
+    this._fontMin = constant(8);
+    this._fontResize = constant(false);
+    this._fontSize = constant(10);
     this._height = accessor("height", 200);
     this._id = function (d, i) { return d.id || ("" + i); };
     this._on = {};
-    this._overflow = constant$1(false);
-    this._rotate = constant$1(0);
+    this._overflow = constant(false);
+    this._rotate = constant(0);
     this._split = defaultSplit;
     this._text = accessor("text");
-    this._textAnchor = constant$1("start");
-    this._verticalAlign = constant$1("top");
+    this._textAnchor = constant("start");
+    this._verticalAlign = constant("top");
     this._width = accessor("width", 200);
     this._x = accessor("x", 0);
     this._y = accessor("y", 0);
@@ -3625,7 +3682,7 @@ function(d) {
 }
   */
   TextBox.prototype.ellipsis = function ellipsis (_) {
-    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$1(_), this) : this._ellipsis;
+    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant(_), this) : this._ellipsis;
   };
 
   /**
@@ -3634,7 +3691,7 @@ function(d) {
       @param {Function|String} [*value* = "black"]
   */
   TextBox.prototype.fontColor = function fontColor (_) {
-    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$1(_), this) : this._fontColor;
+    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant(_), this) : this._fontColor;
   };
 
   /**
@@ -3643,7 +3700,7 @@ function(d) {
       @param {Function|String} [*value* = "Verdana"]
   */
   TextBox.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$1(_), this) : this._fontFamily;
+    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant(_), this) : this._fontFamily;
   };
 
   /**
@@ -3652,7 +3709,7 @@ function(d) {
       @param {Function|Number} [*value* = 50]
   */
   TextBox.prototype.fontMax = function fontMax (_) {
-    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$1(_), this) : this._fontMax;
+    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant(_), this) : this._fontMax;
   };
 
   /**
@@ -3661,7 +3718,7 @@ function(d) {
       @param {Function|Number} [*value* = 8]
   */
   TextBox.prototype.fontMin = function fontMin (_) {
-    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$1(_), this) : this._fontMin;
+    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant(_), this) : this._fontMin;
   };
 
   /**
@@ -3670,7 +3727,7 @@ function(d) {
       @param {Function|Boolean} [*value* = false]
   */
   TextBox.prototype.fontResize = function fontResize (_) {
-    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$1(_), this) : this._fontResize;
+    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant(_), this) : this._fontResize;
   };
 
   /**
@@ -3679,7 +3736,7 @@ function(d) {
       @param {Function|Number} [*value* = 10]
   */
   TextBox.prototype.fontSize = function fontSize (_) {
-    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$1(_), this) : this._fontSize;
+    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant(_), this) : this._fontSize;
   };
 
   /**
@@ -3692,7 +3749,7 @@ function(d) {
 }
   */
   TextBox.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$1(_), this) : this._height;
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant(_), this) : this._height;
   };
 
   /**
@@ -3705,7 +3762,7 @@ function(d, i) {
 }
   */
   TextBox.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$1(_), this) : this._id;
+    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant(_), this) : this._id;
   };
 
   /**
@@ -3714,7 +3771,7 @@ function(d, i) {
       @param {Function|Number} [*value*]
   */
   TextBox.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$1(_), this) : this._lineHeight;
+    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant(_), this) : this._lineHeight;
   };
 
   /**
@@ -3733,7 +3790,7 @@ function(d, i) {
       @param {Function|Boolean} [*value* = false]
   */
   TextBox.prototype.overflow = function overflow (_) {
-    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$1(_), this) : this._overflow;
+    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant(_), this) : this._overflow;
   };
 
   /**
@@ -3742,7 +3799,7 @@ function(d, i) {
       @param {Function|Number} [*value* = 0]
   */
   TextBox.prototype.rotate = function rotate (_) {
-    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$1(_), this) : this._rotate;
+    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant(_), this) : this._rotate;
   };
 
   /**
@@ -3773,7 +3830,7 @@ function(d) {
 }
   */
   TextBox.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$1(_), this) : this._text;
+    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant(_), this) : this._text;
   };
 
   /**
@@ -3782,7 +3839,7 @@ function(d) {
       @param {Function|String} [*value* = "start"] Analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
   */
   TextBox.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$1(_), this) : this._textAnchor;
+    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant(_), this) : this._textAnchor;
   };
 
   /**
@@ -3791,7 +3848,7 @@ function(d) {
       @param {Function|String} [*value* = "top"] Accepts `"top"`, `"middle"`, and `"bottom"`.
   */
   TextBox.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$1(_), this) : this._verticalAlign;
+    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant(_), this) : this._verticalAlign;
   };
 
   /**
@@ -3804,7 +3861,7 @@ function(d) {
 }
   */
   TextBox.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$1(_), this) : this._width;
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant(_), this) : this._width;
   };
 
   /**
@@ -3817,7 +3874,7 @@ function(d) {
 }
   */
   TextBox.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant(_), this) : this._x;
   };
 
   /**
@@ -3830,7 +3887,7 @@ function(d) {
 }
   */
   TextBox.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant(_), this) : this._y;
   };
 
   return TextBox;
@@ -4714,7 +4771,7 @@ function quantile() {
     if (!arguments.length) return domain.slice();
     domain = [];
     for (var i = 0, n = _.length, d; i < n; ++i) if (d = _[i], d != null && !isNaN(d = +d)) domain.push(d);
-    domain.sort(ascending);
+    domain.sort(ascending$1);
     return rescale();
   };
 
@@ -5896,7 +5953,7 @@ var Axis = (function (BaseClass) {
     this._textBoxConfig = {
       fontFamily: new TextBox().fontFamily(),
       fontResize: false,
-      fontSize: constant$1(10)
+      fontSize: constant(10)
     };
     this._tickScale = sqrt().domain([10, 400]).range([10, 50]);
     this._tickSize = 5;
@@ -6074,7 +6131,8 @@ var Axis = (function (BaseClass) {
 
     if (this._select === void 0) this.select(d3Select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node());
 
-    var t = transition().duration(this._duration);
+    var parent = this._select,
+          t = transition().duration(this._duration);
 
     if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._textBoxConfig.fontSize(d, i) * 1.1; };
 
@@ -6190,20 +6248,9 @@ var Axis = (function (BaseClass) {
                          : this._align === "end" ? this[("_" + height)] - this._outerBounds[height]
                          : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
 
-    var group = this._select.selectAll(("g#d3plus-Axis-" + clipId))
-      .data([0]);
-
-    group = group.enter().append("g")
-        .attr("id", ("d3plus-Axis-" + clipId))
-      .merge(group);
-
-    var defs = group.selectAll("defs").data([null]);
-    defs = defs.enter().append("defs").merge(defs);
-
-    var clip = defs.selectAll(("clipPath#" + clipId)).data([null]);
-    clip = clip.enter().append("clipPath")
-        .attr("id", clipId)
-      .merge(clip);
+    var group = elem(("g#d3plus-Axis-" + clipId), {parent: parent});
+    var defs = elem("defs", {parent: group});
+    var clip = elem(("clipPath#" + clipId), {parent: defs});
 
     var axisClip = clip.selectAll("rect").data([null]);
     axisClip.enter().append("rect")
@@ -6242,15 +6289,12 @@ var Axis = (function (BaseClass) {
     var maxTextHeight = d3Max(textData, function (t) { return t.height; }) || 0,
           maxTextWidth = d3Max(textData, function (t) { return t.width + t.fS; }) || 0;
 
-    var titleGroup = group.selectAll("g.d3plus-Axis-title").data([null]);
-    titleGroup = titleGroup.enter().append("g").attr("class", "d3plus-Axis-title").merge(titleGroup);
-
     new TextBox()
       .data(this._title ? [{text: this._title}] : [])
       .duration(this._duration)
       .height(this._outerBounds.height)
       .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
-      .select(titleGroup.node())
+      .select(elem("g.d3plus-Axis-title", {parent: group}).node())
       .text(function (d) { return d.text; })
       .textAnchor("middle")
       .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
@@ -6260,14 +6304,11 @@ var Axis = (function (BaseClass) {
       .config(this._titleConfig)
       .render();
 
-    var tickGroup = group.selectAll("g.d3plus-Axis-ticks").data([null]);
-    tickGroup = tickGroup.enter().append("g").attr("class", "d3plus-Axis-ticks").merge(tickGroup);
-
     new TextBox()
       .data(values.filter(function (d, i) { return textData[i].lines.length; }).map(function (d) { return ({id: d}); }))
       .duration(this._duration)
       .height(maxTextHeight)
-      .select(tickGroup.node())
+      .select(elem("g.d3plus-Axis-ticks", {parent: group}).node())
       .text(function (d) { return tickFormat(d.id); })
       .textAnchor(this._orient === "left" ? "end" : this._orient === "right" ? "start" : "middle")
       .verticalAlign(this._orient === "bottom" ? "top" : this._orient === "top" ? "bottom" : "middle")
