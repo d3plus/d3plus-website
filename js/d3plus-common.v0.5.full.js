@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.6
+  d3plus-common v0.5.7
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -2812,7 +2812,10 @@
 
     elem.exit().transition(p.transition).call(attrize, p.exit).remove();
 
-    return enter.merge(elem).transition(p.transition).call(attrize, p.update);
+    var update = enter.merge(elem);
+    update.transition(p.transition).call(attrize, p.update);
+
+    return update;
 
   }
 
