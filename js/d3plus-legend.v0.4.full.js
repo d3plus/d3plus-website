@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.4.3
+  d3plus-legend v0.4.4
   A collection of chart legends and keys.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -6190,7 +6190,10 @@ var   t1$1 = new Date;
       var clipId = "d3plus-ShapeLegend-clip-" + (this._uuid),
             p = this._padding;
 
-      var size = this._range ? this._range[1] - this._range[0] : this[("_" + width)] - p * 2;
+      var range = this._range ? this._range.slice() : [undefined, undefined];
+      if (range[0] === void 0) range[0] = p;
+      if (range[1] === void 0) range[1] = this[("_" + width)] - p;
+      var size = range[1] - range[0];
 
       this._titleHeight = 0;
       if (this._title) {
@@ -6207,9 +6210,11 @@ var   t1$1 = new Date;
 
       this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
         .domain(this._domain)
-        .rangeRound(this._range || [p, p + size]);
+        .rangeRound(range);
 
       var ticks = this._ticks || this._d3Scale.ticks(Math.floor(size / this._tickScale(size)));
+      var tickFormat = this._d3Scale.tickFormat(ticks.length - 1);
+      if (!this._ticks) ticks = ticks.map(tickFormat).map(Number);
       var values = this._tickLabels || ticks;
 
       var space = 0;
@@ -6242,28 +6247,39 @@ var   t1$1 = new Date;
         res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); })));
         res.height = Math.ceil(res.lines.length * (lh + 1));
         if (res.width % 2) res.width++;
+
         return res;
 
       });
 
-      if (this._range === void 0 && textData.length) {
+      var rangeInit = range.slice();
+      if (textData.length) {
 
         var first = textData[0],
-              last = textData[textData.length - 1],
-              range = this._d3Scale.range();
+              last = textData[textData.length - 1];
 
-        var firstB = this._d3Scale(first.d) - first[width] / 2,
-              lastB = this._d3Scale(last.d) + last[width] / 2;
-
+        var firstB = this._d3Scale(first.d) - first[width] / 2 - p;
         if (firstB < range[0]) {
           var d = range[0] - firstB;
-          size -= d;
-          range[0] += d;
+          if (this._range === void 0 || this._range[0] === void 0) {
+            size -= d;
+            range[0] += d;
+          }
+          else if (this._range) {
+            rangeInit[0] -= d;
+          }
         }
+
+        var lastB = this._d3Scale(last.d) + last[width] / 2 + p;
         if (lastB > range[1]) {
           var d$1 = lastB - range[1];
-          size -= d$1;
-          range[1] -= d$1;
+          if (this._range === void 0 || this._range[1] === void 0) {
+            size -= d$1;
+            range[1] -= d$1;
+          }
+          else if (this._range) {
+            rangeInit[1] += d$1;
+          }
         }
 
         this._d3Scale.rangeRound(range);
@@ -6272,7 +6288,7 @@ var   t1$1 = new Date;
 
       var tPad = textData.length ? p * 2 : 0;
       var obj;
-      this._outerBounds = ( obj = {}, obj[height] = this._titleHeight + this._tickSize + (max(textData, function (t) { return t[height]; }) || 0) + tPad, obj[width] = this[("_" + width)] - p * 2, obj[x] = p, obj );
+      this._outerBounds = ( obj = {}, obj[height] = this._titleHeight + this._tickSize + (max(textData, function (t) { return t[height]; }) || 0) + tPad, obj[width] = rangeInit[1] - rangeInit[0], obj[x] = rangeInit[0], obj );
       this._outerBounds[y] = this._align === "start" ? this._padding
                            : this._align === "end" ? this[("_" + height)] - this._outerBounds[height]
                            : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
@@ -6351,11 +6367,11 @@ var   t1$1 = new Date;
       tickGroup = tickGroup.enter().append("g").attr("class", "d3plus-scaleLegend-ticks").merge(tickGroup);
 
       new TextBox()
-        .data(values.map(function (d) { return ({id: d}); }))
+        .data(values.filter(function (d, i) { return textData[i].lines.length; }).map(function (d) { return ({id: d}); }))
         .duration(this._duration)
         .height(maxTextHeight)
         .select(tickGroup.node())
-        .text(function (d) { return d.id; })
+        .text(function (d) { return tickFormat(d.id); })
         .textAnchor(this._orient === "left" ? "end" : this._orient === "right" ? "start" : "middle")
         .verticalAlign(this._orient === "bottom" ? "top" : this._orient === "top" ? "bottom" : "middle")
         .width(maxTextWidth)
@@ -6415,7 +6431,7 @@ var   t1$1 = new Date;
 
     /**
         @memberof ScaleLegend
-        @desc If *value* is specified, sets the scale range (in pixels) of the legend and returns the current class instance. If *value* is not specified, returns the current scale range.
+        @desc If *value* is specified, sets the scale range (in pixels) of the legend and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value. If *value* is not specified, returns the current scale range.
         @param {Array} [*value*]
     */
     ScaleLegend.prototype.range = function range (_) {
