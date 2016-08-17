@@ -1,14 +1,14 @@
 /*
-  d3plus-common v0.5.5
+  d3plus-common v0.5.6
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-selection')) :
-  typeof define === 'function' && define.amd ? define('d3plus-common', ['exports', 'd3-array', 'd3-collection', 'd3-selection'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.d3Selection));
-}(this, function (exports,d3Array,d3Collection,d3Selection) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3-array'), require('d3-collection')) :
+  typeof define === 'function' && define.amd ? define('d3plus-common', ['exports', 'd3-selection', 'd3-transition', 'd3-array', 'd3-collection'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3Array,global.d3Collection));
+}(this, function (exports,d3Selection,d3Transition,d3Array,d3Collection) { 'use strict';
 
   /**
       @function accessor
@@ -25,6 +25,18 @@
   function accessor(key, def) {
     if (def === void 0) return function (d) { return d[key]; };
     return function (d) { return d[key] === void 0 ? def : d[key]; };
+  }
+
+  /**
+      @function attrize
+      @desc Applies each key/value in an object as an attr.
+      @param {D3selection} elem The D3 element to apply the styles to.
+      @param {Object} attrs An object of key/value attr pairs.
+  */
+  function attrize(e, a) {
+    if ( a === void 0 ) a = {};
+
+    for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
   }
 
   /**
@@ -60,6 +72,65 @@
   };
 
   /**
+      @function constant
+      @desc Wraps non-function variables in a simple return function.
+      @param {Array|Number|Object|String} value The value to be returned from the function.
+      @example <caption>this</caption>
+  constant(42);
+      @example <caption>returns this</caption>
+  function() {
+    return 42;
+  }
+  */
+  function constant(value) {
+    return function constant() {
+      return value;
+    };
+  }
+
+  var defaultParams = {
+    condition: true,
+    enter: {},
+    exit: {},
+    parent: d3Selection.select("body"),
+    transition: d3Transition.transition().duration(0),
+    update: {}
+  };
+
+  /**
+      @function elem
+      @desc Manages the enter/update/exit pattern for a single DOM element.
+      @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
+      @param {Object} params Additional parameters.
+      @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
+      @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
+      @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
+      @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
+      @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
+      @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
+  */
+  function elem(selector, p) {
+
+    p = Object.assign({}, defaultParams, p);
+
+    var className = (/\.([^#]+)/g).exec(selector),
+          id = (/#([^\.]+)/g).exec(selector),
+          tag = (/^([^.^#]+)/g).exec(selector)[1];
+
+    var elem = p.parent.selectAll(selector).data(p.condition ? [null] : []);
+
+    var enter = elem.enter().append(tag).call(attrize, p.enter);
+
+    if (id) enter.attr("id", id[1]);
+    if (className) enter.attr("class", className[1]);
+
+    elem.exit().transition(p.transition).call(attrize, p.exit).remove();
+
+    return enter.merge(elem).transition(p.transition).call(attrize, p.update);
+
+  }
+
+  /**
       @function merge
       @desc Combines an Array of Objects together and returns a new Object.
       @param {Array} objects The Array of objects to be merged together.
@@ -71,7 +142,7 @@
       @example <caption>returns this</caption>
   {id: ["bar", "foo"], group: "A", value: 30}
   */
-  function combine(objects) {
+  function merge$1(objects) {
 
     var availableKeys = new Set(d3Array.merge(objects.map(function (o) { return d3Collection.keys(o); }))),
           newObject = {};
@@ -92,111 +163,6 @@
   }
 
   /**
-      @function colorNest
-      @desc Returns an Array of data objects based on a given color accessor and groupBy levels.
-      @param {Array} raw The raw data Array to be grouped by color.
-      @param {Function} fill The color accessor for each data object.
-      @param {Array} [groupBy = []] An optional array of grouping accessors. Will autodetect if a certain group by level is assigning the colors, and will return the appropriate accessor.
-  */
-  function colorNest(raw, fill, groupBy) {
-    if ( groupBy === void 0 ) groupBy = [];
-
-
-    if (groupBy && !(groupBy instanceof Array)) groupBy = [groupBy];
-
-    var colors = d3Collection.nest().key(fill).entries(raw);
-    var data, id;
-    if (groupBy.length) {
-      var numColors = colors.length;
-      var loop = function ( i ) {
-        var ids = colors.map(function (c) { return Array.from(new Set(c.values.map(function (d) { return groupBy[i](d); }))); }),
-              total = d3Array.sum(ids, function (d) { return d.length; }),
-              uniques = new Set(d3Array.merge(ids)).size;
-        if (total === numColors && uniques === numColors || i === groupBy.length - 1) {
-          id = groupBy[i];
-          data = d3Collection.nest().key(id).entries(raw).map(function (d) { return combine(d.values); });
-          return 'break';
-        }
-      };
-
-      for (var i = 0; i < groupBy.length; i++) {
-        var returned = loop( i );
-
-        if ( returned === 'break' ) break;
-      }
-    }
-    else {
-      id = fill;
-      data = colors.map(function (d) { return combine(d.values); });
-    }
-
-    return {data: data, id: id};
-
-  }
-
-  /**
-      @function constant
-      @desc Wraps non-function variables in a simple return function.
-      @param {Array|Number|Object|String} value The value to be returned from the function.
-      @example <caption>this</caption>
-  constant(42);
-      @example <caption>returns this</caption>
-  function() {
-    return 42;
-  }
-  */
-  function constant(value) {
-    return function constant() {
-      return value;
-    };
-  }
-
-  /**
-    Given an HTMLElement and a "width" or "height" string, this function returns the current calculated size for the DOM element.
-    @private
-  */
-  function elementSize(element, s) {
-
-    if (element.tagName === undefined || ["BODY", "HTML"].indexOf(element.tagName) >= 0) {
-
-      var val  = window[("inner" + (s.charAt(0).toUpperCase() + s.slice(1)))];
-      var elem = d3Selection.select(element);
-
-      if (s === "width") {
-        val -= parseFloat(elem.style("margin-left"), 10);
-        val -= parseFloat(elem.style("margin-right"), 10);
-        val -= parseFloat(elem.style("padding-left"), 10);
-        val -= parseFloat(elem.style("padding-right"), 10);
-      }
-      else {
-        val -= parseFloat(elem.style("margin-top"), 10);
-        val -= parseFloat(elem.style("margin-bottom"), 10);
-        val -= parseFloat(elem.style("padding-top"), 10);
-        val -= parseFloat(elem.style("padding-bottom"), 10);
-      }
-
-      return val;
-
-    }
-    else {
-
-      var val$1 = parseFloat(d3Selection.select(element).style(s), 10);
-      if (typeof val$1 === "number" && val$1 > 0) return val$1;
-      else return elementSize(element.parentNode, s);
-
-    }
-  }
-
-  /**
-      @function getSize
-      @desc Finds the available width and height for a specified HTMLElement, traversing it's parents until it finds something with constrained dimensions. Falls back to the inner dimensions of the browser window if none is found.
-      @param {HTMLElement} elem The HTMLElement to find dimensions for.
-  */
-  function getSize(elem) {
-    return [elementSize(elem, "width"), elementSize(elem, "height")];
-  }
-
-  /**
       @function stylize
       @desc Applies each key/value in an object as a style.
       @param {D3selection} elem The D3 element to apply the styles to.
@@ -209,11 +175,11 @@
   }
 
   exports.accessor = accessor;
+  exports.attrize = attrize;
   exports.BaseClass = BaseClass;
-  exports.colorNest = colorNest;
   exports.constant = constant;
-  exports.getSize = getSize;
-  exports.merge = combine;
+  exports.elem = elem;
+  exports.merge = merge$1;
   exports.stylize = stylize;
 
   Object.defineProperty(exports, '__esModule', { value: true });
