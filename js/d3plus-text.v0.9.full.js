@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.1
+  d3plus-text v0.9.2
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -3172,6 +3172,7 @@
 
       if (this._select === void 0) this.select(d3.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
       if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; };
+      var that = this;
 
       var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
 
@@ -3241,7 +3242,10 @@
               else checkSize();
             }
             else if (line === 2 && !lineData[line - 2].length) lineData = [];
-            else lineData[line - 2] = this._ellipsis(lineData[line - 2]);
+            else {
+              lineData[line - 2] = that._ellipsis(lineData[line - 2]);
+              lineData = lineData.slice(0, line - 1);
+            }
 
           }
 
@@ -3311,8 +3315,6 @@
           .attr("opacity", 0);
 
       }
-
-      var that = this;
 
       function rotate(text) {
         text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + " " + (d.x + d.w / 2) + " " + (d.y + d.lH / 4 + d.lH * d.data.length / 2) + ")"); });
