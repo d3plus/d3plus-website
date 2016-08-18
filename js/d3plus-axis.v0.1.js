@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.1.3
+  d3plus-axis v0.1.4
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -453,8 +453,7 @@ var Axis = (function (BaseClass) {
         .attr("opacity", 1)
         .call(this._barPosition.bind(this));
 
-    var maxTextHeight = d3Array.max(textData, function (t) { return t.height; }) || 0,
-          maxTextWidth = d3Array.max(textData, function (t) { return t.width + t.fS; }) || 0;
+    var maxTextHeight = d3Array.max(textData, function (t) { return t.height; }) || 0;
 
     new d3plusText.TextBox()
       .data(this._title ? [{text: this._title}] : [])
@@ -479,9 +478,9 @@ var Axis = (function (BaseClass) {
       .text(function (d) { return tickFormat(d.id); })
       .textAnchor(this._orient === "left" ? "end" : this._orient === "right" ? "start" : "middle")
       .verticalAlign(this._orient === "bottom" ? "top" : this._orient === "top" ? "bottom" : "middle")
-      .width(maxTextWidth)
+      .width(space)
       .x(function (d, i) {
-        if (["top", "bottom"].includes(this$1._orient)) return this$1._d3Scale(d.id) - maxTextWidth / 2;
+        if (["top", "bottom"].includes(this$1._orient)) return this$1._d3Scale(d.id) - space / 2;
         return this$1._orient === "left" ? this$1._titleHeight + this$1._outerBounds.x - this$1._textBoxConfig.fontSize(values[i], i) / 2 : this$1._outerBounds.x + this$1._tickSize + this$1._gridLength + this$1._padding;
       })
       .y(function (d) {

@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.1.3
+  d3plus-axis v0.1.4
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -3424,6 +3424,7 @@ var TextBox = (function (BaseClass) {
 
     if (this._select === void 0) this.select(d3.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
     if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; };
+    var that = this;
 
     var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
 
@@ -3493,7 +3494,10 @@ var TextBox = (function (BaseClass) {
             else checkSize();
           }
           else if (line === 2 && !lineData[line - 2].length) lineData = [];
-          else lineData[line - 2] = this._ellipsis(lineData[line - 2]);
+          else {
+            lineData[line - 2] = that._ellipsis(lineData[line - 2]);
+            lineData = lineData.slice(0, line - 1);
+          }
 
         }
 
@@ -3563,8 +3567,6 @@ var TextBox = (function (BaseClass) {
         .attr("opacity", 0);
 
     }
-
-    var that = this;
 
     function rotate(text) {
       text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + " " + (d.x + d.w / 2) + " " + (d.y + d.lH / 4 + d.lH * d.data.length / 2) + ")"); });
@@ -6374,8 +6376,7 @@ var Axis = (function (BaseClass) {
         .attr("opacity", 1)
         .call(this._barPosition.bind(this));
 
-    var maxTextHeight = d3Max(textData, function (t) { return t.height; }) || 0,
-          maxTextWidth = d3Max(textData, function (t) { return t.width + t.fS; }) || 0;
+    var maxTextHeight = d3Max(textData, function (t) { return t.height; }) || 0;
 
     new TextBox()
       .data(this._title ? [{text: this._title}] : [])
@@ -6400,9 +6401,9 @@ var Axis = (function (BaseClass) {
       .text(function (d) { return tickFormat(d.id); })
       .textAnchor(this._orient === "left" ? "end" : this._orient === "right" ? "start" : "middle")
       .verticalAlign(this._orient === "bottom" ? "top" : this._orient === "top" ? "bottom" : "middle")
-      .width(maxTextWidth)
+      .width(space)
       .x(function (d, i) {
-        if (["top", "bottom"].includes(this$1._orient)) return this$1._d3Scale(d.id) - maxTextWidth / 2;
+        if (["top", "bottom"].includes(this$1._orient)) return this$1._d3Scale(d.id) - space / 2;
         return this$1._orient === "left" ? this$1._titleHeight + this$1._outerBounds.x - this$1._textBoxConfig.fontSize(values[i], i) / 2 : this$1._outerBounds.x + this$1._tickSize + this$1._gridLength + this$1._padding;
       })
       .y(function (d) {
