@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.5.0
+  d3plus-legend v0.5.1
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -231,9 +231,21 @@ var Legend = (function (BaseClass) {
       };
 
       var loop = function ( k ) {
-        if (k !== "labelBounds" && {}.hasOwnProperty.call(baseConfig, k) && typeof baseConfig[k] === "function") {
-          obj[k] = baseConfig[k](d, i);
-          config[k] = function (d) { return d[k]; };
+        if (k !== "labelBounds" && {}.hasOwnProperty.call(baseConfig, k)) {
+          if (typeof baseConfig[k] === "function") {
+            obj[k] = baseConfig[k](d, i);
+            config[k] = function (d) { return d[k]; };
+          }
+          else if (k === "on") {
+            config[k] = {};
+            var loop$1 = function ( t ) {
+              if ({}.hasOwnProperty.call(baseConfig[k], t)) {
+                config[k][t] = function (d) { return baseConfig[k][t](d.data, d.i); };
+              }
+            };
+
+            for (var t in baseConfig[k]) loop$1( t );
+          }
         }
       };
 
