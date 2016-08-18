@@ -21,6 +21,7 @@ Here is the javascript needed:
 
 ```js
 var bottom = new d3plus.AxisBottom()
+  .select("#my-axis")
   .domain([3.14, 9.34])
   .height(200)
   .width(600)
