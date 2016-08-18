@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.1.1
+  d3plus-axis v0.1.2
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -21,18 +21,29 @@ var Axis = (function (BaseClass) {
     BaseClass.call(this);
 
     this._align = "middle";
+    this._barConfig = {
+      "stroke": "#000",
+      "stroke-width": 1
+    };
     this._domain = [0, 10];
     this._duration = 600;
-    this._height = 100;
+    this._gridConfig = {
+      "stroke": "#ccc",
+      "stroke-width": 1
+    };
+    this._height = 400;
     this.orient("bottom");
     this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
     this._padding = 5;
     this._scale = "linear";
-    this._strokeWidth = 1;
     this._textBoxConfig = {
       fontFamily: new d3plusText.TextBox().fontFamily(),
       fontResize: false,
       fontSize: d3plusCommon.constant(10)
+    };
+    this._tickConfig = {
+      "stroke": "#000",
+      "stroke-width": 1
     };
     this._tickScale = scales.scaleSqrt().domain([10, 400]).range([10, 50]);
     this._tickSize = 5;
@@ -61,8 +72,9 @@ var Axis = (function (BaseClass) {
     var height = ref.height;
     var x = ref.x;
     var y = ref.y;
-    var position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] : this._outerBounds[y];
+    var position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - this._gridLength : this._outerBounds[y] + this._gridLength;
     bar
+      .call(d3plusCommon.attrize, this._barConfig)
       .attr((x + "1"), this._d3Scale(this._d3Scale.domain()[0]))
       .attr((x + "2"), this._d3Scale(this._d3Scale.domain()[1]))
       .attr((y + "1"), position)
@@ -82,14 +94,38 @@ var Axis = (function (BaseClass) {
     var x = ref.x;
     var y = ref.y;
     var d = this._d3Scale.domain(),
-          p = this._strokeWidth,
+          p = d3Array.max([this._gridConfig["stroke-width"], this._tickConfig["stroke-width"]]),
           s = this._d3Scale(d[1]) - this._d3Scale(d[0]);
-    var position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - this._tickSize : this._outerBounds[y];
+    var position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - this._tickSize - this._gridLength : this._outerBounds[y];
     clip
       .attr(x, this._d3Scale(this._d3Scale.domain()[0]) - p)
       .attr(y, position)
       .attr(width, s + p * 2)
-      .attr(height, this._tickSize + p);
+      .attr(height, this._gridLength + this._tickSize + p);
+  };
+
+  /**
+      @memberof Axis
+      @desc Sets positioning for the grid lines.
+      @param {D3Selection} *lines*
+      @private
+  */
+  Axis.prototype._gridPosition = function _gridPosition (lines, last) {
+    if ( last === void 0 ) last = false;
+
+    var ref = this._position;
+    var height = ref.height;
+    var x = ref.x;
+    var y = ref.y;
+    var position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - this._gridLength : this._outerBounds[y] + this._gridLength,
+          scale = last ? this._lastScale || this._d3Scale : this._d3Scale,
+          size = ["top", "left"].includes(this._orient) ? this._gridLength : -this._gridLength;
+    lines
+      .call(d3plusCommon.attrize, this._gridConfig)
+      .attr((x + "1"), function (d) { return scale(d.id); })
+      .attr((x + "2"), function (d) { return scale(d.id); })
+      .attr((y + "1"), position)
+      .attr((y + "2"), last ? position : position + size);
   };
 
   /**
@@ -105,11 +141,11 @@ var Axis = (function (BaseClass) {
     var height = ref.height;
     var x = ref.x;
     var y = ref.y;
-    var position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] : this._outerBounds[y],
+    var position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - this._gridLength : this._outerBounds[y] + this._gridLength,
           scale = last ? this._lastScale || this._d3Scale : this._d3Scale,
           size = ["top", "left"].includes(this._orient) ? -this._tickSize : this._tickSize;
     ticks
-      .attr("stroke-width", this._strokeWidth)
+      .call(d3plusCommon.attrize, this._tickConfig)
       .attr((x + "1"), function (d) { return scale(d.id); })
       .attr((x + "2"), function (d) { return scale(d.id); })
       .attr((y + "1"), position)
@@ -127,7 +163,16 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the scale domain of the legend and returns the current class instance. If *value* is not specified, returns the current scale domain.
+      @desc If *value* is specified, sets the axis line style and returns the current class instance. If *value* is not specified, returns the current axis line style.
+      @param {Object} [*value*]
+  */
+  Axis.prototype.barConfig = function barConfig (_) {
+    return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance. If *value* is not specified, returns the current scale domain.
       @param {Array} [*value* = [0, 10]]
   */
   Axis.prototype.domain = function domain (_) {
@@ -136,7 +181,7 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the transition duration of the legend and returns the current class instance. If *value* is not specified, returns the current duration.
+      @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance. If *value* is not specified, returns the current duration.
       @param {Number} [*value* = 600]
   */
   Axis.prototype.duration = function duration (_) {
@@ -145,7 +190,34 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the overall height of the legend and returns the current class instance. If *value* is not specified, returns the current height value.
+      @desc If *value* is specified, sets the grid values of the axis and returns the current class instance. If *value* is not specified, returns the current grid values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
+      @param {Array} [*value*]
+  */
+  Axis.prototype.grid = function grid (_) {
+    return arguments.length ? (this._grid = _, this) : this._grid;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the grid style of the axis and returns the current class instance. If *value* is not specified, returns the current grid style.
+      @param {Object} [*value*]
+  */
+  Axis.prototype.gridConfig = function gridConfig (_) {
+    return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the grid size of the axis and returns the current class instance. If *value* is not specified, returns the current grid size, which defaults to taking up as much space as available.
+      @param {Number} [*value* = undefined]
+  */
+  Axis.prototype.gridSize = function gridSize (_) {
+    return arguments.length ? (this._gridSize = _, this) : this._gridSize;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the overall height of the axis and returns the current class instance. If *value* is not specified, returns the current height value.
       @param {Number} [*value* = 100]
   */
   Axis.prototype.height = function height (_) {
@@ -173,7 +245,7 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the legend content.
+      @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the axis content.
       @example
 {"width": 180, "height": 24, "x": 10, "y": 20}
   */
@@ -192,7 +264,7 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the scale range (in pixels) of the legend and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value. If *value* is not specified, returns the current scale range.
+      @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value. If *value* is not specified, returns the current scale range.
       @param {Array} [*value*]
   */
   Axis.prototype.range = function range (_) {
@@ -323,6 +395,8 @@ var Axis = (function (BaseClass) {
     var tPad = textData.length ? p * 2 : 0;
     var obj;
     this._outerBounds = ( obj = {}, obj[height] = this._titleHeight + this._tickSize + (d3Array.max(textData, function (t) { return t[height]; }) || 0) + tPad, obj[width] = rangeInit[1] - rangeInit[0], obj[x] = rangeInit[0], obj );
+    this._gridLength = this._gridSize || this[("_" + height)] - this._outerBounds[height] - p * 2;
+    this._outerBounds[height] += this._gridLength;
     this._outerBounds[y] = this._align === "start" ? this._padding
                          : this._align === "end" ? this[("_" + height)] - this._outerBounds[height]
                          : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
@@ -337,18 +411,24 @@ var Axis = (function (BaseClass) {
       .merge(axisClip).transition(t)
         .call(this._clipPosition.bind(this));
 
-    var bar = group.selectAll("line.bar").data([null]);
+    var grid = d3plusCommon.elem("g.grid", {parent: group}).selectAll("line")
+      .data((this._grid || ticks).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
 
-    bar.enter().append("line")
-        .attr("class", "bar")
-        .attr("stroke", "#000")
+    grid.exit().transition(t)
+      .attr("opacity", 0)
+      .call(this._gridPosition.bind(this))
+      .remove();
+
+    grid.enter().append("line")
         .attr("opacity", 0)
-        .call(this._barPosition.bind(this))
-      .merge(bar).transition(t)
+        .attr("clip-path", ("url(#" + clipId + ")"))
+        .call(this._gridPosition.bind(this), true)
+      .merge(grid).transition(t)
         .attr("opacity", 1)
-        .call(this._barPosition.bind(this));
+        .call(this._gridPosition.bind(this));
 
-    var lines = group.selectAll("line.tick").data(ticks.map(function (d) { return ({id: d}); }), function (d) { return d.id; });
+    var lines = d3plusCommon.elem("g.ticks", {parent: group}).selectAll("line")
+      .data(ticks.map(function (d) { return ({id: d}); }), function (d) { return d.id; });
 
     lines.exit().transition(t)
       .attr("opacity", 0)
@@ -356,14 +436,22 @@ var Axis = (function (BaseClass) {
       .remove();
 
     lines.enter().append("line")
-        .attr("class", "tick")
-        .attr("stroke", "#000")
         .attr("opacity", 0)
         .attr("clip-path", ("url(#" + clipId + ")"))
         .call(this._tickPosition.bind(this), true)
       .merge(lines).transition(t)
         .attr("opacity", 1)
         .call(this._tickPosition.bind(this));
+
+    var bar = group.selectAll("line.bar").data([null]);
+
+    bar.enter().append("line")
+        .attr("class", "bar")
+        .attr("opacity", 0)
+        .call(this._barPosition.bind(this))
+      .merge(bar).transition(t)
+        .attr("opacity", 1)
+        .call(this._barPosition.bind(this));
 
     var maxTextHeight = d3Array.max(textData, function (t) { return t.height; }) || 0,
           maxTextWidth = d3Array.max(textData, function (t) { return t.width + t.fS; }) || 0;
@@ -394,11 +482,11 @@ var Axis = (function (BaseClass) {
       .width(maxTextWidth)
       .x(function (d, i) {
         if (["top", "bottom"].includes(this$1._orient)) return this$1._d3Scale(d.id) - maxTextWidth / 2;
-        return this$1._orient === "left" ? this$1._titleHeight + this$1._outerBounds.x - this$1._textBoxConfig.fontSize(values[i], i) / 2 : this$1._outerBounds.x + this$1._tickSize + this$1._padding;
+        return this$1._orient === "left" ? this$1._titleHeight + this$1._outerBounds.x - this$1._textBoxConfig.fontSize(values[i], i) / 2 : this$1._outerBounds.x + this$1._tickSize + this$1._gridLength + this$1._padding;
       })
       .y(function (d) {
         if (["left", "right"].includes(this$1._orient)) return this$1._d3Scale(d.id) - maxTextHeight / 2;
-        return this$1._orient === "bottom" ? this$1._outerBounds.y + this$1._tickSize + p : this$1._titleHeight + this$1._outerBounds.y;
+        return this$1._orient === "bottom" ? this$1._outerBounds.y + this$1._gridLength + this$1._tickSize + p : this$1._titleHeight + this$1._outerBounds.y;
       })
       .config(this._textBoxConfig)
       .render();
@@ -413,7 +501,7 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the scale of the legend and returns the current class instance. If *value* is not specified, returns the current this._d3Scale
+      @desc If *value* is specified, sets the scale of the axis and returns the current class instance. If *value* is not specified, returns the current this._d3Scale
       @param {String} [*value* = "linear"]
   */
   Axis.prototype.scale = function scale (_) {
@@ -440,7 +528,16 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the visible tick labels of the legend and returns the current class instance. If *value* is not specified, returns the current visible tick labels, which defaults to showing all labels.
+      @desc If *value* is specified, sets the tick style of the axis and returns the current class instance. If *value* is not specified, returns the current tick style.
+      @param {Object} [*value*]
+  */
+  Axis.prototype.tickConfig = function tickConfig (_) {
+    return arguments.length ? (this._tickConfig = Object.assign(this._tickConfig, _), this) : this._tickConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance. If *value* is not specified, returns the current visible tick labels, which defaults to showing all labels.
       @param {Array} [*value*]
   */
   Axis.prototype.tickLabels = function tickLabels (_) {
@@ -449,7 +546,7 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the tick values of the legend and returns the current class instance. If *value* is not specified, returns the current tick values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
+      @desc If *value* is specified, sets the tick values of the axis and returns the current class instance. If *value* is not specified, returns the current tick values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
       @param {Array} [*value*]
   */
   Axis.prototype.ticks = function ticks (_) {
@@ -458,7 +555,7 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the tick size of the legend and returns the current class instance. If *value* is not specified, returns the current tick size.
+      @desc If *value* is specified, sets the tick size of the axis and returns the current class instance. If *value* is not specified, returns the current tick size.
       @param {Number} [*value* = 5]
   */
   Axis.prototype.tickSize = function tickSize (_) {
@@ -467,7 +564,7 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the title of the legend and returns the current class instance. If *value* is not specified, returns the current title.
+      @desc If *value* is specified, sets the title of the axis and returns the current class instance. If *value* is not specified, returns the current title.
       @param {String} [*value*]
   */
   Axis.prototype.title = function title (_) {
@@ -476,7 +573,7 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the title configuration of the legend and returns the current class instance. If *value* is not specified, returns the current title configuration.
+      @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance. If *value* is not specified, returns the current title configuration.
       @param {Object} [*value*]
   */
   Axis.prototype.titleConfig = function titleConfig (_) {
@@ -485,7 +582,7 @@ var Axis = (function (BaseClass) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the overall width of the legend and returns the current class instance. If *value* is not specified, returns the current width value.
+      @desc If *value* is specified, sets the overall width of the axis and returns the current class instance. If *value* is not specified, returns the current width value.
       @param {Number} [*value* = 400]
   */
   Axis.prototype.width = function width (_) {
@@ -503,9 +600,7 @@ var Axis = (function (BaseClass) {
 var AxisBottom = (function (Axis) {
   function AxisBottom() {
     Axis.call(this);
-    this._height = 100;
     this.orient("bottom");
-    this._width = 400;
   }
 
   if ( Axis ) AxisBottom.__proto__ = Axis;
@@ -523,9 +618,7 @@ var AxisBottom = (function (Axis) {
 var AxisLeft = (function (Axis) {
   function AxisLeft() {
     Axis.call(this);
-    this._height = 400;
     this.orient("left");
-    this._width = 100;
   }
 
   if ( Axis ) AxisLeft.__proto__ = Axis;
@@ -543,9 +636,7 @@ var AxisLeft = (function (Axis) {
 var AxisRight = (function (Axis) {
   function AxisRight() {
     Axis.call(this);
-    this._height = 400;
     this.orient("right");
-    this._width = 100;
   }
 
   if ( Axis ) AxisRight.__proto__ = Axis;
@@ -563,9 +654,7 @@ var AxisRight = (function (Axis) {
 var AxisTop = (function (Axis) {
   function AxisTop() {
     Axis.call(this);
-    this._height = 100;
     this.orient("top");
-    this._width = 400;
   }
 
   if ( Axis ) AxisTop.__proto__ = Axis;
