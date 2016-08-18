@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.2
+  d3plus-shape v0.8.3
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -268,9 +268,9 @@
       var imageData = [];
       var h = 0, w = 0;
 
-      if (show && (aes.r || aes.w && aes.h)) {
-        h = aes.r ? aes.r * 2 : aes.h;
-        w = aes.r ? aes.r * 2 : aes.w;
+      if (show && (aes.r || aes.width && aes.height)) {
+        h = aes.r ? aes.r * 2 : aes.height;
+        w = aes.r ? aes.r * 2 : aes.width;
         var url = that._backgroundImage(d, i);
         if (url) imageData.push({url: url});
       }
@@ -535,11 +535,11 @@
   /**
       @memberof Shape
       @desc Adds or removes a *listener* to each shape for the specified event *typenames*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-      @param {String} [*typenames*]
+      @param {String|Object} [*typenames*]
       @param {Function} [*listener*]
   */
-  Shape.prototype.on = function on (typenames, listener) {
-    return arguments.length === 2 ? (this._on[typenames] = listener, this) : arguments.length ? this._on[typenames] : this._on;
+  Shape.prototype.on = function on (_, f) {
+    return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
   };
 
   /**
