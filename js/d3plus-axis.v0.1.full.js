@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.1.4
+  d3plus-axis v0.1.5
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -6396,12 +6396,12 @@ var Axis = (function (BaseClass) {
     new TextBox()
       .data(values.filter(function (d, i) { return textData[i].lines.length; }).map(function (d) { return ({id: d}); }))
       .duration(this._duration)
-      .height(maxTextHeight)
+      .height(["top", "bottom"].includes(this._orient) ? maxTextHeight + p : maxTextHeight)
       .select(elem("g.d3plus-Axis-ticks", {parent: group}).node())
       .text(function (d) { return tickFormat(d.id); })
       .textAnchor(this._orient === "left" ? "end" : this._orient === "right" ? "start" : "middle")
       .verticalAlign(this._orient === "bottom" ? "top" : this._orient === "top" ? "bottom" : "middle")
-      .width(space)
+      .width(["top", "bottom"].includes(this._orient) ? space : this._width - this._gridLength - this._tickSize - p * 2 - this._titleHeight)
       .x(function (d, i) {
         if (["top", "bottom"].includes(this$1._orient)) return this$1._d3Scale(d.id) - space / 2;
         return this$1._orient === "left" ? this$1._titleHeight + this$1._outerBounds.x - this$1._textBoxConfig.fontSize(values[i], i) / 2 : this$1._outerBounds.x + this$1._tickSize + this$1._gridLength + this$1._padding;
