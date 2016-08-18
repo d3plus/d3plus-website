@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.1.2
+  d3plus-axis v0.1.3
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -6316,7 +6316,7 @@ var Axis = (function (BaseClass) {
     var tPad = textData.length ? p * 2 : 0;
     var obj;
     this._outerBounds = ( obj = {}, obj[height] = this._titleHeight + this._tickSize + (d3Max(textData, function (t) { return t[height]; }) || 0) + tPad, obj[width] = rangeInit[1] - rangeInit[0], obj[x] = rangeInit[0], obj );
-    this._gridLength = this._gridSize || this[("_" + height)] - this._outerBounds[height] - p * 2;
+    this._gridLength = this._gridSize !== void 0 ? this._gridSize : this[("_" + height)] - this._outerBounds[height] - p * 2;
     this._outerBounds[height] += this._gridLength;
     this._outerBounds[y] = this._align === "start" ? this._padding
                          : this._align === "end" ? this[("_" + height)] - this._outerBounds[height]
