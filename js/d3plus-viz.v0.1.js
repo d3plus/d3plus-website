@@ -1,14 +1,14 @@
 /*
-  d3plus-viz v0.1.0
+  d3plus-viz v0.1.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-color'), require('d3-collection'), require('d3-selection'), require('d3-transition'), require('d3plus-color'), require('d3plus-common'), require('d3plus-legend'), require('d3plus-tooltip'), require('d3plus-text'), require('d3-array')) :
-  typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-color', 'd3-collection', 'd3-selection', 'd3-transition', 'd3plus-color', 'd3plus-common', 'd3plus-legend', 'd3plus-tooltip', 'd3plus-text', 'd3-array'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Color,global.d3Collection,global.d3Selection,global.d3Transition,global.d3plusColor,global.d3plusCommon,global.d3plusLegend,global.d3plusTooltip,global.d3plusText,global.d3Array));
-}(this, (function (exports,d3Color,d3Collection,d3Selection,d3Transition,d3plusColor,d3plusCommon,d3plusLegend,d3plusTooltip,d3plusText,d3Array) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-color'), require('d3-collection'), require('d3-selection'), require('d3-transition'), require('d3plus-color'), require('d3plus-common'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-tooltip'), require('d3-array')) :
+  typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-color', 'd3-collection', 'd3-selection', 'd3-transition', 'd3plus-color', 'd3plus-common', 'd3plus-legend', 'd3plus-text', 'd3plus-tooltip', 'd3-array'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3Color,global.d3Collection,global.d3Selection,global.d3Transition,global.d3plusColor,global.d3plusCommon,global.d3plusLegend,global.d3plusText,global.d3plusTooltip,global.d3Array));
+}(this, (function (exports,d3Color,d3Collection,d3Selection,d3Transition,d3plusColor,d3plusCommon,d3plusLegend,d3plusText,d3plusTooltip,d3Array) { 'use strict';
 
 /**
     @function colorNest
@@ -95,17 +95,11 @@ function elementSize(element, s) {
     @function getSize
     @desc Finds the available width and height for a specified HTMLElement, traversing it's parents until it finds something with constrained dimensions. Falls back to the inner dimensions of the browser window if none is found.
     @param {HTMLElement} elem The HTMLElement to find dimensions for.
+    @private
 */
 function getSize(elem) {
   return [elementSize(elem, "width"), elementSize(elem, "height")];
 }
-
-var d3 = {
-  color: d3Color.color,
-  mouse: d3Selection.mouse,
-  nest: d3Collection.nest,
-  select: d3Selection.select
-};
 
 /**
     @class Viz
@@ -123,6 +117,7 @@ var Viz = (function (BaseClass) {
         if (this$1._history.length) this$1.config(this$1._history.pop()).render();
         else this$1.depth(this$1._drawDepth - 1).filter(false).render();
       });
+    this._data = [];
     this._duration = 600;
     this._history = [];
     this._groupBy = [d3plusCommon.accessor("id")];
@@ -167,7 +162,7 @@ var Viz = (function (BaseClass) {
         if (this$1._tooltip) {
           this$1._tooltipClass.data([d])
             .footer(this$1._drawDepth < this$1._groupBy.length - 1 ? "Click to Expand" : "")
-            .translate(d3.mouse(d3.select("html").node()))
+            .translate(d3Selection.mouse(d3Selection.select("html").node()))
             ();
         }
 
@@ -181,7 +176,7 @@ var Viz = (function (BaseClass) {
         if (this$1._tooltip) {
           this$1._tooltipClass
             .duration(0)
-            .translate(d3.mouse(d3.select("html").node()))
+            .translate(d3Selection.mouse(d3Selection.select("html").node()))
             ().duration(dd);
         }
 
@@ -199,7 +194,7 @@ var Viz = (function (BaseClass) {
     this._shapeConfig = {
       fill: function (d, i) { return d3plusColor.assign(this$1._id(d, i)); },
       opacity: function (d, i) { return this$1._highlight ? this$1._highlight(d, i) ? 1 : 0.25 : 1; },
-      stroke: function (d, i) { return d3.color(d3plusColor.assign(this$1._id(d, i))).darker(); },
+      stroke: function (d, i) { return d3Color.color(d3plusColor.assign(this$1._id(d, i))).darker(); },
       strokeWidth: function (d, i) { return this$1._highlight ? this$1._highlight(d, i) ? 1 : 0 : 0; }
     };
     this._tooltip = {};
@@ -225,11 +220,11 @@ var Viz = (function (BaseClass) {
 
     // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
     if (this._select === void 0) {
-      var ref = getSize(d3.select("body").node());
+      var ref = getSize(d3Selection.select("body").node());
       var w = ref[0];
       var h = ref[1];
       this.width(w).height(h);
-      this.select(d3.select("body").append("svg").style("width", (w + "px")).style("height", (h + "px")).style("display", "block").node());
+      this.select(d3Selection.select("body").append("svg").style("width", (w + "px")).style("height", (h + "px")).style("display", "block").node());
     }
 
     // Calculates the width and/or height of the Viz based on the this._select, if either has not been defined.
@@ -257,9 +252,11 @@ var Viz = (function (BaseClass) {
     };
 
     this._filteredData = [];
-    var nest = d3.nest().rollup(function (leaves) { return this$1._filteredData.push(d3plusCommon.merge(leaves)); });
-    for (var i = 0; i <= this._drawDepth; i++) nest.key(this$1._groupBy[i]);
-    nest.entries(this._filter ? this._data.filter(this._filter) : this._data);
+    if (this._data.length) {
+      var dataNest = d3Collection.nest().rollup(function (leaves) { return this$1._filteredData.push(d3plusCommon.merge(leaves)); });
+      for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
+      dataNest.entries(this._filter ? this._data.filter(this._filter) : this._data);
+    }
 
     // Manages visualization legend group
     var legendGroup = d3plusCommon.elem("g.d3plus-plot-legend", {
@@ -427,8 +424,8 @@ new Plot
       @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element, which is `undefined` by default.
       @param {String|HTMLElement} [*selector*]
   */
-  Viz.prototype.select = function select (_) {
-    return arguments.length ? (this._select = d3.select(_), this) : this._select;
+  Viz.prototype.select = function select$1 (_) {
+    return arguments.length ? (this._select = d3Selection.select(_), this) : this._select;
   };
 
   /**

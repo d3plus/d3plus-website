@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.1.0
+  d3plus-viz v0.1.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -843,7 +843,7 @@ function point(node, event) {
   return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
 }
 
-function d3Mouse(node) {
+function mouse(node) {
   var event = sourceEvent();
   if (event.changedTouches) event = event.changedTouches[0];
   return point(node, event);
@@ -5229,7 +5229,7 @@ function(d) {
   return TextBox;
 }(BaseClass));
 
-var d3$2 = {
+var d3$1 = {
   select: select,
   transition: transition
 };
@@ -5267,7 +5267,7 @@ Image.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-  if (this._select === void 0) this.select(d3$2.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+  if (this._select === void 0) this.select(d3$1.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
 
   var images = this._select.selectAll(".d3plus-shape-image").data(this._data, this._id);
 
@@ -5275,7 +5275,7 @@ Image.prototype.render = function render (callback) {
     .attr("class", "d3plus-shape-image")
     .attr("opacity", 0);
 
-  var t = d3$2.transition().duration(this._duration),
+  var t = d3$1.transition().duration(this._duration),
         that = this,
         update = enter.merge(images);
 
@@ -5288,7 +5288,7 @@ Image.prototype.render = function render (callback) {
       .attr("x", function (d, i) { return this$1._x(d, i); })
       .attr("y", function (d, i) { return this$1._y(d, i); })
       .each(function(d, i) {
-        var image = d3$2.select(this), link = that._url(d, i);
+        var image = d3$1.select(this), link = that._url(d, i);
         var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
         if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
           var img = new Image();
@@ -5368,7 +5368,7 @@ Image.prototype.id = function id (_) {
     @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
 */
 Image.prototype.select = function select (_) {
-  return arguments.length ? (this._select = d3$2.select(_), this) : this._select;
+  return arguments.length ? (this._select = d3$1.select(_), this) : this._select;
 };
 
 /**
@@ -5423,7 +5423,7 @@ Image.prototype.y = function y (_) {
   return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$4(_), this) : this._y;
 };
 
-var d3$1 = {
+var d3 = {
   select: select,
   selectAll: d3SelectAll,
   transition: transition
@@ -5779,10 +5779,10 @@ Shape.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-  if (this._select === void 0) this.select(d3$1.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+  if (this._select === void 0) this.select(d3.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
   if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
 
-  this._transition = d3$1.transition().duration(this._duration);
+  this._transition = d3.transition().duration(this._duration);
 
   if (callback) setTimeout(callback, this._duration + 100);
 
@@ -5804,7 +5804,7 @@ Shape.prototype.scale = function scale (_) {
     @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
 */
 Shape.prototype.select = function select (_) {
-  return arguments.length ? (this._select = d3$1.select(_), this) : this._select;
+  return arguments.length ? (this._select = d3.select(_), this) : this._select;
 };
 
 /**
@@ -8735,7 +8735,7 @@ function prefix$1() {
   return val;
 }
 
-var d3$3 = {
+var d3$2 = {
   select: select, transition: transition
 };
 
@@ -8777,7 +8777,7 @@ function tooltip(data) {
       .style("width", width)
       .style("height", height)
       .style("border", function(d, i) {
-        var b = d3$3.select(this).style("border");
+        var b = d3$2.select(this).style("border");
         return b !== "0px none rgb(0, 0, 0)" ? b : border(d, i);
       })
       .style("top", function(d, i) {
@@ -8794,7 +8794,7 @@ function tooltip(data) {
   */
   function cellContent(d) {
     if (typeof d === "function") {
-      var datum = d3$3.select(this.parentNode.parentNode).datum();
+      var datum = d3$2.select(this.parentNode.parentNode).datum();
       return d(datum, data.indexOf(datum));
     }
     else return d;
@@ -8857,7 +8857,7 @@ function tooltip(data) {
   */
   function tooltip(callback) {
 
-    var tooltips = d3$3.select("body").selectAll(("." + className))
+    var tooltips = d3$2.select("body").selectAll(("." + className))
       .data(data, id);
 
     var enter = tooltips.enter().append("div")
@@ -9303,17 +9303,11 @@ function elementSize(element, s) {
     @function getSize
     @desc Finds the available width and height for a specified HTMLElement, traversing it's parents until it finds something with constrained dimensions. Falls back to the inner dimensions of the browser window if none is found.
     @param {HTMLElement} elem The HTMLElement to find dimensions for.
+    @private
 */
 function getSize(elem) {
   return [elementSize(elem, "width"), elementSize(elem, "height")];
 }
-
-var d3 = {
-  color: color,
-  mouse: d3Mouse,
-  nest: nest,
-  select: select
-};
 
 /**
     @class Viz
@@ -9331,6 +9325,7 @@ var Viz = (function (BaseClass) {
         if (this$1._history.length) this$1.config(this$1._history.pop()).render();
         else this$1.depth(this$1._drawDepth - 1).filter(false).render();
       });
+    this._data = [];
     this._duration = 600;
     this._history = [];
     this._groupBy = [accessor("id")];
@@ -9375,7 +9370,7 @@ var Viz = (function (BaseClass) {
         if (this$1._tooltip) {
           this$1._tooltipClass.data([d])
             .footer(this$1._drawDepth < this$1._groupBy.length - 1 ? "Click to Expand" : "")
-            .translate(d3.mouse(d3.select("html").node()))
+            .translate(mouse(select("html").node()))
             ();
         }
 
@@ -9389,7 +9384,7 @@ var Viz = (function (BaseClass) {
         if (this$1._tooltip) {
           this$1._tooltipClass
             .duration(0)
-            .translate(d3.mouse(d3.select("html").node()))
+            .translate(mouse(select("html").node()))
             ().duration(dd);
         }
 
@@ -9407,7 +9402,7 @@ var Viz = (function (BaseClass) {
     this._shapeConfig = {
       fill: function (d, i) { return assign(this$1._id(d, i)); },
       opacity: function (d, i) { return this$1._highlight ? this$1._highlight(d, i) ? 1 : 0.25 : 1; },
-      stroke: function (d, i) { return d3.color(assign(this$1._id(d, i))).darker(); },
+      stroke: function (d, i) { return color(assign(this$1._id(d, i))).darker(); },
       strokeWidth: function (d, i) { return this$1._highlight ? this$1._highlight(d, i) ? 1 : 0 : 0; }
     };
     this._tooltip = {};
@@ -9433,11 +9428,11 @@ var Viz = (function (BaseClass) {
 
     // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
     if (this._select === void 0) {
-      var ref = getSize(d3.select("body").node());
+      var ref = getSize(select("body").node());
       var w = ref[0];
       var h = ref[1];
       this.width(w).height(h);
-      this.select(d3.select("body").append("svg").style("width", (w + "px")).style("height", (h + "px")).style("display", "block").node());
+      this.select(select("body").append("svg").style("width", (w + "px")).style("height", (h + "px")).style("display", "block").node());
     }
 
     // Calculates the width and/or height of the Viz based on the this._select, if either has not been defined.
@@ -9465,9 +9460,11 @@ var Viz = (function (BaseClass) {
     };
 
     this._filteredData = [];
-    var nest = d3.nest().rollup(function (leaves) { return this$1._filteredData.push(combine(leaves)); });
-    for (var i = 0; i <= this._drawDepth; i++) nest.key(this$1._groupBy[i]);
-    nest.entries(this._filter ? this._data.filter(this._filter) : this._data);
+    if (this._data.length) {
+      var dataNest = nest().rollup(function (leaves) { return this$1._filteredData.push(combine(leaves)); });
+      for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
+      dataNest.entries(this._filter ? this._data.filter(this._filter) : this._data);
+    }
 
     // Manages visualization legend group
     var legendGroup = elem("g.d3plus-plot-legend", {
@@ -9635,8 +9632,8 @@ new Plot
       @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element, which is `undefined` by default.
       @param {String|HTMLElement} [*selector*]
   */
-  Viz.prototype.select = function select (_) {
-    return arguments.length ? (this._select = d3.select(_), this) : this._select;
+  Viz.prototype.select = function select$1 (_) {
+    return arguments.length ? (this._select = select(_), this) : this._select;
   };
 
   /**
