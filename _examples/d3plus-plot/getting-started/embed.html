@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-plot.v0.1.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var data = [
+    {id: "alpha", x: 4, y: 7},
+    {id: "beta", x: 5, y: 2},
+    {id: "gamma", x: 6, y: 13}
+  ];
+
+  new d3plus.Plot()
+    .data(data)
+    .groupBy("id")
+    .render();
+
+</script>
+
+</html>
