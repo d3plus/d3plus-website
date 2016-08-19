@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.2
+  d3plus-text v0.9.3
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -152,7 +152,7 @@
           truncated = false,
           widthProg = 0;
 
-      var lineData = [""],
+      var lineData = [],
             sizes = measure(words, style),
             space = measure(" ", style);
 
@@ -161,7 +161,11 @@
         var nextChar = sentence.charAt(textProg.length + word.length),
               wordWidth = sizes[words.indexOf(word)];
         if (nextChar === " ") word += nextChar;
-        if (widthProg + wordWidth > width - fontSize) {
+        if (widthProg + wordWidth > width) {
+          if (!i && !overflow) {
+            truncated = true;
+            break;
+          }
           lineData[line - 1] = lineData[line - 1].trimRight();
           line++;
           if (lineHeight * line > height || wordWidth > width && !overflow) {
@@ -171,6 +175,7 @@
           widthProg = 0;
           lineData.push(word);
         }
+        else if (!i) lineData[0] = word;
         else lineData[line - 1] += word;
         textProg += word;
         widthProg += wordWidth;
@@ -251,16 +256,9 @@
 
   }
 
-  var d3 = {
-    max: d3Array.max,
-    min: d3Array.min,
-    select: d3Selection.select,
-    sum: d3Array.sum,
-    transition: d3Transition.transition
-  };
-
   /**
       @function TextBox
+      @extends BaseClass
       @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the textBox function.
   */
   var TextBox = (function (BaseClass) {
@@ -270,7 +268,7 @@
 
       this._delay = 0;
       this._duration = 0;
-      this._ellipsis = function (_) { return (_ + "..."); };
+      this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
       this._fontColor = d3plusCommon.constant("black");
       this._fontFamily = d3plusCommon.constant("Verdana");
       this._fontMax = d3plusCommon.constant(50);
@@ -305,7 +303,7 @@
       var this$1 = this;
 
 
-      if (this._select === void 0) this.select(d3.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
+      if (this._select === void 0) this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
       if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; };
       var that = this;
 
@@ -395,13 +393,13 @@
 
             var areaMod = 1.165 + w / h * 0.1,
                   boxArea = w * h,
-                  maxWidth = d3.max(sizes),
-                  textArea = d3.sum(sizes, function (d) { return d * lH; }) * areaMod;
+                  maxWidth = d3Array.max(sizes),
+                  textArea = d3Array.sum(sizes, function (d) { return d * lH; }) * areaMod;
 
             if (maxWidth > w || textArea > boxArea) {
               var areaRatio = Math.sqrt(boxArea / textArea),
                     widthRatio = w / maxWidth;
-              var sizeRatio = d3.min([areaRatio, widthRatio]);
+              var sizeRatio = d3Array.min([areaRatio, widthRatio]);
               fS = Math.floor(fS * sizeRatio);
             }
 
@@ -421,7 +419,8 @@
           yP -= lH * 0.1;
 
           arr.push({
-            data: lineData,
+            data: d,
+            lines: lineData,
             fC: this$1._fontColor(d, i),
             fF: style["font-family"],
             id: this$1._id(d, i),
@@ -435,7 +434,7 @@
 
       }, []), this._id);
 
-      var t = d3.transition().duration(this._duration);
+      var t = d3Transition.transition().duration(this._duration);
 
       if (this._duration === 0) {
 
@@ -452,7 +451,7 @@
       }
 
       function rotate(text) {
-        text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + " " + (d.x + d.w / 2) + " " + (d.y + d.lH / 4 + d.lH * d.data.length / 2) + ")"); });
+        text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + " " + (d.x + d.w / 2) + " " + (d.y + d.lH / 4 + d.lH * d.lines.length / 2) + ")"); });
       }
 
       var update = boxes.enter().append("text")
@@ -460,69 +459,75 @@
           .attr("id", function (d) { return ("d3plus-textBox-" + (d.id)); })
           .attr("y", function (d) { return ((d.y) + "px"); })
           .call(rotate)
-        .merge(boxes)
-          .attr("fill", function (d) { return d.fC; })
-          .attr("text-anchor", function (d) { return d.tA; })
-          .attr("font-family", function (d) { return d.fF; })
-          .style("font-family", function (d) { return d.fF; })
-          .attr("font-size", function (d) { return ((d.fS) + "px"); })
-          .style("font-size", function (d) { return ((d.fS) + "px"); })
-          .each(function(d) {
+        .merge(boxes);
 
-            var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
-                  tB = d3.select(this);
+      update
+        .attr("fill", function (d) { return d.fC; })
+        .attr("text-anchor", function (d) { return d.tA; })
+        .attr("font-family", function (d) { return d.fF; })
+        .style("font-family", function (d) { return d.fF; })
+        .attr("font-size", function (d) { return ((d.fS) + "px"); })
+        .style("font-size", function (d) { return ((d.fS) + "px"); })
+        .each(function(d) {
 
-            if (that._duration === 0) tB.attr("y", function (d) { return ((d.y) + "px"); });
-            else tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); });
+          var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
+                tB = d3Selection.select(this);
 
-            /**
-                Styles to apply to each <tspan> element.
-                @private
-            */
-            function tspanStyle(tspan) {
-              tspan
-                .text(function (t) { return t.trimRight(); })
-                .attr("x", ((d.x) + "px"))
-                .attr("dx", (dx + "px"))
-                .attr("dy", ((d.lH) + "px"));
-            }
+          if (that._duration === 0) tB.attr("y", function (d) { return ((d.y) + "px"); });
+          else tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); });
 
-            var tspans = tB.selectAll("tspan").data(d.data);
+          /**
+              Styles to apply to each <tspan> element.
+              @private
+          */
+          function tspanStyle(tspan) {
+            tspan
+              .text(function (t) { return t.trimRight(); })
+              .attr("x", ((d.x) + "px"))
+              .attr("dx", (dx + "px"))
+              .attr("dy", ((d.lH) + "px"));
+          }
 
-            if (that._duration === 0) {
+          var tspans = tB.selectAll("tspan").data(d.lines);
 
-              tspans.call(tspanStyle);
+          if (that._duration === 0) {
 
-              tspans.exit().remove();
+            tspans.call(tspanStyle);
 
-              tspans.enter().append("tspan")
-                .attr("dominant-baseline", "alphabetic")
-                .style("baseline-shift", "0%")
-                .call(tspanStyle);
+            tspans.exit().remove();
 
-            }
-            else {
+            tspans.enter().append("tspan")
+              .attr("dominant-baseline", "alphabetic")
+              .style("baseline-shift", "0%")
+              .call(tspanStyle);
 
-              tspans.transition(t).call(tspanStyle);
+          }
+          else {
 
-              tspans.exit().transition(t)
-                .attr("opacity", 0).remove();
+            tspans.transition(t).call(tspanStyle);
 
-              tspans.enter().append("tspan")
-                .attr("dominant-baseline", "alphabetic")
-                .style("baseline-shift", "0%")
-                .attr("opacity", 0)
-                .call(tspanStyle)
-                .transition(t).delay(that._delay)
-                  .attr("opacity", 1);
+            tspans.exit().transition(t)
+              .attr("opacity", 0).remove();
 
-            }
+            tspans.enter().append("tspan")
+              .attr("dominant-baseline", "alphabetic")
+              .style("baseline-shift", "0%")
+              .attr("opacity", 0)
+              .call(tspanStyle)
+              .transition(t).delay(that._delay)
+                .attr("opacity", 1);
 
-          })
-          .transition(t).call(rotate);
+          }
 
-      var events = Object.keys(this._on);
-      for (var e = 0; e < events.length; e++) update.on(events[e], this$1._on[events[e]]);
+        })
+        .transition(t).call(rotate);
+
+      var events = Object.keys(this._on),
+            on = events.reduce(function (obj, e) {
+              obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
+              return obj;
+            }, {});
+      for (var e = 0; e < events.length; e++) update.on(events[e], on[events[e]]);
 
       if (callback) setTimeout(callback, this._duration + 100);
 
@@ -692,8 +697,8 @@
         @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns this generator. If *selector* is not specified, returns the current SVG container element, which adds an SVG element to the page by default.
         @param {String|HTMLElement} [*selector*]
     */
-    TextBox.prototype.select = function select (_) {
-      return arguments.length ? (this._select = d3.select(_), this) : this._select;
+    TextBox.prototype.select = function select$1 (_) {
+      return arguments.length ? (this._select = d3Selection.select(_), this) : this._select;
     };
 
     /**
