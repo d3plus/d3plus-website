@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.1.0
+  d3plus-plot v0.1.1
   A reusable plot built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
