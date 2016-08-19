@@ -21,12 +21,10 @@ var data = [
 Only a few lines of code are needed to transform it into an interactive tree map:
 
 ```js
-d3plus.treemap()
+new d3plus.Treemap()
   .data(data)
   .groupBy(["parent", "id"])
-  ();
+  .render();
 ```
 
 Colors are assigned to each unique ID using [d3plus-color](https://github.com/d3plus/d3plus-color#assign), and the rectangles are created using the [d3plus-shape](https://github.com/d3plus/d3plus-shape) module.
-
-*Please note the `()` at the end of the chain of commands. This is what tells [treemap](https://github.com/d3plus/d3plus-text#treemap) to finally render to the page, and allows setting multiple properties of [treemap](https://github.com/d3plus/d3plus-text#treemap) without it trying to render after each one is set.*

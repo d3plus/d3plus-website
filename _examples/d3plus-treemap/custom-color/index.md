@@ -18,12 +18,12 @@ var data = [
 ];
 ```
 
-Given the new `"color"` variable present in each data point, we can tell the [treemap](https://github.com/d3plus/d3plus-text#treemap) generator to use our specific color for each rectangle's [fill](https://github.com/d3plus/d3plus-text#treemap.fill):
+Given the new `"color"` variable present in each data point, we can tell the [treemap](https://github.com/d3plus/d3plus-text#Treemap) instance to use our specific color for each rectangle's fill attribute. All methods that the [Rect](https://github.com/d3plus/d3plus-shape#Rect) class makes available are accessible via the [shapeConfig](https://github.com/d3plus/d3plus-viz#Viz.shapeConfig) method:
 
 ```js
-d3plus.treemap()
+new d3plus.Treemap()
   .data(data)
-  .fill(function(d) { return d.color; })
   .groupBy(["parent", "id"])
-  ();
+  .shapeConfig({fill: function(d) { return d.color; }})
+  .render();
 ```

@@ -4,7 +4,7 @@
 <head>
 
   <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-treemap.v0.4.full.min.js"></script>
+  <script src="https://d3plus.org/js/d3plus-treemap.v0.5.full.min.js"></script>
 
   <style>
 
@@ -28,10 +28,10 @@
     {parent: "Group 2", id: "eta", value: 25}
   ];
 
-  d3plus.treemap()
+  new d3plus.Treemap()
     .data(data)
     .groupBy(["parent", "id"])
-    ();
+    .render();
 
 </script>
 
