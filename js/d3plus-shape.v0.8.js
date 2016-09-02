@@ -1,14 +1,14 @@
 /*
-  d3plus-shape v0.8.4
+  d3plus-shape v0.8.5
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-common'), require('d3-selection'), require('d3-transition'), require('d3plus-color'), require('d3plus-text'), require('d3-collection'), require('d3-shape')) :
-  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3plus-common', 'd3-selection', 'd3-transition', 'd3plus-color', 'd3plus-text', 'd3-collection', 'd3-shape'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3plusCommon,global.d3Selection,global.d3Transition,global.d3plusColor,global.d3plusText,global.d3Collection,global.paths));
-}(this, function (exports,d3plusCommon,d3Selection,d3Transition,d3plusColor,d3plusText,d3Collection,paths) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-common'), require('d3-selection'), require('d3-transition'), require('d3plus-color'), require('d3plus-text'), require('d3-array'), require('d3-collection'), require('d3-shape')) :
+  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3plus-common', 'd3-selection', 'd3-transition', 'd3plus-color', 'd3plus-text', 'd3-array', 'd3-collection', 'd3-shape'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3plusCommon,global.d3Selection,global.d3Transition,global.d3plusColor,global.d3plusText,global.d3Array,global.d3Collection,global.paths));
+}(this, function (exports,d3plusCommon,d3Selection,d3Transition,d3plusColor,d3plusText,d3Array,d3Collection,paths) { 'use strict';
 
   var d3$1 = {
     select: d3Selection.select,
@@ -305,7 +305,7 @@
     g.each(function(datum, i) {
 
       var d = datum;
-      if (Object.keys(datum).length === 2 && datum.key && datum.values) d = datum.values[0];
+      if (datum.nested && datum.key && datum.values) d = datum.values[0];
 
       /* Draws label based on inner bounds */
       var labelData = [];
@@ -826,7 +826,19 @@
 
       Shape.prototype.render.call(this, callback);
 
-      var lines = d3Collection.nest().key(this._id).entries(this._data);
+      var lines = d3Collection.nest().key(this._id).entries(this._data).map(function (d) {
+        var x = d3Array.extent(d.values, function (v) { return v.x; });
+        d.xR = x;
+        d.width = x[1] - x[0];
+        d.x = x[0] + d.width / 2;
+        var y = d3Array.extent(d.values, function (v) { return v.y; });
+        d.yR = y;
+        d.height = y[1] - y[0];
+        d.y = y[0] + d.height / 2;
+        d.nested = true;
+        console.log(d.x, d.y, d.width, d.height);
+        return d;
+      });
 
       this._path
         .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
@@ -835,7 +847,11 @@
 
       var groups = this._select.selectAll(".d3plus-shape-line").data(lines, function (d) { return d.key; });
 
+      groups.transition(this._transition)
+        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
+
       groups.select("path").transition(this._transition)
+        .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
         .attr("d", function (d) { return this$1._path(d.values); })
         .call(this._applyStyle.bind(this));
 
@@ -845,9 +861,12 @@
 
       var enter = groups.enter().append("g")
           .attr("class", "d3plus-shape-line")
-          .attr("id", function (d) { return ("d3plus-shape-line-" + (d.key)); });
+          .attr("id", function (d) { return ("d3plus-shape-line-" + (d.key)); })
+          .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
+          .attr("opacity", 0);
 
       enter.append("path")
+        .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
         .attr("d", function (d) { return this$1._path(d.values); })
         .call(this._applyStyle.bind(this));
 
