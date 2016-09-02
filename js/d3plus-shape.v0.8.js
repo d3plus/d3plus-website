@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.3
+  d3plus-shape v0.8.4
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -302,7 +302,10 @@
 
     var that = this;
 
-    g.each(function(d, i) {
+    g.each(function(datum, i) {
+
+      var d = datum;
+      if (Object.keys(datum).length === 2 && datum.key && datum.values) d = datum.values[0];
 
       /* Draws label based on inner bounds */
       var labelData = [];
@@ -313,7 +316,7 @@
 
         if (that._labelBounds && labels !== false && labels !== void 0) {
 
-          var bounds = that._labelBounds(d, i, that._aes(d, i));
+          var bounds = that._labelBounds(d, i, that._aes(datum, i));
 
           if (bounds) {
 
@@ -511,7 +514,7 @@
   }
   */
   Shape.prototype.labelBounds = function labelBounds (_) {
-    return arguments.length ? (this._labelBounds = _, this) : this._labelBounds;
+    return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._labelBounds;
   };
 
   /**
