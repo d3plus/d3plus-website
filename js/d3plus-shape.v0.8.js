@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.5
+  d3plus-shape v0.8.6
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -836,7 +836,6 @@
         d.height = y[1] - y[0];
         d.y = y[0] + d.height / 2;
         d.nested = true;
-        console.log(d.x, d.y, d.width, d.height);
         return d;
       });
 
