@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.8
+  d3plus-common v0.5.9
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -70,6 +70,16 @@
       return config;
     }
   };
+
+  /**
+      @function closest
+      @desc Finds the closest numeric value in an array.
+      @param {Number} n The number value to use when searching the array.
+      @param {Array} arr The array of values to test against.
+  */
+  function closest(n, arr) {
+    return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
+  }
 
   /**
       @function constant
@@ -2953,6 +2963,7 @@
   exports.accessor = accessor;
   exports.attrize = attrize;
   exports.BaseClass = BaseClass;
+  exports.closest = closest;
   exports.constant = constant;
   exports.elem = elem;
   exports.merge = merge;
