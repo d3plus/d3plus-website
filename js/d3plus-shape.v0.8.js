@@ -1,14 +1,14 @@
 /*
-  d3plus-shape v0.8.11
+  d3plus-shape v0.8.12
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-common'), require('d3-selection'), require('d3-transition'), require('d3plus-color'), require('d3plus-text'), require('d3-array'), require('d3-collection'), require('d3-shape')) :
-  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3plus-common', 'd3-selection', 'd3-transition', 'd3plus-color', 'd3plus-text', 'd3-array', 'd3-collection', 'd3-shape'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3plusCommon,global.d3Selection,global.d3Transition,global.d3plusColor,global.d3plusText,global.d3Array,global.d3Collection,global.paths));
-}(this, (function (exports,d3plusCommon,d3Selection,d3Transition,d3plusColor,d3plusText,d3Array,d3Collection,paths) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-transition'), require('d3plus-common'), require('d3plus-text'), require('d3-selection'), require('d3plus-color'), require('d3-array'), require('d3-collection'), require('d3-shape')) :
+  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3-transition', 'd3plus-common', 'd3plus-text', 'd3-selection', 'd3plus-color', 'd3-array', 'd3-collection', 'd3-shape'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3Transition,global.d3plusCommon,global.d3plusText,global.d3Selection,global.d3plusColor,global.d3Array,global.d3Collection,global.paths));
+}(this, (function (exports,d3Transition,d3plusCommon,d3plusText,d3Selection,d3plusColor,d3Array,d3Collection,paths) { 'use strict';
 
 /**
     @class Image
@@ -731,7 +731,7 @@ var Circle = (function (Shape) {
       .call(this._applyLabels.bind(this), false);
 
     var enter = groups.enter().append("g")
-        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Circle d3plus-id-" + (this$1._id(d, i))); })
+        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Circle d3plus-id-" + (d3plusText.strip(this$1._id(d, i)))); })
         .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
 
     enter.append("circle")
@@ -904,7 +904,7 @@ var Line = (function (Shape) {
     groups.exit().call(this._applyLabels.bind(this), false);
 
     var enter = groups.enter().append("g")
-        .attr("class", function (d) { return ("d3plus-Shape d3plus-Line d3plus-id-" + (d.key)); })
+        .attr("class", function (d) { return ("d3plus-Shape d3plus-Line d3plus-id-" + (d3plusText.strip(d.key))); })
         .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
         .attr("opacity", 0);
 
@@ -1053,7 +1053,7 @@ var Rect = (function (Shape) {
       .call(this._applyLabels.bind(this), false);
 
     var enter = groups.enter().append("g")
-        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Rect d3plus-id-" + (this$1._id(d, i))); })
+        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Rect d3plus-id-" + (d3plusText.strip(this$1._id(d, i)))); })
         .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
 
     enter.append("rect")
