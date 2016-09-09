@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.1.0
+  d3plus-timeline v0.1.1
   An easy-to-use javascript timeline.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -36,7 +36,7 @@ var Timeline = (function (Axis) {
         if (this$1._on.end) this$1._on.end(d.id);
         this$1.selection(d.id).render();
       }},
-      width: function (d) { return this$1._domain.map(function (t) { return this$1._parseDate(t).getTime(); }).includes(d.id.getTime()) ? 2 : 1; }
+      width: function (d) { return this$1._domain.map(function (t) { return this$1._parseDate(t).getTime(); }).includes(d.id) ? 2 : 1; }
     });
     this._tickShape = "circle";
   }

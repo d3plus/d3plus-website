@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.1.0
+  d3plus-timeline v0.1.1
   An easy-to-use javascript timeline.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -978,7 +978,7 @@ Selection.prototype = selection.prototype = {
   dispatch: selection_dispatch
 };
 
-function d3Select(selector) {
+function select(selector) {
   return typeof selector === "string"
       ? new Selection([[document.querySelector(selector)]], [document.documentElement])
       : new Selection([[selector]], root);
@@ -997,7 +997,7 @@ function noevent() {
 
 function nodrag(view) {
   var root = view.document.documentElement,
-      selection = d3Select(view).on("dragstart.drag", noevent, true);
+      selection = select(view).on("dragstart.drag", noevent, true);
   if ("onselectstart" in root) {
     selection.on("selectstart.drag", noevent, true);
   } else {
@@ -1008,7 +1008,7 @@ function nodrag(view) {
 
 function yesdrag(view, noclick) {
   var root = view.document.documentElement,
-      selection = d3Select(view).on("dragstart.drag", null);
+      selection = select(view).on("dragstart.drag", null);
   if (noclick) {
     selection.on("click.drag", noevent, true);
     setTimeout(function() { selection.on("click.drag", null); }, 0);
@@ -2998,7 +2998,7 @@ function brush$1(dim) {
       .merge(overlay)
         .each(function() {
           var extent = local(this).extent;
-          d3Select(this)
+          select(this)
               .attr("x", extent[0][0])
               .attr("y", extent[0][1])
               .attr("width", extent[1][0] - extent[0][0])
@@ -3071,7 +3071,7 @@ function brush$1(dim) {
   };
 
   function redraw() {
-    var group = d3Select(this),
+    var group = select(this),
         selection = local(this).selection;
 
     if (selection) {
@@ -3177,7 +3177,7 @@ function brush$1(dim) {
     e1 = e0;
     s1 = s0;
 
-    var group = d3Select(that)
+    var group = select(that)
         .attr("pointer-events", "none");
 
     var overlay = group.selectAll(".overlay")
@@ -3188,7 +3188,7 @@ function brush$1(dim) {
           .on("touchmove.brush", moved, true)
           .on("touchend.brush touchcancel.brush", ended, true);
     } else {
-      var view = d3Select(event.view)
+      var view = select(event.view)
           .on("keydown.brush", keydowned, true)
           .on("keyup.brush", keyupped, true)
           .on("mousemove.brush", moved, true)
@@ -5847,7 +5847,7 @@ var defaultParams = {
   condition: true,
   enter: {},
   exit: {},
-  parent: d3Select("body"),
+  parent: select("body"),
   transition: transition().duration(0),
   update: {}
 };
@@ -6233,7 +6233,7 @@ var TextBox = (function (BaseClass) {
     var this$1 = this;
 
 
-    if (this._select === void 0) this.select(d3Select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
+    if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
     if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; };
     var that = this;
 
@@ -6401,7 +6401,7 @@ var TextBox = (function (BaseClass) {
       .each(function(d) {
 
         var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
-              tB = d3Select(this);
+              tB = select(this);
 
         if (that._duration === 0) tB.attr("y", function (d) { return ((d.y) + "px"); });
         else tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); });
@@ -6628,7 +6628,7 @@ function(d, i) {
       @param {String|HTMLElement} [*selector*]
   */
   TextBox.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = d3Select(_), this) : this._select;
+    return arguments.length ? (this._select = select(_), this) : this._select;
   };
 
   /**
@@ -6714,7 +6714,7 @@ function(d) {
 }(BaseClass));
 
 var d3$1 = {
-  select: d3Select,
+  select: select,
   transition: transition
 };
 /**
@@ -6908,7 +6908,7 @@ Image.prototype.y = function y (_) {
 };
 
 var d3 = {
-  select: d3Select,
+  select: select,
   selectAll: d3SelectAll,
   transition: transition
 };
@@ -7186,6 +7186,24 @@ Shape.prototype.fontSize = function fontSize (_) {
 
 /**
     @memberof Shape
+    @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
+    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
+    @example
+function(d, i, shape) {
+return {
+  "width": shape.width,
+  "height": shape.height,
+  "x": -shape.width / 2,
+  "y": -shape.height / 2
+};
+}
+*/
+Shape.prototype.hitArea = function hitArea (_) {
+  return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : constant$6(_), this) : this._hitArea;
+};
+
+/**
+    @memberof Shape
     @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
     @param {Function} [*value*]
 */
@@ -7408,11 +7426,29 @@ var Circle = (function (Shape) {
     update
         .call(this._applyImage.bind(this))
         .call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
       .transition(this._transition)
-        .attr("opacity", this._opacity);
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
 
     var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) update.on(events[e], this$1._on[events[e]]);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
 
     return this;
 
@@ -9527,11 +9563,29 @@ var Line = (function (Shape) {
     var update = enter.merge(groups);
 
     update.call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
       .transition(this._transition)
-        .attr("opacity", this._opacity);
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "none");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
 
     var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) update.on(events[e], this$1._on[events[e]]);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
 
     return this;
 
@@ -9681,11 +9735,29 @@ var Rect = (function (Shape) {
     update
         .call(this._applyImage.bind(this))
         .call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
       .transition(this._transition)
-        .attr("opacity", this._opacity);
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
 
     var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) update.on(events[e], this$1._on[events[e]]);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
 
     return this;
 
@@ -10078,7 +10150,7 @@ var Axis = (function (BaseClass) {
 
 
     if (this._select === void 0) {
-      this.select(d3Select("body").append("svg")
+      this.select(select("body").append("svg")
         .attr("width", ((this._width) + "px"))
         .attr("height", ((this._height) + "px"))
         .node());
@@ -10131,10 +10203,12 @@ var Axis = (function (BaseClass) {
 
     var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 25 : 50]);
     var labelScale = sqrt().domain([10, 400]).range([10, 50]);
-    var ticks = this._ticks
+    var ticks = (this._ticks
                 ? this._scale === "time" ? this._ticks.map(this._parseDate) : this._ticks
-                : this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)));
-    var labels = this._labels || this._d3Scale.ticks(Math.floor(this._size / labelScale(this._size)));
+                : this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))).map(Number);
+    var labels = this._ticks && !this._labels ? ticks : (this._labels
+                ? this._scale === "time" ? this._labels.map(this._parseDate) : this._labels
+                : this._d3Scale.ticks(Math.floor(this._size / labelScale(this._size)))).map(Number);
     var tickFormat = this._d3Scale.tickFormat(labels.length - 1);
     this._visibleTicks = ticks;
 
@@ -10209,20 +10283,21 @@ var Axis = (function (BaseClass) {
 
     }
 
+    var tBuff = this._shape === "Line" ? 0 : hBuff;
     var obj;
-    this._outerBounds = ( obj = {}, obj[height] = this._margin[this._orient] + hBuff + (max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[1] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
-    this._margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, hBuff]) : this[("_" + height)] - this._outerBounds[height] - p * 2 + hBuff;
-    this._outerBounds[height] += this._margin[opposite];
-    if (this._margin[opposite] < hBuff) this._outerBounds[height] += hBuff;
+    this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[1] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    this._margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - this._outerBounds[height] - p * 2 - hBuff;
+    this._margin[this._orient] += hBuff;
+    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
     this._outerBounds[y] = this._align === "start" ? this._padding
-                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height]
+                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
                          : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
 
     var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
     this._group = group;
 
     var grid = elem("g.grid", {parent: group}).selectAll("line")
-      .data((this._grid || ticks).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
+      .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
 
     grid.exit().transition(t)
       .attr("opacity", 0)
@@ -10238,8 +10313,7 @@ var Axis = (function (BaseClass) {
         .call(this._gridPosition.bind(this));
 
     var labelHeight = max(textData, function (t) { return t.height; }) || 0,
-          labelWidth = horizontal ? this._space : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
-
+          labelWidth = horizontal ? this._space * 1.1 : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
     var tickData = ticks
       .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); }))
       .map(function (d) {
@@ -10324,7 +10398,7 @@ var Axis = (function (BaseClass) {
       @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
   */
   Axis.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = d3Select(_), this) : this._select;
+    return arguments.length ? (this._select = select(_), this) : this._select;
   };
 
   /**
@@ -10491,7 +10565,7 @@ var Timeline = (function (Axis) {
         if (this$1._on.end) this$1._on.end(d.id);
         this$1.selection(d.id).render();
       }},
-      width: function (d) { return this$1._domain.map(function (t) { return this$1._parseDate(t).getTime(); }).includes(d.id.getTime()) ? 2 : 1; }
+      width: function (d) { return this$1._domain.map(function (t) { return this$1._parseDate(t).getTime(); }).includes(d.id) ? 2 : 1; }
     });
     this._tickShape = "circle";
   }
