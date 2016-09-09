@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.2.0
+  d3plus-axis v0.2.1
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -4064,7 +4064,7 @@ Selection.prototype = selection.prototype = {
   dispatch: selection_dispatch
 };
 
-function d3Select(selector) {
+function select(selector) {
   return typeof selector === "string"
       ? new Selection([[document.querySelector(selector)]], [document.documentElement])
       : new Selection([[selector]], root);
@@ -5228,7 +5228,7 @@ var defaultParams = {
   condition: true,
   enter: {},
   exit: {},
-  parent: d3Select("body"),
+  parent: select("body"),
   transition: transition().duration(0),
   update: {}
 };
@@ -5565,7 +5565,7 @@ function wrap() {
 var d3$1 = {
   max: d3Max,
   min: d3Min,
-  select: d3Select,
+  select: select,
   sum: d3Sum,
   transition: transition
 };
@@ -6090,7 +6090,7 @@ function(d) {
 }(BaseClass));
 
 var d3$2 = {
-  select: d3Select,
+  select: select,
   transition: transition
 };
 /**
@@ -6284,7 +6284,7 @@ Image.prototype.y = function y (_) {
 };
 
 var d3 = {
-  select: d3Select,
+  select: select,
   selectAll: d3SelectAll,
   transition: transition
 };
@@ -6562,6 +6562,24 @@ Shape.prototype.fontSize = function fontSize (_) {
 
 /**
     @memberof Shape
+    @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
+    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
+    @example
+function(d, i, shape) {
+return {
+  "width": shape.width,
+  "height": shape.height,
+  "x": -shape.width / 2,
+  "y": -shape.height / 2
+};
+}
+*/
+Shape.prototype.hitArea = function hitArea (_) {
+  return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : constant$4(_), this) : this._hitArea;
+};
+
+/**
+    @memberof Shape
     @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
     @param {Function} [*value*]
 */
@@ -6784,11 +6802,29 @@ var Circle = (function (Shape) {
     update
         .call(this._applyImage.bind(this))
         .call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
       .transition(this._transition)
-        .attr("opacity", this._opacity);
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
 
     var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) update.on(events[e], this$1._on[events[e]]);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
 
     return this;
 
@@ -8903,11 +8939,29 @@ var Line = (function (Shape) {
     var update = enter.merge(groups);
 
     update.call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
       .transition(this._transition)
-        .attr("opacity", this._opacity);
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "none");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
 
     var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) update.on(events[e], this$1._on[events[e]]);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
 
     return this;
 
@@ -9057,11 +9111,29 @@ var Rect = (function (Shape) {
     update
         .call(this._applyImage.bind(this))
         .call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
       .transition(this._transition)
-        .attr("opacity", this._opacity);
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
 
     var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) update.on(events[e], this$1._on[events[e]]);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
 
     return this;
 
@@ -9454,7 +9526,7 @@ var Axis = (function (BaseClass) {
 
 
     if (this._select === void 0) {
-      this.select(d3Select("body").append("svg")
+      this.select(select("body").append("svg")
         .attr("width", ((this._width) + "px"))
         .attr("height", ((this._height) + "px"))
         .node());
@@ -9507,10 +9579,12 @@ var Axis = (function (BaseClass) {
 
     var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 25 : 50]);
     var labelScale = sqrt().domain([10, 400]).range([10, 50]);
-    var ticks = this._ticks
+    var ticks = (this._ticks
                 ? this._scale === "time" ? this._ticks.map(this._parseDate) : this._ticks
-                : this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)));
-    var labels = this._labels || this._d3Scale.ticks(Math.floor(this._size / labelScale(this._size)));
+                : this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))).map(Number);
+    var labels = this._ticks && !this._labels ? ticks : (this._labels
+                ? this._scale === "time" ? this._labels.map(this._parseDate) : this._labels
+                : this._d3Scale.ticks(Math.floor(this._size / labelScale(this._size)))).map(Number);
     var tickFormat = this._d3Scale.tickFormat(labels.length - 1);
     this._visibleTicks = ticks;
 
@@ -9585,20 +9659,21 @@ var Axis = (function (BaseClass) {
 
     }
 
+    var tBuff = this._shape === "Line" ? 0 : hBuff;
     var obj;
-    this._outerBounds = ( obj = {}, obj[height] = this._margin[this._orient] + hBuff + (d3Max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[1] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
-    this._margin[opposite] = this._gridSize !== void 0 ? d3Max([this._gridSize, hBuff]) : this[("_" + height)] - this._outerBounds[height] - p * 2 + hBuff;
-    this._outerBounds[height] += this._margin[opposite];
-    if (this._margin[opposite] < hBuff) this._outerBounds[height] += hBuff;
+    this._outerBounds = ( obj = {}, obj[height] = (d3Max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[1] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    this._margin[opposite] = this._gridSize !== void 0 ? d3Max([this._gridSize, tBuff]) : this[("_" + height)] - this._outerBounds[height] - p * 2 - hBuff;
+    this._margin[this._orient] += hBuff;
+    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
     this._outerBounds[y] = this._align === "start" ? this._padding
-                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height]
+                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
                          : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
 
     var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
     this._group = group;
 
     var grid = elem("g.grid", {parent: group}).selectAll("line")
-      .data((this._grid || ticks).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
+      .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
 
     grid.exit().transition(t)
       .attr("opacity", 0)
@@ -9614,8 +9689,7 @@ var Axis = (function (BaseClass) {
         .call(this._gridPosition.bind(this));
 
     var labelHeight = d3Max(textData, function (t) { return t.height; }) || 0,
-          labelWidth = horizontal ? this._space : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
-
+          labelWidth = horizontal ? this._space * 1.1 : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
     var tickData = ticks
       .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); }))
       .map(function (d) {
@@ -9700,7 +9774,7 @@ var Axis = (function (BaseClass) {
       @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
   */
   Axis.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = d3Select(_), this) : this._select;
+    return arguments.length ? (this._select = select(_), this) : this._select;
   };
 
   /**

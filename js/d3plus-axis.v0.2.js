@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.2.0
+  d3plus-axis v0.2.1
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -331,10 +331,12 @@ var Axis = (function (BaseClass) {
 
     var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 25 : 50]);
     var labelScale = scales.scaleSqrt().domain([10, 400]).range([10, 50]);
-    var ticks = this._ticks
+    var ticks = (this._ticks
                 ? this._scale === "time" ? this._ticks.map(this._parseDate) : this._ticks
-                : this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)));
-    var labels = this._labels || this._d3Scale.ticks(Math.floor(this._size / labelScale(this._size)));
+                : this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))).map(Number);
+    var labels = this._ticks && !this._labels ? ticks : (this._labels
+                ? this._scale === "time" ? this._labels.map(this._parseDate) : this._labels
+                : this._d3Scale.ticks(Math.floor(this._size / labelScale(this._size)))).map(Number);
     var tickFormat = this._d3Scale.tickFormat(labels.length - 1);
     this._visibleTicks = ticks;
 
@@ -409,20 +411,21 @@ var Axis = (function (BaseClass) {
 
     }
 
+    var tBuff = this._shape === "Line" ? 0 : hBuff;
     var obj;
-    this._outerBounds = ( obj = {}, obj[height] = this._margin[this._orient] + hBuff + (d3Array.max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[1] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
-    this._margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, hBuff]) : this[("_" + height)] - this._outerBounds[height] - p * 2 + hBuff;
-    this._outerBounds[height] += this._margin[opposite];
-    if (this._margin[opposite] < hBuff) this._outerBounds[height] += hBuff;
+    this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[1] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    this._margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, tBuff]) : this[("_" + height)] - this._outerBounds[height] - p * 2 - hBuff;
+    this._margin[this._orient] += hBuff;
+    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
     this._outerBounds[y] = this._align === "start" ? this._padding
-                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height]
+                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
                          : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
 
     var group = d3plusCommon.elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
     this._group = group;
 
     var grid = d3plusCommon.elem("g.grid", {parent: group}).selectAll("line")
-      .data((this._grid || ticks).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
+      .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
 
     grid.exit().transition(t)
       .attr("opacity", 0)
@@ -438,8 +441,7 @@ var Axis = (function (BaseClass) {
         .call(this._gridPosition.bind(this));
 
     var labelHeight = d3Array.max(textData, function (t) { return t.height; }) || 0,
-          labelWidth = horizontal ? this._space : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
-
+          labelWidth = horizontal ? this._space * 1.1 : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
     var tickData = ticks
       .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); }))
       .map(function (d) {
