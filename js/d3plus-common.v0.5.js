@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.7
+  d3plus-common v0.5.8
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -137,6 +137,7 @@
       @function merge
       @desc Combines an Array of Objects together and returns a new Object.
       @param {Array} objects The Array of objects to be merged together.
+      @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
       @example <caption>this</caption>
   merge([
     {id: "foo", group: "A", value: 10},
@@ -145,7 +146,9 @@
       @example <caption>returns this</caption>
   {id: ["bar", "foo"], group: "A", value: 30}
   */
-  function merge$1(objects) {
+  function merge$1(objects, aggs) {
+    if ( aggs === void 0 ) aggs = {};
+
 
     var availableKeys = new Set(d3Array.merge(objects.map(function (o) { return d3Collection.keys(o); }))),
           newObject = {};
@@ -153,8 +156,9 @@
     availableKeys.forEach(function (k) {
       var values = objects.map(function (o) { return o[k]; });
       var value;
-      if (values.map(function (v) { return typeof v; }).indexOf("string") >= 0) {
-        value = Array.from(new Set(values).values());
+      if (aggs[k]) value = aggs[k](values);
+      else if (values.map(function (v) { return typeof v; }).indexOf("string") >= 0) {
+        value = Array.from(new Set(values));
         if (value.length === 1) value = value[0];
       }
       else value = d3Array.sum(values);
@@ -188,3 +192,4 @@
   Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
+//# sourceMappingURL=d3plus-common.js.map
