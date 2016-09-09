@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.3
+  d3plus-legend v0.6.4
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -8409,7 +8409,7 @@ var Legend = (function (BaseClass) {
     if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
 
     // Shape <g> Group
-    var shapeGroup = elem("g.d3plus-Legend", {parent: this._select});
+    this._group = elem("g.d3plus-Legend", {parent: this._select});
 
     var availableHeight = this._height;
     this._titleHeight = 0;
@@ -8567,7 +8567,7 @@ var Legend = (function (BaseClass) {
     new TextBox()
       .data(this._title ? [{text: this._title}] : [])
       .duration(this._duration)
-      .select(shapeGroup.node())
+      .select(this._group.node())
       .textAnchor({left: "start", center: "middle", right: "end"}[this._align])
       .width(this._width - this._padding * 2)
       .x(this._padding)
@@ -8575,64 +8575,8 @@ var Legend = (function (BaseClass) {
       .config(this._titleConfig)
       .render();
 
-    var baseConfig = this._shapeConfig,
-          config = {
-            id: function (d) { return d.id; },
-            label: function (d) { return d.label; },
-            lineHeight: function (d) { return d.lH; }
-          };
-
-    var shapeData = this._data.map(function (d, i) {
-
-      var obj = {
-        data: d, i: i,
-        id: this$1._id(d, i),
-        label: this$1._lineData[i].width ? this$1._label(d, i) : false,
-        lH: this$1._lineHeight(d, i),
-        shape: this$1._shape(d, i)
-      };
-
-      var loop = function ( k ) {
-        if (k !== "labelBounds" && {}.hasOwnProperty.call(baseConfig, k)) {
-          if (typeof baseConfig[k] === "function") {
-            obj[k] = baseConfig[k](d, i);
-            config[k] = function (d) { return d[k]; };
-          }
-          else if (k === "on") {
-            config[k] = {};
-            var loop$1 = function ( t ) {
-              if ({}.hasOwnProperty.call(baseConfig[k], t)) {
-                config[k][t] = function(d) {
-                  baseConfig[k][t].bind(this)(d.data, d.i);
-                };
-              }
-            };
-
-            for (var t in baseConfig[k]) loop$1( t );
-          }
-        }
-      };
-
-      for (var k in baseConfig) loop( k );
-
-      return obj;
-
-    });
-
-    // Legend Shapes
-    nest().key(function (d) { return d.shape; }).entries(shapeData).forEach(function (d) {
-
-      new d3plus[d.key]()
-        .data(d.values)
-        .duration(this$1._duration)
-        .labelPadding(0)
-        .select(shapeGroup.node())
-        .verticalAlign("top")
-        .config(baseConfig)
-        .config(config)
-        .render();
-
-    });
+    this._shapes = {};
+    this.update();
 
     if (callback) setTimeout(callback, this._duration + 100);
 
@@ -8760,6 +8704,78 @@ function value(d) {
   */
   Legend.prototype.titleConfig = function titleConfig (_) {
     return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
+  };
+
+  /**
+      @memberof Legend
+      @desc Pass-through function to update specific shapes.
+      @param {Selector} *selector*
+  */
+  Legend.prototype.update = function update (_) {
+    var this$1 = this;
+
+
+    var baseConfig = this._shapeConfig,
+          config = {
+            id: function (d) { return d.id; },
+            label: function (d) { return d.label; },
+            lineHeight: function (d) { return d.lH; }
+          };
+
+    var data = this._data.map(function (d, i) {
+
+      var obj = {
+        data: d, i: i,
+        id: this$1._id(d, i),
+        label: this$1._lineData[i].width ? this$1._label(d, i) : false,
+        lH: this$1._lineHeight(d, i),
+        shape: this$1._shape(d, i)
+      };
+
+      var loop = function ( k ) {
+        if (k !== "labelBounds" && {}.hasOwnProperty.call(baseConfig, k)) {
+          if (typeof baseConfig[k] === "function") {
+            obj[k] = baseConfig[k](d, i);
+            config[k] = function (d) { return d[k]; };
+          }
+          else if (k === "on") {
+            config[k] = {};
+            var loop$1 = function ( t ) {
+              if ({}.hasOwnProperty.call(baseConfig[k], t)) {
+                config[k][t] = function(d) {
+                  baseConfig[k][t].bind(this)(d.data, d.i);
+                };
+              }
+            };
+
+            for (var t in baseConfig[k]) loop$1( t );
+          }
+        }
+      };
+
+      for (var k in baseConfig) loop( k );
+
+      return obj;
+
+    });
+
+    // Legend Shapes
+    nest().key(function (d) { return d.shape; }).entries(data).forEach(function (d) {
+
+      var s = this$1._shapes[d.key] = (this$1._shapes[d.key] || new d3plus[d.key]())
+        .data(d.values)
+        .duration(this$1._duration)
+        .labelPadding(0)
+        .select(this$1._group.node())
+        .verticalAlign("top")
+        .config(Object.assign({}, baseConfig, config));
+
+      if (_) s.fill("red").update(_);
+      else s.render();
+
+    });
+
+    return this;
   };
 
   /**
