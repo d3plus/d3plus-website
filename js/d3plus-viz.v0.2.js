@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.2.1
+  d3plus-viz v0.2.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -436,9 +436,7 @@ function value(d) {
     this._select.selectAll(".d3plus-Shape")
       .style(((d3plusCommon.prefix()) + "transition"), ("opacity " + (this._tooltipClass.duration() / 1000) + "s"))
       .style("opacity", function() {
-        var id = this.className.baseVal.split(" ")
-          .filter(function (c) { return c.indexOf("d3plus-id-") === 0; })[0]
-          .split("-")[2];
+        var id = this.className.baseVal.split(" ").filter(function (c) { return c.indexOf("d3plus-id-") === 0; })[0].slice(10);
         return ids.length === 0 || ids.includes(id) ? 1 : 0.25;
       });
     return this;
