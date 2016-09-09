@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.8
+  d3plus-shape v0.8.9
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -10,10 +10,6 @@
   (factory((global.d3plus = global.d3plus || {}),global.d3plusCommon,global.d3Selection,global.d3Transition,global.d3plusColor,global.d3plusText,global.d3Array,global.d3Collection,global.paths));
 }(this, (function (exports,d3plusCommon,d3Selection,d3Transition,d3plusColor,d3plusText,d3Array,d3Collection,paths) { 'use strict';
 
-var d3$1 = {
-  select: d3Selection.select,
-  transition: d3Transition.transition
-};
 /**
     @class Image
     @desc Creates SVG images based on an array of data.
@@ -48,7 +44,7 @@ Image.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-  if (this._select === void 0) this.select(d3$1.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+  if (this._select === void 0) this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
 
   var images = this._select.selectAll(".d3plus-shape-image").data(this._data, this._id);
 
@@ -56,7 +52,7 @@ Image.prototype.render = function render (callback) {
     .attr("class", "d3plus-shape-image")
     .attr("opacity", 0);
 
-  var t = d3$1.transition().duration(this._duration),
+  var t = d3Transition.transition().duration(this._duration),
         that = this,
         update = enter.merge(images);
 
@@ -69,7 +65,7 @@ Image.prototype.render = function render (callback) {
       .attr("x", function (d, i) { return this$1._x(d, i); })
       .attr("y", function (d, i) { return this$1._y(d, i); })
       .each(function(d, i) {
-        var image = d3$1.select(this), link = that._url(d, i);
+        var image = d3Selection.select(this), link = that._url(d, i);
         var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
         if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
           var img = new Image();
@@ -148,8 +144,8 @@ Image.prototype.id = function id (_) {
     @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
     @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
 */
-Image.prototype.select = function select (_) {
-  return arguments.length ? (this._select = d3$1.select(_), this) : this._select;
+Image.prototype.select = function select$1 (_) {
+  return arguments.length ? (this._select = d3Selection.select(_), this) : this._select;
 };
 
 /**
@@ -204,12 +200,6 @@ Image.prototype.y = function y (_) {
   return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
 };
 
-var d3 = {
-  select: d3Selection.select,
-  selectAll: d3Selection.selectAll,
-  transition: d3Transition.transition
-};
-
 /**
     @class Shape
     @desc An abstracted class for generating shapes.
@@ -246,6 +236,42 @@ var Shape = function Shape() {
 */
 Shape.prototype._aes = function _aes () {
   return {};
+};
+
+/**
+    @memberof Shape
+    @desc Adds event listeners to each shape group or hit area.
+    @param {D3Selection} *update* The update cycle of the data binding.
+    @private
+*/
+Shape.prototype._applyEvents = function _applyEvents (update) {
+
+  var that = this;
+  var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+  hitArea.exit().remove();
+  hitArea = hitArea.enter().append("rect")
+      .attr("class", "hitArea")
+      .attr("fill", "none")
+    .merge(hitArea)
+      .data(function (d) { return [d]; })
+      .each(function(d) {
+        var h = that._hitArea(d, that._data.indexOf(d));
+        if (h) d3Selection.select(this).call(d3plusCommon.attrize, h);
+        else d3Selection.select(this).remove();
+      });
+  var handler = this._hitArea ? hitArea : update;
+
+  var events = Object.keys(this._on);
+  var loop = function ( e ) {
+    handler.on(events[e], function(d, i) {
+      var hit = this.className.baseVal === "hitArea";
+      var t = hit ? this.parentNode : this;
+      that._on[events[e]].bind(t)(d, hit ? that._data.indexOf(d) : i);
+    });
+  };
+
+    for (var e = 0; e < events.length; e++) loop( e );
+
 };
 
 /**
@@ -581,10 +607,10 @@ Shape.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-  if (this._select === void 0) this.select(d3.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+  if (this._select === void 0) this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
   if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
 
-  this._transition = d3.transition().duration(this._duration);
+  this._transition = d3Transition.transition().duration(this._duration);
 
   if (callback) {
     setTimeout(function () {
@@ -610,8 +636,8 @@ Shape.prototype.scale = function scale (_) {
     @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
     @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
 */
-Shape.prototype.select = function select (_) {
-  return arguments.length ? (this._select = d3.select(_), this) : this._select;
+Shape.prototype.select = function select$1 (_) {
+  return arguments.length ? (this._select = d3Selection.select(_), this) : this._select;
 };
 
 /**
@@ -747,23 +773,7 @@ var Circle = (function (Shape) {
       .transition()
         .attr("pointer-events", "all");
 
-    var that = this;
-    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
-    hitArea.exit().remove();
-    hitArea = hitArea.enter().append("rect")
-        .attr("class", "hitArea")
-        .attr("fill", "none")
-      .merge(hitArea)
-        .data(function (d) { return [d]; })
-        .each(function(d) {
-          var h = that._hitArea(d, that._data.indexOf(d));
-          if (h) d3Selection.select(this).call(d3plusCommon.attrize, h);
-          else d3Selection.select(this).remove();
-        });
-    var handler = this._hitArea ? hitArea : update;
-
-    var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+    this._applyEvents(update);
 
     return this;
 
@@ -932,23 +942,7 @@ var Line = (function (Shape) {
       .transition()
         .attr("pointer-events", "none");
 
-    var that = this;
-    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
-    hitArea.exit().remove();
-    hitArea = hitArea.enter().append("rect")
-        .attr("class", "hitArea")
-        .attr("fill", "none")
-      .merge(hitArea)
-        .data(function (d) { return [d]; })
-        .each(function(d) {
-          var h = that._hitArea(d, that._data.indexOf(d));
-          if (h) d3Selection.select(this).call(d3plusCommon.attrize, h);
-          else d3Selection.select(this).remove();
-        });
-    var handler = this._hitArea ? hitArea : update;
-
-    var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+    this._applyEvents(update);
 
     return this;
 
@@ -1104,23 +1098,7 @@ var Rect = (function (Shape) {
       .transition()
         .attr("pointer-events", "all");
 
-    var that = this;
-    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
-    hitArea.exit().remove();
-    hitArea = hitArea.enter().append("rect")
-        .attr("class", "hitArea")
-        .attr("fill", "none")
-      .merge(hitArea)
-        .data(function (d) { return [d]; })
-        .each(function(d) {
-          var h = that._hitArea(d, that._data.indexOf(d));
-          if (h) d3Selection.select(this).call(d3plusCommon.attrize, h);
-          else d3Selection.select(this).remove();
-        });
-    var handler = this._hitArea ? hitArea : update;
-
-    var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+    this._applyEvents(update);
 
     return this;
 

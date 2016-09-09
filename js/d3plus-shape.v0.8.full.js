@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.8
+  d3plus-shape v0.8.9
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -908,12 +908,6 @@ function select(selector) {
   return typeof selector === "string"
       ? new Selection([[document.querySelector(selector)]], [document.documentElement])
       : new Selection([[selector]], root);
-}
-
-function d3SelectAll(selector) {
-  return typeof selector === "string"
-      ? new Selection([document.querySelectorAll(selector)], [document.documentElement])
-      : new Selection([selector == null ? [] : selector], root);
 }
 
 var noop = {value: function() {}};
@@ -6125,7 +6119,7 @@ function wrap() {
 
 }
 
-var d3$1 = {
+var d3 = {
   max: d3Max,
   min: d3Min,
   select: select,
@@ -6179,7 +6173,7 @@ var TextBox = (function (BaseClass) {
     var this$1 = this;
 
 
-    if (this._select === void 0) this.select(d3$1.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
+    if (this._select === void 0) this.select(d3.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
     if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; };
     var that = this;
 
@@ -6269,13 +6263,13 @@ var TextBox = (function (BaseClass) {
 
           var areaMod = 1.165 + w / h * 0.1,
                 boxArea = w * h,
-                maxWidth = d3$1.max(sizes),
-                textArea = d3$1.sum(sizes, function (d) { return d * lH; }) * areaMod;
+                maxWidth = d3.max(sizes),
+                textArea = d3.sum(sizes, function (d) { return d * lH; }) * areaMod;
 
           if (maxWidth > w || textArea > boxArea) {
             var areaRatio = Math.sqrt(boxArea / textArea),
                   widthRatio = w / maxWidth;
-            var sizeRatio = d3$1.min([areaRatio, widthRatio]);
+            var sizeRatio = d3.min([areaRatio, widthRatio]);
             fS = Math.floor(fS * sizeRatio);
           }
 
@@ -6309,7 +6303,7 @@ var TextBox = (function (BaseClass) {
 
     }, []), this._id);
 
-    var t = d3$1.transition().duration(this._duration);
+    var t = d3.transition().duration(this._duration);
 
     if (this._duration === 0) {
 
@@ -6344,7 +6338,7 @@ var TextBox = (function (BaseClass) {
         .each(function(d) {
 
           var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
-                tB = d3$1.select(this);
+                tB = d3.select(this);
 
           if (that._duration === 0) tB.attr("y", function (d) { return ((d.y) + "px"); });
           else tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); });
@@ -6567,7 +6561,7 @@ function(d, i) {
       @param {String|HTMLElement} [*selector*]
   */
   TextBox.prototype.select = function select (_) {
-    return arguments.length ? (this._select = d3$1.select(_), this) : this._select;
+    return arguments.length ? (this._select = d3.select(_), this) : this._select;
   };
 
   /**
@@ -6652,10 +6646,6 @@ function(d) {
   return TextBox;
 }(BaseClass$1));
 
-var d3$2 = {
-  select: select,
-  transition: transition$1
-};
 /**
     @class Image
     @desc Creates SVG images based on an array of data.
@@ -6690,7 +6680,7 @@ Image.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-  if (this._select === void 0) this.select(d3$2.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+  if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
 
   var images = this._select.selectAll(".d3plus-shape-image").data(this._data, this._id);
 
@@ -6698,7 +6688,7 @@ Image.prototype.render = function render (callback) {
     .attr("class", "d3plus-shape-image")
     .attr("opacity", 0);
 
-  var t = d3$2.transition().duration(this._duration),
+  var t = transition$1().duration(this._duration),
         that = this,
         update = enter.merge(images);
 
@@ -6711,7 +6701,7 @@ Image.prototype.render = function render (callback) {
       .attr("x", function (d, i) { return this$1._x(d, i); })
       .attr("y", function (d, i) { return this$1._y(d, i); })
       .each(function(d, i) {
-        var image = d3$2.select(this), link = that._url(d, i);
+        var image = select(this), link = that._url(d, i);
         var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
         if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
           var img = new Image();
@@ -6790,8 +6780,8 @@ Image.prototype.id = function id (_) {
     @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
     @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
 */
-Image.prototype.select = function select (_) {
-  return arguments.length ? (this._select = d3$2.select(_), this) : this._select;
+Image.prototype.select = function select$1 (_) {
+  return arguments.length ? (this._select = select(_), this) : this._select;
 };
 
 /**
@@ -6846,12 +6836,6 @@ Image.prototype.y = function y (_) {
   return arguments.length ? (this._y = typeof _ === "function" ? _ : constant(_), this) : this._y;
 };
 
-var d3 = {
-  select: select,
-  selectAll: d3SelectAll,
-  transition: transition$1
-};
-
 /**
     @class Shape
     @desc An abstracted class for generating shapes.
@@ -6888,6 +6872,42 @@ var Shape = function Shape() {
 */
 Shape.prototype._aes = function _aes () {
   return {};
+};
+
+/**
+    @memberof Shape
+    @desc Adds event listeners to each shape group or hit area.
+    @param {D3Selection} *update* The update cycle of the data binding.
+    @private
+*/
+Shape.prototype._applyEvents = function _applyEvents (update) {
+
+  var that = this;
+  var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+  hitArea.exit().remove();
+  hitArea = hitArea.enter().append("rect")
+      .attr("class", "hitArea")
+      .attr("fill", "none")
+    .merge(hitArea)
+      .data(function (d) { return [d]; })
+      .each(function(d) {
+        var h = that._hitArea(d, that._data.indexOf(d));
+        if (h) select(this).call(attrize, h);
+        else select(this).remove();
+      });
+  var handler = this._hitArea ? hitArea : update;
+
+  var events = Object.keys(this._on);
+  var loop = function ( e ) {
+    handler.on(events[e], function(d, i) {
+      var hit = this.className.baseVal === "hitArea";
+      var t = hit ? this.parentNode : this;
+      that._on[events[e]].bind(t)(d, hit ? that._data.indexOf(d) : i);
+    });
+  };
+
+    for (var e = 0; e < events.length; e++) loop( e );
+
 };
 
 /**
@@ -7223,10 +7243,10 @@ Shape.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-  if (this._select === void 0) this.select(d3.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+  if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
   if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
 
-  this._transition = d3.transition().duration(this._duration);
+  this._transition = transition$1().duration(this._duration);
 
   if (callback) {
     setTimeout(function () {
@@ -7252,8 +7272,8 @@ Shape.prototype.scale = function scale (_) {
     @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
     @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
 */
-Shape.prototype.select = function select (_) {
-  return arguments.length ? (this._select = d3.select(_), this) : this._select;
+Shape.prototype.select = function select$1 (_) {
+  return arguments.length ? (this._select = select(_), this) : this._select;
 };
 
 /**
@@ -7389,23 +7409,7 @@ var Circle = (function (Shape) {
       .transition()
         .attr("pointer-events", "all");
 
-    var that = this;
-    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
-    hitArea.exit().remove();
-    hitArea = hitArea.enter().append("rect")
-        .attr("class", "hitArea")
-        .attr("fill", "none")
-      .merge(hitArea)
-        .data(function (d) { return [d]; })
-        .each(function(d) {
-          var h = that._hitArea(d, that._data.indexOf(d));
-          if (h) select(this).call(attrize, h);
-          else select(this).remove();
-        });
-    var handler = this._hitArea ? hitArea : update;
-
-    var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+    this._applyEvents(update);
 
     return this;
 
@@ -9526,23 +9530,7 @@ var Line = (function (Shape) {
       .transition()
         .attr("pointer-events", "none");
 
-    var that = this;
-    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
-    hitArea.exit().remove();
-    hitArea = hitArea.enter().append("rect")
-        .attr("class", "hitArea")
-        .attr("fill", "none")
-      .merge(hitArea)
-        .data(function (d) { return [d]; })
-        .each(function(d) {
-          var h = that._hitArea(d, that._data.indexOf(d));
-          if (h) select(this).call(attrize, h);
-          else select(this).remove();
-        });
-    var handler = this._hitArea ? hitArea : update;
-
-    var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+    this._applyEvents(update);
 
     return this;
 
@@ -9698,23 +9686,7 @@ var Rect = (function (Shape) {
       .transition()
         .attr("pointer-events", "all");
 
-    var that = this;
-    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
-    hitArea.exit().remove();
-    hitArea = hitArea.enter().append("rect")
-        .attr("class", "hitArea")
-        .attr("fill", "none")
-      .merge(hitArea)
-        .data(function (d) { return [d]; })
-        .each(function(d) {
-          var h = that._hitArea(d, that._data.indexOf(d));
-          if (h) select(this).call(attrize, h);
-          else select(this).remove();
-        });
-    var handler = this._hitArea ? hitArea : update;
-
-    var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+    this._applyEvents(update);
 
     return this;
 
