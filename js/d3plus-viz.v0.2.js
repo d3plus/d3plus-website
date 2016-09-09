@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.2.0
+  d3plus-viz v0.2.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -121,7 +121,6 @@ var Viz = (function (BaseClass) {
     this._duration = 600;
     this._history = [];
     this._groupBy = [d3plusCommon.accessor("id")];
-    this._highlight = false;
     this._legend = {};
     this._legendClass = new d3plusLegend.Legend();
     this._on = {
@@ -132,7 +131,7 @@ var Viz = (function (BaseClass) {
           var filterGroup = this$1._groupBy[this$1._drawDepth],
                 filterId = this$1._id(d, i);
 
-          this$1._highlight = false;
+          this$1.highlight(false);
           if (this$1._tooltip) this$1._tooltipClass.data([])();
 
           this$1._history.push({
@@ -152,12 +151,12 @@ var Viz = (function (BaseClass) {
 
         var filterId = this$1._id(d, i);
 
-        this$1._highlight = function (h, x) {
+        this$1.highlight(function (h, x) {
           var myId = this$1._id(h, x);
           if (myId.constructor === Array && filterId.constructor !== Array) return myId.includes(filterId);
           if (myId.constructor !== Array && filterId.constructor === Array) return filterId.includes(myId);
           return myId === filterId;
-        };
+        });
 
         if (this$1._tooltip) {
           this$1._tooltipClass.data([d])
@@ -166,40 +165,32 @@ var Viz = (function (BaseClass) {
             ();
         }
 
-        this$1.update(100);
-
       },
       mousemove: function () {
 
-        var dd = this$1._tooltipClass.duration();
-
         if (this$1._tooltip) {
-          this$1._tooltipClass
-            .duration(0)
-            .translate(d3Selection.mouse(d3Selection.select("html").node()))
-            ().duration(dd);
+          this$1._tooltipClass.translate(d3Selection.mouse(d3Selection.select("html").node()))();
         }
 
       },
       mouseleave: function () {
-
-        this$1._highlight = false;
+        this$1.highlight(false);
         if (this$1._tooltip) this$1._tooltipClass.data([])();
-        this$1.update(100);
-
       }
     };
     this._padding = 5;
     this._shapes = [];
     this._shapeConfig = {
       fill: function (d, i) { return d3plusColor.assign(this$1._id(d, i)); },
-      opacity: function (d, i) { return this$1._highlight ? this$1._highlight(d, i) ? 1 : 0.25 : 1; },
+      opacity: 1,
+      // opacity: (d, i) => this._highlight ? this._highlight(d, i) ? 1 : 0.25 : 1,
       stroke: function (d, i) { return d3Color.color(d3plusColor.assign(this$1._id(d, i))).darker(); },
-      strokeWidth: function (d, i) { return this$1._highlight ? this$1._highlight(d, i) ? 1 : 0 : 0; }
+      strokeWidth: 0
+      // strokeWidth: (d, i) => this._highlight ? this._highlight(d, i) ? 1 : 0 : 0
     };
     this._timeline = {};
     this._timelineClass = new d3plusTimeline.Timeline();
-    this._tooltip = {};
+    this._tooltip = {duration: 50};
     this._tooltipClass = d3plusTooltip.tooltip().pointerEvents("none");
 
   }
@@ -437,11 +428,20 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc If *value* is specified, sets the highlight filter to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight filter. When the highlight function returns true given a data point, the highlight styles will be used.
-      @param {Function} [*value* = false]
+      @desc Highlights elements elements based on supplied data.
+      @param {Array|Object} [*data*]
   */
   Viz.prototype.highlight = function highlight (_) {
-    return arguments.length ? (this._highlight = _, this) : this._highlight;
+    var ids = _ ? Array.from(new Set(this._data.filter(_).map(this._id))).map(d3plusText.strip) : [];
+    this._select.selectAll(".d3plus-Shape")
+      .style(((d3plusCommon.prefix()) + "transition"), ("opacity " + (this._tooltipClass.duration() / 1000) + "s"))
+      .style("opacity", function() {
+        var id = this.className.baseVal.split(" ")
+          .filter(function (c) { return c.indexOf("d3plus-id-") === 0; })[0]
+          .split("-")[2];
+        return ids.length === 0 || ids.includes(id) ? 1 : 0.25;
+      });
+    return this;
   };
 
   /**
@@ -552,20 +552,6 @@ new Plot
   */
   Viz.prototype.tooltip = function tooltip$1 (_) {
     return arguments.length ? (this._tooltip = _, this) : this._tooltip;
-  };
-
-  /**
-      @memberof Viz
-      @desc If *ms* is specified, all shapes will redraw using the specified duration and return this generator. If *ms* is not specified, shapes will redraw instantly. This method is useful when only needing to change visual styles (and not data), like when setting custom [mouse events](#Plot.on).
-      @param {Number} [*ms* = 0]
-  */
-  Viz.prototype.update = function update (_) {
-    var this$1 = this;
-    if ( _ === void 0 ) _ = 0;
-
-    this._legendClass.shapeConfig({duration: _}).render().shapeConfig({duration: this._duration});
-    for (var s = 0; s < this._shapes.length; s++) this$1._shapes[s].duration(_).render().duration(this$1._duration);
-    return this;
   };
 
   /**
