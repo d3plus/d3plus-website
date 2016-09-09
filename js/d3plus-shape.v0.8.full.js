@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.9
+  d3plus-shape v0.8.10
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -7248,12 +7248,7 @@ Shape.prototype.render = function render (callback) {
 
   this._transition = transition$1().duration(this._duration);
 
-  if (callback) {
-    setTimeout(function () {
-      this$1._update = undefined;
-      callback();
-    }, this._duration + 100);
-  }
+  if (callback) setTimeout(callback, this._duration + 100);
 
   return this;
 };
@@ -7301,19 +7296,6 @@ Shape.prototype.strokeWidth = function strokeWidth (_) {
 */
 Shape.prototype.textAnchor = function textAnchor (_) {
   return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant(_), this) : this._textAnchor;
-};
-
-/**
-    @memberof Shape
-    @desc Performs the standard render function, but only on the specified elements.
-    @param {Selector} *selector*
-*/
-Shape.prototype.update = function update (_) {
-
-  this._update = _;
-  this.render();
-
-  return this;
 };
 
 /**
@@ -7366,7 +7348,7 @@ var Circle = (function (Shape) {
 
     Shape.prototype.render.call(this, callback);
 
-    var groups = this._select.selectAll(this._update || ".d3plus-shape-circle").data(this._data, this._id);
+    var groups = this._select.selectAll(".d3plus-shape-circle").data(this._data, this._id);
 
     groups.transition(this._transition)
       .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
@@ -9496,7 +9478,7 @@ var Line = (function (Shape) {
       .x(this._x)
       .y(this._y);
 
-    var groups = this._select.selectAll(this._update || ".d3plus-shape-line").data(lines, function (d) { return d.key; });
+    var groups = this._select.selectAll(".d3plus-shape-line").data(lines, function (d) { return d.key; });
 
     groups.transition(this._transition)
       .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
@@ -9641,7 +9623,7 @@ var Rect = (function (Shape) {
 
     Shape.prototype.render.call(this, callback);
 
-    var groups = this._select.selectAll(this._update || ".d3plus-shape-rect").data(this._data, this._id);
+    var groups = this._select.selectAll(".d3plus-shape-rect").data(this._data, this._id);
 
     groups.transition(this._transition)
       .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
