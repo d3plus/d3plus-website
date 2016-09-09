@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.10
+  d3plus-shape v0.8.11
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -7348,7 +7348,7 @@ var Circle = (function (Shape) {
 
     Shape.prototype.render.call(this, callback);
 
-    var groups = this._select.selectAll(".d3plus-shape-circle").data(this._data, this._id);
+    var groups = this._select.selectAll(".d3plus-Circle").data(this._data, this._id);
 
     groups.transition(this._transition)
       .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
@@ -7367,8 +7367,7 @@ var Circle = (function (Shape) {
       .call(this._applyLabels.bind(this), false);
 
     var enter = groups.enter().append("g")
-        .attr("class", "d3plus-shape-circle")
-        .attr("id", function (d, i) { return ("d3plus-shape-circle-" + (this$1._id(d, i))); })
+        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Circle d3plus-id-" + (this$1._id(d, i))); })
         .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
 
     enter.append("circle")
@@ -9478,7 +9477,7 @@ var Line = (function (Shape) {
       .x(this._x)
       .y(this._y);
 
-    var groups = this._select.selectAll(".d3plus-shape-line").data(lines, function (d) { return d.key; });
+    var groups = this._select.selectAll(".d3plus-Line").data(lines, function (d) { return d.key; });
 
     groups.transition(this._transition)
       .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
@@ -9493,8 +9492,7 @@ var Line = (function (Shape) {
     groups.exit().call(this._applyLabels.bind(this), false);
 
     var enter = groups.enter().append("g")
-        .attr("class", "d3plus-shape-line")
-        .attr("id", function (d) { return ("d3plus-shape-line-" + (d.key)); })
+        .attr("class", function (d) { return ("d3plus-Shape d3plus-Line d3plus-id-" + (d.key)); })
         .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
         .attr("opacity", 0);
 
@@ -9623,7 +9621,7 @@ var Rect = (function (Shape) {
 
     Shape.prototype.render.call(this, callback);
 
-    var groups = this._select.selectAll(".d3plus-shape-rect").data(this._data, this._id);
+    var groups = this._select.selectAll(".d3plus-Rect").data(this._data, this._id);
 
     groups.transition(this._transition)
       .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
@@ -9643,8 +9641,7 @@ var Rect = (function (Shape) {
       .call(this._applyLabels.bind(this), false);
 
     var enter = groups.enter().append("g")
-        .attr("class", "d3plus-shape-rect")
-        .attr("id", function (d, i) { return ("d3plus-shape-rect-" + (this$1._id(d, i))); })
+        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Rect d3plus-id-" + (this$1._id(d, i))); })
         .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
 
     enter.append("rect")
