@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.1
+  d3plus-treemap v0.5.2
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -66,7 +66,7 @@ var Treemap = (function (Viz) {
         var node = children[i];
         if (node.depth <= that._drawDepth) extractLayout(node.children);
         else {
-          node.id = that._drawDepth + node.data.key;
+          node.id = node.data.key;
           node.data = d3plusCommon.merge(node.data.values);
           shapeData.push(node);
         }
