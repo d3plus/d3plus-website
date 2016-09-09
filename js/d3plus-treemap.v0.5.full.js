@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.0
+  d3plus-treemap v0.5.1
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -822,6 +822,17 @@ function selection_on(typename, value, capture) {
   if (capture == null) capture = false;
   for (i = 0; i < n; ++i) this.each(on(typenames[i], value, capture));
   return this;
+}
+
+function customEvent(event1, listener, that, args) {
+  var event0 = event;
+  event1.sourceEvent = event;
+  event = event1;
+  try {
+    return listener.apply(that, args);
+  } finally {
+    event = event0;
+  }
 }
 
 function sourceEvent() {
@@ -2479,9 +2490,54 @@ var interpolateRgb = (function rgbGamma(y) {
   return rgb$$;
 })(1);
 
+function array(a, b) {
+  var nb = b ? b.length : 0,
+      na = a ? Math.min(nb, a.length) : 0,
+      x = new Array(nb),
+      c = new Array(nb),
+      i;
+
+  for (i = 0; i < na; ++i) x[i] = interpolate(a[i], b[i]);
+  for (; i < nb; ++i) c[i] = b[i];
+
+  return function(t) {
+    for (i = 0; i < na; ++i) c[i] = x[i](t);
+    return c;
+  };
+}
+
+function date(a, b) {
+  var d = new Date;
+  return a = +a, b -= a, function(t) {
+    return d.setTime(a + b * t), d;
+  };
+}
+
 function reinterpolate(a, b) {
   return a = +a, b -= a, function(t) {
     return a + b * t;
+  };
+}
+
+function object(a, b) {
+  var i = {},
+      c = {},
+      k;
+
+  if (a === null || typeof a !== "object") a = {};
+  if (b === null || typeof b !== "object") b = {};
+
+  for (k in b) {
+    if (k in a) {
+      i[k] = interpolate(a[k], b[k]);
+    } else {
+      c[k] = b[k];
+    }
+  }
+
+  return function(t) {
+    for (k in i) c[k] = i[k](t);
+    return c;
   };
 }
 
@@ -2545,6 +2601,24 @@ function interpolateString(a, b) {
           for (var i = 0, o; i < b; ++i) s[(o = q[i]).i] = o.x(t);
           return s.join("");
         });
+}
+
+function interpolate(a, b) {
+  var t = typeof b, c;
+  return b == null || t === "boolean" ? constant$3(b)
+      : (t === "number" ? reinterpolate
+      : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
+      : b instanceof color ? interpolateRgb
+      : b instanceof Date ? date
+      : Array.isArray(b) ? array
+      : isNaN(b) ? object
+      : reinterpolate)(a, b);
+}
+
+function interpolateRound(a, b) {
+  return a = +a, b -= a, function(t) {
+    return Math.round(a + b * t);
+  };
 }
 
 var degrees = 180 / Math.PI;
@@ -2765,7 +2839,7 @@ function tweenValue(transition, name, value) {
   };
 }
 
-function interpolate(a, b) {
+function interpolate$1(a, b) {
   var c;
   return (typeof b === "number" ? reinterpolate
       : b instanceof color ? interpolateRgb
@@ -2836,7 +2910,7 @@ function attrFunctionNS$1(fullname, interpolate, value) {
 }
 
 function transition_attr(name, value) {
-  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate;
+  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate$1;
   return this.attrTween(name, typeof value === "function"
       ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
       : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
@@ -3103,7 +3177,7 @@ function styleFunction$1(name, interpolate, value) {
 }
 
 function transition_style(name, value, priority) {
-  var i = (name += "") === "transform" ? interpolateTransform$1 : interpolate;
+  var i = (name += "") === "transform" ? interpolateTransform$1 : interpolate$1;
   return value == null ? this
           .styleTween(name, styleRemove$1(name, i))
           .on("end.style." + name, styleRemoveEnd(name))
@@ -3465,6 +3539,86 @@ function ascendingComparator(f) {
 }
 
 var ascendingBisect = bisector(ascending$1);
+var bisectRight = ascendingBisect.right;
+
+function number(x) {
+  return x === null ? NaN : +x;
+}
+
+function extent(array, f) {
+  var i = -1,
+      n = array.length,
+      a,
+      b,
+      c;
+
+  if (f == null) {
+    while (++i < n) if ((b = array[i]) != null && b >= b) { a = c = b; break; }
+    while (++i < n) if ((b = array[i]) != null) {
+      if (a > b) a = b;
+      if (c < b) c = b;
+    }
+  }
+
+  else {
+    while (++i < n) if ((b = f(array[i], i, array)) != null && b >= b) { a = c = b; break; }
+    while (++i < n) if ((b = f(array[i], i, array)) != null) {
+      if (a > b) a = b;
+      if (c < b) c = b;
+    }
+  }
+
+  return [a, c];
+}
+
+function sequence(start, stop, step) {
+  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+
+  var i = -1,
+      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
+      range = new Array(n);
+
+  while (++i < n) {
+    range[i] = start + i * step;
+  }
+
+  return range;
+}
+
+var e10 = Math.sqrt(50);
+var e5 = Math.sqrt(10);
+var e2 = Math.sqrt(2);
+function ticks(start, stop, count) {
+  var step = tickStep(start, stop, count);
+  return sequence(
+    Math.ceil(start / step) * step,
+    Math.floor(stop / step) * step + step / 2, // inclusive
+    step
+  );
+}
+
+function tickStep(start, stop, count) {
+  var step0 = Math.abs(stop - start) / Math.max(0, count),
+      step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
+      error = step0 / step1;
+  if (error >= e10) step1 *= 10;
+  else if (error >= e5) step1 *= 5;
+  else if (error >= e2) step1 *= 2;
+  return stop < start ? -step1 : step1;
+}
+
+function threshold(array, p, f) {
+  if (f == null) f = number;
+  if (!(n = array.length)) return;
+  if ((p = +p) <= 0 || n < 2) return +f(array[0], 0, array);
+  if (p >= 1) return +f(array[n - 1], n - 1, array);
+  var n,
+      h = (n - 1) * p,
+      i = Math.floor(h),
+      a = +f(array[i], i, array),
+      b = +f(array[i + 1], i + 1, array);
+  return a + (b - a) * (h - i);
+}
 
 function max(array, f) {
   var i = -1,
@@ -3485,7 +3639,7 @@ function max(array, f) {
   return a;
 }
 
-function merge(arrays) {
+function merge$1(arrays) {
   var n = arrays.length,
       m,
       i = -1,
@@ -3547,6 +3701,7 @@ function sum(array, f) {
     @function merge
     @desc Combines an Array of Objects together and returns a new Object.
     @param {Array} objects The Array of objects to be merged together.
+    @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
     @example <caption>this</caption>
 merge([
   {id: "foo", group: "A", value: 10},
@@ -3555,16 +3710,19 @@ merge([
     @example <caption>returns this</caption>
 {id: ["bar", "foo"], group: "A", value: 30}
 */
-function combine(objects) {
+function merge(objects, aggs) {
+  if ( aggs === void 0 ) aggs = {};
 
-  var availableKeys = new Set(merge(objects.map(function (o) { return keys(o); }))),
+
+  var availableKeys = new Set(merge$1(objects.map(function (o) { return keys(o); }))),
         newObject = {};
 
   availableKeys.forEach(function (k) {
     var values = objects.map(function (o) { return o[k]; });
     var value;
-    if (values.map(function (v) { return typeof v; }).indexOf("string") >= 0) {
-      value = Array.from(new Set(values).values());
+    if (aggs[k]) value = aggs[k](values);
+    else if (values.map(function (v) { return typeof v; }).indexOf("string") >= 0) {
+      value = Array.from(new Set(values));
       if (value.length === 1) value = value[0];
     }
     else value = sum(values);
@@ -3589,21 +3747,22 @@ function stylize(e, s) {
 
 var array$2 = Array.prototype;
 
+var map$2 = array$2.map;
 var slice$1 = array$2.slice;
 
-var implicit = {name: "implicit"};
+var scaleImplicit = {name: "implicit"};
 
 function ordinal(range) {
   var index = map(),
       domain = [],
-      unknown = implicit;
+      unknown = scaleImplicit;
 
   range = range == null ? [] : slice$1.call(range);
 
   function scale(d) {
     var key = d + "", i = index.get(key);
     if (!i) {
-      if (unknown !== implicit) return unknown;
+      if (unknown !== scaleImplicit) return unknown;
       index.set(key, i = domain.push(d));
     }
     return range[(i - 1) % range.length];
@@ -3633,6 +3792,223 @@ function ordinal(range) {
   };
 
   return scale;
+}
+
+function band() {
+  var scale = ordinal().unknown(undefined),
+      domain = scale.domain,
+      ordinalRange = scale.range,
+      range = [0, 1],
+      step,
+      bandwidth,
+      round = false,
+      paddingInner = 0,
+      paddingOuter = 0,
+      align = 0.5;
+
+  delete scale.unknown;
+
+  function rescale() {
+    var n = domain().length,
+        reverse = range[1] < range[0],
+        start = range[reverse - 0],
+        stop = range[1 - reverse];
+    step = (stop - start) / Math.max(1, n - paddingInner + paddingOuter * 2);
+    if (round) step = Math.floor(step);
+    start += (stop - start - step * (n - paddingInner)) * align;
+    bandwidth = step * (1 - paddingInner);
+    if (round) start = Math.round(start), bandwidth = Math.round(bandwidth);
+    var values = sequence(n).map(function(i) { return start + step * i; });
+    return ordinalRange(reverse ? values.reverse() : values);
+  }
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain(_), rescale()) : domain();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range = [+_[0], +_[1]], rescale()) : range.slice();
+  };
+
+  scale.rangeRound = function(_) {
+    return range = [+_[0], +_[1]], round = true, rescale();
+  };
+
+  scale.bandwidth = function() {
+    return bandwidth;
+  };
+
+  scale.step = function() {
+    return step;
+  };
+
+  scale.round = function(_) {
+    return arguments.length ? (round = !!_, rescale()) : round;
+  };
+
+  scale.padding = function(_) {
+    return arguments.length ? (paddingInner = paddingOuter = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
+  };
+
+  scale.paddingInner = function(_) {
+    return arguments.length ? (paddingInner = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
+  };
+
+  scale.paddingOuter = function(_) {
+    return arguments.length ? (paddingOuter = Math.max(0, Math.min(1, _)), rescale()) : paddingOuter;
+  };
+
+  scale.align = function(_) {
+    return arguments.length ? (align = Math.max(0, Math.min(1, _)), rescale()) : align;
+  };
+
+  scale.copy = function() {
+    return band()
+        .domain(domain())
+        .range(range)
+        .round(round)
+        .paddingInner(paddingInner)
+        .paddingOuter(paddingOuter)
+        .align(align);
+  };
+
+  return rescale();
+}
+
+function pointish(scale) {
+  var copy = scale.copy;
+
+  scale.padding = scale.paddingOuter;
+  delete scale.paddingInner;
+  delete scale.paddingOuter;
+
+  scale.copy = function() {
+    return pointish(copy());
+  };
+
+  return scale;
+}
+
+function scalePoint() {
+  return pointish(band().paddingInner(1));
+}
+
+function constant$5(x) {
+  return function() {
+    return x;
+  };
+}
+
+function number$1(x) {
+  return +x;
+}
+
+var unit = [0, 1];
+
+function deinterpolate(a, b) {
+  return (b -= (a = +a))
+      ? function(x) { return (x - a) / b; }
+      : constant$5(b);
+}
+
+function deinterpolateClamp(deinterpolate) {
+  return function(a, b) {
+    var d = deinterpolate(a = +a, b = +b);
+    return function(x) { return x <= a ? 0 : x >= b ? 1 : d(x); };
+  };
+}
+
+function reinterpolateClamp(reinterpolate) {
+  return function(a, b) {
+    var r = reinterpolate(a = +a, b = +b);
+    return function(t) { return t <= 0 ? a : t >= 1 ? b : r(t); };
+  };
+}
+
+function bimap(domain, range, deinterpolate, reinterpolate) {
+  var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
+  if (d1 < d0) d0 = deinterpolate(d1, d0), r0 = reinterpolate(r1, r0);
+  else d0 = deinterpolate(d0, d1), r0 = reinterpolate(r0, r1);
+  return function(x) { return r0(d0(x)); };
+}
+
+function polymap(domain, range, deinterpolate, reinterpolate) {
+  var j = Math.min(domain.length, range.length) - 1,
+      d = new Array(j),
+      r = new Array(j),
+      i = -1;
+
+  // Reverse descending domains.
+  if (domain[j] < domain[0]) {
+    domain = domain.slice().reverse();
+    range = range.slice().reverse();
+  }
+
+  while (++i < j) {
+    d[i] = deinterpolate(domain[i], domain[i + 1]);
+    r[i] = reinterpolate(range[i], range[i + 1]);
+  }
+
+  return function(x) {
+    var i = bisectRight(domain, x, 1, j) - 1;
+    return r[i](d[i](x));
+  };
+}
+
+function copy(source, target) {
+  return target
+      .domain(source.domain())
+      .range(source.range())
+      .interpolate(source.interpolate())
+      .clamp(source.clamp());
+}
+
+// deinterpolate(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
+// reinterpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding domain value x in [a,b].
+function continuous(deinterpolate$$, reinterpolate) {
+  var domain = unit,
+      range = unit,
+      interpolate$$ = interpolate,
+      clamp = false,
+      piecewise,
+      output,
+      input;
+
+  function rescale() {
+    piecewise = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
+    output = input = null;
+    return scale;
+  }
+
+  function scale(x) {
+    return (output || (output = piecewise(domain, range, clamp ? deinterpolateClamp(deinterpolate$$) : deinterpolate$$, interpolate$$)))(+x);
+  }
+
+  scale.invert = function(y) {
+    return (input || (input = piecewise(range, domain, deinterpolate, clamp ? reinterpolateClamp(reinterpolate) : reinterpolate)))(+y);
+  };
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain = map$2.call(_, number$1), rescale()) : domain.slice();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range = slice$1.call(_), rescale()) : range.slice();
+  };
+
+  scale.rangeRound = function(_) {
+    return range = slice$1.call(_), interpolate$$ = interpolateRound, rescale();
+  };
+
+  scale.clamp = function(_) {
+    return arguments.length ? (clamp = !!_, rescale()) : clamp;
+  };
+
+  scale.interpolate = function(_) {
+    return arguments.length ? (interpolate$$ = _, rescale()) : interpolate$$;
+  };
+
+  return rescale();
 }
 
 // Computes the decimal coefficient and exponent of the specified number x with
@@ -3935,6 +4311,411 @@ function defaultLocale(definition) {
   format = locale.format;
   formatPrefix = locale.formatPrefix;
   return locale;
+}
+
+function precisionFixed(step) {
+  return Math.max(0, -exponent$1(Math.abs(step)));
+}
+
+function precisionPrefix(step, value) {
+  return Math.max(0, Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3 - exponent$1(Math.abs(step)));
+}
+
+function precisionRound(step, max) {
+  step = Math.abs(step), max = Math.abs(max) - step;
+  return Math.max(0, exponent$1(max) - exponent$1(step)) + 1;
+}
+
+function tickFormat(domain, count, specifier) {
+  var start = domain[0],
+      stop = domain[domain.length - 1],
+      step = tickStep(start, stop, count == null ? 10 : count),
+      precision;
+  specifier = formatSpecifier(specifier == null ? ",f" : specifier);
+  switch (specifier.type) {
+    case "s": {
+      var value = Math.max(Math.abs(start), Math.abs(stop));
+      if (specifier.precision == null && !isNaN(precision = precisionPrefix(step, value))) specifier.precision = precision;
+      return formatPrefix(specifier, value);
+    }
+    case "":
+    case "e":
+    case "g":
+    case "p":
+    case "r": {
+      if (specifier.precision == null && !isNaN(precision = precisionRound(step, Math.max(Math.abs(start), Math.abs(stop))))) specifier.precision = precision - (specifier.type === "e");
+      break;
+    }
+    case "f":
+    case "%": {
+      if (specifier.precision == null && !isNaN(precision = precisionFixed(step))) specifier.precision = precision - (specifier.type === "%") * 2;
+      break;
+    }
+  }
+  return format(specifier);
+}
+
+function linearish(scale) {
+  var domain = scale.domain;
+
+  scale.ticks = function(count) {
+    var d = domain();
+    return ticks(d[0], d[d.length - 1], count == null ? 10 : count);
+  };
+
+  scale.tickFormat = function(count, specifier) {
+    return tickFormat(domain(), count, specifier);
+  };
+
+  scale.nice = function(count) {
+    var d = domain(),
+        i = d.length - 1,
+        n = count == null ? 10 : count,
+        start = d[0],
+        stop = d[i],
+        step = tickStep(start, stop, n);
+
+    if (step) {
+      step = tickStep(Math.floor(start / step) * step, Math.ceil(stop / step) * step, n);
+      d[0] = Math.floor(start / step) * step;
+      d[i] = Math.ceil(stop / step) * step;
+      domain(d);
+    }
+
+    return scale;
+  };
+
+  return scale;
+}
+
+function linear$2() {
+  var scale = continuous(deinterpolate, reinterpolate);
+
+  scale.copy = function() {
+    return copy(scale, linear$2());
+  };
+
+  return linearish(scale);
+}
+
+function identity$2() {
+  var domain = [0, 1];
+
+  function scale(x) {
+    return +x;
+  }
+
+  scale.invert = scale;
+
+  scale.domain = scale.range = function(_) {
+    return arguments.length ? (domain = map$2.call(_, number$1), scale) : domain.slice();
+  };
+
+  scale.copy = function() {
+    return identity$2().domain(domain);
+  };
+
+  return linearish(scale);
+}
+
+function nice(domain, interval) {
+  domain = domain.slice();
+
+  var i0 = 0,
+      i1 = domain.length - 1,
+      x0 = domain[i0],
+      x1 = domain[i1],
+      t;
+
+  if (x1 < x0) {
+    t = i0, i0 = i1, i1 = t;
+    t = x0, x0 = x1, x1 = t;
+  }
+
+  domain[i0] = interval.floor(x0);
+  domain[i1] = interval.ceil(x1);
+  return domain;
+}
+
+function deinterpolate$1(a, b) {
+  return (b = Math.log(b / a))
+      ? function(x) { return Math.log(x / a) / b; }
+      : constant$5(b);
+}
+
+function reinterpolate$1(a, b) {
+  return a < 0
+      ? function(t) { return -Math.pow(-b, t) * Math.pow(-a, 1 - t); }
+      : function(t) { return Math.pow(b, t) * Math.pow(a, 1 - t); };
+}
+
+function pow10(x) {
+  return isFinite(x) ? +("1e" + x) : x < 0 ? 0 : x;
+}
+
+function powp(base) {
+  return base === 10 ? pow10
+      : base === Math.E ? Math.exp
+      : function(x) { return Math.pow(base, x); };
+}
+
+function logp(base) {
+  return base === Math.E ? Math.log
+      : base === 10 && Math.log10
+      || base === 2 && Math.log2
+      || (base = Math.log(base), function(x) { return Math.log(x) / base; });
+}
+
+function reflect(f) {
+  return function(x) {
+    return -f(-x);
+  };
+}
+
+function log() {
+  var scale = continuous(deinterpolate$1, reinterpolate$1).domain([1, 10]),
+      domain = scale.domain,
+      base = 10,
+      logs = logp(10),
+      pows = powp(10);
+
+  function rescale() {
+    logs = logp(base), pows = powp(base);
+    if (domain()[0] < 0) logs = reflect(logs), pows = reflect(pows);
+    return scale;
+  }
+
+  scale.base = function(_) {
+    return arguments.length ? (base = +_, rescale()) : base;
+  };
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain(_), rescale()) : domain();
+  };
+
+  scale.ticks = function(count) {
+    var d = domain(),
+        u = d[0],
+        v = d[d.length - 1],
+        r;
+
+    if (r = v < u) i = u, u = v, v = i;
+
+    var i = logs(u),
+        j = logs(v),
+        p,
+        k,
+        t,
+        n = count == null ? 10 : +count,
+        z = [];
+
+    if (!(base % 1) && j - i < n) {
+      i = Math.round(i) - 1, j = Math.round(j) + 1;
+      if (u > 0) for (; i < j; ++i) {
+        for (k = 1, p = pows(i); k < base; ++k) {
+          t = p * k;
+          if (t < u) continue;
+          if (t > v) break;
+          z.push(t);
+        }
+      } else for (; i < j; ++i) {
+        for (k = base - 1, p = pows(i); k >= 1; --k) {
+          t = p * k;
+          if (t < u) continue;
+          if (t > v) break;
+          z.push(t);
+        }
+      }
+    } else {
+      z = ticks(i, j, Math.min(j - i, n)).map(pows);
+    }
+
+    return r ? z.reverse() : z;
+  };
+
+  scale.tickFormat = function(count, specifier) {
+    if (specifier == null) specifier = base === 10 ? ".0e" : ",";
+    if (typeof specifier !== "function") specifier = format(specifier);
+    if (count === Infinity) return specifier;
+    if (count == null) count = 10;
+    var k = Math.max(1, base * count / scale.ticks().length); // TODO fast estimate?
+    return function(d) {
+      var i = d / pows(Math.round(logs(d)));
+      if (i * base < base - 0.5) i *= base;
+      return i <= k ? specifier(d) : "";
+    };
+  };
+
+  scale.nice = function() {
+    return domain(nice(domain(), {
+      floor: function(x) { return pows(Math.floor(logs(x))); },
+      ceil: function(x) { return pows(Math.ceil(logs(x))); }
+    }));
+  };
+
+  scale.copy = function() {
+    return copy(scale, log().base(base));
+  };
+
+  return scale;
+}
+
+function raise$1(x, exponent) {
+  return x < 0 ? -Math.pow(-x, exponent) : Math.pow(x, exponent);
+}
+
+function pow() {
+  var exponent = 1,
+      scale = continuous(deinterpolate, reinterpolate),
+      domain = scale.domain;
+
+  function deinterpolate(a, b) {
+    return (b = raise$1(b, exponent) - (a = raise$1(a, exponent)))
+        ? function(x) { return (raise$1(x, exponent) - a) / b; }
+        : constant$5(b);
+  }
+
+  function reinterpolate(a, b) {
+    b = raise$1(b, exponent) - (a = raise$1(a, exponent));
+    return function(t) { return raise$1(a + b * t, 1 / exponent); };
+  }
+
+  scale.exponent = function(_) {
+    return arguments.length ? (exponent = +_, domain(domain())) : exponent;
+  };
+
+  scale.copy = function() {
+    return copy(scale, pow().exponent(exponent));
+  };
+
+  return linearish(scale);
+}
+
+function scaleSqrt() {
+  return pow().exponent(0.5);
+}
+
+function quantile() {
+  var domain = [],
+      range = [],
+      thresholds = [];
+
+  function rescale() {
+    var i = 0, n = Math.max(1, range.length);
+    thresholds = new Array(n - 1);
+    while (++i < n) thresholds[i - 1] = threshold(domain, i / n);
+    return scale;
+  }
+
+  function scale(x) {
+    if (!isNaN(x = +x)) return range[bisectRight(thresholds, x)];
+  }
+
+  scale.invertExtent = function(y) {
+    var i = range.indexOf(y);
+    return i < 0 ? [NaN, NaN] : [
+      i > 0 ? thresholds[i - 1] : domain[0],
+      i < thresholds.length ? thresholds[i] : domain[domain.length - 1]
+    ];
+  };
+
+  scale.domain = function(_) {
+    if (!arguments.length) return domain.slice();
+    domain = [];
+    for (var i = 0, n = _.length, d; i < n; ++i) if (d = _[i], d != null && !isNaN(d = +d)) domain.push(d);
+    domain.sort(ascending$1);
+    return rescale();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range = slice$1.call(_), rescale()) : range.slice();
+  };
+
+  scale.quantiles = function() {
+    return thresholds.slice();
+  };
+
+  scale.copy = function() {
+    return quantile()
+        .domain(domain)
+        .range(range);
+  };
+
+  return scale;
+}
+
+function quantize$1() {
+  var x0 = 0,
+      x1 = 1,
+      n = 1,
+      domain = [0.5],
+      range = [0, 1];
+
+  function scale(x) {
+    if (x <= x) return range[bisectRight(domain, x, 0, n)];
+  }
+
+  function rescale() {
+    var i = -1;
+    domain = new Array(n);
+    while (++i < n) domain[i] = ((i + 1) * x1 - (i - n) * x0) / (n + 1);
+    return scale;
+  }
+
+  scale.domain = function(_) {
+    return arguments.length ? (x0 = +_[0], x1 = +_[1], rescale()) : [x0, x1];
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (n = (range = slice$1.call(_)).length - 1, rescale()) : range.slice();
+  };
+
+  scale.invertExtent = function(y) {
+    var i = range.indexOf(y);
+    return i < 0 ? [NaN, NaN]
+        : i < 1 ? [x0, domain[0]]
+        : i >= n ? [domain[n - 1], x1]
+        : [domain[i - 1], domain[i]];
+  };
+
+  scale.copy = function() {
+    return quantize$1()
+        .domain([x0, x1])
+        .range(range);
+  };
+
+  return linearish(scale);
+}
+
+function threshold$1() {
+  var domain = [0.5],
+      range = [0, 1],
+      n = 1;
+
+  function scale(x) {
+    if (x <= x) return range[bisectRight(domain, x, 0, n)];
+  }
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain = slice$1.call(_), n = Math.min(domain.length, range.length - 1), scale) : domain.slice();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range = slice$1.call(_), n = Math.min(domain.length, range.length - 1), scale) : range.slice();
+  };
+
+  scale.invertExtent = function(y) {
+    var i = range.indexOf(y);
+    return [domain[i - 1], domain[i]];
+  };
+
+  scale.copy = function() {
+    return threshold$1()
+        .domain(domain)
+        .range(range);
+  };
+
+  return scale;
 }
 
 var t0$1 = new Date;
@@ -4764,27 +5545,167 @@ var parseIso = +new Date("2000-01-01T00:00:00.000Z")
     ? parseIsoNative
     : utcParse(isoSpecifier);
 
+var durationSecond = 1000;
+var durationMinute = durationSecond * 60;
+var durationHour = durationMinute * 60;
+var durationDay = durationHour * 24;
+var durationWeek = durationDay * 7;
+var durationMonth = durationDay * 30;
+var durationYear = durationDay * 365;
+function date$1(t) {
+  return new Date(t);
+}
+
+function number$2(t) {
+  return t instanceof Date ? +t : +new Date(+t);
+}
+
+function calendar(year, month, week, day, hour, minute, second, millisecond, format) {
+  var scale = continuous(deinterpolate, reinterpolate),
+      invert = scale.invert,
+      domain = scale.domain;
+
+  var formatMillisecond = format(".%L"),
+      formatSecond = format(":%S"),
+      formatMinute = format("%I:%M"),
+      formatHour = format("%I %p"),
+      formatDay = format("%a %d"),
+      formatWeek = format("%b %d"),
+      formatMonth = format("%B"),
+      formatYear = format("%Y");
+
+  var tickIntervals = [
+    [second,  1,      durationSecond],
+    [second,  5,  5 * durationSecond],
+    [second, 15, 15 * durationSecond],
+    [second, 30, 30 * durationSecond],
+    [minute,  1,      durationMinute],
+    [minute,  5,  5 * durationMinute],
+    [minute, 15, 15 * durationMinute],
+    [minute, 30, 30 * durationMinute],
+    [  hour,  1,      durationHour  ],
+    [  hour,  3,  3 * durationHour  ],
+    [  hour,  6,  6 * durationHour  ],
+    [  hour, 12, 12 * durationHour  ],
+    [   day,  1,      durationDay   ],
+    [   day,  2,  2 * durationDay   ],
+    [  week,  1,      durationWeek  ],
+    [ month,  1,      durationMonth ],
+    [ month,  3,  3 * durationMonth ],
+    [  year,  1,      durationYear  ]
+  ];
+
+  function tickFormat(date) {
+    return (second(date) < date ? formatMillisecond
+        : minute(date) < date ? formatSecond
+        : hour(date) < date ? formatMinute
+        : day(date) < date ? formatHour
+        : month(date) < date ? (week(date) < date ? formatDay : formatWeek)
+        : year(date) < date ? formatMonth
+        : formatYear)(date);
+  }
+
+  function tickInterval(interval, start, stop, step) {
+    if (interval == null) interval = 10;
+
+    // If a desired tick count is specified, pick a reasonable tick interval
+    // based on the extent of the domain and a rough estimate of tick size.
+    // Otherwise, assume interval is already a time interval and use it.
+    if (typeof interval === "number") {
+      var target = Math.abs(stop - start) / interval,
+          i = bisector(function(i) { return i[2]; }).right(tickIntervals, target);
+      if (i === tickIntervals.length) {
+        step = tickStep(start / durationYear, stop / durationYear, interval);
+        interval = year;
+      } else if (i) {
+        i = tickIntervals[target / tickIntervals[i - 1][2] < tickIntervals[i][2] / target ? i - 1 : i];
+        step = i[1];
+        interval = i[0];
+      } else {
+        step = tickStep(start, stop, interval);
+        interval = millisecond;
+      }
+    }
+
+    return step == null ? interval : interval.every(step);
+  }
+
+  scale.invert = function(y) {
+    return new Date(invert(y));
+  };
+
+  scale.domain = function(_) {
+    return arguments.length ? domain(map$2.call(_, number$2)) : domain().map(date$1);
+  };
+
+  scale.ticks = function(interval, step) {
+    var d = domain(),
+        t0 = d[0],
+        t1 = d[d.length - 1],
+        r = t1 < t0,
+        t;
+    if (r) t = t0, t0 = t1, t1 = t;
+    t = tickInterval(interval, t0, t1, step);
+    t = t ? t.range(t0, t1 + 1) : []; // inclusive stop
+    return r ? t.reverse() : t;
+  };
+
+  scale.tickFormat = function(count, specifier) {
+    return specifier == null ? tickFormat : format(specifier);
+  };
+
+  scale.nice = function(interval, step) {
+    var d = domain();
+    return (interval = tickInterval(interval, d[0], d[d.length - 1], step))
+        ? domain(nice(d, interval))
+        : scale;
+  };
+
+  scale.copy = function() {
+    return copy(scale, calendar(year, month, week, day, hour, minute, second, millisecond, format));
+  };
+
+  return scale;
+}
+
+function scaleTime() {
+  return calendar(year, month, timeSunday, day, hour, minute, second, millisecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]);
+}
+
+function scaleUtc() {
+  return calendar(utcYear, utcMonth, utcWeek, utcDay, utcHour, utcMinute, second, millisecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]);
+}
+
 function colors(s) {
   return s.match(/.{6}/g).map(function(x) {
     return "#" + x;
   });
 }
 
-colors("1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf");
+var schemeCategory10 = colors("1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf");
 
-colors("393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6");
+var schemeCategory20b = colors("393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6");
 
-colors("3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9");
+var schemeCategory20c = colors("3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9");
 
-colors("1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5");
+var schemeCategory20 = colors("1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5");
 
-interpolateCubehelixLong(cubehelix(300, 0.5, 0.0), cubehelix(-240, 0.5, 1.0));
+var interpolateCubehelixDefault = interpolateCubehelixLong(cubehelix(300, 0.5, 0.0), cubehelix(-240, 0.5, 1.0));
 
-var warm = interpolateCubehelixLong(cubehelix(-100, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
+var interpolateWarm = interpolateCubehelixLong(cubehelix(-100, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
 
-var cool = interpolateCubehelixLong(cubehelix(260, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
+var interpolateCool = interpolateCubehelixLong(cubehelix(260, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
 
 var rainbow = cubehelix();
+
+function interpolateRainbow(t) {
+  if (t < 0 || t > 1) t -= Math.floor(t);
+  var ts = Math.abs(t - 0.5);
+  rainbow.h = 360 * t - 100;
+  rainbow.s = 1.5 - 1.5 * ts;
+  rainbow.l = 0.8 - 0.9 * ts;
+  return rainbow + "";
+}
 
 function ramp(range) {
   var n = range.length;
@@ -4793,13 +5714,74 @@ function ramp(range) {
   };
 }
 
-ramp(colors("44015444025645045745055946075a46085c460a5d460b5e470d60470e6147106347116447136548146748166848176948186a481a6c481b6d481c6e481d6f481f70482071482173482374482475482576482677482878482979472a7a472c7a472d7b472e7c472f7d46307e46327e46337f463480453581453781453882443983443a83443b84433d84433e85423f854240864241864142874144874045884046883f47883f48893e49893e4a893e4c8a3d4d8a3d4e8a3c4f8a3c508b3b518b3b528b3a538b3a548c39558c39568c38588c38598c375a8c375b8d365c8d365d8d355e8d355f8d34608d34618d33628d33638d32648e32658e31668e31678e31688e30698e306a8e2f6b8e2f6c8e2e6d8e2e6e8e2e6f8e2d708e2d718e2c718e2c728e2c738e2b748e2b758e2a768e2a778e2a788e29798e297a8e297b8e287c8e287d8e277e8e277f8e27808e26818e26828e26828e25838e25848e25858e24868e24878e23888e23898e238a8d228b8d228c8d228d8d218e8d218f8d21908d21918c20928c20928c20938c1f948c1f958b1f968b1f978b1f988b1f998a1f9a8a1e9b8a1e9c891e9d891f9e891f9f881fa0881fa1881fa1871fa28720a38620a48621a58521a68522a78522a88423a98324aa8325ab8225ac8226ad8127ad8128ae8029af7f2ab07f2cb17e2db27d2eb37c2fb47c31b57b32b67a34b67935b77937b87838b9773aba763bbb753dbc743fbc7340bd7242be7144bf7046c06f48c16e4ac16d4cc26c4ec36b50c46a52c56954c56856c66758c7655ac8645cc8635ec96260ca6063cb5f65cb5e67cc5c69cd5b6ccd5a6ece5870cf5773d05675d05477d1537ad1517cd2507fd34e81d34d84d44b86d54989d5488bd6468ed64590d74393d74195d84098d83e9bd93c9dd93ba0da39a2da37a5db36a8db34aadc32addc30b0dd2fb2dd2db5de2bb8de29bade28bddf26c0df25c2df23c5e021c8e020cae11fcde11dd0e11cd2e21bd5e21ad8e219dae319dde318dfe318e2e418e5e419e7e419eae51aece51befe51cf1e51df4e61ef6e620f8e621fbe723fde725"));
+var interpolateViridis = ramp(colors("44015444025645045745055946075a46085c460a5d460b5e470d60470e6147106347116447136548146748166848176948186a481a6c481b6d481c6e481d6f481f70482071482173482374482475482576482677482878482979472a7a472c7a472d7b472e7c472f7d46307e46327e46337f463480453581453781453882443983443a83443b84433d84433e85423f854240864241864142874144874045884046883f47883f48893e49893e4a893e4c8a3d4d8a3d4e8a3c4f8a3c508b3b518b3b528b3a538b3a548c39558c39568c38588c38598c375a8c375b8d365c8d365d8d355e8d355f8d34608d34618d33628d33638d32648e32658e31668e31678e31688e30698e306a8e2f6b8e2f6c8e2e6d8e2e6e8e2e6f8e2d708e2d718e2c718e2c728e2c738e2b748e2b758e2a768e2a778e2a788e29798e297a8e297b8e287c8e287d8e277e8e277f8e27808e26818e26828e26828e25838e25848e25858e24868e24878e23888e23898e238a8d228b8d228c8d228d8d218e8d218f8d21908d21918c20928c20928c20938c1f948c1f958b1f968b1f978b1f988b1f998a1f9a8a1e9b8a1e9c891e9d891f9e891f9f881fa0881fa1881fa1871fa28720a38620a48621a58521a68522a78522a88423a98324aa8325ab8225ac8226ad8127ad8128ae8029af7f2ab07f2cb17e2db27d2eb37c2fb47c31b57b32b67a34b67935b77937b87838b9773aba763bbb753dbc743fbc7340bd7242be7144bf7046c06f48c16e4ac16d4cc26c4ec36b50c46a52c56954c56856c66758c7655ac8645cc8635ec96260ca6063cb5f65cb5e67cc5c69cd5b6ccd5a6ece5870cf5773d05675d05477d1537ad1517cd2507fd34e81d34d84d44b86d54989d5488bd6468ed64590d74393d74195d84098d83e9bd93c9dd93ba0da39a2da37a5db36a8db34aadc32addc30b0dd2fb2dd2db5de2bb8de29bade28bddf26c0df25c2df23c5e021c8e020cae11fcde11dd0e11cd2e21bd5e21ad8e219dae319dde318dfe318e2e418e5e419e7e419eae51aece51befe51cf1e51df4e61ef6e620f8e621fbe723fde725"));
 
-var magma = ramp(colors("00000401000501010601010802010902020b02020d03030f03031204041405041606051806051a07061c08071e0907200a08220b09240c09260d0a290e0b2b100b2d110c2f120d31130d34140e36150e38160f3b180f3d19103f1a10421c10441d11471e114920114b21114e22115024125325125527125829115a2a115c2c115f2d11612f116331116533106734106936106b38106c390f6e3b0f703d0f713f0f72400f74420f75440f764510774710784910784a10794c117a4e117b4f127b51127c52137c54137d56147d57157e59157e5a167e5c167f5d177f5f187f601880621980641a80651a80671b80681c816a1c816b1d816d1d816e1e81701f81721f817320817521817621817822817922827b23827c23827e24828025828125818326818426818627818827818928818b29818c29818e2a81902a81912b81932b80942c80962c80982d80992d809b2e7f9c2e7f9e2f7fa02f7fa1307ea3307ea5317ea6317da8327daa337dab337cad347cae347bb0357bb2357bb3367ab5367ab73779b83779ba3878bc3978bd3977bf3a77c03a76c23b75c43c75c53c74c73d73c83e73ca3e72cc3f71cd4071cf4070d0416fd2426fd3436ed5446dd6456cd8456cd9466bdb476adc4869de4968df4a68e04c67e24d66e34e65e44f64e55064e75263e85362e95462ea5661eb5760ec5860ed5a5fee5b5eef5d5ef05f5ef1605df2625df2645cf3655cf4675cf4695cf56b5cf66c5cf66e5cf7705cf7725cf8745cf8765cf9785df9795df97b5dfa7d5efa7f5efa815ffb835ffb8560fb8761fc8961fc8a62fc8c63fc8e64fc9065fd9266fd9467fd9668fd9869fd9a6afd9b6bfe9d6cfe9f6dfea16efea36ffea571fea772fea973feaa74feac76feae77feb078feb27afeb47bfeb67cfeb77efeb97ffebb81febd82febf84fec185fec287fec488fec68afec88cfeca8dfecc8ffecd90fecf92fed194fed395fed597fed799fed89afdda9cfddc9efddea0fde0a1fde2a3fde3a5fde5a7fde7a9fde9aafdebacfcecaefceeb0fcf0b2fcf2b4fcf4b6fcf6b8fcf7b9fcf9bbfcfbbdfcfdbf"));
+var interpolateMagma = ramp(colors("00000401000501010601010802010902020b02020d03030f03031204041405041606051806051a07061c08071e0907200a08220b09240c09260d0a290e0b2b100b2d110c2f120d31130d34140e36150e38160f3b180f3d19103f1a10421c10441d11471e114920114b21114e22115024125325125527125829115a2a115c2c115f2d11612f116331116533106734106936106b38106c390f6e3b0f703d0f713f0f72400f74420f75440f764510774710784910784a10794c117a4e117b4f127b51127c52137c54137d56147d57157e59157e5a167e5c167f5d177f5f187f601880621980641a80651a80671b80681c816a1c816b1d816d1d816e1e81701f81721f817320817521817621817822817922827b23827c23827e24828025828125818326818426818627818827818928818b29818c29818e2a81902a81912b81932b80942c80962c80982d80992d809b2e7f9c2e7f9e2f7fa02f7fa1307ea3307ea5317ea6317da8327daa337dab337cad347cae347bb0357bb2357bb3367ab5367ab73779b83779ba3878bc3978bd3977bf3a77c03a76c23b75c43c75c53c74c73d73c83e73ca3e72cc3f71cd4071cf4070d0416fd2426fd3436ed5446dd6456cd8456cd9466bdb476adc4869de4968df4a68e04c67e24d66e34e65e44f64e55064e75263e85362e95462ea5661eb5760ec5860ed5a5fee5b5eef5d5ef05f5ef1605df2625df2645cf3655cf4675cf4695cf56b5cf66c5cf66e5cf7705cf7725cf8745cf8765cf9785df9795df97b5dfa7d5efa7f5efa815ffb835ffb8560fb8761fc8961fc8a62fc8c63fc8e64fc9065fd9266fd9467fd9668fd9869fd9a6afd9b6bfe9d6cfe9f6dfea16efea36ffea571fea772fea973feaa74feac76feae77feb078feb27afeb47bfeb67cfeb77efeb97ffebb81febd82febf84fec185fec287fec488fec68afec88cfeca8dfecc8ffecd90fecf92fed194fed395fed597fed799fed89afdda9cfddc9efddea0fde0a1fde2a3fde3a5fde5a7fde7a9fde9aafdebacfcecaefceeb0fcf0b2fcf2b4fcf4b6fcf6b8fcf7b9fcf9bbfcfbbdfcfdbf"));
 
-var inferno = ramp(colors("00000401000501010601010802010a02020c02020e03021004031204031405041706041907051b08051d09061f0a07220b07240c08260d08290e092b10092d110a30120a32140b34150b37160b39180c3c190c3e1b0c411c0c431e0c451f0c48210c4a230c4c240c4f260c51280b53290b552b0b572d0b592f0a5b310a5c320a5e340a5f3609613809623909633b09643d09653e0966400a67420a68440a68450a69470b6a490b6a4a0c6b4c0c6b4d0d6c4f0d6c510e6c520e6d540f6d550f6d57106e59106e5a116e5c126e5d126e5f136e61136e62146e64156e65156e67166e69166e6a176e6c186e6d186e6f196e71196e721a6e741a6e751b6e771c6d781c6d7a1d6d7c1d6d7d1e6d7f1e6c801f6c82206c84206b85216b87216b88226a8a226a8c23698d23698f24699025689225689326679526679727669827669a28659b29649d29649f2a63a02a63a22b62a32c61a52c60a62d60a82e5fa92e5eab2f5ead305dae305cb0315bb1325ab3325ab43359b63458b73557b93556ba3655bc3754bd3853bf3952c03a51c13a50c33b4fc43c4ec63d4dc73e4cc83f4bca404acb4149cc4248ce4347cf4446d04545d24644d34743d44842d54a41d74b3fd84c3ed94d3dda4e3cdb503bdd513ade5238df5337e05536e15635e25734e35933e45a31e55c30e65d2fe75e2ee8602de9612bea632aeb6429eb6628ec6726ed6925ee6a24ef6c23ef6e21f06f20f1711ff1731df2741cf3761bf37819f47918f57b17f57d15f67e14f68013f78212f78410f8850ff8870ef8890cf98b0bf98c0af98e09fa9008fa9207fa9407fb9606fb9706fb9906fb9b06fb9d07fc9f07fca108fca309fca50afca60cfca80dfcaa0ffcac11fcae12fcb014fcb216fcb418fbb61afbb81dfbba1ffbbc21fbbe23fac026fac228fac42afac62df9c72ff9c932f9cb35f8cd37f8cf3af7d13df7d340f6d543f6d746f5d949f5db4cf4dd4ff4df53f4e156f3e35af3e55df2e661f2e865f2ea69f1ec6df1ed71f1ef75f1f179f2f27df2f482f3f586f3f68af4f88ef5f992f6fa96f8fb9af9fc9dfafda1fcffa4"));
+var interpolateInferno = ramp(colors("00000401000501010601010802010a02020c02020e03021004031204031405041706041907051b08051d09061f0a07220b07240c08260d08290e092b10092d110a30120a32140b34150b37160b39180c3c190c3e1b0c411c0c431e0c451f0c48210c4a230c4c240c4f260c51280b53290b552b0b572d0b592f0a5b310a5c320a5e340a5f3609613809623909633b09643d09653e0966400a67420a68440a68450a69470b6a490b6a4a0c6b4c0c6b4d0d6c4f0d6c510e6c520e6d540f6d550f6d57106e59106e5a116e5c126e5d126e5f136e61136e62146e64156e65156e67166e69166e6a176e6c186e6d186e6f196e71196e721a6e741a6e751b6e771c6d781c6d7a1d6d7c1d6d7d1e6d7f1e6c801f6c82206c84206b85216b87216b88226a8a226a8c23698d23698f24699025689225689326679526679727669827669a28659b29649d29649f2a63a02a63a22b62a32c61a52c60a62d60a82e5fa92e5eab2f5ead305dae305cb0315bb1325ab3325ab43359b63458b73557b93556ba3655bc3754bd3853bf3952c03a51c13a50c33b4fc43c4ec63d4dc73e4cc83f4bca404acb4149cc4248ce4347cf4446d04545d24644d34743d44842d54a41d74b3fd84c3ed94d3dda4e3cdb503bdd513ade5238df5337e05536e15635e25734e35933e45a31e55c30e65d2fe75e2ee8602de9612bea632aeb6429eb6628ec6726ed6925ee6a24ef6c23ef6e21f06f20f1711ff1731df2741cf3761bf37819f47918f57b17f57d15f67e14f68013f78212f78410f8850ff8870ef8890cf98b0bf98c0af98e09fa9008fa9207fa9407fb9606fb9706fb9906fb9b06fb9d07fc9f07fca108fca309fca50afca60cfca80dfcaa0ffcac11fcae12fcb014fcb216fcb418fbb61afbb81dfbba1ffbbc21fbbe23fac026fac228fac42afac62df9c72ff9c932f9cb35f8cd37f8cf3af7d13df7d340f6d543f6d746f5d949f5db4cf4dd4ff4df53f4e156f3e35af3e55df2e661f2e865f2ea69f1ec6df1ed71f1ef75f1f179f2f27df2f482f3f586f3f68af4f88ef5f992f6fa96f8fb9af9fc9dfafda1fcffa4"));
 
-var plasma = ramp(colors("0d088710078813078916078a19068c1b068d1d068e20068f2206902406912605912805922a05932c05942e05952f059631059733059735049837049938049a3a049a3c049b3e049c3f049c41049d43039e44039e46039f48039f4903a04b03a14c02a14e02a25002a25102a35302a35502a45601a45801a45901a55b01a55c01a65e01a66001a66100a76300a76400a76600a76700a86900a86a00a86c00a86e00a86f00a87100a87201a87401a87501a87701a87801a87a02a87b02a87d03a87e03a88004a88104a78305a78405a78606a68707a68808a68a09a58b0aa58d0ba58e0ca48f0da4910ea3920fa39410a29511a19613a19814a099159f9a169f9c179e9d189d9e199da01a9ca11b9ba21d9aa31e9aa51f99a62098a72197a82296aa2395ab2494ac2694ad2793ae2892b02991b12a90b22b8fb32c8eb42e8db52f8cb6308bb7318ab83289ba3388bb3488bc3587bd3786be3885bf3984c03a83c13b82c23c81c33d80c43e7fc5407ec6417dc7427cc8437bc9447aca457acb4679cc4778cc4977cd4a76ce4b75cf4c74d04d73d14e72d24f71d35171d45270d5536fd5546ed6556dd7566cd8576bd9586ada5a6ada5b69db5c68dc5d67dd5e66de5f65de6164df6263e06363e16462e26561e26660e3685fe4695ee56a5de56b5de66c5ce76e5be76f5ae87059e97158e97257ea7457eb7556eb7655ec7754ed7953ed7a52ee7b51ef7c51ef7e50f07f4ff0804ef1814df1834cf2844bf3854bf3874af48849f48948f58b47f58c46f68d45f68f44f79044f79143f79342f89441f89540f9973ff9983ef99a3efa9b3dfa9c3cfa9e3bfb9f3afba139fba238fca338fca537fca636fca835fca934fdab33fdac33fdae32fdaf31fdb130fdb22ffdb42ffdb52efeb72dfeb82cfeba2cfebb2bfebd2afebe2afec029fdc229fdc328fdc527fdc627fdc827fdca26fdcb26fccd25fcce25fcd025fcd225fbd324fbd524fbd724fad824fada24f9dc24f9dd25f8df25f8e125f7e225f7e425f6e626f6e826f5e926f5eb27f4ed27f3ee27f3f027f2f227f1f426f1f525f0f724f0f921"));
+var interpolatePlasma = ramp(colors("0d088710078813078916078a19068c1b068d1d068e20068f2206902406912605912805922a05932c05942e05952f059631059733059735049837049938049a3a049a3c049b3e049c3f049c41049d43039e44039e46039f48039f4903a04b03a14c02a14e02a25002a25102a35302a35502a45601a45801a45901a55b01a55c01a65e01a66001a66100a76300a76400a76600a76700a86900a86a00a86c00a86e00a86f00a87100a87201a87401a87501a87701a87801a87a02a87b02a87d03a87e03a88004a88104a78305a78405a78606a68707a68808a68a09a58b0aa58d0ba58e0ca48f0da4910ea3920fa39410a29511a19613a19814a099159f9a169f9c179e9d189d9e199da01a9ca11b9ba21d9aa31e9aa51f99a62098a72197a82296aa2395ab2494ac2694ad2793ae2892b02991b12a90b22b8fb32c8eb42e8db52f8cb6308bb7318ab83289ba3388bb3488bc3587bd3786be3885bf3984c03a83c13b82c23c81c33d80c43e7fc5407ec6417dc7427cc8437bc9447aca457acb4679cc4778cc4977cd4a76ce4b75cf4c74d04d73d14e72d24f71d35171d45270d5536fd5546ed6556dd7566cd8576bd9586ada5a6ada5b69db5c68dc5d67dd5e66de5f65de6164df6263e06363e16462e26561e26660e3685fe4695ee56a5de56b5de66c5ce76e5be76f5ae87059e97158e97257ea7457eb7556eb7655ec7754ed7953ed7a52ee7b51ef7c51ef7e50f07f4ff0804ef1814df1834cf2844bf3854bf3874af48849f48948f58b47f58c46f68d45f68f44f79044f79143f79342f89441f89540f9973ff9983ef99a3efa9b3dfa9c3cfa9e3bfb9f3afba139fba238fca338fca537fca636fca835fca934fdab33fdac33fdae32fdaf31fdb130fdb22ffdb42ffdb52efeb72dfeb82cfeba2cfebb2bfebd2afebe2afec029fdc229fdc328fdc527fdc627fdc827fdca26fdcb26fccd25fcce25fcd025fcd225fbd324fbd524fbd724fad824fada24f9dc24f9dd25f8df25f8e125f7e225f7e425f6e626f6e826f5e926f5eb27f4ed27f3ee27f3f027f2f227f1f426f1f525f0f724f0f921"));
+
+function sequential(interpolator) {
+  var x0 = 0,
+      x1 = 1,
+      clamp = false;
+
+  function scale(x) {
+    var t = (x - x0) / (x1 - x0);
+    return interpolator(clamp ? Math.max(0, Math.min(1, t)) : t);
+  }
+
+  scale.domain = function(_) {
+    return arguments.length ? (x0 = +_[0], x1 = +_[1], scale) : [x0, x1];
+  };
+
+  scale.clamp = function(_) {
+    return arguments.length ? (clamp = !!_, scale) : clamp;
+  };
+
+  scale.interpolator = function(_) {
+    return arguments.length ? (interpolator = _, scale) : interpolator;
+  };
+
+  scale.copy = function() {
+    return sequential(interpolator).domain([x0, x1]).clamp(clamp);
+  };
+
+  return linearish(scale);
+}
+
+
+
+var scales = Object.freeze({
+  scaleBand: band,
+  scalePoint: scalePoint,
+  scaleIdentity: identity$2,
+  scaleLinear: linear$2,
+  scaleLog: log,
+  scaleOrdinal: ordinal,
+  scaleImplicit: scaleImplicit,
+  scalePow: pow,
+  scaleSqrt: scaleSqrt,
+  scaleQuantile: quantile,
+  scaleQuantize: quantize$1,
+  scaleThreshold: threshold$1,
+  scaleTime: scaleTime,
+  scaleUtc: scaleUtc,
+  schemeCategory10: schemeCategory10,
+  schemeCategory20b: schemeCategory20b,
+  schemeCategory20c: schemeCategory20c,
+  schemeCategory20: schemeCategory20,
+  interpolateCubehelixDefault: interpolateCubehelixDefault,
+  interpolateRainbow: interpolateRainbow,
+  interpolateWarm: interpolateWarm,
+  interpolateCool: interpolateCool,
+  interpolateViridis: interpolateViridis,
+  interpolateMagma: interpolateMagma,
+  interpolateInferno: interpolateInferno,
+  interpolatePlasma: interpolatePlasma,
+  scaleSequential: sequential
+});
 
 /**
     @module {Object} defaults
@@ -4948,7 +5930,7 @@ var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSp
 */
 function defaultSplit(sentence) {
   if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords);
-  return merge(stringify(sentence).match(splitWords).map(function (d) {
+  return merge$1(stringify(sentence).match(splitWords).map(function (d) {
     if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) return d.match(splitAllChars);
     return [d];
   }));
@@ -5944,7 +6926,10 @@ Shape.prototype._applyLabels = function _applyLabels (g, show) {
 
   var that = this;
 
-  g.each(function(d, i) {
+  g.each(function(datum, i) {
+
+    var d = datum;
+    if (datum.nested && datum.key && datum.values) d = datum.values[0];
 
     /* Draws label based on inner bounds */
     var labelData = [];
@@ -5955,7 +6940,7 @@ Shape.prototype._applyLabels = function _applyLabels (g, show) {
 
       if (that._labelBounds && labels !== false && labels !== void 0) {
 
-        var bounds = that._labelBounds(d, i, that._aes(d, i));
+        var bounds = that._labelBounds(d, i, that._aes(datum, i));
 
         if (bounds) {
 
@@ -6122,6 +7107,24 @@ Shape.prototype.fontSize = function fontSize (_) {
 
 /**
     @memberof Shape
+    @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
+    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
+    @example
+function(d, i, shape) {
+return {
+  "width": shape.width,
+  "height": shape.height,
+  "x": -shape.width / 2,
+  "y": -shape.height / 2
+};
+}
+*/
+Shape.prototype.hitArea = function hitArea (_) {
+  return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : constant$1(_), this) : this._hitArea;
+};
+
+/**
+    @memberof Shape
     @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
     @param {Function} [*value*]
 */
@@ -6153,7 +7156,7 @@ return {
 }
 */
 Shape.prototype.labelBounds = function labelBounds (_) {
-  return arguments.length ? (this._labelBounds = _, this) : this._labelBounds;
+  return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : constant$1(_), this) : this._labelBounds;
 };
 
 /**
@@ -6344,11 +7347,29 @@ var Circle = (function (Shape) {
     update
         .call(this._applyImage.bind(this))
         .call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
       .transition(this._transition)
-        .attr("opacity", this._opacity);
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
 
     var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) update.on(events[e], this$1._on[events[e]]);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
 
     return this;
 
@@ -7352,7 +8373,7 @@ function symbol() {
 
 function noop$1() {}
 
-function point$2(that, x, y) {
+function point$1(that, x, y) {
   that._context.bezierCurveTo(
     (2 * that._x0 + that._x1) / 3,
     (2 * that._y0 + that._y1) / 3,
@@ -7381,7 +8402,7 @@ Basis.prototype = {
   },
   lineEnd: function() {
     switch (this._point) {
-      case 3: point$2(this, this._x1, this._y1); // proceed
+      case 3: point$1(this, this._x1, this._y1); // proceed
       case 2: this._context.lineTo(this._x1, this._y1); break;
     }
     if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
@@ -7393,7 +8414,7 @@ Basis.prototype = {
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
       case 1: this._point = 2; break;
       case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // proceed
-      default: point$2(this, x, y); break;
+      default: point$1(this, x, y); break;
     }
     this._x0 = this._x1, this._x1 = x;
     this._y0 = this._y1, this._y1 = y;
@@ -7443,7 +8464,7 @@ BasisClosed.prototype = {
       case 0: this._point = 1; this._x2 = x, this._y2 = y; break;
       case 1: this._point = 2; this._x3 = x, this._y3 = y; break;
       case 2: this._point = 3; this._x4 = x, this._y4 = y; this._context.moveTo((this._x0 + 4 * this._x1 + x) / 6, (this._y0 + 4 * this._y1 + y) / 6); break;
-      default: point$2(this, x, y); break;
+      default: point$1(this, x, y); break;
     }
     this._x0 = this._x1, this._x1 = x;
     this._y0 = this._y1, this._y1 = y;
@@ -7481,7 +8502,7 @@ BasisOpen.prototype = {
       case 1: this._point = 2; break;
       case 2: this._point = 3; var x0 = (this._x0 + 4 * this._x1 + x) / 6, y0 = (this._y0 + 4 * this._y1 + y) / 6; this._line ? this._context.lineTo(x0, y0) : this._context.moveTo(x0, y0); break;
       case 3: this._point = 4; // proceed
-      default: point$2(this, x, y); break;
+      default: point$1(this, x, y); break;
     }
     this._x0 = this._x1, this._x1 = x;
     this._y0 = this._y1, this._y1 = y;
@@ -7547,7 +8568,7 @@ var curveBundle = (function custom(beta) {
   return bundle;
 })(0.85);
 
-function point$3(that, x, y) {
+function point$2(that, x, y) {
   that._context.bezierCurveTo(
     that._x1 + that._k * (that._x2 - that._x0),
     that._y1 + that._k * (that._y2 - that._y0),
@@ -7578,7 +8599,7 @@ Cardinal.prototype = {
   lineEnd: function() {
     switch (this._point) {
       case 2: this._context.lineTo(this._x2, this._y2); break;
-      case 3: point$3(this, this._x1, this._y1); break;
+      case 3: point$2(this, this._x1, this._y1); break;
     }
     if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
     this._line = 1 - this._line;
@@ -7589,7 +8610,7 @@ Cardinal.prototype = {
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
       case 1: this._point = 2; this._x1 = x, this._y1 = y; break;
       case 2: this._point = 3; // proceed
-      default: point$3(this, x, y); break;
+      default: point$2(this, x, y); break;
     }
     this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
     this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
@@ -7648,7 +8669,7 @@ CardinalClosed.prototype = {
       case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
       case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
       case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
-      default: point$3(this, x, y); break;
+      default: point$2(this, x, y); break;
     }
     this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
     this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
@@ -7696,7 +8717,7 @@ CardinalOpen.prototype = {
       case 1: this._point = 2; break;
       case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
       case 3: this._point = 4; // proceed
-      default: point$3(this, x, y); break;
+      default: point$2(this, x, y); break;
     }
     this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
     this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
@@ -7716,7 +8737,7 @@ var curveCardinalOpen = (function custom(tension) {
   return cardinal;
 })(0);
 
-function point$4(that, x, y) {
+function point$3(that, x, y) {
   var x1 = that._x1,
       y1 = that._y1,
       x2 = that._x2,
@@ -7779,7 +8800,7 @@ CatmullRom.prototype = {
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
       case 1: this._point = 2; break;
       case 2: this._point = 3; // proceed
-      default: point$4(this, x, y); break;
+      default: point$3(this, x, y); break;
     }
 
     this._l01_a = this._l12_a, this._l12_a = this._l23_a;
@@ -7850,7 +8871,7 @@ CatmullRomClosed.prototype = {
       case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
       case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
       case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
-      default: point$4(this, x, y); break;
+      default: point$3(this, x, y); break;
     }
 
     this._l01_a = this._l12_a, this._l12_a = this._l23_a;
@@ -7910,7 +8931,7 @@ CatmullRomOpen.prototype = {
       case 1: this._point = 2; break;
       case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
       case 3: this._point = 4; // proceed
-      default: point$4(this, x, y); break;
+      default: point$3(this, x, y); break;
     }
 
     this._l01_a = this._l12_a, this._l12_a = this._l23_a;
@@ -7983,7 +9004,7 @@ function slope2(that, t) {
 // According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
 // "you can express cubic Hermite interpolation in terms of cubic Bézier curves
 // with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
-function point$5(that, t0, t1) {
+function point$4(that, t0, t1) {
   var x0 = that._x0,
       y0 = that._y0,
       x1 = that._x1,
@@ -8012,7 +9033,7 @@ MonotoneX.prototype = {
   lineEnd: function() {
     switch (this._point) {
       case 2: this._context.lineTo(this._x1, this._y1); break;
-      case 3: point$5(this, this._t0, slope2(this, this._t0)); break;
+      case 3: point$4(this, this._t0, slope2(this, this._t0)); break;
     }
     if (this._line || (this._line !== 0 && this._point === 1)) this._context.closePath();
     this._line = 1 - this._line;
@@ -8025,8 +9046,8 @@ MonotoneX.prototype = {
     switch (this._point) {
       case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
       case 1: this._point = 2; break;
-      case 2: this._point = 3; point$5(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
-      default: point$5(this, this._t0, t1 = slope3(this, x, y)); break;
+      case 2: this._point = 3; point$4(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
+      default: point$4(this, this._t0, t1 = slope3(this, x, y)); break;
     }
 
     this._x0 = this._x1, this._x1 = x;
@@ -8417,7 +9438,18 @@ var Line = (function (Shape) {
 
     Shape.prototype.render.call(this, callback);
 
-    var lines = nest().key(this._id).entries(this._data);
+    var lines = nest().key(this._id).entries(this._data).map(function (d) {
+      var x = extent(d.values, function (v) { return v.x; });
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+      var y = extent(d.values, function (v) { return v.y; });
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+      d.nested = true;
+      return d;
+    });
 
     this._path
       .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
@@ -8426,7 +9458,11 @@ var Line = (function (Shape) {
 
     var groups = this._select.selectAll(".d3plus-shape-line").data(lines, function (d) { return d.key; });
 
+    groups.transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
+
     groups.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attr("d", function (d) { return this$1._path(d.values); })
       .call(this._applyStyle.bind(this));
 
@@ -8436,20 +9472,41 @@ var Line = (function (Shape) {
 
     var enter = groups.enter().append("g")
         .attr("class", "d3plus-shape-line")
-        .attr("id", function (d) { return ("d3plus-shape-line-" + (d.key)); });
+        .attr("id", function (d) { return ("d3plus-shape-line-" + (d.key)); })
+        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
+        .attr("opacity", 0);
 
     enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attr("d", function (d) { return this$1._path(d.values); })
       .call(this._applyStyle.bind(this));
 
     var update = enter.merge(groups);
 
     update.call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
       .transition(this._transition)
-        .attr("opacity", this._opacity);
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "none");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
 
     var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) update.on(events[e], this$1._on[events[e]]);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
 
     return this;
 
@@ -8599,11 +9656,29 @@ var Rect = (function (Shape) {
     update
         .call(this._applyImage.bind(this))
         .call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
       .transition(this._transition)
-        .attr("opacity", this._opacity);
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
 
     var events = Object.keys(this._on);
-    for (var e = 0; e < events.length; e++) update.on(events[e], this$1._on[events[e]]);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
 
     return this;
 
@@ -8718,14 +9793,1380 @@ function(d) {
   return Rect;
 }(Shape));
 
+/**
+    @function accessor
+    @desc Wraps an object key in a simple accessor function.
+    @param {String} key The key to be returned from each Object passed to the function.
+    @param {*} [def] A default value to be returned if the key is not present.
+    @example <caption>this</caption>
+accessor("id");
+    @example <caption>returns this</caption>
+function(d) {
+  return d["id"];
+}
+*/
+function accessor$1(key, def) {
+  if (def === void 0) return function (d) { return d[key]; };
+  return function (d) { return d[key] === void 0 ? def : d[key]; };
+}
+
+/**
+    @function attrize
+    @desc Applies each key/value in an object as an attr.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} attrs An object of key/value attr pairs.
+*/
+function attrize$1(e, a) {
+  if ( a === void 0 ) a = {};
+
+  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
+}
+
+/**
+    @class BaseClass
+    @desc An abstract class that contains some global methods and functionality.
+*/
+var BaseClass$1 = function BaseClass() {
+
+  function s() {
+    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  }
+
+  this._uuid = "" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s());
+};
+
+/**
+    @memberof BaseClass
+    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
+    @param {Object} [*value*]
+*/
+BaseClass$1.prototype.config = function config (_) {
+    var this$1 = this;
+
+  if (arguments.length) {
+    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+    return this;
+  }
+    else {
+    var config = {};
+    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    return config;
+  }
+};
+
+/**
+    @function constant
+    @desc Wraps non-function variables in a simple return function.
+    @param {Array|Number|Object|String} value The value to be returned from the function.
+    @example <caption>this</caption>
+constant(42);
+    @example <caption>returns this</caption>
+function() {
+  return 42;
+}
+*/
+function constant$7(value) {
+  return function constant() {
+    return value;
+  };
+}
+
+var defaultParams$1 = {
+  condition: true,
+  enter: {},
+  exit: {},
+  parent: select("body"),
+  transition: transition().duration(0),
+  update: {}
+};
+
+/**
+    @function elem
+    @desc Manages the enter/update/exit pattern for a single DOM element.
+    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
+    @param {Object} params Additional parameters.
+    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
+    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
+    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
+    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
+    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
+    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
+*/
+function elem$1(selector, p) {
+
+  p = Object.assign({}, defaultParams$1, p);
+
+  var className = (/\.([^#]+)/g).exec(selector),
+        id = (/#([^\.]+)/g).exec(selector),
+        tag = (/^([^.^#]+)/g).exec(selector)[1];
+
+  var elem = p.parent.selectAll(selector).data(p.condition ? [null] : []);
+
+  var enter = elem.enter().append(tag).call(attrize$1, p.enter);
+
+  if (id) enter.attr("id", id[1]);
+  if (className) enter.attr("class", className[1]);
+
+  elem.exit().transition(p.transition).call(attrize$1, p.exit).remove();
+
+  var update = enter.merge(elem);
+  update.transition(p.transition).call(attrize$1, p.update);
+
+  return update;
+
+}
+
+/**
+    @function merge
+    @desc Combines an Array of Objects together and returns a new Object.
+    @param {Array} objects The Array of objects to be merged together.
+    @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
+    @example <caption>this</caption>
+merge([
+  {id: "foo", group: "A", value: 10},
+  {id: "bar", group: "A", value: 20}
+]);
+    @example <caption>returns this</caption>
+{id: ["bar", "foo"], group: "A", value: 30}
+*/
+function combine(objects, aggs) {
+  if ( aggs === void 0 ) aggs = {};
+
+
+  var availableKeys = new Set(merge$1(objects.map(function (o) { return keys(o); }))),
+        newObject = {};
+
+  availableKeys.forEach(function (k) {
+    var values = objects.map(function (o) { return o[k]; });
+    var value;
+    if (aggs[k]) value = aggs[k](values);
+    else if (values.map(function (v) { return typeof v; }).indexOf("string") >= 0) {
+      value = Array.from(new Set(values));
+      if (value.length === 1) value = value[0];
+    }
+    else value = sum(values);
+    newObject[k] = value;
+  });
+
+  return newObject;
+
+}
+
+var d3$3 = {
+  select: select,
+  transition: transition
+};
+/**
+    @class Image
+    @desc Creates SVG images based on an array of data.
+    @example <caption>a sample row of data</caption>
+var data = {"url": "file.png", "width": "100", "height": "50"};
+@example <caption>passed to the generator</caption>
+new Image().data([data]).render();
+@example <caption>creates the following</caption>
+<image class="d3plus-shape-image" opacity="1" href="file.png" width="100" height="50" x="0" y="0"></image>
+@example <caption>this is shorthand for the following</caption>
+image().data([data])();
+@example <caption>which also allows a post-draw callback function</caption>
+image().data([data])(function() { alert("draw complete!"); })
+*/
+var Image$1 = function Image() {
+  this._duration = 600;
+  this._height = accessor("height");
+  this._id = accessor("url");
+  this._select;
+  this._url = accessor("url");
+  this._width = accessor("width");
+  this._x = accessor("x", 0);
+  this._y = accessor("y", 0);
+};
+
+/**
+    @memberof Image
+    @desc Renders the current Image to the page. If a *callback* is specified, it will be called once the images are done drawing.
+    @param {Function} [*callback* = undefined]
+*/
+Image$1.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+  if (this._select === void 0) this.select(d3$3.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+
+  var images = this._select.selectAll(".d3plus-shape-image").data(this._data, this._id);
+
+  var enter = images.enter().append("image")
+    .attr("class", "d3plus-shape-image")
+    .attr("opacity", 0);
+
+  var t = d3$3.transition().duration(this._duration),
+        that = this,
+        update = enter.merge(images);
+
+  update
+      .attr("xlink:href", this._url)
+    .transition(t)
+      .attr("opacity", 1)
+      .attr("width", function (d, i) { return this$1._width(d, i); })
+      .attr("height", function (d, i) { return this$1._height(d, i); })
+      .attr("x", function (d, i) { return this$1._x(d, i); })
+      .attr("y", function (d, i) { return this$1._y(d, i); })
+      .each(function(d, i) {
+        var image = d3$3.select(this), link = that._url(d, i);
+        var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
+        if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
+          var img = new Image$1();
+          img.src = link;
+          img.crossOrigin = "Anonymous";
+          img.onload = function() {
+            var canvas = document.createElement("canvas");
+            canvas.width = this.width;
+            canvas.height = this.height;
+            var context = canvas.getContext("2d");
+            context.drawImage(this, 0, 0);
+            image.attr("xlink:href", canvas.toDataURL("image/png"));
+          };
+        }
+      });
+
+  images.exit().transition(t)
+    .attr("width", function (d, i) { return this$1._width(d, i); })
+    .attr("height", function (d, i) { return this$1._height(d, i); })
+    .attr("x", function (d, i) { return this$1._x(d, i); })
+    .attr("y", function (d, i) { return this$1._y(d, i); })
+    .attr("opacity", 0).remove();
+
+  if (callback) setTimeout(callback, this._duration + 100);
+
+  return this;
+
+};
+
+/**
+    @memberof Image
+    @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. An <image> tag will be drawn for each object in the array.
+    @param {Array} [*data* = []]
+*/
+Image$1.prototype.data = function data (_) {
+  return arguments.length ? (this._data = _, this) : this._data;
+};
+
+/**
+    @memberof Image
+    @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
+    @param {Number} [*ms* = 600]
+*/
+Image$1.prototype.duration = function duration (_) {
+  return arguments.length ? (this._duration = _, this) : this._duration;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+    @param {Function|Number} [*value*]
+    @example
+function(d) {
+return d.height;
+}
+*/
+Image$1.prototype.height = function height (_) {
+  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$1(_), this) : this._height;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor. This is useful if you want to duplicate the same image.
+    @param {Function} [*value*]
+    @example
+function(d) {
+return d.url;
+}
+*/
+Image$1.prototype.id = function id (_) {
+  return arguments.length ? (this._id = _, this) : this._id;
+};
+
+/**
+    @memberof Image
+    @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+    @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+*/
+Image$1.prototype.select = function select (_) {
+  return arguments.length ? (this._select = d3$3.select(_), this) : this._select;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the URL accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current URL accessor.
+    @param {Function} [*value*]
+    @example
+function(d) {
+return d.url;
+}
+*/
+Image$1.prototype.url = function url (_) {
+  return arguments.length ? (this._url = _, this) : this._url;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+    @param {Function|Number} [*value*]
+    @example
+function(d) {
+return d.width;
+}
+*/
+Image$1.prototype.width = function width (_) {
+  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$1(_), this) : this._width;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+    @param {Function|Number} [*value*]
+    @example
+function(d) {
+return d.x || 0;
+}
+*/
+Image$1.prototype.x = function x (_) {
+  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+    @param {Function|Number} [*value*]
+    @example
+function(d) {
+return d.y || 0;
+}
+*/
+Image$1.prototype.y = function y (_) {
+  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+};
+
+var d3$2 = {
+  select: select,
+  selectAll: d3SelectAll,
+  transition: transition
+};
+
+/**
+    @class Shape
+    @desc An abstracted class for generating shapes.
+*/
+var Shape$1 = function Shape() {
+  var this$1 = this;
+
+  this._backgroundImage = constant$1(false);
+  this._data = [];
+  this._duration = 600;
+  this._fill = constant$1("black");
+  this._fontColor = function (d, i) { return contrast(this$1._fill(d, i)); };
+  this._fontFamily = constant$1("Verdana");
+  this._fontResize = constant$1(false);
+  this._fontSize = constant$1(12);
+  this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
+  this._label = constant$1(false);
+  this._labelPadding = constant$1(5);
+  this._on = {};
+  this._opacity = constant$1(1);
+  this._scale = constant$1(1);
+  this._stroke = constant$1("black");
+  this._strokeWidth = constant$1(0);
+  this._textAnchor = constant$1("start");
+  this._verticalAlign = constant$1("top");
+};
+
+/**
+    @memberof Shape
+    @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+    @param {Object} *data point*
+    @param {Number} *index*
+    @private
+*/
+Shape$1.prototype._aes = function _aes () {
+  return {};
+};
+
+/**
+    @memberof Shape
+    @desc Adds background image to each shape group.
+    @param {D3Selection} *g*
+    @param {Boolean} [*show* = True] Whether or not to show or remove the image.
+    @private
+*/
+Shape$1.prototype._applyImage = function _applyImage (g, show) {
+    if ( show === void 0 ) show = true;
+
+
+  var that = this;
+
+  g.each(function(d, i) {
+
+    var aes = that._aes(d, i);
+
+    var imageData = [];
+    var h = 0, w = 0;
+
+    if (show && (aes.r || aes.width && aes.height)) {
+      h = aes.r ? aes.r * 2 : aes.height;
+      w = aes.r ? aes.r * 2 : aes.width;
+      var url = that._backgroundImage(d, i);
+      if (url) imageData.push({url: url});
+    }
+
+    new Image$1()
+      .data(imageData)
+      .duration(that._duration)
+      .height(h)
+      .select(this)
+      .width(w)
+      .x(-w / 2)
+      .y(-h / 2)
+      .render();
+
+  });
+
+};
+
+/**
+    @memberof Shape
+    @desc Adds labels to each shape group.
+    @param {D3Selection} *g*
+    @param {Boolean} [*show* = True] Whether or not to show or remove the labels.
+    @private
+*/
+Shape$1.prototype._applyLabels = function _applyLabels (g, show) {
+    if ( show === void 0 ) show = true;
+
+
+  var that = this;
+
+  g.each(function(datum, i) {
+
+    var d = datum;
+    if (datum.nested && datum.key && datum.values) d = datum.values[0];
+
+    /* Draws label based on inner bounds */
+    var labelData = [];
+
+    if (show) {
+
+      var labels = that._label(d, i);
+
+      if (that._labelBounds && labels !== false && labels !== void 0) {
+
+        var bounds = that._labelBounds(d, i, that._aes(datum, i));
+
+        if (bounds) {
+
+          if (labels.constructor !== Array) labels = [labels];
+
+          var fC = that._fontColor(d, i),
+                fF = that._fontFamily(d, i),
+                fR = that._fontResize(d, i),
+                fS = that._fontSize(d, i),
+                lH = that._lineHeight(d, i),
+                padding = that._labelPadding(d, i),
+                tA = that._textAnchor(d, i),
+                vA = that._verticalAlign(d, i);
+
+          for (var l = 0; l < labels.length; l++) {
+            var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
+                  p = padding.constructor === Array ? padding[l] : padding;
+            b.height -= p * 2;
+            b.width -= p * 2;
+            b.x += p;
+            b.y += p;
+            b.id = (that._id(d, i)) + "_" + l;
+            b.text = labels[l];
+
+            b.fC = fC.constructor === Array ? fC[l] : fC;
+            b.fF = fF.constructor === Array ? fF[l] : fF;
+            b.fR = fR.constructor === Array ? fR[l] : fR;
+            b.fS = fS.constructor === Array ? fS[l] : fS;
+            b.lH = lH.constructor === Array ? lH[l] : lH;
+            b.tA = tA.constructor === Array ? tA[l] : tA;
+            b.vA = vA.constructor === Array ? vA[l] : vA;
+
+            labelData.push(b);
+          }
+
+        }
+
+      }
+    }
+
+    new TextBox()
+      .data(labelData)
+      .delay(that._duration / 2)
+      .duration(that._duration)
+      .fontColor(function (d) { return d.fC; })
+      .fontFamily(function (d) { return d.fF; })
+      .fontResize(function (d) { return d.fR; })
+      .fontSize(function (d) { return d.fS; })
+      .lineHeight(function (d) { return d.lH; })
+      .textAnchor(function (d) { return d.tA; })
+      .verticalAlign(function (d) { return d.vA; })
+      .select(this)
+      .render();
+
+  });
+
+};
+
+/**
+    @memberof Shape
+    @desc Provides the default styling to the shape elements.
+    @param {HTMLElement} *elem*
+    @private
+*/
+Shape$1.prototype._applyStyle = function _applyStyle (elem) {
+    var this$1 = this;
+
+  elem
+    .attr("fill", function (d, i) { return this$1._fill(d, i); })
+    .attr("stroke", function (d, i) { return this$1._stroke(d, i); })
+    .attr("stroke-width", function (d, i) { return this$1._strokeWidth(d, i); });
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
+    @param {Function|String} [*value* = false]
+*/
+Shape$1.prototype.backgroundImage = function backgroundImage (_) {
+  return arguments.length ? (this._backgroundImage = typeof _ === "function" ? _ : constant$1(_), this) : this._backgroundImage;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns the current class instance. If *value* is not specified, returns the current configuration.
+    @param {Object} [*value*]
+*/
+Shape$1.prototype.config = function config (_) {
+    var this$1 = this;
+
+  if (arguments.length) {
+    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+    return this;
+  }
+  else {
+    var config = {};
+    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    return config;
+  }
+};
+
+/**
+    @memberof Shape
+    @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape will be drawn for each object in the array.
+    @param {Array} [*data* = []]
+*/
+Shape$1.prototype.data = function data (_) {
+  return arguments.length ? (this._data = _, this) : this._data;
+};
+
+/**
+    @memberof Shape
+    @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
+    @param {Number} [*ms* = 600]
+*/
+Shape$1.prototype.duration = function duration (_) {
+  return arguments.length ? (this._duration = _, this) : this._duration;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current fill accessor.
+    @param {Function|String} [*value* = "black"]
+*/
+Shape$1.prototype.fill = function fill (_) {
+  return arguments.length ? (this._fill = typeof _ === "function" ? _ : constant$1(_), this) : this._fill;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value*]
+*/
+Shape$1.prototype.fontColor = function fontColor (_) {
+  return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$1(_), this) : this._fontColor;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value* = "Verdana"]
+*/
+Shape$1.prototype.fontFamily = function fontFamily (_) {
+  return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$1(_), this) : this._fontFamily;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|Boolean|Array} [*value*]
+*/
+Shape$1.prototype.fontResize = function fontResize (_) {
+  return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$1(_), this) : this._fontResize;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value* = 12]
+*/
+Shape$1.prototype.fontSize = function fontSize (_) {
+  return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$1(_), this) : this._fontSize;
+};
+
+/**
+    @memberof Shape
+    @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
+    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
+    @example
+function(d, i, shape) {
+return {
+  "width": shape.width,
+  "height": shape.height,
+  "x": -shape.width / 2,
+  "y": -shape.height / 2
+};
+}
+*/
+Shape$1.prototype.hitArea = function hitArea (_) {
+  return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : constant$1(_), this) : this._hitArea;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
+    @param {Function} [*value*]
+*/
+Shape$1.prototype.id = function id (_) {
+  return arguments.length ? (this._id = _, this) : this._id;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
+    @param {Function|String|Array} [*value*]
+*/
+Shape$1.prototype.label = function label (_) {
+  return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$1(_), this) : this._label;
+};
+
+/**
+    @memberof Shape
+    @desc If *bounds* is specified, sets the label bounds to the specified function and returns the current class instance. If *bounds* is not specified, returns the current inner bounds accessor.
+    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`. If an array is returned from the function, each value will be used in conjunction with each label.
+    @example
+function(d, i, shape) {
+return {
+  "width": shape.width,
+  "height": shape.height,
+  "x": -shape.width / 2,
+  "y": -shape.height / 2
+};
+}
+*/
+Shape$1.prototype.labelBounds = function labelBounds (_) {
+  return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : constant$1(_), this) : this._labelBounds;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|Number|Array} [*value* = 10]
+*/
+Shape$1.prototype.labelPadding = function labelPadding (_) {
+  return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : constant$1(_), this) : this._labelPadding;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value*]
+*/
+Shape$1.prototype.lineHeight = function lineHeight (_) {
+  return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$1(_), this) : this._lineHeight;
+};
+
+/**
+    @memberof Shape
+    @desc Adds or removes a *listener* to each shape for the specified event *typenames*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
+    @param {String|Object} [*typenames*]
+    @param {Function} [*listener*]
+*/
+Shape$1.prototype.on = function on (_, f) {
+  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current opacity accessor.
+    @param {Number} [*value* = 1]
+*/
+Shape$1.prototype.opacity = function opacity (_) {
+  return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$1(_), this) : this._opacity;
+};
+
+/**
+    @memberof Shape
+    @desc Renders the current Shape to the page. If a *callback* is specified, it will be called once the shapes are done drawing.
+    @param {Function} [*callback* = undefined]
+*/
+Shape$1.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+  if (this._select === void 0) this.select(d3$2.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+  if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
+
+  this._transition = d3$2.transition().duration(this._duration);
+
+  if (callback) setTimeout(callback, this._duration + 100);
+
+  return this;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current scale accessor.
+    @param {Function|Number} [*value* = 1]
+*/
+Shape$1.prototype.scale = function scale (_) {
+  return arguments.length ? (this._scale = typeof _ === "function" ? _ : constant$1(_), this) : this._scale;
+};
+
+/**
+    @memberof Shape
+    @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+    @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+*/
+Shape$1.prototype.select = function select (_) {
+  return arguments.length ? (this._select = d3$2.select(_), this) : this._select;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke accessor.
+    @param {Function|String} [*value* = "black"]
+*/
+Shape$1.prototype.stroke = function stroke (_) {
+  return arguments.length ? (this._stroke = typeof _ === "function" ? _ : constant$1(_), this) : this._stroke;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke-width accessor.
+    @param {Function|Number} [*value* = 0]
+*/
+Shape$1.prototype.strokeWidth = function strokeWidth (_) {
+  return arguments.length ? (this._strokeWidth = typeof _ === "function" ? _ : constant$1(_), this) : this._strokeWidth;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value* = "start"]
+*/
+Shape$1.prototype.textAnchor = function textAnchor (_) {
+  return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$1(_), this) : this._textAnchor;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value* = "start"]
+*/
+Shape$1.prototype.verticalAlign = function verticalAlign (_) {
+  return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$1(_), this) : this._verticalAlign;
+};
+
+/**
+    @class Circle
+    @extends Shape
+    @desc Creates SVG circles based on an array of data.
+*/
+var Circle$1 = (function (Shape) {
+  function Circle() {
+    Shape.call(this);
+    this._r = accessor("r");
+    this._x = accessor("x");
+    this._y = accessor("y");
+  }
+
+  if ( Shape ) Circle.__proto__ = Shape;
+  Circle.prototype = Object.create( Shape && Shape.prototype );
+  Circle.prototype.constructor = Circle;
+
+  /**
+      Provides the default positioning to the <rect> elements.
+      @private
+  */
+  Circle.prototype._applyPosition = function _applyPosition (elem) {
+    var this$1 = this;
+
+    elem
+      .attr("r", function (d, i) { return this$1._r(d, i); })
+      .attr("x", function (d, i) { return -this$1._r(d, i) / 2; })
+      .attr("y", function (d, i) { return -this$1._r(d, i) / 2; });
+  };
+
+  /**
+      Draws the circles.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Circle.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    var groups = this._select.selectAll(".d3plus-shape-circle").data(this._data, this._id);
+
+    groups.transition(this._transition)
+      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
+
+    groups.select("circle").transition(this._transition).call(this._applyStyle.bind(this));
+
+    groups.exit().transition().delay(this._duration).remove();
+
+    groups.exit().select("circle").transition(this._transition)
+      .attr("r", 0)
+      .attr("x", 0)
+      .attr("y", 0);
+
+    groups.exit()
+      .call(this._applyImage.bind(this), false)
+      .call(this._applyLabels.bind(this), false);
+
+    var enter = groups.enter().append("g")
+        .attr("class", "d3plus-shape-circle")
+        .attr("id", function (d, i) { return ("d3plus-shape-circle-" + (this$1._id(d, i))); })
+        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
+
+    enter.append("circle")
+      .attr("r", 0)
+      .attr("x", 0)
+      .attr("y", 0)
+      .call(this._applyStyle.bind(this));
+
+    var update = enter.merge(groups);
+
+    update.select("circle").transition(this._transition)
+      .call(this._applyPosition.bind(this));
+
+    update
+        .call(this._applyImage.bind(this))
+        .call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
+
+    var events = Object.keys(this._on);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Circle
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Circle.prototype._aes = function _aes (d, i) {
+    return {r: this._r(d, i)};
+  };
+
+  /**
+      @memberof Circle
+      @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current radius accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.r;
+}
+  */
+  Circle.prototype.r = function r (_) {
+    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$1(_), this) : this._r;
+  };
+
+  /**
+      @memberof Circle
+      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+      @param {String|HTMLElement} *selector*
+  */
+  Circle.prototype.update = function update (_) {
+    var this$1 = this;
+
+
+    var groups = this._select.selectAll(_),
+          t = transition().duration(this._duration);
+
+    groups
+        .call(this._applyImage.bind(this))
+        .call(this._applyLabels.bind(this))
+      .transition(t)
+        .attr("opacity", this._opacity)
+        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
+
+    groups.select("circle").transition(t)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    return this;
+
+  };
+
+  /**
+      @memberof Circle
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Circle.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
+  };
+
+  /**
+      @memberof Circle
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Circle.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+  };
+
+  return Circle;
+}(Shape$1));
+
+/**
+    @class Line
+    @extends Shape
+    @desc Creates SVG lines based on an array of data.
+*/
+var Line$1 = (function (Shape) {
+  function Line() {
+    Shape.call(this);
+    this._curve = "linear";
+    this._fill = constant$1("none");
+    this._path = line().defined(function (d) { return d; });
+    this._strokeWidth = constant$1(1);
+    this._x = accessor("x");
+    this._y = accessor("y");
+  }
+
+  if ( Shape ) Line.__proto__ = Shape;
+  Line.prototype = Object.create( Shape && Shape.prototype );
+  Line.prototype.constructor = Line;
+
+  /**
+      Draws the lines.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Line.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    var lines = nest().key(this._id).entries(this._data).map(function (d) {
+      var x = extent(d.values, function (v) { return v.x; });
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+      var y = extent(d.values, function (v) { return v.y; });
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+      d.nested = true;
+      return d;
+    });
+
+    this._path
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x)
+      .y(this._y);
+
+    var groups = this._select.selectAll(".d3plus-shape-line").data(lines, function (d) { return d.key; });
+
+    groups.transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
+
+    groups.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return this$1._path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    groups.exit().transition().delay(this._duration).remove();
+
+    groups.exit().call(this._applyLabels.bind(this), false);
+
+    var enter = groups.enter().append("g")
+        .attr("class", "d3plus-shape-line")
+        .attr("id", function (d) { return ("d3plus-shape-line-" + (d.key)); })
+        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
+        .attr("opacity", 0);
+
+    enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return this$1._path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    var update = enter.merge(groups);
+
+    update.call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "none");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
+
+    var events = Object.keys(this._on);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Line
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Line.prototype._aes = function _aes (d, i) {
+    var this$1 = this;
+
+    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve. The number returned should correspond to the horizontal center of the rectangle.
+      @param {String} [*value* = "linear"]
+  */
+  Line.prototype.curve = function curve (_) {
+    return arguments.length ? (this._curve = _, this) : this._curve;
+  };
+
+  /**
+      @memberof Line
+      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+      @param {String|HTMLElement} *selector*
+  */
+  Line.prototype.update = function update (_) {
+    var this$1 = this;
+
+
+    var groups = this._select.selectAll(_),
+          t = transition().duration(this._duration);
+
+    groups
+        .call(this._applyLabels.bind(this))
+      .transition(t)
+        .attr("opacity", this._opacity);
+
+    groups.select("path").transition(t)
+      .attr("d", function (d) { return this$1._path(d.values); });
+
+    return this;
+
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Line.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Line.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+  };
+
+  return Line;
+}(Shape$1));
+
+/**
+    @class Rect
+    @extends Shape
+    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+*/
+var Rect$1 = (function (Shape) {
+  function Rect() {
+    Shape.call(this);
+    this._height = accessor("height");
+    this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
+    this._width = accessor("width");
+    this._x = accessor("x");
+    this._y = accessor("y");
+  }
+
+  if ( Shape ) Rect.__proto__ = Shape;
+  Rect.prototype = Object.create( Shape && Shape.prototype );
+  Rect.prototype.constructor = Rect;
+
+  /**
+      Draws the rectangles.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Rect.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    var groups = this._select.selectAll(".d3plus-shape-rect").data(this._data, this._id);
+
+    groups.transition(this._transition)
+      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
+
+    groups.select("rect").transition(this._transition).call(this._applyStyle.bind(this));
+
+    groups.exit().transition().delay(this._duration).remove();
+
+    groups.exit().select("rect").transition(this._transition)
+      .attr("width", 0)
+      .attr("height", 0)
+      .attr("x", 0)
+      .attr("y", 0);
+
+    groups.exit()
+      .call(this._applyImage.bind(this), false)
+      .call(this._applyLabels.bind(this), false);
+
+    var enter = groups.enter().append("g")
+        .attr("class", "d3plus-shape-rect")
+        .attr("id", function (d, i) { return ("d3plus-shape-rect-" + (this$1._id(d, i))); })
+        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
+
+    enter.append("rect")
+      .attr("width", 0)
+      .attr("height", 0)
+      .attr("x", 0)
+      .attr("y", 0)
+      .call(this._applyStyle.bind(this));
+
+    var update = enter.merge(groups);
+
+    update.select("rect").transition(this._transition)
+      .call(this._applyPosition.bind(this));
+
+    update
+        .call(this._applyImage.bind(this))
+        .call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
+
+    var events = Object.keys(this._on);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Rect
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Rect.prototype._aes = function _aes (d, i) {
+    return {width: this._width(d, i), height: this._height(d, i)};
+  };
+
+  /**
+      @memberof Rect
+      @desc Provides the default positioning to the <rect> elements.
+      @param {D3Selection} *elem*
+      @private
+  */
+  Rect.prototype._applyPosition = function _applyPosition (elem) {
+    var this$1 = this;
+
+    elem
+      .attr("width", function (d, i) { return this$1._width(d, i); })
+      .attr("height", function (d, i) { return this$1._height(d, i); })
+      .attr("x", function (d, i) { return -this$1._width(d, i) / 2; })
+      .attr("y", function (d, i) { return -this$1._height(d, i) / 2; });
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.height;
+}
+  */
+  Rect.prototype.height = function height (_) {
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$1(_), this) : this._height;
+  };
+
+  /**
+      @memberof Rect
+      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+      @param {String|HTMLElement} *selector*
+  */
+  Rect.prototype.update = function update (_) {
+    var this$1 = this;
+
+
+    var groups = this._select.selectAll(_),
+          t = transition().duration(this._duration);
+
+    groups
+        .call(this._applyImage.bind(this))
+        .call(this._applyLabels.bind(this))
+      .transition(t)
+        .attr("opacity", this._opacity)
+        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
+
+    groups.select("rect").transition(t)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    return this;
+
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.width;
+}
+  */
+  Rect.prototype.width = function width (_) {
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$1(_), this) : this._width;
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Rect.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Rect.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+  };
+
+  return Rect;
+}(Shape$1));
+
 
 
 var d3plus = Object.freeze({
-	Circle: Circle,
-	Image: Image,
-	Line: Line,
-	Rect: Rect,
-	Shape: Shape
+	Circle: Circle$1,
+	Image: Image$1,
+	Line: Line$1,
+	Rect: Rect$1,
+	Shape: Shape$1
 });
 
 /**
@@ -8740,7 +11181,7 @@ var Legend = (function (BaseClass) {
 
     BaseClass.call(this);
 
-    var s = new Shape();
+    var s = new Shape$1();
 
     this._align = "center";
     this._data = [];
@@ -8749,7 +11190,6 @@ var Legend = (function (BaseClass) {
     this._id = accessor("id");
     this._label = accessor("id");
     this._lineData = [];
-    this._orient = "horizontal";
     this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
     this._padding = 5;
     this._shape = constant$1("Rect");
@@ -8760,39 +11200,39 @@ var Legend = (function (BaseClass) {
       fontFamily: s.fontFamily(),
       fontSize: constant$1(10),
       height: constant$1(10),
+      hitArea: function (dd) {
+        var d = this$1._lineData[this$1._data.indexOf(dd)],
+              h = max([d.height, d.shapeHeight]);
+        return {width: d.width + d.shapeWidth + (d.width ? this$1._padding : 0), height: h, x: -d.shapeWidth / 2, y: -h / 2};
+      },
       labelBounds: function (dd, i, s) {
         var d = this$1._lineData[dd.i],
               w = s.r !== void 0 ? s.r : s.width / 2;
-        return {width: d.width, height: d.height, x: w + this$1._padding, y: 1 - d.height / 2};
+        return {width: d.width, height: d.height, x: w + this$1._padding, y: -d.height / 2};
       },
       opacity: 1,
       r: constant$1(5),
       width: constant$1(10),
       x: function (d, i) {
         var s = this$1._shapeConfig.width;
-        if (this$1._orient === "vertical") return this$1._outerBounds.x + s(d, i) / 2;
-        else {
-          return this$1._outerBounds.x + sum(this$1._data.slice(0, i).map(function (b, i) { return s(b, i); })) +
-                 sum(this$1._lineData.slice(0, i).map(function (l) { return l.width - this$1._shapeConfig.fontSize(d, i); })) +
-                 s(d, i) / 2 + this$1._padding * 3 * i;
-        }
+        var y = this$1._lineData[i].y;
+        var pad = this$1._align === "left" ? 0 : this$1._align === "center"
+                  ? (this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }))) / 2
+                  : this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }));
+        return this$1._rowWidth(this$1._lineData.slice(0, i).filter(function (l) { return y === l.y; })) + this$1._padding +
+               this$1._outerBounds.x + s(d, i) / 2 + pad;
       },
       y: function (d, i) {
         var s = this$1._shapeConfig.height;
-        if (this$1._orient === "horizontal") return this$1._titleHeight + this$1._outerBounds.y + max(this$1._lineData.map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return s(l, x); }))) / 2;
-        else {
-          var h = s(d, i);
-          var pad = this$1._lineData[i].height > h ? this$1._lineData[i].height / 2 : h / 2,
-                prev = sum(this$1._lineData.slice(0, i), function (l, x) { return max([l.height, s(l.data, x)]); });
-          return this$1._titleHeight + this$1._outerBounds.y + prev + pad + this$1._padding * i;
-        }
+        var ld = this$1._lineData[i];
+        return ld.y + this$1._titleHeight + this$1._outerBounds.y +
+               max(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return s(l, x); }))) / 2;
       }
     };
     this._titleConfig = {
       fontFamily: "Verdana",
       fontSize: 12,
-      lineHeight: 13,
-      textAnchor: "middle"
+      lineHeight: 13
     };
     this._verticalAlign = "middle";
     this._width = 400;
@@ -8802,6 +11242,16 @@ var Legend = (function (BaseClass) {
   if ( BaseClass ) Legend.__proto__ = BaseClass;
   Legend.prototype = Object.create( BaseClass && BaseClass.prototype );
   Legend.prototype.constructor = Legend;
+
+  Legend.prototype._rowHeight = function _rowHeight (row) {
+    return max(row.map(function (d) { return d.height; }).concat(row.map(function (d) { return d.shapeHeight; }))) + this._padding;
+  };
+
+  Legend.prototype._rowWidth = function _rowWidth (row) {
+    var this$1 = this;
+
+    return sum(row.map(function (d) { return d.shapeWidth + d.width + this$1._padding * (d.width ? 2 : 1); })) - this._padding;
+  };
 
   /**
       @memberof Legend
@@ -8831,11 +11281,12 @@ var Legend = (function (BaseClass) {
 
     // Calculate Text Sizes
     this._lineData = this._data.map(function (d, i) {
+      var shapeWidth = this$1._shapeConfig.width(d, i);
       var f = this$1._shapeConfig.fontFamily(d, i),
             lh = this$1._lineHeight(d, i),
             s = this$1._shapeConfig.fontSize(d, i);
-      var h = this$1._orient === "horizontal" ? availableHeight - (this$1._data.length + 1) * this$1._padding : this$1._height,
-            w = this$1._orient === "vertical" ? this$1._width - this$1._padding * 3 - this$1._shapeConfig.width(d, i) : this$1._width;
+      var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
+            w = this$1._width;
       var res = textWrap().fontFamily(f).fontSize(s).lineHeight(lh).width(w).height(h)(this$1._label(d, i));
       res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s;
       res.height = Math.ceil(res.lines.length * (lh + 1));
@@ -8844,81 +11295,129 @@ var Legend = (function (BaseClass) {
       res.f = f;
       res.s = s;
       res.lh = lh;
+      res.y = 0;
       res.id = this$1._id(d, i);
+      res.i = i;
+      res.shapeWidth = shapeWidth;
+      res.shapeHeight = this$1._shapeConfig.height(d, i);
       return res;
     });
 
-    var availableSpace, textSpace, visibleLabels = true;
+    var spaceNeeded;
+    var availableWidth = this._width - this._padding * 2;
+    spaceNeeded = sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding * 2 + d.width; })) - this._padding;
 
-    if (this._orient === "horizontal") {
-      availableSpace = this._width - sum(this._data.map(function (d, i) { return this$1._shapeConfig.width(d, i) + this$1._padding * 3; })) - this._padding * 2;
-      textSpace = sum(this._lineData.map(function (d, i) { return d.width - this$1._shapeConfig.fontSize(d, i); }));
-      if (textSpace > availableSpace) {
-        var wrappable = this._lineData
-          .filter(function (d) { return d.words.length > 1; })
-          .sort(function (a, b) { return b.sentence.length - a.sentence.length; });
+    if (spaceNeeded > availableWidth) {
+      var lines = 1, newRows = [];
 
-        if (wrappable.length && availableHeight > wrappable[0].height * 2) {
+      var maxLines = max(this._lineData.map(function (d) { return d.words.length; }));
+      this._wrapLines = function() {
+        var this$1 = this;
 
-          var line = 2;
-          while (line <= 5) {
-            var labels = wrappable.filter(function (d) { return d.words.length >= line; });
-            if (!labels.length) break;
-            var loop = function ( x ) {
-              var label = wrappable[x];
-              var h = label.og.height * line, w = label.og.width * (1.5 * (1 / line));
-              var res$1 = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
-              if (!res$1.truncated) {
-                textSpace -= label.width;
-                label.width = Math.ceil(max(res$1.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
-                label.height = res$1.lines.length * (label.lh + 1);
-                textSpace += label.width;
-                if (textSpace <= availableSpace) return 'break';
-              }
-            };
 
-            for (var x = 0; x < wrappable.length; x++) {
-              var returned = loop( x );
+        lines++;
 
-              if ( returned === 'break' ) break;
+        if (lines > maxLines) return;
+
+        var wrappable = lines === 1 ? this._lineData.slice()
+                        : this._lineData.filter(function (d) { return d.width + d.shapeWidth + this$1._padding * (d.width ? 2 : 1) > availableWidth && d.words.length >= lines; })
+                            .sort(function (a, b) { return b.sentence.length - a.sentence.length; });
+
+        if (wrappable.length && availableHeight > wrappable[0].height * lines) {
+
+          var truncated = false;
+          var loop = function ( x ) {
+            var label = wrappable[x];
+            var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
+            var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+            if (!res.truncated) {
+              label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+              label.height = res.lines.length * (label.lh + 1);
             }
-            if (textSpace <= availableSpace) break;
-            line++;
+            else {
+              truncated = true;
+              return 'break';
+            }
+          };
 
+          for (var x = 0; x < wrappable.length; x++) {
+            var returned = loop( x );
+
+            if ( returned === 'break' ) break;
           }
-
+          if (!truncated) this._wrapRows();
         }
-        else visibleLabels = false;
+        else {
+          newRows = [];
+          return;
+        }
+
+      };
+
+      this._wrapRows = function() {
+        var this$1 = this;
+
+        newRows = [];
+        var row = 1, rowWidth = 0;
+        for (var i = 0; i < this._lineData.length; i++) {
+          var d = this$1._lineData[i],
+                w = d.width + this$1._padding * (d.width ? 2 : 1) + d.shapeWidth;
+          if (sum(newRows.map(function (row) { return max(row, function (d) { return max([d.height, d.shapeHeight]); }); })) > availableHeight) {
+            newRows = [];
+            break;
+          }
+          if (rowWidth + w < availableWidth) {
+            rowWidth += w;
+          }
+          else if (w > availableWidth) {
+            newRows = [];
+            this$1._wrapLines();
+            break;
+          }
+          else {
+            rowWidth = w;
+            row++;
+          }
+          if (!newRows[row - 1]) newRows[row - 1] = [];
+          newRows[row - 1].push(d);
+        }
+      };
+
+      this._wrapRows();
+
+      if (!newRows.length || sum(newRows, this._rowHeight.bind(this)) + this._padding > availableHeight) {
+        spaceNeeded = sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding * 1; })) - this._padding;
+        for (var i = 0; i < this._lineData.length; i++) {
+          this$1._lineData[i].width = 0;
+          this$1._lineData[i].height = 0;
+        }
+        this._wrapRows();
+      }
+
+      if (newRows.length && sum(newRows, this._rowHeight.bind(this)) + this._padding < availableHeight) {
+        newRows.forEach(function (row, i) {
+          row.forEach(function (d) {
+            if (i) {
+              d.y = sum(newRows.slice(0, i), this$1._rowHeight.bind(this$1));
+            }
+          });
+        });
+        spaceNeeded = max(newRows, function (l) { return sum(l, function (d) { return d.shapeWidth + this$1._padding * (d.width ? 2 : 1) + d.width; }); }) - this._padding;
       }
     }
-    else {
-      availableSpace = this._width - max(this._data.map(function (d, i) { return this$1._shapeConfig.width(d, i) + this$1._padding * 3; })) - this._padding * 2;
-      textSpace = max(this._lineData.map(function (d, i) { return d.width - this$1._shapeConfig.fontSize(d, i); }));
-    }
 
-    if (textSpace > availableSpace) visibleLabels = false;
+    var innerHeight = max(this._lineData, function (d, i) { return max([d.height, this$1._shapeConfig.height(d.data, i)]) + d.y; }) + this._titleHeight,
+          innerWidth = spaceNeeded;
 
-    if (!visibleLabels) {
-      textSpace = 0;
-      for (var i = 0; i < this._lineData.length; i++) {
-        this$1._lineData[i].width = 0;
-        this$1._lineData[i].height = 0;
-      }
-    }
-
-    var innerHeight = max(this._lineData, function (d, i) { return max([d.height, this$1._shapeConfig.height(d.data, i)]); }) + this._titleHeight,
-          innerWidth = this._orient === "horizontal"
-                     ? textSpace + sum(this._data, function (d, i) { return this$1._shapeConfig.width(d, i); }) + this._padding * (this._data.length * (visibleLabels ? 3 : 1) - 2)
-                     : textSpace + max(this._data, function (d, i) { return this$1._shapeConfig.width(d, i); }) + this._padding * 3;
     this._outerBounds.width = innerWidth;
     this._outerBounds.height = innerHeight;
 
     var xOffset = this._padding,
         yOffset = this._padding;
-    if (this._align === "center") xOffset = (this._width - this._padding * 2 - innerWidth) / 2;
-    else if (this._align === "right") xOffset = this._width - this._padding * 2 - innerWidth;
-    if (this._verticalAlign === "middle") yOffset = (this._height - this._padding * 2 - innerHeight) / 2;
-    else if (this._verticalAlign === "bottom") yOffset = this._height - this._padding * 2 - innerHeight;
+    if (this._align === "center") xOffset = (this._width - innerWidth) / 2;
+    else if (this._align === "right") xOffset = this._width - this._padding - innerWidth;
+    if (this._verticalAlign === "middle") yOffset = (this._height - innerHeight) / 2;
+    else if (this._verticalAlign === "bottom") yOffset = this._height - this._padding - innerHeight;
     this._outerBounds.x = xOffset;
     this._outerBounds.y = yOffset;
 
@@ -8926,8 +11425,9 @@ var Legend = (function (BaseClass) {
       .data(this._title ? [{text: this._title}] : [])
       .duration(this._duration)
       .select(shapeGroup.node())
-      .width(this._width)
-      .x(0)
+      .textAnchor({left: "start", center: "middle", right: "end"}[this._align])
+      .width(this._width - this._padding * 2)
+      .x(this._padding)
       .y(this._outerBounds.y)
       .config(this._titleConfig)
       .render();
@@ -8938,12 +11438,13 @@ var Legend = (function (BaseClass) {
             label: function (d) { return d.label; },
             lineHeight: function (d) { return d.lH; }
           };
+
     var shapeData = this._data.map(function (d, i) {
 
       var obj = {
         data: d, i: i,
         id: this$1._id(d, i),
-        label: visibleLabels ? this$1._label(d, i) : null,
+        label: this$1._lineData[i].width ? this$1._label(d, i) : false,
         lH: this$1._lineHeight(d, i),
         shape: this$1._shape(d, i)
       };
@@ -9054,15 +11555,6 @@ function value(d) {
 
   /**
       @memberof Legend
-      @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
-      @param {String} [*orient* = "horizontal"] Supports `"horizontal"` and `"vertical"` orientations.
-  */
-  Legend.prototype.orient = function orient (_) {
-    return arguments.length ? (this._orient = _, this) : this._orient;
-  };
-
-  /**
-      @memberof Legend
       @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the legend content.
       @example
 {"width": 180, "height": 24, "x": 10, "y": 20}
@@ -9146,6 +11638,2612 @@ function value(d) {
   return Legend;
 }(BaseClass));
 
+function noevent() {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
+function nodrag(view) {
+  var root = view.document.documentElement,
+      selection = select(view).on("dragstart.drag", noevent, true);
+  if ("onselectstart" in root) {
+    selection.on("selectstart.drag", noevent, true);
+  } else {
+    root.__noselect = root.style.MozUserSelect;
+    root.style.MozUserSelect = "none";
+  }
+}
+
+function yesdrag(view, noclick) {
+  var root = view.document.documentElement,
+      selection = select(view).on("dragstart.drag", null);
+  if (noclick) {
+    selection.on("click.drag", noevent, true);
+    setTimeout(function() { selection.on("click.drag", null); }, 0);
+  }
+  if ("onselectstart" in root) {
+    selection.on("selectstart.drag", null);
+  } else {
+    root.style.MozUserSelect = root.__noselect;
+    delete root.__noselect;
+  }
+}
+
+function constant$9(x) {
+  return function() {
+    return x;
+  };
+}
+
+function BrushEvent(target, type, selection) {
+  this.target = target;
+  this.type = type;
+  this.selection = selection;
+}
+
+function nopropagation$1() {
+  event.stopImmediatePropagation();
+}
+
+function noevent$1() {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
+var MODE_DRAG = {name: "drag"};
+var MODE_SPACE = {name: "space"};
+var MODE_HANDLE = {name: "handle"};
+var MODE_CENTER = {name: "center"};
+var X = {
+  name: "x",
+  handles: ["e", "w"].map(type),
+  input: function(x, e) { return x && [[x[0], e[0][1]], [x[1], e[1][1]]]; },
+  output: function(xy) { return xy && [xy[0][0], xy[1][0]]; }
+};
+
+var Y = {
+  name: "y",
+  handles: ["n", "s"].map(type),
+  input: function(y, e) { return y && [[e[0][0], y[0]], [e[1][0], y[1]]]; },
+  output: function(xy) { return xy && [xy[0][1], xy[1][1]]; }
+};
+
+var XY = {
+  name: "xy",
+  handles: ["n", "e", "s", "w", "nw", "ne", "se", "sw"].map(type),
+  input: function(xy) { return xy; },
+  output: function(xy) { return xy; }
+};
+
+var cursors = {
+  overlay: "crosshair",
+  selection: "move",
+  n: "ns-resize",
+  e: "ew-resize",
+  s: "ns-resize",
+  w: "ew-resize",
+  nw: "nwse-resize",
+  ne: "nesw-resize",
+  se: "nwse-resize",
+  sw: "nesw-resize"
+};
+
+var flipX = {
+  e: "w",
+  w: "e",
+  nw: "ne",
+  ne: "nw",
+  se: "sw",
+  sw: "se"
+};
+
+var flipY = {
+  n: "s",
+  s: "n",
+  nw: "sw",
+  ne: "se",
+  se: "ne",
+  sw: "nw"
+};
+
+var signsX = {
+  overlay: +1,
+  selection: +1,
+  n: null,
+  e: +1,
+  s: null,
+  w: -1,
+  nw: -1,
+  ne: +1,
+  se: +1,
+  sw: -1
+};
+
+var signsY = {
+  overlay: +1,
+  selection: +1,
+  n: -1,
+  e: null,
+  s: +1,
+  w: null,
+  nw: -1,
+  ne: -1,
+  se: +1,
+  sw: +1
+};
+
+function type(t) {
+  return {type: t};
+}
+
+// Ignore right-click, since that should open the context menu.
+function defaultFilter() {
+  return !event.button;
+}
+
+function defaultExtent() {
+  var svg = this.ownerSVGElement || this;
+  return [[0, 0], [svg.width.baseVal.value, svg.height.baseVal.value]];
+}
+
+// Like d3.local, but with the name “__brush” rather than auto-generated.
+function local$1(node) {
+  while (!node.__brush) if (!(node = node.parentNode)) return;
+  return node.__brush;
+}
+
+function empty$1(extent) {
+  return extent[0][0] === extent[1][0]
+      || extent[0][1] === extent[1][1];
+}
+
+function brushX() {
+  return brush$1(X);
+}
+
+function brush$1(dim) {
+  var extent = defaultExtent,
+      filter = defaultFilter,
+      listeners = dispatch(brush, "start", "brush", "end"),
+      handleSize = 6,
+      touchending;
+
+  function brush(group) {
+    var overlay = group
+        .property("__brush", initialize)
+      .selectAll(".overlay")
+      .data([type("overlay")]);
+
+    overlay.enter().append("rect")
+        .attr("class", "overlay")
+        .attr("pointer-events", "all")
+        .attr("cursor", cursors.overlay)
+      .merge(overlay)
+        .each(function() {
+          var extent = local$1(this).extent;
+          select(this)
+              .attr("x", extent[0][0])
+              .attr("y", extent[0][1])
+              .attr("width", extent[1][0] - extent[0][0])
+              .attr("height", extent[1][1] - extent[0][1]);
+        });
+
+    group.selectAll(".selection")
+      .data([type("selection")])
+      .enter().append("rect")
+        .attr("class", "selection")
+        .attr("cursor", cursors.selection)
+        .attr("fill", "#777")
+        .attr("fill-opacity", 0.3)
+        .attr("stroke", "#fff")
+        .attr("shape-rendering", "crispEdges");
+
+    var handle = group.selectAll(".handle")
+      .data(dim.handles, function(d) { return d.type; });
+
+    handle.exit().remove();
+
+    handle.enter().append("rect")
+        .attr("class", function(d) { return "handle handle--" + d.type; })
+        .attr("cursor", function(d) { return cursors[d.type]; });
+
+    group
+        .each(redraw)
+        .attr("fill", "none")
+        .attr("pointer-events", "all")
+        .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)")
+        .on("mousedown.brush touchstart.brush", started);
+  }
+
+  brush.move = function(group, selection) {
+    if (group.selection) {
+      group
+          .on("start.brush", function() { emitter(this, arguments).beforestart().start(); })
+          .on("interrupt.brush end.brush", function() { emitter(this, arguments).end(); })
+          .tween("brush", function() {
+            var that = this,
+                state = that.__brush,
+                emit = emitter(that, arguments),
+                selection0 = state.selection,
+                selection1 = dim.input(typeof selection === "function" ? selection.apply(this, arguments) : selection, state.extent),
+                i = interpolate(selection0, selection1);
+
+            function tween(t) {
+              state.selection = t === 1 && empty$1(selection1) ? null : i(t);
+              redraw.call(that);
+              emit.brush();
+            }
+
+            return selection0 && selection1 ? tween : tween(1);
+          });
+    } else {
+      group
+          .each(function() {
+            var that = this,
+                args = arguments,
+                state = that.__brush,
+                selection1 = dim.input(typeof selection === "function" ? selection.apply(that, args) : selection, state.extent),
+                emit = emitter(that, args).beforestart();
+
+            interrupt(that);
+            state.selection = selection1 == null || empty$1(selection1) ? null : selection1;
+            redraw.call(that);
+            emit.start().brush().end();
+          });
+    }
+  };
+
+  function redraw() {
+    var group = select(this),
+        selection = local$1(this).selection;
+
+    if (selection) {
+      group.selectAll(".selection")
+          .style("display", null)
+          .attr("x", selection[0][0])
+          .attr("y", selection[0][1])
+          .attr("width", selection[1][0] - selection[0][0])
+          .attr("height", selection[1][1] - selection[0][1]);
+
+      group.selectAll(".handle")
+          .style("display", null)
+          .attr("x", function(d) { return d.type[d.type.length - 1] === "e" ? selection[1][0] - handleSize / 2 : selection[0][0] - handleSize / 2; })
+          .attr("y", function(d) { return d.type[0] === "s" ? selection[1][1] - handleSize / 2 : selection[0][1] - handleSize / 2; })
+          .attr("width", function(d) { return d.type === "n" || d.type === "s" ? selection[1][0] - selection[0][0] + handleSize : handleSize; })
+          .attr("height", function(d) { return d.type === "e" || d.type === "w" ? selection[1][1] - selection[0][1] + handleSize : handleSize; });
+    }
+
+    else {
+      group.selectAll(".selection,.handle")
+          .style("display", "none")
+          .attr("x", null)
+          .attr("y", null)
+          .attr("width", null)
+          .attr("height", null);
+    }
+  }
+
+  function emitter(that, args) {
+    return that.__brush.emitter || new Emitter(that, args);
+  }
+
+  function Emitter(that, args) {
+    this.that = that;
+    this.args = args;
+    this.state = that.__brush;
+    this.active = 0;
+  }
+
+  Emitter.prototype = {
+    beforestart: function() {
+      if (++this.active === 1) this.state.emitter = this, this.starting = true;
+      return this;
+    },
+    start: function() {
+      if (this.starting) this.starting = false, this.emit("start");
+      return this;
+    },
+    brush: function() {
+      this.emit("brush");
+      return this;
+    },
+    end: function() {
+      if (--this.active === 0) delete this.state.emitter, this.emit("end");
+      return this;
+    },
+    emit: function(type) {
+      customEvent(new BrushEvent(brush, type, dim.output(this.state.selection)), listeners.apply, listeners, [type, this.that, this.args]);
+    }
+  };
+
+  function started() {
+    if (event.touches) { if (event.changedTouches.length < event.touches.length) return noevent$1(); }
+    else if (touchending) return;
+    if (!filter.apply(this, arguments)) return;
+
+    var that = this,
+        type = event.target.__data__.type,
+        mode = (event.metaKey ? type = "overlay" : type) === "selection" ? MODE_DRAG : (event.altKey ? MODE_CENTER : MODE_HANDLE),
+        signX = dim === Y ? null : signsX[type],
+        signY = dim === X ? null : signsY[type],
+        state = local$1(that),
+        extent = state.extent,
+        selection = state.selection,
+        W = extent[0][0], w0, w1,
+        N = extent[0][1], n0, n1,
+        E = extent[1][0], e0, e1,
+        S = extent[1][1], s0, s1,
+        dx,
+        dy,
+        moving,
+        shifting = signX && signY && event.shiftKey,
+        lockX,
+        lockY,
+        point0 = mouse(that),
+        point = point0,
+        emit = emitter(that, arguments).beforestart();
+
+    if (type === "overlay") {
+      state.selection = selection = [
+        [w0 = dim === Y ? W : point0[0], n0 = dim === X ? N : point0[1]],
+        [e0 = dim === Y ? E : w0, s0 = dim === X ? S : n0]
+      ];
+    } else {
+      w0 = selection[0][0];
+      n0 = selection[0][1];
+      e0 = selection[1][0];
+      s0 = selection[1][1];
+    }
+
+    w1 = w0;
+    n1 = n0;
+    e1 = e0;
+    s1 = s0;
+
+    var group = select(that)
+        .attr("pointer-events", "none");
+
+    var overlay = group.selectAll(".overlay")
+        .attr("cursor", cursors[type]);
+
+    if (event.touches) {
+      group
+          .on("touchmove.brush", moved, true)
+          .on("touchend.brush touchcancel.brush", ended, true);
+    } else {
+      var view = select(event.view)
+          .on("keydown.brush", keydowned, true)
+          .on("keyup.brush", keyupped, true)
+          .on("mousemove.brush", moved, true)
+          .on("mouseup.brush", ended, true);
+
+      nodrag(event.view);
+    }
+
+    nopropagation$1();
+    interrupt(that);
+    redraw.call(that);
+    emit.start();
+
+    function moved() {
+      var point1 = mouse(that);
+      if (shifting && !lockX && !lockY) {
+        if (Math.abs(point1[0] - point[0]) > Math.abs(point1[1] - point[1])) lockY = true;
+        else lockX = true;
+      }
+      point = point1;
+      moving = true;
+      noevent$1();
+      move();
+    }
+
+    function move() {
+      var t;
+
+      dx = point[0] - point0[0];
+      dy = point[1] - point0[1];
+
+      switch (mode) {
+        case MODE_SPACE:
+        case MODE_DRAG: {
+          if (signX) dx = Math.max(W - w0, Math.min(E - e0, dx)), w1 = w0 + dx, e1 = e0 + dx;
+          if (signY) dy = Math.max(N - n0, Math.min(S - s0, dy)), n1 = n0 + dy, s1 = s0 + dy;
+          break;
+        }
+        case MODE_HANDLE: {
+          if (signX < 0) dx = Math.max(W - w0, Math.min(E - w0, dx)), w1 = w0 + dx, e1 = e0;
+          else if (signX > 0) dx = Math.max(W - e0, Math.min(E - e0, dx)), w1 = w0, e1 = e0 + dx;
+          if (signY < 0) dy = Math.max(N - n0, Math.min(S - n0, dy)), n1 = n0 + dy, s1 = s0;
+          else if (signY > 0) dy = Math.max(N - s0, Math.min(S - s0, dy)), n1 = n0, s1 = s0 + dy;
+          break;
+        }
+        case MODE_CENTER: {
+          if (signX) w1 = Math.max(W, Math.min(E, w0 - dx * signX)), e1 = Math.max(W, Math.min(E, e0 + dx * signX));
+          if (signY) n1 = Math.max(N, Math.min(S, n0 - dy * signY)), s1 = Math.max(N, Math.min(S, s0 + dy * signY));
+          break;
+        }
+      }
+
+      if (e1 < w1) {
+        signX *= -1;
+        t = w0, w0 = e0, e0 = t;
+        t = w1, w1 = e1, e1 = t;
+        if (type in flipX) overlay.attr("cursor", cursors[type = flipX[type]]);
+      }
+
+      if (s1 < n1) {
+        signY *= -1;
+        t = n0, n0 = s0, s0 = t;
+        t = n1, n1 = s1, s1 = t;
+        if (type in flipY) overlay.attr("cursor", cursors[type = flipY[type]]);
+      }
+
+      selection = state.selection; // May be set by brush.move!
+
+      if (lockX) w1 = selection[0][0], e1 = selection[1][0];
+      if (lockY) n1 = selection[0][1], s1 = selection[1][1];
+
+      if (selection[0][0] !== w1
+          || selection[0][1] !== n1
+          || selection[1][0] !== e1
+          || selection[1][1] !== s1) {
+        state.selection = [[w1, n1], [e1, s1]];
+        redraw.call(that);
+        emit.brush();
+      }
+    }
+
+    function ended() {
+      nopropagation$1();
+      if (event.touches) {
+        if (event.touches.length) return;
+        if (touchending) clearTimeout(touchending);
+        touchending = setTimeout(function() { touchending = null; }, 500); // Ghost clicks are delayed!
+        group.on("touchmove.brush touchend.brush touchcancel.brush", null);
+      } else {
+        yesdrag(event.view, moving);
+        view.on("keydown.brush keyup.brush mousemove.brush mouseup.brush", null);
+      }
+      group.attr("pointer-events", "all");
+      overlay.attr("cursor", cursors.overlay);
+      if (empty$1(selection)) state.selection = null, redraw.call(that);
+      emit.end();
+    }
+
+    function keydowned() {
+      switch (event.keyCode) {
+        case 16: { // SHIFT
+          shifting = signX && signY;
+          break;
+        }
+        case 18: { // ALT
+          if (mode === MODE_HANDLE) {
+            if (signX) e0 = e1 - dx * signX, w0 = w1 + dx * signX;
+            if (signY) s0 = s1 - dy * signY, n0 = n1 + dy * signY;
+            mode = MODE_CENTER;
+            move();
+          }
+          break;
+        }
+        case 32: { // SPACE; takes priority over ALT
+          if (mode === MODE_HANDLE || mode === MODE_CENTER) {
+            if (signX < 0) e0 = e1 - dx; else if (signX > 0) w0 = w1 - dx;
+            if (signY < 0) s0 = s1 - dy; else if (signY > 0) n0 = n1 - dy;
+            mode = MODE_SPACE;
+            overlay.attr("cursor", cursors.selection);
+            move();
+          }
+          break;
+        }
+        default: return;
+      }
+      noevent$1();
+    }
+
+    function keyupped() {
+      switch (event.keyCode) {
+        case 16: { // SHIFT
+          if (shifting) {
+            lockX = lockY = shifting = false;
+            move();
+          }
+          break;
+        }
+        case 18: { // ALT
+          if (mode === MODE_CENTER) {
+            if (signX < 0) e0 = e1; else if (signX > 0) w0 = w1;
+            if (signY < 0) s0 = s1; else if (signY > 0) n0 = n1;
+            mode = MODE_HANDLE;
+            move();
+          }
+          break;
+        }
+        case 32: { // SPACE
+          if (mode === MODE_SPACE) {
+            if (event.altKey) {
+              if (signX) e0 = e1 - dx * signX, w0 = w1 + dx * signX;
+              if (signY) s0 = s1 - dy * signY, n0 = n1 + dy * signY;
+              mode = MODE_CENTER;
+            } else {
+              if (signX < 0) e0 = e1; else if (signX > 0) w0 = w1;
+              if (signY < 0) s0 = s1; else if (signY > 0) n0 = n1;
+              mode = MODE_HANDLE;
+            }
+            overlay.attr("cursor", cursors[type]);
+            move();
+          }
+          break;
+        }
+        default: return;
+      }
+      noevent$1();
+    }
+  }
+
+  function initialize() {
+    var state = this.__brush || {selection: null};
+    state.extent = extent.apply(this, arguments);
+    state.dim = dim;
+    return state;
+  }
+
+  brush.extent = function(_) {
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$9([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
+  };
+
+  brush.filter = function(_) {
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$9(!!_), brush) : filter;
+  };
+
+  brush.handleSize = function(_) {
+    return arguments.length ? (handleSize = +_, brush) : handleSize;
+  };
+
+  brush.on = function() {
+    var value = listeners.on.apply(listeners, arguments);
+    return value === listeners ? brush : value;
+  };
+
+  return brush;
+}
+
+var d3$5 = {
+  select: select,
+  transition: transition
+};
+/**
+    @class Image
+    @desc Creates SVG images based on an array of data.
+    @example <caption>a sample row of data</caption>
+var data = {"url": "file.png", "width": "100", "height": "50"};
+@example <caption>passed to the generator</caption>
+new Image().data([data]).render();
+@example <caption>creates the following</caption>
+<image class="d3plus-shape-image" opacity="1" href="file.png" width="100" height="50" x="0" y="0"></image>
+@example <caption>this is shorthand for the following</caption>
+image().data([data])();
+@example <caption>which also allows a post-draw callback function</caption>
+image().data([data])(function() { alert("draw complete!"); })
+*/
+var Image$2 = function Image() {
+  this._duration = 600;
+  this._height = accessor("height");
+  this._id = accessor("url");
+  this._select;
+  this._url = accessor("url");
+  this._width = accessor("width");
+  this._x = accessor("x", 0);
+  this._y = accessor("y", 0);
+};
+
+/**
+    @memberof Image
+    @desc Renders the current Image to the page. If a *callback* is specified, it will be called once the images are done drawing.
+    @param {Function} [*callback* = undefined]
+*/
+Image$2.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+  if (this._select === void 0) this.select(d3$5.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+
+  var images = this._select.selectAll(".d3plus-shape-image").data(this._data, this._id);
+
+  var enter = images.enter().append("image")
+    .attr("class", "d3plus-shape-image")
+    .attr("opacity", 0);
+
+  var t = d3$5.transition().duration(this._duration),
+        that = this,
+        update = enter.merge(images);
+
+  update
+      .attr("xlink:href", this._url)
+    .transition(t)
+      .attr("opacity", 1)
+      .attr("width", function (d, i) { return this$1._width(d, i); })
+      .attr("height", function (d, i) { return this$1._height(d, i); })
+      .attr("x", function (d, i) { return this$1._x(d, i); })
+      .attr("y", function (d, i) { return this$1._y(d, i); })
+      .each(function(d, i) {
+        var image = d3$5.select(this), link = that._url(d, i);
+        var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
+        if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
+          var img = new Image$2();
+          img.src = link;
+          img.crossOrigin = "Anonymous";
+          img.onload = function() {
+            var canvas = document.createElement("canvas");
+            canvas.width = this.width;
+            canvas.height = this.height;
+            var context = canvas.getContext("2d");
+            context.drawImage(this, 0, 0);
+            image.attr("xlink:href", canvas.toDataURL("image/png"));
+          };
+        }
+      });
+
+  images.exit().transition(t)
+    .attr("width", function (d, i) { return this$1._width(d, i); })
+    .attr("height", function (d, i) { return this$1._height(d, i); })
+    .attr("x", function (d, i) { return this$1._x(d, i); })
+    .attr("y", function (d, i) { return this$1._y(d, i); })
+    .attr("opacity", 0).remove();
+
+  if (callback) setTimeout(callback, this._duration + 100);
+
+  return this;
+
+};
+
+/**
+    @memberof Image
+    @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. An <image> tag will be drawn for each object in the array.
+    @param {Array} [*data* = []]
+*/
+Image$2.prototype.data = function data (_) {
+  return arguments.length ? (this._data = _, this) : this._data;
+};
+
+/**
+    @memberof Image
+    @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
+    @param {Number} [*ms* = 600]
+*/
+Image$2.prototype.duration = function duration (_) {
+  return arguments.length ? (this._duration = _, this) : this._duration;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+    @param {Function|Number} [*value*]
+    @example
+function(d) {
+return d.height;
+}
+*/
+Image$2.prototype.height = function height (_) {
+  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$1(_), this) : this._height;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor. This is useful if you want to duplicate the same image.
+    @param {Function} [*value*]
+    @example
+function(d) {
+return d.url;
+}
+*/
+Image$2.prototype.id = function id (_) {
+  return arguments.length ? (this._id = _, this) : this._id;
+};
+
+/**
+    @memberof Image
+    @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+    @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+*/
+Image$2.prototype.select = function select (_) {
+  return arguments.length ? (this._select = d3$5.select(_), this) : this._select;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the URL accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current URL accessor.
+    @param {Function} [*value*]
+    @example
+function(d) {
+return d.url;
+}
+*/
+Image$2.prototype.url = function url (_) {
+  return arguments.length ? (this._url = _, this) : this._url;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+    @param {Function|Number} [*value*]
+    @example
+function(d) {
+return d.width;
+}
+*/
+Image$2.prototype.width = function width (_) {
+  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$1(_), this) : this._width;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+    @param {Function|Number} [*value*]
+    @example
+function(d) {
+return d.x || 0;
+}
+*/
+Image$2.prototype.x = function x (_) {
+  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+    @param {Function|Number} [*value*]
+    @example
+function(d) {
+return d.y || 0;
+}
+*/
+Image$2.prototype.y = function y (_) {
+  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+};
+
+var d3$4 = {
+  select: select,
+  selectAll: d3SelectAll,
+  transition: transition
+};
+
+/**
+    @class Shape
+    @desc An abstracted class for generating shapes.
+*/
+var Shape$2 = function Shape() {
+  var this$1 = this;
+
+  this._backgroundImage = constant$1(false);
+  this._data = [];
+  this._duration = 600;
+  this._fill = constant$1("black");
+  this._fontColor = function (d, i) { return contrast(this$1._fill(d, i)); };
+  this._fontFamily = constant$1("Verdana");
+  this._fontResize = constant$1(false);
+  this._fontSize = constant$1(12);
+  this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
+  this._label = constant$1(false);
+  this._labelPadding = constant$1(5);
+  this._on = {};
+  this._opacity = constant$1(1);
+  this._scale = constant$1(1);
+  this._stroke = constant$1("black");
+  this._strokeWidth = constant$1(0);
+  this._textAnchor = constant$1("start");
+  this._verticalAlign = constant$1("top");
+};
+
+/**
+    @memberof Shape
+    @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+    @param {Object} *data point*
+    @param {Number} *index*
+    @private
+*/
+Shape$2.prototype._aes = function _aes () {
+  return {};
+};
+
+/**
+    @memberof Shape
+    @desc Adds background image to each shape group.
+    @param {D3Selection} *g*
+    @param {Boolean} [*show* = True] Whether or not to show or remove the image.
+    @private
+*/
+Shape$2.prototype._applyImage = function _applyImage (g, show) {
+    if ( show === void 0 ) show = true;
+
+
+  var that = this;
+
+  g.each(function(d, i) {
+
+    var aes = that._aes(d, i);
+
+    var imageData = [];
+    var h = 0, w = 0;
+
+    if (show && (aes.r || aes.width && aes.height)) {
+      h = aes.r ? aes.r * 2 : aes.height;
+      w = aes.r ? aes.r * 2 : aes.width;
+      var url = that._backgroundImage(d, i);
+      if (url) imageData.push({url: url});
+    }
+
+    new Image$2()
+      .data(imageData)
+      .duration(that._duration)
+      .height(h)
+      .select(this)
+      .width(w)
+      .x(-w / 2)
+      .y(-h / 2)
+      .render();
+
+  });
+
+};
+
+/**
+    @memberof Shape
+    @desc Adds labels to each shape group.
+    @param {D3Selection} *g*
+    @param {Boolean} [*show* = True] Whether or not to show or remove the labels.
+    @private
+*/
+Shape$2.prototype._applyLabels = function _applyLabels (g, show) {
+    if ( show === void 0 ) show = true;
+
+
+  var that = this;
+
+  g.each(function(datum, i) {
+
+    var d = datum;
+    if (datum.nested && datum.key && datum.values) d = datum.values[0];
+
+    /* Draws label based on inner bounds */
+    var labelData = [];
+
+    if (show) {
+
+      var labels = that._label(d, i);
+
+      if (that._labelBounds && labels !== false && labels !== void 0) {
+
+        var bounds = that._labelBounds(d, i, that._aes(datum, i));
+
+        if (bounds) {
+
+          if (labels.constructor !== Array) labels = [labels];
+
+          var fC = that._fontColor(d, i),
+                fF = that._fontFamily(d, i),
+                fR = that._fontResize(d, i),
+                fS = that._fontSize(d, i),
+                lH = that._lineHeight(d, i),
+                padding = that._labelPadding(d, i),
+                tA = that._textAnchor(d, i),
+                vA = that._verticalAlign(d, i);
+
+          for (var l = 0; l < labels.length; l++) {
+            var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
+                  p = padding.constructor === Array ? padding[l] : padding;
+            b.height -= p * 2;
+            b.width -= p * 2;
+            b.x += p;
+            b.y += p;
+            b.id = (that._id(d, i)) + "_" + l;
+            b.text = labels[l];
+
+            b.fC = fC.constructor === Array ? fC[l] : fC;
+            b.fF = fF.constructor === Array ? fF[l] : fF;
+            b.fR = fR.constructor === Array ? fR[l] : fR;
+            b.fS = fS.constructor === Array ? fS[l] : fS;
+            b.lH = lH.constructor === Array ? lH[l] : lH;
+            b.tA = tA.constructor === Array ? tA[l] : tA;
+            b.vA = vA.constructor === Array ? vA[l] : vA;
+
+            labelData.push(b);
+          }
+
+        }
+
+      }
+    }
+
+    new TextBox()
+      .data(labelData)
+      .delay(that._duration / 2)
+      .duration(that._duration)
+      .fontColor(function (d) { return d.fC; })
+      .fontFamily(function (d) { return d.fF; })
+      .fontResize(function (d) { return d.fR; })
+      .fontSize(function (d) { return d.fS; })
+      .lineHeight(function (d) { return d.lH; })
+      .textAnchor(function (d) { return d.tA; })
+      .verticalAlign(function (d) { return d.vA; })
+      .select(this)
+      .render();
+
+  });
+
+};
+
+/**
+    @memberof Shape
+    @desc Provides the default styling to the shape elements.
+    @param {HTMLElement} *elem*
+    @private
+*/
+Shape$2.prototype._applyStyle = function _applyStyle (elem) {
+    var this$1 = this;
+
+  elem
+    .attr("fill", function (d, i) { return this$1._fill(d, i); })
+    .attr("stroke", function (d, i) { return this$1._stroke(d, i); })
+    .attr("stroke-width", function (d, i) { return this$1._strokeWidth(d, i); });
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
+    @param {Function|String} [*value* = false]
+*/
+Shape$2.prototype.backgroundImage = function backgroundImage (_) {
+  return arguments.length ? (this._backgroundImage = typeof _ === "function" ? _ : constant$1(_), this) : this._backgroundImage;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns the current class instance. If *value* is not specified, returns the current configuration.
+    @param {Object} [*value*]
+*/
+Shape$2.prototype.config = function config (_) {
+    var this$1 = this;
+
+  if (arguments.length) {
+    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+    return this;
+  }
+  else {
+    var config = {};
+    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    return config;
+  }
+};
+
+/**
+    @memberof Shape
+    @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape will be drawn for each object in the array.
+    @param {Array} [*data* = []]
+*/
+Shape$2.prototype.data = function data (_) {
+  return arguments.length ? (this._data = _, this) : this._data;
+};
+
+/**
+    @memberof Shape
+    @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
+    @param {Number} [*ms* = 600]
+*/
+Shape$2.prototype.duration = function duration (_) {
+  return arguments.length ? (this._duration = _, this) : this._duration;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current fill accessor.
+    @param {Function|String} [*value* = "black"]
+*/
+Shape$2.prototype.fill = function fill (_) {
+  return arguments.length ? (this._fill = typeof _ === "function" ? _ : constant$1(_), this) : this._fill;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value*]
+*/
+Shape$2.prototype.fontColor = function fontColor (_) {
+  return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$1(_), this) : this._fontColor;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value* = "Verdana"]
+*/
+Shape$2.prototype.fontFamily = function fontFamily (_) {
+  return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$1(_), this) : this._fontFamily;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|Boolean|Array} [*value*]
+*/
+Shape$2.prototype.fontResize = function fontResize (_) {
+  return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$1(_), this) : this._fontResize;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value* = 12]
+*/
+Shape$2.prototype.fontSize = function fontSize (_) {
+  return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$1(_), this) : this._fontSize;
+};
+
+/**
+    @memberof Shape
+    @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
+    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
+    @example
+function(d, i, shape) {
+return {
+  "width": shape.width,
+  "height": shape.height,
+  "x": -shape.width / 2,
+  "y": -shape.height / 2
+};
+}
+*/
+Shape$2.prototype.hitArea = function hitArea (_) {
+  return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : constant$1(_), this) : this._hitArea;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
+    @param {Function} [*value*]
+*/
+Shape$2.prototype.id = function id (_) {
+  return arguments.length ? (this._id = _, this) : this._id;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
+    @param {Function|String|Array} [*value*]
+*/
+Shape$2.prototype.label = function label (_) {
+  return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$1(_), this) : this._label;
+};
+
+/**
+    @memberof Shape
+    @desc If *bounds* is specified, sets the label bounds to the specified function and returns the current class instance. If *bounds* is not specified, returns the current inner bounds accessor.
+    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`. If an array is returned from the function, each value will be used in conjunction with each label.
+    @example
+function(d, i, shape) {
+return {
+  "width": shape.width,
+  "height": shape.height,
+  "x": -shape.width / 2,
+  "y": -shape.height / 2
+};
+}
+*/
+Shape$2.prototype.labelBounds = function labelBounds (_) {
+  return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : constant$1(_), this) : this._labelBounds;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|Number|Array} [*value* = 10]
+*/
+Shape$2.prototype.labelPadding = function labelPadding (_) {
+  return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : constant$1(_), this) : this._labelPadding;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value*]
+*/
+Shape$2.prototype.lineHeight = function lineHeight (_) {
+  return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$1(_), this) : this._lineHeight;
+};
+
+/**
+    @memberof Shape
+    @desc Adds or removes a *listener* to each shape for the specified event *typenames*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
+    @param {String|Object} [*typenames*]
+    @param {Function} [*listener*]
+*/
+Shape$2.prototype.on = function on (_, f) {
+  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current opacity accessor.
+    @param {Number} [*value* = 1]
+*/
+Shape$2.prototype.opacity = function opacity (_) {
+  return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$1(_), this) : this._opacity;
+};
+
+/**
+    @memberof Shape
+    @desc Renders the current Shape to the page. If a *callback* is specified, it will be called once the shapes are done drawing.
+    @param {Function} [*callback* = undefined]
+*/
+Shape$2.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+  if (this._select === void 0) this.select(d3$4.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+  if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
+
+  this._transition = d3$4.transition().duration(this._duration);
+
+  if (callback) setTimeout(callback, this._duration + 100);
+
+  return this;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current scale accessor.
+    @param {Function|Number} [*value* = 1]
+*/
+Shape$2.prototype.scale = function scale (_) {
+  return arguments.length ? (this._scale = typeof _ === "function" ? _ : constant$1(_), this) : this._scale;
+};
+
+/**
+    @memberof Shape
+    @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+    @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+*/
+Shape$2.prototype.select = function select (_) {
+  return arguments.length ? (this._select = d3$4.select(_), this) : this._select;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke accessor.
+    @param {Function|String} [*value* = "black"]
+*/
+Shape$2.prototype.stroke = function stroke (_) {
+  return arguments.length ? (this._stroke = typeof _ === "function" ? _ : constant$1(_), this) : this._stroke;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke-width accessor.
+    @param {Function|Number} [*value* = 0]
+*/
+Shape$2.prototype.strokeWidth = function strokeWidth (_) {
+  return arguments.length ? (this._strokeWidth = typeof _ === "function" ? _ : constant$1(_), this) : this._strokeWidth;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value* = "start"]
+*/
+Shape$2.prototype.textAnchor = function textAnchor (_) {
+  return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$1(_), this) : this._textAnchor;
+};
+
+/**
+    @memberof Shape
+    @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+    @param {Function|String|Array} [*value* = "start"]
+*/
+Shape$2.prototype.verticalAlign = function verticalAlign (_) {
+  return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$1(_), this) : this._verticalAlign;
+};
+
+/**
+    @class Circle
+    @extends Shape
+    @desc Creates SVG circles based on an array of data.
+*/
+var Circle$2 = (function (Shape) {
+  function Circle() {
+    Shape.call(this);
+    this._r = accessor("r");
+    this._x = accessor("x");
+    this._y = accessor("y");
+  }
+
+  if ( Shape ) Circle.__proto__ = Shape;
+  Circle.prototype = Object.create( Shape && Shape.prototype );
+  Circle.prototype.constructor = Circle;
+
+  /**
+      Provides the default positioning to the <rect> elements.
+      @private
+  */
+  Circle.prototype._applyPosition = function _applyPosition (elem) {
+    var this$1 = this;
+
+    elem
+      .attr("r", function (d, i) { return this$1._r(d, i); })
+      .attr("x", function (d, i) { return -this$1._r(d, i) / 2; })
+      .attr("y", function (d, i) { return -this$1._r(d, i) / 2; });
+  };
+
+  /**
+      Draws the circles.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Circle.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    var groups = this._select.selectAll(".d3plus-shape-circle").data(this._data, this._id);
+
+    groups.transition(this._transition)
+      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
+
+    groups.select("circle").transition(this._transition).call(this._applyStyle.bind(this));
+
+    groups.exit().transition().delay(this._duration).remove();
+
+    groups.exit().select("circle").transition(this._transition)
+      .attr("r", 0)
+      .attr("x", 0)
+      .attr("y", 0);
+
+    groups.exit()
+      .call(this._applyImage.bind(this), false)
+      .call(this._applyLabels.bind(this), false);
+
+    var enter = groups.enter().append("g")
+        .attr("class", "d3plus-shape-circle")
+        .attr("id", function (d, i) { return ("d3plus-shape-circle-" + (this$1._id(d, i))); })
+        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
+
+    enter.append("circle")
+      .attr("r", 0)
+      .attr("x", 0)
+      .attr("y", 0)
+      .call(this._applyStyle.bind(this));
+
+    var update = enter.merge(groups);
+
+    update.select("circle").transition(this._transition)
+      .call(this._applyPosition.bind(this));
+
+    update
+        .call(this._applyImage.bind(this))
+        .call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
+
+    var events = Object.keys(this._on);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Circle
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Circle.prototype._aes = function _aes (d, i) {
+    return {r: this._r(d, i)};
+  };
+
+  /**
+      @memberof Circle
+      @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current radius accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.r;
+}
+  */
+  Circle.prototype.r = function r (_) {
+    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$1(_), this) : this._r;
+  };
+
+  /**
+      @memberof Circle
+      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+      @param {String|HTMLElement} *selector*
+  */
+  Circle.prototype.update = function update (_) {
+    var this$1 = this;
+
+
+    var groups = this._select.selectAll(_),
+          t = transition().duration(this._duration);
+
+    groups
+        .call(this._applyImage.bind(this))
+        .call(this._applyLabels.bind(this))
+      .transition(t)
+        .attr("opacity", this._opacity)
+        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
+
+    groups.select("circle").transition(t)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    return this;
+
+  };
+
+  /**
+      @memberof Circle
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Circle.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
+  };
+
+  /**
+      @memberof Circle
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Circle.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+  };
+
+  return Circle;
+}(Shape$2));
+
+/**
+    @class Line
+    @extends Shape
+    @desc Creates SVG lines based on an array of data.
+*/
+var Line$2 = (function (Shape) {
+  function Line() {
+    Shape.call(this);
+    this._curve = "linear";
+    this._fill = constant$1("none");
+    this._path = line().defined(function (d) { return d; });
+    this._strokeWidth = constant$1(1);
+    this._x = accessor("x");
+    this._y = accessor("y");
+  }
+
+  if ( Shape ) Line.__proto__ = Shape;
+  Line.prototype = Object.create( Shape && Shape.prototype );
+  Line.prototype.constructor = Line;
+
+  /**
+      Draws the lines.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Line.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    var lines = nest().key(this._id).entries(this._data).map(function (d) {
+      var x = extent(d.values, function (v) { return v.x; });
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+      var y = extent(d.values, function (v) { return v.y; });
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+      d.nested = true;
+      return d;
+    });
+
+    this._path
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x)
+      .y(this._y);
+
+    var groups = this._select.selectAll(".d3plus-shape-line").data(lines, function (d) { return d.key; });
+
+    groups.transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
+
+    groups.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return this$1._path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    groups.exit().transition().delay(this._duration).remove();
+
+    groups.exit().call(this._applyLabels.bind(this), false);
+
+    var enter = groups.enter().append("g")
+        .attr("class", "d3plus-shape-line")
+        .attr("id", function (d) { return ("d3plus-shape-line-" + (d.key)); })
+        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
+        .attr("opacity", 0);
+
+    enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return this$1._path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    var update = enter.merge(groups);
+
+    update.call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "none");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
+
+    var events = Object.keys(this._on);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Line
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Line.prototype._aes = function _aes (d, i) {
+    var this$1 = this;
+
+    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve. The number returned should correspond to the horizontal center of the rectangle.
+      @param {String} [*value* = "linear"]
+  */
+  Line.prototype.curve = function curve (_) {
+    return arguments.length ? (this._curve = _, this) : this._curve;
+  };
+
+  /**
+      @memberof Line
+      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+      @param {String|HTMLElement} *selector*
+  */
+  Line.prototype.update = function update (_) {
+    var this$1 = this;
+
+
+    var groups = this._select.selectAll(_),
+          t = transition().duration(this._duration);
+
+    groups
+        .call(this._applyLabels.bind(this))
+      .transition(t)
+        .attr("opacity", this._opacity);
+
+    groups.select("path").transition(t)
+      .attr("d", function (d) { return this$1._path(d.values); });
+
+    return this;
+
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Line.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Line.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+  };
+
+  return Line;
+}(Shape$2));
+
+/**
+    @class Rect
+    @extends Shape
+    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+*/
+var Rect$2 = (function (Shape) {
+  function Rect() {
+    Shape.call(this);
+    this._height = accessor("height");
+    this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
+    this._width = accessor("width");
+    this._x = accessor("x");
+    this._y = accessor("y");
+  }
+
+  if ( Shape ) Rect.__proto__ = Shape;
+  Rect.prototype = Object.create( Shape && Shape.prototype );
+  Rect.prototype.constructor = Rect;
+
+  /**
+      Draws the rectangles.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Rect.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    var groups = this._select.selectAll(".d3plus-shape-rect").data(this._data, this._id);
+
+    groups.transition(this._transition)
+      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
+
+    groups.select("rect").transition(this._transition).call(this._applyStyle.bind(this));
+
+    groups.exit().transition().delay(this._duration).remove();
+
+    groups.exit().select("rect").transition(this._transition)
+      .attr("width", 0)
+      .attr("height", 0)
+      .attr("x", 0)
+      .attr("y", 0);
+
+    groups.exit()
+      .call(this._applyImage.bind(this), false)
+      .call(this._applyLabels.bind(this), false);
+
+    var enter = groups.enter().append("g")
+        .attr("class", "d3plus-shape-rect")
+        .attr("id", function (d, i) { return ("d3plus-shape-rect-" + (this$1._id(d, i))); })
+        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
+
+    enter.append("rect")
+      .attr("width", 0)
+      .attr("height", 0)
+      .attr("x", 0)
+      .attr("y", 0)
+      .call(this._applyStyle.bind(this));
+
+    var update = enter.merge(groups);
+
+    update.select("rect").transition(this._transition)
+      .call(this._applyPosition.bind(this));
+
+    update
+        .call(this._applyImage.bind(this))
+        .call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
+
+    var events = Object.keys(this._on);
+    for (var e = 0; e < events.length; e++) handler.on(events[e], this$1._on[events[e]]);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Rect
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Rect.prototype._aes = function _aes (d, i) {
+    return {width: this._width(d, i), height: this._height(d, i)};
+  };
+
+  /**
+      @memberof Rect
+      @desc Provides the default positioning to the <rect> elements.
+      @param {D3Selection} *elem*
+      @private
+  */
+  Rect.prototype._applyPosition = function _applyPosition (elem) {
+    var this$1 = this;
+
+    elem
+      .attr("width", function (d, i) { return this$1._width(d, i); })
+      .attr("height", function (d, i) { return this$1._height(d, i); })
+      .attr("x", function (d, i) { return -this$1._width(d, i) / 2; })
+      .attr("y", function (d, i) { return -this$1._height(d, i) / 2; });
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.height;
+}
+  */
+  Rect.prototype.height = function height (_) {
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$1(_), this) : this._height;
+  };
+
+  /**
+      @memberof Rect
+      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+      @param {String|HTMLElement} *selector*
+  */
+  Rect.prototype.update = function update (_) {
+    var this$1 = this;
+
+
+    var groups = this._select.selectAll(_),
+          t = transition().duration(this._duration);
+
+    groups
+        .call(this._applyImage.bind(this))
+        .call(this._applyLabels.bind(this))
+      .transition(t)
+        .attr("opacity", this._opacity)
+        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
+
+    groups.select("rect").transition(t)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    return this;
+
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.width;
+}
+  */
+  Rect.prototype.width = function width (_) {
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$1(_), this) : this._width;
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Rect.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Rect.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+  };
+
+  return Rect;
+}(Shape$2));
+
+
+
+var shapes = Object.freeze({
+	Circle: Circle$2,
+	Image: Image$2,
+	Line: Line$2,
+	Rect: Rect$2,
+	Shape: Shape$2
+});
+
+/**
+    @class Axis
+    @extends BaseClass
+    @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
+*/
+var Axis = (function (BaseClass) {
+  function Axis() {
+    var this$1 = this;
+
+
+    BaseClass.call(this);
+
+    this._align = "middle";
+    this._barConfig = {
+      "stroke": "#000",
+      "stroke-width": 1
+    };
+    this._domain = [0, 10];
+    this._duration = 600;
+    this._gridConfig = {
+      "stroke": "#ccc",
+      "stroke-width": 1
+    };
+    this._height = 400;
+    this.orient("bottom");
+    this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
+    this._padding = 5;
+    this._scale = "linear";
+    this._shape = "Line";
+    this._shapeConfig = {
+      fill: "#000",
+      fontColor: "#000",
+      fontFamily: new TextBox().fontFamily(),
+      fontResize: false,
+      fontSize: constant$1(10),
+      height: 8,
+      label: function (d) { return d.text; },
+      labelBounds: function (d) { return d.labelBounds; },
+      labelPadding: 0,
+      r: 4,
+      stroke: "#000",
+      strokeWidth: 1,
+      textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
+      verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; },
+      width: 8
+    };
+    this._tickSize = 5;
+    this._titleConfig = {
+      fontFamily: "Verdana",
+      fontSize: 12,
+      lineHeight: 13,
+      textAnchor: "middle"
+    };
+    this._width = 400;
+
+  }
+
+  if ( BaseClass ) Axis.__proto__ = BaseClass;
+  Axis.prototype = Object.create( BaseClass && BaseClass.prototype );
+  Axis.prototype.constructor = Axis;
+
+  /**
+      @memberof Axis
+      @desc Sets positioning for the axis bar.
+      @param {D3Selection} *bar*
+      @private
+  */
+  Axis.prototype._barPosition = function _barPosition (bar) {
+    var ref = this._position;
+    var height = ref.height;
+    var x = ref.x;
+    var y = ref.y;
+    var opposite = ref.opposite;
+    var offset = this._margin[opposite],
+          position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
+    bar
+      .call(attrize, this._barConfig)
+      .attr((x + "1"), this._d3Scale(this._d3Scale.domain()[0]))
+      .attr((x + "2"), this._d3Scale(this._d3Scale.domain()[1]))
+      .attr((y + "1"), position)
+      .attr((y + "2"), position);
+  };
+
+  /**
+      @memberof Axis
+      @desc Sets positioning for the grid lines.
+      @param {D3Selection} *lines*
+      @private
+  */
+  Axis.prototype._gridPosition = function _gridPosition (lines, last) {
+    if ( last === void 0 ) last = false;
+
+    var ref = this._position;
+    var height = ref.height;
+    var x = ref.x;
+    var y = ref.y;
+    var opposite = ref.opposite;
+    var offset = this._margin[opposite],
+          position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
+          scale = last ? this._lastScale || this._d3Scale : this._d3Scale,
+          size = ["top", "left"].includes(this._orient) ? offset : -offset;
+    lines
+      .call(attrize, this._gridConfig)
+      .attr((x + "1"), function (d) { return scale(d.id); })
+      .attr((x + "2"), function (d) { return scale(d.id); })
+      .attr((y + "1"), position)
+      .attr((y + "2"), last ? position : position + size);
+  };
+
+  /**
+      @memberof Axis
+      @desc Parses numbers and strings to valid Javascript Date obejcts.
+      @param {Date|Number|String} *date*
+      @private
+  */
+  Axis.prototype._parseDate = function _parseDate (d) {
+    if (d.constructor === Date) return d;
+    else if (d.constructor === Number && ("" + d).length > 4 && d % 1 === 0) return new Date(d);
+    d = "" + d;
+    if (d.length === 4 && ("" + (parseInt(d, 10))) === d) d = d + "/01/01";
+    return new Date(d);
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
+      @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
+  */
+  Axis.prototype.align = function align (_) {
+    return arguments.length ? (this._align = _, this) : this._align;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the axis line style and returns the current class instance. If *value* is not specified, returns the current axis line style.
+      @param {Object} [*value*]
+  */
+  Axis.prototype.barConfig = function barConfig (_) {
+    return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance. If *value* is not specified, returns the current scale domain.
+      @param {Array} [*value* = [0, 10]]
+  */
+  Axis.prototype.domain = function domain (_) {
+    return arguments.length ? (this._domain = _, this) : this._domain;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance. If *value* is not specified, returns the current duration.
+      @param {Number} [*value* = 600]
+  */
+  Axis.prototype.duration = function duration (_) {
+    return arguments.length ? (this._duration = _, this) : this._duration;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the grid values of the axis and returns the current class instance. If *value* is not specified, returns the current grid values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
+      @param {Array} [*value*]
+  */
+  Axis.prototype.grid = function grid (_) {
+    return arguments.length ? (this._grid = _, this) : this._grid;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the grid style of the axis and returns the current class instance. If *value* is not specified, returns the current grid style.
+      @param {Object} [*value*]
+  */
+  Axis.prototype.gridConfig = function gridConfig (_) {
+    return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the grid size of the axis and returns the current class instance. If *value* is not specified, returns the current grid size, which defaults to taking up as much space as available.
+      @param {Number} [*value* = undefined]
+  */
+  Axis.prototype.gridSize = function gridSize (_) {
+    return arguments.length ? (this._gridSize = _, this) : this._gridSize;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the overall height of the axis and returns the current class instance. If *value* is not specified, returns the current height value.
+      @param {Number} [*value* = 100]
+  */
+  Axis.prototype.height = function height (_) {
+    return arguments.length ? (this._height = _, this) : this._height;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance. If *value* is not specified, returns the current visible tick labels, which defaults to showing all labels.
+      @param {Array} [*value*]
+  */
+  Axis.prototype.labels = function labels (_) {
+    return arguments.length ? (this._labels = _, this) : this._labels;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
+      @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
+  */
+  Axis.prototype.orient = function orient (_) {
+    if (arguments.length) {
+
+      var horizontal = ["top", "bottom"].includes(_),
+            opps = {top: "bottom", right: "left", bottom: "top", left: "right"};
+
+      this._position = {
+        horizontal: horizontal,
+        width: horizontal ? "width" : "height",
+        height: horizontal ? "height" : "width",
+        x: horizontal ? "x" : "y",
+        y: horizontal ? "y" : "x",
+        opposite: opps[_]
+      };
+
+      return this._orient = _, this;
+
+    }
+    return this._orient;
+  };
+
+  /**
+      @memberof Axis
+      @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the axis content.
+      @example
+{"width": 180, "height": 24, "x": 10, "y": 20}
+  */
+  Axis.prototype.outerBounds = function outerBounds () {
+    return this._outerBounds;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance. If *value* is not specified, returns the current padding value.
+      @param {Number} [*value* = 10]
+  */
+  Axis.prototype.padding = function padding (_) {
+    return arguments.length ? (this._padding = _, this) : this._padding;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value. If *value* is not specified, returns the current scale range.
+      @param {Array} [*value*]
+  */
+  Axis.prototype.range = function range (_) {
+    return arguments.length ? (this._range = _, this) : this._range;
+  };
+
+  /**
+      @memberof Axis
+      @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
+      @param {Function} [*callback* = undefined]
+  */
+  Axis.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    if (this._select === void 0) {
+      this.select(select("body").append("svg")
+        .attr("width", ((this._width) + "px"))
+        .attr("height", ((this._height) + "px"))
+        .node());
+    }
+
+    if (this._lineHeight === void 0) {
+      this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
+    }
+
+    var ref = this._position;
+    var width = ref.width;
+    var height = ref.height;
+    var x = ref.x;
+    var y = ref.y;
+    var horizontal = ref.horizontal;
+    var opposite = ref.opposite;
+    var clipId = "d3plus-Axis-clip-" + (this._uuid),
+          hBuff = this._shape === "Circle" ? this._shapeConfig.r
+                   : this._shape === "Rect" ? this._shapeConfig[height] / 2
+                   : this._tickSize,
+          p = this._padding,
+          parent = this._select,
+          range = this._range ? this._range.slice() : [undefined, undefined],
+          t = transition().duration(this._duration),
+          wBuff = this._shape === "Circle" ? this._shapeConfig.r
+                   : this._shape === "Rect" ? this._shapeConfig[width] / 2
+                   : this._tickSize;
+
+    if (range[0] === void 0) range[0] = p;
+    if (range[1] === void 0) range[1] = this[("_" + width)] - p;
+    this._size = range[1] - range[0];
+
+    this._margin = {top: 0, right: 0, bottom: 0, left: 0};
+
+    if (this._title) {
+      var lH = this._titleConfig.lineHeight ? this._titleConfig.lineHeight : this._titleConfig.fontSize * 1.1,
+            titleWrap = textWrap()
+              .fontFamily(this._titleConfig.fontFamily)
+              .fontSize(this._titleConfig.fontSize)
+              .lineHeight(lH)
+              .width(this._size)
+              .height(this[("_" + height)] - this._tickSize - p)
+              (this._title);
+      this._margin[this._orient] = titleWrap.lines.length * lH + p;
+    }
+
+    this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
+      .domain(this._scale === "time" ? this._domain.map(this._parseDate) : this._domain)
+      .rangeRound(range);
+
+    var tickScale = scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 25 : 50]);
+    var labelScale = scaleSqrt().domain([10, 400]).range([10, 50]);
+    var ticks = (this._ticks
+                ? this._scale === "time" ? this._ticks.map(this._parseDate) : this._ticks
+                : this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))).map(Number);
+    var labels = this._ticks && !this._labels ? ticks : (this._labels
+                ? this._scale === "time" ? this._labels.map(this._parseDate) : this._labels
+                : this._d3Scale.ticks(Math.floor(this._size / labelScale(this._size)))).map(Number);
+    var tickFormat = this._d3Scale.tickFormat(labels.length - 1);
+    this._visibleTicks = ticks;
+
+    this._space = 0;
+    if (labels.length > 1) {
+      for (var i = 0; i < labels.length; i++) {
+        var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
+        if (s > this$1._space) this$1._space = s;
+      }
+    }
+    else this._space = this._size;
+
+    // Measures size of ticks
+    var textData = labels.map(function (d, i) {
+
+      var f = this$1._shapeConfig.fontFamily(d, i),
+            s = this$1._shapeConfig.fontSize(d, i);
+
+      var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
+
+      var res = textWrap()
+        .fontFamily(f)
+        .fontSize(s)
+        .lineHeight(lh)
+        .width(horizontal ? this$1._space : this$1._width - hBuff - p)
+        .height(horizontal ? this$1._height - hBuff - p : this$1._space)
+        (tickFormat(d));
+
+      res.lines = res.lines.filter(function (d) { return d !== ""; });
+      res.d = d;
+      res.fS = s;
+      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s / 4;
+      res.height = Math.ceil(res.lines.length * (lh + 1));
+      if (res.width % 2) res.width++;
+
+      return res;
+
+    });
+
+    // Calculates new range, based on any text that may be overflowing.
+    var rangeOuter = range.slice();
+    if (textData.length) {
+
+      var first = textData[0],
+            last = textData[textData.length - 1];
+
+      var firstB = min([this._d3Scale(first.d) - first[width] / 2, range[0] - wBuff]);
+      if (firstB < range[0]) {
+        var d = range[0] - firstB;
+        if (this._range === void 0 || this._range[0] === void 0) {
+          this._size -= d;
+          range[0] += d;
+        }
+        else if (this._range) {
+          rangeOuter[0] -= d;
+        }
+      }
+
+      var lastB = max([this._d3Scale(last.d) + last[width] / 2, range[1] + wBuff]);
+      if (lastB > range[1]) {
+        var d$1 = lastB - range[1];
+        if (this._range === void 0 || this._range[1] === void 0) {
+          this._size -= d$1;
+          range[1] -= d$1;
+        }
+        else if (this._range) {
+          rangeOuter[1] += d$1;
+        }
+      }
+
+      this._d3Scale.rangeRound(range);
+
+    }
+
+    var tBuff = this._shape === "Line" ? 0 : hBuff;
+    var obj;
+    this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[1] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    this._margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - this._outerBounds[height] - p * 2 - hBuff;
+    this._margin[this._orient] += hBuff;
+    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
+    this._outerBounds[y] = this._align === "start" ? this._padding
+                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
+                         : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
+
+    var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
+    this._group = group;
+
+    var grid = elem("g.grid", {parent: group}).selectAll("line")
+      .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
+
+    grid.exit().transition(t)
+      .attr("opacity", 0)
+      .call(this._gridPosition.bind(this))
+      .remove();
+
+    grid.enter().append("line")
+        .attr("opacity", 0)
+        .attr("clip-path", ("url(#" + clipId + ")"))
+        .call(this._gridPosition.bind(this), true)
+      .merge(grid).transition(t)
+        .attr("opacity", 1)
+        .call(this._gridPosition.bind(this));
+
+    var labelHeight = max(textData, function (t) { return t.height; }) || 0,
+          labelWidth = horizontal ? this._space * 1.1 : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
+    var tickData = ticks
+      .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); }))
+      .map(function (d) {
+        var offset = this$1._margin[opposite],
+              position = ["top", "left"].includes(this$1._orient) ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
+              size = ["top", "left"].includes(this$1._orient) ? -hBuff : hBuff,
+              sizeOffset = this$1._shape === "Line" ? size / 2 : size;
+        var obj;
+        return ( obj = {
+          id: d,
+          labelBounds: {
+            x: horizontal ? -labelWidth / 2 : this$1._orient === "left" ? -labelWidth - p + sizeOffset : sizeOffset + p,
+            y: horizontal ? this$1._orient === "bottom" ? sizeOffset + p : sizeOffset - p - labelHeight : -labelHeight / 2,
+            width: labelWidth,
+            height: labelHeight
+          },
+          size: size,
+          text: labels.includes(d) ? tickFormat(d) : false
+        }, obj[x] = this$1._d3Scale(d), obj[y] = position, obj );
+      });
+
+    if (this._shape === "Line") {
+      tickData = tickData.concat(tickData.map(function (d) {
+        var dupe = Object.assign({}, d);
+        dupe[y] += d.size;
+        return dupe;
+      }));
+    }
+
+    new shapes[this._shape]()
+      .data(tickData)
+      .duration(this._duration)
+      .select(elem("g.ticks", {parent: group}).node())
+      .config(this._shapeConfig)
+      .render();
+
+    var bar = group.selectAll("line.bar").data([null]);
+
+    bar.enter().append("line")
+        .attr("class", "bar")
+        .attr("opacity", 0)
+        .call(this._barPosition.bind(this))
+      .merge(bar).transition(t)
+        .attr("opacity", 1)
+        .call(this._barPosition.bind(this));
+
+    new TextBox()
+      .data(this._title ? [{text: this._title}] : [])
+      .duration(this._duration)
+      .height(this._outerBounds.height)
+      .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
+      .select(elem("g.d3plus-Axis-title", {parent: group}).node())
+      .text(function (d) { return d.text; })
+      .textAnchor("middle")
+      .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
+      .width(this._outerBounds[width])
+      .x(horizontal ? this._outerBounds.x : this._orient === "left" ? this._outerBounds.x + this._margin[this._orient] / 2 - this._outerBounds[width] / 2 : this._outerBounds.x + this._outerBounds.width - this._margin[this._orient] / 2 - this._outerBounds[width] / 2)
+      .y(horizontal ? this._outerBounds.y : this._outerBounds.y - this._margin[this._orient] / 2 + this._outerBounds[width] / 2)
+      .config(this._titleConfig)
+      .render();
+
+    this._lastScale = this._d3Scale;
+
+    if (callback) setTimeout(callback, this._duration + 100);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the scale of the axis and returns the current class instance. If *value* is not specified, returns the current this._d3Scale
+      @param {String} [*value* = "linear"]
+  */
+  Axis.prototype.scale = function scale (_) {
+    return arguments.length ? (this._scale = _, this) : this._scale;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+      @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+  */
+  Axis.prototype.select = function select$1 (_) {
+    return arguments.length ? (this._select = select(_), this) : this._select;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the tick shape constructor and returns the current class instance. If *value* is not specified, returns the current shape.
+      @param {String} [*value* = "Line"]
+  */
+  Axis.prototype.shape = function shape (_) {
+    return arguments.length ? (this._shape = _, this) : this._shape;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the tick style of the axis and returns the current class instance. If *value* is not specified, returns the current tick style.
+      @param {Object} [*value*]
+  */
+  Axis.prototype.shapeConfig = function shapeConfig (_) {
+    return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the tick values of the axis and returns the current class instance. If *value* is not specified, returns the current tick values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
+      @param {Array} [*value*]
+  */
+  Axis.prototype.ticks = function ticks (_) {
+    return arguments.length ? (this._ticks = _, this) : this._ticks;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the tick size of the axis and returns the current class instance. If *value* is not specified, returns the current tick size.
+      @param {Number} [*value* = 5]
+  */
+  Axis.prototype.tickSize = function tickSize (_) {
+    return arguments.length ? (this._tickSize = _, this) : this._tickSize;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the title of the axis and returns the current class instance. If *value* is not specified, returns the current title.
+      @param {String} [*value*]
+  */
+  Axis.prototype.title = function title (_) {
+    return arguments.length ? (this._title = _, this) : this._title;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance. If *value* is not specified, returns the current title configuration.
+      @param {Object} [*value*]
+  */
+  Axis.prototype.titleConfig = function titleConfig (_) {
+    return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the overall width of the axis and returns the current class instance. If *value* is not specified, returns the current width value.
+      @param {Number} [*value* = 400]
+  */
+  Axis.prototype.width = function width (_) {
+    return arguments.length ? (this._width = _, this) : this._width;
+  };
+
+  return Axis;
+}(BaseClass));
+
+/**
+    @class AxisBottom
+    @extends Axis
+    @desc Shorthand method for creating an axis where the ticks are drawn below the horizontal domain path. Extends all functionality of the base [Axis](#Axis) class.
+*/
+var AxisBottom = (function (Axis) {
+  function AxisBottom() {
+    Axis.call(this);
+    this.orient("bottom");
+  }
+
+  if ( Axis ) AxisBottom.__proto__ = Axis;
+  AxisBottom.prototype = Object.create( Axis && Axis.prototype );
+  AxisBottom.prototype.constructor = AxisBottom;
+
+  return AxisBottom;
+}(Axis));
+
+/**
+    @class AxisLeft
+    @extends Axis
+    @desc Shorthand method for creating an axis where the ticks are drawn to the left of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
+*/
+var AxisLeft = (function (Axis) {
+  function AxisLeft() {
+    Axis.call(this);
+    this.orient("left");
+  }
+
+  if ( Axis ) AxisLeft.__proto__ = Axis;
+  AxisLeft.prototype = Object.create( Axis && Axis.prototype );
+  AxisLeft.prototype.constructor = AxisLeft;
+
+  return AxisLeft;
+}(Axis));
+
+/**
+    @class AxisRight
+    @extends Axis
+    @desc Shorthand method for creating an axis where the ticks are drawn to the right of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
+*/
+var AxisRight = (function (Axis) {
+  function AxisRight() {
+    Axis.call(this);
+    this.orient("right");
+  }
+
+  if ( Axis ) AxisRight.__proto__ = Axis;
+  AxisRight.prototype = Object.create( Axis && Axis.prototype );
+  AxisRight.prototype.constructor = AxisRight;
+
+  return AxisRight;
+}(Axis));
+
+/**
+    @class AxisTop
+    @extends Axis
+    @desc Shorthand method for creating an axis where the ticks are drawn above the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
+*/
+var AxisTop = (function (Axis) {
+  function AxisTop() {
+    Axis.call(this);
+    this.orient("top");
+  }
+
+  if ( Axis ) AxisTop.__proto__ = Axis;
+  AxisTop.prototype = Object.create( Axis && Axis.prototype );
+  AxisTop.prototype.constructor = AxisTop;
+
+  return AxisTop;
+}(Axis));
+
+/**
+    @class Timeline
+    @extends Axis
+*/
+var Timeline = (function (Axis) {
+  function Timeline() {
+    var this$1 = this;
+
+    Axis.call(this);
+    this._domain = [2000, 2010];
+    this._gridSize = 0;
+    this._handleConfig = {
+      fill: "red"
+    };
+    this._handleSize = 6;
+    this._height = 100;
+    this._on = {};
+    this.orient("bottom");
+    this._scale = "time";
+    this._shape = "Rect";
+    this._shapeConfig = Object.assign({}, this._shapeConfig, {
+      height: 10,
+      on: {click: function (d) {
+        if (this$1._on.end) this$1._on.end(d.id);
+        this$1.selection(d.id).render();
+      }},
+      width: function (d) { return this$1._domain.map(function (t) { return this$1._parseDate(t).getTime(); }).includes(d.id) ? 2 : 1; }
+    });
+    this._tickShape = "circle";
+  }
+
+  if ( Axis ) Timeline.__proto__ = Axis;
+  Timeline.prototype = Object.create( Axis && Axis.prototype );
+  Timeline.prototype.constructor = Timeline;
+
+  Timeline.prototype._brushEnd = function _brushEnd () {
+
+    if (!event.sourceEvent) return; // Only transition after input.
+
+    var domain = (event.selection ? event.selection
+                 : [event.sourceEvent.offsetX, event.sourceEvent.offsetX])
+                 .map(this._d3Scale.invert)
+                 .map(Number);
+
+    var ticks = this._visibleTicks.map(Number);
+    domain[0] = this._parseDate(this._findClosest(domain[0], ticks));
+    domain[1] = this._parseDate(this._findClosest(domain[1], ticks));
+    var pixelDomain = domain.map(this._d3Scale),
+          single = pixelDomain[0] === pixelDomain[1];
+    if (single) {
+      pixelDomain[0]--;
+      pixelDomain[1]++;
+    }
+
+    this._brushGroup.transition(this._transition).call(this._brush.move, pixelDomain);
+
+    if (this._on.end) this._on.end(single ? domain[0] : domain);
+
+  };
+
+  Timeline.prototype._findClosest = function _findClosest (num, arr) {
+    return arr.reduce(function (prev, curr) { return Math.abs(curr - num) < Math.abs(prev - num) ? curr : prev; });
+  };
+
+  /**
+      Draws the timeline.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Timeline.prototype.render = function render (callback) {
+
+    Axis.prototype.render.call(this, callback);
+
+    var ref = this._position;
+    var height = ref.height;
+    var y = ref.y;
+
+    var timelineHeight = this._shape === "Circle" ? this._shapeConfig.r * 2
+             : this._shape === "Rect" ? this._shapeConfig[height]
+             : this._tickSize;
+
+    var offset = this._outerBounds[y],
+          range = this._d3Scale.range();
+
+    var brush = this._brush = brushX()
+      .extent([[range[0], offset], [range[1], offset + timelineHeight]])
+      .handleSize(this._handleSize)
+      .on("start", this._on.start || null)
+      .on("brush", this._on.brush || null)
+      .on("end", this._brushEnd.bind(this));
+
+    var latest = this._visibleTicks[this._visibleTicks.length - 1];
+    var selection = (this._selection === void 0 ? [latest, latest]
+                    : this._selection instanceof Array
+                    ? this._selection.slice()
+                    : [this._selection, this._selection])
+                    .map(this._parseDate)
+                    .map(this._d3Scale);
+
+    if (selection[0] === selection[1]) {
+      selection[0]--;
+      selection[1]++;
+    }
+
+    var brushGroup = this._brushGroup = elem("g.brushGroup", {parent: this._group});
+    brushGroup.call(brush).transition(this._transition)
+      .call(brush.move, selection);
+    brushGroup.selectAll(".handle").transition(this._transition)
+      .call(attrize, this._handleConfig);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Timeline
+      @desc If *value* is specified, sets the handle style and returns the current class instance. If *value* is not specified, returns the current handle style.
+      @param {Object} [*value*]
+  */
+  Timeline.prototype.handleConfig = function handleConfig (_) {
+    return arguments.length ? (this._handleConfig = Object.assign(this._handleConfig, _), this) : this._handleConfig;
+  };
+
+  /**
+      @memberof Timeline
+      @desc If *value* is specified, sets the handle size and returns the current class instance. If *value* is not specified, returns the current handle size.
+      @param {Number} [*value* = 6]
+  */
+  Timeline.prototype.handleSize = function handleSize (_) {
+    return arguments.length ? (this._handleSize = _, this) : this._handleSize;
+  };
+
+  /**
+      @memberof Timeline
+      @desc Adds or removes a *listener* for the specified brush event *typename*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-brush](https://github.com/d3/d3-brush#brush_on) behavior.
+      @param {String|Object} [*typename*]
+      @param {Function} [*listener*]
+  */
+  Timeline.prototype.on = function on (_, f) {
+    return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
+  };
+
+  /**
+      @memberof Timeline
+      @desc If *value* is specified, sets the selection style and returns the current class instance. If *value* is not specified, returns the current selection style.
+      @param {Object} [*value*]
+  */
+  Timeline.prototype.selectionConfig = function selectionConfig (_) {
+    return arguments.length ? (this._selectionConfig = Object.assign(this._selectionConfig, _), this) : this._selectionConfig;
+  };
+
+  /**
+      @memberof Timeline
+      @desc If *value* is specified, sets the selection and returns the current class instance. If *value* is not specified, returns the current selection. Defaults to the most recent year in the timeline.
+      @param {Array|Date|Number|String} [*value*]
+  */
+  Timeline.prototype.selection = function selection (_) {
+    return arguments.length ? (this._selection = _, this) : this._selection;
+  };
+
+  return Timeline;
+}(Axis));
+
 var val = undefined;
 
 function prefix$1() {
@@ -9158,7 +14256,7 @@ function prefix$1() {
   return val;
 }
 
-var d3$2 = {
+var d3$6 = {
   select: select, transition: transition
 };
 
@@ -9200,7 +14298,7 @@ function tooltip(data) {
       .style("width", width)
       .style("height", height)
       .style("border", function(d, i) {
-        var b = d3$2.select(this).style("border");
+        var b = d3$6.select(this).style("border");
         return b !== "0px none rgb(0, 0, 0)" ? b : border(d, i);
       })
       .style("top", function(d, i) {
@@ -9217,7 +14315,7 @@ function tooltip(data) {
   */
   function cellContent(d) {
     if (typeof d === "function") {
-      var datum = d3$2.select(this.parentNode.parentNode).datum();
+      var datum = d3$6.select(this.parentNode.parentNode).datum();
       return d(datum, data.indexOf(datum));
     }
     else return d;
@@ -9280,7 +14378,7 @@ function tooltip(data) {
   */
   function tooltip(callback) {
 
-    var tooltips = d3$2.select("body").selectAll(("." + className))
+    var tooltips = d3$6.select("body").selectAll(("." + className))
       .data(data, id);
 
     var enter = tooltips.enter().append("div")
@@ -9663,7 +14761,7 @@ function colorNest(raw, fill, groupBy) {
     var loop = function ( i ) {
       var ids = colors.map(function (c) { return Array.from(new Set(c.values.map(function (d) { return groupBy[i](d); }))); }),
             total = sum(ids, function (d) { return d.length; }),
-            uniques = new Set(merge(ids)).size;
+            uniques = new Set(merge$1(ids)).size;
       if (total === numColors && uniques === numColors || i === groupBy.length - 1) {
         id = groupBy[i];
         data = nest().key(id).entries(raw).map(function (d) { return combine(d.values); });
@@ -9751,7 +14849,7 @@ var Viz = (function (BaseClass) {
     this._data = [];
     this._duration = 600;
     this._history = [];
-    this._groupBy = [accessor("id")];
+    this._groupBy = [accessor$1("id")];
     this._highlight = false;
     this._legend = {};
     this._legendClass = new Legend();
@@ -9828,6 +14926,8 @@ var Viz = (function (BaseClass) {
       stroke: function (d, i) { return color(assign(this$1._id(d, i))).darker(); },
       strokeWidth: function (d, i) { return this$1._highlight ? this$1._highlight(d, i) ? 1 : 0 : 0; }
     };
+    this._timeline = {};
+    this._timelineClass = new Timeline();
     this._tooltip = {};
     this._tooltipClass = tooltip().pointerEvents("none");
 
@@ -9836,6 +14936,25 @@ var Viz = (function (BaseClass) {
   if ( BaseClass ) Viz.__proto__ = BaseClass;
   Viz.prototype = Object.create( BaseClass && BaseClass.prototype );
   Viz.prototype.constructor = Viz;
+
+  /**
+      @memberof Viz
+      @desc Manages the SVG group for a UI element.
+      @param {String} type
+      @private
+  */
+  Viz.prototype._uiGroup = function _uiGroup (type, condition) {
+    if ( condition === void 0 ) condition = true;
+
+    return elem$1(("g.d3plus-plot-" + type), {
+      condition: condition,
+      enter: {transform: ("translate(0, " + (this._height / 2) + ")")},
+      exit: {opacity: 0},
+      parent: this._select,
+      transition: this._transition,
+      update: {opacity: 1, transform: ("translate(0, " + (this._height / 2) + ")")}
+    });
+  };
 
   /**
       The inner return object and draw function that gets assigned the public methods.
@@ -9884,22 +15003,54 @@ var Viz = (function (BaseClass) {
 
     this._filteredData = [];
     if (this._data.length) {
-      var dataNest = nest().rollup(function (leaves) { return this$1._filteredData.push(combine(leaves)); });
+      var aggs = {};
+      if (this._timeKey) {
+        aggs[this._timeKey] = function (a) {
+          var v = Array.from(new Set(a));
+          return v.length === 1 ? v[0] : v;
+        };
+      }
+      var dataNest = nest().rollup(function (leaves) { return this$1._filteredData.push(combine(leaves, aggs)); });
       for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
-      dataNest.entries(this._filter ? this._data.filter(this._filter) : this._data);
+      var data = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
+      dataNest.entries(this._filter ? data.filter(this._filter) : data);
     }
 
-    // Manages visualization legend group
-    var legendGroup = elem("g.d3plus-plot-legend", {
-      condition: this._legend,
-      enter: {transform: ("translate(0," + (this._height / 2) + ")")},
-      exit: {opacity: 0},
-      parent: this._select,
-      transition: this._transition,
-      update: {opacity: 1, transform: ("translate(0," + (this._height / 2) + ")")}
-    });
+    // Renders the timeline if this._time and this._timeline is not falsy.
+    var timelineGroup = this._uiGroup("timeline", this._time && this._timeline);
+    if (this._time && this._timeline) {
+
+      var ticks = Array.from(new Set(this._data.map(this._time)))
+        .map(this._timelineClass._parseDate);
+
+      var selection = extent(Array.from(new Set(merge$1(this._filteredData.map(function (d) {
+        var t = this$1._time(d);
+        return t instanceof Array ? t : [t];
+      })))).map(this._timelineClass._parseDate));
+      if (selection.length === 1) selection = selection[0];
+
+      var timeline = this._timelineClass
+        .align("end")
+        .domain(extent(ticks))
+        .duration(this._duration)
+        .height(this._height / 2 - this._margin.bottom)
+        .on("end", function (s) {
+          if (!(s instanceof Array)) s = [s];
+          this$1.timeFilter(function (d) { return s.map(Number).includes(timeline._parseDate(this$1._time(d)).getTime()); }).render();
+        })
+        .select(timelineGroup.node())
+        .selection(selection)
+        .ticks(ticks)
+        .width(this._width)
+        .config(this._timeline.constructor === Object ? this._timeline : {})
+        .render();
+
+      this._margin.bottom += timeline.outerBounds().height + timeline.padding() * 2;
+
+    }
 
     // Renders the legend if this._legend is not falsy.
+    var legendGroup = this._uiGroup("legend", this._legend);
     if (this._legend) {
 
       var legend = colorNest(this._filteredData, this._shapeConfig.fill, this._groupBy);
@@ -9908,7 +15059,7 @@ var Viz = (function (BaseClass) {
         .id(function (d, i) { return legend.id(d, i); })
         .duration(this._duration)
         .data(legend.data)
-        .height(this._height / 2)
+        .height(this._height / 2 - this._margin.bottom)
         .label(this._drawLabel)
         .select(legendGroup.node())
         .verticalAlign("bottom")
@@ -9923,11 +15074,11 @@ var Viz = (function (BaseClass) {
         .config(this._legend.constructor === Object ? this._legend : {})
         .render();
 
-      this._margin.bottom = this._legendClass.outerBounds().height + this._legendClass.padding() * 4;
+      this._margin.bottom += this._legendClass.outerBounds().height + this._legendClass.padding() * 2;
 
     }
 
-    var titleGroup = elem("g.d3plus-plot-titles", {parent: this._select});
+    var titleGroup = elem$1("g.d3plus-plot-titles", {parent: this._select});
 
     this._backClass
       .data(this._history.length ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
@@ -9940,6 +15091,14 @@ var Viz = (function (BaseClass) {
     if (this._tooltip.constructor === Object) this._tooltipClass.config(this._tooltip);
 
     if (callback) setTimeout(callback, this._duration + 100);
+
+    // Draws a rectangle showing the available space for a visualization.
+    // const tester = this._select.selectAll(".tester").data([0]);
+    // tester.enter().append("rect").attr("fill", "#ccc").merge(tester)
+    //   .attr("width", this._width - this._margin.left - this._margin.right)
+    //   .attr("height", this._height - this._margin.top - this._margin.bottom)
+    //   .attr("x", this._margin.left)
+    //   .attr("y", this._margin.top);
 
     return this;
 
@@ -9993,7 +15152,7 @@ function value(d) {
   Viz.prototype.groupBy = function groupBy (_) {
     if (!arguments.length) return this._groupBy;
     if (!(_ instanceof Array)) _ = [_];
-    return this._groupBy = _.map(function (k) { return typeof k === "function" ? k : accessor(k); }), this;
+    return this._groupBy = _.map(function (k) { return typeof k === "function" ? k : accessor$1(k); }), this;
   };
 
   /**
@@ -10020,7 +15179,7 @@ function value(d) {
       @param {Function|String} [*value*]
   */
   Viz.prototype.label = function label (_) {
-    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$1(_), this) : this._label;
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$7(_), this) : this._label;
   };
 
   /**
@@ -10065,7 +15224,7 @@ new Plot
       @param {Function|String} [*value*]
   */
   Viz.prototype.shape = function shape (_) {
-    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$1(_), this) : this._shape;
+    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$7(_), this) : this._shape;
   };
 
   /**
@@ -10075,6 +15234,44 @@ new Plot
   */
   Viz.prototype.shapeConfig = function shapeConfig (_) {
     return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the time accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current time accessor. The time values that are returned should be valid Date objects, 4-digit year values, or strings that can be parsed into javascript Date objects (click [here](http://dygraphs.com/date-formats.html) for valid string formats).
+      @param {Function|String} [*value*]
+  */
+  Viz.prototype.time = function time (_) {
+    if (arguments.length) {
+      if (typeof _ === "function") {
+        this._time = _;
+        this._timeKey = undefined;
+      }
+      else {
+        this._time = accessor$1(_);
+        this._timeKey = _;
+      }
+      return this;
+    }
+    else return this._timeKey || this._time;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the time filter to the specified function and returns the current class instance. If *value* is not specified, returns the current time filter.
+      @param {Function} [*value*]
+  */
+  Viz.prototype.timeFilter = function timeFilter (_) {
+    return arguments.length ? (this._timeFilter = _, this) : this._timeFilter;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, toggles the timeline based on the specified boolean and returns the current class instance. If *value* is an object, then it is passed to the timeline's config method. If *value* is not specified, returns the current value.
+      @param {Boolean|Object} [*value* = true]
+  */
+  Viz.prototype.timeline = function timeline (_) {
+    return arguments.length ? (this._timeline = _, this) : this._timeline;
   };
 
   /**
@@ -10110,7 +15307,7 @@ new Plot
   };
 
   return Viz;
-}(BaseClass));
+}(BaseClass$1));
 
 /**
     @class Treemap
@@ -10129,6 +15326,7 @@ var Treemap = (function (Viz) {
     this._sort = function (a, b) { return b.value - a.value; };
     this._sum = accessor("value");
     this._tile = squarify;
+    this._treemap = treemap().round(true);
 
   }
 
@@ -10150,9 +15348,8 @@ var Treemap = (function (Viz) {
     for (var i = 0; i <= this._drawDepth; i++) nestedData.key(this$1._groupBy[i]);
     nestedData = nestedData.entries(this._filteredData);
 
-    var tmapData = treemap()
+    var tmapData = this._treemap
       .padding(this._padding)
-      .round(true)
       .size([this._width - this._margin.left - this._margin.right, this._height - this._margin.top - this._margin.bottom])
       .tile(this._tile)
       (hierarchy({values: nestedData}, function (d) { return d.values; }).sum(this._sum).sort(this._sort));
@@ -10169,7 +15366,7 @@ var Treemap = (function (Viz) {
         if (node.depth <= that._drawDepth) extractLayout(node.children);
         else {
           node.id = that._drawDepth + node.data.key;
-          node.data = combine(node.data.values);
+          node.data = merge(node.data.values);
           shapeData.push(node);
         }
       }
@@ -10201,7 +15398,7 @@ var Treemap = (function (Viz) {
       .label(function (d, i) { return [this$1._drawLabel(d.data, i), ((Math.round(this$1._sum(d.data, i) / total * 100)) + "%")]; })
       .labelBounds(function (d, i, s) {
         var h = s.height;
-        var sh = Math.min(50, h / 2);
+        var sh = Math.min(50, h * 0.25);
         return [
           {width: s.width, height: h - sh, x: -s.width / 2, y: -h / 2},
           {width: s.width, height: sh, x: -s.width / 2, y: h / 2 - sh}
@@ -10272,3 +15469,4 @@ exports.Treemap = Treemap;
 Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
+//# sourceMappingURL=d3plus-treemap.full.js.map

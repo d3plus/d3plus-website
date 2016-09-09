@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.0
+  d3plus-treemap v0.5.1
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -27,6 +27,7 @@ var Treemap = (function (Viz) {
     this._sort = function (a, b) { return b.value - a.value; };
     this._sum = d3plusCommon.accessor("value");
     this._tile = d3Hierarchy.treemapSquarify;
+    this._treemap = d3Hierarchy.treemap().round(true);
 
   }
 
@@ -48,9 +49,8 @@ var Treemap = (function (Viz) {
     for (var i = 0; i <= this._drawDepth; i++) nestedData.key(this$1._groupBy[i]);
     nestedData = nestedData.entries(this._filteredData);
 
-    var tmapData = d3Hierarchy.treemap()
+    var tmapData = this._treemap
       .padding(this._padding)
-      .round(true)
       .size([this._width - this._margin.left - this._margin.right, this._height - this._margin.top - this._margin.bottom])
       .tile(this._tile)
       (d3Hierarchy.hierarchy({values: nestedData}, function (d) { return d.values; }).sum(this._sum).sort(this._sort));
@@ -99,7 +99,7 @@ var Treemap = (function (Viz) {
       .label(function (d, i) { return [this$1._drawLabel(d.data, i), ((Math.round(this$1._sum(d.data, i) / total * 100)) + "%")]; })
       .labelBounds(function (d, i, s) {
         var h = s.height;
-        var sh = Math.min(50, h / 2);
+        var sh = Math.min(50, h * 0.25);
         return [
           {width: s.width, height: h - sh, x: -s.width / 2, y: -h / 2},
           {width: s.width, height: sh, x: -s.width / 2, y: h / 2 - sh}
@@ -170,3 +170,4 @@ exports.Treemap = Treemap;
 Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
+//# sourceMappingURL=d3plus-treemap.js.map
