@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.3
+  d3plus-text v0.9.4
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
