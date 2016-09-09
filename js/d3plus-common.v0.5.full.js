@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.9
+  d3plus-common v0.5.10
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -2948,6 +2948,22 @@
 
   }
 
+  var val = undefined;
+
+  /**
+      @function prefix
+      @desc Returns the appropriate CSS vendor prefix, given the current browser.
+  */
+  function prefix$1() {
+    if (val !== void 0) return val;
+    if ("-webkit-transform" in document.body.style) val = "-webkit-";
+    else if ("-moz-transform" in document.body.style) val = "-moz-";
+    else if ("-ms-transform" in document.body.style) val = "-ms-";
+    else if ("-o-transform" in document.body.style) val = "-o-";
+    else val = "";
+    return val;
+  }
+
   /**
       @function stylize
       @desc Applies each key/value in an object as a style.
@@ -2967,6 +2983,7 @@
   exports.constant = constant;
   exports.elem = elem;
   exports.merge = merge;
+  exports.prefix = prefix$1;
   exports.stylize = stylize;
 
   Object.defineProperty(exports, '__esModule', { value: true });
