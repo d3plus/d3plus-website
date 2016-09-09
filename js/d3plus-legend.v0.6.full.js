@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.4
+  d3plus-legend v0.6.5
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5749,12 +5749,7 @@ Shape.prototype.render = function render (callback) {
 
   this._transition = transition().duration(this._duration);
 
-  if (callback) {
-    setTimeout(function () {
-      this$1._update = undefined;
-      callback();
-    }, this._duration + 100);
-  }
+  if (callback) setTimeout(callback, this._duration + 100);
 
   return this;
 };
@@ -5802,19 +5797,6 @@ Shape.prototype.strokeWidth = function strokeWidth (_) {
 */
 Shape.prototype.textAnchor = function textAnchor (_) {
   return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$2(_), this) : this._textAnchor;
-};
-
-/**
-    @memberof Shape
-    @desc Performs the standard render function, but only on the specified elements.
-    @param {Selector} *selector*
-*/
-Shape.prototype.update = function update (_) {
-
-  this._update = _;
-  this.render();
-
-  return this;
 };
 
 /**
@@ -5867,7 +5849,7 @@ var Circle = (function (Shape) {
 
     Shape.prototype.render.call(this, callback);
 
-    var groups = this._select.selectAll(this._update || ".d3plus-shape-circle").data(this._data, this._id);
+    var groups = this._select.selectAll(".d3plus-shape-circle").data(this._data, this._id);
 
     groups.transition(this._transition)
       .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
@@ -7997,7 +7979,7 @@ var Line = (function (Shape) {
       .x(this._x)
       .y(this._y);
 
-    var groups = this._select.selectAll(this._update || ".d3plus-shape-line").data(lines, function (d) { return d.key; });
+    var groups = this._select.selectAll(".d3plus-shape-line").data(lines, function (d) { return d.key; });
 
     groups.transition(this._transition)
       .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
@@ -8142,7 +8124,7 @@ var Rect = (function (Shape) {
 
     Shape.prototype.render.call(this, callback);
 
-    var groups = this._select.selectAll(this._update || ".d3plus-shape-rect").data(this._data, this._id);
+    var groups = this._select.selectAll(".d3plus-shape-rect").data(this._data, this._id);
 
     groups.transition(this._transition)
       .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
@@ -8575,8 +8557,64 @@ var Legend = (function (BaseClass) {
       .config(this._titleConfig)
       .render();
 
-    this._shapes = {};
-    this.update();
+    this._shapes = [];
+    var baseConfig = this._shapeConfig,
+          config = {
+            id: function (d) { return d.id; },
+            label: function (d) { return d.label; },
+            lineHeight: function (d) { return d.lH; }
+          };
+
+    var data = this._data.map(function (d, i) {
+
+      var obj = {
+        data: d, i: i,
+        id: this$1._id(d, i),
+        label: this$1._lineData[i].width ? this$1._label(d, i) : false,
+        lH: this$1._lineHeight(d, i),
+        shape: this$1._shape(d, i)
+      };
+
+      var loop = function ( k ) {
+        if (k !== "labelBounds" && {}.hasOwnProperty.call(baseConfig, k)) {
+          if (typeof baseConfig[k] === "function") {
+            obj[k] = baseConfig[k](d, i);
+            config[k] = function (d) { return d[k]; };
+          }
+          else if (k === "on") {
+            config[k] = {};
+            var loop$1 = function ( t ) {
+              if ({}.hasOwnProperty.call(baseConfig[k], t)) {
+                config[k][t] = function(d) {
+                  baseConfig[k][t].bind(this)(d.data, d.i);
+                };
+              }
+            };
+
+            for (var t in baseConfig[k]) loop$1( t );
+          }
+        }
+      };
+
+      for (var k in baseConfig) loop( k );
+
+      return obj;
+
+    });
+
+    // Legend Shapes
+    nest().key(function (d) { return d.shape; }).entries(data).forEach(function (d) {
+
+      new d3plus[d.key]()
+        .data(d.values)
+        .duration(this$1._duration)
+        .labelPadding(0)
+        .select(this$1._group.node())
+        .verticalAlign("top")
+        .config(Object.assign({}, baseConfig, config))
+        .render();
+
+    });
 
     if (callback) setTimeout(callback, this._duration + 100);
 
@@ -8704,78 +8742,6 @@ function value(d) {
   */
   Legend.prototype.titleConfig = function titleConfig (_) {
     return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
-  };
-
-  /**
-      @memberof Legend
-      @desc Pass-through function to update specific shapes.
-      @param {Selector} *selector*
-  */
-  Legend.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var baseConfig = this._shapeConfig,
-          config = {
-            id: function (d) { return d.id; },
-            label: function (d) { return d.label; },
-            lineHeight: function (d) { return d.lH; }
-          };
-
-    var data = this._data.map(function (d, i) {
-
-      var obj = {
-        data: d, i: i,
-        id: this$1._id(d, i),
-        label: this$1._lineData[i].width ? this$1._label(d, i) : false,
-        lH: this$1._lineHeight(d, i),
-        shape: this$1._shape(d, i)
-      };
-
-      var loop = function ( k ) {
-        if (k !== "labelBounds" && {}.hasOwnProperty.call(baseConfig, k)) {
-          if (typeof baseConfig[k] === "function") {
-            obj[k] = baseConfig[k](d, i);
-            config[k] = function (d) { return d[k]; };
-          }
-          else if (k === "on") {
-            config[k] = {};
-            var loop$1 = function ( t ) {
-              if ({}.hasOwnProperty.call(baseConfig[k], t)) {
-                config[k][t] = function(d) {
-                  baseConfig[k][t].bind(this)(d.data, d.i);
-                };
-              }
-            };
-
-            for (var t in baseConfig[k]) loop$1( t );
-          }
-        }
-      };
-
-      for (var k in baseConfig) loop( k );
-
-      return obj;
-
-    });
-
-    // Legend Shapes
-    nest().key(function (d) { return d.shape; }).entries(data).forEach(function (d) {
-
-      var s = this$1._shapes[d.key] = (this$1._shapes[d.key] || new d3plus[d.key]())
-        .data(d.values)
-        .duration(this$1._duration)
-        .labelPadding(0)
-        .select(this$1._group.node())
-        .verticalAlign("top")
-        .config(Object.assign({}, baseConfig, config));
-
-      if (_) s.fill("red").update(_);
-      else s.render();
-
-    });
-
-    return this;
   };
 
   /**
