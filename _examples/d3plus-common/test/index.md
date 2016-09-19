@@ -13,6 +13,9 @@ height: 400
 ```css
 #thing {
   background-color: red;
+  display: block;
+  height: 200px;
+  width: 100px;
 }
 ```
 
