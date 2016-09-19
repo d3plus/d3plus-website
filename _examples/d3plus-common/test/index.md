@@ -20,5 +20,5 @@ height: 400
 ```
 
 ```js
-document.getElementById("thing").innerHTML = d3plus.prefix();
+document.getElementById("thing").innerHTML = "Test";
 ```
