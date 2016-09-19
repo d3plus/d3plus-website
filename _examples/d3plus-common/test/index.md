@@ -10,6 +10,12 @@ height: 400
 <div id="thing"></div>
 ```
 
+```css
+#thing {
+  background-color: red;
+}
+```
+
 ```js
 document.getElementById("thing").innerHTML = d3plus.prefix();
 ```
