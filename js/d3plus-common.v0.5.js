@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.11
+  d3plus-common v0.5.12
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -22,7 +22,7 @@ function(d) {
   return d["id"];
 }
 */
-var accessor = function(key, def) {
+function accessor(key, def) {
   if (def === void 0) { return function (d) { return d[key]; }; }
   return function (d) { return d[key] === void 0 ? def : d[key]; };
 }
@@ -33,7 +33,7 @@ var accessor = function(key, def) {
     @param {D3selection} elem The D3 element to apply the styles to.
     @param {Object} attrs An object of key/value attr pairs.
 */
-var attrize = function(e, a) {
+function attrize(e, a) {
   if ( a === void 0 ) a = {};
 
   for (var k in a) { if ({}.hasOwnProperty.call(a, k)) { e.attr(k, a[k]); } }
@@ -77,7 +77,7 @@ BaseClass.prototype.config = function config (_) {
     @param {Number} n The number value to use when searching the array.
     @param {Array} arr The array of values to test against.
 */
-var closest = function(n, arr) {
+function closest(n, arr) {
   return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
 }
 
@@ -92,7 +92,7 @@ function() {
   return 42;
 }
 */
-var constant$1 = function(value) {
+function constant(value) {
   return function constant() {
     return value;
   };
@@ -119,7 +119,7 @@ var defaultParams = {
     @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
     @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
 */
-var elem = function(selector, p) {
+function elem(selector, p) {
 
   p = Object.assign({}, defaultParams, p);
 
@@ -156,7 +156,7 @@ merge([
     @example <caption>returns this</caption>
 {id: ["bar", "foo"], group: "A", value: 30}
 */
-var merge$1 = function(objects, aggs) {
+function merge$1(objects, aggs) {
   if ( aggs === void 0 ) aggs = {};
 
 
@@ -185,7 +185,7 @@ var val = undefined;
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
-var prefix = function() {
+function prefix() {
   if (val !== void 0) { return val; }
   if ("-webkit-transform" in document.body.style) { val = "-webkit-"; }
   else if ("-moz-transform" in document.body.style) { val = "-moz-"; }
@@ -201,7 +201,7 @@ var prefix = function() {
     @param {D3selection} elem The D3 element to apply the styles to.
     @param {Object} styles An object of key/value style pairs.
 */
-var stylize = function(e, s) {
+function stylize(e, s) {
   if ( s === void 0 ) s = {};
 
   for (var k in s) { if ({}.hasOwnProperty.call(s, k)) { e.style(k, s[k]); } }
@@ -211,7 +211,7 @@ exports.accessor = accessor;
 exports.attrize = attrize;
 exports.BaseClass = BaseClass;
 exports.closest = closest;
-exports.constant = constant$1;
+exports.constant = constant;
 exports.elem = elem;
 exports.merge = merge$1;
 exports.prefix = prefix;
