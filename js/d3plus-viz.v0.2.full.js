@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.2.3
+  d3plus-viz v0.2.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -14054,6 +14054,7 @@ var Viz = (function (BaseClass) {
       }
       var dataNest = nest().rollup(function (leaves) { return this$1._filteredData.push(combine(leaves, aggs)); });
       for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
+      if (this._discrete) dataNest.key(this[("_" + (this._discrete))]);
       var data = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
       dataNest.entries(this._filter ? data.filter(this._filter) : data);
     }
@@ -14162,6 +14163,15 @@ var Viz = (function (BaseClass) {
   */
   Viz.prototype.depth = function depth (_) {
     return arguments.length ? (this._depth = _, this) : this._depth;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the discrete accessor to the specified method name (usually an axis) and returns the current class instance. If *value* is not specified, returns the current discrete method.
+      @param {String} [*value*]
+  */
+  Viz.prototype.discrete = function discrete (_) {
+    return arguments.length ? (this._discrete = _, this) : this._discrete;
   };
 
   /**
