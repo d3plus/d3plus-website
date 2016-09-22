@@ -16,19 +16,13 @@
 
 </head>
 
-<body>
-
-  <svg width=600 height=300>
-    <g id="my-axis"></g>
-  </svg>
-
-</body>
+<body></body>
 
 <script>
 
   var bottom = new d3plus.AxisBottom()
-    .select("#my-axis")
-    .domain([1, 10])
+    .domain([2002, 2016])
+    .scale("time")
     .width(600)
     .height(300)
     .render();
