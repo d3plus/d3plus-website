@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.12
+  d3plus-common v0.5.13
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -64,7 +64,7 @@ BaseClass.prototype.config = function config (_) {
     for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
     return this;
   }
-    else {
+  else {
     var config = {};
     for (var k$1 in this.prototype.constructor) { if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) { config[k$1] = this$1[k$1](); } }
     return config;
@@ -150,11 +150,11 @@ function elem(selector, p) {
     @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
     @example <caption>this</caption>
 merge([
-  {id: "foo", group: "A", value: 10},
-  {id: "bar", group: "A", value: 20}
+  {id: "foo", group: "A", value: 10, links: [1, 2]},
+  {id: "bar", group: "A", value: 20, links: [1, 3]}
 ]);
     @example <caption>returns this</caption>
-{id: ["bar", "foo"], group: "A", value: 30}
+{id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
 */
 function merge$1(objects, aggs) {
   if ( aggs === void 0 ) aggs = {};
@@ -167,11 +167,19 @@ function merge$1(objects, aggs) {
     var values = objects.map(function (o) { return o[k]; });
     var value;
     if (aggs[k]) { value = aggs[k](values); }
-    else if (values.map(function (v) { return typeof v; }).indexOf("string") >= 0) {
-      value = Array.from(new Set(values));
-      if (value.length === 1) { value = value[0]; }
+    else {
+      var types = values.map(function (v) { return v.constructor; });
+      if (types.indexOf(Array) >= 0) {
+        value = d3Array.merge(values.map(function (v) { return v.constructor === Array ? v : [v]; }));
+        value = Array.from(new Set(value));
+        if (value.length === 1) { value = value[0]; }
+      }
+      else if (types.indexOf(String) >= 0) {
+        value = Array.from(new Set(values));
+        if (value.length === 1) { value = value[0]; }
+      }
+      else { value = d3Array.sum(values); }
     }
-    else { value = d3Array.sum(values); }
     newObject[k] = value;
   });
 
