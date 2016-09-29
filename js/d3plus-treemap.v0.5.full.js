@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.2
+  d3plus-treemap v0.5.3
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -600,7 +600,7 @@ function(d) {
 }
 */
 function accessor(key, def) {
-  if (def === void 0) return function (d) { return d[key]; };
+  if (def === void 0) { return function (d) { return d[key]; }; }
   return function (d) { return d[key] === void 0 ? def : d[key]; };
 }
 
@@ -613,7 +613,7 @@ function accessor(key, def) {
 function attrize(e, a) {
   if ( a === void 0 ) a = {};
 
-  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
+  for (var k in a) { if ({}.hasOwnProperty.call(a, k)) { e.attr(k, a[k]); } }
 }
 
 /**
@@ -638,12 +638,12 @@ BaseClass.prototype.config = function config (_) {
     var this$1 = this;
 
   if (arguments.length) {
-    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+    for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
     return this;
   }
-    else {
+  else {
     var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    for (var k$1 in this.prototype.constructor) { if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) { config[k$1] = this$1[k$1](); } }
     return config;
   }
 };
@@ -3484,8 +3484,8 @@ function elem(selector, p) {
 
   var enter = elem.enter().append(tag).call(attrize, p.enter);
 
-  if (id) enter.attr("id", id[1]);
-  if (className) enter.attr("class", className[1]);
+  if (id) { enter.attr("id", id[1]); }
+  if (className) { enter.attr("class", className[1]); }
 
   elem.exit().transition(p.transition).call(attrize, p.exit).remove();
 
@@ -3698,11 +3698,11 @@ function sum(array, f) {
     @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
     @example <caption>this</caption>
 merge([
-  {id: "foo", group: "A", value: 10},
-  {id: "bar", group: "A", value: 20}
+  {id: "foo", group: "A", value: 10, links: [1, 2]},
+  {id: "bar", group: "A", value: 20, links: [1, 3]}
 ]);
     @example <caption>returns this</caption>
-{id: ["bar", "foo"], group: "A", value: 30}
+{id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
 */
 function combine(objects, aggs) {
   if ( aggs === void 0 ) aggs = {};
@@ -3714,12 +3714,20 @@ function combine(objects, aggs) {
   availableKeys.forEach(function (k) {
     var values = objects.map(function (o) { return o[k]; });
     var value;
-    if (aggs[k]) value = aggs[k](values);
-    else if (values.map(function (v) { return typeof v; }).indexOf("string") >= 0) {
-      value = Array.from(new Set(values));
-      if (value.length === 1) value = value[0];
+    if (aggs[k]) { value = aggs[k](values); }
+    else {
+      var types = values.map(function (v) { return v.constructor; });
+      if (types.indexOf(Array) >= 0) {
+        value = merge(values.map(function (v) { return v.constructor === Array ? v : [v]; }));
+        value = Array.from(new Set(value));
+        if (value.length === 1) { value = value[0]; }
+      }
+      else if (types.indexOf(String) >= 0) {
+        value = Array.from(new Set(values));
+        if (value.length === 1) { value = value[0]; }
+      }
+      else { value = sum(values); }
     }
-    else value = sum(values);
     newObject[k] = value;
   });
 
@@ -3734,12 +3742,12 @@ var val = undefined;
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
 function prefix$1() {
-  if (val !== void 0) return val;
-  if ("-webkit-transform" in document.body.style) val = "-webkit-";
-  else if ("-moz-transform" in document.body.style) val = "-moz-";
-  else if ("-ms-transform" in document.body.style) val = "-ms-";
-  else if ("-o-transform" in document.body.style) val = "-o-";
-  else val = "";
+  if (val !== void 0) { return val; }
+  if ("-webkit-transform" in document.body.style) { val = "-webkit-"; }
+  else if ("-moz-transform" in document.body.style) { val = "-moz-"; }
+  else if ("-ms-transform" in document.body.style) { val = "-ms-"; }
+  else if ("-o-transform" in document.body.style) { val = "-o-"; }
+  else { val = ""; }
   return val;
 }
 
@@ -3752,7 +3760,7 @@ function prefix$1() {
 function stylize(e, s) {
   if ( s === void 0 ) s = {};
 
-  for (var k in s) if ({}.hasOwnProperty.call(s, k)) e.style(k, s[k]);
+  for (var k in s) { if ({}.hasOwnProperty.call(s, k)) { e.style(k, s[k]); } }
 }
 
 /**
@@ -3761,8 +3769,8 @@ function stylize(e, s) {
     @param {String} value
 */
 function stringify(value) {
-  if (value === void 0) value = "undefined";
-  else if (!(typeof value === "string" || value instanceof String)) value = JSON.stringify(value);
+  if (value === void 0) { value = "undefined"; }
+  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
   return value;
 }
 
@@ -3789,8 +3797,8 @@ function strip(value) {
 
   return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
 
-    if (char === " ") return "-";
-    else if (removed.indexOf(char) >= 0) return "";
+    if (char === " ") { return "-"; }
+    else if (removed.indexOf(char) >= 0) { return ""; }
 
     for (var d = 0; d < diacritics.length; d++) {
       if (new RegExp(diacritics[d][0]).test(char)) {
@@ -3861,9 +3869,9 @@ var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSp
     @param {String} sentence
 */
 function defaultSplit(sentence) {
-  if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords);
+  if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords); }
   return merge(stringify(sentence).match(splitWords).map(function (d) {
-    if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) return d.match(splitAllChars);
+    if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
     return [d];
   }));
 }
@@ -3881,19 +3889,19 @@ function measure(text, style) {
   var context = document.createElement("canvas").getContext("2d");
 
   var font = [];
-  if ("font-style" in style) font.push(style["font-style"]);
-  if ("font-variant" in style) font.push(style["font-variant"]);
-  if ("font-weight" in style) font.push(style["font-weight"]);
+  if ("font-style" in style) { font.push(style["font-style"]); }
+  if ("font-variant" in style) { font.push(style["font-variant"]); }
+  if ("font-weight" in style) { font.push(style["font-weight"]); }
   if ("font-size" in style) {
     var s = (style["font-size"]) + "px";
-    if ("line-height" in style) s += "/" + (style["line-height"]) + "px";
+    if ("line-height" in style) { s += "/" + (style["line-height"]) + "px"; }
     font.push(s);
   }
-  if ("font-family" in style) font.push(style["font-family"]);
+  if ("font-family" in style) { font.push(style["font-family"]); }
 
   context.font = font.join(" ");
 
-  if (text instanceof Array) return text.map(function (t) { return context.measureText(t).width; });
+  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
   return context.measureText(text).width;
 
 }
@@ -3920,7 +3928,7 @@ function wrap() {
 
     sentence = stringify(sentence);
 
-    if (lineHeight === void 0) lineHeight = Math.ceil(fontSize * 1.1);
+    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.1); }
 
     var words = split(sentence);
 
@@ -3943,7 +3951,7 @@ function wrap() {
       var word = words[i];
       var nextChar = sentence.charAt(textProg.length + word.length),
             wordWidth = sizes[words.indexOf(word)];
-      if (nextChar === " ") word += nextChar;
+      if (nextChar === " ") { word += nextChar; }
       if (widthProg + wordWidth > width) {
         if (!i && !overflow) {
           truncated = true;
@@ -3958,11 +3966,11 @@ function wrap() {
         widthProg = 0;
         lineData.push(word);
       }
-      else if (!i) lineData[0] = word;
-      else lineData[line - 1] += word;
+      else if (!i) { lineData[0] = word; }
+      else { lineData[line - 1] += word; }
       textProg += word;
       widthProg += wordWidth;
-      if (nextChar === " ") widthProg += space;
+      if (nextChar === " ") { widthProg += space; }
     }
 
     return {
@@ -4086,14 +4094,14 @@ var TextBox = (function (BaseClass) {
     var this$1 = this;
 
 
-    if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
-    if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; };
+    if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
+    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; }; }
     var that = this;
 
     var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
 
       var t = this$1._text(d, i);
-      if (t === void 0) return arr;
+      if (t === void 0) { return arr; }
 
       var resize = this$1._fontResize(d, i);
 
@@ -4135,7 +4143,7 @@ var TextBox = (function (BaseClass) {
           lineData = [];
           return;
         }
-        else if (fS > fMax) fS = fMax;
+        else if (fS > fMax) { fS = fMax; }
 
         if (resize) {
           lH = fS * 1.1;
@@ -4154,10 +4162,10 @@ var TextBox = (function (BaseClass) {
 
           if (resize) {
             fS--;
-            if (fS < fMin) lineData = [];
-            else checkSize();
+            if (fS < fMin) { lineData = []; }
+            else { checkSize(); }
           }
-          else if (line === 2 && !lineData[line - 2].length) lineData = [];
+          else if (line === 2 && !lineData[line - 2].length) { lineData = []; }
           else {
             lineData[line - 2] = that._ellipsis(lineData[line - 2]);
             lineData = lineData.slice(0, line - 1);
@@ -4187,7 +4195,7 @@ var TextBox = (function (BaseClass) {
           }
 
           var heightMax = Math.floor(h * 0.8);
-          if (fS > heightMax) fS = heightMax;
+          if (fS > heightMax) { fS = heightMax; }
 
         }
 
@@ -4256,8 +4264,8 @@ var TextBox = (function (BaseClass) {
         var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
               tB = select(this);
 
-        if (that._duration === 0) tB.attr("y", function (d) { return ((d.y) + "px"); });
-        else tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); });
+        if (that._duration === 0) { tB.attr("y", function (d) { return ((d.y) + "px"); }); }
+        else { tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); }); }
 
         /**
             Styles to apply to each <tspan> element.
@@ -4310,9 +4318,9 @@ var TextBox = (function (BaseClass) {
             obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
             return obj;
           }, {});
-    for (var e = 0; e < events.length; e++) update.on(events[e], on[events[e]]);
+    for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
 
-    if (callback) setTimeout(callback, this._duration + 100);
+    if (callback) { setTimeout(callback, this._duration + 100); }
 
     return this;
 
@@ -6653,15 +6661,15 @@ function assign(c, u) {
 
 
   // If the value is null or undefined, set to grey.
-  if ([null, void 0].indexOf(c) >= 0) return getColor("missing", u);
+  if ([null, void 0].indexOf(c) >= 0) { return getColor("missing", u); }
   // Else if the value is true, set to green.
-  else if (c === true) return getColor("on", u);
+  else if (c === true) { return getColor("on", u); }
   // Else if the value is false, set to red.
-  else if (c === false) return getColor("off", u);
+  else if (c === false) { return getColor("off", u); }
 
   var p = color(c);
   // If the value is not a valid color string, use the color scale.
-  if (!p) return getColor("scale", u)(c);
+  if (!p) { return getColor("scale", u)(c); }
 
   return c.toString();
 
@@ -6716,7 +6724,7 @@ Image.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-  if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+  if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node()); }
 
   var images = this._select.selectAll(".d3plus-shape-image").data(this._data, this._id);
 
@@ -6761,7 +6769,7 @@ Image.prototype.render = function render (callback) {
     .attr("y", function (d, i) { return this$1._y(d, i); })
     .attr("opacity", 0).remove();
 
-  if (callback) setTimeout(callback, this._duration + 100);
+  if (callback) { setTimeout(callback, this._duration + 100); }
 
   return this;
 
@@ -6928,8 +6936,8 @@ Shape.prototype._applyEvents = function _applyEvents (update) {
       .data(function (d) { return [d]; })
       .each(function(d) {
         var h = that._hitArea(d, that._data.indexOf(d));
-        if (h) select(this).call(attrize, h);
-        else select(this).remove();
+        if (h) { select(this).call(attrize, h); }
+        else { select(this).remove(); }
       });
   var handler = this._hitArea ? hitArea : update;
 
@@ -6970,7 +6978,7 @@ Shape.prototype._applyImage = function _applyImage (g, show) {
       h = aes.r ? aes.r * 2 : aes.height;
       w = aes.r ? aes.r * 2 : aes.width;
       var url = that._backgroundImage(d, i);
-      if (url) imageData.push({url: url});
+      if (url) { imageData.push({url: url}); }
     }
 
     new Image()
@@ -7003,7 +7011,7 @@ Shape.prototype._applyLabels = function _applyLabels (g, show) {
   g.each(function(datum, i) {
 
     var d = datum;
-    if (datum.nested && datum.key && datum.values) d = datum.values[0];
+    if (datum.nested && datum.key && datum.values) { d = datum.values[0]; }
 
     /* Draws label based on inner bounds */
     var labelData = [];
@@ -7018,7 +7026,7 @@ Shape.prototype._applyLabels = function _applyLabels (g, show) {
 
         if (bounds) {
 
-          if (labels.constructor !== Array) labels = [labels];
+          if (labels.constructor !== Array) { labels = [labels]; }
 
           var fC = that._fontColor(d, i),
                 fF = that._fontFamily(d, i),
@@ -7106,12 +7114,12 @@ Shape.prototype.config = function config (_) {
     var this$1 = this;
 
   if (arguments.length) {
-    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+    for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
     return this;
   }
   else {
     var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    for (var k$1 in this.prototype.constructor) { if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) { config[k$1] = this$1[k$1](); } }
     return config;
   }
 };
@@ -7279,12 +7287,12 @@ Shape.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-  if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
-  if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
+  if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node()); }
+  if (this._lineHeight === void 0) { this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; }); }
 
   this._transition = transition().duration(this._duration);
 
-  if (callback) setTimeout(callback, this._duration + 100);
+  if (callback) { setTimeout(callback, this._duration + 100); }
 
   return this;
 };
@@ -9832,8 +9840,8 @@ var shapes = Object.freeze({
     @param {String} value
 */
 function stringify$1(value) {
-  if (value === void 0) value = "undefined";
-  else if (!(typeof value === "string" || value instanceof String)) value = JSON.stringify(value);
+  if (value === void 0) { value = "undefined"; }
+  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
   return value;
 }
 
@@ -9860,8 +9868,8 @@ function strip$1(value) {
 
   return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
 
-    if (char === " ") return "-";
-    else if (removed$1.indexOf(char) >= 0) return "";
+    if (char === " ") { return "-"; }
+    else if (removed$1.indexOf(char) >= 0) { return ""; }
 
     for (var d = 0; d < diacritics$1.length; d++) {
       if (new RegExp(diacritics$1[d][0]).test(char)) {
@@ -9932,9 +9940,9 @@ var splitAllChars$1 = new RegExp(("(\\" + (prefixChars$1.join("|\\")) + ")*[" + 
     @param {String} sentence
 */
 function defaultSplit$1(sentence) {
-  if (!noSpaceLanguage$1.test(sentence)) return stringify$1(sentence).match(splitWords$1);
+  if (!noSpaceLanguage$1.test(sentence)) { return stringify$1(sentence).match(splitWords$1); }
   return merge(stringify$1(sentence).match(splitWords$1).map(function (d) {
-    if (!japaneseChars$1.test(d) && noSpaceLanguage$1.test(d)) return d.match(splitAllChars$1);
+    if (!japaneseChars$1.test(d) && noSpaceLanguage$1.test(d)) { return d.match(splitAllChars$1); }
     return [d];
   }));
 }
@@ -9952,19 +9960,19 @@ function textWidth(text, style) {
   var context = document.createElement("canvas").getContext("2d");
 
   var font = [];
-  if ("font-style" in style) font.push(style["font-style"]);
-  if ("font-variant" in style) font.push(style["font-variant"]);
-  if ("font-weight" in style) font.push(style["font-weight"]);
+  if ("font-style" in style) { font.push(style["font-style"]); }
+  if ("font-variant" in style) { font.push(style["font-variant"]); }
+  if ("font-weight" in style) { font.push(style["font-weight"]); }
   if ("font-size" in style) {
     var s = (style["font-size"]) + "px";
-    if ("line-height" in style) s += "/" + (style["line-height"]) + "px";
+    if ("line-height" in style) { s += "/" + (style["line-height"]) + "px"; }
     font.push(s);
   }
-  if ("font-family" in style) font.push(style["font-family"]);
+  if ("font-family" in style) { font.push(style["font-family"]); }
 
   context.font = font.join(" ");
 
-  if (text instanceof Array) return text.map(function (t) { return context.measureText(t).width; });
+  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
   return context.measureText(text).width;
 
 }
@@ -9991,7 +9999,7 @@ function textWrap() {
 
     sentence = stringify$1(sentence);
 
-    if (lineHeight === void 0) lineHeight = Math.ceil(fontSize * 1.1);
+    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.1); }
 
     var words = split(sentence);
 
@@ -10014,7 +10022,7 @@ function textWrap() {
       var word = words[i];
       var nextChar = sentence.charAt(textProg.length + word.length),
             wordWidth = sizes[words.indexOf(word)];
-      if (nextChar === " ") word += nextChar;
+      if (nextChar === " ") { word += nextChar; }
       if (widthProg + wordWidth > width) {
         if (!i && !overflow) {
           truncated = true;
@@ -10029,11 +10037,11 @@ function textWrap() {
         widthProg = 0;
         lineData.push(word);
       }
-      else if (!i) lineData[0] = word;
-      else lineData[line - 1] += word;
+      else if (!i) { lineData[0] = word; }
+      else { lineData[line - 1] += word; }
       textProg += word;
       widthProg += wordWidth;
-      if (nextChar === " ") widthProg += space;
+      if (nextChar === " ") { widthProg += space; }
     }
 
     return {
@@ -10157,14 +10165,14 @@ var TextBox$1 = (function (BaseClass) {
     var this$1 = this;
 
 
-    if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
-    if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; };
+    if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
+    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; }; }
     var that = this;
 
     var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
 
       var t = this$1._text(d, i);
-      if (t === void 0) return arr;
+      if (t === void 0) { return arr; }
 
       var resize = this$1._fontResize(d, i);
 
@@ -10206,7 +10214,7 @@ var TextBox$1 = (function (BaseClass) {
           lineData = [];
           return;
         }
-        else if (fS > fMax) fS = fMax;
+        else if (fS > fMax) { fS = fMax; }
 
         if (resize) {
           lH = fS * 1.1;
@@ -10225,10 +10233,10 @@ var TextBox$1 = (function (BaseClass) {
 
           if (resize) {
             fS--;
-            if (fS < fMin) lineData = [];
-            else checkSize();
+            if (fS < fMin) { lineData = []; }
+            else { checkSize(); }
           }
-          else if (line === 2 && !lineData[line - 2].length) lineData = [];
+          else if (line === 2 && !lineData[line - 2].length) { lineData = []; }
           else {
             lineData[line - 2] = that._ellipsis(lineData[line - 2]);
             lineData = lineData.slice(0, line - 1);
@@ -10258,7 +10266,7 @@ var TextBox$1 = (function (BaseClass) {
           }
 
           var heightMax = Math.floor(h * 0.8);
-          if (fS > heightMax) fS = heightMax;
+          if (fS > heightMax) { fS = heightMax; }
 
         }
 
@@ -10327,8 +10335,8 @@ var TextBox$1 = (function (BaseClass) {
         var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
               tB = select(this);
 
-        if (that._duration === 0) tB.attr("y", function (d) { return ((d.y) + "px"); });
-        else tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); });
+        if (that._duration === 0) { tB.attr("y", function (d) { return ((d.y) + "px"); }); }
+        else { tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); }); }
 
         /**
             Styles to apply to each <tspan> element.
@@ -10381,9 +10389,9 @@ var TextBox$1 = (function (BaseClass) {
             obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
             return obj;
           }, {});
-    for (var e = 0; e < events.length; e++) update.on(events[e], on[events[e]]);
+    for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
 
-    if (callback) setTimeout(callback, this._duration + 100);
+    if (callback) { setTimeout(callback, this._duration + 100); }
 
     return this;
 
@@ -10730,8 +10738,8 @@ var Legend = (function (BaseClass) {
     var this$1 = this;
 
 
-    if (this._select === void 0) this.select(select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node());
-    if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
+    if (this._select === void 0) { this.select(select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node()); }
+    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; }; }
 
     // Shape <g> Group
     this._group = elem("g.d3plus-Legend", {parent: this._select});
@@ -10785,7 +10793,7 @@ var Legend = (function (BaseClass) {
 
         lines++;
 
-        if (lines > maxLines) return;
+        if (lines > maxLines) { return; }
 
         var wrappable = lines === 1 ? this._lineData.slice()
                         : this._lineData.filter(function (d) { return d.width + d.shapeWidth + this$1._padding * (d.width ? 2 : 1) > availableWidth && d.words.length >= lines; })
@@ -10813,7 +10821,7 @@ var Legend = (function (BaseClass) {
 
             if ( returned === 'break' ) break;
           }
-          if (!truncated) this._wrapRows();
+          if (!truncated) { this._wrapRows(); }
         }
         else {
           newRows = [];
@@ -10846,7 +10854,7 @@ var Legend = (function (BaseClass) {
             rowWidth = w;
             row++;
           }
-          if (!newRows[row - 1]) newRows[row - 1] = [];
+          if (!newRows[row - 1]) { newRows[row - 1] = []; }
           newRows[row - 1].push(d);
         }
       };
@@ -10882,10 +10890,10 @@ var Legend = (function (BaseClass) {
 
     var xOffset = this._padding,
         yOffset = this._padding;
-    if (this._align === "center") xOffset = (this._width - innerWidth) / 2;
-    else if (this._align === "right") xOffset = this._width - this._padding - innerWidth;
-    if (this._verticalAlign === "middle") yOffset = (this._height - innerHeight) / 2;
-    else if (this._verticalAlign === "bottom") yOffset = this._height - this._padding - innerHeight;
+    if (this._align === "center") { xOffset = (this._width - innerWidth) / 2; }
+    else if (this._align === "right") { xOffset = this._width - this._padding - innerWidth; }
+    if (this._verticalAlign === "middle") { yOffset = (this._height - innerHeight) / 2; }
+    else if (this._verticalAlign === "bottom") { yOffset = this._height - this._padding - innerHeight; }
     this._outerBounds.x = xOffset;
     this._outerBounds.y = yOffset;
 
@@ -10959,7 +10967,7 @@ var Legend = (function (BaseClass) {
 
     });
 
-    if (callback) setTimeout(callback, this._duration + 100);
+    if (callback) { setTimeout(callback, this._duration + 100); }
 
     return this;
 
@@ -11793,10 +11801,10 @@ var Axis = (function (BaseClass) {
       @private
   */
   Axis.prototype._parseDate = function _parseDate (d) {
-    if (d.constructor === Date) return d;
-    else if (d.constructor === Number && ("" + d).length > 4 && d % 1 === 0) return new Date(d);
+    if (d.constructor === Date) { return d; }
+    else if (d.constructor === Number && ("" + d).length > 4 && d % 1 === 0) { return new Date(d); }
     d = "" + d;
-    if (d.length === 4 && ("" + (parseInt(d, 10))) === d) d = d + "/01/01";
+    if (d.length === 4 && ("" + (parseInt(d, 10))) === d) { d = d + "/01/01"; }
     return new Date(d);
   };
 
@@ -11974,8 +11982,8 @@ var Axis = (function (BaseClass) {
                    : this._shape === "Rect" ? this._shapeConfig[width] / 2
                    : this._tickSize;
 
-    if (range[0] === void 0) range[0] = p;
-    if (range[1] === void 0) range[1] = this[("_" + width)] - p;
+    if (range[0] === void 0) { range[0] = p; }
+    if (range[1] === void 0) { range[1] = this[("_" + width)] - p; }
     this._size = range[1] - range[0];
 
     this._margin = {top: 0, right: 0, bottom: 0, left: 0};
@@ -12011,10 +12019,10 @@ var Axis = (function (BaseClass) {
     if (labels.length > 1) {
       for (var i = 0; i < labels.length; i++) {
         var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
-        if (s > this$1._space) this$1._space = s;
+        if (s > this$1._space) { this$1._space = s; }
       }
     }
-    else this._space = this._size;
+    else { this._space = this._size; }
 
     // Measures size of ticks
     var textData = labels.map(function (d, i) {
@@ -12037,7 +12045,7 @@ var Axis = (function (BaseClass) {
       res.fS = s;
       res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s / 4;
       res.height = Math.ceil(res.lines.length * (lh + 1));
-      if (res.width % 2) res.width++;
+      if (res.width % 2) { res.width++; }
 
       return res;
 
@@ -12172,7 +12180,7 @@ var Axis = (function (BaseClass) {
 
     this._lastScale = this._d3Scale;
 
-    if (callback) setTimeout(callback, this._duration + 100);
+    if (callback) { setTimeout(callback, this._duration + 100); }
 
     return this;
 
@@ -12357,7 +12365,7 @@ var Timeline = (function (Axis) {
     this._shapeConfig = Object.assign({}, this._shapeConfig, {
       height: 10,
       on: {click: function (d) {
-        if (this$1._on.end) this$1._on.end(d.id);
+        if (this$1._on.end) { this$1._on.end(d.id); }
         this$1.selection(d.id).render();
       }},
       width: function (d) { return this$1._domain.map(function (t) { return this$1._parseDate(t).getTime(); }).includes(d.id) ? 2 : 1; }
@@ -12371,7 +12379,7 @@ var Timeline = (function (Axis) {
 
   Timeline.prototype._brushEnd = function _brushEnd () {
 
-    if (!event.sourceEvent) return; // Only transition after input.
+    if (!event.sourceEvent) { return; } // Only transition after input.
 
     var domain = (event.selection ? event.selection
                  : [event.sourceEvent.offsetX, event.sourceEvent.offsetX])
@@ -12390,7 +12398,7 @@ var Timeline = (function (Axis) {
 
     this._brushGroup.transition(this._transition).call(this._brush.move, pixelDomain);
 
-    if (this._on.end) this._on.end(single ? domain[0] : domain);
+    if (this._on.end) { this._on.end(single ? domain[0] : domain); }
 
   };
 
@@ -12500,12 +12508,12 @@ var Timeline = (function (Axis) {
 var val$1 = undefined;
 
 function prefix$2() {
-  if (val$1 !== void 0) return val$1;
-  if ("-webkit-transform" in document.body.style) val$1 = "-webkit-";
-  else if ("-moz-transform" in document.body.style) val$1 = "-moz-";
-  else if ("-ms-transform" in document.body.style) val$1 = "-ms-";
-  else if ("-o-transform" in document.body.style) val$1 = "-o-";
-  else val$1 = "";
+  if (val$1 !== void 0) { return val$1; }
+  if ("-webkit-transform" in document.body.style) { val$1 = "-webkit-"; }
+  else if ("-moz-transform" in document.body.style) { val$1 = "-moz-"; }
+  else if ("-ms-transform" in document.body.style) { val$1 = "-ms-"; }
+  else if ("-o-transform" in document.body.style) { val$1 = "-o-"; }
+  else { val$1 = ""; }
   return val$1;
 }
 
@@ -12571,7 +12579,7 @@ function tooltip(data) {
       var datum = d3.select(this.parentNode.parentNode).datum();
       return d(datum, data.indexOf(datum));
     }
-    else return d;
+    else { return d; }
   }
 
   var pre = prefix$2();
@@ -12691,7 +12699,7 @@ function tooltip(data) {
       .style((pre + "transform"), "scale(0)")
       .remove();
 
-    if (callback) setTimeout(callback, 100);
+    if (callback) { setTimeout(callback, 100); }
 
     return tooltip;
 
@@ -12768,12 +12776,12 @@ function value(d) {
   */
   tooltip.config = function(_) {
     if (arguments.length) {
-      for (var k in _) if ({}.hasOwnProperty.call(_, k)) tooltip[k](_[k]);
+      for (var k in _) { if ({}.hasOwnProperty.call(_, k)) { tooltip[k](_[k]); } }
       return tooltip;
     }
     else {
       var config = {};
-      for (var k$1 in tooltip.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(tooltip, k$1)) config[k$1] = tooltip[k$1]();
+      for (var k$1 in tooltip.prototype.constructor) { if (k$1 !== "config" && {}.hasOwnProperty.call(tooltip, k$1)) { config[k$1] = tooltip[k$1](); } }
       return config;
     }
   };
@@ -13004,7 +13012,7 @@ function colorNest(raw, fill, groupBy) {
   if ( groupBy === void 0 ) groupBy = [];
 
 
-  if (groupBy && !(groupBy instanceof Array)) groupBy = [groupBy];
+  if (groupBy && !(groupBy instanceof Array)) { groupBy = [groupBy]; }
 
   var colors = nest().key(fill).entries(raw);
   var data, id;
@@ -13067,8 +13075,8 @@ function elementSize(element, s) {
   else {
 
     var val$1 = parseFloat(select(element).style(s), 10);
-    if (typeof val$1 === "number" && val$1 > 0) return val$1;
-    else return elementSize(element.parentNode, s);
+    if (typeof val$1 === "number" && val$1 > 0) { return val$1; }
+    else { return elementSize(element.parentNode, s); }
 
   }
 }
@@ -13096,8 +13104,8 @@ var Viz = (function (BaseClass) {
 
     this._backClass = new TextBox$1()
       .on("click", function () {
-        if (this$1._history.length) this$1.config(this$1._history.pop()).render();
-        else this$1.depth(this$1._drawDepth - 1).filter(false).render();
+        if (this$1._history.length) { this$1.config(this$1._history.pop()).render(); }
+        else { this$1.depth(this$1._drawDepth - 1).filter(false).render(); }
       });
     this._data = [];
     this._duration = 600;
@@ -13114,7 +13122,7 @@ var Viz = (function (BaseClass) {
                 filterId = this$1._id(d, i);
 
           this$1.highlight(false);
-          if (this$1._tooltip) this$1._tooltipClass.data([])();
+          if (this$1._tooltip) { this$1._tooltipClass.data([])(); }
 
           this$1._history.push({
             depth: this$1._depth,
@@ -13135,8 +13143,8 @@ var Viz = (function (BaseClass) {
 
         this$1.highlight(function (h, x) {
           var myId = this$1._id(h, x);
-          if (myId.constructor === Array && filterId.constructor !== Array) return myId.includes(filterId);
-          if (myId.constructor !== Array && filterId.constructor === Array) return filterId.includes(myId);
+          if (myId.constructor === Array && filterId.constructor !== Array) { return myId.includes(filterId); }
+          if (myId.constructor !== Array && filterId.constructor === Array) { return filterId.includes(myId); }
           return myId === filterId;
         });
 
@@ -13157,7 +13165,7 @@ var Viz = (function (BaseClass) {
       },
       mouseleave: function () {
         this$1.highlight(false);
-        if (this$1._tooltip) this$1._tooltipClass.data([])();
+        if (this$1._tooltip) { this$1._tooltipClass.data([])(); }
       }
     };
     this._padding = 5;
@@ -13226,8 +13234,8 @@ var Viz = (function (BaseClass) {
       var ref$1 = getSize(this._select.node());
       var w$1 = ref$1[0];
       var h$1 = ref$1[1];
-      if (!this._width) this.width(w$1);
-      if (!this._height) this.height(h$1);
+      if (!this._width) { this.width(w$1); }
+      if (!this._height) { this.height(h$1); }
     }
 
     var that = this;
@@ -13237,10 +13245,10 @@ var Viz = (function (BaseClass) {
     this._id = this._groupBy[this._drawDepth];
     this._drawLabel = this._label || function(d, i) {
       var l = that._id(d, i);
-      if (l.constructor !== Array) return l;
+      if (l.constructor !== Array) { return l; }
       for (var x = that._drawDepth; x >= 0; x--) {
         l = that._groupBy[x](d, i);
-        if (l.constructor !== Array) break;
+        if (l.constructor !== Array) { break; }
       }
       return l;
     };
@@ -13255,7 +13263,7 @@ var Viz = (function (BaseClass) {
         };
       }
       var dataNest = nest().rollup(function (leaves) { return this$1._filteredData.push(combine(leaves, aggs)); });
-      for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
+      for (var i = 0; i <= this._drawDepth; i++) { dataNest.key(this$1._groupBy[i]); }
       var data = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
       dataNest.entries(this._filter ? data.filter(this._filter) : data);
     }
@@ -13271,7 +13279,7 @@ var Viz = (function (BaseClass) {
         var t = this$1._time(d);
         return t instanceof Array ? t : [t];
       })))).map(this._timelineClass._parseDate));
-      if (selection.length === 1) selection = selection[0];
+      if (selection.length === 1) { selection = selection[0]; }
 
       var timeline = this._timelineClass
         .align("end")
@@ -13279,7 +13287,7 @@ var Viz = (function (BaseClass) {
         .duration(this._duration)
         .height(this._height / 2 - this._margin.bottom)
         .on("end", function (s) {
-          if (!(s instanceof Array)) s = [s];
+          if (!(s instanceof Array)) { s = [s]; }
           this$1.timeFilter(function (d) { return s.map(Number).includes(timeline._parseDate(this$1._time(d)).getTime()); }).render();
         })
         .select(timelineGroup.node())
@@ -13332,9 +13340,9 @@ var Viz = (function (BaseClass) {
     this._margin.top += this._history.length ? this._backClass.fontSize()() + this._padding : 0;
 
     this._tooltipClass.title(this._drawLabel);
-    if (this._tooltip.constructor === Object) this._tooltipClass.config(this._tooltip);
+    if (this._tooltip.constructor === Object) { this._tooltipClass.config(this._tooltip); }
 
-    if (callback) setTimeout(callback, this._duration + 100);
+    if (callback) { setTimeout(callback, this._duration + 100); }
 
     // Draws a rectangle showing the available space for a visualization.
     // const tester = this._select.selectAll(".tester").data([0]);
@@ -13394,8 +13402,8 @@ function value(d) {
 }
   */
   Viz.prototype.groupBy = function groupBy (_) {
-    if (!arguments.length) return this._groupBy;
-    if (!(_ instanceof Array)) _ = [_];
+    if (!arguments.length) { return this._groupBy; }
+    if (!(_ instanceof Array)) { _ = [_]; }
     return this._groupBy = _.map(function (k) { return typeof k === "function" ? k : accessor(k); }), this;
   };
 
@@ -13504,7 +13512,7 @@ new Plot
       }
       return this;
     }
-    else return this._timeKey || this._time;
+    else { return this._timeKey || this._time; }
   };
 
   /**
@@ -13582,7 +13590,7 @@ var Treemap = (function (Viz) {
     Viz.prototype.render.call(this, callback);
 
     var nestedData = nest();
-    for (var i = 0; i <= this._drawDepth; i++) nestedData.key(this$1._groupBy[i]);
+    for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this$1._groupBy[i]); }
     nestedData = nestedData.entries(this._filteredData);
 
     var tmapData = this._treemap
@@ -13600,7 +13608,7 @@ var Treemap = (function (Viz) {
     function extractLayout(children) {
       for (var i = 0; i < children.length; i++) {
         var node = children[i];
-        if (node.depth <= that._drawDepth) extractLayout(node.children);
+        if (node.depth <= that._drawDepth) { extractLayout(node.children); }
         else {
           node.id = node.data.key;
           node.data = combine(node.data.values);
@@ -13608,14 +13616,14 @@ var Treemap = (function (Viz) {
         }
       }
     }
-    if (tmapData.children) extractLayout(tmapData.children);
+    if (tmapData.children) { extractLayout(tmapData.children); }
     var total = tmapData.value;
 
     var c = this._shapeConfig, config = {};
     var loop = function ( k ) {
       if (k !== "labelBounds" && {}.hasOwnProperty.call(c, k)) {
-        if (typeof c[k] === "function") config[k] = function (d, i) { return c[k](d.data, i); };
-        else config[k] = c[k];
+        if (typeof c[k] === "function") { config[k] = function (d, i) { return c[k](d.data, i); }; }
+        else { config[k] = c[k]; }
       }
     };
 
