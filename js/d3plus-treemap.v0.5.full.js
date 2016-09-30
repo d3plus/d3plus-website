@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.4
+  d3plus-treemap v0.5.5
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -3716,8 +3716,9 @@ function combine(objects, aggs) {
     var value;
     if (aggs[k]) value = aggs[k](values);
     else {
-      var types = values.map(function (v) { return v.constructor; });
-      if (types.indexOf(Array) >= 0) {
+      var types = values.map(function (v) { return v ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
+      if (!types.length) value = undefined;
+      else if (types.indexOf(Array) >= 0) {
         value = merge(values.map(function (v) { return v.constructor === Array ? v : [v]; }));
         value = Array.from(new Set(value));
         if (value.length === 1) value = value[0];
@@ -3726,7 +3727,12 @@ function combine(objects, aggs) {
         value = Array.from(new Set(values));
         if (value.length === 1) value = value[0];
       }
-      else value = sum(values);
+      else if (types.indexOf(Number) >= 0) value = sum(values);
+      else {
+        console.log(k, types, values);
+        value = Array.from(new Set(values.filter(function (v) { return v !== void 0; })));
+        if (value.length === 1) value = value[0];
+      }
     }
     newObject[k] = value;
   });
