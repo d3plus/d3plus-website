@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.16
+  d3plus-common v0.5.17
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -2950,7 +2950,6 @@
         }
         else if (types.indexOf(Number) >= 0) value = sum(values);
         else {
-          console.log(k, types, values);
           value = Array.from(new Set(values.filter(function (v) { return v !== void 0; })));
           if (value.length === 1) value = value[0];
         }
