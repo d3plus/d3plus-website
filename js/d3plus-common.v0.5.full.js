@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.17
+  d3plus-common v0.5.18
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -2784,15 +2784,6 @@
   selection.prototype.interrupt = selection_interrupt;
   selection.prototype.transition = selection_transition;
 
-  var defaultParams = {
-    condition: true,
-    enter: {},
-    exit: {},
-    parent: select("body"),
-    transition: transition().duration(0),
-    update: {}
-  };
-
   /**
       @function elem
       @desc Manages the enter/update/exit pattern for a single DOM element.
@@ -2807,7 +2798,15 @@
   */
   function elem(selector, p) {
 
-    p = Object.assign({}, defaultParams, p);
+    // overrides default params
+    p = Object.assign({}, {
+      condition: true,
+      enter: {},
+      exit: {},
+      parent: select("body"),
+      transition: transition().duration(0),
+      update: {}
+    }, p);
 
     var className = (/\.([^#]+)/g).exec(selector),
           id = (/#([^\.]+)/g).exec(selector),
