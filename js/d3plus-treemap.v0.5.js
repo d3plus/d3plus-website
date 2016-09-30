@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.3
+  d3plus-treemap v0.5.4
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -46,7 +46,7 @@ var Treemap = (function (Viz) {
     Viz.prototype.render.call(this, callback);
 
     var nestedData = d3Collection.nest();
-    for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this$1._groupBy[i]); }
+    for (var i = 0; i <= this._drawDepth; i++) nestedData.key(this$1._groupBy[i]);
     nestedData = nestedData.entries(this._filteredData);
 
     var tmapData = this._treemap
@@ -64,7 +64,7 @@ var Treemap = (function (Viz) {
     function extractLayout(children) {
       for (var i = 0; i < children.length; i++) {
         var node = children[i];
-        if (node.depth <= that._drawDepth) { extractLayout(node.children); }
+        if (node.depth <= that._drawDepth) extractLayout(node.children);
         else {
           node.id = node.data.key;
           node.data = d3plusCommon.merge(node.data.values);
@@ -72,14 +72,14 @@ var Treemap = (function (Viz) {
         }
       }
     }
-    if (tmapData.children) { extractLayout(tmapData.children); }
+    if (tmapData.children) extractLayout(tmapData.children);
     var total = tmapData.value;
 
     var c = this._shapeConfig, config = {};
     var loop = function ( k ) {
       if (k !== "labelBounds" && {}.hasOwnProperty.call(c, k)) {
-        if (typeof c[k] === "function") { config[k] = function (d, i) { return c[k](d.data, i); }; }
-        else { config[k] = c[k]; }
+        if (typeof c[k] === "function") config[k] = function (d, i) { return c[k](d.data, i); };
+        else config[k] = c[k];
       }
     };
 
