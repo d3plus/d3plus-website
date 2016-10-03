@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.14
+  d3plus-shape v0.8.15
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -172,7 +172,9 @@ Map.prototype = map$1.prototype = {
     return property in this && delete this[property];
   },
   clear: function() {
-    for (var property in this) if (property[0] === prefix) delete this[property];
+    var this$1 = this;
+
+    for (var property in this) if (property[0] === prefix) delete this$1[property];
   },
   keys: function() {
     var keys = [];
@@ -180,13 +182,17 @@ Map.prototype = map$1.prototype = {
     return keys;
   },
   values: function() {
+    var this$1 = this;
+
     var values = [];
-    for (var property in this) if (property[0] === prefix) values.push(this[property]);
+    for (var property in this) if (property[0] === prefix) values.push(this$1[property]);
     return values;
   },
   entries: function() {
+    var this$1 = this;
+
     var entries = [];
-    for (var property in this) if (property[0] === prefix) entries.push({key: property.slice(1), value: this[property]});
+    for (var property in this) if (property[0] === prefix) entries.push({key: property.slice(1), value: this$1[property]});
     return entries;
   },
   size: function() {
@@ -199,7 +205,9 @@ Map.prototype = map$1.prototype = {
     return true;
   },
   each: function(f) {
-    for (var property in this) if (property[0] === prefix) f(this[property], property.slice(1), this);
+    var this$1 = this;
+
+    for (var property in this) if (property[0] === prefix) f(this$1[property], property.slice(1), this$1);
   }
 };
 
@@ -953,7 +961,7 @@ var cubehelixLong = cubehelix$1(nogamma);
 /**
  * List of params for each command type in a path `d` attribute
  */
-const typeMap = {
+var typeMap = {
   M: ['x', 'y'],
   L: ['x', 'y'],
   H: ['x'],
@@ -975,13 +983,13 @@ function commandObject(commandString) {
   // convert all spaces to commas
   commandString = commandString.trim().replace(/ /g, ',');
 
-  const type = commandString[0];
-  const args = commandString.substring(1).split(',');
-  return typeMap[type.toUpperCase()].reduce((obj, param, i) => {
+  var type = commandString[0];
+  var args = commandString.substring(1).split(',');
+  return typeMap[type.toUpperCase()].reduce(function (obj, param, i) {
     // parse X as float since we need it to do distance checks for extending points
     obj[param] = param === 'x' ? parseFloat(args[i]) : args[i];
     return obj;
-  }, { type });
+  }, { type: type });
 }
 
 /**
@@ -990,9 +998,9 @@ function commandObject(commandString) {
  * @return {String} The string for the `d` attribute
  */
 function commandToString(command) {
-  const { type } = command;
-  const params = typeMap[type.toUpperCase()];
-  return `${type}${params.map(p => command[p]).join(',')}`;
+  var type = command.type;
+  var params = typeMap[type.toUpperCase()];
+  return ("" + type + (params.map(function (p) { return command[p]; }).join(',')));
 }
 
 /**
@@ -1016,22 +1024,22 @@ function commandToString(command) {
  * @return {Object} aCommand converted to type of bCommand
  */
 function convertToSameType(aCommand, bCommand) {
-  const conversionMap = {
+  var conversionMap = {
     x1: 'x',
     y1: 'y',
     x2: 'x',
     y2: 'y',
   };
 
-  const readFromBKeys = ['xAxisRotation', 'largeArcFlag', 'sweepFlag'];
+  var readFromBKeys = ['xAxisRotation', 'largeArcFlag', 'sweepFlag'];
 
   // convert (but ignore M types)
   if (aCommand.type !== bCommand.type && bCommand.type.toUpperCase() !== 'M') {
-    const aConverted = {};
-    Object.keys(bCommand).forEach(bKey => {
-      const bValue = bCommand[bKey];
+    var aConverted = {};
+    Object.keys(bCommand).forEach(function (bKey) {
+      var bValue = bCommand[bKey];
       // first read from the A command
-      let aValue = aCommand[bKey];
+      var aValue = aCommand[bKey];
 
       // if it is one of these values, read from B no matter what
       if (aValue === undefined) {
@@ -1074,12 +1082,12 @@ function convertToSameType(aCommand, bCommand) {
 function extend(commandsToExtend, referenceCommands, numPointsToExtend) {
   // map each command in B to a command in A by counting how many times ideally
   // a command in A was in the initial path
-  const counts = referenceCommands.reduce((counts, refCommand) => {
-    let minDistance = Math.abs(commandsToExtend[0].x - refCommand.x);
-    let minCommand = 0;
+  var counts = referenceCommands.reduce(function (counts, refCommand) {
+    var minDistance = Math.abs(commandsToExtend[0].x - refCommand.x);
+    var minCommand = 0;
     // find the closest point by X position in A
-    for (let j = 1; j < commandsToExtend.length; j++) {
-      const distance = Math.abs(commandsToExtend[j].x - refCommand.x);
+    for (var j = 1; j < commandsToExtend.length; j++) {
+      var distance = Math.abs(commandsToExtend[j].x - refCommand.x);
       if (distance < minDistance) {
         minDistance = distance;
         minCommand = j;
@@ -1094,14 +1102,14 @@ function extend(commandsToExtend, referenceCommands, numPointsToExtend) {
   }, {});
 
   // now extend the array adding in at the appropriate place as needed
-  const extended = [];
-  let numExtended = 0;
-  for (let i = 0; i < commandsToExtend.length; i++) {
+  var extended = [];
+  var numExtended = 0;
+  for (var i = 0; i < commandsToExtend.length; i++) {
     // add in the initial point for this A command
     extended.push(commandsToExtend[i]);
 
-    for (let j = 1; j < counts[i] && numExtended < numPointsToExtend; j++) {
-      let commandToAdd = commandsToExtend[i];
+    for (var j = 1; j < counts[i] && numExtended < numPointsToExtend; j++) {
+      var commandToAdd = commandsToExtend[i];
       // don't allow multiple Ms
       if (commandToAdd.type === 'M') {
         commandToAdd = Object.assign({}, commandToAdd, { type: 'L' });
@@ -1125,10 +1133,10 @@ function extend(commandsToExtend, referenceCommands, numPointsToExtend) {
  * @param {String} b The `d` attribute for a path
  */
 function interpolatePath(a, b) {
-  const aNormalized = a == null ? '' : a.replace(/[Z]/gi, '');
-  const bNormalized = b == null ? '' : b.replace(/[Z]/gi, '');
-  const aPoints = aNormalized === '' ? [] : aNormalized.split(/(?=[MLCSTQAHV])/gi);
-  const bPoints = bNormalized === '' ? [] : bNormalized.split(/(?=[MLCSTQAHV])/gi);
+  var aNormalized = a == null ? '' : a.replace(/[Z]/gi, '');
+  var bNormalized = b == null ? '' : b.replace(/[Z]/gi, '');
+  var aPoints = aNormalized === '' ? [] : aNormalized.split(/(?=[MLCSTQAHV])/gi);
+  var bPoints = bNormalized === '' ? [] : bNormalized.split(/(?=[MLCSTQAHV])/gi);
 
   // if both are empty, interpolation is always the empty string.
   if (!aPoints.length && !bPoints.length) {
@@ -1149,11 +1157,11 @@ function interpolatePath(a, b) {
   }
 
   // convert to command objects so we can match types
-  let aCommands = aPoints.map(commandObject);
-  let bCommands = bPoints.map(commandObject);
+  var aCommands = aPoints.map(commandObject);
+  var bCommands = bPoints.map(commandObject);
 
   // extend to match equal size
-  const numPointsToExtend = Math.abs(bPoints.length - aPoints.length);
+  var numPointsToExtend = Math.abs(bPoints.length - aPoints.length);
 
   if (numPointsToExtend !== 0) {
     // B has more points than A, so add points to A before interpolating
@@ -1168,10 +1176,10 @@ function interpolatePath(a, b) {
 
   // commands have same length now.
   // convert A to the same type of B
-  aCommands = aCommands.map((aCommand, i) => convertToSameType(aCommand, bCommands[i]));
+  aCommands = aCommands.map(function (aCommand, i) { return convertToSameType(aCommand, bCommands[i]); });
 
-  let aProcessed = aCommands.map(commandToString).join('');
-  let bProcessed = bCommands.map(commandToString).join('');
+  var aProcessed = aCommands.map(commandToString).join('');
+  var bProcessed = bCommands.map(commandToString).join('');
 
   // if both A and B end with Z add it back in
   if ((a == null || a[a.length - 1] === 'Z') &&
@@ -1180,7 +1188,7 @@ function interpolatePath(a, b) {
     bProcessed += 'Z';
   }
 
-  const stringInterpolator = string(aProcessed, bProcessed);
+  var stringInterpolator = string(aProcessed, bProcessed);
 
   return function pathInterpolator(t) {
     // at 1 return the final value without the extensions used during interpolation
@@ -1297,11 +1305,13 @@ function parseTypenames(typenames) {
 
 function onRemove(typename) {
   return function() {
+    var this$1 = this;
+
     var on = this.__on;
     if (!on) return;
     for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
       if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-        this.removeEventListener(o.type, o.listener, o.capture);
+        this$1.removeEventListener(o.type, o.listener, o.capture);
       } else {
         on[++i] = o;
       }
@@ -1314,11 +1324,13 @@ function onRemove(typename) {
 function onAdd(typename, value, capture) {
   var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
   return function(d, i, group) {
+    var this$1 = this;
+
     var on = this.__on, o, listener = wrap(value, i, group);
     if (on) for (var j = 0, m = on.length; j < m; ++j) {
       if ((o = on[j]).type === typename.type && o.name === typename.name) {
-        this.removeEventListener(o.type, o.listener, o.capture);
-        this.addEventListener(o.type, o.listener = listener, o.capture = capture);
+        this$1.removeEventListener(o.type, o.listener, o.capture);
+        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
         o.value = value;
         return;
       }
@@ -1331,6 +1343,8 @@ function onAdd(typename, value, capture) {
 }
 
 function selection_on(typename, value, capture) {
+  var this$1 = this;
+
   var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
 
   if (arguments.length < 2) {
@@ -1347,7 +1361,7 @@ function selection_on(typename, value, capture) {
 
   on = value ? onAdd : onRemove;
   if (capture == null) capture = false;
-  for (i = 0; i < n; ++i) this.each(on(typenames[i], value, capture));
+  for (i = 0; i < n; ++i) this$1.each(on(typenames[i], value, capture));
   return this;
 }
 
@@ -3116,6 +3130,8 @@ Bundle.prototype = {
     this._basis.lineStart();
   },
   lineEnd: function() {
+    var this$1 = this;
+
     var x = this._x,
         y = this._y,
         j = x.length - 1;
@@ -3130,9 +3146,9 @@ Bundle.prototype = {
 
       while (++i <= j) {
         t = i / j;
-        this._basis.point(
-          this._beta * x[i] + (1 - this._beta) * (x0 + t * dx),
-          this._beta * y[i] + (1 - this._beta) * (y0 + t * dy)
+        this$1._basis.point(
+          this$1._beta * x[i] + (1 - this$1._beta) * (x0 + t * dx),
+          this$1._beta * y[i] + (1 - this$1._beta) * (y0 + t * dy)
         );
       }
     }
@@ -3690,6 +3706,8 @@ Natural.prototype = {
     this._y = [];
   },
   lineEnd: function() {
+    var this$1 = this;
+
     var x = this._x,
         y = this._y,
         n = x.length;
@@ -3702,7 +3720,7 @@ Natural.prototype = {
         var px = controlPoints(x),
             py = controlPoints(y);
         for (var i0 = 0, i1 = 1; i1 < n; ++i0, ++i1) {
-          this._context.bezierCurveTo(px[0][i0], py[0][i0], px[1][i0], py[1][i0], x[i1], y[i1]);
+          this$1._context.bezierCurveTo(px[0][i0], py[0][i0], px[1][i0], py[1][i0], x[i1], y[i1]);
         }
       }
     }
@@ -4001,8 +4019,10 @@ var paths = Object.freeze({
 var noop$1 = {value: function() {}};
 
 function dispatch() {
+  var arguments$1 = arguments;
+
   for (var i = 0, n = arguments.length, _ = {}, t; i < n; ++i) {
-    if (!(t = arguments[i] + "") || (t in _)) throw new Error("illegal type: " + t);
+    if (!(t = arguments$1[i] + "") || (t in _)) throw new Error("illegal type: " + t);
     _[t] = [];
   }
   return new Dispatch(_);
@@ -4052,7 +4072,9 @@ Dispatch.prototype = dispatch.prototype = {
     return new Dispatch(copy);
   },
   call: function(type, that) {
-    if ((n = arguments.length - 2) > 0) for (var args = new Array(n), i = 0, n, t; i < n; ++i) args[i] = arguments[i + 2];
+    var arguments$1 = arguments;
+
+    if ((n = arguments.length - 2) > 0) for (var args = new Array(n), i = 0, n, t; i < n; ++i) args[i] = arguments$1[i + 2];
     if (!this._.hasOwnProperty(type)) throw new Error("unknown type: " + type);
     for (t = this._[type], i = 0, n = t.length; i < n; ++i) t[i].value.apply(that, args);
   },
