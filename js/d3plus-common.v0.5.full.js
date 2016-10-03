@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.20
+  d3plus-common v0.5.21
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -203,11 +203,13 @@
 
 	function onRemove(typename) {
 	  return function() {
+	    var this$1 = this;
+
 	    var on = this.__on;
 	    if (!on) return;
 	    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
 	      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-	        this.removeEventListener(o.type, o.listener, o.capture);
+	        this$1.removeEventListener(o.type, o.listener, o.capture);
 	      } else {
 	        on[++i] = o;
 	      }
@@ -220,11 +222,13 @@
 	function onAdd(typename, value, capture) {
 	  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
 	  return function(d, i, group) {
+	    var this$1 = this;
+
 	    var on = this.__on, o, listener = wrap(value, i, group);
 	    if (on) for (var j = 0, m = on.length; j < m; ++j) {
 	      if ((o = on[j]).type === typename.type && o.name === typename.name) {
-	        this.removeEventListener(o.type, o.listener, o.capture);
-	        this.addEventListener(o.type, o.listener = listener, o.capture = capture);
+	        this$1.removeEventListener(o.type, o.listener, o.capture);
+	        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
 	        o.value = value;
 	        return;
 	      }
@@ -237,6 +241,8 @@
 	}
 
 	function selection_on(typename, value, capture) {
+	  var this$1 = this;
+
 	  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
 
 	  if (arguments.length < 2) {
@@ -253,7 +259,7 @@
 
 	  on = value ? onAdd : onRemove;
 	  if (capture == null) capture = false;
-	  for (i = 0; i < n; ++i) this.each(on(typenames[i], value, capture));
+	  for (i = 0; i < n; ++i) this$1.each(on(typenames[i], value, capture));
 	  return this;
 	}
 
@@ -955,8 +961,10 @@
 	var noop = {value: function() {}};
 
 	function dispatch() {
+	  var arguments$1 = arguments;
+
 	  for (var i = 0, n = arguments.length, _ = {}, t; i < n; ++i) {
-	    if (!(t = arguments[i] + "") || (t in _)) throw new Error("illegal type: " + t);
+	    if (!(t = arguments$1[i] + "") || (t in _)) throw new Error("illegal type: " + t);
 	    _[t] = [];
 	  }
 	  return new Dispatch(_);
@@ -1006,7 +1014,9 @@
 	    return new Dispatch(copy);
 	  },
 	  call: function(type, that) {
-	    if ((n = arguments.length - 2) > 0) for (var args = new Array(n), i = 0, n, t; i < n; ++i) args[i] = arguments[i + 2];
+	    var arguments$1 = arguments;
+
+	    if ((n = arguments.length - 2) > 0) for (var args = new Array(n), i = 0, n, t; i < n; ++i) args[i] = arguments$1[i + 2];
 	    if (!this._.hasOwnProperty(type)) throw new Error("unknown type: " + type);
 	    for (t = this._[type], i = 0, n = t.length; i < n; ++i) t[i].value.apply(that, args);
 	  },
