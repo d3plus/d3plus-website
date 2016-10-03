@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.13
+  d3plus-shape v0.8.14
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -44,7 +44,7 @@ Image.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-  if (this._select === void 0) { this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node()); }
+  if (this._select === void 0) this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
 
   var images = this._select.selectAll(".d3plus-shape-image").data(this._data, this._id);
 
@@ -89,7 +89,7 @@ Image.prototype.render = function render (callback) {
     .attr("y", function (d, i) { return this$1._y(d, i); })
     .attr("opacity", 0).remove();
 
-  if (callback) { setTimeout(callback, this._duration + 100); }
+  if (callback) setTimeout(callback, this._duration + 100);
 
   return this;
 
@@ -256,8 +256,8 @@ Shape.prototype._applyEvents = function _applyEvents (update) {
       .data(function (d) { return [d]; })
       .each(function(d) {
         var h = that._hitArea(d, that._data.indexOf(d));
-        if (h) { d3Selection.select(this).call(d3plusCommon.attrize, h); }
-        else { d3Selection.select(this).remove(); }
+        if (h) d3Selection.select(this).call(d3plusCommon.attrize, h);
+        else d3Selection.select(this).remove();
       });
   var handler = this._hitArea ? hitArea : update;
 
@@ -298,7 +298,7 @@ Shape.prototype._applyImage = function _applyImage (g, show) {
       h = aes.r ? aes.r * 2 : aes.height;
       w = aes.r ? aes.r * 2 : aes.width;
       var url = that._backgroundImage(d, i);
-      if (url) { imageData.push({url: url}); }
+      if (url) imageData.push({url: url});
     }
 
     new Image()
@@ -349,7 +349,7 @@ Shape.prototype._applyLabels = function _applyLabels (g, show) {
 
         if (bounds) {
 
-          if (labels.constructor !== Array) { labels = [labels]; }
+          if (labels.constructor !== Array) labels = [labels];
 
           var fC = that._fontColor(d, i),
                 fF = that._fontFamily(d, i),
@@ -443,12 +443,12 @@ Shape.prototype.config = function config (_) {
     var this$1 = this;
 
   if (arguments.length) {
-    for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
+    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
     return this;
   }
   else {
     var config = {};
-    for (var k$1 in this.prototype.constructor) { if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) { config[k$1] = this$1[k$1](); } }
+    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
     return config;
   }
 };
@@ -616,12 +616,12 @@ Shape.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-  if (this._select === void 0) { this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node()); }
-  if (this._lineHeight === void 0) { this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; }); }
+  if (this._select === void 0) this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+  if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
 
   this._transition = d3Transition.transition().duration(this._duration);
 
-  if (callback) { setTimeout(callback, this._duration + 100); }
+  if (callback) setTimeout(callback, this._duration + 100);
 
   return this;
 };
@@ -693,22 +693,10 @@ var Area = (function (Shape) {
     this._curve = "linear";
     this._x = d3plusCommon.accessor("x");
     this._x0 = d3plusCommon.accessor("x");
-    this._x1 = d3plusCommon.constant(null);
+    this._x1 = null;
     this._y = d3plusCommon.constant(0);
     this._y0 = d3plusCommon.constant(0);
     this._y1 = d3plusCommon.accessor("y");
-
-    this._path = paths.area()
-      .defined(function (d) { return d; })
-      .x(this._x)
-      .y0(this._y0)
-      .y1(this._y1);
-
-    this._pathExit = paths.area()
-      .defined(function (d) { return d; })
-      .x(this._x)
-      .y0(this._y0)
-      .y1(this._y0);
 
   }
 
@@ -727,19 +715,37 @@ var Area = (function (Shape) {
 
     Shape.prototype.render.call(this, callback);
 
-    var that = this;
+    var path = this._path = paths.area()
+      .defined(function (d) { return d; })
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x)
+      .x0(this._x0)
+      .x1(this._x1)
+      .y(this._y)
+      .y0(this._y0)
+      .y1(this._y1);
+
+    var exitPath = paths.area()
+      .defined(function (d) { return d; })
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x)
+      .x0(this._x0)
+      .x1(this._x1)
+      .y(this._y)
+      .y0(this._y0)
+      .y1(this._y1);
 
     var areas = d3Collection.nest().key(this._id).entries(this._data).map(function (d) {
       var x = d3Array.extent(d.values.map(this$1._x)
         .concat(d.values.map(this$1._x0))
-        .concat(d.values.map(this$1._x1))
+        .concat(this$1._x1 ? d.values.map(this$1._x1) : [])
       );
       d.xR = x;
       d.width = x[1] - x[0];
       d.x = x[0] + d.width / 2;
       var y = d3Array.extent(d.values.map(this$1._y)
         .concat(d.values.map(this$1._y0))
-        .concat(d.values.map(this$1._y1))
+        .concat(this$1._y1 ? d.values.map(this$1._y1) : [])
       );
       d.yR = y;
       d.height = y[1] - y[0];
@@ -747,8 +753,6 @@ var Area = (function (Shape) {
       d.nested = true;
       return d;
     });
-
-    this._path.curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))]);
 
     var groups = this._select.selectAll(".d3plus-Area").data(areas, function (d) { return d.key; });
 
@@ -758,13 +762,13 @@ var Area = (function (Shape) {
     groups.select("path").transition(this._transition)
       .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attrTween("d", function(d) {
-        return d3InterpolatePath.interpolatePath(d3Selection.select(this).attr("d"), that._path(d.values));
+        return d3InterpolatePath.interpolatePath(d3Selection.select(this).attr("d"), path(d.values));
       })
       .call(this._applyStyle.bind(this));
 
     groups.exit().select("path").transition(this._transition)
       .attrTween("d", function(d) {
-        return d3InterpolatePath.interpolatePath(d3Selection.select(this).attr("d"), that._pathExit(d.values));
+        return d3InterpolatePath.interpolatePath(d3Selection.select(this).attr("d"), exitPath(d.values));
       });
 
     groups.exit().transition().delay(this._duration).remove();
@@ -778,7 +782,7 @@ var Area = (function (Shape) {
 
     enter.append("path")
       .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attr("d", function (d) { return this$1._path(d.values); })
+      .attr("d", function (d) { return path(d.values); })
       .call(this._applyStyle.bind(this));
 
     var update = enter.merge(groups);
@@ -788,7 +792,7 @@ var Area = (function (Shape) {
       .transition(this._transition)
         .attr("opacity", this._opacity)
       .transition()
-        .attr("pointer-events", "none");
+        .attr("pointer-events", "all");
 
     this._applyEvents(update);
 
@@ -852,13 +856,7 @@ function(d) {
 }
   */
   Area.prototype.x = function x (_) {
-    if (arguments.length) {
-      this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_);
-      this._path.x(this._x);
-      this._pathExit.x(this._x);
-      return this;
-    }
-    return this._x;
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x;
   };
 
   /**
@@ -867,28 +865,16 @@ function(d) {
       @param {Function|Number} [*value*]
   */
   Area.prototype.x0 = function x0 (_) {
-    if (arguments.length) {
-      this._x0 = typeof _ === "function" ? _ : d3plusCommon.constant(_);
-      this._path.x0(this._x0);
-      this._pathExit.x0(this._x0);
-      this._pathExit.x1(this._x0);
-      return this;
-    }
-    return this._x0;
+    return arguments.length ? (this._x0 = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x0;
   };
 
   /**
       @memberof Area
       @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
-      @param {Function|Number} [*value*]
+      @param {Function|Number|null} [*value*]
   */
   Area.prototype.x1 = function x1 (_) {
-    if (arguments.length) {
-      this._x1 = typeof _ === "function" ? _ : d3plusCommon.constant(_);
-      this._path.x1(this._x1);
-      return this;
-    }
-    return this._x1;
+    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this) : this._x1;
   };
 
   /**
@@ -901,13 +887,7 @@ function(d) {
 }
   */
   Area.prototype.y = function y (_) {
-    if (arguments.length) {
-      this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_);
-      this._path.y(this._y);
-      this._pathExit.y(this._y);
-      return this;
-    }
-    return this._y;
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
   };
 
   /**
@@ -916,28 +896,16 @@ function(d) {
       @param {Function|Number} [*value*]
   */
   Area.prototype.y0 = function y0 (_) {
-    if (arguments.length) {
-      this._y0 = typeof _ === "function" ? _ : d3plusCommon.constant(_);
-      this._path.y0(this._y0);
-      this._pathExit.y0(this._y0);
-      this._pathExit.y1(this._y0);
-      return this;
-    }
-    return this._y0;
+    return arguments.length ? (this._y0 = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y0;
   };
 
   /**
       @memberof Area
       @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
-      @param {Function|Number} [*value*]
+      @param {Function|Number|null} [*value*]
   */
   Area.prototype.y1 = function y1 (_) {
-    if (arguments.length) {
-      this._y1 = typeof _ === "function" ? _ : d3plusCommon.constant(_);
-      this._path.y1(this._y1);
-      return this;
-    }
-    return this._y1;
+    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this) : this._y1;
   };
 
   return Area;
@@ -1196,7 +1164,7 @@ var Line = (function (Shape) {
       .transition(this._transition)
         .attr("opacity", this._opacity)
       .transition()
-        .attr("pointer-events", "none");
+        .attr("pointer-events", "all");
 
     this._applyEvents(update);
 
