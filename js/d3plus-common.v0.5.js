@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.19
+  d3plus-common v0.5.20
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -144,12 +144,12 @@
 
 	}
 
-	var array = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CEOs","CFO","CFOs","CNC","COO","COOs","CPU","CPUs","GDP","HVAC","ID","IT","R&D","TV","UI"]};
+	var array = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
 	var enUS = {
 		array: array
 	};
 
-	var array$1 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CEOs","CFO","CFOs","CNC","COO","COOs","CPU","CPUs","PIB","HVAC","ID","TI","I&D","TV","UI"]};
+	var array$1 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
 	var esES = {
 		array: array$1
 	};
