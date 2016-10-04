@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.2.4
+  d3plus-viz v0.2.5
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -229,12 +229,16 @@ var Viz = (function (BaseClass) {
     this._transition = d3Transition.transition().duration(this._duration);
 
     // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
-    if (this._select === void 0) {
-      var ref = getSize(d3Selection.select("body").node());
+    if (this._select === void 0 || this._select.node().tagName.toLowerCase() !== "svg") {
+      var parent = this._select === void 0 ? d3Selection.select("body") : this._select;
+      var ref = getSize(parent.node());
       var w = ref[0];
       var h = ref[1];
-      this.width(w).height(h);
-      this.select(d3Selection.select("body").append("svg").style("width", (w + "px")).style("height", (h + "px")).style("display", "block").node());
+      if (!this._width) this.width(w);
+      if (!this._height) this.height(h);
+      w = this._width;
+      h = this._height;
+      this.select(parent.append("svg").style("width", (w + "px")).style("height", (h + "px")).style("display", "block").node());
     }
 
     // Calculates the width and/or height of the Viz based on the this._select, if either has not been defined.
