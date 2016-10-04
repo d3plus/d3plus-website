@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.1.1
+  d3plus-timeline v0.1.2
   An easy-to-use javascript timeline.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -36,7 +36,7 @@ var Timeline = (function (Axis) {
         if (this$1._on.end) this$1._on.end(d.id);
         this$1.selection(d.id).render();
       }},
-      width: function (d) { return this$1._domain.map(function (t) { return this$1._parseDate(t).getTime(); }).includes(d.id) ? 2 : 1; }
+      width: function (d) { return this$1._domain.map(function (t) { return d3plusAxis.date(t).getTime(); }).includes(d.id) ? 2 : 1; }
     });
     this._tickShape = "circle";
   }
@@ -55,8 +55,8 @@ var Timeline = (function (Axis) {
                  .map(Number);
 
     var ticks = this._visibleTicks.map(Number);
-    domain[0] = this._parseDate(this._findClosest(domain[0], ticks));
-    domain[1] = this._parseDate(this._findClosest(domain[1], ticks));
+    domain[0] = d3plusAxis.date(d3plusCommon.closest(domain[0], ticks));
+    domain[1] = d3plusAxis.date(d3plusCommon.closest(domain[1], ticks));
     var pixelDomain = domain.map(this._d3Scale),
           single = pixelDomain[0] === pixelDomain[1];
     if (single) {
@@ -68,10 +68,6 @@ var Timeline = (function (Axis) {
 
     if (this._on.end) this._on.end(single ? domain[0] : domain);
 
-  };
-
-  Timeline.prototype._findClosest = function _findClosest (num, arr) {
-    return arr.reduce(function (prev, curr) { return Math.abs(curr - num) < Math.abs(prev - num) ? curr : prev; });
   };
 
   /**
@@ -106,7 +102,7 @@ var Timeline = (function (Axis) {
                     : this._selection instanceof Array
                     ? this._selection.slice()
                     : [this._selection, this._selection])
-                    .map(this._parseDate)
+                    .map(d3plusAxis.date)
                     .map(this._d3Scale);
 
     if (selection[0] === selection[1]) {
@@ -178,3 +174,4 @@ exports.Timeline = Timeline;
 Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
+//# sourceMappingURL=d3plus-timeline.js.map
