@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.0
+  d3plus-axis v0.3.1
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -11,9 +11,33 @@
 }(this, (function (exports,d3Array,scales,d3Selection,d3Transition,d3plusCommon,shapes,d3plusText) { 'use strict';
 
 /**
+    @function date
+    @desc Parses numbers and strings to valid Javascript Date obejcts.
+    @param {Date|Number|String} *date*
+*/
+function date(d) {
+
+  // returns if already Date object
+  if (d.constructor === Date) return d;
+  // detects if milliseconds
+  else if (d.constructor === Number && d > 0 && ("" + d).length > 4 && d % 1 === 0) return new Date(d);
+
+  var s = "" + d;
+  // detects if only passing a year value
+  if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
+    var date = new Date((s + "/01/01"));
+    date.setFullYear(d);
+    return date;
+  }
+  // parses string to Date object
+  else return new Date(s);
+
+}
+
+/**
     @class Axis
     @extends BaseClass
-    @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
+    @desc Creates an SVG scale based on an array of data.
 */
 var Axis = (function (BaseClass) {
   function Axis() {
@@ -122,20 +146,6 @@ var Axis = (function (BaseClass) {
       .attr((x + "2"), xPos)
       .attr((y + "1"), position)
       .attr((y + "2"), last ? position : position + size);
-  };
-
-  /**
-      @memberof Axis
-      @desc Parses numbers and strings to valid Javascript Date obejcts.
-      @param {Date|Number|String} *date*
-      @private
-  */
-  Axis.prototype._parseDate = function _parseDate (d) {
-    if (d.constructor === Date) { return d; }
-    else if (d.constructor === Number && ("" + d).length > 4 && d % 1 === 0) { return new Date(d); }
-    d = "" + d;
-    if (d.length === 4 && ("" + (parseInt(d, 10))) === d) { d = d + "/01/01"; }
-    return new Date(d);
   };
 
   /**
@@ -330,8 +340,8 @@ var Axis = (function (BaseClass) {
                    : this._tickSize;
 
     var range = this._range ? this._range.slice() : [undefined, undefined];
-    if (range[0] === void 0) { range[0] = p; }
-    if (range[1] === void 0) { range[1] = this[("_" + width)] - p; }
+    if (range[0] === void 0) range[0] = p;
+    if (range[1] === void 0) range[1] = this[("_" + width)] - p;
     this._size = range[1] - range[0];
     if (this._scale === "ordinal" && this._domain.length > range.length) {
       range = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range[0]; });
@@ -352,23 +362,23 @@ var Axis = (function (BaseClass) {
     }
 
     this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-      .domain(this._scale === "time" ? this._domain.map(this._parseDate) : this._domain)
+      .domain(this._scale === "time" ? this._domain.map(date) : this._domain)
       .range(range);
 
-    if (this._d3Scale.round) { this._d3Scale.round(true); }
-    if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
-    if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
+    if (this._d3Scale.round) this._d3Scale.round(true);
+    if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
+    if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
 
     var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 32.5 : 75]);
     var labelScale = scales.scaleSqrt().domain([10, 400]).range([10, 75]);
 
     var ticks = this._ticks
-               ? this._scale === "time" ? this._ticks.map(this._parseDate) : this._ticks
+               ? this._scale === "time" ? this._ticks.map(date) : this._ticks
                : this._d3Scale.ticks
                ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
                : this._domain;
     var labels = this._ticks && !this._labels ? ticks : this._labels
-               ? this._scale === "time" ? this._labels.map(this._parseDate) : this._labels
+               ? this._scale === "time" ? this._labels.map(date) : this._labels
                : this._d3Scale.ticks
                ? this._d3Scale.ticks(Math.floor(this._size / labelScale(this._size)))
                : this._domain;
@@ -391,10 +401,10 @@ var Axis = (function (BaseClass) {
       this._space = 0;
       for (var i = 0; i < labels.length - 1; i++) {
         var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
-        if (s > this$1._space) { this$1._space = s; }
+        if (s > this$1._space) this$1._space = s;
       }
     }
-    else { this._space = this._size; }
+    else this._space = this._size;
 
     // Measures size of ticks
     var textData = labels.map(function (d, i) {
@@ -417,7 +427,7 @@ var Axis = (function (BaseClass) {
       res.fS = s;
       res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); }))) + s / 4;
       res.height = Math.ceil(res.lines.length * (lh + 1));
-      if (res.width % 2) { res.width++; }
+      if (res.width % 2) res.width++;
 
       return res;
 
@@ -553,7 +563,7 @@ var Axis = (function (BaseClass) {
 
     this._lastScale = this._d3Scale;
 
-    if (callback) { setTimeout(callback, this._duration + 100); }
+    if (callback) setTimeout(callback, this._duration + 100);
 
     return this;
 
@@ -720,6 +730,7 @@ exports.AxisBottom = AxisBottom;
 exports.AxisLeft = AxisLeft;
 exports.AxisRight = AxisRight;
 exports.AxisTop = AxisTop;
+exports.date = date;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
