@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.7
+  d3plus-legend v0.6.8
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -39,6 +39,7 @@ var Legend = (function (BaseClass) {
       fill: d3plusCommon.accessor("color"),
       fontColor: d3plusCommon.constant("#444"),
       fontFamily: s.fontFamily(),
+      fontResize: false,
       fontSize: d3plusCommon.constant(10),
       height: d3plusCommon.constant(10),
       hitArea: function (dd) {
