@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-plot.v0.1.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var data = [
+    {id: "alpha", x:  7, y: 4},
+    {id: "alpha", x: 25, y: 5},
+    {id: "alpha", x: 13, y: 6},
+    {id: "beta",  x: 17, y: 4},
+    {id: "beta",  x:  8, y: 5},
+    {id: "beta",  x: 13, y: 6}
+  ];
+
+  new d3plus.StackedArea()
+    .data(data)
+    .groupBy("id")
+    .discrete("y")
+    .render();
+
+</script>
+
+</html>
