@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.1
+  d3plus-axis v0.3.2
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -20,7 +20,7 @@ function date(d) {
   // returns if already Date object
   if (d.constructor === Date) return d;
   // detects if milliseconds
-  else if (d.constructor === Number && d > 0 && ("" + d).length > 4 && d % 1 === 0) return new Date(d);
+  else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) return new Date(d);
 
   var s = "" + d;
   // detects if only passing a year value
