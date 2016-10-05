@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.8
+  d3plus-treemap v0.5.9
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -12436,7 +12436,7 @@ function(d) {
 
 
 
-var shapes = Object.freeze({
+var d3plus = Object.freeze({
 	Area: Area,
 	Circle: Circle,
 	Image: Image,
@@ -12446,1441 +12446,716 @@ var shapes = Object.freeze({
 });
 
 /**
-    @class Image
-    @desc Creates SVG images based on an array of data.
-    @example <caption>a sample row of data</caption>
-var data = {"url": "file.png", "width": "100", "height": "50"};
-@example <caption>passed to the generator</caption>
-new Image().data([data]).render();
-@example <caption>creates the following</caption>
-<image class="d3plus-shape-image" opacity="1" href="file.png" width="100" height="50" x="0" y="0"></image>
-@example <caption>this is shorthand for the following</caption>
-image().data([data])();
-@example <caption>which also allows a post-draw callback function</caption>
-image().data([data])(function() { alert("draw complete!"); })
+    @function date
+    @desc Parses numbers and strings to valid Javascript Date obejcts.
+    @param {Date|Number|String} *date*
 */
-var Image$1 = function Image() {
-  this._duration = 600;
-  this._height = accessor("height");
-  this._id = accessor("url");
-  this._select;
-  this._url = accessor("url");
-  this._width = accessor("width");
-  this._x = accessor("x", 0);
-  this._y = accessor("y", 0);
-};
+function date$2(d) {
+
+  // returns if already Date object
+  if (d.constructor === Date) return d;
+  // detects if milliseconds
+  else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) return new Date(d);
+
+  var s = "" + d;
+  // detects if only passing a year value
+  if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
+    var date = new Date((s + "/01/01"));
+    date.setFullYear(d);
+    return date;
+  }
+  // parses string to Date object
+  else return new Date(s);
+
+}
 
 /**
-    @memberof Image
-    @desc Renders the current Image to the page. If a *callback* is specified, it will be called once the images are done drawing.
-    @param {Function} [*callback* = undefined]
+    @class Axis
+    @extends BaseClass
+    @desc Creates an SVG scale based on an array of data.
 */
-Image$1.prototype.render = function render (callback) {
+var Axis = (function (BaseClass) {
+  function Axis() {
     var this$1 = this;
 
 
-  if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+    BaseClass.call(this);
 
-  var images = this._select.selectAll(".d3plus-shape-image").data(this._data, this._id);
+    this._align = "middle";
+    this._barConfig = {
+      "stroke": "#000",
+      "stroke-width": 1
+    };
+    this._domain = [0, 10];
+    this._duration = 600;
+    this._gridConfig = {
+      "stroke": "#ccc",
+      "stroke-width": 1
+    };
+    this._height = 400;
+    this.orient("bottom");
+    this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
+    this._padding = 5;
+    this._paddingInner = 0.1;
+    this._paddingOuter = 0.1;
+    this._scale = "linear";
+    this._shape = "Line";
+    this._shapeConfig = {
+      fill: "#000",
+      fontColor: "#000",
+      fontFamily: new TextBox().fontFamily(),
+      fontResize: false,
+      fontSize: constant$1(10),
+      height: 8,
+      label: function (d) { return d.text; },
+      labelBounds: function (d) { return d.labelBounds; },
+      labelPadding: 0,
+      r: 4,
+      stroke: "#000",
+      strokeWidth: 1,
+      textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
+      verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; },
+      width: 8
+    };
+    this._tickSize = 5;
+    this._titleConfig = {
+      fontFamily: "Verdana",
+      fontSize: 12,
+      lineHeight: 13,
+      textAnchor: "middle"
+    };
+    this._width = 400;
 
-  var enter = images.enter().append("image")
-    .attr("class", "d3plus-shape-image")
-    .attr("opacity", 0);
+  }
 
-  var t = transition().duration(this._duration),
-        that = this,
-        update = enter.merge(images);
+  if ( BaseClass ) Axis.__proto__ = BaseClass;
+  Axis.prototype = Object.create( BaseClass && BaseClass.prototype );
+  Axis.prototype.constructor = Axis;
 
-  update
-      .attr("xlink:href", this._url)
-    .transition(t)
-      .attr("opacity", 1)
-      .attr("width", function (d, i) { return this$1._width(d, i); })
-      .attr("height", function (d, i) { return this$1._height(d, i); })
-      .attr("x", function (d, i) { return this$1._x(d, i); })
-      .attr("y", function (d, i) { return this$1._y(d, i); })
-      .each(function(d, i) {
-        var image = select(this), link = that._url(d, i);
-        var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
-        if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
-          var img = new Image$1();
-          img.src = link;
-          img.crossOrigin = "Anonymous";
-          img.onload = function() {
-            var canvas = document.createElement("canvas");
-            canvas.width = this.width;
-            canvas.height = this.height;
-            var context = canvas.getContext("2d");
-            context.drawImage(this, 0, 0);
-            image.attr("xlink:href", canvas.toDataURL("image/png"));
-          };
-        }
-      });
-
-  images.exit().transition(t)
-    .attr("width", function (d, i) { return this$1._width(d, i); })
-    .attr("height", function (d, i) { return this$1._height(d, i); })
-    .attr("x", function (d, i) { return this$1._x(d, i); })
-    .attr("y", function (d, i) { return this$1._y(d, i); })
-    .attr("opacity", 0).remove();
-
-  if (callback) setTimeout(callback, this._duration + 100);
-
-  return this;
-
-};
-
-/**
-    @memberof Image
-    @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. An <image> tag will be drawn for each object in the array.
-    @param {Array} [*data* = []]
-*/
-Image$1.prototype.data = function data (_) {
-  return arguments.length ? (this._data = _, this) : this._data;
-};
-
-/**
-    @memberof Image
-    @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
-    @param {Number} [*ms* = 600]
-*/
-Image$1.prototype.duration = function duration (_) {
-  return arguments.length ? (this._duration = _, this) : this._duration;
-};
-
-/**
-    @memberof Image
-    @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
-    @param {Function|Number} [*value*]
-    @example
-function(d) {
-return d.height;
-}
-*/
-Image$1.prototype.height = function height (_) {
-  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$1(_), this) : this._height;
-};
-
-/**
-    @memberof Image
-    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor. This is useful if you want to duplicate the same image.
-    @param {Function} [*value*]
-    @example
-function(d) {
-return d.url;
-}
-*/
-Image$1.prototype.id = function id (_) {
-  return arguments.length ? (this._id = _, this) : this._id;
-};
-
-/**
-    @memberof Image
-    @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
-    @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
-*/
-Image$1.prototype.select = function select$1 (_) {
-  return arguments.length ? (this._select = select(_), this) : this._select;
-};
-
-/**
-    @memberof Image
-    @desc If *value* is specified, sets the URL accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current URL accessor.
-    @param {Function} [*value*]
-    @example
-function(d) {
-return d.url;
-}
-*/
-Image$1.prototype.url = function url (_) {
-  return arguments.length ? (this._url = _, this) : this._url;
-};
-
-/**
-    @memberof Image
-    @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
-    @param {Function|Number} [*value*]
-    @example
-function(d) {
-return d.width;
-}
-*/
-Image$1.prototype.width = function width (_) {
-  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$1(_), this) : this._width;
-};
-
-/**
-    @memberof Image
-    @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-    @param {Function|Number} [*value*]
-    @example
-function(d) {
-return d.x || 0;
-}
-*/
-Image$1.prototype.x = function x (_) {
-  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
-};
-
-/**
-    @memberof Image
-    @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-    @param {Function|Number} [*value*]
-    @example
-function(d) {
-return d.y || 0;
-}
-*/
-Image$1.prototype.y = function y (_) {
-  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
-};
-
-/**
-    @class Shape
-    @desc An abstracted class for generating shapes.
-*/
-var Shape$1 = function Shape() {
-  var this$1 = this;
-
-  this._backgroundImage = constant$1(false);
-  this._data = [];
-  this._duration = 600;
-  this._fill = constant$1("black");
-  this._fontColor = function (d, i) { return contrast(this$1._fill(d, i)); };
-  this._fontFamily = constant$1("Verdana");
-  this._fontResize = constant$1(false);
-  this._fontSize = constant$1(12);
-  this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
-  this._label = constant$1(false);
-  this._labelPadding = constant$1(5);
-  this._on = {};
-  this._opacity = constant$1(1);
-  this._scale = constant$1(1);
-  this._stroke = constant$1("black");
-  this._strokeWidth = constant$1(0);
-  this._textAnchor = constant$1("start");
-  this._verticalAlign = constant$1("top");
-};
-
-/**
-    @memberof Shape
-    @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-    @param {Object} *data point*
-    @param {Number} *index*
-    @private
-*/
-Shape$1.prototype._aes = function _aes () {
-  return {};
-};
-
-/**
-    @memberof Shape
-    @desc Adds event listeners to each shape group or hit area.
-    @param {D3Selection} *update* The update cycle of the data binding.
-    @private
-*/
-Shape$1.prototype._applyEvents = function _applyEvents (update) {
-
-  var that = this;
-  var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
-  hitArea.exit().remove();
-  hitArea = hitArea.enter().append("rect")
-      .attr("class", "hitArea")
-      .attr("fill", "none")
-    .merge(hitArea)
-      .data(function (d) { return [d]; })
-      .each(function(d) {
-        var h = that._hitArea(d, that._data.indexOf(d));
-        if (h) select(this).call(attrize, h);
-        else select(this).remove();
-      });
-  var handler = this._hitArea ? hitArea : update;
-
-  var events = Object.keys(this._on);
-  var loop = function ( e ) {
-    handler.on(events[e], function(d, i) {
-      var hit = this.className.baseVal === "hitArea";
-      var t = hit ? this.parentNode : this;
-      that._on[events[e]].bind(t)(d, hit ? that._data.indexOf(d) : i);
-    });
+  /**
+      @memberof Axis
+      @desc Sets positioning for the axis bar.
+      @param {D3Selection} *bar*
+      @private
+  */
+  Axis.prototype._barPosition = function _barPosition (bar) {
+    var ref = this._position;
+    var height = ref.height;
+    var x = ref.x;
+    var y = ref.y;
+    var opposite = ref.opposite;
+    var domain = this._d3Scale.domain(),
+          offset = this._margin[opposite],
+          position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
+    bar
+      .call(attrize, this._barConfig)
+      .attr((x + "1"), this._d3Scale(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
+      .attr((x + "2"), this._d3Scale(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
+      .attr((y + "1"), position)
+      .attr((y + "2"), position);
   };
 
-    for (var e = 0; e < events.length; e++) loop( e );
+  /**
+      @memberof Axis
+      @desc Sets positioning for the grid lines.
+      @param {D3Selection} *lines*
+      @private
+  */
+  Axis.prototype._gridPosition = function _gridPosition (lines, last) {
+    if ( last === void 0 ) last = false;
 
-};
+    var ref = this._position;
+    var height = ref.height;
+    var x = ref.x;
+    var y = ref.y;
+    var opposite = ref.opposite;
+    var offset = this._margin[opposite],
+          position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
+          scale = last ? this._lastScale || this._d3Scale : this._d3Scale,
+          size = ["top", "left"].includes(this._orient) ? offset : -offset,
+          xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
+          xPos = function (d) { return scale(d.id) + xDiff; };
+    lines
+      .call(attrize, this._gridConfig)
+      .attr((x + "1"), xPos)
+      .attr((x + "2"), xPos)
+      .attr((y + "1"), position)
+      .attr((y + "2"), last ? position : position + size);
+  };
 
-/**
-    @memberof Shape
-    @desc Adds background image to each shape group.
-    @param {D3Selection} *g*
-    @param {Boolean} [*show* = True] Whether or not to show or remove the image.
-    @private
-*/
-Shape$1.prototype._applyImage = function _applyImage (g, show) {
-    if ( show === void 0 ) show = true;
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
+      @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
+  */
+  Axis.prototype.align = function align (_) {
+    return arguments.length ? (this._align = _, this) : this._align;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the axis line style and returns the current class instance. If *value* is not specified, returns the current axis line style.
+      @param {Object} [*value*]
+  */
+  Axis.prototype.barConfig = function barConfig (_) {
+    return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance. If *value* is not specified, returns the current scale domain.
+      @param {Array} [*value* = [0, 10]]
+  */
+  Axis.prototype.domain = function domain (_) {
+    return arguments.length ? (this._domain = _, this) : this._domain;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance. If *value* is not specified, returns the current duration.
+      @param {Number} [*value* = 600]
+  */
+  Axis.prototype.duration = function duration (_) {
+    return arguments.length ? (this._duration = _, this) : this._duration;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the grid values of the axis and returns the current class instance. If *value* is not specified, returns the current grid values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
+      @param {Array} [*value*]
+  */
+  Axis.prototype.grid = function grid (_) {
+    return arguments.length ? (this._grid = _, this) : this._grid;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the grid style of the axis and returns the current class instance. If *value* is not specified, returns the current grid style.
+      @param {Object} [*value*]
+  */
+  Axis.prototype.gridConfig = function gridConfig (_) {
+    return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the grid size of the axis and returns the current class instance. If *value* is not specified, returns the current grid size, which defaults to taking up as much space as available.
+      @param {Number} [*value* = undefined]
+  */
+  Axis.prototype.gridSize = function gridSize (_) {
+    return arguments.length ? (this._gridSize = _, this) : this._gridSize;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the overall height of the axis and returns the current class instance. If *value* is not specified, returns the current height value.
+      @param {Number} [*value* = 100]
+  */
+  Axis.prototype.height = function height (_) {
+    return arguments.length ? (this._height = _, this) : this._height;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance. If *value* is not specified, returns the current visible tick labels, which defaults to showing all labels.
+      @param {Array} [*value*]
+  */
+  Axis.prototype.labels = function labels (_) {
+    return arguments.length ? (this._labels = _, this) : this._labels;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
+      @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
+  */
+  Axis.prototype.orient = function orient (_) {
+    if (arguments.length) {
+
+      var horizontal = ["top", "bottom"].includes(_),
+            opps = {top: "bottom", right: "left", bottom: "top", left: "right"};
+
+      this._position = {
+        horizontal: horizontal,
+        width: horizontal ? "width" : "height",
+        height: horizontal ? "height" : "width",
+        x: horizontal ? "x" : "y",
+        y: horizontal ? "y" : "x",
+        opposite: opps[_]
+      };
+
+      return this._orient = _, this;
+
+    }
+    return this._orient;
+  };
+
+  /**
+      @memberof Axis
+      @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the axis content.
+      @example
+{"width": 180, "height": 24, "x": 10, "y": 20}
+  */
+  Axis.prototype.outerBounds = function outerBounds () {
+    return this._outerBounds;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance. If *value* is not specified, returns the current padding value.
+      @param {Number} [*value* = 10]
+  */
+  Axis.prototype.padding = function padding (_) {
+    return arguments.length ? (this._padding = _, this) : this._padding;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance. If *value* is not specified, returns the current inner padding value.
+      @param {Number} [*value* = 0.1]
+  */
+  Axis.prototype.paddingInner = function paddingInner (_) {
+    return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance. If *value* is not specified, returns the current outer padding value.
+      @param {Number} [*value* = 0.1]
+  */
+  Axis.prototype.paddingOuter = function paddingOuter (_) {
+    return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value. If *value* is not specified, returns the current scale range.
+      @param {Array} [*value*]
+  */
+  Axis.prototype.range = function range (_) {
+    return arguments.length ? (this._range = _, this) : this._range;
+  };
+
+  /**
+      @memberof Axis
+      @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
+      @param {Function} [*callback* = undefined]
+  */
+  Axis.prototype.render = function render (callback) {
+    var this$1 = this;
 
 
-  var that = this;
-
-  g.each(function(d, i) {
-
-    var aes = that._aes(d, i);
-
-    var imageData = [];
-    var h = 0, w = 0;
-
-    if (show && (aes.r || aes.width && aes.height)) {
-      h = aes.r ? aes.r * 2 : aes.height;
-      w = aes.r ? aes.r * 2 : aes.width;
-      var url = that._backgroundImage(d, i);
-      if (url) imageData.push({url: url});
+    if (this._select === void 0) {
+      this.select(select("body").append("svg")
+        .attr("width", ((this._width) + "px"))
+        .attr("height", ((this._height) + "px"))
+        .node());
     }
 
-    new Image$1()
-      .data(imageData)
-      .duration(that._duration)
-      .height(h)
-      .select(this)
-      .width(w)
-      .x(-w / 2)
-      .y(-h / 2)
-      .render();
-
-  });
-
-};
-
-/**
-    @memberof Shape
-    @desc Adds labels to each shape group.
-    @param {D3Selection} *g*
-    @param {Boolean} [*show* = True] Whether or not to show or remove the labels.
-    @private
-*/
-Shape$1.prototype._applyLabels = function _applyLabels (g, show) {
-    if ( show === void 0 ) show = true;
-
-
-  var that = this;
-
-  g.each(function(datum, i) {
-
-    var d = datum;
-    if (datum.nested && datum.key && datum.values) {
-      d = datum.values[0];
-      i = that._data.indexOf(d);
+    if (this._lineHeight === void 0) {
+      this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
     }
 
-    /* Draws label based on inner bounds */
-    var labelData = [];
+    var ref = this._position;
+    var width = ref.width;
+    var height = ref.height;
+    var x = ref.x;
+    var y = ref.y;
+    var horizontal = ref.horizontal;
+    var opposite = ref.opposite;
+    var clipId = "d3plus-Axis-clip-" + (this._uuid),
+          hBuff = this._shape === "Circle" ? this._shapeConfig.r
+                   : this._shape === "Rect" ? this._shapeConfig[height] / 2
+                   : this._tickSize,
+          p = this._padding,
+          parent = this._select,
+          t = transition().duration(this._duration),
+          wBuff = this._shape === "Circle" ? this._shapeConfig.r
+                   : this._shape === "Rect" ? this._shapeConfig[width] / 2
+                   : this._tickSize;
 
-    if (show) {
+    var range = this._range ? this._range.slice() : [undefined, undefined];
+    if (range[0] === void 0) range[0] = p;
+    if (range[1] === void 0) range[1] = this[("_" + width)] - p;
+    this._size = range[1] - range[0];
+    if (this._scale === "ordinal" && this._domain.length > range.length) {
+      range = d3Range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range[0]; });
+    }
 
-      var labels = that._label(d, i);
+    this._margin = {top: 0, right: 0, bottom: 0, left: 0};
 
-      if (that._labelBounds && labels !== false && labels !== void 0) {
+    if (this._title) {
+      var lH = this._titleConfig.lineHeight ? this._titleConfig.lineHeight : this._titleConfig.fontSize * 1.1,
+            titleWrap = textWrap()
+              .fontFamily(this._titleConfig.fontFamily)
+              .fontSize(this._titleConfig.fontSize)
+              .lineHeight(lH)
+              .width(this._size)
+              .height(this[("_" + height)] - this._tickSize - p)
+              (this._title);
+      this._margin[this._orient] = titleWrap.lines.length * lH + p;
+    }
 
-        var bounds = that._labelBounds(d, i, that._aes(datum, i));
+    this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
+      .domain(this._scale === "time" ? this._domain.map(date$2) : this._domain)
+      .range(range);
 
-        if (bounds) {
+    if (this._d3Scale.round) this._d3Scale.round(true);
+    if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
+    if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
 
-          if (labels.constructor !== Array) labels = [labels];
+    var tickScale = scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 45 : 75]);
 
-          var fC = that._fontColor(d, i),
-                fF = that._fontFamily(d, i),
-                fR = that._fontResize(d, i),
-                fS = that._fontSize(d, i),
-                lH = that._lineHeight(d, i),
-                padding = that._labelPadding(d, i),
-                tA = that._textAnchor(d, i),
-                vA = that._verticalAlign(d, i);
+    var ticks = this._ticks
+               ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
+               : this._d3Scale.ticks
+               ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+               : this._domain;
+    var labels = this._ticks && !this._labels ? ticks : this._labels
+               ? this._scale === "time" ? this._labels.map(date$2) : this._labels
+               : ticks;
 
-          for (var l = 0; l < labels.length; l++) {
-            var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
-                  p = padding.constructor === Array ? padding[l] : padding;
-            b.height -= p * 2;
-            b.width -= p * 2;
-            b.x += p;
-            b.y += p;
-            b.id = (that._id(d, i)) + "_" + l;
-            b.text = labels[l];
+    var tickFormat = this._d3Scale.tickFormat
+                     ? this._d3Scale.tickFormat(labels.length - 1)
+                     : function (d) { return d; };
 
-            b.fC = fC.constructor === Array ? fC[l] : fC;
-            b.fF = fF.constructor === Array ? fF[l] : fF;
-            b.fR = fR.constructor === Array ? fR[l] : fR;
-            b.fS = fS.constructor === Array ? fS[l] : fS;
-            b.lH = lH.constructor === Array ? lH[l] : lH;
-            b.tA = tA.constructor === Array ? tA[l] : tA;
-            b.vA = vA.constructor === Array ? vA[l] : vA;
+    if (this._scale === "time") {
+      ticks = ticks.map(Number);
+      labels = labels.map(Number);
+    }
 
-            labelData.push(b);
-          }
+    this._visibleTicks = ticks;
 
-        }
-
+    if (this._scale === "band") {
+      this._space = this._d3Scale.bandwidth();
+    }
+    else if (labels.length > 1) {
+      this._space = 0;
+      for (var i = 0; i < labels.length - 1; i++) {
+        var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
+        if (s > this$1._space) this$1._space = s;
       }
     }
+    else this._space = this._size;
 
-    new TextBox()
-      .data(labelData)
-      .delay(that._duration / 2)
-      .duration(that._duration)
-      .fontColor(function (d) { return d.fC; })
-      .fontFamily(function (d) { return d.fF; })
-      .fontResize(function (d) { return d.fR; })
-      .fontSize(function (d) { return d.fS; })
-      .lineHeight(function (d) { return d.lH; })
-      .textAnchor(function (d) { return d.tA; })
-      .verticalAlign(function (d) { return d.vA; })
-      .select(this)
-      .render();
+    // Measures size of ticks
+    var textData = labels.map(function (d, i) {
 
-  });
+      var f = this$1._shapeConfig.fontFamily(d, i),
+            s = this$1._shapeConfig.fontSize(d, i);
 
-};
+      var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
 
-/**
-    @memberof Shape
-    @desc Provides the default styling to the shape elements.
-    @param {HTMLElement} *elem*
-    @private
-*/
-Shape$1.prototype._applyStyle = function _applyStyle (elem) {
+      var res = textWrap()
+        .fontFamily(f)
+        .fontSize(s)
+        .lineHeight(lh)
+        .width(horizontal ? this$1._space : this$1._width - hBuff - p)
+        .height(horizontal ? this$1._height - hBuff - p : this$1._space)
+        (tickFormat(d));
 
-  var that = this;
-  function styleLogic(d, i) {
-    return d.nested && d.key && d.values
-         ? this(d.values[0], that._data.indexOf(d.values[0]))
-         : this(d, i);
-  }
+      res.lines = res.lines.filter(function (d) { return d !== ""; });
+      res.d = d;
+      res.fS = s;
+      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s / 4;
+      res.height = Math.ceil(res.lines.length * (lh + 1));
+      if (res.width % 2) res.width++;
 
-  elem
-    .attr("fill", styleLogic.bind(this._fill))
-    .attr("stroke", styleLogic.bind(this._stroke))
-    .attr("stroke-width", styleLogic.bind(this._strokeWidth));
-};
+      return res;
 
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
-    @param {Function|String} [*value* = false]
-*/
-Shape$1.prototype.backgroundImage = function backgroundImage (_) {
-  return arguments.length ? (this._backgroundImage = typeof _ === "function" ? _ : constant$1(_), this) : this._backgroundImage;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns the current class instance. If *value* is not specified, returns the current configuration.
-    @param {Object} [*value*]
-*/
-Shape$1.prototype.config = function config (_) {
-    var this$1 = this;
-
-  if (arguments.length) {
-    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
-    return this;
-  }
-  else {
-    var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
-    return config;
-  }
-};
-
-/**
-    @memberof Shape
-    @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape will be drawn for each object in the array.
-    @param {Array} [*data* = []]
-*/
-Shape$1.prototype.data = function data (_) {
-  return arguments.length ? (this._data = _, this) : this._data;
-};
-
-/**
-    @memberof Shape
-    @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
-    @param {Number} [*ms* = 600]
-*/
-Shape$1.prototype.duration = function duration (_) {
-  return arguments.length ? (this._duration = _, this) : this._duration;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current fill accessor.
-    @param {Function|String} [*value* = "black"]
-*/
-Shape$1.prototype.fill = function fill (_) {
-  return arguments.length ? (this._fill = typeof _ === "function" ? _ : constant$1(_), this) : this._fill;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value*]
-*/
-Shape$1.prototype.fontColor = function fontColor (_) {
-  return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$1(_), this) : this._fontColor;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value* = "Verdana"]
-*/
-Shape$1.prototype.fontFamily = function fontFamily (_) {
-  return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$1(_), this) : this._fontFamily;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|Boolean|Array} [*value*]
-*/
-Shape$1.prototype.fontResize = function fontResize (_) {
-  return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$1(_), this) : this._fontResize;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value* = 12]
-*/
-Shape$1.prototype.fontSize = function fontSize (_) {
-  return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$1(_), this) : this._fontSize;
-};
-
-/**
-    @memberof Shape
-    @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
-    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
-    @example
-function(d, i, shape) {
-return {
-  "width": shape.width,
-  "height": shape.height,
-  "x": -shape.width / 2,
-  "y": -shape.height / 2
-};
-}
-*/
-Shape$1.prototype.hitArea = function hitArea (_) {
-  return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : constant$1(_), this) : this._hitArea;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
-    @param {Function} [*value*]
-*/
-Shape$1.prototype.id = function id (_) {
-  return arguments.length ? (this._id = _, this) : this._id;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
-    @param {Function|String|Array} [*value*]
-*/
-Shape$1.prototype.label = function label (_) {
-  return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$1(_), this) : this._label;
-};
-
-/**
-    @memberof Shape
-    @desc If *bounds* is specified, sets the label bounds to the specified function and returns the current class instance. If *bounds* is not specified, returns the current inner bounds accessor.
-    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`. If an array is returned from the function, each value will be used in conjunction with each label.
-    @example
-function(d, i, shape) {
-return {
-  "width": shape.width,
-  "height": shape.height,
-  "x": -shape.width / 2,
-  "y": -shape.height / 2
-};
-}
-*/
-Shape$1.prototype.labelBounds = function labelBounds (_) {
-  return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : constant$1(_), this) : this._labelBounds;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|Number|Array} [*value* = 10]
-*/
-Shape$1.prototype.labelPadding = function labelPadding (_) {
-  return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : constant$1(_), this) : this._labelPadding;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value*]
-*/
-Shape$1.prototype.lineHeight = function lineHeight (_) {
-  return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$1(_), this) : this._lineHeight;
-};
-
-/**
-    @memberof Shape
-    @desc Adds or removes a *listener* to each shape for the specified event *typenames*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-    @param {String|Object} [*typenames*]
-    @param {Function} [*listener*]
-*/
-Shape$1.prototype.on = function on (_, f) {
-  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current opacity accessor.
-    @param {Number} [*value* = 1]
-*/
-Shape$1.prototype.opacity = function opacity (_) {
-  return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$1(_), this) : this._opacity;
-};
-
-/**
-    @memberof Shape
-    @desc Renders the current Shape to the page. If a *callback* is specified, it will be called once the shapes are done drawing.
-    @param {Function} [*callback* = undefined]
-*/
-Shape$1.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-  if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
-  if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
-
-  this._transition = transition().duration(this._duration);
-
-  if (callback) setTimeout(callback, this._duration + 100);
-
-  return this;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current scale accessor.
-    @param {Function|Number} [*value* = 1]
-*/
-Shape$1.prototype.scale = function scale (_) {
-  return arguments.length ? (this._scale = typeof _ === "function" ? _ : constant$1(_), this) : this._scale;
-};
-
-/**
-    @memberof Shape
-    @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
-    @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
-*/
-Shape$1.prototype.select = function select$1 (_) {
-  return arguments.length ? (this._select = select(_), this) : this._select;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke accessor.
-    @param {Function|String} [*value* = "black"]
-*/
-Shape$1.prototype.stroke = function stroke (_) {
-  return arguments.length ? (this._stroke = typeof _ === "function" ? _ : constant$1(_), this) : this._stroke;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke-width accessor.
-    @param {Function|Number} [*value* = 0]
-*/
-Shape$1.prototype.strokeWidth = function strokeWidth (_) {
-  return arguments.length ? (this._strokeWidth = typeof _ === "function" ? _ : constant$1(_), this) : this._strokeWidth;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value* = "start"]
-*/
-Shape$1.prototype.textAnchor = function textAnchor (_) {
-  return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$1(_), this) : this._textAnchor;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value* = "start"]
-*/
-Shape$1.prototype.verticalAlign = function verticalAlign (_) {
-  return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$1(_), this) : this._verticalAlign;
-};
-
-/**
-    @class Area
-    @extends Shape
-    @desc Creates SVG areas based on an array of data.
-*/
-var Area$1 = (function (Shape) {
-  function Area() {
-
-    Shape.call(this);
-
-    this._curve = "linear";
-    this._x = accessor("x");
-    this._x0 = accessor("x");
-    this._x1 = null;
-    this._y = constant$1(0);
-    this._y0 = constant$1(0);
-    this._y1 = accessor("y");
-
-  }
-
-  if ( Shape ) Area.__proto__ = Shape;
-  Area.prototype = Object.create( Shape && Shape.prototype );
-  Area.prototype.constructor = Area;
-
-  /**
-      Draws the lines.
-      @param {Function} [*callback* = undefined]
-      @private
-  */
-  Area.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    Shape.prototype.render.call(this, callback);
-
-    var path = this._path = area()
-      .defined(function (d) { return d; })
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .x(this._x)
-      .x0(this._x0)
-      .x1(this._x1)
-      .y(this._y)
-      .y0(this._y0)
-      .y1(this._y1);
-
-    var exitPath = area()
-      .defined(function (d) { return d; })
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .x(this._x)
-      .x0(this._x0)
-      .x1(this._x1)
-      .y(this._y)
-      .y0(this._y0)
-      .y1(this._y1);
-
-    var areas = nest().key(this._id).entries(this._data).map(function (d) {
-      var x = extent(d.values.map(this$1._x)
-        .concat(d.values.map(this$1._x0))
-        .concat(this$1._x1 ? d.values.map(this$1._x1) : [])
-      );
-      d.xR = x;
-      d.width = x[1] - x[0];
-      d.x = x[0] + d.width / 2;
-      var y = extent(d.values.map(this$1._y)
-        .concat(d.values.map(this$1._y0))
-        .concat(this$1._y1 ? d.values.map(this$1._y1) : [])
-      );
-      d.yR = y;
-      d.height = y[1] - y[0];
-      d.y = y[0] + d.height / 2;
-      d.nested = true;
-      return d;
     });
 
-    var groups = this._select.selectAll(".d3plus-Area").data(areas, function (d) { return d.key; });
+    // Calculates new range, based on any text that may be overflowing.
+    var rangeOuter = range.slice();
+    var lastI = range.length - 1;
+    if (this._scale !== "band" && textData.length) {
 
-    groups.transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
+      var first = textData[0],
+            last = textData[textData.length - 1];
 
-    groups.select("path").transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attrTween("d", function(d) {
-        return interpolatePath(select(this).attr("d"), path(d.values));
-      })
-      .call(this._applyStyle.bind(this));
+      var firstB = min([this._d3Scale(first.d) - first[width] / 2, range[0] - wBuff]);
+      if (firstB < range[0]) {
+        var d = range[0] - firstB;
+        if (this._range === void 0 || this._range[0] === void 0) {
+          this._size -= d;
+          range[0] += d;
+        }
+        else if (this._range) {
+          rangeOuter[0] -= d;
+        }
+      }
 
-    groups.exit().select("path").transition(this._transition)
-      .attrTween("d", function(d) {
-        return interpolatePath(select(this).attr("d"), exitPath(d.values));
+      var lastB = max([this._d3Scale(last.d) + last[width] / 2, range[lastI] + wBuff]);
+      if (lastB > range[lastI]) {
+        var d$1 = lastB - range[lastI];
+        if (this._range === void 0 || this._range[lastI] === void 0) {
+          this._size -= d$1;
+          range[lastI] -= d$1;
+        }
+        else if (this._range) {
+          rangeOuter[lastI] += d$1;
+        }
+      }
+
+      this._d3Scale.range(range);
+
+    }
+
+    var tBuff = this._shape === "Line" ? 0 : hBuff;
+    var obj;
+    this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    this._margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
+    this._margin[this._orient] += hBuff;
+    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
+    this._outerBounds[y] = this._align === "start" ? this._padding
+                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
+                         : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
+
+    var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
+    this._group = group;
+
+    var grid = elem("g.grid", {parent: group}).selectAll("line")
+      .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
+
+    grid.exit().transition(t)
+      .attr("opacity", 0)
+      .call(this._gridPosition.bind(this))
+      .remove();
+
+    grid.enter().append("line")
+        .attr("opacity", 0)
+        .attr("clip-path", ("url(#" + clipId + ")"))
+        .call(this._gridPosition.bind(this), true)
+      .merge(grid).transition(t)
+        .attr("opacity", 1)
+        .call(this._gridPosition.bind(this));
+
+    var labelHeight = max(textData, function (t) { return t.height; }) || 0,
+          labelWidth = horizontal ? this._space * 1.1 : (this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p) * 1.1;
+    var tickData = ticks
+      .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); }))
+      .map(function (d) {
+        var offset = this$1._margin[opposite],
+              position = ["top", "left"].includes(this$1._orient) ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
+              size = ["top", "left"].includes(this$1._orient) ? -hBuff : hBuff,
+              sizeOffset = this$1._shape === "Line" ? size / 2 : size;
+        var obj;
+        return ( obj = {
+          id: d,
+          labelBounds: {
+            x: horizontal ? -labelWidth / 2 : this$1._orient === "left" ? -labelWidth - p + sizeOffset : sizeOffset + p,
+            y: horizontal ? this$1._orient === "bottom" ? sizeOffset + p : sizeOffset - p - labelHeight : -labelHeight / 2,
+            width: labelWidth,
+            height: labelHeight
+          },
+          size: size,
+          text: labels.includes(d) ? tickFormat(d) : false
+        }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
       });
 
-    groups.exit().transition().delay(this._duration).remove();
+    if (this._shape === "Line") {
+      tickData = tickData.concat(tickData.map(function (d) {
+        var dupe = Object.assign({}, d);
+        dupe[y] += d.size;
+        return dupe;
+      }));
+    }
 
-    groups.exit().call(this._applyLabels.bind(this), false);
+    new d3plus[this._shape]()
+      .data(tickData)
+      .duration(this._duration)
+      .select(elem("g.ticks", {parent: group}).node())
+      .config(this._shapeConfig)
+      .render();
 
-    var enter = groups.enter().append("g")
-        .attr("class", function (d) { return ("d3plus-Shape d3plus-Area d3plus-id-" + (strip(d.key))); })
-        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
-        .attr("opacity", 0);
+    var bar = group.selectAll("line.bar").data([null]);
 
-    enter.append("path")
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attr("d", function (d) { return path(d.values); })
-      .call(this._applyStyle.bind(this));
+    bar.enter().append("line")
+        .attr("class", "bar")
+        .attr("opacity", 0)
+        .call(this._barPosition.bind(this))
+      .merge(bar).transition(t)
+        .attr("opacity", 1)
+        .call(this._barPosition.bind(this));
 
-    var update = enter.merge(groups);
+    new TextBox()
+      .data(this._title ? [{text: this._title}] : [])
+      .duration(this._duration)
+      .height(this._outerBounds.height)
+      .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
+      .select(elem("g.d3plus-Axis-title", {parent: group}).node())
+      .text(function (d) { return d.text; })
+      .textAnchor("middle")
+      .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
+      .width(this._outerBounds[width])
+      .x(horizontal ? this._outerBounds.x : this._orient === "left" ? this._outerBounds.x + this._margin[this._orient] / 2 - this._outerBounds[width] / 2 : this._outerBounds.x + this._outerBounds.width - this._margin[this._orient] / 2 - this._outerBounds[width] / 2)
+      .y(horizontal ? this._outerBounds.y : this._outerBounds.y - this._margin[this._orient] / 2 + this._outerBounds[width] / 2)
+      .config(this._titleConfig)
+      .render();
 
-    update.call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
-      .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
+    this._lastScale = this._d3Scale;
 
-    this._applyEvents(update);
+    if (callback) setTimeout(callback, this._duration + 100);
 
     return this;
 
   };
 
   /**
-      @memberof Area
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Area.prototype._aes = function _aes (d, i) {
-    var this$1 = this;
-
-    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve. The number returned should correspond to the horizontal center of the rectangle.
+      @memberof Axis
+      @desc If *value* is specified, sets the scale of the axis and returns the current class instance. If *value* is not specified, returns the current this._d3Scale
       @param {String} [*value* = "linear"]
   */
-  Area.prototype.curve = function curve (_) {
-    return arguments.length ? (this._curve = _, this) : this._curve;
+  Axis.prototype.scale = function scale (_) {
+    return arguments.length ? (this._scale = _, this) : this._scale;
   };
 
   /**
-      @memberof Area
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
+      @memberof Axis
+      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+      @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
   */
-  Area.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = transition().duration(this._duration);
-
-    groups
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity);
-
-    groups.select("path").transition(t)
-      .attr("d", function (d) { return this$1._path(d.values); });
-
-    return this;
-
+  Axis.prototype.select = function select$1 (_) {
+    return arguments.length ? (this._select = select(_), this) : this._select;
   };
 
   /**
-      @memberof Area
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
+      @memberof Axis
+      @desc If *value* is specified, sets the tick shape constructor and returns the current class instance. If *value* is not specified, returns the current shape.
+      @param {String} [*value* = "Line"]
   */
-  Area.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
+  Axis.prototype.shape = function shape (_) {
+    return arguments.length ? (this._shape = _, this) : this._shape;
   };
 
   /**
-      @memberof Area
-      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
-      @param {Function|Number} [*value*]
+      @memberof Axis
+      @desc If *value* is specified, sets the tick style of the axis and returns the current class instance. If *value* is not specified, returns the current tick style.
+      @param {Object} [*value*]
   */
-  Area.prototype.x0 = function x0 (_) {
-    return arguments.length ? (this._x0 = typeof _ === "function" ? _ : constant$1(_), this) : this._x0;
+  Axis.prototype.shapeConfig = function shapeConfig (_) {
+    return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
   };
 
   /**
-      @memberof Area
-      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
-      @param {Function|Number|null} [*value*]
+      @memberof Axis
+      @desc If *value* is specified, sets the tick values of the axis and returns the current class instance. If *value* is not specified, returns the current tick values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
+      @param {Array} [*value*]
   */
-  Area.prototype.x1 = function x1 (_) {
-    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$1(_), this) : this._x1;
+  Axis.prototype.ticks = function ticks (_) {
+    return arguments.length ? (this._ticks = _, this) : this._ticks;
   };
 
   /**
-      @memberof Area
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
+      @memberof Axis
+      @desc If *value* is specified, sets the tick size of the axis and returns the current class instance. If *value* is not specified, returns the current tick size.
+      @param {Number} [*value* = 5]
   */
-  Area.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+  Axis.prototype.tickSize = function tickSize (_) {
+    return arguments.length ? (this._tickSize = _, this) : this._tickSize;
   };
 
   /**
-      @memberof Area
-      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
-      @param {Function|Number} [*value*]
+      @memberof Axis
+      @desc If *value* is specified, sets the title of the axis and returns the current class instance. If *value* is not specified, returns the current title.
+      @param {String} [*value*]
   */
-  Area.prototype.y0 = function y0 (_) {
-    return arguments.length ? (this._y0 = typeof _ === "function" ? _ : constant$1(_), this) : this._y0;
+  Axis.prototype.title = function title (_) {
+    return arguments.length ? (this._title = _, this) : this._title;
   };
 
   /**
-      @memberof Area
-      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
-      @param {Function|Number|null} [*value*]
+      @memberof Axis
+      @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance. If *value* is not specified, returns the current title configuration.
+      @param {Object} [*value*]
   */
-  Area.prototype.y1 = function y1 (_) {
-    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$1(_), this) : this._y1;
+  Axis.prototype.titleConfig = function titleConfig (_) {
+    return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
   };
 
-  return Area;
-}(Shape$1));
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the overall width of the axis and returns the current class instance. If *value* is not specified, returns the current width value.
+      @param {Number} [*value* = 400]
+  */
+  Axis.prototype.width = function width (_) {
+    return arguments.length ? (this._width = _, this) : this._width;
+  };
+
+  return Axis;
+}(BaseClass));
 
 /**
-    @class Circle
-    @extends Shape
-    @desc Creates SVG circles based on an array of data.
+    @class AxisBottom
+    @extends Axis
+    @desc Shorthand method for creating an axis where the ticks are drawn below the horizontal domain path. Extends all functionality of the base [Axis](#Axis) class.
 */
-var Circle$1 = (function (Shape) {
-  function Circle() {
-    Shape.call(this);
-    this._r = accessor("r");
-    this._x = accessor("x");
-    this._y = accessor("y");
+var AxisBottom = (function (Axis) {
+  function AxisBottom() {
+    Axis.call(this);
+    this.orient("bottom");
   }
 
-  if ( Shape ) Circle.__proto__ = Shape;
-  Circle.prototype = Object.create( Shape && Shape.prototype );
-  Circle.prototype.constructor = Circle;
+  if ( Axis ) AxisBottom.__proto__ = Axis;
+  AxisBottom.prototype = Object.create( Axis && Axis.prototype );
+  AxisBottom.prototype.constructor = AxisBottom;
 
-  /**
-      Provides the default positioning to the <rect> elements.
-      @private
-  */
-  Circle.prototype._applyPosition = function _applyPosition (elem) {
-    var this$1 = this;
-
-    elem
-      .attr("r", function (d, i) { return this$1._r(d, i); })
-      .attr("x", function (d, i) { return -this$1._r(d, i) / 2; })
-      .attr("y", function (d, i) { return -this$1._r(d, i) / 2; });
-  };
-
-  /**
-      Draws the circles.
-      @param {Function} [*callback* = undefined]
-      @private
-  */
-  Circle.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    Shape.prototype.render.call(this, callback);
-
-    var groups = this._select.selectAll(".d3plus-Circle").data(this._data, this._id);
-
-    groups.transition(this._transition)
-      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
-
-    groups.select("circle").transition(this._transition).call(this._applyStyle.bind(this));
-
-    groups.exit().transition().delay(this._duration).remove();
-
-    groups.exit().select("circle").transition(this._transition)
-      .attr("r", 0)
-      .attr("x", 0)
-      .attr("y", 0);
-
-    groups.exit()
-      .call(this._applyImage.bind(this), false)
-      .call(this._applyLabels.bind(this), false);
-
-    var enter = groups.enter().append("g")
-        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Circle d3plus-id-" + (strip(this$1._id(d, i)))); })
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
-
-    enter.append("circle")
-      .attr("r", 0)
-      .attr("x", 0)
-      .attr("y", 0)
-      .call(this._applyStyle.bind(this));
-
-    var update = enter.merge(groups);
-
-    update.select("circle").transition(this._transition)
-      .call(this._applyPosition.bind(this));
-
-    update
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
-      .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
-
-    this._applyEvents(update);
-
-    return this;
-
-  };
-
-  /**
-      @memberof Circle
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Circle.prototype._aes = function _aes (d, i) {
-    return {r: this._r(d, i)};
-  };
-
-  /**
-      @memberof Circle
-      @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current radius accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.r;
-}
-  */
-  Circle.prototype.r = function r (_) {
-    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$1(_), this) : this._r;
-  };
-
-  /**
-      @memberof Circle
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Circle.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = transition().duration(this._duration);
-
-    groups
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity)
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
-
-    groups.select("circle").transition(t)
-      .call(this._applyStyle.bind(this))
-      .call(this._applyPosition.bind(this));
-
-    return this;
-
-  };
-
-  /**
-      @memberof Circle
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Circle.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
-  };
-
-  /**
-      @memberof Circle
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Circle.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
-  };
-
-  return Circle;
-}(Shape$1));
+  return AxisBottom;
+}(Axis));
 
 /**
-    @class Line
-    @extends Shape
-    @desc Creates SVG lines based on an array of data.
+    @class AxisLeft
+    @extends Axis
+    @desc Shorthand method for creating an axis where the ticks are drawn to the left of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
 */
-var Line$1 = (function (Shape) {
-  function Line() {
-    Shape.call(this);
-    this._curve = "linear";
-    this._fill = constant$1("none");
-    this._path = line().defined(function (d) { return d; });
-    this._strokeWidth = constant$1(1);
-    this._x = accessor("x");
-    this._y = accessor("y");
+var AxisLeft = (function (Axis) {
+  function AxisLeft() {
+    Axis.call(this);
+    this.orient("left");
   }
 
-  if ( Shape ) Line.__proto__ = Shape;
-  Line.prototype = Object.create( Shape && Shape.prototype );
-  Line.prototype.constructor = Line;
+  if ( Axis ) AxisLeft.__proto__ = Axis;
+  AxisLeft.prototype = Object.create( Axis && Axis.prototype );
+  AxisLeft.prototype.constructor = AxisLeft;
 
-  /**
-      Draws the lines.
-      @param {Function} [*callback* = undefined]
-      @private
-  */
-  Line.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    Shape.prototype.render.call(this, callback);
-
-    var that = this;
-
-    var lines = nest().key(this._id).entries(this._data).map(function (d) {
-      var x = extent(d.values, this$1._x);
-      d.xR = x;
-      d.width = x[1] - x[0];
-      d.x = x[0] + d.width / 2;
-      var y = extent(d.values, this$1._y);
-      d.yR = y;
-      d.height = y[1] - y[0];
-      d.y = y[0] + d.height / 2;
-      d.nested = true;
-      return d;
-    });
-
-    this._path
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .x(this._x)
-      .y(this._y);
-
-    var groups = this._select.selectAll(".d3plus-Line").data(lines, function (d) { return d.key; });
-
-    groups.transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
-
-    groups.select("path").transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attrTween("d", function(d) {
-        return interpolatePath(select(this).attr("d"), that._path(d.values));
-      })
-      .call(this._applyStyle.bind(this));
-
-    groups.exit().transition().delay(this._duration).remove();
-
-    groups.exit().call(this._applyLabels.bind(this), false);
-
-    var enter = groups.enter().append("g")
-        .attr("class", function (d) { return ("d3plus-Shape d3plus-Line d3plus-id-" + (strip(d.key))); })
-        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
-        .attr("opacity", 0);
-
-    enter.append("path")
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attr("d", function (d) { return this$1._path(d.values); })
-      .call(this._applyStyle.bind(this));
-
-    var update = enter.merge(groups);
-
-    update.call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
-      .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
-
-    this._applyEvents(update);
-
-    return this;
-
-  };
-
-  /**
-      @memberof Line
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Line.prototype._aes = function _aes (d, i) {
-    var this$1 = this;
-
-    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
-  };
-
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve. The number returned should correspond to the horizontal center of the rectangle.
-      @param {String} [*value* = "linear"]
-  */
-  Line.prototype.curve = function curve (_) {
-    return arguments.length ? (this._curve = _, this) : this._curve;
-  };
-
-  /**
-      @memberof Line
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Line.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = transition().duration(this._duration);
-
-    groups
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity);
-
-    groups.select("path").transition(t)
-      .attr("d", function (d) { return this$1._path(d.values); });
-
-    return this;
-
-  };
-
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Line.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
-  };
-
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Line.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
-  };
-
-  return Line;
-}(Shape$1));
+  return AxisLeft;
+}(Axis));
 
 /**
-    @class Rect
-    @extends Shape
-    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+    @class AxisRight
+    @extends Axis
+    @desc Shorthand method for creating an axis where the ticks are drawn to the right of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
 */
-var Rect$1 = (function (Shape) {
-  function Rect() {
-    Shape.call(this);
-    this._height = accessor("height");
-    this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
-    this._width = accessor("width");
-    this._x = accessor("x");
-    this._y = accessor("y");
+var AxisRight = (function (Axis) {
+  function AxisRight() {
+    Axis.call(this);
+    this.orient("right");
   }
 
-  if ( Shape ) Rect.__proto__ = Shape;
-  Rect.prototype = Object.create( Shape && Shape.prototype );
-  Rect.prototype.constructor = Rect;
+  if ( Axis ) AxisRight.__proto__ = Axis;
+  AxisRight.prototype = Object.create( Axis && Axis.prototype );
+  AxisRight.prototype.constructor = AxisRight;
 
-  /**
-      Draws the rectangles.
-      @param {Function} [*callback* = undefined]
-      @private
-  */
-  Rect.prototype.render = function render (callback) {
-    var this$1 = this;
+  return AxisRight;
+}(Axis));
 
+/**
+    @class AxisTop
+    @extends Axis
+    @desc Shorthand method for creating an axis where the ticks are drawn above the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
+*/
+var AxisTop = (function (Axis) {
+  function AxisTop() {
+    Axis.call(this);
+    this.orient("top");
+  }
 
-    Shape.prototype.render.call(this, callback);
+  if ( Axis ) AxisTop.__proto__ = Axis;
+  AxisTop.prototype = Object.create( Axis && Axis.prototype );
+  AxisTop.prototype.constructor = AxisTop;
 
-    var groups = this._select.selectAll(".d3plus-Rect").data(this._data, this._id);
-
-    groups.transition(this._transition)
-      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
-
-    groups.select("rect").transition(this._transition).call(this._applyStyle.bind(this));
-
-    groups.exit().transition().delay(this._duration).remove();
-
-    groups.exit().select("rect").transition(this._transition)
-      .attr("width", 0)
-      .attr("height", 0)
-      .attr("x", 0)
-      .attr("y", 0);
-
-    groups.exit()
-      .call(this._applyImage.bind(this), false)
-      .call(this._applyLabels.bind(this), false);
-
-    var enter = groups.enter().append("g")
-        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Rect d3plus-id-" + (strip(this$1._id(d, i)))); })
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
-
-    enter.append("rect")
-      .attr("width", 0)
-      .attr("height", 0)
-      .attr("x", 0)
-      .attr("y", 0)
-      .call(this._applyStyle.bind(this));
-
-    var update = enter.merge(groups);
-
-    update.select("rect").transition(this._transition)
-      .call(this._applyPosition.bind(this));
-
-    update
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
-      .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
-
-    this._applyEvents(update);
-
-    return this;
-
-  };
-
-  /**
-      @memberof Rect
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Rect.prototype._aes = function _aes (d, i) {
-    return {width: this._width(d, i), height: this._height(d, i)};
-  };
-
-  /**
-      @memberof Rect
-      @desc Provides the default positioning to the <rect> elements.
-      @param {D3Selection} *elem*
-      @private
-  */
-  Rect.prototype._applyPosition = function _applyPosition (elem) {
-    var this$1 = this;
-
-    elem
-      .attr("width", function (d, i) { return this$1._width(d, i); })
-      .attr("height", function (d, i) { return this$1._height(d, i); })
-      .attr("x", function (d, i) { return -this$1._width(d, i) / 2; })
-      .attr("y", function (d, i) { return -this$1._height(d, i) / 2; });
-  };
-
-  /**
-      @memberof Rect
-      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.height;
-}
-  */
-  Rect.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$1(_), this) : this._height;
-  };
-
-  /**
-      @memberof Rect
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Rect.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = transition().duration(this._duration);
-
-    groups
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity)
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
-
-    groups.select("rect").transition(t)
-      .call(this._applyStyle.bind(this))
-      .call(this._applyPosition.bind(this));
-
-    return this;
-
-  };
-
-  /**
-      @memberof Rect
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.width;
-}
-  */
-  Rect.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$1(_), this) : this._width;
-  };
-
-  /**
-      @memberof Rect
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Rect.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$1(_), this) : this._x;
-  };
-
-  /**
-      @memberof Rect
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Rect.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
-  };
-
-  return Rect;
-}(Shape$1));
-
-
-
-var d3plus = Object.freeze({
-	Area: Area$1,
-	Circle: Circle$1,
-	Image: Image$1,
-	Line: Line$1,
-	Rect: Rect$1,
-	Shape: Shape$1
-});
+  return AxisTop;
+}(Axis));
 
 /**
     @class Legend
@@ -13894,7 +13169,7 @@ var Legend = (function (BaseClass) {
 
     BaseClass.call(this);
 
-    var s = new Shape$1();
+    var s = new Shape();
 
     this._align = "center";
     this._data = [];
@@ -14924,718 +14199,6 @@ function brush$1(dim) {
 }
 
 /**
-    @function date
-    @desc Parses numbers and strings to valid Javascript Date obejcts.
-    @param {Date|Number|String} *date*
-*/
-function date$2(d) {
-
-  // returns if already Date object
-  if (d.constructor === Date) return d;
-  // detects if milliseconds
-  else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) return new Date(d);
-
-  var s = "" + d;
-  // detects if only passing a year value
-  if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
-    var date = new Date((s + "/01/01"));
-    date.setFullYear(d);
-    return date;
-  }
-  // parses string to Date object
-  else return new Date(s);
-
-}
-
-/**
-    @class Axis
-    @extends BaseClass
-    @desc Creates an SVG scale based on an array of data.
-*/
-var Axis = (function (BaseClass) {
-  function Axis() {
-    var this$1 = this;
-
-
-    BaseClass.call(this);
-
-    this._align = "middle";
-    this._barConfig = {
-      "stroke": "#000",
-      "stroke-width": 1
-    };
-    this._domain = [0, 10];
-    this._duration = 600;
-    this._gridConfig = {
-      "stroke": "#ccc",
-      "stroke-width": 1
-    };
-    this._height = 400;
-    this.orient("bottom");
-    this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
-    this._padding = 5;
-    this._paddingInner = 0.1;
-    this._paddingOuter = 0.1;
-    this._scale = "linear";
-    this._shape = "Line";
-    this._shapeConfig = {
-      fill: "#000",
-      fontColor: "#000",
-      fontFamily: new TextBox().fontFamily(),
-      fontResize: false,
-      fontSize: constant$1(10),
-      height: 8,
-      label: function (d) { return d.text; },
-      labelBounds: function (d) { return d.labelBounds; },
-      labelPadding: 0,
-      r: 4,
-      stroke: "#000",
-      strokeWidth: 1,
-      textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
-      verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; },
-      width: 8
-    };
-    this._tickSize = 5;
-    this._titleConfig = {
-      fontFamily: "Verdana",
-      fontSize: 12,
-      lineHeight: 13,
-      textAnchor: "middle"
-    };
-    this._width = 400;
-
-  }
-
-  if ( BaseClass ) Axis.__proto__ = BaseClass;
-  Axis.prototype = Object.create( BaseClass && BaseClass.prototype );
-  Axis.prototype.constructor = Axis;
-
-  /**
-      @memberof Axis
-      @desc Sets positioning for the axis bar.
-      @param {D3Selection} *bar*
-      @private
-  */
-  Axis.prototype._barPosition = function _barPosition (bar) {
-    var ref = this._position;
-    var height = ref.height;
-    var x = ref.x;
-    var y = ref.y;
-    var opposite = ref.opposite;
-    var domain = this._d3Scale.domain(),
-          offset = this._margin[opposite],
-          position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
-    bar
-      .call(attrize, this._barConfig)
-      .attr((x + "1"), this._d3Scale(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
-      .attr((x + "2"), this._d3Scale(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
-      .attr((y + "1"), position)
-      .attr((y + "2"), position);
-  };
-
-  /**
-      @memberof Axis
-      @desc Sets positioning for the grid lines.
-      @param {D3Selection} *lines*
-      @private
-  */
-  Axis.prototype._gridPosition = function _gridPosition (lines, last) {
-    if ( last === void 0 ) last = false;
-
-    var ref = this._position;
-    var height = ref.height;
-    var x = ref.x;
-    var y = ref.y;
-    var opposite = ref.opposite;
-    var offset = this._margin[opposite],
-          position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
-          scale = last ? this._lastScale || this._d3Scale : this._d3Scale,
-          size = ["top", "left"].includes(this._orient) ? offset : -offset,
-          xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
-          xPos = function (d) { return scale(d.id) + xDiff; };
-    lines
-      .call(attrize, this._gridConfig)
-      .attr((x + "1"), xPos)
-      .attr((x + "2"), xPos)
-      .attr((y + "1"), position)
-      .attr((y + "2"), last ? position : position + size);
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
-      @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
-  */
-  Axis.prototype.align = function align (_) {
-    return arguments.length ? (this._align = _, this) : this._align;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the axis line style and returns the current class instance. If *value* is not specified, returns the current axis line style.
-      @param {Object} [*value*]
-  */
-  Axis.prototype.barConfig = function barConfig (_) {
-    return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance. If *value* is not specified, returns the current scale domain.
-      @param {Array} [*value* = [0, 10]]
-  */
-  Axis.prototype.domain = function domain (_) {
-    return arguments.length ? (this._domain = _, this) : this._domain;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance. If *value* is not specified, returns the current duration.
-      @param {Number} [*value* = 600]
-  */
-  Axis.prototype.duration = function duration (_) {
-    return arguments.length ? (this._duration = _, this) : this._duration;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the grid values of the axis and returns the current class instance. If *value* is not specified, returns the current grid values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
-      @param {Array} [*value*]
-  */
-  Axis.prototype.grid = function grid (_) {
-    return arguments.length ? (this._grid = _, this) : this._grid;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the grid style of the axis and returns the current class instance. If *value* is not specified, returns the current grid style.
-      @param {Object} [*value*]
-  */
-  Axis.prototype.gridConfig = function gridConfig (_) {
-    return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the grid size of the axis and returns the current class instance. If *value* is not specified, returns the current grid size, which defaults to taking up as much space as available.
-      @param {Number} [*value* = undefined]
-  */
-  Axis.prototype.gridSize = function gridSize (_) {
-    return arguments.length ? (this._gridSize = _, this) : this._gridSize;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the overall height of the axis and returns the current class instance. If *value* is not specified, returns the current height value.
-      @param {Number} [*value* = 100]
-  */
-  Axis.prototype.height = function height (_) {
-    return arguments.length ? (this._height = _, this) : this._height;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance. If *value* is not specified, returns the current visible tick labels, which defaults to showing all labels.
-      @param {Array} [*value*]
-  */
-  Axis.prototype.labels = function labels (_) {
-    return arguments.length ? (this._labels = _, this) : this._labels;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
-      @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
-  */
-  Axis.prototype.orient = function orient (_) {
-    if (arguments.length) {
-
-      var horizontal = ["top", "bottom"].includes(_),
-            opps = {top: "bottom", right: "left", bottom: "top", left: "right"};
-
-      this._position = {
-        horizontal: horizontal,
-        width: horizontal ? "width" : "height",
-        height: horizontal ? "height" : "width",
-        x: horizontal ? "x" : "y",
-        y: horizontal ? "y" : "x",
-        opposite: opps[_]
-      };
-
-      return this._orient = _, this;
-
-    }
-    return this._orient;
-  };
-
-  /**
-      @memberof Axis
-      @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the axis content.
-      @example
-{"width": 180, "height": 24, "x": 10, "y": 20}
-  */
-  Axis.prototype.outerBounds = function outerBounds () {
-    return this._outerBounds;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance. If *value* is not specified, returns the current padding value.
-      @param {Number} [*value* = 10]
-  */
-  Axis.prototype.padding = function padding (_) {
-    return arguments.length ? (this._padding = _, this) : this._padding;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance. If *value* is not specified, returns the current inner padding value.
-      @param {Number} [*value* = 0.1]
-  */
-  Axis.prototype.paddingInner = function paddingInner (_) {
-    return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance. If *value* is not specified, returns the current outer padding value.
-      @param {Number} [*value* = 0.1]
-  */
-  Axis.prototype.paddingOuter = function paddingOuter (_) {
-    return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value. If *value* is not specified, returns the current scale range.
-      @param {Array} [*value*]
-  */
-  Axis.prototype.range = function range (_) {
-    return arguments.length ? (this._range = _, this) : this._range;
-  };
-
-  /**
-      @memberof Axis
-      @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
-      @param {Function} [*callback* = undefined]
-  */
-  Axis.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    if (this._select === void 0) {
-      this.select(select("body").append("svg")
-        .attr("width", ((this._width) + "px"))
-        .attr("height", ((this._height) + "px"))
-        .node());
-    }
-
-    if (this._lineHeight === void 0) {
-      this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
-    }
-
-    var ref = this._position;
-    var width = ref.width;
-    var height = ref.height;
-    var x = ref.x;
-    var y = ref.y;
-    var horizontal = ref.horizontal;
-    var opposite = ref.opposite;
-    var clipId = "d3plus-Axis-clip-" + (this._uuid),
-          hBuff = this._shape === "Circle" ? this._shapeConfig.r
-                   : this._shape === "Rect" ? this._shapeConfig[height] / 2
-                   : this._tickSize,
-          p = this._padding,
-          parent = this._select,
-          t = transition().duration(this._duration),
-          wBuff = this._shape === "Circle" ? this._shapeConfig.r
-                   : this._shape === "Rect" ? this._shapeConfig[width] / 2
-                   : this._tickSize;
-
-    var range = this._range ? this._range.slice() : [undefined, undefined];
-    if (range[0] === void 0) range[0] = p;
-    if (range[1] === void 0) range[1] = this[("_" + width)] - p;
-    this._size = range[1] - range[0];
-    if (this._scale === "ordinal" && this._domain.length > range.length) {
-      range = d3Range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range[0]; });
-    }
-
-    this._margin = {top: 0, right: 0, bottom: 0, left: 0};
-
-    if (this._title) {
-      var lH = this._titleConfig.lineHeight ? this._titleConfig.lineHeight : this._titleConfig.fontSize * 1.1,
-            titleWrap = textWrap()
-              .fontFamily(this._titleConfig.fontFamily)
-              .fontSize(this._titleConfig.fontSize)
-              .lineHeight(lH)
-              .width(this._size)
-              .height(this[("_" + height)] - this._tickSize - p)
-              (this._title);
-      this._margin[this._orient] = titleWrap.lines.length * lH + p;
-    }
-
-    this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-      .domain(this._scale === "time" ? this._domain.map(date$2) : this._domain)
-      .range(range);
-
-    if (this._d3Scale.round) this._d3Scale.round(true);
-    if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
-    if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
-
-    var tickScale = scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 45 : 75]);
-
-    var ticks = this._ticks
-               ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
-               : this._d3Scale.ticks
-               ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
-               : this._domain;
-    var labels = this._ticks && !this._labels ? ticks : this._labels
-               ? this._scale === "time" ? this._labels.map(date$2) : this._labels
-               : ticks;
-
-    var tickFormat = this._d3Scale.tickFormat
-                     ? this._d3Scale.tickFormat(labels.length - 1)
-                     : function (d) { return d; };
-
-    if (this._scale === "time") {
-      ticks = ticks.map(Number);
-      labels = labels.map(Number);
-    }
-
-    this._visibleTicks = ticks;
-
-    if (this._scale === "band") {
-      this._space = this._d3Scale.bandwidth();
-    }
-    else if (labels.length > 1) {
-      this._space = 0;
-      for (var i = 0; i < labels.length - 1; i++) {
-        var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
-        if (s > this$1._space) this$1._space = s;
-      }
-    }
-    else this._space = this._size;
-
-    // Measures size of ticks
-    var textData = labels.map(function (d, i) {
-
-      var f = this$1._shapeConfig.fontFamily(d, i),
-            s = this$1._shapeConfig.fontSize(d, i);
-
-      var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
-
-      var res = textWrap()
-        .fontFamily(f)
-        .fontSize(s)
-        .lineHeight(lh)
-        .width(horizontal ? this$1._space : this$1._width - hBuff - p)
-        .height(horizontal ? this$1._height - hBuff - p : this$1._space)
-        (tickFormat(d));
-
-      res.lines = res.lines.filter(function (d) { return d !== ""; });
-      res.d = d;
-      res.fS = s;
-      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s / 4;
-      res.height = Math.ceil(res.lines.length * (lh + 1));
-      if (res.width % 2) res.width++;
-
-      return res;
-
-    });
-
-    // Calculates new range, based on any text that may be overflowing.
-    var rangeOuter = range.slice();
-    var lastI = range.length - 1;
-    if (this._scale !== "band" && textData.length) {
-
-      var first = textData[0],
-            last = textData[textData.length - 1];
-
-      var firstB = min([this._d3Scale(first.d) - first[width] / 2, range[0] - wBuff]);
-      if (firstB < range[0]) {
-        var d = range[0] - firstB;
-        if (this._range === void 0 || this._range[0] === void 0) {
-          this._size -= d;
-          range[0] += d;
-        }
-        else if (this._range) {
-          rangeOuter[0] -= d;
-        }
-      }
-
-      var lastB = max([this._d3Scale(last.d) + last[width] / 2, range[lastI] + wBuff]);
-      if (lastB > range[lastI]) {
-        var d$1 = lastB - range[lastI];
-        if (this._range === void 0 || this._range[lastI] === void 0) {
-          this._size -= d$1;
-          range[lastI] -= d$1;
-        }
-        else if (this._range) {
-          rangeOuter[lastI] += d$1;
-        }
-      }
-
-      this._d3Scale.range(range);
-
-    }
-
-    var tBuff = this._shape === "Line" ? 0 : hBuff;
-    var obj;
-    this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
-    this._margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
-    this._margin[this._orient] += hBuff;
-    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
-    this._outerBounds[y] = this._align === "start" ? this._padding
-                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
-                         : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
-
-    var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
-    this._group = group;
-
-    var grid = elem("g.grid", {parent: group}).selectAll("line")
-      .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
-
-    grid.exit().transition(t)
-      .attr("opacity", 0)
-      .call(this._gridPosition.bind(this))
-      .remove();
-
-    grid.enter().append("line")
-        .attr("opacity", 0)
-        .attr("clip-path", ("url(#" + clipId + ")"))
-        .call(this._gridPosition.bind(this), true)
-      .merge(grid).transition(t)
-        .attr("opacity", 1)
-        .call(this._gridPosition.bind(this));
-
-    var labelHeight = max(textData, function (t) { return t.height; }) || 0,
-          labelWidth = horizontal ? this._space * 1.1 : (this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p) * 1.1;
-    var tickData = ticks
-      .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); }))
-      .map(function (d) {
-        var offset = this$1._margin[opposite],
-              position = ["top", "left"].includes(this$1._orient) ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
-              size = ["top", "left"].includes(this$1._orient) ? -hBuff : hBuff,
-              sizeOffset = this$1._shape === "Line" ? size / 2 : size;
-        var obj;
-        return ( obj = {
-          id: d,
-          labelBounds: {
-            x: horizontal ? -labelWidth / 2 : this$1._orient === "left" ? -labelWidth - p + sizeOffset : sizeOffset + p,
-            y: horizontal ? this$1._orient === "bottom" ? sizeOffset + p : sizeOffset - p - labelHeight : -labelHeight / 2,
-            width: labelWidth,
-            height: labelHeight
-          },
-          size: size,
-          text: labels.includes(d) ? tickFormat(d) : false
-        }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
-      });
-
-    if (this._shape === "Line") {
-      tickData = tickData.concat(tickData.map(function (d) {
-        var dupe = Object.assign({}, d);
-        dupe[y] += d.size;
-        return dupe;
-      }));
-    }
-
-    new shapes[this._shape]()
-      .data(tickData)
-      .duration(this._duration)
-      .select(elem("g.ticks", {parent: group}).node())
-      .config(this._shapeConfig)
-      .render();
-
-    var bar = group.selectAll("line.bar").data([null]);
-
-    bar.enter().append("line")
-        .attr("class", "bar")
-        .attr("opacity", 0)
-        .call(this._barPosition.bind(this))
-      .merge(bar).transition(t)
-        .attr("opacity", 1)
-        .call(this._barPosition.bind(this));
-
-    new TextBox()
-      .data(this._title ? [{text: this._title}] : [])
-      .duration(this._duration)
-      .height(this._outerBounds.height)
-      .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
-      .select(elem("g.d3plus-Axis-title", {parent: group}).node())
-      .text(function (d) { return d.text; })
-      .textAnchor("middle")
-      .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
-      .width(this._outerBounds[width])
-      .x(horizontal ? this._outerBounds.x : this._orient === "left" ? this._outerBounds.x + this._margin[this._orient] / 2 - this._outerBounds[width] / 2 : this._outerBounds.x + this._outerBounds.width - this._margin[this._orient] / 2 - this._outerBounds[width] / 2)
-      .y(horizontal ? this._outerBounds.y : this._outerBounds.y - this._margin[this._orient] / 2 + this._outerBounds[width] / 2)
-      .config(this._titleConfig)
-      .render();
-
-    this._lastScale = this._d3Scale;
-
-    if (callback) setTimeout(callback, this._duration + 100);
-
-    return this;
-
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the scale of the axis and returns the current class instance. If *value* is not specified, returns the current this._d3Scale
-      @param {String} [*value* = "linear"]
-  */
-  Axis.prototype.scale = function scale (_) {
-    return arguments.length ? (this._scale = _, this) : this._scale;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
-      @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
-  */
-  Axis.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = select(_), this) : this._select;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the tick shape constructor and returns the current class instance. If *value* is not specified, returns the current shape.
-      @param {String} [*value* = "Line"]
-  */
-  Axis.prototype.shape = function shape (_) {
-    return arguments.length ? (this._shape = _, this) : this._shape;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the tick style of the axis and returns the current class instance. If *value* is not specified, returns the current tick style.
-      @param {Object} [*value*]
-  */
-  Axis.prototype.shapeConfig = function shapeConfig (_) {
-    return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the tick values of the axis and returns the current class instance. If *value* is not specified, returns the current tick values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
-      @param {Array} [*value*]
-  */
-  Axis.prototype.ticks = function ticks (_) {
-    return arguments.length ? (this._ticks = _, this) : this._ticks;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the tick size of the axis and returns the current class instance. If *value* is not specified, returns the current tick size.
-      @param {Number} [*value* = 5]
-  */
-  Axis.prototype.tickSize = function tickSize (_) {
-    return arguments.length ? (this._tickSize = _, this) : this._tickSize;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the title of the axis and returns the current class instance. If *value* is not specified, returns the current title.
-      @param {String} [*value*]
-  */
-  Axis.prototype.title = function title (_) {
-    return arguments.length ? (this._title = _, this) : this._title;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance. If *value* is not specified, returns the current title configuration.
-      @param {Object} [*value*]
-  */
-  Axis.prototype.titleConfig = function titleConfig (_) {
-    return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
-  };
-
-  /**
-      @memberof Axis
-      @desc If *value* is specified, sets the overall width of the axis and returns the current class instance. If *value* is not specified, returns the current width value.
-      @param {Number} [*value* = 400]
-  */
-  Axis.prototype.width = function width (_) {
-    return arguments.length ? (this._width = _, this) : this._width;
-  };
-
-  return Axis;
-}(BaseClass));
-
-/**
-    @class AxisBottom
-    @extends Axis
-    @desc Shorthand method for creating an axis where the ticks are drawn below the horizontal domain path. Extends all functionality of the base [Axis](#Axis) class.
-*/
-var AxisBottom = (function (Axis) {
-  function AxisBottom() {
-    Axis.call(this);
-    this.orient("bottom");
-  }
-
-  if ( Axis ) AxisBottom.__proto__ = Axis;
-  AxisBottom.prototype = Object.create( Axis && Axis.prototype );
-  AxisBottom.prototype.constructor = AxisBottom;
-
-  return AxisBottom;
-}(Axis));
-
-/**
-    @class AxisLeft
-    @extends Axis
-    @desc Shorthand method for creating an axis where the ticks are drawn to the left of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-*/
-var AxisLeft = (function (Axis) {
-  function AxisLeft() {
-    Axis.call(this);
-    this.orient("left");
-  }
-
-  if ( Axis ) AxisLeft.__proto__ = Axis;
-  AxisLeft.prototype = Object.create( Axis && Axis.prototype );
-  AxisLeft.prototype.constructor = AxisLeft;
-
-  return AxisLeft;
-}(Axis));
-
-/**
-    @class AxisRight
-    @extends Axis
-    @desc Shorthand method for creating an axis where the ticks are drawn to the right of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-*/
-var AxisRight = (function (Axis) {
-  function AxisRight() {
-    Axis.call(this);
-    this.orient("right");
-  }
-
-  if ( Axis ) AxisRight.__proto__ = Axis;
-  AxisRight.prototype = Object.create( Axis && Axis.prototype );
-  AxisRight.prototype.constructor = AxisRight;
-
-  return AxisRight;
-}(Axis));
-
-/**
-    @class AxisTop
-    @extends Axis
-    @desc Shorthand method for creating an axis where the ticks are drawn above the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-*/
-var AxisTop = (function (Axis) {
-  function AxisTop() {
-    Axis.call(this);
-    this.orient("top");
-  }
-
-  if ( Axis ) AxisTop.__proto__ = Axis;
-  AxisTop.prototype = Object.create( Axis && Axis.prototype );
-  AxisTop.prototype.constructor = AxisTop;
-
-  return AxisTop;
-}(Axis));
-
-/**
     @class Timeline
     @extends Axis
 */
@@ -16564,13 +15127,12 @@ var Viz = (function (BaseClass) {
     var timelineGroup = this._uiGroup("timeline", this._time && this._timeline);
     if (this._time && this._timeline) {
 
-      var ticks = Array.from(new Set(this._data.map(this._time)))
-        .map(this._timelineClass._parseDate);
+      var ticks = Array.from(new Set(this._data.map(this._time))).map(date$2);
 
       var selection = extent(Array.from(new Set(merge(this._filteredData.map(function (d) {
         var t = this$1._time(d);
         return t instanceof Array ? t : [t];
-      })))).map(this._timelineClass._parseDate));
+      })))).map(date$2));
       if (selection.length === 1) selection = selection[0];
 
       var timeline = this._timelineClass
@@ -16580,7 +15142,7 @@ var Viz = (function (BaseClass) {
         .height(this._height / 2 - this._margin.bottom)
         .on("end", function (s) {
           if (!(s instanceof Array)) s = [s];
-          this$1.timeFilter(function (d) { return s.map(Number).includes(timeline._parseDate(this$1._time(d)).getTime()); }).render();
+          this$1.timeFilter(function (d) { return s.map(Number).includes(date$2(this$1._time(d)).getTime()); }).render();
         })
         .select(timelineGroup.node())
         .selection(selection)
