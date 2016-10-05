@@ -1,14 +1,14 @@
 /*
-  d3plus-viz v0.2.6
+  d3plus-viz v0.2.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-collection'), require('d3-selection'), require('d3-transition'), require('d3plus-color'), require('d3plus-common'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
-  typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-array', 'd3-color', 'd3-collection', 'd3-selection', 'd3-transition', 'd3plus-color', 'd3plus-common', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Color,global.d3Collection,global.d3Selection,global.d3Transition,global.d3plusColor,global.d3plusCommon,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
-}(this, (function (exports,d3Array,d3Color,d3Collection,d3Selection,d3Transition,d3plusColor,d3plusCommon,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-collection'), require('d3-selection'), require('d3-transition'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
+  typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-array', 'd3-color', 'd3-collection', 'd3-selection', 'd3-transition', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Color,global.d3Collection,global.d3Selection,global.d3Transition,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
+}(this, (function (exports,d3Array,d3Color,d3Collection,d3Selection,d3Transition,d3plusAxis,d3plusColor,d3plusCommon,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
 
 /**
     @function colorNest
@@ -285,13 +285,12 @@ var Viz = (function (BaseClass) {
     var timelineGroup = this._uiGroup("timeline", this._time && this._timeline);
     if (this._time && this._timeline) {
 
-      var ticks = Array.from(new Set(this._data.map(this._time)))
-        .map(this._timelineClass._parseDate);
+      var ticks = Array.from(new Set(this._data.map(this._time))).map(d3plusAxis.date);
 
       var selection = d3Array.extent(Array.from(new Set(d3Array.merge(this._filteredData.map(function (d) {
         var t = this$1._time(d);
         return t instanceof Array ? t : [t];
-      })))).map(this._timelineClass._parseDate));
+      })))).map(d3plusAxis.date));
       if (selection.length === 1) selection = selection[0];
 
       var timeline = this._timelineClass
@@ -301,7 +300,7 @@ var Viz = (function (BaseClass) {
         .height(this._height / 2 - this._margin.bottom)
         .on("end", function (s) {
           if (!(s instanceof Array)) s = [s];
-          this$1.timeFilter(function (d) { return s.map(Number).includes(timeline._parseDate(this$1._time(d)).getTime()); }).render();
+          this$1.timeFilter(function (d) { return s.map(Number).includes(d3plusAxis.date(this$1._time(d)).getTime()); }).render();
         })
         .select(timelineGroup.node())
         .selection(selection)
