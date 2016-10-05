@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.2.7
+  d3plus-viz v0.2.8
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -121,7 +121,11 @@ var Viz = (function (BaseClass) {
     this._duration = 600;
     this._history = [];
     this._groupBy = [d3plusCommon.accessor("id")];
-    this._legend = {};
+    this._legend = {
+      shapeConfig: {
+        fontResize: false
+      }
+    };
     this._legendClass = new d3plusLegend.Legend();
     this._on = {
       click: function (d, i) {
