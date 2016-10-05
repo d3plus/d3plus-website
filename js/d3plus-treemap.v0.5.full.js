@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.9
+  d3plus-treemap v0.5.10
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -14963,7 +14963,11 @@ var Viz = (function (BaseClass) {
     this._duration = 600;
     this._history = [];
     this._groupBy = [accessor("id")];
-    this._legend = {};
+    this._legend = {
+      shapeConfig: {
+        fontResize: false
+      }
+    };
     this._legendClass = new Legend();
     this._on = {
       click: function (d, i) {
