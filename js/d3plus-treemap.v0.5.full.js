@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.10
+  d3plus-treemap v0.5.11
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -14963,7 +14963,8 @@ var Viz = (function (BaseClass) {
     this._duration = 600;
     this._history = [];
     this._groupBy = [accessor("id")];
-    this._legend = {
+    this._legend = true;
+    this._legendConfig = {
       shapeConfig: {
         fontResize: false
       }
@@ -15181,7 +15182,7 @@ var Viz = (function (BaseClass) {
             obj[e] = this$1._on[e];
             return obj;
           }, {})})
-        .config(this._legend.constructor === Object ? this._legend : {})
+        .config(this._legendConfig)
         .render();
 
       this._margin.bottom += this._legendClass.outerBounds().height + this._legendClass.padding() * 2;
@@ -15310,11 +15311,20 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc If *value* is specified, toggles the legend based on the specified boolean and returns the current class instance. If *value* is an object, then it is passed to the legend's config method. If *value* is not specified, returns the current value.
-      @param {Boolean|Object} [*value* = true]
+      @desc If *value* is specified, toggles the legend based on the specified boolean and returns the current class instance. If *value* is not specified, returns the current value.
+      @param {Boolean} [*value* = true]
   */
   Viz.prototype.legend = function legend (_) {
     return arguments.length ? (this._legend = _, this) : this._legend;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, the object is passed to the legend's config method. If *value* is not specified, returns the current legend config.
+      @param {Object} [*value*]
+  */
+  Viz.prototype.legendConfig = function legendConfig (_) {
+    return arguments.length ? (this._legendConfig = _, this) : this._legendConfig;
   };
 
   /**
