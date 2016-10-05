@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.2.8
+  d3plus-viz v0.2.9
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5261,6 +5261,16 @@ BaseClass.prototype.config = function config (_) {
     return config;
   }
 };
+
+/**
+    @function closest
+    @desc Finds the closest numeric value in an array.
+    @param {Number} n The number value to use when searching the array.
+    @param {Array} arr The array of values to test against.
+*/
+function closest(n, arr) {
+  return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
+}
 
 /**
     @function constant
@@ -16925,91 +16935,6 @@ function brush$1(dim) {
 }
 
 /**
-    @function attrize
-    @desc Applies each key/value in an object as an attr.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} attrs An object of key/value attr pairs.
-*/
-function attrize$2(e, a) {
-  if ( a === void 0 ) a = {};
-
-  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
-}
-
-/**
-    @function closest
-    @desc Finds the closest numeric value in an array.
-    @param {Number} n The number value to use when searching the array.
-    @param {Array} arr The array of values to test against.
-*/
-function closest$2(n, arr) {
-  return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
-}
-
-/**
-    @function elem
-    @desc Manages the enter/update/exit pattern for a single DOM element.
-    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
-    @param {Object} params Additional parameters.
-    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
-    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
-    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
-    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
-    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
-    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
-*/
-function elem$2(selector, p) {
-
-  // overrides default params
-  p = Object.assign({}, {
-    condition: true,
-    enter: {},
-    exit: {},
-    parent: select("body"),
-    transition: transition().duration(0),
-    update: {}
-  }, p);
-
-  var className = (/\.([^#]+)/g).exec(selector),
-        id = (/#([^\.]+)/g).exec(selector),
-        tag = (/^([^.^#]+)/g).exec(selector)[1];
-
-  var elem = p.parent.selectAll(selector).data(p.condition ? [null] : []);
-
-  var enter = elem.enter().append(tag).call(attrize$2, p.enter);
-
-  if (id) enter.attr("id", id[1]);
-  if (className) enter.attr("class", className[1]);
-
-  elem.exit().transition(p.transition).call(attrize$2, p.exit).remove();
-
-  var update = enter.merge(elem);
-  update.transition(p.transition).call(attrize$2, p.update);
-
-  return update;
-
-}
-
-var array$7 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
-var enUS$2 = {
-	array: array$7
-};
-
-var array$8 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
-var esES$2 = {
-	array: array$8
-};
-
-i18next.init({
-  fallbackLng: "en-US",
-  initImmediate: false,
-  resources: {
-    "en-US": {translation: enUS$2},
-    "es-ES": {translation: esES$2}
-  }
-});
-
-/**
     @class Timeline
     @extends Axis
 */
@@ -17054,8 +16979,8 @@ var Timeline = (function (Axis) {
                  .map(Number);
 
     var ticks = this._visibleTicks.map(Number);
-    domain[0] = date$2(closest$2(domain[0], ticks));
-    domain[1] = date$2(closest$2(domain[1], ticks));
+    domain[0] = date$2(closest(domain[0], ticks));
+    domain[1] = date$2(closest(domain[1], ticks));
     var pixelDomain = domain.map(this._d3Scale),
           single = pixelDomain[0] === pixelDomain[1];
     if (single) {
@@ -17109,11 +17034,11 @@ var Timeline = (function (Axis) {
       selection[1]++;
     }
 
-    var brushGroup = this._brushGroup = elem$2("g.brushGroup", {parent: this._group});
+    var brushGroup = this._brushGroup = elem("g.brushGroup", {parent: this._group});
     brushGroup.call(brush).transition(this._transition)
       .call(brush.move, selection);
     brushGroup.selectAll(".handle").transition(this._transition)
-      .call(attrize$2, this._handleConfig);
+      .call(attrize, this._handleConfig);
 
     return this;
 
@@ -17168,16 +17093,16 @@ var Timeline = (function (Axis) {
   return Timeline;
 }(Axis));
 
-var val$3 = undefined;
+var val$2 = undefined;
 
-function prefix$4() {
-  if (val$3 !== void 0) return val$3;
-  if ("-webkit-transform" in document.body.style) val$3 = "-webkit-";
-  else if ("-moz-transform" in document.body.style) val$3 = "-moz-";
-  else if ("-ms-transform" in document.body.style) val$3 = "-ms-";
-  else if ("-o-transform" in document.body.style) val$3 = "-o-";
-  else val$3 = "";
-  return val$3;
+function prefix$3() {
+  if (val$2 !== void 0) return val$2;
+  if ("-webkit-transform" in document.body.style) val$2 = "-webkit-";
+  else if ("-moz-transform" in document.body.style) val$2 = "-moz-";
+  else if ("-ms-transform" in document.body.style) val$2 = "-ms-";
+  else if ("-o-transform" in document.body.style) val$2 = "-o-";
+  else val$2 = "";
+  return val$2;
 }
 
 var d3 = {
@@ -17245,7 +17170,7 @@ function tooltip(data) {
     else return d;
   }
 
-  var pre = prefix$4();
+  var pre = prefix$3();
 
   var background = constant$4("rgba(255, 255, 255, 0.75)"),
       body = accessor("body", ""),
@@ -17774,7 +17699,8 @@ var Viz = (function (BaseClass) {
     this._duration = 600;
     this._history = [];
     this._groupBy = [accessor("id")];
-    this._legend = {
+    this._legend = true;
+    this._legendConfig = {
       shapeConfig: {
         fontResize: false
       }
@@ -17992,7 +17918,7 @@ var Viz = (function (BaseClass) {
             obj[e] = this$1._on[e];
             return obj;
           }, {})})
-        .config(this._legend.constructor === Object ? this._legend : {})
+        .config(this._legendConfig)
         .render();
 
       this._margin.bottom += this._legendClass.outerBounds().height + this._legendClass.padding() * 2;
@@ -18121,11 +18047,20 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc If *value* is specified, toggles the legend based on the specified boolean and returns the current class instance. If *value* is an object, then it is passed to the legend's config method. If *value* is not specified, returns the current value.
-      @param {Boolean|Object} [*value* = true]
+      @desc If *value* is specified, toggles the legend based on the specified boolean and returns the current class instance. If *value* is not specified, returns the current value.
+      @param {Boolean} [*value* = true]
   */
   Viz.prototype.legend = function legend (_) {
     return arguments.length ? (this._legend = _, this) : this._legend;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, the object is passed to the legend's config method. If *value* is not specified, returns the current legend config.
+      @param {Object} [*value*]
+  */
+  Viz.prototype.legendConfig = function legendConfig (_) {
+    return arguments.length ? (this._legendConfig = _, this) : this._legendConfig;
   };
 
   /**
