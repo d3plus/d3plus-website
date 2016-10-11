@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.1.2
+  d3plus-timeline v0.1.3
   An easy-to-use javascript timeline.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -14,15 +14,17 @@
     @class Timeline
     @extends Axis
 */
-var Timeline = (function (Axis) {
+var Timeline = (function (Axis$$1) {
   function Timeline() {
     var this$1 = this;
 
-    Axis.call(this);
-    this._domain = [2000, 2010];
+
+    Axis$$1.call(this);
+
+    this._domain = [2001, 2010];
     this._gridSize = 0;
     this._handleConfig = {
-      fill: "red"
+      fill: "#444"
     };
     this._handleSize = 6;
     this._height = 100;
@@ -38,13 +40,18 @@ var Timeline = (function (Axis) {
       }},
       width: function (d) { return this$1._domain.map(function (t) { return d3plusAxis.date(t).getTime(); }).includes(d.id) ? 2 : 1; }
     });
-    this._tickShape = "circle";
+
   }
 
-  if ( Axis ) Timeline.__proto__ = Axis;
-  Timeline.prototype = Object.create( Axis && Axis.prototype );
+  if ( Axis$$1 ) Timeline.__proto__ = Axis$$1;
+  Timeline.prototype = Object.create( Axis$$1 && Axis$$1.prototype );
   Timeline.prototype.constructor = Timeline;
 
+  /**
+      @memberof Timeline
+      @desc Triggered when mouse events changing the timeline have ended.
+      @private
+  */
   Timeline.prototype._brushEnd = function _brushEnd () {
 
     if (!d3Selection.event.sourceEvent) return; // Only transition after input.
@@ -77,7 +84,7 @@ var Timeline = (function (Axis) {
   */
   Timeline.prototype.render = function render (callback) {
 
-    Axis.prototype.render.call(this, callback);
+    Axis$$1.prototype.render.call(this, callback);
 
     var ref = this._position;
     var height = ref.height;
