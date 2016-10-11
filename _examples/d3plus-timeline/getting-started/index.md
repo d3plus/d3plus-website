@@ -1,8 +1,11 @@
 ---
 title: Getting Started
-width: 990
-height: 400
+width: 400
+height: 100
 ---
+
+[width]: 400
+[height]: 100
 
 # Getting Started
 
@@ -10,6 +13,6 @@ A d3plus timeline extends the functionality of a [d3plus-axis](https://github.co
 
 ```js
 new d3plus.Timeline()
-  .domain([1987, 2016])
+  .domain([2001, 2010])
   .render();
 ```
