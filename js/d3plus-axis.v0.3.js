@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.3
+  d3plus-axis v0.3.4
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -15,7 +15,7 @@
     @desc Parses numbers and strings to valid Javascript Date obejcts.
     @param {Date|Number|String} *date*
 */
-function date(d) {
+var date = function(d) {
 
   // returns if already Date object
   if (d.constructor === Date) return d;
@@ -32,19 +32,19 @@ function date(d) {
   // parses string to Date object
   else return new Date(s);
 
-}
+};
 
 /**
     @class Axis
     @extends BaseClass
     @desc Creates an SVG scale based on an array of data.
 */
-var Axis = (function (BaseClass) {
+var Axis = (function (BaseClass$$1) {
   function Axis() {
     var this$1 = this;
 
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._align = "middle";
     this._barConfig = {
@@ -93,8 +93,8 @@ var Axis = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) Axis.__proto__ = BaseClass;
-  Axis.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) Axis.__proto__ = BaseClass$$1;
+  Axis.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Axis.prototype.constructor = Axis;
 
   /**
@@ -372,12 +372,15 @@ var Axis = (function (BaseClass) {
     var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 45 : 75]);
 
     var ticks = this._ticks
-               ? this._scale === "time" ? this._ticks.map(date) : this._ticks
+              ? this._scale === "time" ? this._ticks.map(date) : this._ticks
+              : this._d3Scale.ticks
+              ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+              : this._domain;
+
+    var labels = this._labels
+               ? this._scale === "time" ? this._labels.map(date) : this._labels
                : this._d3Scale.ticks
                ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
-               : this._domain;
-    var labels = this._ticks && !this._labels ? ticks : this._labels
-               ? this._scale === "time" ? this._labels.map(date) : this._labels
                : ticks;
 
     var tickFormat = this._d3Scale.tickFormat
@@ -655,14 +658,14 @@ var Axis = (function (BaseClass) {
     @extends Axis
     @desc Shorthand method for creating an axis where the ticks are drawn below the horizontal domain path. Extends all functionality of the base [Axis](#Axis) class.
 */
-var AxisBottom = (function (Axis) {
+var AxisBottom = (function (Axis$$1) {
   function AxisBottom() {
-    Axis.call(this);
+    Axis$$1.call(this);
     this.orient("bottom");
   }
 
-  if ( Axis ) AxisBottom.__proto__ = Axis;
-  AxisBottom.prototype = Object.create( Axis && Axis.prototype );
+  if ( Axis$$1 ) AxisBottom.__proto__ = Axis$$1;
+  AxisBottom.prototype = Object.create( Axis$$1 && Axis$$1.prototype );
   AxisBottom.prototype.constructor = AxisBottom;
 
   return AxisBottom;
@@ -673,14 +676,14 @@ var AxisBottom = (function (Axis) {
     @extends Axis
     @desc Shorthand method for creating an axis where the ticks are drawn to the left of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
 */
-var AxisLeft = (function (Axis) {
+var AxisLeft = (function (Axis$$1) {
   function AxisLeft() {
-    Axis.call(this);
+    Axis$$1.call(this);
     this.orient("left");
   }
 
-  if ( Axis ) AxisLeft.__proto__ = Axis;
-  AxisLeft.prototype = Object.create( Axis && Axis.prototype );
+  if ( Axis$$1 ) AxisLeft.__proto__ = Axis$$1;
+  AxisLeft.prototype = Object.create( Axis$$1 && Axis$$1.prototype );
   AxisLeft.prototype.constructor = AxisLeft;
 
   return AxisLeft;
@@ -691,14 +694,14 @@ var AxisLeft = (function (Axis) {
     @extends Axis
     @desc Shorthand method for creating an axis where the ticks are drawn to the right of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
 */
-var AxisRight = (function (Axis) {
+var AxisRight = (function (Axis$$1) {
   function AxisRight() {
-    Axis.call(this);
+    Axis$$1.call(this);
     this.orient("right");
   }
 
-  if ( Axis ) AxisRight.__proto__ = Axis;
-  AxisRight.prototype = Object.create( Axis && Axis.prototype );
+  if ( Axis$$1 ) AxisRight.__proto__ = Axis$$1;
+  AxisRight.prototype = Object.create( Axis$$1 && Axis$$1.prototype );
   AxisRight.prototype.constructor = AxisRight;
 
   return AxisRight;
@@ -709,14 +712,14 @@ var AxisRight = (function (Axis) {
     @extends Axis
     @desc Shorthand method for creating an axis where the ticks are drawn above the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
 */
-var AxisTop = (function (Axis) {
+var AxisTop = (function (Axis$$1) {
   function AxisTop() {
-    Axis.call(this);
+    Axis$$1.call(this);
     this.orient("top");
   }
 
-  if ( Axis ) AxisTop.__proto__ = Axis;
-  AxisTop.prototype = Object.create( Axis && Axis.prototype );
+  if ( Axis$$1 ) AxisTop.__proto__ = Axis$$1;
+  AxisTop.prototype = Object.create( Axis$$1 && Axis$$1.prototype );
   AxisTop.prototype.constructor = AxisTop;
 
   return AxisTop;
