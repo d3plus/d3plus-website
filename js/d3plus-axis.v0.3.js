@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.4
+  d3plus-axis v0.3.5
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -362,8 +362,10 @@ var Axis = (function (BaseClass$$1) {
     }
 
     this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-      .domain(this._scale === "time" ? this._domain.map(date) : this._domain)
-      .range(range);
+      .domain(this._scale === "time" ? this._domain.map(date) : this._domain);
+
+    if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range);
+    else this._d3Scale.range(range);
 
     if (this._d3Scale.round) this._d3Scale.round(true);
     if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
@@ -376,6 +378,18 @@ var Axis = (function (BaseClass$$1) {
               : this._d3Scale.ticks
               ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
               : this._domain;
+
+    var tickWidth = this._shape === "Circle" ? this._shapeConfig.r * 2
+             : this._shape === "Rect" ? this._shapeConfig[width]
+             : this._shapeConfig.strokeWidth;
+
+    var pixels = [];
+    ticks.forEach(function (d) {
+      var t = this$1._d3Scale(d);
+      if (!pixels.includes(t) && d3Array.max(pixels) < t - tickWidth / 2 - 2) pixels.push(t);
+      else pixels.push(false);
+    });
+    ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
 
     var labels = this._labels
                ? this._scale === "time" ? this._labels.map(date) : this._labels
@@ -465,7 +479,8 @@ var Axis = (function (BaseClass$$1) {
         }
       }
 
-      this._d3Scale.range(range);
+      if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range);
+      else this._d3Scale.range(range);
 
     }
 
