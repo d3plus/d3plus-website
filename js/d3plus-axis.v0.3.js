@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.7
+  d3plus-axis v0.3.8
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -329,15 +329,16 @@ var Axis = (function (BaseClass$$1) {
     var horizontal = ref.horizontal;
     var opposite = ref.opposite;
     var clipId = "d3plus-Axis-clip-" + (this._uuid),
-          hBuff = this._shape === "Circle" ? this._shapeConfig.r
-                   : this._shape === "Rect" ? this._shapeConfig[height] / 2
-                   : this._tickSize,
           p = this._padding,
           parent = this._select,
-          t = d3Transition.transition().duration(this._duration),
-          wBuff = this._shape === "Circle" ? this._shapeConfig.r
-                   : this._shape === "Rect" ? this._shapeConfig[width] / 2
-                   : this._tickSize;
+          t = d3Transition.transition().duration(this._duration);
+
+    var hBuff = this._shape === "Circle" ? this._shapeConfig.r
+              : this._shape === "Rect" ? this._shapeConfig[height]
+              : width === "height" ? this._shapeConfig.strokeWidth : this._tickSize,
+        wBuff = this._shape === "Circle" ? this._shapeConfig.r
+                 : this._shape === "Rect" ? this._shapeConfig[width]
+                 : width === "width" ? this._shapeConfig.strokeWidth : this._tickSize;
 
     var range = this._range ? this._range.slice() : [undefined, undefined];
     if (range[0] === void 0) range[0] = p;
@@ -379,10 +380,6 @@ var Axis = (function (BaseClass$$1) {
               ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
               : this._domain;
 
-    var tickWidth = this._shape === "Circle" ? this._shapeConfig.r * 2
-             : this._shape === "Rect" ? this._shapeConfig[width]
-             : this._shapeConfig.strokeWidth;
-
     var labels = this._labels
                ? this._scale === "time" ? this._labels.map(date) : this._labels
                : this._d3Scale.ticks
@@ -398,16 +395,29 @@ var Axis = (function (BaseClass$$1) {
       labels = labels.map(Number);
     }
 
+    var tickSize = this._shape === "Circle" ? this._shapeConfig.r
+                   : this._shape === "Rect" ? this._shapeConfig[width]
+                   : this._shapeConfig.strokeWidth;
+
+    var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
+
     var pixels = [];
     this._availableTicks = ticks;
-    ticks.forEach(function (d) {
+    ticks.forEach(function (d, i) {
+      var s = tickGet(d, i);
+      if (this$1._shape === "Circle") s *= 2;
       var t = this$1._d3Scale(d);
-      if (!pixels.length || !pixels.includes(t) && d3Array.max(pixels) < t - tickWidth / 2 - 2) pixels.push(t);
+      if (!pixels.length || !pixels.includes(t) && d3Array.max(pixels) < t - s * 2) pixels.push(t);
       else pixels.push(false);
     });
     ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
 
     this._visibleTicks = ticks;
+
+    if (typeof hBuff === "function") hBuff = d3Array.max(ticks.map(hBuff));
+    if (this._shape !== "Circle") hBuff / 2;
+    if (typeof wBuff === "function") wBuff = d3Array.max(ticks.map(wBuff));
+    if (this._shape !== "Circle") wBuff / 2;
 
     if (this._scale === "band") {
       this._space = this._d3Scale.bandwidth();
