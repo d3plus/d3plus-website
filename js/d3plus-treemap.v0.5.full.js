@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.12
+  d3plus-treemap v0.5.13
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -12862,15 +12862,9 @@ var Axis = (function (BaseClass) {
     var horizontal = ref.horizontal;
     var opposite = ref.opposite;
     var clipId = "d3plus-Axis-clip-" + (this._uuid),
-          hBuff = this._shape === "Circle" ? this._shapeConfig.r
-                   : this._shape === "Rect" ? this._shapeConfig[height] / 2
-                   : this._tickSize,
           p = this._padding,
           parent = this._select,
-          t = transition().duration(this._duration),
-          wBuff = this._shape === "Circle" ? this._shapeConfig.r
-                   : this._shape === "Rect" ? this._shapeConfig[width] / 2
-                   : this._tickSize;
+          t = transition().duration(this._duration);
 
     var range = this._range ? this._range.slice() : [undefined, undefined];
     if (range[0] === void 0) range[0] = p;
@@ -12895,8 +12889,10 @@ var Axis = (function (BaseClass) {
     }
 
     this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-      .domain(this._scale === "time" ? this._domain.map(date$2) : this._domain)
-      .range(range);
+      .domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
+
+    if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range);
+    else this._d3Scale.range(range);
 
     if (this._d3Scale.round) this._d3Scale.round(true);
     if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
@@ -12925,7 +12921,36 @@ var Axis = (function (BaseClass) {
       labels = labels.map(Number);
     }
 
+    var tickSize = this._shape === "Circle" ? this._shapeConfig.r
+                   : this._shape === "Rect" ? this._shapeConfig[width]
+                   : this._shapeConfig.strokeWidth;
+
+    var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
+
+    var pixels = [];
+    this._availableTicks = ticks;
+    ticks.forEach(function (d, i) {
+      var s = tickGet(d, i);
+      if (this$1._shape === "Circle") s *= 2;
+      var t = this$1._d3Scale(d);
+      if (!pixels.length || !pixels.includes(t) && max(pixels) < t - s * 2) pixels.push(t);
+      else pixels.push(false);
+    });
+    ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
+
     this._visibleTicks = ticks;
+
+    var hBuff = this._shape === "Circle" ? this._shapeConfig.r
+              : this._shape === "Rect" ? this._shapeConfig[height]
+              : this._tickSize,
+        wBuff = this._shape === "Circle" ? this._shapeConfig.r
+              : this._shape === "Rect" ? this._shapeConfig[width]
+              : this._shapeConfig.strokeWidth;
+
+    if (typeof hBuff === "function") hBuff = max(ticks.map(hBuff));
+    if (this._shape === "Rect") hBuff /= 2;
+    if (typeof wBuff === "function") wBuff = max(ticks.map(wBuff));
+    if (this._shape !== "Circle") wBuff /= 2;
 
     if (this._scale === "band") {
       this._space = this._d3Scale.bandwidth();
@@ -12998,7 +13023,8 @@ var Axis = (function (BaseClass) {
         }
       }
 
-      this._d3Scale.range(range);
+      if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range);
+      else this._d3Scale.range(range);
 
     }
 
@@ -14611,13 +14637,12 @@ var Timeline = (function (Axis) {
     this._on = {};
     this.orient("bottom");
     this._scale = "time";
+    this._selectionConfig = {
+      fill: "#777"
+    };
     this._shape = "Rect";
     this._shapeConfig = Object.assign({}, this._shapeConfig, {
       height: 10,
-      on: {click: function (d) {
-        if (this$1._on.end) this$1._on.end(d.id);
-        this$1.selection(d.id).render();
-      }},
       width: function (d) { return this$1._domain.map(function (t) { return date$2(t).getTime(); }).includes(d.id) ? 2 : 1; }
     });
 
@@ -14629,7 +14654,19 @@ var Timeline = (function (Axis) {
 
   /**
       @memberof Timeline
-      @desc Triggered when mouse events changing the timeline have ended.
+      @desc Triggered on brush "brush".
+      @private
+  */
+  Timeline.prototype._brushBrush = function _brushBrush () {
+
+    this._brushStyle();
+    if (this._on.brush) this._on.brush();
+
+  };
+
+  /**
+      @memberof Timeline
+      @desc Triggered on brush "end".
       @private
   */
   Timeline.prototype._brushEnd = function _brushEnd () {
@@ -14641,19 +14678,56 @@ var Timeline = (function (Axis) {
                  .map(this._d3Scale.invert)
                  .map(Number);
 
-    var ticks = this._visibleTicks.map(Number);
+    var ticks = this._availableTicks.map(Number);
     domain[0] = date$2(closest$3(domain[0], ticks));
     domain[1] = date$2(closest$3(domain[1], ticks));
     var pixelDomain = domain.map(this._d3Scale),
           single = pixelDomain[0] === pixelDomain[1];
     if (single) {
-      pixelDomain[0]--;
-      pixelDomain[1]++;
+      pixelDomain[0] -= 0.1;
+      pixelDomain[1] += 0.1;
     }
 
     this._brushGroup.transition(this._transition).call(this._brush.move, pixelDomain);
 
+    this._brushStyle();
+
     if (this._on.end) this._on.end(single ? domain[0] : domain);
+
+  };
+
+  /**
+      @memberof Timeline
+      @desc Triggered on brush "start".
+      @private
+  */
+  Timeline.prototype._brushStart = function _brushStart () {
+
+    this._brushStyle();
+    if (this._on.start) this._on.start();
+
+  };
+
+  /**
+      @memberof Timeline
+      @desc Overrides the default brush styles.
+      @private
+  */
+  Timeline.prototype._brushStyle = function _brushStyle () {
+
+    var ref = this._position;
+    var height = ref.height;
+    var timelineHeight = this._shape === "Circle" ? this._shapeConfig.r * 2
+             : this._shape === "Rect" ? this._shapeConfig[height]
+             : this._tickSize;
+
+    this._brushGroup.selectAll(".selection")
+      .call(attrize$3, this._selectionConfig)
+      .attr("height", timelineHeight);
+
+    this._brushGroup.selectAll(".handle")
+      .call(attrize$3, this._handleConfig)
+      .attr("height", timelineHeight + this._handleSize);
 
   };
 
@@ -14670,21 +14744,17 @@ var Timeline = (function (Axis) {
     var height = ref.height;
     var y = ref.y;
 
-    var timelineHeight = this._shape === "Circle" ? this._shapeConfig.r * 2
-             : this._shape === "Rect" ? this._shapeConfig[height]
-             : this._tickSize;
-
     var offset = this._outerBounds[y],
           range = this._d3Scale.range();
 
     var brush = this._brush = brushX()
-      .extent([[range[0], offset], [range[1], offset + timelineHeight]])
+      .extent([[range[0], offset], [range[1], offset + this._outerBounds[height]]])
       .handleSize(this._handleSize)
-      .on("start", this._on.start || null)
-      .on("brush", this._on.brush || null)
+      .on("start", this._brushStart.bind(this))
+      .on("brush", this._brushBrush.bind(this))
       .on("end", this._brushEnd.bind(this));
 
-    var latest = this._visibleTicks[this._visibleTicks.length - 1];
+    var latest = this._availableTicks[this._availableTicks.length - 1];
     var selection = (this._selection === void 0 ? [latest, latest]
                     : this._selection instanceof Array
                     ? this._selection.slice()
@@ -14693,15 +14763,13 @@ var Timeline = (function (Axis) {
                     .map(this._d3Scale);
 
     if (selection[0] === selection[1]) {
-      selection[0]--;
-      selection[1]++;
+      selection[0] -= 0.1;
+      selection[1] += 0.1;
     }
 
-    var brushGroup = this._brushGroup = elem$3("g.brushGroup", {parent: this._group});
-    brushGroup.call(brush).transition(this._transition)
+    this._brushGroup = elem$3("g.brushGroup", {parent: this._group});
+    this._brushGroup.call(brush).transition(this._transition)
       .call(brush.move, selection);
-    brushGroup.selectAll(".handle").transition(this._transition)
-      .call(attrize$3, this._handleConfig);
 
     return this;
 
@@ -15353,6 +15421,7 @@ var Viz = (function (BaseClass) {
 
     BaseClass.call(this);
 
+    this._aggs = {};
     this._backClass = new TextBox()
       .on("click", function () {
         if (this$1._history.length) this$1.config(this$1._history.pop()).render();
@@ -15433,7 +15502,17 @@ var Viz = (function (BaseClass) {
       strokeWidth: constant$8(0)
     };
     this._timeline = {};
-    this._timelineClass = new Timeline();
+    this._timelineClass = new Timeline()
+      .align("end")
+      .on("end", function (s) {
+        if (!(s instanceof Array)) s = [s, s];
+        s = s.map(Number);
+        this$1._timelineClass.selection(s);
+        this$1.timeFilter(function (d) {
+          var ms = date$2(this$1._time(d)).getTime();
+          return ms >= s[0] && ms <= s[1];
+        }).render();
+      });
     this._tooltip = {duration: 50};
     this._tooltipClass = tooltip().pointerEvents("none");
 
@@ -15513,14 +15592,7 @@ var Viz = (function (BaseClass) {
 
     this._filteredData = [];
     if (this._data.length) {
-      var aggs = {};
-      if (this._timeKey) {
-        aggs[this._timeKey] = function (a) {
-          var v = Array.from(new Set(a));
-          return v.length === 1 ? v[0] : v;
-        };
-      }
-      var dataNest = nest().rollup(function (leaves) { return this$1._filteredData.push(combine(leaves, aggs)); });
+      var dataNest = nest().rollup(function (leaves) { return this$1._filteredData.push(combine(leaves, this$1._aggs)); });
       for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
       if (this._discrete) dataNest.key(this[("_" + (this._discrete))]);
       var data = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
@@ -15534,29 +15606,27 @@ var Viz = (function (BaseClass) {
     var timelineGroup = this._uiGroup("timeline", timelinePossible);
     if (timelinePossible) {
 
-      var selection = extent(Array.from(new Set(merge$1(this._filteredData.map(function (d) {
-        var t = this$1._time(d);
-        return t instanceof Array ? t : [t];
-      })))).map(date$2));
-      if (selection.length === 1) selection = selection[0];
-
       var timeline = this._timelineClass
-        .align("end")
         .domain(extent(ticks))
         .duration(this._duration)
         .height(this._height / 2 - this._margin.bottom)
-        .on("end", function (s) {
-          if (!(s instanceof Array)) s = [s, s];
-          s = s.map(Number);
-          this$1.timeFilter(function (d) {
-            var ms = date$2(this$1._time(d)).getTime();
-            return ms >= s[0] && ms <= s[1];
-          }).render();
-        })
         .select(timelineGroup.node())
-        .selection(selection)
         .ticks(ticks)
-        .width(this._width)
+        .width(this._width);
+
+      if (timeline.selection() === void 0) {
+
+        var selection = extent(Array.from(new Set(merge$1(this._filteredData.map(function (d) {
+          var t = this$1._time(d);
+          return t instanceof Array ? t : [t];
+        })))).map(date$2));
+
+        if (selection.length === 1) selection = selection[0];
+        timeline.selection(selection);
+
+      }
+
+      timeline
         .config(this._timeline.constructor === Object ? this._timeline : {})
         .render();
 
@@ -15621,6 +15691,15 @@ var Viz = (function (BaseClass) {
 
   /**
       @memberof Viz
+      @desc If *value* is specified, sets the aggregation method for each key in the object and returns the current class instance. If *value* is not specified, returns the current defined aggregation methods.
+      @param {Object} [*value*]
+  */
+  Viz.prototype.aggs = function aggs (_) {
+    return arguments.length ? (this._aggs = Object.assign(this._aggs, _), this) : this._aggs;
+  };
+
+  /**
+      @memberof Viz
       @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array.
       @param {Array} [*data* = []]
   */
@@ -15674,9 +15753,22 @@ function value(d) {
 }
   */
   Viz.prototype.groupBy = function groupBy (_) {
+    var this$1 = this;
+
     if (!arguments.length) return this._groupBy;
     if (!(_ instanceof Array)) _ = [_];
-    return this._groupBy = _.map(function (k) { return typeof k === "function" ? k : accessor$2(k); }), this;
+    return this._groupBy = _.map(function (k) {
+      if (typeof k === "function") return k;
+      else {
+        if (!this$1._aggs[k]) {
+          this$1._aggs[k] = function (a) {
+            var v = Array.from(new Set(a));
+            return v.length === 1 ? v[0] : v;
+          };
+        }
+        return accessor$2(k);
+      }
+    }), this;
   };
 
   /**
@@ -15785,15 +15877,19 @@ new Plot
     if (arguments.length) {
       if (typeof _ === "function") {
         this._time = _;
-        this._timeKey = undefined;
       }
       else {
         this._time = accessor$2(_);
-        this._timeKey = _;
+        if (!this._aggs[_]) {
+          this._aggs[_] = function (a) {
+            var v = Array.from(new Set(a));
+            return v.length === 1 ? v[0] : v;
+          };
+        }
       }
       return this;
     }
-    else return this._timeKey || this._time;
+    else return this._time;
   };
 
   /**
