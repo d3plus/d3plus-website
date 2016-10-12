@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.6
+  d3plus-axis v0.3.7
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -12196,14 +12196,6 @@ var Axis = (function (BaseClass$$1) {
              : this._shape === "Rect" ? this._shapeConfig[width]
              : this._shapeConfig.strokeWidth;
 
-    var pixels = [];
-    ticks$$1.forEach(function (d) {
-      var t = this$1._d3Scale(d);
-      if (!pixels.length || !pixels.includes(t) && max(pixels) < t - tickWidth / 2 - 2) pixels.push(t);
-      else pixels.push(false);
-    });
-    ticks$$1 = ticks$$1.filter(function (d, i) { return pixels[i] !== false; });
-
     var labels = this._labels
                ? this._scale === "time" ? this._labels.map(date$2) : this._labels
                : this._d3Scale.ticks
@@ -12218,6 +12210,15 @@ var Axis = (function (BaseClass$$1) {
       ticks$$1 = ticks$$1.map(Number);
       labels = labels.map(Number);
     }
+
+    var pixels = [];
+    this._availableTicks = ticks$$1;
+    ticks$$1.forEach(function (d) {
+      var t = this$1._d3Scale(d);
+      if (!pixels.length || !pixels.includes(t) && max(pixels) < t - tickWidth / 2 - 2) pixels.push(t);
+      else pixels.push(false);
+    });
+    ticks$$1 = ticks$$1.filter(function (d, i) { return pixels[i] !== false; });
 
     this._visibleTicks = ticks$$1;
 
