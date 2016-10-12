@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.0
+  d3plus-plot v0.3.1
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -18803,6 +18803,15 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
+      @desc If *value* is specified, sets the config method for the x-axis and returns the current class instance. If *value* is not specified, returns the current x-axis configuration.
+      @param {Object} [*value*]
+  */
+  Plot.prototype.xConfig = function xConfig (_) {
+    return arguments.length ? (this._xConfig = Object.assign(this._xConfig, _), this) : this._xConfig;
+  };
+
+  /**
+      @memberof Plot
       @desc If *value* is specified, sets the x domain to the specified array and returns the current class instance. If *value* is not specified, returns the current x domain. Additionally, if either value of the array is undefined, it will be calculated from the data.
       @param {Array} [*value*]
   */
@@ -18817,6 +18826,15 @@ var Plot = (function (Viz$$1) {
   */
   Plot.prototype.y = function y (_) {
     return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$1(_), this) : this._y;
+  };
+
+  /**
+      @memberof Plot
+      @desc If *value* is specified, sets the config method for the y-axis and returns the current class instance. If *value* is not specified, returns the current y-axis configuration.
+      @param {Object} [*value*]
+  */
+  Plot.prototype.yConfig = function yConfig (_) {
+    return arguments.length ? (this._yConfig = Object.assign(this._yConfig, _), this) : this._yConfig;
   };
 
   /**
