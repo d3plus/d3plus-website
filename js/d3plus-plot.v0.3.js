@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.1
+  d3plus-plot v0.3.2
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -291,15 +291,25 @@ var Plot = (function (Viz$$1) {
 
     var shapeConfig = {
       duration: this._duration,
-      fill: function (d) { return this$1._shapeConfig.fill(d.data, d.i); },
       label: function (d) { return this$1._drawLabel(d.data, d.i); },
-      opacity: function (d) { return this$1._shapeConfig.opacity(d.data, d.i); },
       select: d3plusCommon.elem("g.d3plus-plot-shapes", {parent: parent, transition: transition}).node(),
-      stroke: function (d) { return this$1._shapeConfig.stroke(d.data, d.i); },
-      strokeWidth: function (d) { return this$1._shapeConfig.strokeWidth(d.data, d.i); },
       x: function (d) { return x(d.x); },
       y: function (d) { return y(d.y); }
     };
+
+    function wrapConfig(config) {
+      var obj = {};
+      var loop = function ( k ) {
+        if ({}.hasOwnProperty.call(config, k) && !shapes[k]) {
+          obj[k] = typeof config[k] === "function" ? function (d) { return config[k](d.data, d.i); } : config[k];
+        }
+      };
+
+      for (var k in config) loop( k );
+      return obj;
+    }
+
+    shapeConfig = Object.assign(shapeConfig, wrapConfig(this._shapeConfig));
 
     var positions = {
       x0: this._discrete === "x" ? shapeConfig.x : x(0),
@@ -339,7 +349,7 @@ var Plot = (function (Viz$$1) {
       for (var e = 0; e < globalEvents.length; e++) s.on(globalEvents[e], mouseEvent.bind(this$1._on[globalEvents[e]]));
       for (var e$1 = 0; e$1 < shapeEvents.length; e$1++) s.on(shapeEvents[e$1], mouseEvent.bind(this$1._on[shapeEvents[e$1]]));
       for (var e$2 = 0; e$2 < classEvents.length; e$2++) s.on(classEvents[e$2], mouseEvent.bind(this$1._on[classEvents[e$2]]));
-      s.config(this$1._shapeConfig[d.key] || {}).render();
+      s.config(this$1._shapeConfig[d.key] ? wrapConfig(this$1._shapeConfig[d.key]) : {}).render();
       this$1._shapes.push(s);
 
     });
