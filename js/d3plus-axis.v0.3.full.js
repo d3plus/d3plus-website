@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.8
+  d3plus-axis v0.3.9
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -12146,13 +12146,6 @@ var Axis = (function (BaseClass$$1) {
           parent = this._select,
           t = transition().duration(this._duration);
 
-    var hBuff = this._shape === "Circle" ? this._shapeConfig.r
-              : this._shape === "Rect" ? this._shapeConfig[height]
-              : width === "height" ? this._shapeConfig.strokeWidth : this._tickSize,
-        wBuff = this._shape === "Circle" ? this._shapeConfig.r
-                 : this._shape === "Rect" ? this._shapeConfig[width]
-                 : width === "width" ? this._shapeConfig.strokeWidth : this._tickSize;
-
     var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
     if (range$$1[0] === void 0) range$$1[0] = p;
     if (range$$1[1] === void 0) range$$1[1] = this[("_" + width)] - p;
@@ -12227,10 +12220,17 @@ var Axis = (function (BaseClass$$1) {
 
     this._visibleTicks = ticks$$1;
 
+    var hBuff = this._shape === "Circle" ? this._shapeConfig.r
+              : this._shape === "Rect" ? this._shapeConfig[height]
+              : this._tickSize,
+        wBuff = this._shape === "Circle" ? this._shapeConfig.r
+              : this._shape === "Rect" ? this._shapeConfig[width]
+              : this._shapeConfig.strokeWidth;
+
     if (typeof hBuff === "function") hBuff = max(ticks$$1.map(hBuff));
-    if (this._shape !== "Circle") hBuff / 2;
+    if (this._shape === "Rect") hBuff /= 2;
     if (typeof wBuff === "function") wBuff = max(ticks$$1.map(wBuff));
-    if (this._shape !== "Circle") wBuff / 2;
+    if (this._shape !== "Circle") wBuff /= 2;
 
     if (this._scale === "band") {
       this._space = this._d3Scale.bandwidth();
