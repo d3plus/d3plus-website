@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.5
+  d3plus-axis v0.3.6
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -12199,7 +12199,7 @@ var Axis = (function (BaseClass$$1) {
     var pixels = [];
     ticks$$1.forEach(function (d) {
       var t = this$1._d3Scale(d);
-      if (!pixels.includes(t) && max(pixels) < t - tickWidth / 2 - 2) pixels.push(t);
+      if (!pixels.length || !pixels.includes(t) && max(pixels) < t - tickWidth / 2 - 2) pixels.push(t);
       else pixels.push(false);
     });
     ticks$$1 = ticks$$1.filter(function (d, i) { return pixels[i] !== false; });
