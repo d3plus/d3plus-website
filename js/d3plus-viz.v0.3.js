@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.3.0
+  d3plus-viz v0.3.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -112,6 +112,7 @@ var Viz = (function (BaseClass$$1) {
 
     BaseClass$$1.call(this);
 
+    this._aggs = {};
     this._backClass = new d3plusText.TextBox()
       .on("click", function () {
         if (this$1._history.length) this$1.config(this$1._history.pop()).render();
@@ -192,7 +193,17 @@ var Viz = (function (BaseClass$$1) {
       strokeWidth: d3plusCommon.constant(0)
     };
     this._timeline = {};
-    this._timelineClass = new d3plusTimeline.Timeline();
+    this._timelineClass = new d3plusTimeline.Timeline()
+      .align("end")
+      .on("end", function (s) {
+        if (!(s instanceof Array)) s = [s, s];
+        s = s.map(Number);
+        this$1._timelineClass.selection(s);
+        this$1.timeFilter(function (d) {
+          var ms = d3plusAxis.date(this$1._time(d)).getTime();
+          return ms >= s[0] && ms <= s[1];
+        }).render();
+      });
     this._tooltip = {duration: 50};
     this._tooltipClass = d3plusTooltip.tooltip().pointerEvents("none");
 
@@ -272,14 +283,7 @@ var Viz = (function (BaseClass$$1) {
 
     this._filteredData = [];
     if (this._data.length) {
-      var aggs = {};
-      if (this._timeKey) {
-        aggs[this._timeKey] = function (a) {
-          var v = Array.from(new Set(a));
-          return v.length === 1 ? v[0] : v;
-        };
-      }
-      var dataNest = d3Collection.nest().rollup(function (leaves) { return this$1._filteredData.push(d3plusCommon.merge(leaves, aggs)); });
+      var dataNest = d3Collection.nest().rollup(function (leaves) { return this$1._filteredData.push(d3plusCommon.merge(leaves, this$1._aggs)); });
       for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
       if (this._discrete) dataNest.key(this[("_" + (this._discrete))]);
       var data = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
@@ -293,29 +297,27 @@ var Viz = (function (BaseClass$$1) {
     var timelineGroup = this._uiGroup("timeline", timelinePossible);
     if (timelinePossible) {
 
-      var selection = d3Array.extent(Array.from(new Set(d3Array.merge(this._filteredData.map(function (d) {
-        var t = this$1._time(d);
-        return t instanceof Array ? t : [t];
-      })))).map(d3plusAxis.date));
-      if (selection.length === 1) selection = selection[0];
-
       var timeline = this._timelineClass
-        .align("end")
         .domain(d3Array.extent(ticks))
         .duration(this._duration)
         .height(this._height / 2 - this._margin.bottom)
-        .on("end", function (s) {
-          if (!(s instanceof Array)) s = [s, s];
-          s = s.map(Number);
-          this$1.timeFilter(function (d) {
-            var ms = d3plusAxis.date(this$1._time(d)).getTime();
-            return ms >= s[0] && ms <= s[1];
-          }).render();
-        })
         .select(timelineGroup.node())
-        .selection(selection)
         .ticks(ticks)
-        .width(this._width)
+        .width(this._width);
+
+      if (timeline.selection() === void 0) {
+
+        var selection = d3Array.extent(Array.from(new Set(d3Array.merge(this._filteredData.map(function (d) {
+          var t = this$1._time(d);
+          return t instanceof Array ? t : [t];
+        })))).map(d3plusAxis.date));
+
+        if (selection.length === 1) selection = selection[0];
+        timeline.selection(selection);
+
+      }
+
+      timeline
         .config(this._timeline.constructor === Object ? this._timeline : {})
         .render();
 
@@ -380,6 +382,15 @@ var Viz = (function (BaseClass$$1) {
 
   /**
       @memberof Viz
+      @desc If *value* is specified, sets the aggregation method for each key in the object and returns the current class instance. If *value* is not specified, returns the current defined aggregation methods.
+      @param {Object} [*value*]
+  */
+  Viz.prototype.aggs = function aggs (_) {
+    return arguments.length ? (this._aggs = Object.assign(this._aggs, _), this) : this._aggs;
+  };
+
+  /**
+      @memberof Viz
       @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array.
       @param {Array} [*data* = []]
   */
@@ -433,9 +444,22 @@ function value(d) {
 }
   */
   Viz.prototype.groupBy = function groupBy (_) {
+    var this$1 = this;
+
     if (!arguments.length) return this._groupBy;
     if (!(_ instanceof Array)) _ = [_];
-    return this._groupBy = _.map(function (k) { return typeof k === "function" ? k : d3plusCommon.accessor(k); }), this;
+    return this._groupBy = _.map(function (k) {
+      if (typeof k === "function") return k;
+      else {
+        if (!this$1._aggs[k]) {
+          this$1._aggs[k] = function (a) {
+            var v = Array.from(new Set(a));
+            return v.length === 1 ? v[0] : v;
+          };
+        }
+        return d3plusCommon.accessor(k);
+      }
+    }), this;
   };
 
   /**
@@ -544,15 +568,19 @@ new Plot
     if (arguments.length) {
       if (typeof _ === "function") {
         this._time = _;
-        this._timeKey = undefined;
       }
       else {
         this._time = d3plusCommon.accessor(_);
-        this._timeKey = _;
+        if (!this._aggs[_]) {
+          this._aggs[_] = function (a) {
+            var v = Array.from(new Set(a));
+            return v.length === 1 ? v[0] : v;
+          };
+        }
       }
       return this;
     }
-    else return this._timeKey || this._time;
+    else return this._time;
   };
 
   /**
