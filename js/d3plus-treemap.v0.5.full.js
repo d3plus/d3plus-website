@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.11
+  d3plus-treemap v0.5.12
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -655,16 +655,6 @@ BaseClass.prototype.config = function config (_) {
     return config;
   }
 };
-
-/**
-    @function closest
-    @desc Finds the closest numeric value in an array.
-    @param {Number} n The number value to use when searching the array.
-    @param {Array} arr The array of values to test against.
-*/
-function closest(n, arr) {
-  return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
-}
 
 /**
     @function constant
@@ -5751,7 +5741,7 @@ function max(array, f) {
   return a;
 }
 
-function merge(arrays) {
+function merge$1(arrays) {
   var n = arrays.length,
       m,
       i = -1,
@@ -5822,11 +5812,11 @@ merge([
     @example <caption>returns this</caption>
 {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
 */
-function combine(objects, aggs) {
+function merge(objects, aggs) {
   if ( aggs === void 0 ) aggs = {};
 
 
-  var availableKeys = new Set(merge(objects.map(function (o) { return keys(o); }))),
+  var availableKeys = new Set(merge$1(objects.map(function (o) { return keys(o); }))),
         newObject = {};
 
   availableKeys.forEach(function (k) {
@@ -5837,7 +5827,7 @@ function combine(objects, aggs) {
       var types = values.map(function (v) { return v ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
       if (!types.length) value = undefined;
       else if (types.indexOf(Array) >= 0) {
-        value = merge(values.map(function (v) { return v.constructor === Array ? v : [v]; }));
+        value = merge$1(values.map(function (v) { return v.constructor === Array ? v : [v]; }));
         value = Array.from(new Set(value));
         if (value.length === 1) value = value[0];
       }
@@ -5856,22 +5846,6 @@ function combine(objects, aggs) {
 
   return newObject;
 
-}
-
-var val = undefined;
-
-/**
-    @function prefix
-    @desc Returns the appropriate CSS vendor prefix, given the current browser.
-*/
-function prefix$1() {
-  if (val !== void 0) return val;
-  if ("-webkit-transform" in document.body.style) val = "-webkit-";
-  else if ("-moz-transform" in document.body.style) val = "-moz-";
-  else if ("-ms-transform" in document.body.style) val = "-ms-";
-  else if ("-o-transform" in document.body.style) val = "-o-";
-  else val = "";
-  return val;
 }
 
 /**
@@ -8191,7 +8165,7 @@ var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSp
 */
 function textSplit(sentence) {
   if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords);
-  return merge(stringify(sentence).match(splitWords).map(function (d) {
+  return merge$1(stringify(sentence).match(splitWords).map(function (d) {
     if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) return d.match(splitAllChars);
     return [d];
   }));
@@ -12446,6 +12420,130 @@ var d3plus = Object.freeze({
 });
 
 /**
+    @function attrize
+    @desc Applies each key/value in an object as an attr.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} attrs An object of key/value attr pairs.
+*/
+function attrize$1(e, a) {
+  if ( a === void 0 ) a = {};
+
+  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
+}
+
+/**
+    @class BaseClass
+    @desc An abstract class that contains some global methods and functionality.
+*/
+var BaseClass$1 = function BaseClass() {
+
+  function s() {
+    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  }
+
+  this._uuid = "" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s());
+};
+
+/**
+    @memberof BaseClass
+    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
+    @param {Object} [*value*]
+*/
+BaseClass$1.prototype.config = function config (_) {
+    var this$1 = this;
+
+  if (arguments.length) {
+    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+    return this;
+  }
+  else {
+    var config = {};
+    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    return config;
+  }
+};
+
+/**
+    @function constant
+    @desc Wraps non-function variables in a simple return function.
+    @param {Array|Number|Object|String} value The value to be returned from the function.
+    @example <caption>this</caption>
+constant(42);
+    @example <caption>returns this</caption>
+function() {
+  return 42;
+}
+*/
+function constant$7(value) {
+  return function constant() {
+    return value;
+  };
+}
+
+/**
+    @function elem
+    @desc Manages the enter/update/exit pattern for a single DOM element.
+    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
+    @param {Object} params Additional parameters.
+    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
+    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
+    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
+    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
+    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
+    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
+*/
+function elem$1(selector, p) {
+
+  // overrides default params
+  p = Object.assign({}, {
+    condition: true,
+    enter: {},
+    exit: {},
+    parent: select("body"),
+    transition: transition().duration(0),
+    update: {}
+  }, p);
+
+  var className = (/\.([^#]+)/g).exec(selector),
+        id = (/#([^\.]+)/g).exec(selector),
+        tag = (/^([^.^#]+)/g).exec(selector)[1];
+
+  var elem = p.parent.selectAll(selector).data(p.condition ? [null] : []);
+
+  var enter = elem.enter().append(tag).call(attrize$1, p.enter);
+
+  if (id) enter.attr("id", id[1]);
+  if (className) enter.attr("class", className[1]);
+
+  elem.exit().transition(p.transition).call(attrize$1, p.exit).remove();
+
+  var update = enter.merge(elem);
+  update.transition(p.transition).call(attrize$1, p.update);
+
+  return update;
+
+}
+
+var array$5 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
+var enUS$1 = {
+	array: array$5
+};
+
+var array$6 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
+var esES$1 = {
+	array: array$6
+};
+
+i18next.init({
+  fallbackLng: "en-US",
+  initImmediate: false,
+  resources: {
+    "en-US": {translation: enUS$1},
+    "es-ES": {translation: esES$1}
+  }
+});
+
+/**
     @function date
     @desc Parses numbers and strings to valid Javascript Date obejcts.
     @param {Date|Number|String} *date*
@@ -12505,7 +12603,7 @@ var Axis = (function (BaseClass) {
       fontColor: "#000",
       fontFamily: new TextBox().fontFamily(),
       fontResize: false,
-      fontSize: constant$1(10),
+      fontSize: constant$7(10),
       height: 8,
       label: function (d) { return d.text; },
       labelBounds: function (d) { return d.labelBounds; },
@@ -12548,7 +12646,7 @@ var Axis = (function (BaseClass) {
           offset = this._margin[opposite],
           position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
     bar
-      .call(attrize, this._barConfig)
+      .call(attrize$1, this._barConfig)
       .attr((x + "1"), this._d3Scale(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
       .attr((x + "2"), this._d3Scale(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
       .attr((y + "1"), position)
@@ -12576,7 +12674,7 @@ var Axis = (function (BaseClass) {
           xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
           xPos = function (d) { return scale(d.id) + xDiff; };
     lines
-      .call(attrize, this._gridConfig)
+      .call(attrize$1, this._gridConfig)
       .attr((x + "1"), xPos)
       .attr((x + "2"), xPos)
       .attr((y + "1"), position)
@@ -12807,12 +12905,15 @@ var Axis = (function (BaseClass) {
     var tickScale = scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 45 : 75]);
 
     var ticks = this._ticks
-               ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
+              ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
+              : this._d3Scale.ticks
+              ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+              : this._domain;
+
+    var labels = this._labels
+               ? this._scale === "time" ? this._labels.map(date$2) : this._labels
                : this._d3Scale.ticks
                ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
-               : this._domain;
-    var labels = this._ticks && !this._labels ? ticks : this._labels
-               ? this._scale === "time" ? this._labels.map(date$2) : this._labels
                : ticks;
 
     var tickFormat = this._d3Scale.tickFormat
@@ -12911,10 +13012,10 @@ var Axis = (function (BaseClass) {
                          : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
                          : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
 
-    var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
+    var group = elem$1(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
     this._group = group;
 
-    var grid = elem("g.grid", {parent: group}).selectAll("line")
+    var grid = elem$1("g.grid", {parent: group}).selectAll("line")
       .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
 
     grid.exit().transition(t)
@@ -12964,7 +13065,7 @@ var Axis = (function (BaseClass) {
     new d3plus[this._shape]()
       .data(tickData)
       .duration(this._duration)
-      .select(elem("g.ticks", {parent: group}).node())
+      .select(elem$1("g.ticks", {parent: group}).node())
       .config(this._shapeConfig)
       .render();
 
@@ -12983,7 +13084,7 @@ var Axis = (function (BaseClass) {
       .duration(this._duration)
       .height(this._outerBounds.height)
       .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
-      .select(elem("g.d3plus-Axis-title", {parent: group}).node())
+      .select(elem$1("g.d3plus-Axis-title", {parent: group}).node())
       .text(function (d) { return d.text; })
       .textAnchor("middle")
       .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
@@ -13083,7 +13184,7 @@ var Axis = (function (BaseClass) {
   };
 
   return Axis;
-}(BaseClass));
+}(BaseClass$1));
 
 /**
     @class AxisBottom
@@ -13156,6 +13257,212 @@ var AxisTop = (function (Axis) {
 
   return AxisTop;
 }(Axis));
+
+/**
+    @function accessor
+    @desc Wraps an object key in a simple accessor function.
+    @param {String} key The key to be returned from each Object passed to the function.
+    @param {*} [def] A default value to be returned if the key is not present.
+    @example <caption>this</caption>
+accessor("id");
+    @example <caption>returns this</caption>
+function(d) {
+  return d["id"];
+}
+*/
+function accessor$2(key, def) {
+  if (def === void 0) return function (d) { return d[key]; };
+  return function (d) { return d[key] === void 0 ? def : d[key]; };
+}
+
+/**
+    @function attrize
+    @desc Applies each key/value in an object as an attr.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} attrs An object of key/value attr pairs.
+*/
+function attrize$2(e, a) {
+  if ( a === void 0 ) a = {};
+
+  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
+}
+
+/**
+    @class BaseClass
+    @desc An abstract class that contains some global methods and functionality.
+*/
+var BaseClass$2 = function BaseClass() {
+
+  function s() {
+    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  }
+
+  this._uuid = "" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s());
+};
+
+/**
+    @memberof BaseClass
+    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
+    @param {Object} [*value*]
+*/
+BaseClass$2.prototype.config = function config (_) {
+    var this$1 = this;
+
+  if (arguments.length) {
+    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+    return this;
+  }
+  else {
+    var config = {};
+    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    return config;
+  }
+};
+
+/**
+    @function constant
+    @desc Wraps non-function variables in a simple return function.
+    @param {Array|Number|Object|String} value The value to be returned from the function.
+    @example <caption>this</caption>
+constant(42);
+    @example <caption>returns this</caption>
+function() {
+  return 42;
+}
+*/
+function constant$8(value) {
+  return function constant() {
+    return value;
+  };
+}
+
+/**
+    @function elem
+    @desc Manages the enter/update/exit pattern for a single DOM element.
+    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
+    @param {Object} params Additional parameters.
+    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
+    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
+    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
+    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
+    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
+    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
+*/
+function elem$2(selector, p) {
+
+  // overrides default params
+  p = Object.assign({}, {
+    condition: true,
+    enter: {},
+    exit: {},
+    parent: select("body"),
+    transition: transition().duration(0),
+    update: {}
+  }, p);
+
+  var className = (/\.([^#]+)/g).exec(selector),
+        id = (/#([^\.]+)/g).exec(selector),
+        tag = (/^([^.^#]+)/g).exec(selector)[1];
+
+  var elem = p.parent.selectAll(selector).data(p.condition ? [null] : []);
+
+  var enter = elem.enter().append(tag).call(attrize$2, p.enter);
+
+  if (id) enter.attr("id", id[1]);
+  if (className) enter.attr("class", className[1]);
+
+  elem.exit().transition(p.transition).call(attrize$2, p.exit).remove();
+
+  var update = enter.merge(elem);
+  update.transition(p.transition).call(attrize$2, p.update);
+
+  return update;
+
+}
+
+var array$7 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
+var enUS$2 = {
+	array: array$7
+};
+
+var array$8 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
+var esES$2 = {
+	array: array$8
+};
+
+i18next.init({
+  fallbackLng: "en-US",
+  initImmediate: false,
+  resources: {
+    "en-US": {translation: enUS$2},
+    "es-ES": {translation: esES$2}
+  }
+});
+
+/**
+    @function merge
+    @desc Combines an Array of Objects together and returns a new Object.
+    @param {Array} objects The Array of objects to be merged together.
+    @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
+    @example <caption>this</caption>
+merge([
+  {id: "foo", group: "A", value: 10, links: [1, 2]},
+  {id: "bar", group: "A", value: 20, links: [1, 3]}
+]);
+    @example <caption>returns this</caption>
+{id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
+*/
+function combine(objects, aggs) {
+  if ( aggs === void 0 ) aggs = {};
+
+
+  var availableKeys = new Set(merge$1(objects.map(function (o) { return keys(o); }))),
+        newObject = {};
+
+  availableKeys.forEach(function (k) {
+    var values = objects.map(function (o) { return o[k]; });
+    var value;
+    if (aggs[k]) value = aggs[k](values);
+    else {
+      var types = values.map(function (v) { return v ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
+      if (!types.length) value = undefined;
+      else if (types.indexOf(Array) >= 0) {
+        value = merge$1(values.map(function (v) { return v.constructor === Array ? v : [v]; }));
+        value = Array.from(new Set(value));
+        if (value.length === 1) value = value[0];
+      }
+      else if (types.indexOf(String) >= 0) {
+        value = Array.from(new Set(values));
+        if (value.length === 1) value = value[0];
+      }
+      else if (types.indexOf(Number) >= 0) value = sum(values);
+      else {
+        value = Array.from(new Set(values.filter(function (v) { return v !== void 0; })));
+        if (value.length === 1) value = value[0];
+      }
+    }
+    newObject[k] = value;
+  });
+
+  return newObject;
+
+}
+
+var val$2 = undefined;
+
+/**
+    @function prefix
+    @desc Returns the appropriate CSS vendor prefix, given the current browser.
+*/
+function prefix$3() {
+  if (val$2 !== void 0) return val$2;
+  if ("-webkit-transform" in document.body.style) val$2 = "-webkit-";
+  else if ("-moz-transform" in document.body.style) val$2 = "-moz-";
+  else if ("-ms-transform" in document.body.style) val$2 = "-ms-";
+  else if ("-o-transform" in document.body.style) val$2 = "-o-";
+  else val$2 = "";
+  return val$2;
+}
 
 /**
     @class Legend
@@ -13660,7 +13967,7 @@ function yesdrag(view, noclick) {
   }
 }
 
-function constant$8(x) {
+function constant$10(x) {
   return function() {
     return x;
   };
@@ -14179,11 +14486,11 @@ function brush$1(dim) {
   }
 
   brush.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$8([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$10([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
   };
 
   brush.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$8(!!_), brush) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$10(!!_), brush) : filter;
   };
 
   brush.handleSize = function(_) {
@@ -14199,6 +14506,91 @@ function brush$1(dim) {
 }
 
 /**
+    @function attrize
+    @desc Applies each key/value in an object as an attr.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} attrs An object of key/value attr pairs.
+*/
+function attrize$3(e, a) {
+  if ( a === void 0 ) a = {};
+
+  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
+}
+
+/**
+    @function closest
+    @desc Finds the closest numeric value in an array.
+    @param {Number} n The number value to use when searching the array.
+    @param {Array} arr The array of values to test against.
+*/
+function closest$3(n, arr) {
+  return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
+}
+
+/**
+    @function elem
+    @desc Manages the enter/update/exit pattern for a single DOM element.
+    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
+    @param {Object} params Additional parameters.
+    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
+    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
+    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
+    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
+    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
+    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
+*/
+function elem$3(selector, p) {
+
+  // overrides default params
+  p = Object.assign({}, {
+    condition: true,
+    enter: {},
+    exit: {},
+    parent: select("body"),
+    transition: transition().duration(0),
+    update: {}
+  }, p);
+
+  var className = (/\.([^#]+)/g).exec(selector),
+        id = (/#([^\.]+)/g).exec(selector),
+        tag = (/^([^.^#]+)/g).exec(selector)[1];
+
+  var elem = p.parent.selectAll(selector).data(p.condition ? [null] : []);
+
+  var enter = elem.enter().append(tag).call(attrize$3, p.enter);
+
+  if (id) enter.attr("id", id[1]);
+  if (className) enter.attr("class", className[1]);
+
+  elem.exit().transition(p.transition).call(attrize$3, p.exit).remove();
+
+  var update = enter.merge(elem);
+  update.transition(p.transition).call(attrize$3, p.update);
+
+  return update;
+
+}
+
+var array$9 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
+var enUS$3 = {
+	array: array$9
+};
+
+var array$10 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
+var esES$3 = {
+	array: array$10
+};
+
+i18next.init({
+  fallbackLng: "en-US",
+  initImmediate: false,
+  resources: {
+    "en-US": {translation: enUS$3},
+    "es-ES": {translation: esES$3}
+  }
+});
+
+/**
     @class Timeline
     @extends Axis
 */
@@ -14206,11 +14598,13 @@ var Timeline = (function (Axis) {
   function Timeline() {
     var this$1 = this;
 
+
     Axis.call(this);
-    this._domain = [2000, 2010];
+
+    this._domain = [2001, 2010];
     this._gridSize = 0;
     this._handleConfig = {
-      fill: "red"
+      fill: "#444"
     };
     this._handleSize = 6;
     this._height = 100;
@@ -14226,13 +14620,18 @@ var Timeline = (function (Axis) {
       }},
       width: function (d) { return this$1._domain.map(function (t) { return date$2(t).getTime(); }).includes(d.id) ? 2 : 1; }
     });
-    this._tickShape = "circle";
+
   }
 
   if ( Axis ) Timeline.__proto__ = Axis;
   Timeline.prototype = Object.create( Axis && Axis.prototype );
   Timeline.prototype.constructor = Timeline;
 
+  /**
+      @memberof Timeline
+      @desc Triggered when mouse events changing the timeline have ended.
+      @private
+  */
   Timeline.prototype._brushEnd = function _brushEnd () {
 
     if (!event.sourceEvent) return; // Only transition after input.
@@ -14243,8 +14642,8 @@ var Timeline = (function (Axis) {
                  .map(Number);
 
     var ticks = this._visibleTicks.map(Number);
-    domain[0] = date$2(closest(domain[0], ticks));
-    domain[1] = date$2(closest(domain[1], ticks));
+    domain[0] = date$2(closest$3(domain[0], ticks));
+    domain[1] = date$2(closest$3(domain[1], ticks));
     var pixelDomain = domain.map(this._d3Scale),
           single = pixelDomain[0] === pixelDomain[1];
     if (single) {
@@ -14298,11 +14697,11 @@ var Timeline = (function (Axis) {
       selection[1]++;
     }
 
-    var brushGroup = this._brushGroup = elem("g.brushGroup", {parent: this._group});
+    var brushGroup = this._brushGroup = elem$3("g.brushGroup", {parent: this._group});
     brushGroup.call(brush).transition(this._transition)
       .call(brush.move, selection);
     brushGroup.selectAll(".handle").transition(this._transition)
-      .call(attrize, this._handleConfig);
+      .call(attrize$3, this._handleConfig);
 
     return this;
 
@@ -14357,16 +14756,16 @@ var Timeline = (function (Axis) {
   return Timeline;
 }(Axis));
 
-var val$1 = undefined;
+var val$4 = undefined;
 
-function prefix$2() {
-  if (val$1 !== void 0) return val$1;
-  if ("-webkit-transform" in document.body.style) val$1 = "-webkit-";
-  else if ("-moz-transform" in document.body.style) val$1 = "-moz-";
-  else if ("-ms-transform" in document.body.style) val$1 = "-ms-";
-  else if ("-o-transform" in document.body.style) val$1 = "-o-";
-  else val$1 = "";
-  return val$1;
+function prefix$5() {
+  if (val$4 !== void 0) return val$4;
+  if ("-webkit-transform" in document.body.style) val$4 = "-webkit-";
+  else if ("-moz-transform" in document.body.style) val$4 = "-moz-";
+  else if ("-ms-transform" in document.body.style) val$4 = "-ms-";
+  else if ("-o-transform" in document.body.style) val$4 = "-o-";
+  else val$4 = "";
+  return val$4;
 }
 
 var d3 = {
@@ -14434,7 +14833,7 @@ function tooltip(data) {
     else return d;
   }
 
-  var pre = prefix$2();
+  var pre = prefix$5();
 
   var background = constant$1("rgba(255, 255, 255, 0.75)"),
       body = accessor("body", ""),
@@ -14874,7 +15273,7 @@ function colorNest(raw, fill, groupBy) {
     var loop = function ( i ) {
       var ids = colors.map(function (c) { return Array.from(new Set(c.values.map(function (d) { return groupBy[i](d); }))); }),
             total = sum(ids, function (d) { return d.length; }),
-            uniques = new Set(merge(ids)).size;
+            uniques = new Set(merge$1(ids)).size;
       if (total === numColors && uniques === numColors || i === groupBy.length - 1) {
         id = groupBy[i];
         data = nest().key(id).entries(raw).map(function (d) { return combine(d.values); });
@@ -14962,7 +15361,7 @@ var Viz = (function (BaseClass) {
     this._data = [];
     this._duration = 600;
     this._history = [];
-    this._groupBy = [accessor("id")];
+    this._groupBy = [accessor$2("id")];
     this._legend = true;
     this._legendConfig = {
       shapeConfig: {
@@ -15029,9 +15428,9 @@ var Viz = (function (BaseClass) {
     this._shapes = [];
     this._shapeConfig = {
       fill: function (d, i) { return assign(this$1._id(d, i)); },
-      opacity: constant$1(1),
+      opacity: constant$8(1),
       stroke: function (d, i) { return color(assign(this$1._id(d, i))).darker(); },
-      strokeWidth: constant$1(0)
+      strokeWidth: constant$8(0)
     };
     this._timeline = {};
     this._timelineClass = new Timeline();
@@ -15053,7 +15452,7 @@ var Viz = (function (BaseClass) {
   Viz.prototype._uiGroup = function _uiGroup (type, condition) {
     if ( condition === void 0 ) condition = true;
 
-    return elem(("g.d3plus-plot-" + type), {
+    return elem$2(("g.d3plus-plot-" + type), {
       condition: condition,
       enter: {transform: ("translate(0, " + (this._height / 2) + ")")},
       exit: {opacity: 0},
@@ -15128,13 +15527,14 @@ var Viz = (function (BaseClass) {
       dataNest.entries(this._filter ? data.filter(this._filter) : data);
     }
 
-    // Renders the timeline if this._time and this._timeline is not falsy.
-    var timelineGroup = this._uiGroup("timeline", this._time && this._timeline);
-    if (this._time && this._timeline) {
+    // Renders the timeline if this._time and this._timeline are not falsy and there are more than 1 tick available.
+    var timelinePossible = this._time && this._timeline;
+    var ticks = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$2) : [];
+    timelinePossible = timelinePossible && ticks.length > 1;
+    var timelineGroup = this._uiGroup("timeline", timelinePossible);
+    if (timelinePossible) {
 
-      var ticks = Array.from(new Set(this._data.map(this._time))).map(date$2);
-
-      var selection = extent(Array.from(new Set(merge(this._filteredData.map(function (d) {
+      var selection = extent(Array.from(new Set(merge$1(this._filteredData.map(function (d) {
         var t = this$1._time(d);
         return t instanceof Array ? t : [t];
       })))).map(date$2));
@@ -15146,8 +15546,12 @@ var Viz = (function (BaseClass) {
         .duration(this._duration)
         .height(this._height / 2 - this._margin.bottom)
         .on("end", function (s) {
-          if (!(s instanceof Array)) s = [s];
-          this$1.timeFilter(function (d) { return s.map(Number).includes(date$2(this$1._time(d)).getTime()); }).render();
+          if (!(s instanceof Array)) s = [s, s];
+          s = s.map(Number);
+          this$1.timeFilter(function (d) {
+            var ms = date$2(this$1._time(d)).getTime();
+            return ms >= s[0] && ms <= s[1];
+          }).render();
         })
         .select(timelineGroup.node())
         .selection(selection)
@@ -15189,7 +15593,7 @@ var Viz = (function (BaseClass) {
 
     }
 
-    var titleGroup = elem("g.d3plus-plot-titles", {parent: this._select});
+    var titleGroup = elem$2("g.d3plus-plot-titles", {parent: this._select});
 
     this._backClass
       .data(this._history.length ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
@@ -15272,7 +15676,7 @@ function value(d) {
   Viz.prototype.groupBy = function groupBy (_) {
     if (!arguments.length) return this._groupBy;
     if (!(_ instanceof Array)) _ = [_];
-    return this._groupBy = _.map(function (k) { return typeof k === "function" ? k : accessor(k); }), this;
+    return this._groupBy = _.map(function (k) { return typeof k === "function" ? k : accessor$2(k); }), this;
   };
 
   /**
@@ -15292,7 +15696,7 @@ function value(d) {
   Viz.prototype.highlight = function highlight (_) {
     var ids = _ ? Array.from(new Set(this._data.filter(_).map(this._id))).map(strip) : [];
     this._select.selectAll(".d3plus-Shape")
-      .style(((prefix$1()) + "transition"), ("opacity " + (this._tooltipClass.duration() / 1000) + "s"))
+      .style(((prefix$3()) + "transition"), ("opacity " + (this._tooltipClass.duration() / 1000) + "s"))
       .style("opacity", function() {
         var id = this.className.baseVal.split(" ").filter(function (c) { return c.indexOf("d3plus-id-") === 0; })[0].slice(10);
         return ids.length === 0 || ids.includes(id) ? 1 : 0.25;
@@ -15306,7 +15710,7 @@ function value(d) {
       @param {Function|String} [*value*]
   */
   Viz.prototype.label = function label (_) {
-    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$1(_), this) : this._label;
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$8(_), this) : this._label;
   };
 
   /**
@@ -15360,7 +15764,7 @@ new Plot
       @param {Function|String} [*value*]
   */
   Viz.prototype.shape = function shape (_) {
-    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$1(_), this) : this._shape;
+    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$8(_), this) : this._shape;
   };
 
   /**
@@ -15384,7 +15788,7 @@ new Plot
         this._timeKey = undefined;
       }
       else {
-        this._time = accessor(_);
+        this._time = accessor$2(_);
         this._timeKey = _;
       }
       return this;
@@ -15429,7 +15833,7 @@ new Plot
   };
 
   return Viz;
-}(BaseClass));
+}(BaseClass$2));
 
 /**
     @class Treemap
@@ -15488,7 +15892,7 @@ var Treemap = (function (Viz) {
         if (node.depth <= that._drawDepth) extractLayout(node.children);
         else {
           node.id = node.data.key;
-          node.data = combine(node.data.values);
+          node.data = merge(node.data.values);
           shapeData.push(node);
         }
       }
@@ -15563,7 +15967,7 @@ function comparator(a, b) {
 
   /**
       @memberof Treemap
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current sum accessor.
+      @desc If *value* is specified, sets the sum accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current sum accessor.
       @param {Function|Number} [*value*]
       @example
 function sum(d) {

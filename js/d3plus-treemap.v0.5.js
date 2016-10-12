@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.11
+  d3plus-treemap v0.5.12
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -142,7 +142,7 @@ function comparator(a, b) {
 
   /**
       @memberof Treemap
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current sum accessor.
+      @desc If *value* is specified, sets the sum accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current sum accessor.
       @param {Function|Number} [*value*]
       @example
 function sum(d) {
