@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.4
+  d3plus-plot v0.3.5
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -134,6 +134,8 @@ var Plot = (function (Viz$$1) {
         width: d3plusCommon.constant(10)
       }
     });
+    this._stackOffset = d3Shape.stackOffsetNone;
+    this._stackOrder = d3Shape.stackOrderNone;
     this._x = d3plusCommon.accessor("x");
     this._xAxis = new d3plusAxis.AxisBottom().align("end");
     this._xTest = new d3plusAxis.AxisBottom().align("end").gridSize(0);
@@ -164,14 +166,15 @@ var Plot = (function (Viz$$1) {
     Viz$$1.prototype.render.call(this, callback);
 
     var data = this._filteredData.map(function (d, i) { return ({
-            data: d,
-            i: i,
-            id: this$1._id(d, i),
-            shape: this$1._shape(d, i),
-            x: this$1._x(d, i),
-            y: this$1._y(d, i)
-          }); }),
-          height = this._height - this._margin.top - this._margin.bottom,
+      data: d,
+      i: i,
+      id: this$1._id(d, i),
+      shape: this$1._shape(d, i),
+      x: this$1._x(d, i),
+      y: this$1._y(d, i)
+    }); });
+
+    var height = this._height - this._margin.top - this._margin.bottom,
           opp = this._discrete ? this._discrete === "x" ? "y" : "x" : undefined,
           parent = this._select,
           that = this,
@@ -183,13 +186,41 @@ var Plot = (function (Viz$$1) {
     if (this._stacked) {
 
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
+
+      stackData = d3Collection.nest().key(function (d) { return d[this$1._discrete]; }).entries(data).map(function (d) { return d.values; });
+
+      stackData.forEach(function (g, i) {
+        var ids = Array.from(new Set(g.map(function (d) { return d.id; })));
+        if (ids.length < stackKeys.length) {
+          stackKeys.forEach(function (k) {
+            if (!ids.includes(k)) {
+              var d = data.filter(function (d) { return d.id === k; })[0];
+              if (d.shape === "Area") {
+                var fillerPoint = {
+                  data: d.data,
+                  id: k,
+                  shape: d.shape
+                };
+                fillerPoint[this$1._discrete] = g[0][this$1._discrete];
+                fillerPoint[opp] = 0;
+                stackData[i].push(fillerPoint);
+                data.push(fillerPoint);
+              }
+            }
+          });
+        }
+      });
+
+      data = data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
+
       stackData = d3Shape.stack()
         .keys(stackKeys)
+        .offset(this._stackOffset)
+        .order(this._stackOrder)
         .value(function (group, key) {
           var d = group.filter(function (g) { return g.id === key; });
           return d.length ? d[0][opp] : 0;
-        })
-        (d3Collection.nest().key(function (d) { return d[this$1._discrete]; }).entries(data).map(function (d) { return d.values; }));
+        })(stackData);
 
       domains = {};
       domains[this._discrete] = d3Array.extent(data, function (d) { return d[this$1._discrete]; });
@@ -323,7 +354,7 @@ var Plot = (function (Viz$$1) {
 
     if (this._stacked) {
       var scale = opp === "x" ? x : y;
-      positions[(opp + "0")] = function (d, i) {
+      positions[("" + opp)] = positions[(opp + "0")] = function (d, i) {
         var index = stackKeys.indexOf(d.id);
         return index >= 0 ? scale(stackData[index][i][0]) : scale(0);
       };
@@ -384,6 +415,24 @@ var Plot = (function (Viz$$1) {
   */
   Plot.prototype.stacked = function stacked (_) {
     return arguments.length ? (this._stacked = _, this) : this._stacked;
+  };
+
+  /**
+      @memberof Plot
+      @desc If *value* is specified, sets the stack offset and returns the current class instance. If *value* is not specified, returns the current stack offset function.
+      @param {Function|String} [*value* = "none"]
+  */
+  Plot.prototype.stackOffset = function stackOffset (_) {
+    return arguments.length ? (this._stackOffset = typeof _ === "function" ? _ : d3Shape[("stackOffset" + (_.charAt(0).toUpperCase() + _.slice(1)))], this) : this._stackOffset;
+  };
+
+  /**
+      @memberof Plot
+      @desc If *value* is specified, sets the stack order and returns the current class instance. If *value* is not specified, returns the current stack order function.
+      @param {Function|String} [*value* = "none"]
+  */
+  Plot.prototype.stackOrder = function stackOrder (_) {
+    return arguments.length ? (this._stackOrder = typeof _ === "function" ? _ : d3Shape[("stackOrder" + (_.charAt(0).toUpperCase() + _.slice(1)))], this) : this._stackOrder;
   };
 
   /**
