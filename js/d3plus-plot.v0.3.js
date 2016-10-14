@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.3
+  d3plus-plot v0.3.4
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -185,7 +185,10 @@ var Plot = (function (Viz$$1) {
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
       stackData = d3Shape.stack()
         .keys(stackKeys)
-        .value(function (group, key) { return group.filter(function (d) { return d.id === key; })[0][opp]; })
+        .value(function (group, key) {
+          var d = group.filter(function (g) { return g.id === key; });
+          return d.length ? d[0][opp] : 0;
+        })
         (d3Collection.nest().key(function (d) { return d[this$1._discrete]; }).entries(data).map(function (d) { return d.values; }));
 
       domains = {};
@@ -292,7 +295,7 @@ var Plot = (function (Viz$$1) {
     var shapeConfig = {
       duration: this._duration,
       label: function (d) { return this$1._drawLabel(d.data, d.i); },
-      select: d3plusCommon.elem("g.d3plus-plot-shapes", {parent: parent, transition: transition}).node(),
+      select: d3plusCommon.elem("g.d3plus-plot-shapes", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node(),
       x: function (d) { return x(d.x); },
       y: function (d) { return y(d.y); }
     };
@@ -319,8 +322,15 @@ var Plot = (function (Viz$$1) {
     };
 
     if (this._stacked) {
-      positions[(opp + "0")] = function (d, i) { return (opp === "x" ? x : y)(stackData[stackKeys.indexOf(d.id)][i][0]); };
-      positions[(opp + "1")] = function (d, i) { return (opp === "x" ? x : y)(stackData[stackKeys.indexOf(d.id)][i][1]); };
+      var scale = opp === "x" ? x : y;
+      positions[(opp + "0")] = function (d, i) {
+        var index = stackKeys.indexOf(d.id);
+        return index >= 0 ? scale(stackData[index][i][0]) : scale(0);
+      };
+      positions[(opp + "1")] = function (d, i) {
+        var index = stackKeys.indexOf(d.id);
+        return index >= 0 ? scale(stackData[index][i][1]) : scale(0);
+      };
     }
 
     shapeConfig = Object.assign(shapeConfig, positions);
@@ -382,7 +392,20 @@ var Plot = (function (Viz$$1) {
       @param {Function|Number} [*value*]
   */
   Plot.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x;
+    if (arguments.length) {
+      if (typeof _ === "function") this._x = _;
+      else {
+        this._x = d3plusCommon.accessor(_);
+        if (!this._aggs[_] && this._discrete === "x") {
+          this._aggs[_] = function (a) {
+            var v = Array.from(new Set(a));
+            return v.length === 1 ? v[0] : v;
+          };
+        }
+      }
+      return this;
+    }
+    else return this._x;
   };
 
   /**
@@ -409,7 +432,20 @@ var Plot = (function (Viz$$1) {
       @param {Function|Number} [*value*]
   */
   Plot.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
+    if (arguments.length) {
+      if (typeof _ === "function") this._y = _;
+      else {
+        this._y = d3plusCommon.accessor(_);
+        if (!this._aggs[_] && this._discrete === "y") {
+          this._aggs[_] = function (a) {
+            var v = Array.from(new Set(a));
+            return v.length === 1 ? v[0] : v;
+          };
+        }
+      }
+      return this;
+    }
+    else return this._y;
   };
 
   /**
@@ -450,6 +486,7 @@ var AreaPlot = (function (Plot$$1) {
     this._baseline = 0;
     this._discrete = "x";
     this._shape = d3plusCommon.constant("Area");
+    this.x("x");
 
   }
 
@@ -475,6 +512,7 @@ var LinePlot = (function (Plot$$1) {
     Plot$$1.call(this);
     this._discrete = "x";
     this._shape = d3plusCommon.constant("Line");
+    this.x("x");
 
   }
 
