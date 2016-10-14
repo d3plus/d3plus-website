@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.15
+  d3plus-shape v0.8.16
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -691,6 +691,7 @@ var Area = (function (Shape) {
     Shape.call(this);
 
     this._curve = "linear";
+    this._defined = function () { return true; };
     this._x = d3plusCommon.accessor("x");
     this._x0 = d3plusCommon.accessor("x");
     this._x1 = null;
@@ -716,7 +717,7 @@ var Area = (function (Shape) {
     Shape.prototype.render.call(this, callback);
 
     var path = this._path = paths.area()
-      .defined(function (d) { return d; })
+      .defined(this._defined)
       .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
       .x(this._x)
       .x0(this._x0)
@@ -815,11 +816,20 @@ var Area = (function (Shape) {
 
   /**
       @memberof Area
-      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve. The number returned should correspond to the horizontal center of the rectangle.
+      @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
       @param {String} [*value* = "linear"]
   */
   Area.prototype.curve = function curve (_) {
     return arguments.length ? (this._curve = _, this) : this._curve;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+      @param {Function} [*value*]
+  */
+  Area.prototype.defined = function defined (_) {
+    return arguments.length ? (this._defined = _, this) : this._defined;
   };
 
   /**
@@ -1089,8 +1099,9 @@ var Line = (function (Shape) {
   function Line() {
     Shape.call(this);
     this._curve = "linear";
+    this._defined = function (d) { return d; };
     this._fill = d3plusCommon.constant("none");
-    this._path = paths.line().defined(function (d) { return d; });
+    this._path = paths.line();
     this._strokeWidth = d3plusCommon.constant(1);
     this._x = d3plusCommon.accessor("x");
     this._y = d3plusCommon.accessor("y");
@@ -1128,6 +1139,7 @@ var Line = (function (Shape) {
 
     this._path
       .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .defined(this._defined)
       .x(this._x)
       .y(this._y);
 
@@ -1187,11 +1199,20 @@ var Line = (function (Shape) {
 
   /**
       @memberof Line
-      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve. The number returned should correspond to the horizontal center of the rectangle.
+      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
       @param {String} [*value* = "linear"]
   */
   Line.prototype.curve = function curve (_) {
     return arguments.length ? (this._curve = _, this) : this._curve;
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+      @param {Function} [*value*]
+  */
+  Line.prototype.defined = function defined (_) {
+    return arguments.length ? (this._defined = _, this) : this._defined;
   };
 
   /**
