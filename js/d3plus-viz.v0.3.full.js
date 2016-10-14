@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.3.1
+  d3plus-viz v0.3.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -19025,13 +19025,19 @@ var Viz = (function (BaseClass$$1) {
       return l;
     };
 
+    this._legendData = [];
     this._filteredData = [];
     if (this._data.length) {
-      var dataNest = nest$1().rollup(function (leaves) { return this$1._filteredData.push(combine(leaves, this$1._aggs)); });
-      for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
-      if (this._discrete) dataNest.key(this[("_" + (this._discrete))]);
+
       var data = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
-      dataNest.entries(this._filter ? data.filter(this._filter) : data);
+      if (this._filter) data = data.filter(this._filter);
+
+      var dataNest = nest$1();
+      for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
+      dataNest.rollup(function (leaves) { return this$1._legendData.push(combine(leaves, this$1._aggs)); }).entries(data);
+      if (this._discrete && ("_" + (this._discrete)) in this) dataNest.key(this[("_" + (this._discrete))]);
+      dataNest.rollup(function (leaves) { return this$1._filteredData.push(combine(leaves, this$1._aggs)); }).entries(data);
+
     }
 
     // Renders the timeline if this._time and this._timeline are not falsy and there are more than 1 tick available.
@@ -19073,7 +19079,7 @@ var Viz = (function (BaseClass$$1) {
     var legendGroup = this._uiGroup("legend", this._legend);
     if (this._legend) {
 
-      var legend = colorNest(this._filteredData, this._shapeConfig.fill, this._groupBy);
+      var legend = colorNest(this._legendData, this._shapeConfig.fill, this._groupBy);
 
       this._legendClass
         .id(function (d, i) { return legend.id(d, i); })
