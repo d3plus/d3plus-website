@@ -21,6 +21,7 @@ var bottom = new d3plus.AxisBottom()
   .tickFormat(function(ms) {
     return new Date(ms).getFullYear();
   })
+  .scale("time")
   .width(600)
   .height(300)
   .render();
