@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.16
+  d3plus-shape v0.8.17
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -10608,6 +10608,7 @@ Shape.prototype._applyEvents = function _applyEvents (update) {
   var events = Object.keys(this._on);
   var loop = function ( e ) {
     handler.on(events[e], function(d, i) {
+      if (!that._on[events[e]]) return;
       var hit = this.className.baseVal === "hitArea";
       var t = hit ? this.parentNode : this;
       that._on[events[e]].bind(t)(d, hit ? that._data.indexOf(d) : i);
