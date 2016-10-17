@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.13
+  d3plus-treemap v0.5.14
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -15,10 +15,10 @@
     @extends Viz
     @desc Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout) to creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
 */
-var Treemap = (function (Viz) {
+var Treemap = (function (Viz$$1) {
   function Treemap() {
 
-    Viz.call(this);
+    Viz$$1.call(this);
 
     this._padding = 1;
     this._shapeConfig = Object.assign({}, this._shapeConfig, {
@@ -31,8 +31,8 @@ var Treemap = (function (Viz) {
 
   }
 
-  if ( Viz ) Treemap.__proto__ = Viz;
-  Treemap.prototype = Object.create( Viz && Viz.prototype );
+  if ( Viz$$1 ) Treemap.__proto__ = Viz$$1;
+  Treemap.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
   Treemap.prototype.constructor = Treemap;
 
   /**
@@ -43,7 +43,7 @@ var Treemap = (function (Viz) {
     var this$1 = this;
 
 
-    Viz.prototype.render.call(this, callback);
+    Viz$$1.prototype.render.call(this, callback);
 
     var nestedData = d3Collection.nest();
     for (var i = 0; i <= this._drawDepth; i++) nestedData.key(this$1._groupBy[i]);
@@ -90,7 +90,7 @@ var Treemap = (function (Viz) {
       .config({on: Object.keys(this._on)
         .filter(function (e) { return !e.includes(".") || e.includes(".shape"); })
         .reduce(function (obj, e) {
-          obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
+          obj[e] = function (d, i) { return this$1._on[e] ? this$1._on[e](d.data, i) : null; };
           return obj;
         }, {})})
       .data(shapeData)
