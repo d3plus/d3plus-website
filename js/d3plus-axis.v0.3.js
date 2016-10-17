@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.9
+  d3plus-axis v0.3.10
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -379,7 +379,7 @@ var Axis = (function (BaseClass$$1) {
                ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
                : ticks;
 
-    var tickFormat = this._d3Scale.tickFormat
+    var tickFormat = this._tickFormat ? this._tickFormat : this._d3Scale.tickFormat
                      ? this._d3Scale.tickFormat(labels.length - 1)
                      : function (d) { return d; };
 
@@ -629,6 +629,15 @@ var Axis = (function (BaseClass$$1) {
   */
   Axis.prototype.shapeConfig = function shapeConfig (_) {
     return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the tick formatter and returns the current class instance. If *value* is not specified, returns the current tick formatter, which by default is retrieved from the [d3-scale](https://github.com/d3/d3-scale#continuous_tickFormat).
+      @param {Function} [*value*]
+  */
+  Axis.prototype.tickFormat = function tickFormat (_) {
+    return arguments.length ? (this._tickFormat = _, this) : this._tickFormat;
   };
 
   /**
