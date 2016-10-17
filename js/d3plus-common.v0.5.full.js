@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.5.22
+  d3plus-common v0.5.23
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -40,16 +40,23 @@ var attrize = function(e, a) {
 };
 
 /**
+    @function s
+    @desc Returns 4 random characters, used for constructing unique identifiers.
+    @private
+*/
+function s() {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+
+/**
     @class BaseClass
     @desc An abstract class that contains some global methods and functionality.
 */
 var BaseClass = function BaseClass() {
-
-  function s() {
-    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-  }
-
+  this._on = {};
   this._uuid = "" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s());
+
 };
 
 /**
@@ -69,6 +76,24 @@ BaseClass.prototype.config = function config (_) {
     for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
     return config;
   }
+};
+
+/**
+    @memberof BaseClass
+    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
+    @param {String} [*typenames*]
+    @param {Function} [*listener*]
+    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
+new Plot
+.on("click.Shape", function(d) {
+  console.log("data for shape clicked:", d);
+})
+.on("click.Legend", function(d) {
+  console.log("data for legend clicked:", d);
+})
+*/
+BaseClass.prototype.on = function on (_, f) {
+  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
 };
 
 /**
