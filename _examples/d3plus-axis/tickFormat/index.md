@@ -1,5 +1,5 @@
 ---
-title: Setting Custom Ticks
+title: Tick Label Formatting
 width: 600
 height: 300
 ---
@@ -7,9 +7,9 @@ height: 300
 [width]: 600
 [height]: 300
 
-# Setting Custom Ticks
+# Tick Label Formatting
 
-The default tick formatter can be overridden by passing a function to the [.tickFormat( )](https://github.com/d3plus/d3plus-axis#Axis.tickFormat) method. The function is passed the numeric value of each label (which in the case of dates is the number of milliseconds since midnight on January 1, 1970).
+The default label format can be overridden by passing a function to the [.tickFormat( )](https://github.com/d3plus/d3plus-axis#Axis.tickFormat) method. The function is passed the numeric value of each label (which in the case of dates is the number of milliseconds since midnight on January 1, 1970).
 
 ```js
 var dateRange = ["06/30/2015", "08/31/2016"];
