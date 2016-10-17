@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.5
+  d3plus-plot v0.3.6
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -284,7 +284,8 @@ var Plot = (function (Viz$$1) {
       .config(this._yConfig)
       .render();
 
-    var xOffset = this._yTest.outerBounds().width + this._yTest.padding();
+    var yBounds = this._yTest.outerBounds();
+    var xOffset = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
 
     this._xTest
       .domain(xDomain)
@@ -371,6 +372,7 @@ var Plot = (function (Viz$$1) {
         @private
     */
     function mouseEvent(d) {
+      if (!this) return false;
       if (d.nested && d.values) {
         var axis = that._discrete,
               cursor = d3Selection.mouse(that._select.node())[axis === "x" ? 0 : 1],
