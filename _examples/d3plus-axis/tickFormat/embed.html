@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-axis.v0.3.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var dateRange = ["06/30/2015", "08/31/2016"];
+  
+  var bottom = new d3plus.AxisBottom()
+    .domain(dateRange)
+    .labels(dateRange)
+    .ticks(dateRange)
+    .tickFormat(function(ms) {
+      return new Date(ms).getFullYear();
+    })
+    .width(600)
+    .height(300)
+    .render();
+
+</script>
+
+</html>
