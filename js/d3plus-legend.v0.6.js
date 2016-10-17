@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.8
+  d3plus-legend v0.6.9
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -15,12 +15,12 @@
     @extends BaseClass
     @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
 */
-var Legend = (function (BaseClass) {
+var Legend = (function (BaseClass$$1) {
   function Legend() {
     var this$1 = this;
 
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     var s = new d3plus.Shape();
 
@@ -81,8 +81,8 @@ var Legend = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) Legend.__proto__ = BaseClass;
-  Legend.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) Legend.__proto__ = BaseClass$$1;
+  Legend.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Legend.prototype.constructor = Legend;
 
   Legend.prototype._rowHeight = function _rowHeight (row) {
