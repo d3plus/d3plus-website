@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.3.2
+  d3plus-viz v0.3.3
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -117,7 +117,8 @@ var Viz = (function (BaseClass$$1) {
       .on("click", function () {
         if (this$1._history.length) this$1.config(this$1._history.pop()).render();
         else this$1.depth(this$1._drawDepth - 1).filter(false).render();
-      });
+      })
+      .on("mousemove", function () { return this$1._backClass.select().style("cursor", "pointer"); });
     this._data = [];
     this._duration = 600;
     this._history = [];
@@ -340,7 +341,7 @@ var Viz = (function (BaseClass$$1) {
       this._legendClass
         .id(function (d, i) { return legend.id(d, i); })
         .duration(this._duration)
-        .data(legend.data)
+        .data(legend.data.length > 1 ? legend.data : [])
         .height(this._height / 2 - this._margin.bottom)
         .label(this._drawLabel)
         .select(legendGroup.node())
@@ -356,7 +357,8 @@ var Viz = (function (BaseClass$$1) {
         .config(this._legendConfig)
         .render();
 
-      this._margin.bottom += this._legendClass.outerBounds().height + this._legendClass.padding() * 2;
+      var legendBounds = this._legendClass.outerBounds();
+      if (legendBounds.height) this._margin.bottom += legendBounds.height + this._legendClass.padding() * 2;
 
     }
 
@@ -518,24 +520,6 @@ function value(d) {
   */
   Viz.prototype.legendConfig = function legendConfig (_) {
     return arguments.length ? (this._legendConfig = _, this) : this._legendConfig;
-  };
-
-  /**
-      @memberof Viz
-      @desc Adds or removes a *listener* to each shape for the specified event *typenames*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-      @param {String} [*typenames*]
-      @param {Function} [*listener*]
-      @example <caption>By default, listeners apply to both the shapes and the legend. Passing a namespace with the typename gives control over specific elements:</caption>
-new Plot
-  .on("click.shape", function(d) {
-    console.log("data for shape clicked:", d);
-  })
-  .on("click.legend", function(d) {
-    console.log("data for legend clicked:", d);
-  })
-  */
-  Viz.prototype.on = function on (typenames, listener) {
-    return arguments.length === 2 ? (this._on[typenames] = listener, this) : arguments.length ? this._on[typenames] : this._on;
   };
 
   /**
