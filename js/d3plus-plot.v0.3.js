@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.6
+  d3plus-plot v0.3.7
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -229,8 +229,8 @@ var Plot = (function (Viz$$1) {
     }
     else domains = {x: d3Array.extent(data, function (d) { return d.x; }), y: d3Array.extent(data, function (d) { return d.y; })};
 
-    var xTime = this._time && this._x(data[0], 0) === this._time(data[0], 0),
-          yTime = this._time && this._y(data[0], 0) === this._time(data[0], 0);
+    var xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
+          yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
 
     if (xTime || yTime) {
       data.forEach(function (d) {
