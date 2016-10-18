@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.10
+  d3plus-legend v0.6.11
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -275,202 +275,6 @@ var transpose = function(matrix) {
 function length(d) {
   return d.length;
 }
-
-var prefix = "$";
-
-function Map() {}
-
-Map.prototype = map$1.prototype = {
-  constructor: Map,
-  has: function(key) {
-    return (prefix + key) in this;
-  },
-  get: function(key) {
-    return this[prefix + key];
-  },
-  set: function(key, value) {
-    this[prefix + key] = value;
-    return this;
-  },
-  remove: function(key) {
-    var property = prefix + key;
-    return property in this && delete this[property];
-  },
-  clear: function() {
-    var this$1 = this;
-
-    for (var property in this) if (property[0] === prefix) delete this$1[property];
-  },
-  keys: function() {
-    var keys = [];
-    for (var property in this) if (property[0] === prefix) keys.push(property.slice(1));
-    return keys;
-  },
-  values: function() {
-    var this$1 = this;
-
-    var values = [];
-    for (var property in this) if (property[0] === prefix) values.push(this$1[property]);
-    return values;
-  },
-  entries: function() {
-    var this$1 = this;
-
-    var entries = [];
-    for (var property in this) if (property[0] === prefix) entries.push({key: property.slice(1), value: this$1[property]});
-    return entries;
-  },
-  size: function() {
-    var size = 0;
-    for (var property in this) if (property[0] === prefix) ++size;
-    return size;
-  },
-  empty: function() {
-    for (var property in this) if (property[0] === prefix) return false;
-    return true;
-  },
-  each: function(f) {
-    var this$1 = this;
-
-    for (var property in this) if (property[0] === prefix) f(this$1[property], property.slice(1), this$1);
-  }
-};
-
-function map$1(object, f) {
-  var map = new Map;
-
-  // Copy constructor.
-  if (object instanceof Map) object.each(function(value, key) { map.set(key, value); });
-
-  // Index array by numeric index or specified key function.
-  else if (Array.isArray(object)) {
-    var i = -1,
-        n = object.length,
-        o;
-
-    if (f == null) while (++i < n) map.set(i, object[i]);
-    else while (++i < n) map.set(f(o = object[i], i, object), o);
-  }
-
-  // Convert object to map.
-  else if (object) for (var key in object) map.set(key, object[key]);
-
-  return map;
-}
-
-var nest$1 = function() {
-  var keys = [],
-      sortKeys = [],
-      sortValues,
-      rollup,
-      nest;
-
-  function apply(array, depth, createResult, setResult) {
-    if (depth >= keys.length) return rollup != null
-        ? rollup(array) : (sortValues != null
-        ? array.sort(sortValues)
-        : array);
-
-    var i = -1,
-        n = array.length,
-        key = keys[depth++],
-        keyValue,
-        value,
-        valuesByKey = map$1(),
-        values,
-        result = createResult();
-
-    while (++i < n) {
-      if (values = valuesByKey.get(keyValue = key(value = array[i]) + "")) {
-        values.push(value);
-      } else {
-        valuesByKey.set(keyValue, [value]);
-      }
-    }
-
-    valuesByKey.each(function(values, key) {
-      setResult(result, key, apply(values, depth, createResult, setResult));
-    });
-
-    return result;
-  }
-
-  function entries(map, depth) {
-    if (++depth > keys.length) return map;
-    var array, sortKey = sortKeys[depth - 1];
-    if (rollup != null && depth >= keys.length) array = map.entries();
-    else array = [], map.each(function(v, k) { array.push({key: k, values: entries(v, depth)}); });
-    return sortKey != null ? array.sort(function(a, b) { return sortKey(a.key, b.key); }) : array;
-  }
-
-  return nest = {
-    object: function(array) { return apply(array, 0, createObject, setObject); },
-    map: function(array) { return apply(array, 0, createMap, setMap); },
-    entries: function(array) { return entries(apply(array, 0, createMap, setMap), 0); },
-    key: function(d) { keys.push(d); return nest; },
-    sortKeys: function(order) { sortKeys[keys.length - 1] = order; return nest; },
-    sortValues: function(order) { sortValues = order; return nest; },
-    rollup: function(f) { rollup = f; return nest; }
-  };
-};
-
-function createObject() {
-  return {};
-}
-
-function setObject(object, key, value) {
-  object[key] = value;
-}
-
-function createMap() {
-  return map$1();
-}
-
-function setMap(map, key, value) {
-  map.set(key, value);
-}
-
-function Set$1() {}
-
-var proto = map$1.prototype;
-
-Set$1.prototype = set.prototype = {
-  constructor: Set$1,
-  has: proto.has,
-  add: function(value) {
-    value += "";
-    this[prefix + value] = value;
-    return this;
-  },
-  remove: proto.remove,
-  clear: proto.clear,
-  values: proto.keys,
-  size: proto.size,
-  empty: proto.empty,
-  each: proto.each
-};
-
-function set(object, f) {
-  var set = new Set$1;
-
-  // Copy constructor.
-  if (object instanceof Set$1) object.each(function(value) { set.add(value); });
-
-  // Otherwise, assume it’s an array.
-  else if (object) {
-    var i = -1, n = object.length;
-    if (f == null) while (++i < n) set.add(object[i]);
-    else while (++i < n) set.add(f(object[i], i, object));
-  }
-
-  return set;
-}
-
-var keys = function(map) {
-  var keys = [];
-  for (var key in map) keys.push(key);
-  return keys;
-};
 
 var xhtml = "http://www.w3.org/1999/xhtml";
 
@@ -1508,8 +1312,8 @@ Dispatch.prototype = dispatch.prototype = {
     // Otherwise, if a null callback was specified, remove callbacks of the given name.
     if (callback != null && typeof callback !== "function") throw new Error("invalid callback: " + callback);
     while (++i < n) {
-      if (t = (typename = T[i]).type) _[t] = set$3(_[t], typename.name, callback);
-      else if (callback == null) for (t in _) _[t] = set$3(_[t], typename.name, null);
+      if (t = (typename = T[i]).type) _[t] = set$1(_[t], typename.name, callback);
+      else if (callback == null) for (t in _) _[t] = set$1(_[t], typename.name, null);
     }
 
     return this;
@@ -1540,7 +1344,7 @@ function get$1(type, name) {
   }
 }
 
-function set$3(type, name, callback) {
+function set$1(type, name, callback) {
   for (var i = 0, n = type.length; i < n; ++i) {
     if (type[i].name === name) {
       type[i] = noop, type = type.slice(0, i).concat(type.slice(i + 1));
@@ -1709,7 +1513,7 @@ function init$1(node, id) {
   return schedule;
 }
 
-function set$2(node, id) {
+function set(node, id) {
   var schedule = node.__transition;
   if (!schedule || !(schedule = schedule[id]) || schedule.state > STARTING) throw new Error("too late");
   return schedule;
@@ -2702,7 +2506,7 @@ var cubehelixLong = cubehelix$1(nogamma);
 function tweenRemove(id, name) {
   var tween0, tween1;
   return function() {
-    var schedule = set$2(this, id),
+    var schedule = set(this, id),
         tween = schedule.tween;
 
     // If this node shared tween with the previous node,
@@ -2727,7 +2531,7 @@ function tweenFunction(id, name, value) {
   var tween0, tween1;
   if (typeof value !== "function") throw new Error;
   return function() {
-    var schedule = set$2(this, id),
+    var schedule = set(this, id),
         tween = schedule.tween;
 
     // If this node shared tween with the previous node,
@@ -2770,7 +2574,7 @@ function tweenValue(transition, name, value) {
   var id = transition._id;
 
   transition.each(function() {
-    var schedule = set$2(this, id);
+    var schedule = set(this, id);
     (schedule.value || (schedule.value = {}))[name] = value.apply(this, arguments);
   });
 
@@ -2912,13 +2716,13 @@ var transition_delay = function(value) {
 
 function durationFunction(id, value) {
   return function() {
-    set$2(this, id).duration = +value.apply(this, arguments);
+    set(this, id).duration = +value.apply(this, arguments);
   };
 }
 
 function durationConstant(id, value) {
   return value = +value, function() {
-    set$2(this, id).duration = value;
+    set(this, id).duration = value;
   };
 }
 
@@ -2935,7 +2739,7 @@ var transition_duration = function(value) {
 function easeConstant(id, value) {
   if (typeof value !== "function") throw new Error;
   return function() {
-    set$2(this, id).ease = value;
+    set(this, id).ease = value;
   };
 }
 
@@ -2988,7 +2792,7 @@ function start(name) {
 }
 
 function onFunction(id, name, listener) {
-  var on0, on1, sit = start(name) ? init$1 : set$2;
+  var on0, on1, sit = start(name) ? init$1 : set;
   return function() {
     var schedule = sit(this, id),
         on = schedule.on;
@@ -5547,6 +5351,202 @@ var locale$1 = i18next$1.init({
     "es-ES": {translation: esES}
   }
 });
+
+var prefix = "$";
+
+function Map() {}
+
+Map.prototype = map$1.prototype = {
+  constructor: Map,
+  has: function(key) {
+    return (prefix + key) in this;
+  },
+  get: function(key) {
+    return this[prefix + key];
+  },
+  set: function(key, value) {
+    this[prefix + key] = value;
+    return this;
+  },
+  remove: function(key) {
+    var property = prefix + key;
+    return property in this && delete this[property];
+  },
+  clear: function() {
+    var this$1 = this;
+
+    for (var property in this) if (property[0] === prefix) delete this$1[property];
+  },
+  keys: function() {
+    var keys = [];
+    for (var property in this) if (property[0] === prefix) keys.push(property.slice(1));
+    return keys;
+  },
+  values: function() {
+    var this$1 = this;
+
+    var values = [];
+    for (var property in this) if (property[0] === prefix) values.push(this$1[property]);
+    return values;
+  },
+  entries: function() {
+    var this$1 = this;
+
+    var entries = [];
+    for (var property in this) if (property[0] === prefix) entries.push({key: property.slice(1), value: this$1[property]});
+    return entries;
+  },
+  size: function() {
+    var size = 0;
+    for (var property in this) if (property[0] === prefix) ++size;
+    return size;
+  },
+  empty: function() {
+    for (var property in this) if (property[0] === prefix) return false;
+    return true;
+  },
+  each: function(f) {
+    var this$1 = this;
+
+    for (var property in this) if (property[0] === prefix) f(this$1[property], property.slice(1), this$1);
+  }
+};
+
+function map$1(object, f) {
+  var map = new Map;
+
+  // Copy constructor.
+  if (object instanceof Map) object.each(function(value, key) { map.set(key, value); });
+
+  // Index array by numeric index or specified key function.
+  else if (Array.isArray(object)) {
+    var i = -1,
+        n = object.length,
+        o;
+
+    if (f == null) while (++i < n) map.set(i, object[i]);
+    else while (++i < n) map.set(f(o = object[i], i, object), o);
+  }
+
+  // Convert object to map.
+  else if (object) for (var key in object) map.set(key, object[key]);
+
+  return map;
+}
+
+var nest$1 = function() {
+  var keys = [],
+      sortKeys = [],
+      sortValues,
+      rollup,
+      nest;
+
+  function apply(array, depth, createResult, setResult) {
+    if (depth >= keys.length) return rollup != null
+        ? rollup(array) : (sortValues != null
+        ? array.sort(sortValues)
+        : array);
+
+    var i = -1,
+        n = array.length,
+        key = keys[depth++],
+        keyValue,
+        value,
+        valuesByKey = map$1(),
+        values,
+        result = createResult();
+
+    while (++i < n) {
+      if (values = valuesByKey.get(keyValue = key(value = array[i]) + "")) {
+        values.push(value);
+      } else {
+        valuesByKey.set(keyValue, [value]);
+      }
+    }
+
+    valuesByKey.each(function(values, key) {
+      setResult(result, key, apply(values, depth, createResult, setResult));
+    });
+
+    return result;
+  }
+
+  function entries(map, depth) {
+    if (++depth > keys.length) return map;
+    var array, sortKey = sortKeys[depth - 1];
+    if (rollup != null && depth >= keys.length) array = map.entries();
+    else array = [], map.each(function(v, k) { array.push({key: k, values: entries(v, depth)}); });
+    return sortKey != null ? array.sort(function(a, b) { return sortKey(a.key, b.key); }) : array;
+  }
+
+  return nest = {
+    object: function(array) { return apply(array, 0, createObject, setObject); },
+    map: function(array) { return apply(array, 0, createMap, setMap); },
+    entries: function(array) { return entries(apply(array, 0, createMap, setMap), 0); },
+    key: function(d) { keys.push(d); return nest; },
+    sortKeys: function(order) { sortKeys[keys.length - 1] = order; return nest; },
+    sortValues: function(order) { sortValues = order; return nest; },
+    rollup: function(f) { rollup = f; return nest; }
+  };
+};
+
+function createObject() {
+  return {};
+}
+
+function setObject(object, key, value) {
+  object[key] = value;
+}
+
+function createMap() {
+  return map$1();
+}
+
+function setMap(map, key, value) {
+  map.set(key, value);
+}
+
+function Set$1() {}
+
+var proto = map$1.prototype;
+
+Set$1.prototype = set$2.prototype = {
+  constructor: Set$1,
+  has: proto.has,
+  add: function(value) {
+    value += "";
+    this[prefix + value] = value;
+    return this;
+  },
+  remove: proto.remove,
+  clear: proto.clear,
+  values: proto.keys,
+  size: proto.size,
+  empty: proto.empty,
+  each: proto.each
+};
+
+function set$2(object, f) {
+  var set = new Set$1;
+
+  // Copy constructor.
+  if (object instanceof Set$1) object.each(function(value) { set.add(value); });
+
+  // Otherwise, assume it’s an array.
+  else if (object) {
+    var i = -1, n = object.length;
+    if (f == null) while (++i < n) set.add(object[i]);
+    else while (++i < n) set.add(f(object[i], i, object));
+  }
+
+  return set;
+}
+
+var keys = function(map) {
+  var keys = [];
+  for (var key in map) keys.push(key);
+  return keys;
+};
 
 /**
     @function merge
@@ -11326,247 +11326,6 @@ function(d, i, shape) {
 }(BaseClass));
 
 /**
-    @class Area
-    @extends Shape
-    @desc Creates SVG areas based on an array of data.
-*/
-var Area = (function (Shape$$1) {
-  function Area() {
-
-    Shape$$1.call(this);
-
-    this._curve = "linear";
-    this._defined = function () { return true; };
-    this._x = accessor("x");
-    this._x0 = accessor("x");
-    this._x1 = null;
-    this._y = constant$3(0);
-    this._y0 = constant$3(0);
-    this._y1 = accessor("y");
-
-  }
-
-  if ( Shape$$1 ) Area.__proto__ = Shape$$1;
-  Area.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
-  Area.prototype.constructor = Area;
-
-  /**
-      Draws the lines.
-      @param {Function} [*callback* = undefined]
-      @private
-  */
-  Area.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    Shape$$1.prototype.render.call(this, callback);
-
-    var path = this._path = area()
-      .defined(this._defined)
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .x(this._x)
-      .x0(this._x0)
-      .x1(this._x1)
-      .y(this._y)
-      .y0(this._y0)
-      .y1(this._y1);
-
-    var exitPath = area()
-      .defined(function (d) { return d; })
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .x(this._x)
-      .x0(this._x0)
-      .x1(this._x1)
-      .y(this._y)
-      .y0(this._y0)
-      .y1(this._y1);
-
-    var areas = nest$1().key(this._id).entries(this._data).map(function (d) {
-      var x = extent(d.values.map(this$1._x)
-        .concat(d.values.map(this$1._x0))
-        .concat(this$1._x1 ? d.values.map(this$1._x1) : [])
-      );
-      d.xR = x;
-      d.width = x[1] - x[0];
-      d.x = x[0] + d.width / 2;
-      var y = extent(d.values.map(this$1._y)
-        .concat(d.values.map(this$1._y0))
-        .concat(this$1._y1 ? d.values.map(this$1._y1) : [])
-      );
-      d.yR = y;
-      d.height = y[1] - y[0];
-      d.y = y[0] + d.height / 2;
-      d.nested = true;
-      return d;
-    });
-
-    var groups = this._select.selectAll(".d3plus-Area").data(areas, function (d) { return d.key; });
-
-    groups.transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
-
-    groups.select("path").transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attrTween("d", function(d) {
-        return interpolatePath(select(this).attr("d"), path(d.values));
-      })
-      .call(this._applyStyle.bind(this));
-
-    groups.exit().select("path").transition(this._transition)
-      .attrTween("d", function(d) {
-        return interpolatePath(select(this).attr("d"), exitPath(d.values));
-      });
-
-    groups.exit().transition().delay(this._duration).remove();
-
-    groups.exit().call(this._applyLabels.bind(this), false);
-
-    var enter = groups.enter().append("g")
-        .attr("class", function (d) { return ("d3plus-Shape d3plus-Area d3plus-id-" + (strip(d.key))); })
-        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
-        .attr("opacity", 0);
-
-    enter.append("path")
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attr("d", function (d) { return path(d.values); })
-      .call(this._applyStyle.bind(this));
-
-    var update = enter.merge(groups);
-
-    update.call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
-      .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
-
-    this._applyEvents(update);
-
-    return this;
-
-  };
-
-  /**
-      @memberof Area
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Area.prototype._aes = function _aes (d, i) {
-    var this$1 = this;
-
-    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
-      @param {String} [*value* = "linear"]
-  */
-  Area.prototype.curve = function curve (_) {
-    return arguments.length ? (this._curve = _, this) : this._curve;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
-      @param {Function} [*value*]
-  */
-  Area.prototype.defined = function defined (_) {
-    return arguments.length ? (this._defined = _, this) : this._defined;
-  };
-
-  /**
-      @memberof Area
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Area.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = transition().duration(this._duration);
-
-    groups
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity);
-
-    groups.select("path").transition(t)
-      .attr("d", function (d) { return this$1._path(d.values); });
-
-    return this;
-
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Area.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$3(_), this) : this._x;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
-      @param {Function|Number} [*value*]
-  */
-  Area.prototype.x0 = function x0 (_) {
-    return arguments.length ? (this._x0 = typeof _ === "function" ? _ : constant$3(_), this) : this._x0;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
-      @param {Function|Number|null} [*value*]
-  */
-  Area.prototype.x1 = function x1 (_) {
-    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$3(_), this) : this._x1;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Area.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$3(_), this) : this._y;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
-      @param {Function|Number} [*value*]
-  */
-  Area.prototype.y0 = function y0 (_) {
-    return arguments.length ? (this._y0 = typeof _ === "function" ? _ : constant$3(_), this) : this._y0;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
-      @param {Function|Number|null} [*value*]
-  */
-  Area.prototype.y1 = function y1 (_) {
-    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$3(_), this) : this._y1;
-  };
-
-  return Area;
-}(Shape));
-
-/**
     @class Circle
     @extends Shape
     @desc Creates SVG circles based on an array of data.
@@ -11733,184 +11492,6 @@ function(d) {
   };
 
   return Circle;
-}(Shape));
-
-/**
-    @class Line
-    @extends Shape
-    @desc Creates SVG lines based on an array of data.
-*/
-var Line = (function (Shape$$1) {
-  function Line() {
-    Shape$$1.call(this);
-    this._curve = "linear";
-    this._defined = function (d) { return d; };
-    this._fill = constant$3("none");
-    this._path = line();
-    this._strokeWidth = constant$3(1);
-    this._x = accessor("x");
-    this._y = accessor("y");
-  }
-
-  if ( Shape$$1 ) Line.__proto__ = Shape$$1;
-  Line.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
-  Line.prototype.constructor = Line;
-
-  /**
-      Draws the lines.
-      @param {Function} [*callback* = undefined]
-      @private
-  */
-  Line.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    Shape$$1.prototype.render.call(this, callback);
-
-    var that = this;
-
-    var lines = nest$1().key(this._id).entries(this._data).map(function (d) {
-      var x = extent(d.values, this$1._x);
-      d.xR = x;
-      d.width = x[1] - x[0];
-      d.x = x[0] + d.width / 2;
-      var y = extent(d.values, this$1._y);
-      d.yR = y;
-      d.height = y[1] - y[0];
-      d.y = y[0] + d.height / 2;
-      d.nested = true;
-      return d;
-    });
-
-    this._path
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .defined(this._defined)
-      .x(this._x)
-      .y(this._y);
-
-    var groups = this._select.selectAll(".d3plus-Line").data(lines, function (d) { return d.key; });
-
-    groups.transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
-
-    groups.select("path").transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attrTween("d", function(d) {
-        return interpolatePath(select(this).attr("d"), that._path(d.values));
-      })
-      .call(this._applyStyle.bind(this));
-
-    groups.exit().transition().delay(this._duration).remove();
-
-    groups.exit().call(this._applyLabels.bind(this), false);
-
-    var enter = groups.enter().append("g")
-        .attr("class", function (d) { return ("d3plus-Shape d3plus-Line d3plus-id-" + (strip(d.key))); })
-        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
-        .attr("opacity", 0);
-
-    enter.append("path")
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attr("d", function (d) { return this$1._path(d.values); })
-      .call(this._applyStyle.bind(this));
-
-    var update = enter.merge(groups);
-
-    update.call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
-      .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
-
-    this._applyEvents(update);
-
-    return this;
-
-  };
-
-  /**
-      @memberof Line
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Line.prototype._aes = function _aes (d, i) {
-    var this$1 = this;
-
-    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
-  };
-
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
-      @param {String} [*value* = "linear"]
-  */
-  Line.prototype.curve = function curve (_) {
-    return arguments.length ? (this._curve = _, this) : this._curve;
-  };
-
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
-      @param {Function} [*value*]
-  */
-  Line.prototype.defined = function defined (_) {
-    return arguments.length ? (this._defined = _, this) : this._defined;
-  };
-
-  /**
-      @memberof Line
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Line.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = transition().duration(this._duration);
-
-    groups
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity);
-
-    groups.select("path").transition(t)
-      .attr("d", function (d) { return this$1._path(d.values); });
-
-    return this;
-
-  };
-
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Line.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$3(_), this) : this._x;
-  };
-
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Line.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$3(_), this) : this._y;
-  };
-
-  return Line;
 }(Shape));
 
 /**
@@ -12102,17 +11683,7 @@ function(d) {
   return Rect;
 }(Shape));
 
-
-
-var d3plus = Object.freeze({
-	Area: Area,
-	Circle: Circle,
-	Image: Image,
-	Line: Line,
-	Rect: Rect,
-	Shape: Shape
-});
-
+var d3plus = [Circle, Rect];
 /**
     @class Legend
     @extends BaseClass
@@ -12124,8 +11695,6 @@ var Legend = (function (BaseClass$$1) {
 
 
     BaseClass$$1.call(this);
-
-    var s = new Shape();
 
     this._align = "center";
     this._data = [];
@@ -12141,7 +11710,7 @@ var Legend = (function (BaseClass$$1) {
       duration: this._duration,
       fill: accessor("color"),
       fontColor: constant$3("#444"),
-      fontFamily: s.fontFamily(),
+      fontFamily: new Rect().fontFamily(),
       fontResize: false,
       fontSize: constant$3(10),
       height: constant$3(10),
@@ -12424,10 +11993,11 @@ var Legend = (function (BaseClass$$1) {
     });
 
     // Legend Shapes
-    nest$1().key(function (d) { return d.shape; }).entries(data).forEach(function (d) {
+    console.log(d3plus);
+    d3plus.forEach(function (Shape$$1) {
 
-      new d3plus[d.key]()
-        .data(d.values)
+      new Shape$$1()
+        .data(data.filter(function (d) { return d.shape === Shape$$1.name; }))
         .duration(this$1._duration)
         .labelPadding(0)
         .select(this$1._group.node())

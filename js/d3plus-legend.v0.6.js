@@ -1,15 +1,16 @@
 /*
-  d3plus-legend v0.6.10
+  d3plus-legend v0.6.11
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-selection'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
-  typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-collection', 'd3-selection', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.d3Selection,global.d3plusCommon,global.d3plus,global.d3plusText));
-}(this, (function (exports,d3Array,d3Collection,d3Selection,d3plusCommon,d3plus,d3plusText) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-selection'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
+  typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-selection', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Selection,global.d3plusCommon,global.d3plusShape,global.d3plusText));
+}(this, (function (exports,d3Array,d3Selection,d3plusCommon,d3plusShape,d3plusText) { 'use strict';
 
+var d3plus = [d3plusShape.Circle, d3plusShape.Rect];
 /**
     @class Legend
     @extends BaseClass
@@ -21,8 +22,6 @@ var Legend = (function (BaseClass$$1) {
 
 
     BaseClass$$1.call(this);
-
-    var s = new d3plus.Shape();
 
     this._align = "center";
     this._data = [];
@@ -38,7 +37,7 @@ var Legend = (function (BaseClass$$1) {
       duration: this._duration,
       fill: d3plusCommon.accessor("color"),
       fontColor: d3plusCommon.constant("#444"),
-      fontFamily: s.fontFamily(),
+      fontFamily: new d3plusShape.Rect().fontFamily(),
       fontResize: false,
       fontSize: d3plusCommon.constant(10),
       height: d3plusCommon.constant(10),
@@ -321,10 +320,11 @@ var Legend = (function (BaseClass$$1) {
     });
 
     // Legend Shapes
-    d3Collection.nest().key(function (d) { return d.shape; }).entries(data).forEach(function (d) {
+    console.log(d3plus);
+    d3plus.forEach(function (Shape) {
 
-      new d3plus[d.key]()
-        .data(d.values)
+      new Shape()
+        .data(data.filter(function (d) { return d.shape === Shape.name; }))
         .duration(this$1._duration)
         .labelPadding(0)
         .select(this$1._group.node())
