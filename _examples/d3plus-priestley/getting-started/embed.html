@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-priestley.v0.1.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var data = [
+    {id: "alpha",   start: 2004, end: 2007},
+    {id: "epsilon", start: 2007, end: 2012},
+    {id: "beta",    start: 2005, end: 2010},
+  ];
+
+  new d3plus.Priestley()
+    .data(data)
+    .render();
+
+</script>
+
+</html>
