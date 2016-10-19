@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.3.4
+  d3plus-viz v0.3.5
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -133,13 +133,14 @@ var Viz = (function (BaseClass$$1) {
     this._on = {
       click: function (d, i) {
 
+        this$1._select.style("cursor", "auto");
         if (this$1._drawDepth < this$1._groupBy.length - 1) {
 
           var filterGroup = this$1._groupBy[this$1._drawDepth],
                 filterId = this$1._id(d, i);
 
           this$1.highlight(false);
-          if (this$1._tooltip) this$1._tooltipClass.data([])();
+          if (this$1._tooltip) this$1._tooltipClass.data([]).render();
 
           this$1._history.push({
             depth: this$1._depth,
@@ -166,23 +167,26 @@ var Viz = (function (BaseClass$$1) {
         });
 
         if (this$1._tooltip) {
+          var depth = this$1._drawDepth < this$1._groupBy.length - 1;
+          this$1._select.style("cursor", depth ? "pointer" : "auto");
           this$1._tooltipClass.data([d])
-            .footer(this$1._drawDepth < this$1._groupBy.length - 1 ? "Click to Expand" : "")
+            .footer(depth ? "Click to Expand" : "")
             .translate(d3Selection.mouse(d3Selection.select("html").node()))
-            ();
+            .render();
         }
 
       },
       mousemove: function () {
 
         if (this$1._tooltip) {
-          this$1._tooltipClass.translate(d3Selection.mouse(d3Selection.select("html").node()))();
+          this$1._tooltipClass.translate(d3Selection.mouse(d3Selection.select("html").node())).render();
         }
 
       },
       mouseleave: function () {
         this$1.highlight(false);
-        if (this$1._tooltip) this$1._tooltipClass.data([])();
+        this$1._select.style("cursor", "auto");
+        if (this$1._tooltip) this$1._tooltipClass.data([]).render();
       }
     };
     this._padding = 5;
@@ -193,7 +197,7 @@ var Viz = (function (BaseClass$$1) {
       stroke: function (d, i) { return d3Color.color(d3plusColor.assign(this$1._id(d, i))).darker(); },
       strokeWidth: d3plusCommon.constant(0)
     };
-    this._timeline = {};
+    this._timeline = true;
     this._timelineClass = new d3plusTimeline.Timeline()
       .align("end")
       .on("end", function (s) {
@@ -205,8 +209,10 @@ var Viz = (function (BaseClass$$1) {
           return ms >= s[0] && ms <= s[1];
         }).render();
       });
-    this._tooltip = {duration: 50};
-    this._tooltipClass = d3plusTooltip.tooltip().pointerEvents("none");
+    this._timelineConfig = {};
+    this._tooltip = true;
+    this._tooltipClass = new d3plusTooltip.Tooltip().pointerEvents("none");
+    this._tooltipConfig = {duration: 50};
 
   }
 
@@ -325,7 +331,7 @@ var Viz = (function (BaseClass$$1) {
       }
 
       timeline
-        .config(this._timeline.constructor === Object ? this._timeline : {})
+        .config(this._timelineConfig)
         .render();
 
       this._margin.bottom += timeline.outerBounds().height + timeline.padding() * 2;
@@ -371,8 +377,7 @@ var Viz = (function (BaseClass$$1) {
 
     this._margin.top += this._history.length ? this._backClass.fontSize()() + this._padding : 0;
 
-    this._tooltipClass.title(this._drawLabel);
-    if (this._tooltip.constructor === Object) this._tooltipClass.config(this._tooltip);
+    this._tooltipClass.title(this._drawLabel).config(this._tooltipConfig);
 
     if (callback) setTimeout(callback, this._duration + 100);
 
@@ -584,8 +589,8 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc If *value* is specified, toggles the timeline based on the specified boolean and returns the current class instance. If *value* is an object, then it is passed to the timeline's config method. If *value* is not specified, returns the current value.
-      @param {Boolean|Object} [*value* = true]
+      @desc If *value* is specified, toggles the timeline based on the specified boolean and returns the current class instance. If *value* is not specified, returns the current timeline visibility.
+      @param {Boolean} [*value* = true]
   */
   Viz.prototype.timeline = function timeline (_) {
     return arguments.length ? (this._timeline = _, this) : this._timeline;
@@ -593,11 +598,29 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc If *value* is specified, toggles the tooltip based on the specified boolean and returns the current class instance. If *value* is an object, then it is passed to the tooltip's config method. If *value* is not specified, returns the current tooltip visibility.
-      @param {Boolean|Object} [*value* = true]
+      @desc If *value* is specified, sets the config method for the timeline and returns the current class instance. If *value* is not specified, returns the current timeline configuration.
+      @param {Object} [*value*]
   */
-  Viz.prototype.tooltip = function tooltip$1 (_) {
+  Viz.prototype.timelineConfig = function timelineConfig (_) {
+    return arguments.length ? (this._timelineConfig = Object.assign(this._timelineConfig, _), this) : this._timelineConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, toggles the tooltip based on the specified boolean and returns the current class instance. If *value* is not specified, returns the current tooltip visibility.
+      @param {Boolean} [*value* = true]
+  */
+  Viz.prototype.tooltip = function tooltip (_) {
     return arguments.length ? (this._tooltip = _, this) : this._tooltip;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the config method for the tooltip and returns the current class instance. If *value* is not specified, returns the current tooltip configuration.
+      @param {Object} [*value*]
+  */
+  Viz.prototype.tooltipConfig = function tooltipConfig (_) {
+    return arguments.length ? (this._tooltipConfig = Object.assign(this._tooltipConfig, _), this) : this._tooltipConfig;
   };
 
   /**
