@@ -24,14 +24,14 @@
     {"title": "D3plus Tooltip", "body": "Check out this cool table:", "x": 100, "y": 120, "label": "Position"}
   ];
   
-  d3plus.tooltip()
+  new d3plus.Tooltip()
     .data(data)
     .thead(["Axis", function(d) { return d.label; }])
     .tbody([
       ["x", function(d) { return d.x; }],
       ["y", function(d) { return d.y; }]
     ])
-    ();
+    .render();
 
 </script>
 
