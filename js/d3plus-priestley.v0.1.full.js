@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.2
+  d3plus-priestley v0.1.3
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -15490,7 +15490,7 @@ var Priestley = (function (Viz$$1) {
       .label(function (d, i) { return this$1._drawLabel(d.data, i); })
       .select(elem("g.d3plus-priestley-shapes", {parent: this._select}).node())
       .width(function (d) {
-        var w = xScale(d.end) - xScale(d.start);
+        var w = Math.abs(xScale(d.end) - xScale(d.start));
         return w > 2 ? w - 2 : w;
       })
       .x(function (d) { return xScale(d.start) + (xScale(d.end) - xScale(d.start)) / 2; })
