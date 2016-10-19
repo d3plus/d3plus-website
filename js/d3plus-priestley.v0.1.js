@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.1
+  d3plus-priestley v0.1.2
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -48,7 +48,7 @@ var Priestley = (function (Viz$$1) {
       i: i,
       id: this$1._id(data, i),
       start: this$1._axisConfig.scale === "time" ? d3plusAxis.date(this$1._start(data, i)) : this$1._start(data, i)
-    }); }).sort(function (a, b) { return a.start - b.start; });
+    }); }).filter(function (d) { return d.end - d.start > 0; }).sort(function (a, b) { return a.start - b.start; });
 
     var nestedData;
     if (this._groupBy.length > 1 && this._drawDepth > 0) {
@@ -129,10 +129,13 @@ var Priestley = (function (Viz$$1) {
         }, {})})
       .data(data)
       .duration(this._duration)
-      .height(step - this._padding)
+      .height(step >= this._padding * 2 ? step - this._padding : step > 2 ? step - 2 : step)
       .label(function (d, i) { return this$1._drawLabel(d.data, i); })
       .select(d3plusCommon.elem("g.d3plus-priestley-shapes", {parent: this._select}).node())
-      .width(function (d) { return xScale(d.end) - xScale(d.start) - 2; })
+      .width(function (d) {
+        var w = xScale(d.end) - xScale(d.start);
+        return w > 2 ? w - 2 : w;
+      })
       .x(function (d) { return xScale(d.start) + (xScale(d.end) - xScale(d.start)) / 2; })
       .y(function (d) { return yScale(d.lane); })
       .config(config)
