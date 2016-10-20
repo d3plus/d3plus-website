@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.15
+  d3plus-treemap v0.5.16
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5236,7 +5236,7 @@ var Interpolator = function () {
 
     var iOpts = options.interpolation;
 
-    this.escapeValue = iOpts.escapeValue;
+    this.escapeValue = iOpts.escapeValue !== undefined ? iOpts.escapeValue : true;
 
     this.prefix = iOpts.prefix ? regexEscape(iOpts.prefix) : iOpts.prefixEscaped || '{{';
     this.suffix = iOpts.suffix ? regexEscape(iOpts.suffix) : iOpts.suffixEscaped || '}}';
@@ -6371,7 +6371,7 @@ var max = function(array, f) {
   return a;
 };
 
-var merge$1 = function(arrays) {
+var merge = function(arrays) {
   var n = arrays.length,
       m,
       i = -1,
@@ -6456,11 +6456,11 @@ merge([
     @example <caption>returns this</caption>
 {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
 */
-var merge$$1 = function(objects, aggs) {
+var combine = function(objects, aggs) {
   if ( aggs === void 0 ) aggs = {};
 
 
-  var availableKeys = new Set(merge$1(objects.map(function (o) { return keys(o); }))),
+  var availableKeys = new Set(merge(objects.map(function (o) { return keys(o); }))),
         newObject = {};
 
   availableKeys.forEach(function (k) {
@@ -6471,7 +6471,7 @@ var merge$$1 = function(objects, aggs) {
       var types = values$$1.map(function (v) { return v ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
       if (!types.length) value = undefined;
       else if (types.indexOf(Array) >= 0) {
-        value = merge$1(values$$1.map(function (v) { return v.constructor === Array ? v : [v]; }));
+        value = merge(values$$1.map(function (v) { return v.constructor === Array ? v : [v]; }));
         value = Array.from(new Set(value));
         if (value.length === 1) value = value[0];
       }
@@ -6498,6 +6498,15 @@ var val = undefined;
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
+var prefix$1 = function() {
+  if (val !== void 0) return val;
+  if ("-webkit-transform" in document.body.style) val = "-webkit-";
+  else if ("-moz-transform" in document.body.style) val = "-moz-";
+  else if ("-ms-transform" in document.body.style) val = "-ms-";
+  else if ("-o-transform" in document.body.style) val = "-o-";
+  else val = "";
+  return val;
+};
 
 /**
     @function stylize
@@ -6505,6 +6514,11 @@ var val = undefined;
     @param {D3selection} elem The D3 element to apply the styles to.
     @param {Object} styles An object of key/value style pairs.
 */
+var stylize = function(e, s) {
+  if ( s === void 0 ) s = {};
+
+  for (var k in s) if ({}.hasOwnProperty.call(s, k)) e.style(k, s[k]);
+};
 
 /**
  * List of params for each command type in a path `d` attribute
@@ -8815,7 +8829,7 @@ var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSp
 */
 var textSplit = function(sentence) {
   if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords);
-  return merge$1(stringify(sentence).match(splitWords).map(function (d) {
+  return merge(stringify(sentence).match(splitWords).map(function (d) {
     if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) return d.match(splitAllChars);
     return [d];
   }));
@@ -13812,453 +13826,6 @@ var Axis = (function (BaseClass$$1) {
 }(BaseClass));
 
 /**
-    @function accessor
-    @desc Wraps an object key in a simple accessor function.
-    @param {String} key The key to be returned from each Object passed to the function.
-    @param {*} [def] A default value to be returned if the key is not present.
-    @example <caption>this</caption>
-accessor("id");
-    @example <caption>returns this</caption>
-function(d) {
-  return d["id"];
-}
-*/
-var accessor$1 = function(key, def) {
-  if (def === void 0) return function (d) { return d[key]; };
-  return function (d) { return d[key] === void 0 ? def : d[key]; };
-};
-
-/**
-    @function attrize
-    @desc Applies each key/value in an object as an attr.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} attrs An object of key/value attr pairs.
-*/
-var attrize$1 = function(e, a) {
-  if ( a === void 0 ) a = {};
-
-  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
-};
-
-/**
-    @function s
-    @desc Returns 4 random characters, used for constructing unique identifiers.
-    @private
-*/
-function s$2() {
-  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-}
-
-
-/**
-    @class BaseClass
-    @desc An abstract class that contains some global methods and functionality.
-*/
-var BaseClass$2 = function BaseClass$2() {
-  this._on = {};
-  this._uuid = "" + (s$2()) + (s$2()) + "-" + (s$2()) + "-" + (s$2()) + "-" + (s$2()) + "-" + (s$2()) + (s$2()) + (s$2());
-
-};
-
-/**
-    @memberof BaseClass
-    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
-    @param {Object} [*value*]
-*/
-BaseClass$2.prototype.config = function config (_) {
-    var this$1 = this;
-
-  if (arguments.length) {
-    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
-    return this;
-  }
-  else {
-    var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
-    return config;
-  }
-};
-
-/**
-    @memberof BaseClass
-    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-    @param {String} [*typenames*]
-    @param {Function} [*listener*]
-    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
-new Plot
-.on("click.Shape", function(d) {
-  console.log("data for shape clicked:", d);
-})
-.on("click.Legend", function(d) {
-  console.log("data for legend clicked:", d);
-})
-*/
-BaseClass$2.prototype.on = function on (_, f) {
-  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-};
-
-/**
-    @function closest
-    @desc Finds the closest numeric value in an array.
-    @param {Number} n The number value to use when searching the array.
-    @param {Array} arr The array of values to test against.
-*/
-
-/**
-    @function constant
-    @desc Wraps non-function variables in a simple return function.
-    @param {Array|Number|Object|String} value The value to be returned from the function.
-    @example <caption>this</caption>
-constant(42);
-    @example <caption>returns this</caption>
-function() {
-  return 42;
-}
-*/
-var constant$8 = function(value) {
-  return function constant() {
-    return value;
-  };
-};
-
-/**
-    @function elem
-    @desc Manages the enter/update/exit pattern for a single DOM element.
-    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
-    @param {Object} params Additional parameters.
-    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
-    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
-    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
-    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
-    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
-    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
-*/
-var elem$1 = function(selector$$1, p) {
-
-  // overrides default params
-  p = Object.assign({}, {
-    condition: true,
-    enter: {},
-    exit: {},
-    parent: select("body"),
-    transition: transition().duration(0),
-    update: {}
-  }, p);
-
-  var className = (/\.([^#]+)/g).exec(selector$$1),
-        id = (/#([^\.]+)/g).exec(selector$$1),
-        tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
-
-  var elem = p.parent.selectAll(selector$$1).data(p.condition ? [null] : []);
-
-  var enter = elem.enter().append(tag).call(attrize$1, p.enter);
-
-  if (id) enter.attr("id", id[1]);
-  if (className) enter.attr("class", className[1]);
-
-  elem.exit().transition(p.transition).call(attrize$1, p.exit).remove();
-
-  var update = enter.merge(elem);
-  update.transition(p.transition).call(attrize$1, p.update);
-
-  return update;
-
-};
-
-var array$5 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
-var enUS$1 = {
-	array: array$5
-};
-
-var array$6 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
-var esES$1 = {
-	array: array$6
-};
-
-i18next$1.init({
-  fallbackLng: "en-US",
-  initImmediate: false,
-  resources: {
-    "en-US": {translation: enUS$1},
-    "es-ES": {translation: esES$1}
-  }
-});
-
-/**
-    @function merge
-    @desc Combines an Array of Objects together and returns a new Object.
-    @param {Array} objects The Array of objects to be merged together.
-    @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
-    @example <caption>this</caption>
-merge([
-  {id: "foo", group: "A", value: 10, links: [1, 2]},
-  {id: "bar", group: "A", value: 20, links: [1, 3]}
-]);
-    @example <caption>returns this</caption>
-{id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
-*/
-var combine = function(objects, aggs) {
-  if ( aggs === void 0 ) aggs = {};
-
-
-  var availableKeys = new Set(merge$1(objects.map(function (o) { return keys(o); }))),
-        newObject = {};
-
-  availableKeys.forEach(function (k) {
-    var values$$1 = objects.map(function (o) { return o[k]; });
-    var value;
-    if (aggs[k]) value = aggs[k](values$$1);
-    else {
-      var types = values$$1.map(function (v) { return v ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
-      if (!types.length) value = undefined;
-      else if (types.indexOf(Array) >= 0) {
-        value = merge$1(values$$1.map(function (v) { return v.constructor === Array ? v : [v]; }));
-        value = Array.from(new Set(value));
-        if (value.length === 1) value = value[0];
-      }
-      else if (types.indexOf(String) >= 0) {
-        value = Array.from(new Set(values$$1));
-        if (value.length === 1) value = value[0];
-      }
-      else if (types.indexOf(Number) >= 0) value = sum$1(values$$1);
-      else {
-        value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
-        if (value.length === 1) value = value[0];
-      }
-    }
-    newObject[k] = value;
-  });
-
-  return newObject;
-
-};
-
-var val$1 = undefined;
-
-/**
-    @function prefix
-    @desc Returns the appropriate CSS vendor prefix, given the current browser.
-*/
-var prefix$2 = function() {
-  if (val$1 !== void 0) return val$1;
-  if ("-webkit-transform" in document.body.style) val$1 = "-webkit-";
-  else if ("-moz-transform" in document.body.style) val$1 = "-moz-";
-  else if ("-ms-transform" in document.body.style) val$1 = "-ms-";
-  else if ("-o-transform" in document.body.style) val$1 = "-o-";
-  else val$1 = "";
-  return val$1;
-};
-
-/**
-    @function stylize
-    @desc Applies each key/value in an object as a style.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} styles An object of key/value style pairs.
-*/
-
-/**
-    @function accessor
-    @desc Wraps an object key in a simple accessor function.
-    @param {String} key The key to be returned from each Object passed to the function.
-    @param {*} [def] A default value to be returned if the key is not present.
-    @example <caption>this</caption>
-accessor("id");
-    @example <caption>returns this</caption>
-function(d) {
-  return d["id"];
-}
-*/
-var accessor$2 = function(key, def) {
-  if (def === void 0) return function (d) { return d[key]; };
-  return function (d) { return d[key] === void 0 ? def : d[key]; };
-};
-
-/**
-    @function attrize
-    @desc Applies each key/value in an object as an attr.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} attrs An object of key/value attr pairs.
-*/
-var attrize$2 = function(e, a) {
-  if ( a === void 0 ) a = {};
-
-  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
-};
-
-/**
-    @function s
-    @desc Returns 4 random characters, used for constructing unique identifiers.
-    @private
-*/
-function s$3() {
-  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-}
-
-
-/**
-    @class BaseClass
-    @desc An abstract class that contains some global methods and functionality.
-*/
-var BaseClass$4 = function BaseClass$4() {
-  this._on = {};
-  this._uuid = "" + (s$3()) + (s$3()) + "-" + (s$3()) + "-" + (s$3()) + "-" + (s$3()) + "-" + (s$3()) + (s$3()) + (s$3());
-
-};
-
-/**
-    @memberof BaseClass
-    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
-    @param {Object} [*value*]
-*/
-BaseClass$4.prototype.config = function config (_) {
-    var this$1 = this;
-
-  if (arguments.length) {
-    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
-    return this;
-  }
-  else {
-    var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
-    return config;
-  }
-};
-
-/**
-    @memberof BaseClass
-    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-    @param {String} [*typenames*]
-    @param {Function} [*listener*]
-    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
-new Plot
-.on("click.Shape", function(d) {
-  console.log("data for shape clicked:", d);
-})
-.on("click.Legend", function(d) {
-  console.log("data for legend clicked:", d);
-})
-*/
-BaseClass$4.prototype.on = function on (_, f) {
-  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-};
-
-/**
-    @function closest
-    @desc Finds the closest numeric value in an array.
-    @param {Number} n The number value to use when searching the array.
-    @param {Array} arr The array of values to test against.
-*/
-
-/**
-    @function constant
-    @desc Wraps non-function variables in a simple return function.
-    @param {Array|Number|Object|String} value The value to be returned from the function.
-    @example <caption>this</caption>
-constant(42);
-    @example <caption>returns this</caption>
-function() {
-  return 42;
-}
-*/
-var constant$9 = function(value) {
-  return function constant() {
-    return value;
-  };
-};
-
-/**
-    @function elem
-    @desc Manages the enter/update/exit pattern for a single DOM element.
-    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
-    @param {Object} params Additional parameters.
-    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
-    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
-    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
-    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
-    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
-    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
-*/
-var elem$2 = function(selector$$1, p) {
-
-  // overrides default params
-  p = Object.assign({}, {
-    condition: true,
-    enter: {},
-    exit: {},
-    parent: select("body"),
-    transition: transition().duration(0),
-    update: {}
-  }, p);
-
-  var className = (/\.([^#]+)/g).exec(selector$$1),
-        id = (/#([^\.]+)/g).exec(selector$$1),
-        tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
-
-  var elem = p.parent.selectAll(selector$$1).data(p.condition ? [null] : []);
-
-  var enter = elem.enter().append(tag).call(attrize$2, p.enter);
-
-  if (id) enter.attr("id", id[1]);
-  if (className) enter.attr("class", className[1]);
-
-  elem.exit().transition(p.transition).call(attrize$2, p.exit).remove();
-
-  var update = enter.merge(elem);
-  update.transition(p.transition).call(attrize$2, p.update);
-
-  return update;
-
-};
-
-var array$7 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
-var enUS$2 = {
-	array: array$7
-};
-
-var array$8 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
-var esES$2 = {
-	array: array$8
-};
-
-i18next$1.init({
-  fallbackLng: "en-US",
-  initImmediate: false,
-  resources: {
-    "en-US": {translation: enUS$2},
-    "es-ES": {translation: esES$2}
-  }
-});
-
-/**
-    @function merge
-    @desc Combines an Array of Objects together and returns a new Object.
-    @param {Array} objects The Array of objects to be merged together.
-    @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
-    @example <caption>this</caption>
-merge([
-  {id: "foo", group: "A", value: 10, links: [1, 2]},
-  {id: "bar", group: "A", value: 20, links: [1, 3]}
-]);
-    @example <caption>returns this</caption>
-{id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
-*/
-
-var val$2 = undefined;
-
-/**
-    @function prefix
-    @desc Returns the appropriate CSS vendor prefix, given the current browser.
-*/
-
-/**
-    @function stylize
-    @desc Applies each key/value in an object as a style.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} styles An object of key/value style pairs.
-*/
-
-var d3plus = [Circle, Rect];
-/**
     @class Legend
     @extends BaseClass
     @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
@@ -14274,20 +13841,20 @@ var Legend = (function (BaseClass$$1) {
     this._data = [];
     this._duration = 600;
     this._height = 200;
-    this._id = accessor$2("id");
-    this._label = accessor$2("id");
+    this._id = accessor("id");
+    this._label = accessor("id");
     this._lineData = [];
     this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
     this._padding = 5;
-    this._shape = constant$9("Rect");
+    this._shape = constant$2("Rect");
     this._shapeConfig = {
       duration: this._duration,
-      fill: accessor$2("color"),
-      fontColor: constant$9("#444"),
+      fill: accessor("color"),
+      fontColor: constant$2("#444"),
       fontFamily: new Rect().fontFamily(),
       fontResize: false,
-      fontSize: constant$9(10),
-      height: constant$9(10),
+      fontSize: constant$2(10),
+      height: constant$2(10),
       hitArea: function (dd) {
         var d = this$1._lineData[this$1._data.indexOf(dd)],
               h = max([d.height, d.shapeHeight]);
@@ -14299,8 +13866,8 @@ var Legend = (function (BaseClass$$1) {
         return {width: d.width, height: d.height, x: w + this$1._padding, y: -d.height / 2};
       },
       opacity: 1,
-      r: constant$9(5),
-      width: constant$9(10),
+      r: constant$2(5),
+      width: constant$2(10),
       x: function (d, i) {
         var s = this$1._shapeConfig.width;
         var y = this$1._lineData[i].y;
@@ -14354,7 +13921,7 @@ var Legend = (function (BaseClass$$1) {
     if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
 
     // Shape <g> Group
-    this._group = elem$2("g.d3plus-Legend", {parent: this._select});
+    this._group = elem("g.d3plus-Legend", {parent: this._select});
 
     var availableHeight = this._height;
     this._titleHeight = 0;
@@ -14567,10 +14134,10 @@ var Legend = (function (BaseClass$$1) {
     });
 
     // Legend Shapes
-    d3plus.forEach(function (Shape$$1) {
+    ["Circle", "Rect"].forEach(function (Shape$$1) {
 
-      new Shape$$1()
-        .data(data.filter(function (d) { return d.shape === Shape$$1.name; }))
+      new shapes[Shape$$1]()
+        .data(data.filter(function (d) { return d.shape === Shape$$1; }))
         .duration(this$1._duration)
         .labelPadding(0)
         .select(this$1._group.node())
@@ -14641,7 +14208,7 @@ function value(d) {
       @param {Function|String} [*value*]
   */
   Legend.prototype.label = function label (_) {
-    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$9(_), this) : this._label;
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$2(_), this) : this._label;
   };
 
   /**
@@ -14678,7 +14245,7 @@ function value(d) {
       @param {Function|String} [*value* = "Rect"]
   */
   Legend.prototype.shape = function shape (_) {
-    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$9(_), this) : this._shape;
+    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$2(_), this) : this._shape;
   };
 
   /**
@@ -14727,7 +14294,7 @@ function value(d) {
   };
 
   return Legend;
-}(BaseClass$4));
+}(BaseClass));
 
 function nopropagation() {
   event.stopImmediatePropagation();
@@ -14764,7 +14331,7 @@ function yesdrag(view, noclick) {
   }
 }
 
-var constant$10 = function(x) {
+var constant$8 = function(x) {
   return function() {
     return x;
   };
@@ -14801,7 +14368,7 @@ function defaultSubject(d) {
   return d == null ? {x: event.x, y: event.y} : d;
 }
 
-var constant$11 = function(x) {
+var constant$9 = function(x) {
   return function() {
     return x;
   };
@@ -15325,11 +14892,11 @@ function brush$1(dim) {
   }
 
   brush.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$11([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$9([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
   };
 
   brush.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$11(!!_), brush) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$9(!!_), brush) : filter;
   };
 
   brush.handleSize = function(_) {
@@ -15556,7 +15123,7 @@ var Timeline = (function (Axis$$1) {
     @function prefix
     @desc Returns the appropriate vendor prefix to use in CSS styles.
 */
-var prefix$4 = function() {
+var prefix$2 = function() {
   if ("-webkit-transform" in document.body.style) return "-webkit-";
   else if ("-moz-transform" in document.body.style) return "-moz-";
   else if ("-ms-transform" in document.body.style) return "-ms-";
@@ -16323,181 +15890,6 @@ selection$1.prototype.transition = selection_transition$1;
 var root$2 = [null];
 
 /**
-    @function accessor
-    @desc Wraps an object key in a simple accessor function.
-    @param {String} key The key to be returned from each Object passed to the function.
-    @param {*} [def] A default value to be returned if the key is not present.
-    @example <caption>this</caption>
-accessor("id");
-    @example <caption>returns this</caption>
-function(d) {
-  return d["id"];
-}
-*/
-var accessor$3 = function(key, def) {
-  if (def === void 0) return function (d) { return d[key]; };
-  return function (d) { return d[key] === void 0 ? def : d[key]; };
-};
-
-/**
-    @function attrize
-    @desc Applies each key/value in an object as an attr.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} attrs An object of key/value attr pairs.
-*/
-var attrize$3 = function(e, a) {
-  if ( a === void 0 ) a = {};
-
-  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
-};
-
-/**
-    @function s
-    @desc Returns 4 random characters, used for constructing unique identifiers.
-    @private
-*/
-function s$4() {
-  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-}
-
-
-/**
-    @class BaseClass
-    @desc An abstract class that contains some global methods and functionality.
-*/
-var BaseClass$6 = function BaseClass$6() {
-  this._on = {};
-  this._uuid = "" + (s$4()) + (s$4()) + "-" + (s$4()) + "-" + (s$4()) + "-" + (s$4()) + "-" + (s$4()) + (s$4()) + (s$4());
-
-};
-
-/**
-    @memberof BaseClass
-    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
-    @param {Object} [*value*]
-*/
-BaseClass$6.prototype.config = function config (_) {
-    var this$1 = this;
-
-  if (arguments.length) {
-    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
-    return this;
-  }
-  else {
-    var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
-    return config;
-  }
-};
-
-/**
-    @memberof BaseClass
-    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-    @param {String} [*typenames*]
-    @param {Function} [*listener*]
-    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
-new Plot
-.on("click.Shape", function(d) {
-  console.log("data for shape clicked:", d);
-})
-.on("click.Legend", function(d) {
-  console.log("data for legend clicked:", d);
-})
-*/
-BaseClass$6.prototype.on = function on (_, f) {
-  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-};
-
-/**
-    @function closest
-    @desc Finds the closest numeric value in an array.
-    @param {Number} n The number value to use when searching the array.
-    @param {Array} arr The array of values to test against.
-*/
-
-/**
-    @function constant
-    @desc Wraps non-function variables in a simple return function.
-    @param {Array|Number|Object|String} value The value to be returned from the function.
-    @example <caption>this</caption>
-constant(42);
-    @example <caption>returns this</caption>
-function() {
-  return 42;
-}
-*/
-var constant$12 = function(value) {
-  return function constant() {
-    return value;
-  };
-};
-
-/**
-    @function elem
-    @desc Manages the enter/update/exit pattern for a single DOM element.
-    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
-    @param {Object} params Additional parameters.
-    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
-    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
-    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
-    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
-    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
-    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
-*/
-
-var array$9 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
-var enUS$3 = {
-	array: array$9
-};
-
-var array$10 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
-var esES$3 = {
-	array: array$10
-};
-
-i18next$1.init({
-  fallbackLng: "en-US",
-  initImmediate: false,
-  resources: {
-    "en-US": {translation: enUS$3},
-    "es-ES": {translation: esES$3}
-  }
-});
-
-/**
-    @function merge
-    @desc Combines an Array of Objects together and returns a new Object.
-    @param {Array} objects The Array of objects to be merged together.
-    @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
-    @example <caption>this</caption>
-merge([
-  {id: "foo", group: "A", value: 10, links: [1, 2]},
-  {id: "bar", group: "A", value: 20, links: [1, 3]}
-]);
-    @example <caption>returns this</caption>
-{id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
-*/
-
-var val$3 = undefined;
-
-/**
-    @function prefix
-    @desc Returns the appropriate CSS vendor prefix, given the current browser.
-*/
-
-/**
-    @function stylize
-    @desc Applies each key/value in an object as a style.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} styles An object of key/value style pairs.
-*/
-var stylize$3 = function(e, s) {
-  if ( s === void 0 ) s = {};
-
-  for (var k in s) if ({}.hasOwnProperty.call(s, k)) e.style(k, s[k]);
-};
-
-/**
     @class Tooltip
     @extends BaseClass
     @desc Creates HTML tooltips in the body of a webpage.
@@ -16506,29 +15898,29 @@ var Tooltip = (function (BaseClass$$1) {
   function Tooltip() {
 
     BaseClass$$1.call(this);
-    this._background = constant$12("rgba(255, 255, 255, 0.75)");
-    this._body = accessor$3("body", "");
+    this._background = constant$2("rgba(255, 255, 255, 0.75)");
+    this._body = accessor("body", "");
     this._bodyStyle = {
       "font-family": "Verdana",
       "font-size": "10px",
       "font-weight": "400"
     };
-    this._border = constant$12("1px solid rgba(0, 0, 0, 0.1)");
-    this._borderRadius = constant$12("2px");
+    this._border = constant$2("1px solid rgba(0, 0, 0, 0.1)");
+    this._borderRadius = constant$2("2px");
     this._className = "d3plus-tooltip";
-    this._duration = constant$12(200);
-    this._footer = accessor$3("footer", "");
+    this._duration = constant$2(200);
+    this._footer = accessor("footer", "");
     this._footerStyle = {
       "font-family": "Verdana",
       "font-size": "10px",
       "font-weight": "400"
     };
-    this._height = constant$12("auto");
+    this._height = constant$2("auto");
     this._id = function (d, i) { return d.id || ("" + i); };
-    this._offset = constant$12(10);
-    this._padding = constant$12("5px");
-    this._pointerEvents = constant$12("auto");
-    this._prefix = prefix$4();
+    this._offset = constant$2(10);
+    this._padding = constant$2("5px");
+    this._pointerEvents = constant$2("auto");
+    this._prefix = prefix$2();
     this._tableStyle = {
       "border-spacing": "0",
       "width": "100%"
@@ -16546,7 +15938,7 @@ var Tooltip = (function (BaseClass$$1) {
       "font-weight": "600",
       "text-align": "center"
     };
-    this._title = accessor$3("title", "");
+    this._title = accessor("title", "");
     this._titleStyle = {
       "font-family": "Verdana",
       "font-size": "12px",
@@ -16554,7 +15946,7 @@ var Tooltip = (function (BaseClass$$1) {
       "padding-bottom": "5px"
     };
     this._translate = function (d) { return [d.x, d.y]; };
-    this._width = constant$12("auto");
+    this._width = constant$2("auto");
 
   }
 
@@ -16590,7 +15982,7 @@ var Tooltip = (function (BaseClass$$1) {
     function divElement(cat) {
       enter.append("div").attr("class", ("d3plus-tooltip-" + cat));
       var div = update.select((".d3plus-tooltip-" + cat)).html(that[("_" + cat)]);
-      stylize$3(div, that[("_" + cat + "Style")]);
+      stylize(div, that[("_" + cat + "Style")]);
     }
 
     /**
@@ -16636,18 +16028,18 @@ var Tooltip = (function (BaseClass$$1) {
 
     var tableEnter = enter.append("table").attr("class", "d3plus-tooltip-table");
     var table = update.select(".d3plus-tooltip-table");
-    stylize$3(table, this._tableStyle);
+    stylize(table, this._tableStyle);
 
     tableEnter.append("thead").attr("class", "d3plus-tooltip-thead");
     var tableHead = update.select(".d3plus-tooltip-thead");
-    stylize$3(tableHead, this._theadStyle);
+    stylize(tableHead, this._theadStyle);
     var th = tableHead.selectAll("th").data(this._thead);
     th.enter().append("th").merge(th).html(cellContent);
     th.exit().remove();
 
     tableEnter.append("tbody").attr("class", "d3plus-tooltip-tbody");
     var tableBody = update.select(".d3plus-tooltip-tbody");
-    stylize$3(tableBody, this._tbodyStyle);
+    stylize(tableBody, this._tbodyStyle);
     var tr = tableBody.selectAll("tr").data(this._tbody);
     var trEnter = tr.enter().append("tr");
     tr.exit().remove();
@@ -16684,7 +16076,7 @@ var Tooltip = (function (BaseClass$$1) {
       @param {Function|String} [*value* = "rgba(255, 255, 255, 0.75)"]
   */
   Tooltip.prototype.background = function background (_) {
-    return arguments.length ? (this._background = typeof _ === "function" ? _ : constant$12(_), this) : this._background;
+    return arguments.length ? (this._background = typeof _ === "function" ? _ : constant$2(_), this) : this._background;
   };
 
   /**
@@ -16697,7 +16089,7 @@ function value(d) {
 }
   */
   Tooltip.prototype.body = function body (_) {
-    return arguments.length ? (this._body = typeof _ === "function" ? _ : constant$12(_), this) : this._body;
+    return arguments.length ? (this._body = typeof _ === "function" ? _ : constant$2(_), this) : this._body;
   };
 
   /**
@@ -16721,7 +16113,7 @@ function value(d) {
       @param {Function|String} [*value* = "1px solid rgba(0, 0, 0, 0.1)"]
   */
   Tooltip.prototype.border = function border (_) {
-    return arguments.length ? (this._border = typeof _ === "function" ? _ : constant$12(_), this) : this._border;
+    return arguments.length ? (this._border = typeof _ === "function" ? _ : constant$2(_), this) : this._border;
   };
 
   /**
@@ -16730,7 +16122,7 @@ function value(d) {
       @param {Function|String} [*value* = "2px"]
   */
   Tooltip.prototype.borderRadius = function borderRadius (_) {
-    return arguments.length ? (this._borderRadius = typeof _ === "function" ? _ : constant$12(_), this) : this._borderRadius;
+    return arguments.length ? (this._borderRadius = typeof _ === "function" ? _ : constant$2(_), this) : this._borderRadius;
   };
 
   /**
@@ -16757,7 +16149,7 @@ function value(d) {
       @param {Function|Number} [*ms* = 200]
   */
   Tooltip.prototype.duration = function duration (_) {
-    return arguments.length ? (this._duration = typeof _ === "function" ? _ : constant$12(_), this) : this._duration;
+    return arguments.length ? (this._duration = typeof _ === "function" ? _ : constant$2(_), this) : this._duration;
   };
 
   /**
@@ -16770,7 +16162,7 @@ function value(d) {
 }
   */
   Tooltip.prototype.footer = function footer (_) {
-    return arguments.length ? (this._footer = typeof _ === "function" ? _ : constant$12(_), this) : this._footer;
+    return arguments.length ? (this._footer = typeof _ === "function" ? _ : constant$2(_), this) : this._footer;
   };
 
   /**
@@ -16794,7 +16186,7 @@ function value(d) {
       @param {Function|String} [*value* = "auto"]
   */
   Tooltip.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$12(_), this) : this._height;
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$2(_), this) : this._height;
   };
 
   /**
@@ -16807,7 +16199,7 @@ function value(d, i) {
 }
   */
   Tooltip.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$12(_), this) : this._id;
+    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$2(_), this) : this._id;
   };
 
   /**
@@ -16816,7 +16208,7 @@ function value(d, i) {
       @param {Function|Number} [*value* = 10]
   */
   Tooltip.prototype.offset = function offset (_) {
-    return arguments.length ? (this._offset = typeof _ === "function" ? _ : constant$12(_), this) : this._offset;
+    return arguments.length ? (this._offset = typeof _ === "function" ? _ : constant$2(_), this) : this._offset;
   };
 
   /**
@@ -16825,7 +16217,7 @@ function value(d, i) {
       @param {Function|String} [*value* = "5px"]
   */
   Tooltip.prototype.padding = function padding (_) {
-    return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$12(_), this) : this._padding;
+    return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$2(_), this) : this._padding;
   };
 
   /**
@@ -16834,7 +16226,7 @@ function value(d, i) {
       @param {Function|String} [*value* = "auto"]
   */
   Tooltip.prototype.pointerEvents = function pointerEvents (_) {
-    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$12(_), this) : this._pointerEvents;
+    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$2(_), this) : this._pointerEvents;
   };
 
   /**
@@ -16911,7 +16303,7 @@ function value(d) {
 }
   */
   Tooltip.prototype.title = function title (_) {
-    return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$12(_), this) : this._title;
+    return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$2(_), this) : this._title;
   };
 
   /**
@@ -16940,7 +16332,7 @@ function value(d) {
 }
   */
   Tooltip.prototype.translate = function translate (_) {
-    return arguments.length ? (this._translate = typeof _ === "function" ? _ : constant$12(_), this) : this._translate;
+    return arguments.length ? (this._translate = typeof _ === "function" ? _ : constant$2(_), this) : this._translate;
   };
 
   /**
@@ -16949,11 +16341,11 @@ function value(d) {
       @param {Function|String} [*value* = "auto"]
   */
   Tooltip.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$12(_), this) : this._width;
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$2(_), this) : this._width;
   };
 
   return Tooltip;
-}(BaseClass$6));
+}(BaseClass));
 
 /**
     @function colorNest
@@ -16977,7 +16369,7 @@ var colorNest = function(raw, fill, groupBy) {
     var loop = function ( i ) {
       var ids = colors.map(function (c) { return Array.from(new Set(c.values.map(function (d) { return groupBy[i](d); }))); }),
             total = sum$1(ids, function (d) { return d.length; }),
-            uniques = new Set(merge$1(ids)).size;
+            uniques = new Set(merge(ids)).size;
       if (total === numColors && uniques === numColors || i === groupBy.length - 1) {
         id = groupBy[i];
         data = nest$1().key(id).entries(raw).map(function (d) { return combine(d.values); });
@@ -17067,7 +16459,7 @@ var Viz = (function (BaseClass$$1) {
     this._data = [];
     this._duration = 600;
     this._history = [];
-    this._groupBy = [accessor$1("id")];
+    this._groupBy = [accessor("id")];
     this._legend = true;
     this._legendConfig = {
       shapeConfig: {
@@ -17138,9 +16530,9 @@ var Viz = (function (BaseClass$$1) {
     this._shapes = [];
     this._shapeConfig = {
       fill: function (d, i) { return assign(this$1._id(d, i)); },
-      opacity: constant$8(1),
+      opacity: constant$2(1),
       stroke: function (d, i) { return color(assign(this$1._id(d, i))).darker(); },
-      strokeWidth: constant$8(0)
+      strokeWidth: constant$2(0)
     };
     this._timeline = true;
     this._timelineClass = new Timeline()
@@ -17174,7 +16566,7 @@ var Viz = (function (BaseClass$$1) {
   Viz.prototype._uiGroup = function _uiGroup (type, condition) {
     if ( condition === void 0 ) condition = true;
 
-    return elem$1(("g.d3plus-plot-" + type), {
+    return elem(("g.d3plus-plot-" + type), {
       condition: condition,
       enter: {transform: ("translate(0, " + (this._height / 2) + ")")},
       exit: {opacity: 0},
@@ -17265,7 +16657,7 @@ var Viz = (function (BaseClass$$1) {
 
       if (timeline.selection() === void 0) {
 
-        var selection$$1 = extent(Array.from(new Set(merge$1(this._filteredData.map(function (d) {
+        var selection$$1 = extent(Array.from(new Set(merge(this._filteredData.map(function (d) {
           var t = this$1._time(d);
           return t instanceof Array ? t : [t];
         })))).map(date$2));
@@ -17313,7 +16705,7 @@ var Viz = (function (BaseClass$$1) {
 
     }
 
-    var titleGroup = elem$1("g.d3plus-plot-titles", {parent: this._select});
+    var titleGroup = elem("g.d3plus-plot-titles", {parent: this._select});
 
     this._backClass
       .data(this._history.length ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
@@ -17415,7 +16807,7 @@ function value(d) {
             return v.length === 1 ? v[0] : v;
           };
         }
-        return accessor$1(k);
+        return accessor(k);
       }
     }), this;
   };
@@ -17437,7 +16829,7 @@ function value(d) {
   Viz.prototype.highlight = function highlight (_) {
     var ids = _ ? Array.from(new Set(this._data.filter(_).map(this._id))).map(strip) : [];
     this._select.selectAll(".d3plus-Shape")
-      .style(((prefix$2()) + "transition"), ("opacity " + (this._tooltipClass.duration() / 1000) + "s"))
+      .style(((prefix$1()) + "transition"), ("opacity " + (this._tooltipClass.duration() / 1000) + "s"))
       .style("opacity", function() {
         var id = this.className.baseVal.split(" ").filter(function (c) { return c.indexOf("d3plus-id-") === 0; })[0].slice(10);
         return ids.length === 0 || ids.includes(id) ? 1 : 0.25;
@@ -17451,7 +16843,7 @@ function value(d) {
       @param {Function|String} [*value*]
   */
   Viz.prototype.label = function label (_) {
-    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$8(_), this) : this._label;
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$2(_), this) : this._label;
   };
 
   /**
@@ -17487,7 +16879,7 @@ function value(d) {
       @param {Function|String} [*value*]
   */
   Viz.prototype.shape = function shape (_) {
-    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$8(_), this) : this._shape;
+    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$2(_), this) : this._shape;
   };
 
   /**
@@ -17510,7 +16902,7 @@ function value(d) {
         this._time = _;
       }
       else {
-        this._time = accessor$1(_);
+        this._time = accessor(_);
         if (!this._aggs[_]) {
           this._aggs[_] = function (a) {
             var v = Array.from(new Set(a));
@@ -17578,7 +16970,7 @@ function value(d) {
   };
 
   return Viz;
-}(BaseClass$2));
+}(BaseClass));
 
 /**
     @class Treemap
@@ -17637,7 +17029,7 @@ var Treemap = (function (Viz$$1) {
         if (node.depth <= that._drawDepth) extractLayout(node.children);
         else {
           node.id = node.data.key;
-          node.data = merge$$1(node.data.values);
+          node.data = combine(node.data.values);
           shapeData.push(node);
         }
       }
