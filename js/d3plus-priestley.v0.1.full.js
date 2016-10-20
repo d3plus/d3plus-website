@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.3
+  d3plus-priestley v0.1.4
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -12975,7 +12975,6 @@ var Axis = (function (BaseClass$$1) {
   return Axis;
 }(BaseClass));
 
-var d3plus = [Circle, Rect];
 /**
     @class Legend
     @extends BaseClass
@@ -13285,10 +13284,10 @@ var Legend = (function (BaseClass$$1) {
     });
 
     // Legend Shapes
-    d3plus.forEach(function (Shape$$1) {
+    ["Circle", "Rect"].forEach(function (Shape$$1) {
 
-      new Shape$$1()
-        .data(data.filter(function (d) { return d.shape === Shape$$1.name; }))
+      new shapes[Shape$$1]()
+        .data(data.filter(function (d) { return d.shape === Shape$$1; }))
         .duration(this$1._duration)
         .labelPadding(0)
         .select(this$1._group.node())
@@ -14270,148 +14269,101 @@ var Timeline = (function (Axis$$1) {
   return Timeline;
 }(Axis));
 
-var val$1 = undefined;
-
+/**
+    @function prefix
+    @desc Returns the appropriate vendor prefix to use in CSS styles.
+*/
 var prefix$2 = function() {
-  if (val$1 !== void 0) return val$1;
-  if ("-webkit-transform" in document.body.style) val$1 = "-webkit-";
-  else if ("-moz-transform" in document.body.style) val$1 = "-moz-";
-  else if ("-ms-transform" in document.body.style) val$1 = "-ms-";
-  else if ("-o-transform" in document.body.style) val$1 = "-o-";
-  else val$1 = "";
-  return val$1;
-};
-
-var d3 = {
-  select: select, transition: transition
+  if ("-webkit-transform" in document.body.style) return "-webkit-";
+  else if ("-moz-transform" in document.body.style) return "-moz-";
+  else if ("-ms-transform" in document.body.style) return "-ms-";
+  else if ("-o-transform" in document.body.style) return "-o-";
+  else return "";
 };
 
 /**
-    The default id accessor function.
-    @private
+    @class Tooltip
+    @extends BaseClass
+    @desc Creates HTML tooltips in the body of a webpage.
 */
-function tooltipId(d, i) {
-  return d.id || ("" + i);
-}
+var Tooltip = (function (BaseClass$$1) {
+  function Tooltip() {
 
-/**
-    The default translate accessor function.
-    @private
-*/
-function tooltipTranslate(d) {
-  return [d.x, d.y];
-}
+    BaseClass$$1.call(this);
+    this._background = constant$5("rgba(255, 255, 255, 0.75)");
+    this._body = accessor("body", "");
+    this._bodyStyle = {
+      "font-family": "Verdana",
+      "font-size": "10px",
+      "font-weight": "400"
+    };
+    this._border = constant$5("1px solid rgba(0, 0, 0, 0.1)");
+    this._borderRadius = constant$5("2px");
+    this._className = "d3plus-tooltip";
+    this._duration = constant$5(200);
+    this._footer = accessor("footer", "");
+    this._footerStyle = {
+      "font-family": "Verdana",
+      "font-size": "10px",
+      "font-weight": "400"
+    };
+    this._height = constant$5("auto");
+    this._id = function (d, i) { return d.id || ("" + i); };
+    this._offset = constant$5(10);
+    this._padding = constant$5("5px");
+    this._pointerEvents = constant$5("auto");
+    this._prefix = prefix$2();
+    this._tableStyle = {
+      "border-spacing": "0",
+      "width": "100%"
+    };
+    this._tbody = [];
+    this._tbodyStyle = {
+      "font-family": "Verdana",
+      "font-size": "10px",
+      "text-align": "center"
+    };
+    this._thead = [];
+    this._theadStyle = {
+      "font-family": "Verdana",
+      "font-size": "10px",
+      "font-weight": "600",
+      "text-align": "center"
+    };
+    this._title = accessor("title", "");
+    this._titleStyle = {
+      "font-family": "Verdana",
+      "font-size": "12px",
+      "font-weight": "600",
+      "padding-bottom": "5px"
+    };
+    this._translate = function (d) { return [d.x, d.y]; };
+    this._width = constant$5("auto");
 
-/**
-    @function tooltip
-    @desc Creates HTML tooltips in the body of a webpage. If *data* is specified, immediately draws the tooltips based on the specified array and returns this generator. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#tooltip.data) method.
-    @param {Array} [data = []]
-*/
-var tooltip = function(data) {
-  if ( data === void 0 ) data = [];
-
-
-  /**
-      Sets styles for both enter and update.
-      @private
-  */
-  function boxStyles(box) {
-    box
-      .style("background", background)
-      .style((pre + "border-radius"), borderRadius)
-      .style("pointer-events", pointerEvents)
-      .style("padding", padding)
-      .style("width", width)
-      .style("height", height)
-      .style("border", function(d, i) {
-        var b = d3.select(this).style("border");
-        return b !== "0px none rgb(0, 0, 0)" ? b : border(d, i);
-      })
-      .style("top", function(d, i) {
-        return ((translate(d, i)[1] - this.offsetHeight - offset(d, i)) + "px");
-      })
-      .style("left", function(d, i) {
-        return ((translate(d, i)[0] - this.offsetWidth / 2) + "px");
-      });
   }
 
-  /**
-      Fetches table contents given functions or values.
-      @private
-  */
-  function cellContent(d) {
-    if (typeof d === "function") {
-      var datum = d3.select(this.parentNode.parentNode).datum();
-      return d(datum, data.indexOf(datum));
-    }
-    else return d;
-  }
-
-  var pre = prefix$2();
-
-  var background = constant$5("rgba(255, 255, 255, 0.75)"),
-      body = accessor("body", ""),
-      bodyStyle = {
-        "font-family": "Verdana",
-        "font-size": "10px",
-        "font-weight": "400"
-      },
-      border = constant$5("1px solid rgba(0, 0, 0, 0.1)"),
-      borderRadius = constant$5("2px"),
-      className = "d3plus-tooltip",
-      duration = constant$5(200),
-      footer = accessor("footer", ""),
-      footerStyle = {
-        "font-family": "Verdana",
-        "font-size": "10px",
-        "font-weight": "400"
-      },
-      height = constant$5("auto"),
-      id = tooltipId,
-      offset = constant$5(10),
-      padding = constant$5("5px"),
-      pointerEvents = constant$5("auto"),
-      tableStyle = {
-        "border-spacing": "0",
-        "width": "100%"
-      },
-      tbody = [],
-      tbodyStyle = {
-        "font-family": "Verdana",
-        "font-size": "10px",
-        "text-align": "center"
-      },
-      thead = [],
-      theadStyle = {
-        "font-family": "Verdana",
-        "font-size": "10px",
-        "font-weight": "600",
-        "text-align": "center"
-      },
-      title = accessor("title", ""),
-      titleStyle = {
-        "font-family": "Verdana",
-        "font-size": "12px",
-        "font-weight": "600",
-        "padding-bottom": "5px"
-      },
-      translate = tooltipTranslate,
-      width = constant$5("auto");
+  if ( BaseClass$$1 ) Tooltip.__proto__ = BaseClass$$1;
+  Tooltip.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  Tooltip.prototype.constructor = Tooltip;
 
   /**
       The inner return object and draw function that gets assigned the public methods.
       @private
   */
-  function tooltip(callback) {
+  Tooltip.prototype.render = function render (callback) {
+    var this$1 = this;
 
-    var tooltips = d3.select("body").selectAll(("." + className))
-      .data(data, id);
+
+    var that = this;
+
+    var tooltips = select("body").selectAll(("." + (this._className)))
+      .data(this._data, this._id);
 
     var enter = tooltips.enter().append("div")
-      .attr("class", className)
+      .attr("class", this._className)
       .style("position", "absolute")
-      .style((pre + "transform"), "scale(0)")
-      .style((pre + "transform-origin"), "50% 100%");
+      .style(((this._prefix) + "transform"), "scale(0)")
+      .style(((this._prefix) + "transform-origin"), "50% 100%");
 
     var update = tooltips.merge(enter);
 
@@ -14421,8 +14373,46 @@ var tooltip = function(data) {
     */
     function divElement(cat) {
       enter.append("div").attr("class", ("d3plus-tooltip-" + cat));
-      var div = update.select((".d3plus-tooltip-" + cat)).html(eval(cat));
-      stylize(div, eval((cat + "Style")));
+      var div = update.select((".d3plus-tooltip-" + cat)).html(that[("_" + cat)]);
+      stylize(div, that[("_" + cat + "Style")]);
+    }
+
+    /**
+        Fetches table contents given functions or values.
+        @private
+    */
+    function cellContent(d) {
+      if (typeof d === "function") {
+        var datum = select(this.parentNode.parentNode).datum();
+        return d(datum, that._data.indexOf(datum));
+      }
+      else return d;
+    }
+
+    /**
+        Sets styles for both enter and update.
+        @private
+    */
+    function boxStyles(box) {
+
+      box
+        .style("background", that._background)
+        .style(((that._prefix) + "border-radius"), that._borderRadius)
+        .style("pointer-events", that._pointerEvents)
+        .style("padding", that._padding)
+        .style("width", that._width)
+        .style("height", that._height)
+        .style("border", function(d, i) {
+          var b = select(this).style("border");
+          return b !== "0px none rgb(0, 0, 0)" ? b : that._border(d, i);
+        })
+        .style("top", function(d, i) {
+          return ((that._translate(d, i)[1] - this.offsetHeight - that._offset(d, i)) + "px");
+        })
+        .style("left", function(d, i) {
+          return ((that._translate(d, i)[0] - this.offsetWidth / 2) + "px");
+        });
+
     }
 
     divElement("title");
@@ -14430,19 +14420,19 @@ var tooltip = function(data) {
 
     var tableEnter = enter.append("table").attr("class", "d3plus-tooltip-table");
     var table = update.select(".d3plus-tooltip-table");
-    stylize(table, tableStyle);
+    stylize(table, this._tableStyle);
 
     tableEnter.append("thead").attr("class", "d3plus-tooltip-thead");
     var tableHead = update.select(".d3plus-tooltip-thead");
-    stylize(tableHead, theadStyle);
-    var th = tableHead.selectAll("th").data(thead);
+    stylize(tableHead, this._theadStyle);
+    var th = tableHead.selectAll("th").data(this._thead);
     th.enter().append("th").merge(th).html(cellContent);
     th.exit().remove();
 
     tableEnter.append("tbody").attr("class", "d3plus-tooltip-tbody");
     var tableBody = update.select(".d3plus-tooltip-tbody");
-    stylize(tableBody, tbodyStyle);
-    var tr = tableBody.selectAll("tr").data(tbody);
+    stylize(tableBody, this._tbodyStyle);
+    var tr = tableBody.selectAll("tr").data(this._tbody);
     var trEnter = tr.enter().append("tr");
     tr.exit().remove();
     var trUpdate = tr.merge(trEnter);
@@ -14453,34 +14443,36 @@ var tooltip = function(data) {
 
     enter.call(boxStyles);
 
+    var t = transition().duration(this._duration);
+
     update
-      .attr("id", function (d, i) { return ("d3plus-tooltip-" + (id(d, i))); })
-      .transition().duration(duration)
-        .style((pre + "transform"), "scale(1)")
+      .attr("id", function (d, i) { return ("d3plus-tooltip-" + (this$1._id(d, i))); })
+      .transition(t)
+        .style(((this._prefix) + "transform"), "scale(1)")
         .call(boxStyles);
 
     tooltips.exit()
-      .transition().duration(duration)
-      .style((pre + "transform"), "scale(0)")
-      .remove();
+      .transition(t)
+        .style(((this._prefix) + "transform"), "scale(0)")
+        .remove();
 
-    if (callback) setTimeout(callback, 100);
+    if (callback) setTimeout(callback, this._duration + 100);
 
-    return tooltip;
+    return this;
 
-  }
-
-  /**
-      @memberof tooltip
-      @desc If *value* is specified, sets the background accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current background accessor.
-      @param {Function|String} [*value* = "rgba(255, 255, 255, 0.75)"]
-  */
-  tooltip.background = function(_) {
-    return arguments.length ? (background = typeof _ === "function" ? _ : constant$5(_), tooltip) : background;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
+      @desc If *value* is specified, sets the background accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current background accessor.
+      @param {Function|String} [*value* = "rgba(255, 255, 255, 0.75)"]
+  */
+  Tooltip.prototype.background = function background (_) {
+    return arguments.length ? (this._background = typeof _ === "function" ? _ : constant$5(_), this) : this._background;
+  };
+
+  /**
+      @memberof Tooltip
       @desc If *value* is specified, sets the body accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current body accessor.
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
@@ -14488,12 +14480,12 @@ function value(d) {
   return d.body || "";
 }
   */
-  tooltip.body = function(_) {
-    return arguments.length ? (body = typeof _ === "function" ? _ : constant$5(_), tooltip) : body;
+  Tooltip.prototype.body = function body (_) {
+    return arguments.length ? (this._body = typeof _ === "function" ? _ : constant$5(_), this) : this._body;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the body styles to the specified values and returns this generator. If *value* is not specified, returns the current body styles.
       @param {Object} [*value*]
       @example <caption>default styles</caption>
@@ -14503,74 +14495,57 @@ function value(d) {
   "font-weight": "400"
 }
   */
-  tooltip.bodyStyle = function(_) {
-    return arguments.length ? (bodyStyle = Object.assign(bodyStyle, _), tooltip) : bodyStyle;
+  Tooltip.prototype.bodyStyle = function bodyStyle (_) {
+    return arguments.length ? (this._bodyStyle = Object.assign(this._bodyStyle, _), this) : this._bodyStyle;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the border accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current border accessor.
       @param {Function|String} [*value* = "1px solid rgba(0, 0, 0, 0.1)"]
   */
-  tooltip.border = function(_) {
-    return arguments.length ? (border = typeof _ === "function" ? _ : constant$5(_), tooltip) : border;
+  Tooltip.prototype.border = function border (_) {
+    return arguments.length ? (this._border = typeof _ === "function" ? _ : constant$5(_), this) : this._border;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the border-radius accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current border-radius accessor.
       @param {Function|String} [*value* = "2px"]
   */
-  tooltip.borderRadius = function(_) {
-    return arguments.length ? (borderRadius = typeof _ === "function" ? _ : constant$5(_), tooltip) : borderRadius;
+  Tooltip.prototype.borderRadius = function borderRadius (_) {
+    return arguments.length ? (this._borderRadius = typeof _ === "function" ? _ : constant$5(_), this) : this._borderRadius;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the class name to the specified string and returns this generator. If *value* is not specified, returns the current class name.
       @param {String} [*value* = "d3plus-tooltip"]
   */
-  tooltip.className = function(_) {
-    return arguments.length ? (className = _, tooltip) : className;
+  Tooltip.prototype.className = function className (_) {
+    return arguments.length ? (this._className = _, this) : this._className;
   };
 
   /**
-      @memberof tooltip
-      @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this generator. If *value* is not specified, returns the current configuration.
-      @param {Object} [*value*]
-  */
-  tooltip.config = function(_) {
-    if (arguments.length) {
-      for (var k in _) if ({}.hasOwnProperty.call(_, k)) tooltip[k](_[k]);
-      return tooltip;
-    }
-    else {
-      var config = {};
-      for (var k$1 in tooltip.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(tooltip, k$1)) config[k$1] = tooltip[k$1]();
-      return config;
-    }
-  };
-
-  /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *data* is specified, sets the data array to the specified array and returns this generator. If *data* is not specified, returns the current data array.
       @param {Array} [*data* = []]
   */
-  tooltip.data = function(_) {
-    return arguments.length ? (data = _, tooltip) : data;
+  Tooltip.prototype.data = function data (_) {
+    return arguments.length ? (this._data = _, this) : this._data;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *ms* is specified, sets the duration accessor to the specified function or number and returns this generator. If *ms* is not specified, returns the current duration accessor.
       @param {Function|Number} [*ms* = 200]
   */
-  tooltip.duration = function(_) {
-    return arguments.length ? (duration = typeof _ === "function" ? _ : constant$5(_), tooltip) : duration;
+  Tooltip.prototype.duration = function duration (_) {
+    return arguments.length ? (this._duration = typeof _ === "function" ? _ : constant$5(_), this) : this._duration;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the footer accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current footer accessor.
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
@@ -14578,12 +14553,12 @@ function value(d) {
   return d.footer || "";
 }
   */
-  tooltip.footer = function(_) {
-    return arguments.length ? (footer = typeof _ === "function" ? _ : constant$5(_), tooltip) : footer;
+  Tooltip.prototype.footer = function footer (_) {
+    return arguments.length ? (this._footer = typeof _ === "function" ? _ : constant$5(_), this) : this._footer;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the footer styles to the specified values and returns this generator. If *value* is not specified, returns the current footer styles.
       @param {Object} [*value*]
       @example <caption>default styles</caption>
@@ -14593,21 +14568,21 @@ function value(d) {
   "font-weight": "400"
 }
   */
-  tooltip.footerStyle = function(_) {
-    return arguments.length ? (footerStyle = Object.assign(footerStyle, _), tooltip) : footerStyle;
+  Tooltip.prototype.footerStyle = function footerStyle (_) {
+    return arguments.length ? (this._footerStyle = Object.assign(this._footerStyle, _), this) : this._footerStyle;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the height accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current height accessor.
       @param {Function|String} [*value* = "auto"]
   */
-  tooltip.height = function(_) {
-    return arguments.length ? (height = typeof _ === "function" ? _ : constant$5(_), tooltip) : height;
+  Tooltip.prototype.height = function height (_) {
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$5(_), this) : this._height;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the id accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current id accessor.
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
@@ -14615,39 +14590,39 @@ function value(d, i) {
   return d.id || "" + i;
 }
   */
-  tooltip.id = function(_) {
-    return arguments.length ? (id = typeof _ === "function" ? _ : constant$5(_), tooltip) : id;
+  Tooltip.prototype.id = function id (_) {
+    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$5(_), this) : this._id;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the offset accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current offset accessor.
       @param {Function|Number} [*value* = 10]
   */
-  tooltip.offset = function(_) {
-    return arguments.length ? (offset = typeof _ === "function" ? _ : constant$5(_), tooltip) : offset;
+  Tooltip.prototype.offset = function offset (_) {
+    return arguments.length ? (this._offset = typeof _ === "function" ? _ : constant$5(_), this) : this._offset;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the padding accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current padding accessor.
       @param {Function|String} [*value* = "5px"]
   */
-  tooltip.padding = function(_) {
-    return arguments.length ? (padding = typeof _ === "function" ? _ : constant$5(_), tooltip) : padding;
+  Tooltip.prototype.padding = function padding (_) {
+    return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$5(_), this) : this._padding;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current pointer-events accessor.
       @param {Function|String} [*value* = "auto"]
   */
-  tooltip.pointerEvents = function(_) {
-    return arguments.length ? (pointerEvents = typeof _ === "function" ? _ : constant$5(_), tooltip) : pointerEvents;
+  Tooltip.prototype.pointerEvents = function pointerEvents (_) {
+    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$5(_), this) : this._pointerEvents;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the table styles to the specified values and returns this generator. If *value* is not specified, returns the current table styles.
       @param {Object} [*value*]
       @example <caption>default styles</caption>
@@ -14656,21 +14631,21 @@ function value(d, i) {
   "width": "100%"
 }
   */
-  tooltip.tableStyle = function(_) {
-    return arguments.length ? (tableStyle = Object.assign(tableStyle, _), tooltip) : tableStyle;
+  Tooltip.prototype.tableStyle = function tableStyle (_) {
+    return arguments.length ? (this._tableStyle = Object.assign(this._tableStyle, _), this) : this._tableStyle;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the contents of the table body to the specified array of functions or strings and returns this generator. If *value* is not specified, returns the current table body data.
       @param {Array} [*value* = []]
   */
-  tooltip.tbody = function(_) {
-    return arguments.length ? (tbody = _, tooltip) : tbody;
+  Tooltip.prototype.tbody = function tbody (_) {
+    return arguments.length ? (this._tbody = _, this) : this._tbody;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the table body styles to the specified values and returns this generator. If *value* is not specified, returns the current table body styles.
       @param {Object} [*value*]
       @example <caption>default styles</caption>
@@ -14681,21 +14656,21 @@ function value(d, i) {
   "text-align": "center"
 }
   */
-  tooltip.tbodyStyle = function(_) {
-    return arguments.length ? (tbodyStyle = Object.assign(tbodyStyle, _), tooltip) : tbodyStyle;
+  Tooltip.prototype.tbodyStyle = function tbodyStyle (_) {
+    return arguments.length ? (this._tbodyStyle = Object.assign(this._tbodyStyle, _), this) : this._tbodyStyle;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the contents of the table head to the specified array of functions or strings and returns this generator. If *value* is not specified, returns the current table head data.
       @param {Array} [*value* = []]
   */
-  tooltip.thead = function(_) {
-    return arguments.length ? (thead = _, tooltip) : thead;
+  Tooltip.prototype.thead = function thead (_) {
+    return arguments.length ? (this._thead = _, this) : this._thead;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the table head styles to the specified values and returns this generator. If *value* is not specified, returns the current table head styles.
       @param {Object} [*value*]
       @example <caption>default styles</caption>
@@ -14706,12 +14681,12 @@ function value(d, i) {
   "text-align": "center"
 }
   */
-  tooltip.theadStyle = function(_) {
-    return arguments.length ? (theadStyle = Object.assign(theadStyle, _), tooltip) : theadStyle;
+  Tooltip.prototype.theadStyle = function theadStyle (_) {
+    return arguments.length ? (this._theadStyle = Object.assign(this._theadStyle, _), this) : this._theadStyle;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the title accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current title accessor.
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
@@ -14719,12 +14694,12 @@ function value(d) {
   return d.title || "";
 }
   */
-  tooltip.title = function(_) {
-    return arguments.length ? (title = typeof _ === "function" ? _ : constant$5(_), tooltip) : title;
+  Tooltip.prototype.title = function title (_) {
+    return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$5(_), this) : this._title;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the title styles to the specified values and returns this generator. If *value* is not specified, returns the current title styles.
       @param {Object} [*value*]
       @example <caption>default styles</caption>
@@ -14735,12 +14710,12 @@ function value(d) {
   "padding-bottom": "5px"
 }
   */
-  tooltip.titleStyle = function(_) {
-    return arguments.length ? (titleStyle = Object.assign(titleStyle, _), tooltip) : titleStyle;
+  Tooltip.prototype.titleStyle = function titleStyle (_) {
+    return arguments.length ? (this._titleStyle = Object.assign(this._titleStyle, _), this) : this._titleStyle;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the translate accessor to the specified function or array and returns this generator. If *value* is not specified, returns the current translate accessor.
       @param {Function|Array} [*value*]
       @example <caption>default accessor</caption>
@@ -14748,22 +14723,21 @@ function value(d) {
   return [d.x, d.y];
 }
   */
-  tooltip.translate = function(_) {
-    return arguments.length ? (translate = typeof _ === "function" ? _ : constant$5(_), tooltip) : translate;
+  Tooltip.prototype.translate = function translate (_) {
+    return arguments.length ? (this._translate = typeof _ === "function" ? _ : constant$5(_), this) : this._translate;
   };
 
   /**
-      @memberof tooltip
+      @memberof Tooltip
       @desc If *value* is specified, sets the width accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current width accessor.
       @param {Function|String} [*value* = "auto"]
   */
-  tooltip.width = function(_) {
-    return arguments.length ? (width = typeof _ === "function" ? _ : constant$5(_), tooltip) : width;
+  Tooltip.prototype.width = function width (_) {
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$5(_), this) : this._width;
   };
 
-  return data.length ? tooltip() : tooltip;
-
-};
+  return Tooltip;
+}(BaseClass));
 
 /**
     @function colorNest
@@ -14888,13 +14862,14 @@ var Viz = (function (BaseClass$$1) {
     this._on = {
       click: function (d, i) {
 
+        this$1._select.style("cursor", "auto");
         if (this$1._drawDepth < this$1._groupBy.length - 1) {
 
           var filterGroup = this$1._groupBy[this$1._drawDepth],
                 filterId = this$1._id(d, i);
 
           this$1.highlight(false);
-          if (this$1._tooltip) this$1._tooltipClass.data([])();
+          if (this$1._tooltip) this$1._tooltipClass.data([]).render();
 
           this$1._history.push({
             depth: this$1._depth,
@@ -14921,23 +14896,26 @@ var Viz = (function (BaseClass$$1) {
         });
 
         if (this$1._tooltip) {
+          var depth = this$1._drawDepth < this$1._groupBy.length - 1;
+          this$1._select.style("cursor", depth ? "pointer" : "auto");
           this$1._tooltipClass.data([d])
-            .footer(this$1._drawDepth < this$1._groupBy.length - 1 ? "Click to Expand" : "")
+            .footer(depth ? "Click to Expand" : "")
             .translate(mouse(select("html").node()))
-            ();
+            .render();
         }
 
       },
       mousemove: function () {
 
         if (this$1._tooltip) {
-          this$1._tooltipClass.translate(mouse(select("html").node()))();
+          this$1._tooltipClass.translate(mouse(select("html").node())).render();
         }
 
       },
       mouseleave: function () {
         this$1.highlight(false);
-        if (this$1._tooltip) this$1._tooltipClass.data([])();
+        this$1._select.style("cursor", "auto");
+        if (this$1._tooltip) this$1._tooltipClass.data([]).render();
       }
     };
     this._padding = 5;
@@ -14948,7 +14926,7 @@ var Viz = (function (BaseClass$$1) {
       stroke: function (d, i) { return color(assign(this$1._id(d, i))).darker(); },
       strokeWidth: constant$5(0)
     };
-    this._timeline = {};
+    this._timeline = true;
     this._timelineClass = new Timeline()
       .align("end")
       .on("end", function (s) {
@@ -14960,8 +14938,10 @@ var Viz = (function (BaseClass$$1) {
           return ms >= s[0] && ms <= s[1];
         }).render();
       });
-    this._tooltip = {duration: 50};
-    this._tooltipClass = tooltip().pointerEvents("none");
+    this._timelineConfig = {};
+    this._tooltip = true;
+    this._tooltipClass = new Tooltip().pointerEvents("none");
+    this._tooltipConfig = {duration: 50};
 
   }
 
@@ -15080,7 +15060,7 @@ var Viz = (function (BaseClass$$1) {
       }
 
       timeline
-        .config(this._timeline.constructor === Object ? this._timeline : {})
+        .config(this._timelineConfig)
         .render();
 
       this._margin.bottom += timeline.outerBounds().height + timeline.padding() * 2;
@@ -15126,8 +15106,7 @@ var Viz = (function (BaseClass$$1) {
 
     this._margin.top += this._history.length ? this._backClass.fontSize()() + this._padding : 0;
 
-    this._tooltipClass.title(this._drawLabel);
-    if (this._tooltip.constructor === Object) this._tooltipClass.config(this._tooltip);
+    this._tooltipClass.title(this._drawLabel).config(this._tooltipConfig);
 
     if (callback) setTimeout(callback, this._duration + 100);
 
@@ -15339,8 +15318,8 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc If *value* is specified, toggles the timeline based on the specified boolean and returns the current class instance. If *value* is an object, then it is passed to the timeline's config method. If *value* is not specified, returns the current value.
-      @param {Boolean|Object} [*value* = true]
+      @desc If *value* is specified, toggles the timeline based on the specified boolean and returns the current class instance. If *value* is not specified, returns the current timeline visibility.
+      @param {Boolean} [*value* = true]
   */
   Viz.prototype.timeline = function timeline (_) {
     return arguments.length ? (this._timeline = _, this) : this._timeline;
@@ -15348,11 +15327,29 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc If *value* is specified, toggles the tooltip based on the specified boolean and returns the current class instance. If *value* is an object, then it is passed to the tooltip's config method. If *value* is not specified, returns the current tooltip visibility.
-      @param {Boolean|Object} [*value* = true]
+      @desc If *value* is specified, sets the config method for the timeline and returns the current class instance. If *value* is not specified, returns the current timeline configuration.
+      @param {Object} [*value*]
   */
-  Viz.prototype.tooltip = function tooltip$1 (_) {
+  Viz.prototype.timelineConfig = function timelineConfig (_) {
+    return arguments.length ? (this._timelineConfig = Object.assign(this._timelineConfig, _), this) : this._timelineConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, toggles the tooltip based on the specified boolean and returns the current class instance. If *value* is not specified, returns the current tooltip visibility.
+      @param {Boolean} [*value* = true]
+  */
+  Viz.prototype.tooltip = function tooltip (_) {
     return arguments.length ? (this._tooltip = _, this) : this._tooltip;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the config method for the tooltip and returns the current class instance. If *value* is not specified, returns the current tooltip configuration.
+      @param {Object} [*value*]
+  */
+  Viz.prototype.tooltipConfig = function tooltipConfig (_) {
+    return arguments.length ? (this._tooltipConfig = Object.assign(this._tooltipConfig, _), this) : this._tooltipConfig;
   };
 
   /**
