@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.3.5
+  d3plus-viz v0.3.6
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -14567,6 +14567,247 @@ function(d, i, shape) {
 }(BaseClass));
 
 /**
+    @class Area
+    @extends Shape
+    @desc Creates SVG areas based on an array of data.
+*/
+var Area$2 = (function (Shape) {
+  function Area() {
+
+    Shape.call(this);
+
+    this._curve = "linear";
+    this._defined = function () { return true; };
+    this._x = accessor("x");
+    this._x0 = accessor("x");
+    this._x1 = null;
+    this._y = constant$5(0);
+    this._y0 = constant$5(0);
+    this._y1 = accessor("y");
+
+  }
+
+  if ( Shape ) Area.__proto__ = Shape;
+  Area.prototype = Object.create( Shape && Shape.prototype );
+  Area.prototype.constructor = Area;
+
+  /**
+      Draws the lines.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Area.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    var path = this._path = area()
+      .defined(this._defined)
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x)
+      .x0(this._x0)
+      .x1(this._x1)
+      .y(this._y)
+      .y0(this._y0)
+      .y1(this._y1);
+
+    var exitPath = area()
+      .defined(function (d) { return d; })
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x)
+      .x0(this._x0)
+      .x1(this._x1)
+      .y(this._y)
+      .y0(this._y0)
+      .y1(this._y1);
+
+    var areas = nest$1().key(this._id).entries(this._data).map(function (d) {
+      var x = extent(d.values.map(this$1._x)
+        .concat(d.values.map(this$1._x0))
+        .concat(this$1._x1 ? d.values.map(this$1._x1) : [])
+      );
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+      var y = extent(d.values.map(this$1._y)
+        .concat(d.values.map(this$1._y0))
+        .concat(this$1._y1 ? d.values.map(this$1._y1) : [])
+      );
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+      d.nested = true;
+      return d;
+    });
+
+    var groups = this._select.selectAll(".d3plus-Area").data(areas, function (d) { return d.key; });
+
+    groups.transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
+
+    groups.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attrTween("d", function(d) {
+        return interpolatePath(select(this).attr("d"), path(d.values));
+      })
+      .call(this._applyStyle.bind(this));
+
+    groups.exit().select("path").transition(this._transition)
+      .attrTween("d", function(d) {
+        return interpolatePath(select(this).attr("d"), exitPath(d.values));
+      });
+
+    groups.exit().transition().delay(this._duration).remove();
+
+    groups.exit().call(this._applyLabels.bind(this), false);
+
+    var enter = groups.enter().append("g")
+        .attr("class", function (d) { return ("d3plus-Shape d3plus-Area d3plus-id-" + (strip$2(d.key))); })
+        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
+        .attr("opacity", 0);
+
+    enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    var update = enter.merge(groups);
+
+    update.call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    this._applyEvents(update);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Area
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Area.prototype._aes = function _aes (d, i) {
+    var this$1 = this;
+
+    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
+      @param {String} [*value* = "linear"]
+  */
+  Area.prototype.curve = function curve (_) {
+    return arguments.length ? (this._curve = _, this) : this._curve;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+      @param {Function} [*value*]
+  */
+  Area.prototype.defined = function defined (_) {
+    return arguments.length ? (this._defined = _, this) : this._defined;
+  };
+
+  /**
+      @memberof Area
+      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+      @param {String|HTMLElement} *selector*
+  */
+  Area.prototype.update = function update (_) {
+    var this$1 = this;
+
+
+    var groups = this._select.selectAll(_),
+          t = transition().duration(this._duration);
+
+    groups
+        .call(this._applyLabels.bind(this))
+      .transition(t)
+        .attr("opacity", this._opacity);
+
+    groups.select("path").transition(t)
+      .attr("d", function (d) { return this$1._path(d.values); });
+
+    return this;
+
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Area.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$5(_), this) : this._x;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
+      @param {Function|Number} [*value*]
+  */
+  Area.prototype.x0 = function x0 (_) {
+    return arguments.length ? (this._x0 = typeof _ === "function" ? _ : constant$5(_), this) : this._x0;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
+      @param {Function|Number|null} [*value*]
+  */
+  Area.prototype.x1 = function x1 (_) {
+    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$5(_), this) : this._x1;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Area.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$5(_), this) : this._y;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
+      @param {Function|Number} [*value*]
+  */
+  Area.prototype.y0 = function y0 (_) {
+    return arguments.length ? (this._y0 = typeof _ === "function" ? _ : constant$5(_), this) : this._y0;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
+      @param {Function|Number|null} [*value*]
+  */
+  Area.prototype.y1 = function y1 (_) {
+    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$5(_), this) : this._y1;
+  };
+
+  return Area;
+}(Shape$2));
+
+/**
     @class Circle
     @extends Shape
     @desc Creates SVG circles based on an array of data.
@@ -14733,6 +14974,184 @@ function(d) {
   };
 
   return Circle;
+}(Shape$2));
+
+/**
+    @class Line
+    @extends Shape
+    @desc Creates SVG lines based on an array of data.
+*/
+var Line$2 = (function (Shape) {
+  function Line() {
+    Shape.call(this);
+    this._curve = "linear";
+    this._defined = function (d) { return d; };
+    this._fill = constant$5("none");
+    this._path = line();
+    this._strokeWidth = constant$5(1);
+    this._x = accessor("x");
+    this._y = accessor("y");
+  }
+
+  if ( Shape ) Line.__proto__ = Shape;
+  Line.prototype = Object.create( Shape && Shape.prototype );
+  Line.prototype.constructor = Line;
+
+  /**
+      Draws the lines.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Line.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    var that = this;
+
+    var lines = nest$1().key(this._id).entries(this._data).map(function (d) {
+      var x = extent(d.values, this$1._x);
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+      var y = extent(d.values, this$1._y);
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+      d.nested = true;
+      return d;
+    });
+
+    this._path
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .defined(this._defined)
+      .x(this._x)
+      .y(this._y);
+
+    var groups = this._select.selectAll(".d3plus-Line").data(lines, function (d) { return d.key; });
+
+    groups.transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
+
+    groups.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attrTween("d", function(d) {
+        return interpolatePath(select(this).attr("d"), that._path(d.values));
+      })
+      .call(this._applyStyle.bind(this));
+
+    groups.exit().transition().delay(this._duration).remove();
+
+    groups.exit().call(this._applyLabels.bind(this), false);
+
+    var enter = groups.enter().append("g")
+        .attr("class", function (d) { return ("d3plus-Shape d3plus-Line d3plus-id-" + (strip$2(d.key))); })
+        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
+        .attr("opacity", 0);
+
+    enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return this$1._path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    var update = enter.merge(groups);
+
+    update.call(this._applyLabels.bind(this))
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
+
+    this._applyEvents(update);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Line
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Line.prototype._aes = function _aes (d, i) {
+    var this$1 = this;
+
+    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
+      @param {String} [*value* = "linear"]
+  */
+  Line.prototype.curve = function curve (_) {
+    return arguments.length ? (this._curve = _, this) : this._curve;
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+      @param {Function} [*value*]
+  */
+  Line.prototype.defined = function defined (_) {
+    return arguments.length ? (this._defined = _, this) : this._defined;
+  };
+
+  /**
+      @memberof Line
+      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
+      @param {String|HTMLElement} *selector*
+  */
+  Line.prototype.update = function update (_) {
+    var this$1 = this;
+
+
+    var groups = this._select.selectAll(_),
+          t = transition().duration(this._duration);
+
+    groups
+        .call(this._applyLabels.bind(this))
+      .transition(t)
+        .attr("opacity", this._opacity);
+
+    groups.select("path").transition(t)
+      .attr("d", function (d) { return this$1._path(d.values); });
+
+    return this;
+
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Line.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$5(_), this) : this._x;
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Line.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$5(_), this) : this._y;
+  };
+
+  return Line;
 }(Shape$2));
 
 /**
@@ -14924,7 +15343,17 @@ function(d) {
   return Rect;
 }(Shape$2));
 
-var d3plus = [Circle$2, Rect$2];
+
+
+var shapes$1 = Object.freeze({
+	Area: Area$2,
+	Circle: Circle$2,
+	Image: Image$2,
+	Line: Line$2,
+	Rect: Rect$2,
+	Shape: Shape$2
+});
+
 /**
     @class Legend
     @extends BaseClass
@@ -15234,10 +15663,10 @@ var Legend = (function (BaseClass$$1) {
     });
 
     // Legend Shapes
-    d3plus.forEach(function (Shape$$1) {
+    ["Circle", "Rect"].forEach(function (Shape$$1) {
 
-      new Shape$$1()
-        .data(data.filter(function (d) { return d.shape === Shape$$1.name; }))
+      new shapes$1[Shape$$1]()
+        .data(data.filter(function (d) { return d.shape === Shape$$1; }))
         .duration(this$1._duration)
         .labelPadding(0)
         .select(this$1._group.node())
