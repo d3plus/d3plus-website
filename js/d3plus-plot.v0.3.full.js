@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.8
+  d3plus-plot v0.3.9
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -14363,7 +14363,6 @@ var val$3 = undefined;
     @param {Object} styles An object of key/value style pairs.
 */
 
-var d3plus = [Circle, Rect];
 /**
     @class Legend
     @extends BaseClass
@@ -14673,10 +14672,10 @@ var Legend = (function (BaseClass$$1) {
     });
 
     // Legend Shapes
-    d3plus.forEach(function (Shape$$1) {
+    ["Circle", "Rect"].forEach(function (Shape$$1) {
 
-      new Shape$$1()
-        .data(data.filter(function (d) { return d.shape === Shape$$1.name; }))
+      new shapes[Shape$$1]()
+        .data(data.filter(function (d) { return d.shape === Shape$$1; }))
         .duration(this$1._duration)
         .labelPadding(0)
         .select(this$1._group.node())
