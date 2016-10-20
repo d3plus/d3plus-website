@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.14
+  d3plus-treemap v0.5.15
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
