@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.12
+  d3plus-legend v0.6.13
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -7,10 +7,9 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-selection'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
   typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-selection', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Selection,global.d3plusCommon,global.d3plusShape,global.d3plusText));
-}(this, (function (exports,d3Array,d3Selection,d3plusCommon,d3plusShape,d3plusText) { 'use strict';
+  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Selection,global.d3plusCommon,global.shapes,global.d3plusText));
+}(this, (function (exports,d3Array,d3Selection,d3plusCommon,shapes,d3plusText) { 'use strict';
 
-var d3plus = [d3plusShape.Circle, d3plusShape.Rect];
 /**
     @class Legend
     @extends BaseClass
@@ -37,7 +36,7 @@ var Legend = (function (BaseClass$$1) {
       duration: this._duration,
       fill: d3plusCommon.accessor("color"),
       fontColor: d3plusCommon.constant("#444"),
-      fontFamily: new d3plusShape.Rect().fontFamily(),
+      fontFamily: new shapes.Rect().fontFamily(),
       fontResize: false,
       fontSize: d3plusCommon.constant(10),
       height: d3plusCommon.constant(10),
@@ -320,10 +319,10 @@ var Legend = (function (BaseClass$$1) {
     });
 
     // Legend Shapes
-    d3plus.forEach(function (Shape) {
+    ["Circle", "Rect"].forEach(function (Shape) {
 
-      new Shape()
-        .data(data.filter(function (d) { return d.shape === Shape.name; }))
+      new shapes[Shape]()
+        .data(data.filter(function (d) { return d.shape === Shape; }))
         .duration(this$1._duration)
         .labelPadding(0)
         .select(this$1._group.node())
