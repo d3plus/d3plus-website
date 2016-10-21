@@ -1,5 +1,5 @@
 /*
-  d3plus-treemap v0.5.16
+  d3plus-treemap v0.5.17
   A reusable tree map built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -15297,7 +15297,7 @@ var interrupt$1 = function(node, name) {
 
   for (i in schedules) {
     if ((schedule = schedules[i]).name !== name) { empty = false; continue; }
-    active = schedule.state === STARTED$1;
+    active = schedule.state > STARTING$1 && schedule.state < ENDING$1;
     schedule.state = ENDED$1;
     schedule.timer.stop();
     if (active) schedule.on.call("interrupt", node, node.__data__, schedule.index, schedule.group);
@@ -16682,11 +16682,11 @@ var Viz = (function (BaseClass$$1) {
       var legend = colorNest(this._legendData, this._shapeConfig.fill, this._groupBy);
 
       this._legendClass
-        .id(function (d, i) { return legend.id(d, i); })
+        .id(legend.id)
         .duration(this._duration)
         .data(legend.data.length > 1 ? legend.data : [])
         .height(this._height / 2 - this._margin.bottom)
-        .label(this._drawLabel)
+        .label(this._label || legend.id)
         .select(legendGroup.node())
         .verticalAlign("bottom")
         .width(this._width)
