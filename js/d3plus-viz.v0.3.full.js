@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.3.6
+  d3plus-viz v0.3.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -19678,11 +19678,11 @@ var Viz = (function (BaseClass$$1) {
       var legend = colorNest(this._legendData, this._shapeConfig.fill, this._groupBy);
 
       this._legendClass
-        .id(function (d, i) { return legend.id(d, i); })
+        .id(legend.id)
         .duration(this._duration)
         .data(legend.data.length > 1 ? legend.data : [])
         .height(this._height / 2 - this._margin.bottom)
-        .label(this._drawLabel)
+        .label(this._label || legend.id)
         .select(legendGroup.node())
         .verticalAlign("bottom")
         .width(this._width)
