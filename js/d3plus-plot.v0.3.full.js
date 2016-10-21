@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.9
+  d3plus-plot v0.3.10
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -17857,14 +17857,28 @@ var Plot = (function (Viz$$1) {
           transition = this._transition,
           width = this._width - this._margin.left - this._margin.right;
 
+    var xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
+          yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
+
+    if (xTime || yTime) {
+      data.forEach(function (d) {
+        if (xTime) d.x = date$2(d.x);
+        if (yTime) d.y = date$2(d.y);
+      });
+    }
+
     var domains, stackData, stackKeys;
     if (this._stacked) {
 
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
 
-      stackData = nest$1().key(function (d) { return d[this$1._discrete]; }).entries(data).map(function (d) { return d.values; });
+      stackData = nest$1()
+        .key(function (d) { return Number(d[this$1._discrete]); })
+        .entries(data)
+        .sort(function (a, b) { return a.key - b.key; })
+        .map(function (d) { return d.values; });
 
-      stackData.forEach(function (g, i) {
+      stackData.forEach(function (g) {
         var ids = Array.from(new Set(g.map(function (d) { return d.id; })));
         if (ids.length < stackKeys.length) {
           stackKeys.forEach(function (k) {
@@ -17878,7 +17892,6 @@ var Plot = (function (Viz$$1) {
                 };
                 fillerPoint[this$1._discrete] = g[0][this$1._discrete];
                 fillerPoint[opp] = 0;
-                stackData[i].push(fillerPoint);
                 data.push(fillerPoint);
               }
             }
@@ -17886,7 +17899,7 @@ var Plot = (function (Viz$$1) {
         }
       });
 
-      data = data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
+      data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
 
       stackData = stack()
         .keys(stackKeys)
@@ -17903,16 +17916,6 @@ var Plot = (function (Viz$$1) {
 
     }
     else domains = {x: extent(data, function (d) { return d.x; }), y: extent(data, function (d) { return d.y; })};
-
-    var xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
-          yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
-
-    if (xTime || yTime) {
-      data.forEach(function (d) {
-        if (xTime) d.x = date$2(d.x);
-        if (yTime) d.y = date$2(d.y);
-      });
-    }
 
     var xDomain = this._xDomain ? this._xDomain.slice() : domains.x;
     if (xDomain[0] === void 0) xDomain[0] = domains.x[0];
