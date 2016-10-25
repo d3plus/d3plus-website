@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.6
+  d3plus-text v0.9.7
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -15,24 +15,27 @@
     @desc Coerces value into a String.
     @param {String} value
 */
-function stringify(value) {
+var stringify = function(value) {
   if (value === void 0) value = "undefined";
   else if (!(typeof value === "string" || value instanceof String)) value = JSON.stringify(value);
   return value;
-}
+};
 
-var removed = [
-  "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "[", "]", "{", "}", ".",
-  ", ", "/", "\\", "|", "'", "\"", ";", ":", "<", ">", "?", "=", "+"];
+// great unicode list: http://asecuritysite.com/coding/asc2
 
 var diacritics = [
-  [/[\300-\306]/g, "A"], [/[\340-\346]/g, "a"],
+  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
+  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
+  [/[\337]/g, "B"],
+  [/[\307]/g, "C"], [/[\347]/g, "c"],
+  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
   [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
   [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
-  [/[\322-\330]/g, "O"], [/[\362-\370]/g, "o"],
-  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
   [/[\321]/g, "N"], [/[\361]/g, "n"],
-  [/[\307]/g, "C"], [/[\347]/g, "c"]
+  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
+  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
+  [/[\327]/g, "x"],
+  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
 ];
 
 /**
@@ -40,24 +43,24 @@ var diacritics = [
     @desc Removes all non ASCII characters from a string.
     @param {String} value
 */
-function strip(value) {
+var strip = function(value) {
 
   return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
 
     if (char === " ") return "-";
-    else if (removed.indexOf(char) >= 0) return "";
 
+    var ret = false;
     for (var d = 0; d < diacritics.length; d++) {
       if (new RegExp(diacritics[d][0]).test(char)) {
-        char = diacritics[d][1];
+        ret = diacritics[d][1];
         break;
       }
     }
 
-    return char;
+    return ret || "";
 
   });
-}
+};
 
 // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
 // and http://www.fileformat.info/info/unicode/category/Mn/list.htm
@@ -115,13 +118,13 @@ var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSp
     @desc Splits a given sentence into an array of words.
     @param {String} sentence
 */
-function textSplit(sentence) {
+var textSplit = function(sentence) {
   if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords);
   return d3Array.merge(stringify(sentence).match(splitWords).map(function (d) {
     if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) return d.match(splitAllChars);
     return [d];
   }));
-}
+};
 
 /**
     @function textWidth
@@ -129,7 +132,7 @@ function textSplit(sentence) {
     @param {String|Array} text Can be either a single string or an array of strings to analyze.
     @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
 */
-function measure(text, style) {
+var measure = function(text, style) {
   if ( style === void 0 ) style = {"font-size": 10, "font-family": "sans-serif"};
 
 
@@ -151,13 +154,13 @@ function measure(text, style) {
   if (text instanceof Array) return text.map(function (t) { return context.measureText(t).width; });
   return context.measureText(text).width;
 
-}
+};
 
 /**
     @function textWrap
     @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
 */
-function wrap() {
+var wrap = function() {
 
   var fontFamily = "sans-serif",
       fontSize = 10,
@@ -292,17 +295,17 @@ function wrap() {
 
   return textWrap;
 
-}
+};
 
 /**
     @function TextBox
     @extends BaseClass
     @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the textBox function.
 */
-var TextBox = (function (BaseClass) {
+var TextBox = (function (BaseClass$$1) {
   function TextBox() {
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._delay = 0;
     this._duration = 0;
@@ -328,8 +331,8 @@ var TextBox = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) TextBox.__proto__ = BaseClass;
-  TextBox.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) TextBox.__proto__ = BaseClass$$1;
+  TextBox.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   TextBox.prototype.constructor = TextBox;
 
   /**
@@ -701,16 +704,6 @@ function(d, i) {
 
   /**
       @memberof TextBox
-      @desc Adds or removes a *listener* to each box for the specified event *typenames*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-      @param {String} [*typenames*]
-      @param {Function} [*listener*]
-  */
-  TextBox.prototype.on = function on (typenames, listener) {
-    return arguments.length === 2 ? (this._on[typenames] = listener, this) : arguments.length ? this._on[typenames] : this._on;
-  };
-
-  /**
-      @memberof TextBox
       @desc If *value* is specified, sets the overflow accessor to the specified function or boolean and returns this generator. If *value* is not specified, returns the current overflow accessor.
       @param {Function|Boolean} [*value* = false]
   */
@@ -825,7 +818,7 @@ function(d) {
     @param {Object} [opts] Optional parameters to apply.
     @param {String} [opts.lng] The locale to use when looking up all lowercase or uppecase words.
 */
-function titleCase(str, opts) {
+var titleCase = function(str, opts) {
 
   if (str === void 0) return "";
 
@@ -858,7 +851,7 @@ function titleCase(str, opts) {
     return ret;
   }, "");
 
-}
+};
 
 exports.stringify = stringify;
 exports.strip = strip;
