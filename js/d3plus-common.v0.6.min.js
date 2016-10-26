@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.1
+  d3plus-common v0.6.2
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
