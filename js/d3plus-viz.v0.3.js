@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.3.7
+  d3plus-viz v0.3.8
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -121,6 +121,7 @@ var Viz = (function (BaseClass$$1) {
       .on("mousemove", function () { return this$1._backClass.select().style("cursor", "pointer"); });
     this._data = [];
     this._duration = 600;
+    this._highlightOpacity = 0.5;
     this._history = [];
     this._groupBy = [d3plusCommon.accessor("id")];
     this._legend = true;
@@ -229,7 +230,7 @@ var Viz = (function (BaseClass$$1) {
   Viz.prototype._uiGroup = function _uiGroup (type, condition) {
     if ( condition === void 0 ) condition = true;
 
-    return d3plusCommon.elem(("g.d3plus-plot-" + type), {
+    return d3plusCommon.elem(("g.d3plus-viz-" + type), {
       condition: condition,
       enter: {transform: ("translate(0, " + (this._height / 2) + ")")},
       exit: {opacity: 0},
@@ -368,7 +369,7 @@ var Viz = (function (BaseClass$$1) {
 
     }
 
-    var titleGroup = d3plusCommon.elem("g.d3plus-plot-titles", {parent: this._select});
+    var titleGroup = d3plusCommon.elem("g.d3plus-viz-titles", {parent: this._select});
 
     this._backClass
       .data(this._history.length ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
@@ -490,14 +491,26 @@ function value(d) {
       @param {Array|Object} [*data*]
   */
   Viz.prototype.highlight = function highlight (_) {
-    var ids = _ ? Array.from(new Set(this._data.filter(_).map(this._id))).map(d3plusText.strip) : [];
-    this._select.selectAll(".d3plus-Shape")
+    var ids = _ ? Array.from(new Set(this._data.filter(_).map(this._id))).map(d3plusText.strip) : [],
+          that = this;
+    var groups = this._select.select(".d3plus-viz-legend");
+    this._shapes.forEach(function (s) { return groups = groups.merge(s.select()); });
+    groups.selectAll(".d3plus-Shape")
       .style(((d3plusCommon.prefix()) + "transition"), ("opacity " + (this._tooltipClass.duration() / 1000) + "s"))
       .style("opacity", function() {
         var id = this.className.baseVal.split(" ").filter(function (c) { return c.indexOf("d3plus-id-") === 0; })[0].slice(10);
-        return ids.length === 0 || ids.includes(id) ? 1 : 0.25;
+        return ids.length === 0 || ids.includes(id) ? 1 : that._highlightOpacity;
       });
     return this;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the highlight opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight opacity.
+      @param {Number} [*value* = 0.5]
+  */
+  Viz.prototype.highlightOpacity = function highlightOpacity (_) {
+    return arguments.length ? (this._highlightOpacity = _, this) : this._highlightOpacity;
   };
 
   /**
