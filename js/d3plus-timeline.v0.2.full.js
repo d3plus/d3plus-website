@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.2.0
+  d3plus-timeline v0.2.1
   An easy-to-use javascript timeline.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -4545,7 +4545,7 @@ var precisionRound = function(step, max) {
   return Math.max(0, exponent$1(max) - exponent$1(step)) + 1;
 };
 
-var tickFormat = function(domain, count, specifier) {
+var tickFormat$1 = function(domain, count, specifier) {
   var start = domain[0],
       stop = domain[domain.length - 1],
       step = tickStep(start, stop, count == null ? 10 : count),
@@ -4583,7 +4583,7 @@ function linearish(scale) {
   };
 
   scale.tickFormat = function(count, specifier) {
-    return tickFormat(domain(), count, specifier);
+    return tickFormat$1(domain(), count, specifier);
   };
 
   scale.nice = function(count) {
@@ -6045,15 +6045,21 @@ var attrize = function(e, a) {
 };
 
 /**
+    @function s
+    @desc Returns 4 random characters, used for constructing unique identifiers.
+    @private
+*/
+function s() {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+
+/**
     @class BaseClass
     @desc An abstract class that contains some global methods and functionality.
 */
 var BaseClass = function BaseClass() {
-
-  function s() {
-    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-  }
-
+  this._on = {};
   this._uuid = "" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s());
 };
 
@@ -6074,6 +6080,24 @@ BaseClass.prototype.config = function config (_) {
     for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
     return config;
   }
+};
+
+/**
+    @memberof BaseClass
+    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
+    @param {String} [*typenames*]
+    @param {Function} [*listener*]
+    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
+new Plot
+.on("click.Shape", function(d) {
+  console.log("data for shape clicked:", d);
+})
+.on("click.Legend", function(d) {
+  console.log("data for legend clicked:", d);
+})
+*/
+BaseClass.prototype.on = function on (_, f) {
+  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
 };
 
 /**
@@ -7293,7 +7317,7 @@ var Interpolator = function () {
 
     var iOpts = options.interpolation;
 
-    this.escapeValue = iOpts.escapeValue;
+    this.escapeValue = iOpts.escapeValue !== undefined ? iOpts.escapeValue : true;
 
     this.prefix = iOpts.prefix ? regexEscape(iOpts.prefix) : iOpts.prefixEscaped || '{{';
     this.suffix = iOpts.suffix ? regexEscape(iOpts.suffix) : iOpts.suffixEscaped || '}}';
@@ -8437,8 +8461,9 @@ function extend$1(commandsToExtend, referenceCommands, numPointsToExtend) {
  * @param {String} b The `d` attribute for a path
  */
 function interpolatePath(a, b) {
-  var aNormalized = a == null ? '' : a.replace(/[Z]/gi, '');
-  var bNormalized = b == null ? '' : b.replace(/[Z]/gi, '');
+  // remove Z, remove spaces after letters as seen in IE
+  var aNormalized = a == null ? '' : a.replace(/[Z]/gi, '').replace(/([MLCSTQAHV])\W*/gi, '$1');
+  var bNormalized = b == null ? '' : b.replace(/[Z]/gi, '').replace(/([MLCSTQAHV])\W*/gi, '$1');
   var aPoints = aNormalized === '' ? [] : aNormalized.split(/(?=[MLCSTQAHV])/gi);
   var bPoints = bNormalized === '' ? [] : bNormalized.split(/(?=[MLCSTQAHV])/gi);
 
@@ -9361,7 +9386,7 @@ var triangle = {
 };
 
 var c = -0.5;
-var s = Math.sqrt(3) / 2;
+var s$1 = Math.sqrt(3) / 2;
 var k = 1 / Math.sqrt(12);
 var a = (k / 2 + 1) * 3;
 
@@ -9377,12 +9402,12 @@ var wye = {
     context.moveTo(x0, y0);
     context.lineTo(x1, y1);
     context.lineTo(x2, y2);
-    context.lineTo(c * x0 - s * y0, s * x0 + c * y0);
-    context.lineTo(c * x1 - s * y1, s * x1 + c * y1);
-    context.lineTo(c * x2 - s * y2, s * x2 + c * y2);
-    context.lineTo(c * x0 + s * y0, c * y0 - s * x0);
-    context.lineTo(c * x1 + s * y1, c * y1 - s * x1);
-    context.lineTo(c * x2 + s * y2, c * y2 - s * x2);
+    context.lineTo(c * x0 - s$1 * y0, s$1 * x0 + c * y0);
+    context.lineTo(c * x1 - s$1 * y1, s$1 * x1 + c * y1);
+    context.lineTo(c * x2 - s$1 * y2, s$1 * x2 + c * y2);
+    context.lineTo(c * x0 + s$1 * y0, c * y0 - s$1 * x0);
+    context.lineTo(c * x1 + s$1 * y1, c * y1 - s$1 * x1);
+    context.lineTo(c * x2 + s$1 * y2, c * y2 - s$1 * x2);
     context.closePath();
   }
 };
@@ -10475,18 +10500,21 @@ var stringify = function(value) {
   return value;
 };
 
-var removed = [
-  "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "[", "]", "{", "}", ".",
-  ", ", "/", "\\", "|", "'", "\"", ";", ":", "<", ">", "?", "=", "+"];
+// great unicode list: http://asecuritysite.com/coding/asc2
 
 var diacritics = [
-  [/[\300-\306]/g, "A"], [/[\340-\346]/g, "a"],
+  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
+  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
+  [/[\337]/g, "B"],
+  [/[\307]/g, "C"], [/[\347]/g, "c"],
+  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
   [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
   [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
-  [/[\322-\330]/g, "O"], [/[\362-\370]/g, "o"],
-  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
   [/[\321]/g, "N"], [/[\361]/g, "n"],
-  [/[\307]/g, "C"], [/[\347]/g, "c"]
+  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
+  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
+  [/[\327]/g, "x"],
+  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
 ];
 
 /**
@@ -10499,16 +10527,16 @@ var strip = function(value) {
   return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
 
     if (char === " ") return "-";
-    else if (removed.indexOf(char) >= 0) return "";
 
+    var ret = false;
     for (var d = 0; d < diacritics.length; d++) {
       if (new RegExp(diacritics[d][0]).test(char)) {
-        char = diacritics[d][1];
+        ret = diacritics[d][1];
         break;
       }
     }
 
-    return char;
+    return ret || "";
 
   });
 };
@@ -10521,36 +10549,36 @@ var b = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307",
 var combiningMarks = a$1.concat(b);
 
 var splitChars = ["-",  "/",  ";",  ":",  "&",
-                    "u0E2F",  // thai character pairannoi
-                    "u0EAF",  // lao ellipsis
-                    "u0EC6",  // lao ko la (word repetition)
-                    "u0ECC",  // lao cancellation mark
-                    "u104A",  // myanmar sign little section
-                    "u104B",  // myanmar sign section
-                    "u104C",  // myanmar symbol locative
-                    "u104D",  // myanmar symbol completed
-                    "u104E",  // myanmar symbol aforementioned
-                    "u104F",  // myanmar symbol genitive
-                    "u2013",  // en dash
-                    "u2014",  // em dash
-                    "u2027",  // simplified chinese hyphenation point
-                    "u3000",  // simplified chinese ideographic space
-                    "u3001",  // simplified chinese ideographic comma
-                    "u3002",  // simplified chinese ideographic full stop
-                    "uFF5E"  // wave dash
-                  ];
+  "u0E2F",  // thai character pairannoi
+  "u0EAF",  // lao ellipsis
+  "u0EC6",  // lao ko la (word repetition)
+  "u0ECC",  // lao cancellation mark
+  "u104A",  // myanmar sign little section
+  "u104B",  // myanmar sign section
+  "u104C",  // myanmar symbol locative
+  "u104D",  // myanmar symbol completed
+  "u104E",  // myanmar symbol aforementioned
+  "u104F",  // myanmar symbol genitive
+  "u2013",  // en dash
+  "u2014",  // em dash
+  "u2027",  // simplified chinese hyphenation point
+  "u3000",  // simplified chinese ideographic space
+  "u3001",  // simplified chinese ideographic comma
+  "u3002",  // simplified chinese ideographic full stop
+  "uFF5E"  // wave dash
+];
 
 var prefixChars = ["'",  "<",  "(",  "{",  "[",
-                     "u00AB",  // left-pointing double angle quotation mark
-                     "u300A",  // left double angle bracket
-                     "u3008"  // left angle bracket
-                   ];
+  "u00AB",  // left-pointing double angle quotation mark
+  "u300A",  // left double angle bracket
+  "u3008"  // left angle bracket
+];
 
 var suffixChars = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
-                     "u00BB",  // right-pointing double angle quotation mark
-                     "u300B",  // right double angle bracket
-                     "u3009"  // right angle bracket
-                   ].concat(splitChars);
+  "u00BB",  // right-pointing double angle quotation mark
+  "u300B",  // right double angle bracket
+  "u3009"  // right angle bracket
+].concat(splitChars);
 
 var burmeseRange = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
 var japaneseRange = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u3400-\u4dbf";
@@ -11155,16 +11183,6 @@ function(d, i) {
 
   /**
       @memberof TextBox
-      @desc Adds or removes a *listener* to each box for the specified event *typenames*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-      @param {String} [*typenames*]
-      @param {Function} [*listener*]
-  */
-  TextBox.prototype.on = function on (typenames, listener) {
-    return arguments.length === 2 ? (this._on[typenames] = listener, this) : arguments.length ? this._on[typenames] : this._on;
-  };
-
-  /**
-      @memberof TextBox
       @desc If *value* is specified, sets the overflow accessor to the specified function or boolean and returns this generator. If *value* is not specified, returns the current overflow accessor.
       @param {Function|Boolean} [*value* = false]
   */
@@ -11569,481 +11587,468 @@ Image.prototype.y = function y (_) {
     @class Shape
     @desc An abstracted class for generating shapes.
 */
-var Shape = function Shape() {
-  var this$1 = this;
+var Shape = (function (BaseClass$$1) {
+  function Shape() {
+    var this$1 = this;
 
-  this._backgroundImage = constant$7(false);
-  this._data = [];
-  this._duration = 600;
-  this._fill = constant$7("black");
-  this._fontColor = function (d, i) { return contrast(this$1._fill(d, i)); };
-  this._fontFamily = constant$7("Verdana");
-  this._fontResize = constant$7(false);
-  this._fontSize = constant$7(12);
-  this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
-  this._label = constant$7(false);
-  this._labelPadding = constant$7(5);
-  this._on = {};
-  this._opacity = constant$7(1);
-  this._scale = constant$7(1);
-  this._stroke = constant$7("black");
-  this._strokeWidth = constant$7(0);
-  this._textAnchor = constant$7("start");
-  this._verticalAlign = constant$7("top");
-};
+    BaseClass$$1.call(this);
+    this._backgroundImage = constant$7(false);
+    this._data = [];
+    this._duration = 600;
+    this._fill = constant$7("black");
+    this._fontColor = function (d, i) { return contrast(this$1._fill(d, i)); };
+    this._fontFamily = constant$7("Verdana");
+    this._fontResize = constant$7(false);
+    this._fontSize = constant$7(12);
+    this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
+    this._label = constant$7(false);
+    this._labelPadding = constant$7(5);
+    this._opacity = constant$7(1);
+    this._scale = constant$7(1);
+    this._stroke = constant$7("black");
+    this._strokeWidth = constant$7(0);
+    this._textAnchor = constant$7("start");
+    this._verticalAlign = constant$7("top");
+  }
 
-/**
-    @memberof Shape
-    @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-    @param {Object} *data point*
-    @param {Number} *index*
-    @private
-*/
-Shape.prototype._aes = function _aes () {
-  return {};
-};
+  if ( BaseClass$$1 ) Shape.__proto__ = BaseClass$$1;
+  Shape.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  Shape.prototype.constructor = Shape;
 
-/**
-    @memberof Shape
-    @desc Adds event listeners to each shape group or hit area.
-    @param {D3Selection} *update* The update cycle of the data binding.
-    @private
-*/
-Shape.prototype._applyEvents = function _applyEvents (update) {
-
-  var that = this;
-  var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
-  hitArea.exit().remove();
-  hitArea = hitArea.enter().append("rect")
-      .attr("class", "hitArea")
-      .attr("fill", "none")
-    .merge(hitArea)
-      .data(function (d) { return [d]; })
-      .each(function(d) {
-        var h = that._hitArea(d, that._data.indexOf(d));
-        if (h) select(this).call(attrize, h);
-        else select(this).remove();
-      });
-  var handler = this._hitArea ? hitArea : update;
-
-  var events = Object.keys(this._on);
-  var loop = function ( e ) {
-    handler.on(events[e], function(d, i) {
-      var hit = this.className.baseVal === "hitArea";
-      var t = hit ? this.parentNode : this;
-      that._on[events[e]].bind(t)(d, hit ? that._data.indexOf(d) : i);
-    });
+  /**
+      @memberof Shape
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Shape.prototype._aes = function _aes () {
+    return {};
   };
+
+  /**
+      @memberof Shape
+      @desc Adds event listeners to each shape group or hit area.
+      @param {D3Selection} *update* The update cycle of the data binding.
+      @private
+  */
+  Shape.prototype._applyEvents = function _applyEvents (update) {
+
+    var that = this;
+    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+    var handler = this._hitArea ? hitArea : update;
+
+    var events = Object.keys(this._on);
+    var loop = function ( e ) {
+      handler.on(events[e], function(d, i) {
+        if (!that._on[events[e]]) return;
+        var hit = this.className.baseVal === "hitArea";
+        var t = hit ? this.parentNode : this;
+        that._on[events[e]].bind(t)(d, hit ? that._data.indexOf(d) : i);
+      });
+    };
 
     for (var e = 0; e < events.length; e++) loop( e );
 
-};
+  };
 
-/**
-    @memberof Shape
-    @desc Adds background image to each shape group.
-    @param {D3Selection} *g*
-    @param {Boolean} [*show* = True] Whether or not to show or remove the image.
-    @private
-*/
-Shape.prototype._applyImage = function _applyImage (g, show) {
+  /**
+      @memberof Shape
+      @desc Adds background image to each shape group.
+      @param {D3Selection} *g*
+      @param {Boolean} [*show* = True] Whether or not to show or remove the image.
+      @private
+  */
+  Shape.prototype._applyImage = function _applyImage (g, show) {
     if ( show === void 0 ) show = true;
 
 
-  var that = this;
+    var that = this;
 
-  g.each(function(d, i) {
+    g.each(function(d, i) {
 
-    var aes = that._aes(d, i);
+      var aes = that._aes(d, i);
 
-    var imageData = [];
-    var h = 0, w = 0;
+      var imageData = [];
+      var h = 0, w = 0;
 
-    if (show && (aes.r || aes.width && aes.height)) {
-      h = aes.r ? aes.r * 2 : aes.height;
-      w = aes.r ? aes.r * 2 : aes.width;
-      var url = that._backgroundImage(d, i);
-      if (url) imageData.push({url: url});
-    }
+      if (show && (aes.r || aes.width && aes.height)) {
+        h = aes.r ? aes.r * 2 : aes.height;
+        w = aes.r ? aes.r * 2 : aes.width;
+        var url = that._backgroundImage(d, i);
+        if (url) imageData.push({url: url});
+      }
 
-    new Image()
-      .data(imageData)
-      .duration(that._duration)
-      .height(h)
-      .select(this)
-      .width(w)
-      .x(-w / 2)
-      .y(-h / 2)
-      .render();
+      new Image()
+        .data(imageData)
+        .duration(that._duration)
+        .height(h)
+        .select(this)
+        .width(w)
+        .x(-w / 2)
+        .y(-h / 2)
+        .render();
 
-  });
+    });
 
-};
+  };
 
-/**
-    @memberof Shape
-    @desc Adds labels to each shape group.
-    @param {D3Selection} *g*
-    @param {Boolean} [*show* = True] Whether or not to show or remove the labels.
-    @private
-*/
-Shape.prototype._applyLabels = function _applyLabels (g, show) {
+  /**
+      @memberof Shape
+      @desc Adds labels to each shape group.
+      @param {D3Selection} *g*
+      @param {Boolean} [*show* = True] Whether or not to show or remove the labels.
+      @private
+  */
+  Shape.prototype._applyLabels = function _applyLabels (g, show) {
     if ( show === void 0 ) show = true;
 
 
-  var that = this;
+    var that = this;
 
-  g.each(function(datum, i) {
+    g.each(function(datum, i) {
 
-    var d = datum;
-    if (datum.nested && datum.key && datum.values) {
-      d = datum.values[0];
-      i = that._data.indexOf(d);
-    }
+      var d = datum;
+      if (datum.nested && datum.key && datum.values) {
+        d = datum.values[0];
+        i = that._data.indexOf(d);
+      }
 
-    /* Draws label based on inner bounds */
-    var labelData = [];
+      /* Draws label based on inner bounds */
+      var labelData = [];
 
-    if (show) {
+      if (show) {
 
-      var labels = that._label(d, i);
+        var labels = that._label(d, i);
 
-      if (that._labelBounds && labels !== false && labels !== void 0) {
+        if (that._labelBounds && labels !== false && labels !== void 0) {
 
-        var bounds = that._labelBounds(d, i, that._aes(datum, i));
+          var bounds = that._labelBounds(d, i, that._aes(datum, i));
 
-        if (bounds) {
+          if (bounds) {
 
-          if (labels.constructor !== Array) labels = [labels];
+            if (labels.constructor !== Array) labels = [labels];
 
-          var fC = that._fontColor(d, i),
-                fF = that._fontFamily(d, i),
-                fR = that._fontResize(d, i),
-                fS = that._fontSize(d, i),
-                lH = that._lineHeight(d, i),
-                padding = that._labelPadding(d, i),
-                tA = that._textAnchor(d, i),
-                vA = that._verticalAlign(d, i);
+            var fC = that._fontColor(d, i),
+                  fF = that._fontFamily(d, i),
+                  fR = that._fontResize(d, i),
+                  fS = that._fontSize(d, i),
+                  lH = that._lineHeight(d, i),
+                  padding = that._labelPadding(d, i),
+                  tA = that._textAnchor(d, i),
+                  vA = that._verticalAlign(d, i);
 
-          for (var l = 0; l < labels.length; l++) {
-            var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
-                  p = padding.constructor === Array ? padding[l] : padding;
-            b.height -= p * 2;
-            b.width -= p * 2;
-            b.x += p;
-            b.y += p;
-            b.id = (that._id(d, i)) + "_" + l;
-            b.text = labels[l];
+            for (var l = 0; l < labels.length; l++) {
+              var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
+                    p = padding.constructor === Array ? padding[l] : padding;
+              b.height -= p * 2;
+              b.width -= p * 2;
+              b.x += p;
+              b.y += p;
+              b.id = (that._id(d, i)) + "_" + l;
+              b.text = labels[l];
 
-            b.fC = fC.constructor === Array ? fC[l] : fC;
-            b.fF = fF.constructor === Array ? fF[l] : fF;
-            b.fR = fR.constructor === Array ? fR[l] : fR;
-            b.fS = fS.constructor === Array ? fS[l] : fS;
-            b.lH = lH.constructor === Array ? lH[l] : lH;
-            b.tA = tA.constructor === Array ? tA[l] : tA;
-            b.vA = vA.constructor === Array ? vA[l] : vA;
+              b.fC = fC.constructor === Array ? fC[l] : fC;
+              b.fF = fF.constructor === Array ? fF[l] : fF;
+              b.fR = fR.constructor === Array ? fR[l] : fR;
+              b.fS = fS.constructor === Array ? fS[l] : fS;
+              b.lH = lH.constructor === Array ? lH[l] : lH;
+              b.tA = tA.constructor === Array ? tA[l] : tA;
+              b.vA = vA.constructor === Array ? vA[l] : vA;
 
-            labelData.push(b);
+              labelData.push(b);
+            }
+
           }
 
         }
-
       }
+
+      new TextBox()
+        .data(labelData)
+        .delay(that._duration / 2)
+        .duration(that._duration)
+        .fontColor(function (d) { return d.fC; })
+        .fontFamily(function (d) { return d.fF; })
+        .fontResize(function (d) { return d.fR; })
+        .fontSize(function (d) { return d.fS; })
+        .lineHeight(function (d) { return d.lH; })
+        .textAnchor(function (d) { return d.tA; })
+        .verticalAlign(function (d) { return d.vA; })
+        .select(this)
+        .render();
+
+    });
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Provides the default styling to the shape elements.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._applyStyle = function _applyStyle (elem$$1) {
+
+    var that = this;
+
+    /**
+        @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
+        @param {Object} *d* data point
+        @param {Number} *i* index
+        @private
+    */
+    function styleLogic(d, i) {
+      return d.nested && d.key && d.values
+           ? this(d.values[0], that._data.indexOf(d.values[0]))
+           : this(d, i);
     }
 
-    new TextBox()
-      .data(labelData)
-      .delay(that._duration / 2)
-      .duration(that._duration)
-      .fontColor(function (d) { return d.fC; })
-      .fontFamily(function (d) { return d.fF; })
-      .fontResize(function (d) { return d.fR; })
-      .fontSize(function (d) { return d.fS; })
-      .lineHeight(function (d) { return d.lH; })
-      .textAnchor(function (d) { return d.tA; })
-      .verticalAlign(function (d) { return d.vA; })
-      .select(this)
-      .render();
+    elem$$1
+      .attr("fill", styleLogic.bind(this._fill))
+      .attr("stroke", styleLogic.bind(this._stroke))
+      .attr("stroke-width", styleLogic.bind(this._strokeWidth));
+  };
 
-  });
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
+      @param {Function|String} [*value* = false]
+  */
+  Shape.prototype.backgroundImage = function backgroundImage (_) {
+    return arguments.length ? (this._backgroundImage = typeof _ === "function" ? _ : constant$7(_), this) : this._backgroundImage;
+  };
 
-};
+  /**
+      @memberof Shape
+      @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape will be drawn for each object in the array.
+      @param {Array} [*data* = []]
+  */
+  Shape.prototype.data = function data (_) {
+    return arguments.length ? (this._data = _, this) : this._data;
+  };
 
-/**
-    @memberof Shape
-    @desc Provides the default styling to the shape elements.
-    @param {HTMLElement} *elem*
-    @private
-*/
-Shape.prototype._applyStyle = function _applyStyle (elem$$1) {
+  /**
+      @memberof Shape
+      @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
+      @param {Number} [*ms* = 600]
+  */
+  Shape.prototype.duration = function duration (_) {
+    return arguments.length ? (this._duration = _, this) : this._duration;
+  };
 
-  var that = this;
-  function styleLogic(d, i) {
-    return d.nested && d.key && d.values
-         ? this(d.values[0], that._data.indexOf(d.values[0]))
-         : this(d, i);
-  }
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current fill accessor.
+      @param {Function|String} [*value* = "black"]
+  */
+  Shape.prototype.fill = function fill (_) {
+    return arguments.length ? (this._fill = typeof _ === "function" ? _ : constant$7(_), this) : this._fill;
+  };
 
-  elem$$1
-    .attr("fill", styleLogic.bind(this._fill))
-    .attr("stroke", styleLogic.bind(this._stroke))
-    .attr("stroke-width", styleLogic.bind(this._strokeWidth));
-};
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value*]
+  */
+  Shape.prototype.fontColor = function fontColor (_) {
+    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$7(_), this) : this._fontColor;
+  };
 
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
-    @param {Function|String} [*value* = false]
-*/
-Shape.prototype.backgroundImage = function backgroundImage (_) {
-  return arguments.length ? (this._backgroundImage = typeof _ === "function" ? _ : constant$7(_), this) : this._backgroundImage;
-};
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = "Verdana"]
+  */
+  Shape.prototype.fontFamily = function fontFamily (_) {
+    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$7(_), this) : this._fontFamily;
+  };
 
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns the current class instance. If *value* is not specified, returns the current configuration.
-    @param {Object} [*value*]
-*/
-Shape.prototype.config = function config (_) {
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|Boolean|Array} [*value*]
+  */
+  Shape.prototype.fontResize = function fontResize (_) {
+    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$7(_), this) : this._fontResize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = 12]
+  */
+  Shape.prototype.fontSize = function fontSize (_) {
+    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$7(_), this) : this._fontSize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
+      @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
+      @example
+function(d, i, shape) {
+  return {
+    "width": shape.width,
+    "height": shape.height,
+    "x": -shape.width / 2,
+    "y": -shape.height / 2
+  };
+}
+  */
+  Shape.prototype.hitArea = function hitArea (_) {
+    return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : constant$7(_), this) : this._hitArea;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
+      @param {Function} [*value*]
+  */
+  Shape.prototype.id = function id (_) {
+    return arguments.length ? (this._id = _, this) : this._id;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
+      @param {Function|String|Array} [*value*]
+  */
+  Shape.prototype.label = function label (_) {
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$7(_), this) : this._label;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *bounds* is specified, sets the label bounds to the specified function and returns the current class instance. If *bounds* is not specified, returns the current inner bounds accessor.
+      @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`. If an array is returned from the function, each value will be used in conjunction with each label.
+      @example
+function(d, i, shape) {
+  return {
+    "width": shape.width,
+    "height": shape.height,
+    "x": -shape.width / 2,
+    "y": -shape.height / 2
+  };
+}
+  */
+  Shape.prototype.labelBounds = function labelBounds (_) {
+    return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : constant$7(_), this) : this._labelBounds;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|Number|Array} [*value* = 10]
+  */
+  Shape.prototype.labelPadding = function labelPadding (_) {
+    return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : constant$7(_), this) : this._labelPadding;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value*]
+  */
+  Shape.prototype.lineHeight = function lineHeight (_) {
+    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$7(_), this) : this._lineHeight;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current opacity accessor.
+      @param {Number} [*value* = 1]
+  */
+  Shape.prototype.opacity = function opacity (_) {
+    return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$7(_), this) : this._opacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc Renders the current Shape to the page. If a *callback* is specified, it will be called once the shapes are done drawing.
+      @param {Function} [*callback* = undefined]
+  */
+  Shape.prototype.render = function render (callback) {
     var this$1 = this;
 
-  if (arguments.length) {
-    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+
+    if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
+    if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
+
+    this._transition = transition().duration(this._duration);
+
+    if (callback) setTimeout(callback, this._duration + 100);
+
     return this;
-  }
-  else {
-    var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
-    return config;
-  }
-};
+  };
 
-/**
-    @memberof Shape
-    @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape will be drawn for each object in the array.
-    @param {Array} [*data* = []]
-*/
-Shape.prototype.data = function data (_) {
-  return arguments.length ? (this._data = _, this) : this._data;
-};
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current scale accessor.
+      @param {Function|Number} [*value* = 1]
+  */
+  Shape.prototype.scale = function scale (_) {
+    return arguments.length ? (this._scale = typeof _ === "function" ? _ : constant$7(_), this) : this._scale;
+  };
 
-/**
-    @memberof Shape
-    @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
-    @param {Number} [*ms* = 600]
-*/
-Shape.prototype.duration = function duration (_) {
-  return arguments.length ? (this._duration = _, this) : this._duration;
-};
+  /**
+      @memberof Shape
+      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+      @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+  */
+  Shape.prototype.select = function select$1 (_) {
+    return arguments.length ? (this._select = select(_), this) : this._select;
+  };
 
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current fill accessor.
-    @param {Function|String} [*value* = "black"]
-*/
-Shape.prototype.fill = function fill (_) {
-  return arguments.length ? (this._fill = typeof _ === "function" ? _ : constant$7(_), this) : this._fill;
-};
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke accessor.
+      @param {Function|String} [*value* = "black"]
+  */
+  Shape.prototype.stroke = function stroke (_) {
+    return arguments.length ? (this._stroke = typeof _ === "function" ? _ : constant$7(_), this) : this._stroke;
+  };
 
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value*]
-*/
-Shape.prototype.fontColor = function fontColor (_) {
-  return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$7(_), this) : this._fontColor;
-};
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke-width accessor.
+      @param {Function|Number} [*value* = 0]
+  */
+  Shape.prototype.strokeWidth = function strokeWidth (_) {
+    return arguments.length ? (this._strokeWidth = typeof _ === "function" ? _ : constant$7(_), this) : this._strokeWidth;
+  };
 
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value* = "Verdana"]
-*/
-Shape.prototype.fontFamily = function fontFamily (_) {
-  return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$7(_), this) : this._fontFamily;
-};
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = "start"]
+  */
+  Shape.prototype.textAnchor = function textAnchor (_) {
+    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$7(_), this) : this._textAnchor;
+  };
 
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|Boolean|Array} [*value*]
-*/
-Shape.prototype.fontResize = function fontResize (_) {
-  return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$7(_), this) : this._fontResize;
-};
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = "start"]
+  */
+  Shape.prototype.verticalAlign = function verticalAlign (_) {
+    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$7(_), this) : this._verticalAlign;
+  };
 
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value* = 12]
-*/
-Shape.prototype.fontSize = function fontSize (_) {
-  return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$7(_), this) : this._fontSize;
-};
-
-/**
-    @memberof Shape
-    @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
-    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
-    @example
-function(d, i, shape) {
-return {
-  "width": shape.width,
-  "height": shape.height,
-  "x": -shape.width / 2,
-  "y": -shape.height / 2
-};
-}
-*/
-Shape.prototype.hitArea = function hitArea (_) {
-  return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : constant$7(_), this) : this._hitArea;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
-    @param {Function} [*value*]
-*/
-Shape.prototype.id = function id (_) {
-  return arguments.length ? (this._id = _, this) : this._id;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
-    @param {Function|String|Array} [*value*]
-*/
-Shape.prototype.label = function label (_) {
-  return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$7(_), this) : this._label;
-};
-
-/**
-    @memberof Shape
-    @desc If *bounds* is specified, sets the label bounds to the specified function and returns the current class instance. If *bounds* is not specified, returns the current inner bounds accessor.
-    @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`. If an array is returned from the function, each value will be used in conjunction with each label.
-    @example
-function(d, i, shape) {
-return {
-  "width": shape.width,
-  "height": shape.height,
-  "x": -shape.width / 2,
-  "y": -shape.height / 2
-};
-}
-*/
-Shape.prototype.labelBounds = function labelBounds (_) {
-  return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : constant$7(_), this) : this._labelBounds;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|Number|Array} [*value* = 10]
-*/
-Shape.prototype.labelPadding = function labelPadding (_) {
-  return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : constant$7(_), this) : this._labelPadding;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value*]
-*/
-Shape.prototype.lineHeight = function lineHeight (_) {
-  return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$7(_), this) : this._lineHeight;
-};
-
-/**
-    @memberof Shape
-    @desc Adds or removes a *listener* to each shape for the specified event *typenames*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-    @param {String|Object} [*typenames*]
-    @param {Function} [*listener*]
-*/
-Shape.prototype.on = function on (_, f) {
-  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current opacity accessor.
-    @param {Number} [*value* = 1]
-*/
-Shape.prototype.opacity = function opacity (_) {
-  return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$7(_), this) : this._opacity;
-};
-
-/**
-    @memberof Shape
-    @desc Renders the current Shape to the page. If a *callback* is specified, it will be called once the shapes are done drawing.
-    @param {Function} [*callback* = undefined]
-*/
-Shape.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-  if (this._select === void 0) this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
-  if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
-
-  this._transition = transition().duration(this._duration);
-
-  if (callback) setTimeout(callback, this._duration + 100);
-
-  return this;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current scale accessor.
-    @param {Function|Number} [*value* = 1]
-*/
-Shape.prototype.scale = function scale (_) {
-  return arguments.length ? (this._scale = typeof _ === "function" ? _ : constant$7(_), this) : this._scale;
-};
-
-/**
-    @memberof Shape
-    @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
-    @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
-*/
-Shape.prototype.select = function select$1 (_) {
-  return arguments.length ? (this._select = select(_), this) : this._select;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke accessor.
-    @param {Function|String} [*value* = "black"]
-*/
-Shape.prototype.stroke = function stroke (_) {
-  return arguments.length ? (this._stroke = typeof _ === "function" ? _ : constant$7(_), this) : this._stroke;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke-width accessor.
-    @param {Function|Number} [*value* = 0]
-*/
-Shape.prototype.strokeWidth = function strokeWidth (_) {
-  return arguments.length ? (this._strokeWidth = typeof _ === "function" ? _ : constant$7(_), this) : this._strokeWidth;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value* = "start"]
-*/
-Shape.prototype.textAnchor = function textAnchor (_) {
-  return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$7(_), this) : this._textAnchor;
-};
-
-/**
-    @memberof Shape
-    @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-    @param {Function|String|Array} [*value* = "start"]
-*/
-Shape.prototype.verticalAlign = function verticalAlign (_) {
-  return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$7(_), this) : this._verticalAlign;
-};
+  return Shape;
+}(BaseClass));
 
 /**
     @class Area
@@ -12056,6 +12061,7 @@ var Area = (function (Shape$$1) {
     Shape$$1.call(this);
 
     this._curve = "linear";
+    this._defined = function () { return true; };
     this._x = accessor("x");
     this._x0 = accessor("x");
     this._x1 = null;
@@ -12081,7 +12087,7 @@ var Area = (function (Shape$$1) {
     Shape$$1.prototype.render.call(this, callback);
 
     var path = this._path = area()
-      .defined(function (d) { return d; })
+      .defined(this._defined)
       .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
       .x(this._x)
       .x0(this._x0)
@@ -12180,11 +12186,20 @@ var Area = (function (Shape$$1) {
 
   /**
       @memberof Area
-      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve. The number returned should correspond to the horizontal center of the rectangle.
+      @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
       @param {String} [*value* = "linear"]
   */
   Area.prototype.curve = function curve (_) {
     return arguments.length ? (this._curve = _, this) : this._curve;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+      @param {Function} [*value*]
+  */
+  Area.prototype.defined = function defined (_) {
+    return arguments.length ? (this._defined = _, this) : this._defined;
   };
 
   /**
@@ -12454,8 +12469,9 @@ var Line = (function (Shape$$1) {
   function Line() {
     Shape$$1.call(this);
     this._curve = "linear";
+    this._defined = function (d) { return d; };
     this._fill = constant$7("none");
-    this._path = line().defined(function (d) { return d; });
+    this._path = line();
     this._strokeWidth = constant$7(1);
     this._x = accessor("x");
     this._y = accessor("y");
@@ -12493,6 +12509,7 @@ var Line = (function (Shape$$1) {
 
     this._path
       .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .defined(this._defined)
       .x(this._x)
       .y(this._y);
 
@@ -12552,11 +12569,20 @@ var Line = (function (Shape$$1) {
 
   /**
       @memberof Line
-      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve. The number returned should correspond to the horizontal center of the rectangle.
+      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
       @param {String} [*value* = "linear"]
   */
   Line.prototype.curve = function curve (_) {
     return arguments.length ? (this._curve = _, this) : this._curve;
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+      @param {Function} [*value*]
+  */
+  Line.prototype.defined = function defined (_) {
+    return arguments.length ? (this._defined = _, this) : this._defined;
   };
 
   /**
@@ -13181,7 +13207,7 @@ var Axis = (function (BaseClass$$1) {
                ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
                : ticks$$1;
 
-    var tickFormat = this._d3Scale.tickFormat
+    var tickFormat = this._tickFormat ? this._tickFormat : this._d3Scale.tickFormat
                      ? this._d3Scale.tickFormat(labels.length - 1)
                      : function (d) { return d; };
 
@@ -13431,6 +13457,15 @@ var Axis = (function (BaseClass$$1) {
   */
   Axis.prototype.shapeConfig = function shapeConfig (_) {
     return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the tick formatter and returns the current class instance. If *value* is not specified, returns the current tick formatter, which by default is retrieved from the [d3-scale](https://github.com/d3/d3-scale#continuous_tickFormat).
+      @param {Function} [*value*]
+  */
+  Axis.prototype.tickFormat = function tickFormat (_) {
+    return arguments.length ? (this._tickFormat = _, this) : this._tickFormat;
   };
 
   /**
