@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.2.0
+  d3plus-tooltip v0.2.1
   A javascript-only tooltip.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -41,6 +41,7 @@ var Tooltip = (function (BaseClass$$1) {
     this._border = d3plusCommon.constant("1px solid rgba(0, 0, 0, 0.1)");
     this._borderRadius = d3plusCommon.constant("2px");
     this._className = "d3plus-tooltip";
+    this._data = [];
     this._duration = d3plusCommon.constant(200);
     this._footer = d3plusCommon.accessor("footer", "");
     this._footerStyle = {
