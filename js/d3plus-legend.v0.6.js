@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.13
+  d3plus-legend v0.6.14
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
