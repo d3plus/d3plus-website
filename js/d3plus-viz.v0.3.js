@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.3.9
+  d3plus-viz v0.3.10
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -493,14 +493,19 @@ function value(d) {
   Viz.prototype.highlight = function highlight (_) {
     var ids = _ ? Array.from(new Set(this._data.filter(_).map(this._id))).map(d3plusText.strip) : [],
           that = this;
-    var groups = this._select.select(".d3plus-viz-legend");
-    this._shapes.forEach(function (s) { return groups = groups.merge(s.select()); });
-    groups.selectAll(".d3plus-Shape")
-      .style(((d3plusCommon.prefix()) + "transition"), ("opacity " + (this._tooltipClass.duration() / 1000) + "s"))
-      .style("opacity", function() {
-        var id = this.className.baseVal.split(" ").filter(function (c) { return c.indexOf("d3plus-id-") === 0; })[0].slice(10);
-        return ids.length === 0 || ids.includes(id) ? 1 : that._highlightOpacity;
-      });
+
+    function opacity(group) {
+      group.selectAll(".d3plus-Shape")
+        .style(((d3plusCommon.prefix()) + "transition"), ("opacity " + (that._tooltipClass.duration() / 1000) + "s"))
+        .style("opacity", function() {
+          var id = this.className.baseVal.split(" ").filter(function (c) { return c.indexOf("d3plus-id-") === 0; })[0].slice(10);
+          return ids.length === 0 || ids.includes(id) ? 1 : that._highlightOpacity;
+        });
+    }
+
+    this._shapes.forEach(function (s) { return s.select().call(opacity); });
+    this._select.select(".d3plus-viz-legend").call(opacity);
+
     return this;
   };
 
