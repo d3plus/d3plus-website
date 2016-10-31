@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.5
+  d3plus-priestley v0.1.6
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -4666,7 +4666,7 @@ var interrupt = function(node, name) {
 
   for (i in schedules) {
     if ((schedule = schedules[i]).name !== name) { empty = false; continue; }
-    active = schedule.state === STARTED;
+    active = schedule.state > STARTING && schedule.state < ENDING;
     schedule.state = ENDED;
     schedule.timer.stop();
     if (active) schedule.on.call("interrupt", node, node.__data__, schedule.index, schedule.group);
@@ -5446,7 +5446,6 @@ function s() {
 var BaseClass = function BaseClass() {
   this._on = {};
   this._uuid = "" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s());
-
 };
 
 /**
@@ -7896,8 +7895,9 @@ function extend$1(commandsToExtend, referenceCommands, numPointsToExtend) {
  * @param {String} b The `d` attribute for a path
  */
 function interpolatePath(a, b) {
-  var aNormalized = a == null ? '' : a.replace(/[Z]/gi, '');
-  var bNormalized = b == null ? '' : b.replace(/[Z]/gi, '');
+  // remove Z, remove spaces after letters as seen in IE
+  var aNormalized = a == null ? '' : a.replace(/[Z]/gi, '').replace(/([MLCSTQAHV])\W*/gi, '$1');
+  var bNormalized = b == null ? '' : b.replace(/[Z]/gi, '').replace(/([MLCSTQAHV])\W*/gi, '$1');
   var aPoints = aNormalized === '' ? [] : aNormalized.split(/(?=[MLCSTQAHV])/gi);
   var bPoints = bNormalized === '' ? [] : bNormalized.split(/(?=[MLCSTQAHV])/gi);
 
@@ -9934,18 +9934,21 @@ var stringify = function(value) {
   return value;
 };
 
-var removed = [
-  "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "[", "]", "{", "}", ".",
-  ", ", "/", "\\", "|", "'", "\"", ";", ":", "<", ">", "?", "=", "+"];
+// great unicode list: http://asecuritysite.com/coding/asc2
 
 var diacritics = [
-  [/[\300-\306]/g, "A"], [/[\340-\346]/g, "a"],
+  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
+  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
+  [/[\337]/g, "B"],
+  [/[\307]/g, "C"], [/[\347]/g, "c"],
+  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
   [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
   [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
-  [/[\322-\330]/g, "O"], [/[\362-\370]/g, "o"],
-  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
   [/[\321]/g, "N"], [/[\361]/g, "n"],
-  [/[\307]/g, "C"], [/[\347]/g, "c"]
+  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
+  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
+  [/[\327]/g, "x"],
+  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
 ];
 
 /**
@@ -9958,16 +9961,16 @@ var strip = function(value) {
   return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
 
     if (char === " ") return "-";
-    else if (removed.indexOf(char) >= 0) return "";
 
+    var ret = false;
     for (var d = 0; d < diacritics.length; d++) {
       if (new RegExp(diacritics[d][0]).test(char)) {
-        char = diacritics[d][1];
+        ret = diacritics[d][1];
         break;
       }
     }
 
-    return char;
+    return ret || "";
 
   });
 };
@@ -9980,36 +9983,36 @@ var b = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307",
 var combiningMarks = a$1.concat(b);
 
 var splitChars = ["-",  "/",  ";",  ":",  "&",
-                    "u0E2F",  // thai character pairannoi
-                    "u0EAF",  // lao ellipsis
-                    "u0EC6",  // lao ko la (word repetition)
-                    "u0ECC",  // lao cancellation mark
-                    "u104A",  // myanmar sign little section
-                    "u104B",  // myanmar sign section
-                    "u104C",  // myanmar symbol locative
-                    "u104D",  // myanmar symbol completed
-                    "u104E",  // myanmar symbol aforementioned
-                    "u104F",  // myanmar symbol genitive
-                    "u2013",  // en dash
-                    "u2014",  // em dash
-                    "u2027",  // simplified chinese hyphenation point
-                    "u3000",  // simplified chinese ideographic space
-                    "u3001",  // simplified chinese ideographic comma
-                    "u3002",  // simplified chinese ideographic full stop
-                    "uFF5E"  // wave dash
-                  ];
+  "u0E2F",  // thai character pairannoi
+  "u0EAF",  // lao ellipsis
+  "u0EC6",  // lao ko la (word repetition)
+  "u0ECC",  // lao cancellation mark
+  "u104A",  // myanmar sign little section
+  "u104B",  // myanmar sign section
+  "u104C",  // myanmar symbol locative
+  "u104D",  // myanmar symbol completed
+  "u104E",  // myanmar symbol aforementioned
+  "u104F",  // myanmar symbol genitive
+  "u2013",  // en dash
+  "u2014",  // em dash
+  "u2027",  // simplified chinese hyphenation point
+  "u3000",  // simplified chinese ideographic space
+  "u3001",  // simplified chinese ideographic comma
+  "u3002",  // simplified chinese ideographic full stop
+  "uFF5E"  // wave dash
+];
 
 var prefixChars = ["'",  "<",  "(",  "{",  "[",
-                     "u00AB",  // left-pointing double angle quotation mark
-                     "u300A",  // left double angle bracket
-                     "u3008"  // left angle bracket
-                   ];
+  "u00AB",  // left-pointing double angle quotation mark
+  "u300A",  // left double angle bracket
+  "u3008"  // left angle bracket
+];
 
 var suffixChars = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
-                     "u00BB",  // right-pointing double angle quotation mark
-                     "u300B",  // right double angle bracket
-                     "u3009"  // right angle bracket
-                   ].concat(splitChars);
+  "u00BB",  // right-pointing double angle quotation mark
+  "u300B",  // right double angle bracket
+  "u3009"  // right angle bracket
+].concat(splitChars);
 
 var burmeseRange = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
 var japaneseRange = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u3400-\u4dbf";
@@ -10610,16 +10613,6 @@ function(d, i) {
   */
   TextBox.prototype.lineHeight = function lineHeight (_) {
     return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$5(_), this) : this._lineHeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Adds or removes a *listener* to each box for the specified event *typenames*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-      @param {String} [*typenames*]
-      @param {Function} [*listener*]
-  */
-  TextBox.prototype.on = function on (typenames, listener) {
-    return arguments.length === 2 ? (this._on[typenames] = listener, this) : arguments.length ? this._on[typenames] : this._on;
   };
 
   /**
@@ -14300,6 +14293,7 @@ var Tooltip = (function (BaseClass$$1) {
     this._border = constant$5("1px solid rgba(0, 0, 0, 0.1)");
     this._borderRadius = constant$5("2px");
     this._className = "d3plus-tooltip";
+    this._data = [];
     this._duration = constant$5(200);
     this._footer = accessor("footer", "");
     this._footerStyle = {
@@ -14850,6 +14844,7 @@ var Viz = (function (BaseClass$$1) {
       .on("mousemove", function () { return this$1._backClass.select().style("cursor", "pointer"); });
     this._data = [];
     this._duration = 600;
+    this._highlightOpacity = 0.5;
     this._history = [];
     this._groupBy = [accessor("id")];
     this._legend = true;
@@ -14958,7 +14953,7 @@ var Viz = (function (BaseClass$$1) {
   Viz.prototype._uiGroup = function _uiGroup (type, condition) {
     if ( condition === void 0 ) condition = true;
 
-    return elem(("g.d3plus-plot-" + type), {
+    return elem(("g.d3plus-viz-" + type), {
       condition: condition,
       enter: {transform: ("translate(0, " + (this._height / 2) + ")")},
       exit: {opacity: 0},
@@ -15097,7 +15092,7 @@ var Viz = (function (BaseClass$$1) {
 
     }
 
-    var titleGroup = elem("g.d3plus-plot-titles", {parent: this._select});
+    var titleGroup = elem("g.d3plus-viz-titles", {parent: this._select});
 
     this._backClass
       .data(this._history.length ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
@@ -15219,14 +15214,31 @@ function value(d) {
       @param {Array|Object} [*data*]
   */
   Viz.prototype.highlight = function highlight (_) {
-    var ids = _ ? Array.from(new Set(this._data.filter(_).map(this._id))).map(strip) : [];
-    this._select.selectAll(".d3plus-Shape")
-      .style(((prefix$1()) + "transition"), ("opacity " + (this._tooltipClass.duration() / 1000) + "s"))
-      .style("opacity", function() {
-        var id = this.className.baseVal.split(" ").filter(function (c) { return c.indexOf("d3plus-id-") === 0; })[0].slice(10);
-        return ids.length === 0 || ids.includes(id) ? 1 : 0.25;
-      });
+    var ids = _ ? Array.from(new Set(this._data.filter(_).map(this._id))).map(strip) : [],
+          that = this;
+
+    function opacity(group) {
+      group.selectAll(".d3plus-Shape")
+        .style(((prefix$1()) + "transition"), ("opacity " + (that._tooltipClass.duration() / 1000) + "s"))
+        .style("opacity", function() {
+          var id = this.className.baseVal.split(" ").filter(function (c) { return c.indexOf("d3plus-id-") === 0; })[0].slice(10);
+          return ids.length === 0 || ids.includes(id) ? 1 : that._highlightOpacity;
+        });
+    }
+
+    this._shapes.forEach(function (s) { return s.select().call(opacity); });
+    this._select.select(".d3plus-viz-legend").call(opacity);
+
     return this;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the highlight opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight opacity.
+      @param {Number} [*value* = 0.5]
+  */
+  Viz.prototype.highlightOpacity = function highlightOpacity (_) {
+    return arguments.length ? (this._highlightOpacity = _, this) : this._highlightOpacity;
   };
 
   /**
@@ -15435,7 +15447,7 @@ var Priestley = (function (Viz$$1) {
     });
 
     var axisConfig = {
-      domain: [min(data, function (d) { return d.start; }), max(data, function (d) { return d.end; })],
+      domain: [min(data, function (d) { return d.start; }) || 0, max(data, function (d) { return d.end; }) || 0],
       height: this._height - this._margin.top - this._margin.bottom,
       width: this._width - this._margin.left - this._margin.right
     };
