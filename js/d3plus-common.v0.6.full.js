@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.6
+  d3plus-common v0.6.7
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5270,7 +5270,7 @@ var quantile = function(array, p, f) {
   return a + (b - a) * (h - i);
 };
 
-var merge$1 = function(arrays) {
+var merge = function(arrays) {
   var n = arrays.length,
       m,
       i = -1,
@@ -5495,11 +5495,11 @@ merge([
     @example <caption>returns this</caption>
 {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
 */
-var merge$$1 = function(objects, aggs) {
+function objectMerge(objects, aggs) {
   if ( aggs === void 0 ) aggs = {};
 
 
-  var availableKeys = new Set(merge$1(objects.map(function (o) { return keys(o); }))),
+  var availableKeys = new Set(merge(objects.map(function (o) { return keys(o); }))),
         newObject = {};
 
   availableKeys.forEach(function (k) {
@@ -5510,7 +5510,7 @@ var merge$$1 = function(objects, aggs) {
       var types = values$$1.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
       if (!types.length) value = undefined;
       else if (types.indexOf(Array) >= 0) {
-        value = merge$1(values$$1.map(function (v) { return v instanceof Array ? v : [v]; }));
+        value = merge(values$$1.map(function (v) { return v instanceof Array ? v : [v]; }));
         value = Array.from(new Set(value));
         if (value.length === 1) value = value[0];
       }
@@ -5519,6 +5519,7 @@ var merge$$1 = function(objects, aggs) {
         if (value.length === 1) value = value[0];
       }
       else if (types.indexOf(Number) >= 0) value = sum(values$$1);
+      else if (types.indexOf(Object) >= 0) value = objectMerge(values$$1);
       else {
         value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
         if (value.length === 1) value = value[0];
@@ -5529,7 +5530,7 @@ var merge$$1 = function(objects, aggs) {
 
   return newObject;
 
-};
+}
 
 var val = undefined;
 
@@ -5566,7 +5567,7 @@ exports.closest = closest;
 exports.constant = constant$1;
 exports.elem = elem;
 exports.locale = locale;
-exports.merge = merge$$1;
+exports.merge = objectMerge;
 exports.prefix = prefix$1;
 exports.stylize = stylize;
 
