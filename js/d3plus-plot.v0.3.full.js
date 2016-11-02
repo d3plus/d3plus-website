@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.13
+  d3plus-plot v0.3.14
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5629,7 +5629,7 @@ function objectMerge(objects, aggs) {
         if (value.length === 1) value = value[0];
       }
       else if (types.indexOf(Number) >= 0) value = sum(values$$1);
-      else if (types.indexOf(Object) >= 0) value = objectMerge(values$$1);
+      else if (types.indexOf(Object) >= 0) value = objectMerge(values$$1.filter(function (v) { return v; }));
       else {
         value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
         if (value.length === 1) value = value[0];
