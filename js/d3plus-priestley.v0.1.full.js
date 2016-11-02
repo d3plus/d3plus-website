@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.7
+  d3plus-priestley v0.1.8
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -7680,7 +7680,7 @@ function objectMerge(objects, aggs) {
         if (value.length === 1) value = value[0];
       }
       else if (types.indexOf(Number) >= 0) value = sum(values$$1);
-      else if (types.indexOf(Object) >= 0) value = objectMerge(values$$1);
+      else if (types.indexOf(Object) >= 0) value = objectMerge(values$$1.filter(function (v) { return v; }));
       else {
         value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
         if (value.length === 1) value = value[0];
