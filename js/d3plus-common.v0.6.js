@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.5
+  d3plus-common v0.6.6
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -212,10 +212,10 @@ var merge$1 = function(objects, aggs) {
     var value;
     if (aggs[k]) value = aggs[k](values);
     else {
-      var types = values.map(function (v) { return v ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
+      var types = values.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
       if (!types.length) value = undefined;
       else if (types.indexOf(Array) >= 0) {
-        value = d3Array.merge(values.map(function (v) { return v.constructor === Array ? v : [v]; }));
+        value = d3Array.merge(values.map(function (v) { return v instanceof Array ? v : [v]; }));
         value = Array.from(new Set(value));
         if (value.length === 1) value = value[0];
       }
