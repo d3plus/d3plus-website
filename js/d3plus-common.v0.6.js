@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.7
+  d3plus-common v0.6.8
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -224,7 +224,7 @@ function objectMerge(objects, aggs) {
         if (value.length === 1) value = value[0];
       }
       else if (types.indexOf(Number) >= 0) value = d3Array.sum(values);
-      else if (types.indexOf(Object) >= 0) value = objectMerge(values);
+      else if (types.indexOf(Object) >= 0) value = objectMerge(values.filter(function (v) { return v; }));
       else {
         value = Array.from(new Set(values.filter(function (v) { return v !== void 0; })));
         if (value.length === 1) value = value[0];
