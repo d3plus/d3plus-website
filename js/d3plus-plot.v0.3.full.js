@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.12
+  d3plus-plot v0.3.13
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5605,7 +5605,7 @@ merge([
     @example <caption>returns this</caption>
 {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
 */
-var combine = function(objects, aggs) {
+function objectMerge(objects, aggs) {
   if ( aggs === void 0 ) aggs = {};
 
 
@@ -5617,10 +5617,10 @@ var combine = function(objects, aggs) {
     var value;
     if (aggs[k]) value = aggs[k](values$$1);
     else {
-      var types = values$$1.map(function (v) { return v ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
+      var types = values$$1.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
       if (!types.length) value = undefined;
       else if (types.indexOf(Array) >= 0) {
-        value = merge(values$$1.map(function (v) { return v.constructor === Array ? v : [v]; }));
+        value = merge(values$$1.map(function (v) { return v instanceof Array ? v : [v]; }));
         value = Array.from(new Set(value));
         if (value.length === 1) value = value[0];
       }
@@ -5629,6 +5629,7 @@ var combine = function(objects, aggs) {
         if (value.length === 1) value = value[0];
       }
       else if (types.indexOf(Number) >= 0) value = sum(values$$1);
+      else if (types.indexOf(Object) >= 0) value = objectMerge(values$$1);
       else {
         value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
         if (value.length === 1) value = value[0];
@@ -5639,7 +5640,7 @@ var combine = function(objects, aggs) {
 
   return newObject;
 
-};
+}
 
 var val = undefined;
 
@@ -14794,7 +14795,7 @@ var colorNest = function(raw, fill, groupBy) {
             uniques = new Set(merge(ids)).size;
       if (total === numColors && uniques === numColors || i === groupBy.length - 1) {
         id = groupBy[i];
-        data = nest$1().key(id).entries(raw).map(function (d) { return combine(d.values); });
+        data = nest$1().key(id).entries(raw).map(function (d) { return objectMerge(d.values); });
         return 'break';
       }
     };
@@ -14807,7 +14808,7 @@ var colorNest = function(raw, fill, groupBy) {
   }
   else {
     id = fill;
-    data = colors.map(function (d) { return combine(d.values); });
+    data = colors.map(function (d) { return objectMerge(d.values); });
   }
 
   return {data: data, id: id};
@@ -15057,9 +15058,9 @@ var Viz = (function (BaseClass$$1) {
 
       var dataNest = nest$1();
       for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
-      dataNest.rollup(function (leaves) { return this$1._legendData.push(combine(leaves, this$1._aggs)); }).entries(data);
+      dataNest.rollup(function (leaves) { return this$1._legendData.push(objectMerge(leaves, this$1._aggs)); }).entries(data);
       if (this._discrete && ("_" + (this._discrete)) in this) dataNest.key(this[("_" + (this._discrete))]);
-      dataNest.rollup(function (leaves) { return this$1._filteredData.push(combine(leaves, this$1._aggs)); }).entries(data);
+      dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(data);
 
     }
 
