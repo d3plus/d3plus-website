@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.19
+  d3plus-shape v0.8.20
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -4415,6 +4415,115 @@ var paths = Object.freeze({
 	stackOrderReverse: reverse
 });
 
+/**
+    @function accessor
+    @desc Wraps an object key in a simple accessor function.
+    @param {String} key The key to be returned from each Object passed to the function.
+    @param {*} [def] A default value to be returned if the key is not present.
+    @example <caption>this</caption>
+accessor("id");
+    @example <caption>returns this</caption>
+function(d) {
+  return d["id"];
+}
+*/
+var accessor = function(key, def) {
+  if (def === void 0) return function (d) { return d[key]; };
+  return function (d) { return d[key] === void 0 ? def : d[key]; };
+};
+
+/**
+    @function attrize
+    @desc Applies each key/value in an object as an attr.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} attrs An object of key/value attr pairs.
+*/
+var attrize = function(e, a) {
+  if ( a === void 0 ) a = {};
+
+  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
+};
+
+/**
+    @function s
+    @desc Returns 4 random characters, used for constructing unique identifiers.
+    @private
+*/
+function s$1() {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+
+/**
+    @class BaseClass
+    @desc An abstract class that contains some global methods and functionality.
+*/
+var BaseClass = function BaseClass() {
+  this._on = {};
+  this._uuid = "" + (s$1()) + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + (s$1()) + (s$1());
+};
+
+/**
+    @memberof BaseClass
+    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
+    @param {Object} [*value*]
+*/
+BaseClass.prototype.config = function config (_) {
+    var this$1 = this;
+
+  if (arguments.length) {
+    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+    return this;
+  }
+  else {
+    var config = {};
+    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    return config;
+  }
+};
+
+/**
+    @memberof BaseClass
+    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
+    @param {String} [*typenames*]
+    @param {Function} [*listener*]
+    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
+new Plot
+.on("click.Shape", function(d) {
+  console.log("data for shape clicked:", d);
+})
+.on("click.Legend", function(d) {
+  console.log("data for legend clicked:", d);
+})
+*/
+BaseClass.prototype.on = function on (_, f) {
+  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
+};
+
+/**
+    @function closest
+    @desc Finds the closest numeric value in an array.
+    @param {Number} n The number value to use when searching the array.
+    @param {Array} arr The array of values to test against.
+*/
+
+/**
+    @function constant
+    @desc Wraps non-function variables in a simple return function.
+    @param {Array|Number|Object|String} value The value to be returned from the function.
+    @example <caption>this</caption>
+constant(42);
+    @example <caption>returns this</caption>
+function() {
+  return 42;
+}
+*/
+var constant$5 = function(value) {
+  return function constant() {
+    return value;
+  };
+};
+
 var noop$1 = {value: function() {}};
 
 function dispatch() {
@@ -5522,115 +5631,6 @@ selection.prototype.interrupt = selection_interrupt;
 selection.prototype.transition = selection_transition;
 
 var root$1 = [null];
-
-/**
-    @function accessor
-    @desc Wraps an object key in a simple accessor function.
-    @param {String} key The key to be returned from each Object passed to the function.
-    @param {*} [def] A default value to be returned if the key is not present.
-    @example <caption>this</caption>
-accessor("id");
-    @example <caption>returns this</caption>
-function(d) {
-  return d["id"];
-}
-*/
-var accessor = function(key, def) {
-  if (def === void 0) return function (d) { return d[key]; };
-  return function (d) { return d[key] === void 0 ? def : d[key]; };
-};
-
-/**
-    @function attrize
-    @desc Applies each key/value in an object as an attr.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} attrs An object of key/value attr pairs.
-*/
-var attrize = function(e, a) {
-  if ( a === void 0 ) a = {};
-
-  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
-};
-
-/**
-    @function s
-    @desc Returns 4 random characters, used for constructing unique identifiers.
-    @private
-*/
-function s$1() {
-  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-}
-
-
-/**
-    @class BaseClass
-    @desc An abstract class that contains some global methods and functionality.
-*/
-var BaseClass = function BaseClass() {
-  this._on = {};
-  this._uuid = "" + (s$1()) + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + (s$1()) + (s$1());
-};
-
-/**
-    @memberof BaseClass
-    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
-    @param {Object} [*value*]
-*/
-BaseClass.prototype.config = function config (_) {
-    var this$1 = this;
-
-  if (arguments.length) {
-    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
-    return this;
-  }
-  else {
-    var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
-    return config;
-  }
-};
-
-/**
-    @memberof BaseClass
-    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-    @param {String} [*typenames*]
-    @param {Function} [*listener*]
-    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
-new Plot
-.on("click.Shape", function(d) {
-  console.log("data for shape clicked:", d);
-})
-.on("click.Legend", function(d) {
-  console.log("data for legend clicked:", d);
-})
-*/
-BaseClass.prototype.on = function on (_, f) {
-  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-};
-
-/**
-    @function closest
-    @desc Finds the closest numeric value in an array.
-    @param {Number} n The number value to use when searching the array.
-    @param {Array} arr The array of values to test against.
-*/
-
-/**
-    @function constant
-    @desc Wraps non-function variables in a simple return function.
-    @param {Array|Number|Object|String} value The value to be returned from the function.
-    @example <caption>this</caption>
-constant(42);
-    @example <caption>returns this</caption>
-function() {
-  return 42;
-}
-*/
-var constant$5 = function(value) {
-  return function constant() {
-    return value;
-  };
-};
 
 /**
     @function elem
@@ -10841,7 +10841,9 @@ var Shape = (function (BaseClass$$1) {
   function Shape() {
     var this$1 = this;
 
+
     BaseClass$$1.call(this);
+
     this._backgroundImage = constant$5(false);
     this._data = [];
     this._duration = 600;
@@ -10858,7 +10860,12 @@ var Shape = (function (BaseClass$$1) {
     this._stroke = constant$5("black");
     this._strokeWidth = constant$5(0);
     this._textAnchor = constant$5("start");
+    this._transform = constant$5("");
+    this._vectorEffect = constant$5("non-scaling-stroke");
     this._verticalAlign = constant$5("top");
+    this._x = accessor("x");
+    this._y = accessor("y");
+
   }
 
   if ( BaseClass$$1 ) Shape.__proto__ = BaseClass$$1;
@@ -11068,7 +11075,9 @@ var Shape = (function (BaseClass$$1) {
     elem$$1
       .attr("fill", styleLogic.bind(this._fill))
       .attr("stroke", styleLogic.bind(this._stroke))
-      .attr("stroke-width", styleLogic.bind(this._strokeWidth));
+      .attr("stroke-width", styleLogic.bind(this._strokeWidth))
+      .attr("transform", styleLogic.bind(this._transform))
+      .attr("vector-effect", styleLogic.bind(this._vectorEffect));
   };
 
   /**
@@ -11290,11 +11299,55 @@ function(d, i, shape) {
 
   /**
       @memberof Shape
+      @desc If *value* is specified, sets the transform accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current transform accessor.
+      @param {Function|String} [*value* = ""]
+  */
+  Shape.prototype.transform = function transform (_) {
+    return arguments.length ? (this._transform = typeof _ === "function" ? _ : constant$5(_), this) : this._transform;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the vector-effect accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vector-effect accessor.
+      @param {Function|String} [*value* = "non-scaling-stroke"]
+  */
+  Shape.prototype.vectorEffect = function vectorEffect (_) {
+    return arguments.length ? (this._vectorEffect = typeof _ === "function" ? _ : constant$5(_), this) : this._vectorEffect;
+  };
+
+  /**
+      @memberof Shape
       @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value* = "start"]
   */
   Shape.prototype.verticalAlign = function verticalAlign (_) {
     return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$5(_), this) : this._verticalAlign;
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Shape.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$5(_), this) : this._x;
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Shape.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$5(_), this) : this._y;
   };
 
   return Shape;
@@ -11454,43 +11507,6 @@ var Area = (function (Shape$$1) {
 
   /**
       @memberof Area
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Area.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = transition().duration(this._duration);
-
-    groups
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity);
-
-    groups.select("path").transition(t)
-      .attr("d", function (d) { return this$1._path(d.values); });
-
-    return this;
-
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Area.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$5(_), this) : this._x;
-  };
-
-  /**
-      @memberof Area
       @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
       @param {Function|Number} [*value*]
   */
@@ -11505,19 +11521,6 @@ function(d) {
   */
   Area.prototype.x1 = function x1 (_) {
     return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$5(_), this) : this._x1;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Area.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$5(_), this) : this._y;
   };
 
   /**
@@ -11550,8 +11553,6 @@ var Circle = (function (Shape$$1) {
   function Circle() {
     Shape$$1.call(this);
     this._r = accessor("r");
-    this._x = accessor("x");
-    this._y = accessor("y");
   }
 
   if ( Shape$$1 ) Circle.__proto__ = Shape$$1;
@@ -11654,59 +11655,6 @@ function(d) {
     return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$5(_), this) : this._r;
   };
 
-  /**
-      @memberof Circle
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Circle.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = transition().duration(this._duration);
-
-    groups
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity)
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
-
-    groups.select("circle").transition(t)
-      .call(this._applyStyle.bind(this))
-      .call(this._applyPosition.bind(this));
-
-    return this;
-
-  };
-
-  /**
-      @memberof Circle
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Circle.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$5(_), this) : this._x;
-  };
-
-  /**
-      @memberof Circle
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Circle.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$5(_), this) : this._y;
-  };
-
   return Circle;
 }(Shape));
 
@@ -11717,14 +11665,15 @@ function(d) {
 */
 var Line = (function (Shape$$1) {
   function Line() {
+
     Shape$$1.call(this);
+
     this._curve = "linear";
     this._defined = function (d) { return d; };
     this._fill = constant$5("none");
     this._path = line();
     this._strokeWidth = constant$5(1);
-    this._x = accessor("x");
-    this._y = accessor("y");
+
   }
 
   if ( Shape$$1 ) Line.__proto__ = Shape$$1;
@@ -11835,57 +11784,94 @@ var Line = (function (Shape$$1) {
     return arguments.length ? (this._defined = _, this) : this._defined;
   };
 
+  return Line;
+}(Shape));
+
+/**
+    @class Path
+    @extends Shape
+    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+*/
+var Path$1 = (function (Shape$$1) {
+  function Path() {
+    Shape$$1.call(this);
+    this._d = accessor("path");
+  }
+
+  if ( Shape$$1 ) Path.__proto__ = Shape$$1;
+  Path.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
+  Path.prototype.constructor = Path;
+
   /**
-      @memberof Line
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
+      Draws the rectangles.
+      @param {Function} [*callback* = undefined]
+      @private
   */
-  Line.prototype.update = function update (_) {
+  Path.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-    var groups = this._select.selectAll(_),
-          t = transition().duration(this._duration);
+    Shape$$1.prototype.render.call(this, callback);
 
-    groups
+    var groups = this._select.selectAll(".d3plus-Path").data(this._data, this._id);
+
+    groups.transition(this._transition)
+      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
+
+    groups.select("path").transition(this._transition).call(this._applyStyle.bind(this));
+
+    groups.exit().transition().delay(this._duration).remove();
+
+    groups.exit().select("path").transition(this._transition)
+      .attr("opacity", 0);
+
+    groups.exit()
+      .call(this._applyImage.bind(this), false)
+      .call(this._applyLabels.bind(this), false);
+
+    var enter = groups.enter().append("g")
+        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Path d3plus-id-" + (strip(this$1._id(d, i)))); })
+        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
+
+    enter.append("path")
+      .attr("opacity", 0)
+      .call(this._applyStyle.bind(this));
+
+    var update = enter.merge(groups);
+
+    update.select("path").transition(this._transition)
+      .attr("opacity", 1)
+      .attr("d", this._d);
+
+    update
+        .call(this._applyImage.bind(this))
         .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity);
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
 
-    groups.select("path").transition(t)
-      .attr("d", function (d) { return this$1._path(d.values); });
+    this._applyEvents(update);
 
     return this;
 
   };
 
   /**
-      @memberof Line
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-      @param {Function|Number} [*value*]
+      @memberof Path
+      @desc If *value* is specified, sets the "d" attribute accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current "d" attribute accessor.
+      @param {Function|String} [*value*]
       @example
 function(d) {
-  return d.x;
+  return d.path;
 }
   */
-  Line.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$5(_), this) : this._x;
+  Path.prototype.d = function d (_) {
+    return arguments.length ? (this._d = typeof _ === "function" ? _ : constant$5(_), this) : this._d;
   };
 
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Line.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$5(_), this) : this._y;
-  };
-
-  return Line;
+  return Path;
 }(Shape));
 
 /**
@@ -11899,8 +11885,6 @@ var Rect = (function (Shape$$1) {
     this._height = accessor("height");
     this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
     this._width = accessor("width");
-    this._x = accessor("x");
-    this._y = accessor("y");
   }
 
   if ( Shape$$1 ) Rect.__proto__ = Shape$$1;
@@ -12010,33 +11994,6 @@ function(d) {
 
   /**
       @memberof Rect
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Rect.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = transition().duration(this._duration);
-
-    groups
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity)
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
-
-    groups.select("rect").transition(t)
-      .call(this._applyStyle.bind(this))
-      .call(this._applyPosition.bind(this));
-
-    return this;
-
-  };
-
-  /**
-      @memberof Rect
       @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
       @param {Function|Number} [*value*]
       @example
@@ -12048,32 +12005,6 @@ function(d) {
     return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$5(_), this) : this._width;
   };
 
-  /**
-      @memberof Rect
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Rect.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$5(_), this) : this._x;
-  };
-
-  /**
-      @memberof Rect
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Rect.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$5(_), this) : this._y;
-  };
-
   return Rect;
 }(Shape));
 
@@ -12081,6 +12012,7 @@ exports.Area = Area;
 exports.Circle = Circle;
 exports.Image = Image;
 exports.Line = Line;
+exports.Path = Path$1;
 exports.Rect = Rect;
 exports.Shape = Shape;
 

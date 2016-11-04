@@ -1,14 +1,14 @@
 /*
-  d3plus-shape v0.8.19
+  d3plus-shape v0.8.20
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-interpolate-path'), require('d3-selection'), require('d3-shape'), require('d3-transition'), require('d3plus-common'), require('d3plus-text'), require('d3plus-color')) :
-  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3-array', 'd3-collection', 'd3-interpolate-path', 'd3-selection', 'd3-shape', 'd3-transition', 'd3plus-common', 'd3plus-text', 'd3plus-color'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.d3InterpolatePath,global.d3Selection,global.paths,global.d3Transition,global.d3plusCommon,global.d3plusText,global.d3plusColor));
-}(this, (function (exports,d3Array,d3Collection,d3InterpolatePath,d3Selection,paths,d3Transition,d3plusCommon,d3plusText,d3plusColor) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-interpolate-path'), require('d3-selection'), require('d3-shape'), require('d3plus-common'), require('d3plus-text'), require('d3-transition'), require('d3plus-color')) :
+  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3-array', 'd3-collection', 'd3-interpolate-path', 'd3-selection', 'd3-shape', 'd3plus-common', 'd3plus-text', 'd3-transition', 'd3plus-color'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.d3InterpolatePath,global.d3Selection,global.paths,global.d3plusCommon,global.d3plusText,global.d3Transition,global.d3plusColor));
+}(this, (function (exports,d3Array,d3Collection,d3InterpolatePath,d3Selection,paths,d3plusCommon,d3plusText,d3Transition,d3plusColor) { 'use strict';
 
 /**
     @class Image
@@ -208,7 +208,9 @@ var Shape = (function (BaseClass$$1) {
   function Shape() {
     var this$1 = this;
 
+
     BaseClass$$1.call(this);
+
     this._backgroundImage = d3plusCommon.constant(false);
     this._data = [];
     this._duration = 600;
@@ -225,7 +227,12 @@ var Shape = (function (BaseClass$$1) {
     this._stroke = d3plusCommon.constant("black");
     this._strokeWidth = d3plusCommon.constant(0);
     this._textAnchor = d3plusCommon.constant("start");
+    this._transform = d3plusCommon.constant("");
+    this._vectorEffect = d3plusCommon.constant("non-scaling-stroke");
     this._verticalAlign = d3plusCommon.constant("top");
+    this._x = d3plusCommon.accessor("x");
+    this._y = d3plusCommon.accessor("y");
+
   }
 
   if ( BaseClass$$1 ) Shape.__proto__ = BaseClass$$1;
@@ -435,7 +442,9 @@ var Shape = (function (BaseClass$$1) {
     elem
       .attr("fill", styleLogic.bind(this._fill))
       .attr("stroke", styleLogic.bind(this._stroke))
-      .attr("stroke-width", styleLogic.bind(this._strokeWidth));
+      .attr("stroke-width", styleLogic.bind(this._strokeWidth))
+      .attr("transform", styleLogic.bind(this._transform))
+      .attr("vector-effect", styleLogic.bind(this._vectorEffect));
   };
 
   /**
@@ -657,11 +666,55 @@ function(d, i, shape) {
 
   /**
       @memberof Shape
+      @desc If *value* is specified, sets the transform accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current transform accessor.
+      @param {Function|String} [*value* = ""]
+  */
+  Shape.prototype.transform = function transform (_) {
+    return arguments.length ? (this._transform = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._transform;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the vector-effect accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vector-effect accessor.
+      @param {Function|String} [*value* = "non-scaling-stroke"]
+  */
+  Shape.prototype.vectorEffect = function vectorEffect (_) {
+    return arguments.length ? (this._vectorEffect = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._vectorEffect;
+  };
+
+  /**
+      @memberof Shape
       @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value* = "start"]
   */
   Shape.prototype.verticalAlign = function verticalAlign (_) {
     return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._verticalAlign;
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Shape.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x;
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Shape.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
   };
 
   return Shape;
@@ -821,43 +874,6 @@ var Area = (function (Shape$$1) {
 
   /**
       @memberof Area
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Area.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = d3Transition.transition().duration(this._duration);
-
-    groups
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity);
-
-    groups.select("path").transition(t)
-      .attr("d", function (d) { return this$1._path(d.values); });
-
-    return this;
-
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Area.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x;
-  };
-
-  /**
-      @memberof Area
       @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
       @param {Function|Number} [*value*]
   */
@@ -872,19 +888,6 @@ function(d) {
   */
   Area.prototype.x1 = function x1 (_) {
     return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this) : this._x1;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Area.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
   };
 
   /**
@@ -917,8 +920,6 @@ var Circle = (function (Shape$$1) {
   function Circle() {
     Shape$$1.call(this);
     this._r = d3plusCommon.accessor("r");
-    this._x = d3plusCommon.accessor("x");
-    this._y = d3plusCommon.accessor("y");
   }
 
   if ( Shape$$1 ) Circle.__proto__ = Shape$$1;
@@ -1021,59 +1022,6 @@ function(d) {
     return arguments.length ? (this._r = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._r;
   };
 
-  /**
-      @memberof Circle
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Circle.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = d3Transition.transition().duration(this._duration);
-
-    groups
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity)
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
-
-    groups.select("circle").transition(t)
-      .call(this._applyStyle.bind(this))
-      .call(this._applyPosition.bind(this));
-
-    return this;
-
-  };
-
-  /**
-      @memberof Circle
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Circle.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x;
-  };
-
-  /**
-      @memberof Circle
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Circle.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
-  };
-
   return Circle;
 }(Shape));
 
@@ -1084,14 +1032,15 @@ function(d) {
 */
 var Line = (function (Shape$$1) {
   function Line() {
+
     Shape$$1.call(this);
+
     this._curve = "linear";
     this._defined = function (d) { return d; };
     this._fill = d3plusCommon.constant("none");
     this._path = paths.line();
     this._strokeWidth = d3plusCommon.constant(1);
-    this._x = d3plusCommon.accessor("x");
-    this._y = d3plusCommon.accessor("y");
+
   }
 
   if ( Shape$$1 ) Line.__proto__ = Shape$$1;
@@ -1202,57 +1151,94 @@ var Line = (function (Shape$$1) {
     return arguments.length ? (this._defined = _, this) : this._defined;
   };
 
+  return Line;
+}(Shape));
+
+/**
+    @class Path
+    @extends Shape
+    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+*/
+var Path = (function (Shape$$1) {
+  function Path() {
+    Shape$$1.call(this);
+    this._d = d3plusCommon.accessor("path");
+  }
+
+  if ( Shape$$1 ) Path.__proto__ = Shape$$1;
+  Path.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
+  Path.prototype.constructor = Path;
+
   /**
-      @memberof Line
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
+      Draws the rectangles.
+      @param {Function} [*callback* = undefined]
+      @private
   */
-  Line.prototype.update = function update (_) {
+  Path.prototype.render = function render (callback) {
     var this$1 = this;
 
 
-    var groups = this._select.selectAll(_),
-          t = d3Transition.transition().duration(this._duration);
+    Shape$$1.prototype.render.call(this, callback);
 
-    groups
+    var groups = this._select.selectAll(".d3plus-Path").data(this._data, this._id);
+
+    groups.transition(this._transition)
+      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
+
+    groups.select("path").transition(this._transition).call(this._applyStyle.bind(this));
+
+    groups.exit().transition().delay(this._duration).remove();
+
+    groups.exit().select("path").transition(this._transition)
+      .attr("opacity", 0);
+
+    groups.exit()
+      .call(this._applyImage.bind(this), false)
+      .call(this._applyLabels.bind(this), false);
+
+    var enter = groups.enter().append("g")
+        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Path d3plus-id-" + (d3plusText.strip(this$1._id(d, i)))); })
+        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
+
+    enter.append("path")
+      .attr("opacity", 0)
+      .call(this._applyStyle.bind(this));
+
+    var update = enter.merge(groups);
+
+    update.select("path").transition(this._transition)
+      .attr("opacity", 1)
+      .attr("d", this._d);
+
+    update
+        .call(this._applyImage.bind(this))
         .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity);
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._opacity)
+      .transition()
+        .attr("pointer-events", "all");
 
-    groups.select("path").transition(t)
-      .attr("d", function (d) { return this$1._path(d.values); });
+    this._applyEvents(update);
 
     return this;
 
   };
 
   /**
-      @memberof Line
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-      @param {Function|Number} [*value*]
+      @memberof Path
+      @desc If *value* is specified, sets the "d" attribute accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current "d" attribute accessor.
+      @param {Function|String} [*value*]
       @example
 function(d) {
-  return d.x;
+  return d.path;
 }
   */
-  Line.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x;
+  Path.prototype.d = function d (_) {
+    return arguments.length ? (this._d = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._d;
   };
 
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Line.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
-  };
-
-  return Line;
+  return Path;
 }(Shape));
 
 /**
@@ -1266,8 +1252,6 @@ var Rect = (function (Shape$$1) {
     this._height = d3plusCommon.accessor("height");
     this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
     this._width = d3plusCommon.accessor("width");
-    this._x = d3plusCommon.accessor("x");
-    this._y = d3plusCommon.accessor("y");
   }
 
   if ( Shape$$1 ) Rect.__proto__ = Shape$$1;
@@ -1377,33 +1361,6 @@ function(d) {
 
   /**
       @memberof Rect
-      @desc Updates the style and positioning of the elements matching *selector* and returns the current class instance. This is helpful when not wanting to loop through all shapes just to change the style of a few.
-      @param {String|HTMLElement} *selector*
-  */
-  Rect.prototype.update = function update (_) {
-    var this$1 = this;
-
-
-    var groups = this._select.selectAll(_),
-          t = d3Transition.transition().duration(this._duration);
-
-    groups
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-      .transition(t)
-        .attr("opacity", this._opacity)
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
-
-    groups.select("rect").transition(t)
-      .call(this._applyStyle.bind(this))
-      .call(this._applyPosition.bind(this));
-
-    return this;
-
-  };
-
-  /**
-      @memberof Rect
       @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
       @param {Function|Number} [*value*]
       @example
@@ -1415,32 +1372,6 @@ function(d) {
     return arguments.length ? (this._width = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._width;
   };
 
-  /**
-      @memberof Rect
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor. The number returned should correspond to the horizontal center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.x;
-}
-  */
-  Rect.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x;
-  };
-
-  /**
-      @memberof Rect
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor. The number returned should correspond to the vertical center of the rectangle.
-      @param {Function|Number} [*value*]
-      @example
-function(d) {
-  return d.y;
-}
-  */
-  Rect.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
-  };
-
   return Rect;
 }(Shape));
 
@@ -1448,6 +1379,7 @@ exports.Area = Area;
 exports.Circle = Circle;
 exports.Image = Image;
 exports.Line = Line;
+exports.Path = Path;
 exports.Rect = Rect;
 exports.Shape = Shape;
 
