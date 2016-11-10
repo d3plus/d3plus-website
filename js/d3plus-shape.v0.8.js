@@ -1,14 +1,29 @@
 /*
-  d3plus-shape v0.8.21
+  d3plus-shape v0.8.22
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-interpolate-path'), require('d3-selection'), require('d3-shape'), require('d3plus-common'), require('d3-transition'), require('d3plus-color'), require('d3plus-text')) :
-  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3-array', 'd3-collection', 'd3-interpolate-path', 'd3-selection', 'd3-shape', 'd3plus-common', 'd3-transition', 'd3plus-color', 'd3plus-text'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.d3InterpolatePath,global.d3Selection,global.paths,global.d3plusCommon,global.d3Transition,global.d3plusColor,global.d3plusText));
-}(this, (function (exports,d3Array,d3Collection,d3InterpolatePath,d3Selection,paths,d3plusCommon,d3Transition,d3plusColor,d3plusText) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3plus-color'), require('d3plus-text'), require('d3-array'), require('d3-collection'), require('d3-interpolate-path'), require('d3-shape')) :
+  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3plus-color', 'd3plus-text', 'd3-array', 'd3-collection', 'd3-interpolate-path', 'd3-shape'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3plusCommon,global.d3plusColor,global.d3plusText,global.d3Array,global.d3Collection,global.d3InterpolatePath,global.paths));
+}(this, (function (exports,d3Selection,d3Transition,d3plusCommon,d3plusColor,d3plusText,d3Array,d3Collection,d3InterpolatePath,paths) { 'use strict';
+
+/**
+    @function distance
+    @desc Calculates the pixel distance between two points.
+    @param {Array|Object} p1 The first point, either an Array formatted like `[x, y]` or a keyed object formatted like `{x, y}`.
+    @param {Array|Object} p2 The second point, either an Array formatted like `[x, y]` or a keyed object formatted like `{x, y}`
+    @returns {Number}
+*/
+var pointDistance = function(p1, p2) {
+  if (!(p1 instanceof Array)) p1 = [p1.x, p1.y];
+  if (!(p2 instanceof Array)) p2 = [p2.x, p2.y];
+  var xx = Math.abs(p1[0] - p2[0]);
+  var yy = Math.abs(p1[1] - p2[1]);
+  return Math.sqrt(xx * xx + yy * yy);
+};
 
 /**
     @class Image
@@ -1451,13 +1466,14 @@ function(d) {
   return Rect;
 }(Shape));
 
+exports.pointDistance = pointDistance;
+exports.Image = Image;
+exports.Shape = Shape;
 exports.Area = Area;
 exports.Circle = Circle;
-exports.Image = Image;
 exports.Line = Line;
 exports.Path = Path;
 exports.Rect = Rect;
-exports.Shape = Shape;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
