@@ -1,14 +1,14 @@
 /*
-  d3plus-shape v0.8.20
+  d3plus-shape v0.8.21
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-interpolate-path'), require('d3-selection'), require('d3-shape'), require('d3plus-common'), require('d3plus-text'), require('d3-transition'), require('d3plus-color')) :
-  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3-array', 'd3-collection', 'd3-interpolate-path', 'd3-selection', 'd3-shape', 'd3plus-common', 'd3plus-text', 'd3-transition', 'd3plus-color'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.d3InterpolatePath,global.d3Selection,global.paths,global.d3plusCommon,global.d3plusText,global.d3Transition,global.d3plusColor));
-}(this, (function (exports,d3Array,d3Collection,d3InterpolatePath,d3Selection,paths,d3plusCommon,d3plusText,d3Transition,d3plusColor) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-interpolate-path'), require('d3-selection'), require('d3-shape'), require('d3plus-common'), require('d3-transition'), require('d3plus-color'), require('d3plus-text')) :
+  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3-array', 'd3-collection', 'd3-interpolate-path', 'd3-selection', 'd3-shape', 'd3plus-common', 'd3-transition', 'd3plus-color', 'd3plus-text'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.d3InterpolatePath,global.d3Selection,global.paths,global.d3plusCommon,global.d3Transition,global.d3plusColor,global.d3plusText));
+}(this, (function (exports,d3Array,d3Collection,d3InterpolatePath,d3Selection,paths,d3plusCommon,d3Transition,d3plusColor,d3plusText) { 'use strict';
 
 /**
     @class Image
@@ -215,21 +215,26 @@ var Shape = (function (BaseClass$$1) {
     this._data = [];
     this._duration = 600;
     this._fill = d3plusCommon.constant("black");
+
     this._fontColor = function (d, i) { return d3plusColor.contrast(this$1._fill(d, i)); };
     this._fontFamily = d3plusCommon.constant("Verdana");
     this._fontResize = d3plusCommon.constant(false);
     this._fontSize = d3plusCommon.constant(12);
+
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = d3plusCommon.constant(false);
     this._labelPadding = d3plusCommon.constant(5);
+    this._name = "Shape";
     this._opacity = d3plusCommon.constant(1);
     this._scale = d3plusCommon.constant(1);
+    this._shapeRendering = d3plusCommon.constant("geometricPrecision");
     this._stroke = d3plusCommon.constant("black");
     this._strokeWidth = d3plusCommon.constant(0);
     this._textAnchor = d3plusCommon.constant("start");
     this._transform = d3plusCommon.constant("");
     this._vectorEffect = d3plusCommon.constant("non-scaling-stroke");
     this._verticalAlign = d3plusCommon.constant("top");
+
     this._x = d3plusCommon.accessor("x");
     this._y = d3plusCommon.accessor("y");
 
@@ -449,11 +454,115 @@ var Shape = (function (BaseClass$$1) {
 
   /**
       @memberof Shape
+      @desc Calculates the transform for the group elements.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._applyTransform = function _applyTransform (elem) {
+    var this$1 = this;
+
+
+    elem
+      .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plus__ ? d.x ? d.x : this$1._x(d.data, d.i) : this$1._x(d, i)) + ",\n                  " + (d.__d3plus__ ? d.y ? d.y : this$1._y(d.data, d.i) : this$1._y(d, i)) + ")\n        scale(" + (d.__d3plus__ ? d.scale ? d.scale : this$1._scale(d.data, d.i) : this$1._scale(d, i)) + ")"); });
+  };
+
+  /**
+      @memberof Shape
+      @desc Checks for nested data and uses the appropriate variables for accessor functions.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._nestWrapper = function _nestWrapper (method) {
+    return function (d, i) { return method(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); };
+  };
+
+  /**
+      @memberof Shape
+      @desc Renders the current Shape to the page. If a *callback* is specified, it will be called once the shapes are done drawing.
+      @param {Function} [*callback* = undefined]
+  */
+  Shape.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    if (this._select === void 0) {
+      this.select(d3Selection.select("body").append("svg")
+        .style("width", ((window.innerWidth) + "px"))
+        .style("height", ((window.innerHeight) + "px"))
+        .style("display", "block").node());
+    }
+
+    if (this._lineHeight === void 0) {
+      this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
+    }
+
+    this._transition = d3Transition.transition().duration(this._duration);
+
+    var data = this._data, key = this._id;
+    if (this._dataFilter) {
+      data = this._dataFilter(data);
+      if (data.key) key = data.key;
+    }
+
+    if (this._sort) data = data.sort(function (a, b) { return this$1._sort(a.__d3plus__ ? a.data : a, b.__d3plus__ ? b.data : b); });
+
+    // Makes the update state of the group selection accessible.
+    var update = this._select.selectAll((".d3plus-" + (this._name))).data(data, key);
+    update
+        .order()
+        .attr("shape-rendering", this._nestWrapper(this._shapeRendering))
+      .transition(this._transition)
+        .call(this._applyTransform.bind(this));
+    this._update = update.select(".d3plus-Shape-bg");
+
+    // Makes the enter state of the group selection accessible.
+    var enter = update.enter().append("g")
+      .attr("class", function (d, i) { return ("d3plus-Shape d3plus-" + (this$1._name) + " d3plus-id-" + (d3plusText.strip(this$1._nestWrapper(this$1._id)(d, i)))); })
+      .call(this._applyTransform.bind(this))
+      .attr("opacity", this._nestWrapper(this._opacity))
+      .attr("shape-rendering", this._nestWrapper(this._shapeRendering));
+
+    this._enter = enter.append("g").attr("class", "d3plus-Shape-bg");
+    var fg = enter.append("g").attr("class", "d3plus-Shape-fg");
+
+    var enterUpdate = this._enter.merge(update);
+
+    fg.merge(update.select(".d3plus-Shape-fg"))
+      .call(this._applyImage.bind(this))
+      .call(this._applyLabels.bind(this));
+
+    enterUpdate
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._nestWrapper(this._opacity))
+      .transition()
+        .attr("pointer-events", "all");
+
+    this._applyEvents(enterUpdate);
+
+    // Makes the exit state of the group selection accessible.
+    var exit = update.exit();
+    exit.select(".d3plus-Shape-fg")
+      .call(this._applyImage.bind(this), false)
+      .call(this._applyLabels.bind(this), false);
+    exit.transition().delay(this._duration).remove();
+    this._exit = exit.select(".d3plus-Shape-bg");
+
+    if (callback) setTimeout(callback, this._duration + 100);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Shape
       @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
       @param {Function|String} [*value* = false]
   */
   Shape.prototype.backgroundImage = function backgroundImage (_) {
-    return arguments.length ? (this._backgroundImage = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._backgroundImage;
+    return arguments.length
+         ? (this._backgroundImage = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._backgroundImage;
   };
 
   /**
@@ -462,7 +571,9 @@ var Shape = (function (BaseClass$$1) {
       @param {Array} [*data* = []]
   */
   Shape.prototype.data = function data (_) {
-    return arguments.length ? (this._data = _, this) : this._data;
+    return arguments.length
+         ? (this._data = _, this)
+         : this._data;
   };
 
   /**
@@ -471,7 +582,9 @@ var Shape = (function (BaseClass$$1) {
       @param {Number} [*ms* = 600]
   */
   Shape.prototype.duration = function duration (_) {
-    return arguments.length ? (this._duration = _, this) : this._duration;
+    return arguments.length
+         ? (this._duration = _, this)
+         : this._duration;
   };
 
   /**
@@ -480,7 +593,9 @@ var Shape = (function (BaseClass$$1) {
       @param {Function|String} [*value* = "black"]
   */
   Shape.prototype.fill = function fill (_) {
-    return arguments.length ? (this._fill = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._fill;
+    return arguments.length
+         ? (this._fill = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._fill;
   };
 
   /**
@@ -489,7 +604,9 @@ var Shape = (function (BaseClass$$1) {
       @param {Function|String|Array} [*value*]
   */
   Shape.prototype.fontColor = function fontColor (_) {
-    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._fontColor;
+    return arguments.length
+         ? (this._fontColor = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._fontColor;
   };
 
   /**
@@ -498,7 +615,9 @@ var Shape = (function (BaseClass$$1) {
       @param {Function|String|Array} [*value* = "Verdana"]
   */
   Shape.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._fontFamily;
+    return arguments.length
+         ? (this._fontFamily = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._fontFamily;
   };
 
   /**
@@ -507,7 +626,9 @@ var Shape = (function (BaseClass$$1) {
       @param {Function|Boolean|Array} [*value*]
   */
   Shape.prototype.fontResize = function fontResize (_) {
-    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._fontResize;
+    return arguments.length
+         ? (this._fontResize = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._fontResize;
   };
 
   /**
@@ -516,7 +637,9 @@ var Shape = (function (BaseClass$$1) {
       @param {Function|String|Array} [*value* = 12]
   */
   Shape.prototype.fontSize = function fontSize (_) {
-    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._fontSize;
+    return arguments.length
+         ? (this._fontSize = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._fontSize;
   };
 
   /**
@@ -534,7 +657,9 @@ function(d, i, shape) {
 }
   */
   Shape.prototype.hitArea = function hitArea (_) {
-    return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._hitArea;
+    return arguments.length
+         ? (this._hitArea = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._hitArea;
   };
 
   /**
@@ -543,7 +668,9 @@ function(d, i, shape) {
       @param {Function} [*value*]
   */
   Shape.prototype.id = function id (_) {
-    return arguments.length ? (this._id = _, this) : this._id;
+    return arguments.length
+         ? (this._id = _, this)
+         : this._id;
   };
 
   /**
@@ -552,7 +679,9 @@ function(d, i, shape) {
       @param {Function|String|Array} [*value*]
   */
   Shape.prototype.label = function label (_) {
-    return arguments.length ? (this._label = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._label;
+    return arguments.length
+         ? (this._label = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._label;
   };
 
   /**
@@ -570,7 +699,9 @@ function(d, i, shape) {
 }
   */
   Shape.prototype.labelBounds = function labelBounds (_) {
-    return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._labelBounds;
+    return arguments.length
+         ? (this._labelBounds = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._labelBounds;
   };
 
   /**
@@ -579,7 +710,9 @@ function(d, i, shape) {
       @param {Function|Number|Array} [*value* = 10]
   */
   Shape.prototype.labelPadding = function labelPadding (_) {
-    return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._labelPadding;
+    return arguments.length
+         ? (this._labelPadding = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._labelPadding;
   };
 
   /**
@@ -588,7 +721,9 @@ function(d, i, shape) {
       @param {Function|String|Array} [*value*]
   */
   Shape.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._lineHeight;
+    return arguments.length
+         ? (this._lineHeight = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._lineHeight;
   };
 
   /**
@@ -597,26 +732,9 @@ function(d, i, shape) {
       @param {Number} [*value* = 1]
   */
   Shape.prototype.opacity = function opacity (_) {
-    return arguments.length ? (this._opacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._opacity;
-  };
-
-  /**
-      @memberof Shape
-      @desc Renders the current Shape to the page. If a *callback* is specified, it will be called once the shapes are done drawing.
-      @param {Function} [*callback* = undefined]
-  */
-  Shape.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    if (this._select === void 0) this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node());
-    if (this._lineHeight === void 0) this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
-
-    this._transition = d3Transition.transition().duration(this._duration);
-
-    if (callback) setTimeout(callback, this._duration + 100);
-
-    return this;
+    return arguments.length
+         ? (this._opacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._opacity;
   };
 
   /**
@@ -625,7 +743,9 @@ function(d, i, shape) {
       @param {Function|Number} [*value* = 1]
   */
   Shape.prototype.scale = function scale (_) {
-    return arguments.length ? (this._scale = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._scale;
+    return arguments.length
+         ? (this._scale = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._scale;
   };
 
   /**
@@ -634,7 +754,35 @@ function(d, i, shape) {
       @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
   */
   Shape.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = d3Selection.select(_), this) : this._select;
+    return arguments.length
+         ? (this._select = d3Selection.select(_), this)
+         : this._select;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the shape-rendering accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current shape-rendering accessor.
+      @param {Function|String} [*value* = "geometricPrecision"]
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Shape.prototype.shapeRendering = function shapeRendering (_) {
+    return arguments.length
+         ? (this._shapeRendering = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._shapeRendering;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the sort comparator to the specified function and returns the current class instance. If *value* is not specified, returns the current sort comparator.
+      @param {false|Function} [*value* = []]
+  */
+  Shape.prototype.sort = function sort (_) {
+    return arguments.length
+         ? (this._sort = _, this)
+         : this._sort;
   };
 
   /**
@@ -643,7 +791,9 @@ function(d, i, shape) {
       @param {Function|String} [*value* = "black"]
   */
   Shape.prototype.stroke = function stroke (_) {
-    return arguments.length ? (this._stroke = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._stroke;
+    return arguments.length
+         ? (this._stroke = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._stroke;
   };
 
   /**
@@ -652,7 +802,9 @@ function(d, i, shape) {
       @param {Function|Number} [*value* = 0]
   */
   Shape.prototype.strokeWidth = function strokeWidth (_) {
-    return arguments.length ? (this._strokeWidth = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._strokeWidth;
+    return arguments.length
+         ? (this._strokeWidth = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._strokeWidth;
   };
 
   /**
@@ -661,7 +813,9 @@ function(d, i, shape) {
       @param {Function|String|Array} [*value* = "start"]
   */
   Shape.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._textAnchor;
+    return arguments.length
+         ? (this._textAnchor = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._textAnchor;
   };
 
   /**
@@ -670,7 +824,9 @@ function(d, i, shape) {
       @param {Function|String} [*value* = ""]
   */
   Shape.prototype.transform = function transform (_) {
-    return arguments.length ? (this._transform = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._transform;
+    return arguments.length
+         ? (this._transform = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._transform;
   };
 
   /**
@@ -679,7 +835,9 @@ function(d, i, shape) {
       @param {Function|String} [*value* = "non-scaling-stroke"]
   */
   Shape.prototype.vectorEffect = function vectorEffect (_) {
-    return arguments.length ? (this._vectorEffect = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._vectorEffect;
+    return arguments.length
+         ? (this._vectorEffect = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._vectorEffect;
   };
 
   /**
@@ -688,11 +846,13 @@ function(d, i, shape) {
       @param {Function|String|Array} [*value* = "start"]
   */
   Shape.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._verticalAlign;
+    return arguments.length
+         ? (this._verticalAlign = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._verticalAlign;
   };
 
   /**
-      @memberof Rect
+      @memberof Shape
       @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
       @param {Function|Number} [*value*]
       @example
@@ -701,11 +861,13 @@ function(d) {
 }
   */
   Shape.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x;
+    return arguments.length
+         ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._x;
   };
 
   /**
-      @memberof Rect
+      @memberof Shape
       @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
       @param {Function|Number} [*value*]
       @example
@@ -714,7 +876,9 @@ function(d) {
 }
   */
   Shape.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
+    return arguments.length
+         ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._y;
   };
 
   return Shape;
@@ -732,6 +896,7 @@ var Area = (function (Shape$$1) {
 
     this._curve = "linear";
     this._defined = function () { return true; };
+    this._name = "Area";
     this._x = d3plusCommon.accessor("x");
     this._x0 = d3plusCommon.accessor("x");
     this._x1 = null;
@@ -746,37 +911,19 @@ var Area = (function (Shape$$1) {
   Area.prototype.constructor = Area;
 
   /**
-      Draws the lines.
-      @param {Function} [*callback* = undefined]
+      Filters/manipulates the data array before binding each point to an SVG group.
+      @param {Array} [*data* = the data array to be filtered]
       @private
   */
-  Area.prototype.render = function render (callback) {
+  Area.prototype._dataFilter = function _dataFilter (data) {
     var this$1 = this;
 
 
-    Shape$$1.prototype.render.call(this, callback);
+    var areas = d3Collection.nest().key(this._id).entries(data).map(function (d) {
 
-    var path = this._path = paths.area()
-      .defined(this._defined)
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .x(this._x)
-      .x0(this._x0)
-      .x1(this._x1)
-      .y(this._y)
-      .y0(this._y0)
-      .y1(this._y1);
+      d.data = d3plusCommon.merge(d.values);
+      d.i = data.indexOf(d.values[0]);
 
-    var exitPath = paths.area()
-      .defined(function (d) { return d; })
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .x(this._x)
-      .x0(this._x0)
-      .x1(this._x1)
-      .y(this._y)
-      .y0(this._y0)
-      .y1(this._y1);
-
-    var areas = d3Collection.nest().key(this._id).entries(this._data).map(function (d) {
       var x = d3Array.extent(d.values.map(this$1._x)
         .concat(d.values.map(this$1._x0))
         .concat(this$1._x1 ? d.values.map(this$1._x1) : [])
@@ -784,6 +931,7 @@ var Area = (function (Shape$$1) {
       d.xR = x;
       d.width = x[1] - x[0];
       d.x = x[0] + d.width / 2;
+
       var y = d3Array.extent(d.values.map(this$1._y)
         .concat(d.values.map(this$1._y0))
         .concat(this$1._y1 ? d.values.map(this$1._y1) : [])
@@ -791,51 +939,54 @@ var Area = (function (Shape$$1) {
       d.yR = y;
       d.height = y[1] - y[0];
       d.y = y[0] + d.height / 2;
+
       d.nested = true;
+      d.__d3plus__ = true;
       return d;
     });
 
-    var groups = this._select.selectAll(".d3plus-Area").data(areas, function (d) { return d.key; });
+    areas.key = function (d) { return d.key; };
+    return areas;
 
-    groups.transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
+  };
 
-    groups.select("path").transition(this._transition)
+  /**
+      Draws the area polygons.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Area.prototype.render = function render (callback) {
+
+    Shape$$1.prototype.render.call(this, callback);
+
+    var path = this._path = paths.area()
+      .defined(this._defined)
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x).x0(this._x0).x1(this._x1)
+      .y(this._y).y0(this._y0).y1(this._y1);
+
+    var exitPath = paths.area()
+      .defined(function (d) { return d; })
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x).x0(this._x0).x1(this._x1)
+      .y(this._y).y0(this._y0).y1(this._y1);
+
+    this._enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    this._update.select("path").transition(this._transition)
       .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attrTween("d", function(d) {
         return d3InterpolatePath.interpolatePath(d3Selection.select(this).attr("d"), path(d.values));
       })
       .call(this._applyStyle.bind(this));
 
-    groups.exit().select("path").transition(this._transition)
+    this._exit.select("path").transition(this._transition)
       .attrTween("d", function(d) {
         return d3InterpolatePath.interpolatePath(d3Selection.select(this).attr("d"), exitPath(d.values));
       });
-
-    groups.exit().transition().delay(this._duration).remove();
-
-    groups.exit().call(this._applyLabels.bind(this), false);
-
-    var enter = groups.enter().append("g")
-        .attr("class", function (d) { return ("d3plus-Shape d3plus-Area d3plus-id-" + (d3plusText.strip(d.key))); })
-        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
-        .attr("opacity", 0);
-
-    enter.append("path")
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attr("d", function (d) { return path(d.values); })
-      .call(this._applyStyle.bind(this));
-
-    var update = enter.merge(groups);
-
-    update.call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
-      .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
-
-    this._applyEvents(update);
 
     return this;
 
@@ -860,7 +1011,9 @@ var Area = (function (Shape$$1) {
       @param {String} [*value* = "linear"]
   */
   Area.prototype.curve = function curve (_) {
-    return arguments.length ? (this._curve = _, this) : this._curve;
+    return arguments.length
+         ? (this._curve = _, this)
+         : this._curve;
   };
 
   /**
@@ -869,7 +1022,9 @@ var Area = (function (Shape$$1) {
       @param {Function} [*value*]
   */
   Area.prototype.defined = function defined (_) {
-    return arguments.length ? (this._defined = _, this) : this._defined;
+    return arguments.length
+         ? (this._defined = _, this)
+         : this._defined;
   };
 
   /**
@@ -878,7 +1033,9 @@ var Area = (function (Shape$$1) {
       @param {Function|Number} [*value*]
   */
   Area.prototype.x0 = function x0 (_) {
-    return arguments.length ? (this._x0 = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x0;
+    return arguments.length
+         ? (this._x0 = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._x0;
   };
 
   /**
@@ -887,7 +1044,9 @@ var Area = (function (Shape$$1) {
       @param {Function|Number|null} [*value*]
   */
   Area.prototype.x1 = function x1 (_) {
-    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this) : this._x1;
+    return arguments.length
+         ? (this._x1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this)
+         : this._x1;
   };
 
   /**
@@ -896,7 +1055,9 @@ var Area = (function (Shape$$1) {
       @param {Function|Number} [*value*]
   */
   Area.prototype.y0 = function y0 (_) {
-    return arguments.length ? (this._y0 = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y0;
+    return arguments.length
+         ? (this._y0 = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._y0;
   };
 
   /**
@@ -905,7 +1066,9 @@ var Area = (function (Shape$$1) {
       @param {Function|Number|null} [*value*]
   */
   Area.prototype.y1 = function y1 (_) {
-    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this) : this._y1;
+    return arguments.length
+         ? (this._y1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this)
+         : this._y1;
   };
 
   return Area;
@@ -919,6 +1082,7 @@ var Area = (function (Shape$$1) {
 var Circle = (function (Shape$$1) {
   function Circle() {
     Shape$$1.call(this);
+    this._name = "Circle";
     this._r = d3plusCommon.accessor("r");
   }
 
@@ -945,54 +1109,21 @@ var Circle = (function (Shape$$1) {
       @private
   */
   Circle.prototype.render = function render (callback) {
-    var this$1 = this;
-
 
     Shape$$1.prototype.render.call(this, callback);
 
-    var groups = this._select.selectAll(".d3plus-Circle").data(this._data, this._id);
+    this._enter.append("circle")
+        .attr("r", 0).attr("x", 0).attr("y", 0)
+        .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .call(this._applyPosition.bind(this));
 
-    groups.transition(this._transition)
-      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
-
-    groups.select("circle").transition(this._transition).call(this._applyStyle.bind(this));
-
-    groups.exit().transition().delay(this._duration).remove();
-
-    groups.exit().select("circle").transition(this._transition)
-      .attr("r", 0)
-      .attr("x", 0)
-      .attr("y", 0);
-
-    groups.exit()
-      .call(this._applyImage.bind(this), false)
-      .call(this._applyLabels.bind(this), false);
-
-    var enter = groups.enter().append("g")
-        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Circle d3plus-id-" + (d3plusText.strip(this$1._id(d, i)))); })
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
-
-    enter.append("circle")
-      .attr("r", 0)
-      .attr("x", 0)
-      .attr("y", 0)
-      .call(this._applyStyle.bind(this));
-
-    var update = enter.merge(groups);
-
-    update.select("circle").transition(this._transition)
+    this._update.select("circle").transition(this._transition)
+      .call(this._applyStyle.bind(this))
       .call(this._applyPosition.bind(this));
 
-    update
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
-      .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
-
-    this._applyEvents(update);
+    this._exit.select("circle").transition(this._transition)
+      .attr("r", 0).attr("x", 0).attr("y", 0);
 
     return this;
 
@@ -1038,6 +1169,7 @@ var Line = (function (Shape$$1) {
     this._curve = "linear";
     this._defined = function (d) { return d; };
     this._fill = d3plusCommon.constant("none");
+    this._name = "Line";
     this._path = paths.line();
     this._strokeWidth = d3plusCommon.constant(1);
 
@@ -1046,6 +1178,41 @@ var Line = (function (Shape$$1) {
   if ( Shape$$1 ) Line.__proto__ = Shape$$1;
   Line.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
   Line.prototype.constructor = Line;
+
+  /**
+      Filters/manipulates the data array before binding each point to an SVG group.
+      @param {Array} [*data* = the data array to be filtered]
+      @private
+  */
+  Line.prototype._dataFilter = function _dataFilter (data) {
+    var this$1 = this;
+
+
+    var lines = d3Collection.nest().key(this._id).entries(data).map(function (d) {
+
+      d.data = d3plusCommon.merge(d.values);
+      d.i = data.indexOf(d.values[0]);
+
+      var x = d3Array.extent(d.values, this$1._x);
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+
+      var y = d3Array.extent(d.values, this$1._y);
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+
+      d.nested = true;
+      d.__d3plus__ = true;
+
+      return d;
+    });
+
+    lines.key = function (d) { return d.key; };
+    return lines;
+
+  };
 
   /**
       Draws the lines.
@@ -1060,61 +1227,23 @@ var Line = (function (Shape$$1) {
 
     var that = this;
 
-    var lines = d3Collection.nest().key(this._id).entries(this._data).map(function (d) {
-      var x = d3Array.extent(d.values, this$1._x);
-      d.xR = x;
-      d.width = x[1] - x[0];
-      d.x = x[0] + d.width / 2;
-      var y = d3Array.extent(d.values, this$1._y);
-      d.yR = y;
-      d.height = y[1] - y[0];
-      d.y = y[0] + d.height / 2;
-      d.nested = true;
-      return d;
-    });
-
     this._path
       .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
       .defined(this._defined)
       .x(this._x)
       .y(this._y);
 
-    var groups = this._select.selectAll(".d3plus-Line").data(lines, function (d) { return d.key; });
+    this._enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return this$1._path(d.values); })
+      .call(this._applyStyle.bind(this));
 
-    groups.transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); });
-
-    groups.select("path").transition(this._transition)
+    this._update.select("path").transition(this._transition)
       .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attrTween("d", function(d) {
         return d3InterpolatePath.interpolatePath(d3Selection.select(this).attr("d"), that._path(d.values));
       })
       .call(this._applyStyle.bind(this));
-
-    groups.exit().transition().delay(this._duration).remove();
-
-    groups.exit().call(this._applyLabels.bind(this), false);
-
-    var enter = groups.enter().append("g")
-        .attr("class", function (d) { return ("d3plus-Shape d3plus-Line d3plus-id-" + (d3plusText.strip(d.key))); })
-        .attr("transform", function (d) { return ("translate(" + (d.x) + ", " + (d.y) + ")"); })
-        .attr("opacity", 0);
-
-    enter.append("path")
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attr("d", function (d) { return this$1._path(d.values); })
-      .call(this._applyStyle.bind(this));
-
-    var update = enter.merge(groups);
-
-    update.call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
-      .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
-
-    this._applyEvents(update);
 
     return this;
 
@@ -1163,6 +1292,7 @@ var Path = (function (Shape$$1) {
   function Path() {
     Shape$$1.call(this);
     this._d = d3plusCommon.accessor("path");
+    this._name = "Path";
   }
 
   if ( Shape$$1 ) Path.__proto__ = Shape$$1;
@@ -1175,51 +1305,23 @@ var Path = (function (Shape$$1) {
       @private
   */
   Path.prototype.render = function render (callback) {
-    var this$1 = this;
-
 
     Shape$$1.prototype.render.call(this, callback);
 
-    var groups = this._select.selectAll(".d3plus-Path").data(this._data, this._id);
-
-    groups.transition(this._transition)
-      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
-
-    groups.select("path").transition(this._transition).call(this._applyStyle.bind(this));
-
-    groups.exit().transition().delay(this._duration).remove();
-
-    groups.exit().select("path").transition(this._transition)
-      .attr("opacity", 0);
-
-    groups.exit()
-      .call(this._applyImage.bind(this), false)
-      .call(this._applyLabels.bind(this), false);
-
-    var enter = groups.enter().append("g")
-        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Path d3plus-id-" + (d3plusText.strip(this$1._id(d, i)))); })
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")scale(" + (this$1._scale(d, i)) + ")"); });
-
-    enter.append("path")
-      .attr("opacity", 0)
-      .call(this._applyStyle.bind(this));
-
-    var update = enter.merge(groups);
-
-    update.select("path").transition(this._transition)
-      .attr("opacity", 1)
-      .attr("d", this._d);
-
-    update
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
+    this._enter.append("path")
+        .attr("opacity", 0)
+        .attr("d", this._d)
+      .call(this._applyStyle.bind(this))
       .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
+        .attr("opacity", 1);
 
-    this._applyEvents(update);
+    this._update.select("path").transition(this._transition)
+      .call(this._applyStyle.bind(this))
+        .attr("opacity", 1)
+        .attr("d", this._d);
+
+    this._exit.select("path").transition(this._transition)
+      .attr("opacity", 0);
 
     return this;
 
@@ -1235,7 +1337,9 @@ function(d) {
 }
   */
   Path.prototype.d = function d (_) {
-    return arguments.length ? (this._d = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._d;
+    return arguments.length
+         ? (this._d = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._d;
   };
 
   return Path;
@@ -1251,6 +1355,7 @@ var Rect = (function (Shape$$1) {
     Shape$$1.call(this);
     this._height = d3plusCommon.accessor("height");
     this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
+    this._name = "Rect";
     this._width = d3plusCommon.accessor("width");
   }
 
@@ -1264,56 +1369,23 @@ var Rect = (function (Shape$$1) {
       @private
   */
   Rect.prototype.render = function render (callback) {
-    var this$1 = this;
-
 
     Shape$$1.prototype.render.call(this, callback);
 
-    var groups = this._select.selectAll(".d3plus-Rect").data(this._data, this._id);
+    this._enter.append("rect")
+        .attr("width", 0).attr("height", 0)
+        .attr("x", 0).attr("y", 0)
+        .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .call(this._applyPosition.bind(this));
 
-    groups.transition(this._transition)
-      .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
-
-    groups.select("rect").transition(this._transition).call(this._applyStyle.bind(this));
-
-    groups.exit().transition().delay(this._duration).remove();
-
-    groups.exit().select("rect").transition(this._transition)
-      .attr("width", 0)
-      .attr("height", 0)
-      .attr("x", 0)
-      .attr("y", 0);
-
-    groups.exit()
-      .call(this._applyImage.bind(this), false)
-      .call(this._applyLabels.bind(this), false);
-
-    var enter = groups.enter().append("g")
-        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-Rect d3plus-id-" + (d3plusText.strip(this$1._id(d, i)))); })
-        .attr("transform", function (d, i) { return ("translate(" + (this$1._x(d, i)) + "," + (this$1._y(d, i)) + ")"); });
-
-    enter.append("rect")
-      .attr("width", 0)
-      .attr("height", 0)
-      .attr("x", 0)
-      .attr("y", 0)
-      .call(this._applyStyle.bind(this));
-
-    var update = enter.merge(groups);
-
-    update.select("rect").transition(this._transition)
+    this._update.select("rect").transition(this._transition)
+      .call(this._applyStyle.bind(this))
       .call(this._applyPosition.bind(this));
 
-    update
-        .call(this._applyImage.bind(this))
-        .call(this._applyLabels.bind(this))
-        .attr("pointer-events", "none")
-      .transition(this._transition)
-        .attr("opacity", this._opacity)
-      .transition()
-        .attr("pointer-events", "all");
-
-    this._applyEvents(update);
+    this._exit.select("rect").transition(this._transition)
+      .attr("width", 0).attr("height", 0)
+      .attr("x", 0).attr("y", 0);
 
     return this;
 
@@ -1356,7 +1428,9 @@ function(d) {
 }
   */
   Rect.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._height;
+    return arguments.length
+         ? (this._height = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._height;
   };
 
   /**
@@ -1369,7 +1443,9 @@ function(d) {
 }
   */
   Rect.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._width;
+    return arguments.length
+         ? (this._width = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._width;
   };
 
   return Rect;
