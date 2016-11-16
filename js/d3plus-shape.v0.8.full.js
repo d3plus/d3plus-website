@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.22
+  d3plus-shape v0.8.23
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -8765,22 +8765,9 @@ var Shape = (function (BaseClass$$1) {
       @param {D3Selection} *update* The update cycle of the data binding.
       @private
   */
-  Shape.prototype._applyEvents = function _applyEvents (update) {
+  Shape.prototype._applyEvents = function _applyEvents (handler) {
 
     var that = this;
-    var hitArea = update.selectAll(".hitArea").data(this._hitArea ? [0] : []);
-    hitArea.exit().remove();
-    hitArea = hitArea.enter().append("rect")
-        .attr("class", "hitArea")
-        .attr("fill", "none")
-      .merge(hitArea)
-        .data(function (d) { return [d]; })
-        .each(function(d) {
-          var h = that._hitArea(d, that._data.indexOf(d));
-          if (h) select(this).call(attrize, h);
-          else select(this).remove();
-        });
-    var handler = this._hitArea ? hitArea : update;
 
     var events = Object.keys(this._on);
     var loop = function ( e ) {
@@ -9029,7 +9016,7 @@ var Shape = (function (BaseClass$$1) {
     this._enter = enter.append("g").attr("class", "d3plus-Shape-bg");
     var fg = enter.append("g").attr("class", "d3plus-Shape-fg");
 
-    var enterUpdate = this._enter.merge(update);
+    var enterUpdate = enter.merge(update);
 
     fg.merge(update.select(".d3plus-Shape-fg"))
       .call(this._applyImage.bind(this))
@@ -9042,7 +9029,21 @@ var Shape = (function (BaseClass$$1) {
       .transition()
         .attr("pointer-events", "all");
 
-    this._applyEvents(enterUpdate);
+    var that = this;
+    var hitArea = enterUpdate.selectAll(".d3plus-Shape-hitArea").data(this._hitArea ? [0] : []);
+    hitArea.exit().remove();
+    hitArea = hitArea.enter().append("rect")
+        .attr("class", "d3plus-Shape-hitArea")
+        .attr("fill", "none")
+      .merge(hitArea)
+        .data(function (d) { return [d]; })
+        .each(function(d) {
+          var h = that._hitArea(d, that._data.indexOf(d));
+          if (h) select(this).call(attrize, h);
+          else select(this).remove();
+        });
+
+    this._applyEvents(this._hitArea ? hitArea : enterUpdate);
 
     // Makes the exit state of the group selection accessible.
     var exit = update.exit();
