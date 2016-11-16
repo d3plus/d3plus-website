@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.8.23
+  d3plus-shape v0.8.24
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -9029,18 +9029,17 @@ var Shape = (function (BaseClass$$1) {
       .transition()
         .attr("pointer-events", "all");
 
-    var that = this;
     var hitArea = enterUpdate.selectAll(".d3plus-Shape-hitArea").data(this._hitArea ? [0] : []);
     hitArea.exit().remove();
     hitArea = hitArea.enter().append("rect")
         .attr("class", "d3plus-Shape-hitArea")
         .attr("fill", "none")
       .merge(hitArea)
-        .data(function (d) { return [d]; })
+        .data(function (d) { return [this$1._hitArea 
+             ? this$1._hitArea(d, this$1._data.indexOf(d), this$1._aes(d, this$1._data.indexOf(d)))
+             : null]; })
         .each(function(d) {
-          var h = that._hitArea(d, that._data.indexOf(d));
-          if (h) select(this).call(attrize, h);
-          else select(this).remove();
+          return d ? select(this).call(attrize, d) : select(this).remove();
         });
 
     this._applyEvents(this._hitArea ? hitArea : enterUpdate);
