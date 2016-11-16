@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.0
+  d3plus-viz v0.4.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -219,6 +219,46 @@ var Viz = (function (BaseClass$$1) {
   if ( BaseClass$$1 ) Viz.__proto__ = BaseClass$$1;
   Viz.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Viz.prototype.constructor = Viz;
+
+  /**
+      @memberof Viz
+      @desc Preps a shapeConfig object for d3plus data, and optionally bubbles up a specific shape type.
+      @param {String} *shape* The shape key to bubble up to the parent config level.
+      @private
+  */
+  Viz.prototype._shapeConfigPrep = function _shapeConfigPrep (shape) {
+    var this$1 = this;
+    if ( shape === void 0 ) shape = false;
+
+
+    var newConfig = {duration: this._duration};
+
+    var loop = function ( key ) {
+
+      if ({}.hasOwnProperty.call(this$1._shapeConfig, key)) {
+
+        if (typeof this$1._shapeConfig[key] === "function") {
+          newConfig[key] = function (d, i, s) { return this$1._shapeConfig[key](d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i, s); };
+        }
+        else newConfig[key] = this$1._shapeConfig[key];
+
+      }
+
+    };
+
+    for (var key in this._shapeConfig) loop( key );
+
+    newConfig.on = Object.keys(this._on)
+      .filter(function (e) { return !e.includes(".") || e.includes(".shape"); })
+      .reduce(function (obj, e) {
+        obj[e] = function (d, i) { return this$1._on[e] ? this$1._on[e](d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i) : null; };
+        return obj;
+      }, {});
+
+    if (shape) newConfig = Object.assign(newConfig, this._shapeConfig[shape]);
+    return newConfig;
+
+  };
 
   /**
       @memberof Viz
