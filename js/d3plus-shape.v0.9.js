@@ -1,14 +1,14 @@
 /*
-  d3plus-shape v0.9.0
+  d3plus-shape v0.9.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3plus-color'), require('d3plus-text'), require('d3-collection'), require('d3-interpolate-path'), require('d3-shape')) :
-  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3plus-color', 'd3plus-text', 'd3-collection', 'd3-interpolate-path', 'd3-shape'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3plusCommon,global.d3plusColor,global.d3plusText,global.d3Collection,global.d3InterpolatePath,global.paths));
-}(this, (function (exports,d3Selection,d3Transition,d3plusCommon,d3plusColor,d3plusText,d3Collection,d3InterpolatePath,paths) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3plus-color'), require('d3plus-text'), require('d3-array'), require('d3-collection'), require('d3-interpolate-path'), require('d3-shape')) :
+  typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3plus-color', 'd3plus-text', 'd3-array', 'd3-collection', 'd3-interpolate-path', 'd3-shape'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3plusCommon,global.d3plusColor,global.d3plusText,global.d3Array,global.d3Collection,global.d3InterpolatePath,global.paths));
+}(this, (function (exports,d3Selection,d3Transition,d3plusCommon,d3plusColor,d3plusText,d3Array,d3Collection,d3InterpolatePath,paths) { 'use strict';
 
 /**
     @function distance
@@ -246,7 +246,6 @@ var Shape = (function (BaseClass$$1) {
     this._stroke = d3plusCommon.constant("black");
     this._strokeWidth = d3plusCommon.constant(0);
     this._textAnchor = d3plusCommon.constant("start");
-    this._transform = d3plusCommon.constant("");
     this._vectorEffect = d3plusCommon.constant("non-scaling-stroke");
     this._verticalAlign = d3plusCommon.constant("top");
 
@@ -450,7 +449,6 @@ var Shape = (function (BaseClass$$1) {
       .attr("fill", styleLogic.bind(this._fill))
       .attr("stroke", styleLogic.bind(this._stroke))
       .attr("stroke-width", styleLogic.bind(this._strokeWidth))
-      .attr("transform", styleLogic.bind(this._transform))
       .attr("vector-effect", styleLogic.bind(this._vectorEffect));
   };
 
@@ -838,17 +836,6 @@ function(d) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the transform accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current transform accessor.
-      @param {Function|String} [*value* = ""]
-  */
-  Shape.prototype.transform = function transform (_) {
-    return arguments.length
-         ? (this._transform = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._transform;
-  };
-
-  /**
-      @memberof Shape
       @desc If *value* is specified, sets the vector-effect accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vector-effect accessor.
       @param {Function|String} [*value* = "non-scaling-stroke"]
   */
@@ -934,14 +921,32 @@ var Area = (function (Shape$$1) {
       @private
   */
   Area.prototype._dataFilter = function _dataFilter (data) {
+    var this$1 = this;
+
 
     var areas = d3Collection.nest().key(this._id).entries(data).map(function (d) {
 
       d.data = d3plusCommon.merge(d.values);
       d.i = data.indexOf(d.values[0]);
 
+      var x = d3Array.extent(d.values.map(this$1._x)
+        .concat(d.values.map(this$1._x0))
+        .concat(this$1._x1 ? d.values.map(this$1._x1) : [])
+      );
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+
+      var y = d3Array.extent(d.values.map(this$1._y)
+        .concat(d.values.map(this$1._y0))
+        .concat(this$1._y1 ? d.values.map(this$1._y1) : [])
+      );
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+
       d.nested = true;
-      d.translate = [0, 0];
+      d.translate = [d.x, d.y];
       d.__d3plus__ = true;
 
       return d;
@@ -974,10 +979,12 @@ var Area = (function (Shape$$1) {
       .y(this._y).y0(this._y0).y1(this._y1);
 
     this._enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attr("d", function (d) { return path(d.values); })
       .call(this._applyStyle.bind(this));
 
     this._update.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attrTween("d", function(d) {
         return d3InterpolatePath.interpolatePath(d3Selection.select(this).attr("d"), path(d.values));
       })
@@ -1185,14 +1192,26 @@ var Line = (function (Shape$$1) {
       @private
   */
   Line.prototype._dataFilter = function _dataFilter (data) {
+    var this$1 = this;
+
 
     var lines = d3Collection.nest().key(this._id).entries(data).map(function (d) {
 
       d.data = d3plusCommon.merge(d.values);
       d.i = data.indexOf(d.values[0]);
 
+      var x = d3Array.extent(d.values, this$1._x);
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+
+      var y = d3Array.extent(d.values, this$1._y);
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+
       d.nested = true;
-      d.translate = [0, 0];
+      d.translate = [d.x, d.y];
       d.__d3plus__ = true;
 
       return d;
@@ -1223,10 +1242,12 @@ var Line = (function (Shape$$1) {
       .y(this._y);
 
     this._enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attr("d", function (d) { return this$1._path(d.values); })
       .call(this._applyStyle.bind(this));
 
     this._update.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attrTween("d", function(d) {
         return d3InterpolatePath.interpolatePath(d3Selection.select(this).attr("d"), that._path(d.values));
       })

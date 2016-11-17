@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.9.0
+  d3plus-shape v0.9.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -8735,7 +8735,6 @@ var Shape = (function (BaseClass$$1) {
     this._stroke = constant$3("black");
     this._strokeWidth = constant$3(0);
     this._textAnchor = constant$3("start");
-    this._transform = constant$3("");
     this._vectorEffect = constant$3("non-scaling-stroke");
     this._verticalAlign = constant$3("top");
 
@@ -8939,7 +8938,6 @@ var Shape = (function (BaseClass$$1) {
       .attr("fill", styleLogic.bind(this._fill))
       .attr("stroke", styleLogic.bind(this._stroke))
       .attr("stroke-width", styleLogic.bind(this._strokeWidth))
-      .attr("transform", styleLogic.bind(this._transform))
       .attr("vector-effect", styleLogic.bind(this._vectorEffect));
   };
 
@@ -9323,17 +9321,6 @@ function(d) {
     return arguments.length
          ? (this._textAnchor = typeof _ === "function" ? _ : constant$3(_), this)
          : this._textAnchor;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the transform accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current transform accessor.
-      @param {Function|String} [*value* = ""]
-  */
-  Shape.prototype.transform = function transform (_) {
-    return arguments.length
-         ? (this._transform = typeof _ === "function" ? _ : constant$3(_), this)
-         : this._transform;
   };
 
   /**
@@ -11626,14 +11613,32 @@ var Area = (function (Shape$$1) {
       @private
   */
   Area.prototype._dataFilter = function _dataFilter (data) {
+    var this$1 = this;
+
 
     var areas = nest$1().key(this._id).entries(data).map(function (d) {
 
       d.data = objectMerge(d.values);
       d.i = data.indexOf(d.values[0]);
 
+      var x = extent(d.values.map(this$1._x)
+        .concat(d.values.map(this$1._x0))
+        .concat(this$1._x1 ? d.values.map(this$1._x1) : [])
+      );
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+
+      var y = extent(d.values.map(this$1._y)
+        .concat(d.values.map(this$1._y0))
+        .concat(this$1._y1 ? d.values.map(this$1._y1) : [])
+      );
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+
       d.nested = true;
-      d.translate = [0, 0];
+      d.translate = [d.x, d.y];
       d.__d3plus__ = true;
 
       return d;
@@ -11666,10 +11671,12 @@ var Area = (function (Shape$$1) {
       .y(this._y).y0(this._y0).y1(this._y1);
 
     this._enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attr("d", function (d) { return path(d.values); })
       .call(this._applyStyle.bind(this));
 
     this._update.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attrTween("d", function(d) {
         return interpolatePath(select(this).attr("d"), path(d.values));
       })
@@ -11877,14 +11884,26 @@ var Line = (function (Shape$$1) {
       @private
   */
   Line.prototype._dataFilter = function _dataFilter (data) {
+    var this$1 = this;
+
 
     var lines = nest$1().key(this._id).entries(data).map(function (d) {
 
       d.data = objectMerge(d.values);
       d.i = data.indexOf(d.values[0]);
 
+      var x = extent(d.values, this$1._x);
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+
+      var y = extent(d.values, this$1._y);
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+
       d.nested = true;
-      d.translate = [0, 0];
+      d.translate = [d.x, d.y];
       d.__d3plus__ = true;
 
       return d;
@@ -11915,10 +11934,12 @@ var Line = (function (Shape$$1) {
       .y(this._y);
 
     this._enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attr("d", function (d) { return this$1._path(d.values); })
       .call(this._applyStyle.bind(this));
 
     this._update.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
       .attrTween("d", function(d) {
         return interpolatePath(select(this).attr("d"), that._path(d.values));
       })
