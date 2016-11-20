@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.9.2
+  d3plus-shape v0.9.3
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -8952,10 +8952,10 @@ var Shape = (function (BaseClass$$1) {
 
 
     elem$$1
-      .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plus__
+      .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plusShape__
                   ? d.translate ? d.translate
                   : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
-                  : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plus__ ? d.scale || this$1._scale(d.data, d.i)
+                  : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plusShape__ ? d.scale || this$1._scale(d.data, d.i)
               : this$1._scale(d, i)) + ")"); });
   };
 
@@ -8966,7 +8966,7 @@ var Shape = (function (BaseClass$$1) {
       @private
   */
   Shape.prototype._nestWrapper = function _nestWrapper (method) {
-    return function (d, i) { return method(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); };
+    return function (d, i) { return method(d.__d3plusShape__ ? d.data : d, d.__d3plusShape__ ? d.i : i); };
   };
 
   /**
@@ -8997,7 +8997,7 @@ var Shape = (function (BaseClass$$1) {
       if (data.key) key = data.key;
     }
 
-    if (this._sort) data = data.sort(function (a, b) { return this$1._sort(a.__d3plus__ ? a.data : a, b.__d3plus__ ? b.data : b); });
+    if (this._sort) data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ ? a.data : a, b.__d3plusShape__ ? b.data : b); });
 
     // Makes the update state of the group selection accessible.
     var update = this._select.selectAll((".d3plus-" + (this._name))).data(data, key);
@@ -11640,7 +11640,7 @@ var Area = (function (Shape$$1) {
 
       d.nested = true;
       d.translate = [d.x, d.y];
-      d.__d3plus__ = true;
+      d.__d3plusShape__ = true;
 
       return d;
     });
@@ -11905,7 +11905,7 @@ var Line = (function (Shape$$1) {
 
       d.nested = true;
       d.translate = [d.x, d.y];
-      d.__d3plus__ = true;
+      d.__d3plusShape__ = true;
 
       return d;
     });
