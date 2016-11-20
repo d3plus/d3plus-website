@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.12
+  d3plus-axis v0.3.13
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -375,7 +375,7 @@ var Axis = (function (BaseClass$$1) {
 
     var labels = this._labels
                ? this._scale === "time" ? this._labels.map(date) : this._labels
-               : this._d3Scale.ticks
+               : this._ticks ? ticks : this._d3Scale.ticks
                ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
                : ticks;
 

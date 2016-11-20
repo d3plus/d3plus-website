@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.12
+  d3plus-axis v0.3.13
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -7611,190 +7611,6 @@ merge([
     @example <caption>returns this</caption>
 {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
 */
-
-var val = undefined;
-
-/**
-    @function prefix
-    @desc Returns the appropriate CSS vendor prefix, given the current browser.
-*/
-
-/**
-    @function stylize
-    @desc Applies each key/value in an object as a style.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} styles An object of key/value style pairs.
-*/
-
-/**
-    @function distance
-    @desc Calculates the pixel distance between two points.
-    @param {Array|Object} p1 The first point, either an Array formatted like `[x, y]` or a keyed object formatted like `{x, y}`.
-    @param {Array|Object} p2 The second point, either an Array formatted like `[x, y]` or a keyed object formatted like `{x, y}`
-    @returns {Number}
-*/
-var pointDistance = function(p1, p2) {
-  if (!(p1 instanceof Array)) p1 = [p1.x, p1.y];
-  if (!(p2 instanceof Array)) p2 = [p2.x, p2.y];
-  var xx = Math.abs(p1[0] - p2[0]);
-  var yy = Math.abs(p1[1] - p2[1]);
-  return Math.sqrt(xx * xx + yy * yy);
-};
-
-/**
-    @function accessor
-    @desc Wraps an object key in a simple accessor function.
-    @param {String} key The key to be returned from each Object passed to the function.
-    @param {*} [def] A default value to be returned if the key is not present.
-    @example <caption>this</caption>
-accessor("id");
-    @example <caption>returns this</caption>
-function(d) {
-  return d["id"];
-}
-*/
-var accessor$1 = function(key, def) {
-  if (def === void 0) return function (d) { return d[key]; };
-  return function (d) { return d[key] === void 0 ? def : d[key]; };
-};
-
-/**
-    @function attrize
-    @desc Applies each key/value in an object as an attr.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} attrs An object of key/value attr pairs.
-*/
-var attrize$1 = function(e, a) {
-  if ( a === void 0 ) a = {};
-
-  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
-};
-
-/**
-    @function s
-    @desc Returns 4 random characters, used for constructing unique identifiers.
-    @private
-*/
-function s$1() {
-  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-}
-
-
-/**
-    @class BaseClass
-    @desc An abstract class that contains some global methods and functionality.
-*/
-var BaseClass$2 = function BaseClass$2() {
-  this._on = {};
-  this._uuid = "" + (s$1()) + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + (s$1()) + (s$1());
-};
-
-/**
-    @memberof BaseClass
-    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
-    @param {Object} [*value*]
-*/
-BaseClass$2.prototype.config = function config (_) {
-    var this$1 = this;
-
-  if (arguments.length) {
-    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
-    return this;
-  }
-  else {
-    var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
-    return config;
-  }
-};
-
-/**
-    @memberof BaseClass
-    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-    @param {String} [*typenames*]
-    @param {Function} [*listener*]
-    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
-new Plot
-.on("click.Shape", function(d) {
-  console.log("data for shape clicked:", d);
-})
-.on("click.Legend", function(d) {
-  console.log("data for legend clicked:", d);
-})
-*/
-BaseClass$2.prototype.on = function on (_, f) {
-  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-};
-
-/**
-    @function closest
-    @desc Finds the closest numeric value in an array.
-    @param {Number} n The number value to use when searching the array.
-    @param {Array} arr The array of values to test against.
-*/
-
-/**
-    @function constant
-    @desc Wraps non-function variables in a simple return function.
-    @param {Array|Number|Object|String} value The value to be returned from the function.
-    @example <caption>this</caption>
-constant(42);
-    @example <caption>returns this</caption>
-function() {
-  return 42;
-}
-*/
-var constant$6 = function(value) {
-  return function constant() {
-    return value;
-  };
-};
-
-/**
-    @function elem
-    @desc Manages the enter/update/exit pattern for a single DOM element.
-    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
-    @param {Object} params Additional parameters.
-    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
-    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
-    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
-    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
-    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
-    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
-*/
-
-var array$5 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
-var enUS$1 = {
-	array: array$5
-};
-
-var array$6 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
-var esES$1 = {
-	array: array$6
-};
-
-i18next$1.init({
-  fallbackLng: "en-US",
-  initImmediate: false,
-  resources: {
-    "en-US": {translation: enUS$1},
-    "es-ES": {translation: esES$1}
-  }
-});
-
-/**
-    @function merge
-    @desc Combines an Array of Objects together and returns a new Object.
-    @param {Array} objects The Array of objects to be merged together.
-    @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
-    @example <caption>this</caption>
-merge([
-  {id: "foo", group: "A", value: 10, links: [1, 2]},
-  {id: "bar", group: "A", value: 20, links: [1, 3]}
-]);
-    @example <caption>returns this</caption>
-{id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
-*/
 function objectMerge(objects, aggs) {
   if ( aggs === void 0 ) aggs = {};
 
@@ -7832,7 +7648,7 @@ function objectMerge(objects, aggs) {
 
 }
 
-var val$1 = undefined;
+var val = undefined;
 
 /**
     @function prefix
@@ -7845,6 +7661,21 @@ var val$1 = undefined;
     @param {D3selection} elem The D3 element to apply the styles to.
     @param {Object} styles An object of key/value style pairs.
 */
+
+/**
+    @function distance
+    @desc Calculates the pixel distance between two points.
+    @param {Array|Object} p1 The first point, either an Array formatted like `[x, y]` or a keyed object formatted like `{x, y}`.
+    @param {Array|Object} p2 The second point, either an Array formatted like `[x, y]` or a keyed object formatted like `{x, y}`
+    @returns {Number}
+*/
+var pointDistance = function(p1, p2) {
+  if (!(p1 instanceof Array)) p1 = [p1.x, p1.y];
+  if (!(p2 instanceof Array)) p2 = [p2.x, p2.y];
+  var xx = Math.abs(p1[0] - p2[0]);
+  var yy = Math.abs(p1[1] - p2[1]);
+  return Math.sqrt(xx * xx + yy * yy);
+};
 
 /**
     @class Image
@@ -7862,13 +7693,13 @@ image().data([data])(function() { alert("draw complete!"); })
 */
 var Image = function Image() {
   this._duration = 600;
-  this._height = accessor$1("height");
-  this._id = accessor$1("url");
+  this._height = accessor("height");
+  this._id = accessor("url");
   this._select;
-  this._url = accessor$1("url");
-  this._width = accessor$1("width");
-  this._x = accessor$1("x", 0);
-  this._y = accessor$1("y", 0);
+  this._url = accessor("url");
+  this._width = accessor("width");
+  this._x = accessor("x", 0);
+  this._y = accessor("y", 0);
 };
 
 /**
@@ -7959,7 +7790,7 @@ return d.height;
 }
 */
 Image.prototype.height = function height (_) {
-  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$6(_), this) : this._height;
+  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$5(_), this) : this._height;
 };
 
 /**
@@ -8007,7 +7838,7 @@ return d.width;
 }
 */
 Image.prototype.width = function width (_) {
-  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$6(_), this) : this._width;
+  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$5(_), this) : this._width;
 };
 
 /**
@@ -8020,7 +7851,7 @@ return d.x || 0;
 }
 */
 Image.prototype.x = function x (_) {
-  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$6(_), this) : this._x;
+  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$5(_), this) : this._x;
 };
 
 /**
@@ -8033,7 +7864,7 @@ return d.y || 0;
 }
 */
 Image.prototype.y = function y (_) {
-  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$6(_), this) : this._y;
+  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$5(_), this) : this._y;
 };
 
 /**
@@ -8207,7 +8038,8 @@ var splitChars = ["-",  "/",  ";",  ":",  "&",
   "u3000",  // simplified chinese ideographic space
   "u3001",  // simplified chinese ideographic comma
   "u3002",  // simplified chinese ideographic full stop
-  "uFF5E"  // wave dash
+  "uFF0C",  // full-width comma
+  "uFF5E"   // wave dash
 ];
 
 var prefixChars = ["'",  "<",  "(",  "{",  "[",
@@ -8223,7 +8055,7 @@ var suffixChars = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
 ].concat(splitChars);
 
 var burmeseRange = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-var japaneseRange = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u3400-\u4dbf";
+var japaneseRange = "぀-ゟ\n                       ゠-ヿ\n                       ＀-＋\n                       －-｝\n                       ｟-ﾟ\n                       㐀-䶿";
 var chineseRange = "\u3400-\u9FBF";
 var laoRange = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
 
@@ -8283,8 +8115,9 @@ var measure = function(text, style) {
 */
 var wrap = function() {
 
-  var fontFamily = "sans-serif",
+  var fontFamily = "Verdana",
       fontSize = 10,
+      fontWeight = 400,
       height = 200,
       lineHeight,
       overflow = false,
@@ -8306,6 +8139,7 @@ var wrap = function() {
     var style = {
       "font-family": fontFamily,
       "font-size": fontSize,
+      "font-weight": fontWeight,
       "line-height": lineHeight
     };
 
@@ -8354,7 +8188,7 @@ var wrap = function() {
   /**
       @memberof textWrap
       @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value*]
+      @param {Function|String} [*value* = "Verdana"]
   */
   textWrap.fontFamily = function(_) {
     return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
@@ -8363,10 +8197,19 @@ var wrap = function() {
   /**
       @memberof textWrap
       @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
-      @param {Function|Number} [*value*]
+      @param {Function|Number} [*value* = 10]
   */
   textWrap.fontSize = function(_) {
     return arguments.length ? (fontSize = _, textWrap) : fontSize;
+  };
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
+      @param {Function|Number|String} [*value* = 400]
+  */
+  textWrap.fontWeight = function(_) {
+    return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
   };
 
   /**
@@ -8437,6 +8280,7 @@ var TextBox = (function (BaseClass$$1) {
     this._fontMin = constant$5(8);
     this._fontResize = constant$5(false);
     this._fontSize = constant$5(10);
+    this._fontWeight = constant$5(400);
     this._height = accessor("height", 200);
     this._id = function (d, i) { return d.id || ("" + i); };
     this._on = {};
@@ -8485,6 +8329,7 @@ var TextBox = (function (BaseClass$$1) {
       var style = {
         "font-family": this$1._fontFamily(d, i),
         "font-size": fS,
+        "font-weight": this$1._fontWeight(d, i),
         "line-height": lH
       };
 
@@ -8494,6 +8339,7 @@ var TextBox = (function (BaseClass$$1) {
       var wrapper = wrap()
         .fontFamily(style["font-family"])
         .fontSize(fS)
+        .fontWeight(style["font-weight"])
         .lineHeight(lH)
         .height(h)
         .overflow(this$1._overflow(d, i))
@@ -8582,6 +8428,7 @@ var TextBox = (function (BaseClass$$1) {
           lines: lineData,
           fC: this$1._fontColor(d, i),
           fF: style["font-family"],
+          fW: style["font-weight"],
           id: this$1._id(d, i),
           tA: this$1._textAnchor(d, i),
           fS: fS, lH: lH, w: w, x: this$1._x(d, i), y: this$1._y(d, i) + yP
@@ -8627,6 +8474,8 @@ var TextBox = (function (BaseClass$$1) {
       .style("font-family", function (d) { return d.fF; })
       .attr("font-size", function (d) { return ((d.fS) + "px"); })
       .style("font-size", function (d) { return ((d.fS) + "px"); })
+      .attr("font-weight", function (d) { return d.fW; })
+      .style("font-weight", function (d) { return d.fW; })
       .each(function(d) {
 
         var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
@@ -8786,6 +8635,15 @@ function(d) {
   */
   TextBox.prototype.fontSize = function fontSize (_) {
     return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$5(_), this) : this._fontSize;
+  };
+
+  /**
+      @memberof TextBox
+      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight accessor, which is inferred from the [container element](#textBox.select) by default.
+      @param {Function|Number|String} [*value* = 400]
+  */
+  TextBox.prototype.fontWeight = function fontWeight (_) {
+    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$5(_), this) : this._fontWeight;
   };
 
   /**
@@ -8951,31 +8809,31 @@ var Shape = (function (BaseClass$$1) {
 
     BaseClass$$1.call(this);
 
-    this._backgroundImage = constant$6(false);
+    this._backgroundImage = constant$5(false);
     this._data = [];
     this._duration = 600;
-    this._fill = constant$6("black");
+    this._fill = constant$5("black");
 
     this._fontColor = function (d, i) { return contrast(this$1._fill(d, i)); };
-    this._fontFamily = constant$6("Verdana");
-    this._fontResize = constant$6(false);
-    this._fontSize = constant$6(12);
+    this._fontFamily = constant$5("Verdana");
+    this._fontResize = constant$5(false);
+    this._fontSize = constant$5(12);
 
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
-    this._label = constant$6(false);
-    this._labelPadding = constant$6(5);
+    this._label = constant$5(false);
+    this._labelPadding = constant$5(5);
     this._name = "Shape";
-    this._opacity = constant$6(1);
-    this._scale = constant$6(1);
-    this._shapeRendering = constant$6("geometricPrecision");
-    this._stroke = constant$6("black");
-    this._strokeWidth = constant$6(0);
-    this._textAnchor = constant$6("start");
-    this._vectorEffect = constant$6("non-scaling-stroke");
-    this._verticalAlign = constant$6("top");
+    this._opacity = constant$5(1);
+    this._scale = constant$5(1);
+    this._shapeRendering = constant$5("geometricPrecision");
+    this._stroke = constant$5("black");
+    this._strokeWidth = constant$5(0);
+    this._textAnchor = constant$5("start");
+    this._vectorEffect = constant$5("non-scaling-stroke");
+    this._verticalAlign = constant$5("top");
 
-    this._x = accessor$1("x", 0);
-    this._y = accessor$1("y", 0);
+    this._x = accessor("x", 0);
+    this._y = accessor("y", 0);
 
   }
 
@@ -9276,7 +9134,7 @@ var Shape = (function (BaseClass$$1) {
         .data(function (d) { return [d]; })
         .each(function(d) {
           var h = that._hitArea(d, that._data.indexOf(d), that._aes(d, that._data.indexOf(d)));
-          return h ? select(this).call(attrize$1, h) : select(this).remove();
+          return h ? select(this).call(attrize, h) : select(this).remove();
         });
 
     this._applyEvents(this._hitArea ? hitArea : enterUpdate);
@@ -9302,7 +9160,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.backgroundImage = function backgroundImage (_) {
     return arguments.length
-         ? (this._backgroundImage = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._backgroundImage = typeof _ === "function" ? _ : constant$5(_), this)
          : this._backgroundImage;
   };
 
@@ -9335,7 +9193,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fill = function fill (_) {
     return arguments.length
-         ? (this._fill = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._fill = typeof _ === "function" ? _ : constant$5(_), this)
          : this._fill;
   };
 
@@ -9346,7 +9204,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fontColor = function fontColor (_) {
     return arguments.length
-         ? (this._fontColor = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._fontColor = typeof _ === "function" ? _ : constant$5(_), this)
          : this._fontColor;
   };
 
@@ -9357,7 +9215,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fontFamily = function fontFamily (_) {
     return arguments.length
-         ? (this._fontFamily = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._fontFamily = typeof _ === "function" ? _ : constant$5(_), this)
          : this._fontFamily;
   };
 
@@ -9368,7 +9226,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fontResize = function fontResize (_) {
     return arguments.length
-         ? (this._fontResize = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._fontResize = typeof _ === "function" ? _ : constant$5(_), this)
          : this._fontResize;
   };
 
@@ -9379,7 +9237,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fontSize = function fontSize (_) {
     return arguments.length
-         ? (this._fontSize = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._fontSize = typeof _ === "function" ? _ : constant$5(_), this)
          : this._fontSize;
   };
 
@@ -9399,7 +9257,7 @@ function(d, i, shape) {
   */
   Shape.prototype.hitArea = function hitArea (_) {
     return arguments.length
-         ? (this._hitArea = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._hitArea = typeof _ === "function" ? _ : constant$5(_), this)
          : this._hitArea;
   };
 
@@ -9421,7 +9279,7 @@ function(d, i, shape) {
   */
   Shape.prototype.label = function label (_) {
     return arguments.length
-         ? (this._label = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._label = typeof _ === "function" ? _ : constant$5(_), this)
          : this._label;
   };
 
@@ -9441,7 +9299,7 @@ function(d, i, shape) {
   */
   Shape.prototype.labelBounds = function labelBounds (_) {
     return arguments.length
-         ? (this._labelBounds = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._labelBounds = typeof _ === "function" ? _ : constant$5(_), this)
          : this._labelBounds;
   };
 
@@ -9452,7 +9310,7 @@ function(d, i, shape) {
   */
   Shape.prototype.labelPadding = function labelPadding (_) {
     return arguments.length
-         ? (this._labelPadding = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._labelPadding = typeof _ === "function" ? _ : constant$5(_), this)
          : this._labelPadding;
   };
 
@@ -9463,7 +9321,7 @@ function(d, i, shape) {
   */
   Shape.prototype.lineHeight = function lineHeight (_) {
     return arguments.length
-         ? (this._lineHeight = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._lineHeight = typeof _ === "function" ? _ : constant$5(_), this)
          : this._lineHeight;
   };
 
@@ -9474,7 +9332,7 @@ function(d, i, shape) {
   */
   Shape.prototype.opacity = function opacity (_) {
     return arguments.length
-         ? (this._opacity = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._opacity = typeof _ === "function" ? _ : constant$5(_), this)
          : this._opacity;
   };
 
@@ -9485,7 +9343,7 @@ function(d, i, shape) {
   */
   Shape.prototype.scale = function scale (_) {
     return arguments.length
-         ? (this._scale = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._scale = typeof _ === "function" ? _ : constant$5(_), this)
          : this._scale;
   };
 
@@ -9511,7 +9369,7 @@ function(d) {
   */
   Shape.prototype.shapeRendering = function shapeRendering (_) {
     return arguments.length
-         ? (this._shapeRendering = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._shapeRendering = typeof _ === "function" ? _ : constant$5(_), this)
          : this._shapeRendering;
   };
 
@@ -9533,7 +9391,7 @@ function(d) {
   */
   Shape.prototype.stroke = function stroke (_) {
     return arguments.length
-         ? (this._stroke = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._stroke = typeof _ === "function" ? _ : constant$5(_), this)
          : this._stroke;
   };
 
@@ -9544,7 +9402,7 @@ function(d) {
   */
   Shape.prototype.strokeWidth = function strokeWidth (_) {
     return arguments.length
-         ? (this._strokeWidth = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._strokeWidth = typeof _ === "function" ? _ : constant$5(_), this)
          : this._strokeWidth;
   };
 
@@ -9555,7 +9413,7 @@ function(d) {
   */
   Shape.prototype.textAnchor = function textAnchor (_) {
     return arguments.length
-         ? (this._textAnchor = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._textAnchor = typeof _ === "function" ? _ : constant$5(_), this)
          : this._textAnchor;
   };
 
@@ -9566,7 +9424,7 @@ function(d) {
   */
   Shape.prototype.vectorEffect = function vectorEffect (_) {
     return arguments.length
-         ? (this._vectorEffect = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._vectorEffect = typeof _ === "function" ? _ : constant$5(_), this)
          : this._vectorEffect;
   };
 
@@ -9577,7 +9435,7 @@ function(d) {
   */
   Shape.prototype.verticalAlign = function verticalAlign (_) {
     return arguments.length
-         ? (this._verticalAlign = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._verticalAlign = typeof _ === "function" ? _ : constant$5(_), this)
          : this._verticalAlign;
   };
 
@@ -9592,7 +9450,7 @@ function(d) {
   */
   Shape.prototype.x = function x (_) {
     return arguments.length
-         ? (this._x = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._x = typeof _ === "function" ? _ : constant$5(_), this)
          : this._x;
   };
 
@@ -9607,12 +9465,12 @@ function(d) {
   */
   Shape.prototype.y = function y (_) {
     return arguments.length
-         ? (this._y = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._y = typeof _ === "function" ? _ : constant$5(_), this)
          : this._y;
   };
 
   return Shape;
-}(BaseClass$2));
+}(BaseClass));
 
 /**
  * List of params for each command type in a path `d` attribute
@@ -10001,7 +9859,7 @@ Path.prototype = path.prototype = {
   }
 };
 
-var constant$7 = function(x) {
+var constant$6 = function(x) {
   return function constant() {
     return x;
   };
@@ -10089,7 +9947,7 @@ function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
 var arc = function() {
   var innerRadius = arcInnerRadius,
       outerRadius = arcOuterRadius,
-      cornerRadius = constant$7(0),
+      cornerRadius = constant$6(0),
       padRadius = null,
       startAngle = arcStartAngle,
       endAngle = arcEndAngle,
@@ -10238,31 +10096,31 @@ var arc = function() {
   };
 
   arc.innerRadius = function(_) {
-    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$7(+_), arc) : innerRadius;
+    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$6(+_), arc) : innerRadius;
   };
 
   arc.outerRadius = function(_) {
-    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$7(+_), arc) : outerRadius;
+    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$6(+_), arc) : outerRadius;
   };
 
   arc.cornerRadius = function(_) {
-    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$7(+_), arc) : cornerRadius;
+    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$6(+_), arc) : cornerRadius;
   };
 
   arc.padRadius = function(_) {
-    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$7(+_), arc) : padRadius;
+    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$6(+_), arc) : padRadius;
   };
 
   arc.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$7(+_), arc) : startAngle;
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$6(+_), arc) : startAngle;
   };
 
   arc.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$7(+_), arc) : endAngle;
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$6(+_), arc) : endAngle;
   };
 
   arc.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$7(+_), arc) : padAngle;
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$6(+_), arc) : padAngle;
   };
 
   arc.context = function(_) {
@@ -10315,7 +10173,7 @@ function y$1(p) {
 var line = function() {
   var x$$1 = x$1,
       y$$1 = y$1,
-      defined = constant$7(true),
+      defined = constant$6(true),
       context = null,
       curve = curveLinear,
       output = null;
@@ -10341,15 +10199,15 @@ var line = function() {
   }
 
   line.x = function(_) {
-    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$7(+_), line) : x$$1;
+    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$6(+_), line) : x$$1;
   };
 
   line.y = function(_) {
-    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$7(+_), line) : y$$1;
+    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$6(+_), line) : y$$1;
   };
 
   line.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$7(!!_), line) : defined;
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$6(!!_), line) : defined;
   };
 
   line.curve = function(_) {
@@ -10366,9 +10224,9 @@ var line = function() {
 var area = function() {
   var x0 = x$1,
       x1 = null,
-      y0 = constant$7(0),
+      y0 = constant$6(0),
       y1 = y$1,
-      defined = constant$7(true),
+      defined = constant$6(true),
       context = null,
       curve = curveLinear,
       output = null;
@@ -10416,27 +10274,27 @@ var area = function() {
   }
 
   area.x = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$7(+_), x1 = null, area) : x0;
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$6(+_), x1 = null, area) : x0;
   };
 
   area.x0 = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$7(+_), area) : x0;
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$6(+_), area) : x0;
   };
 
   area.x1 = function(_) {
-    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$7(+_), area) : x1;
+    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$6(+_), area) : x1;
   };
 
   area.y = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$7(+_), y1 = null, area) : y0;
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$6(+_), y1 = null, area) : y0;
   };
 
   area.y0 = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$7(+_), area) : y0;
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$6(+_), area) : y0;
   };
 
   area.y1 = function(_) {
-    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$7(+_), area) : y1;
+    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$6(+_), area) : y1;
   };
 
   area.lineX0 =
@@ -10453,7 +10311,7 @@ var area = function() {
   };
 
   area.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$7(!!_), area) : defined;
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$6(!!_), area) : defined;
   };
 
   area.curve = function(_) {
@@ -10479,9 +10337,9 @@ var pie = function() {
   var value = identity$4,
       sortValues = descending$1,
       sort = null,
-      startAngle = constant$7(0),
-      endAngle = constant$7(tau$2),
-      padAngle = constant$7(0);
+      startAngle = constant$6(0),
+      endAngle = constant$6(tau$2),
+      padAngle = constant$6(0);
 
   function pie(data) {
     var i,
@@ -10524,7 +10382,7 @@ var pie = function() {
   }
 
   pie.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$7(+_), pie) : value;
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$6(+_), pie) : value;
   };
 
   pie.sortValues = function(_) {
@@ -10536,15 +10394,15 @@ var pie = function() {
   };
 
   pie.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$7(+_), pie) : startAngle;
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$6(+_), pie) : startAngle;
   };
 
   pie.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$7(+_), pie) : endAngle;
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$6(+_), pie) : endAngle;
   };
 
   pie.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$7(+_), pie) : padAngle;
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$6(+_), pie) : padAngle;
   };
 
   return pie;
@@ -10714,7 +10572,7 @@ var triangle = {
 };
 
 var c = -0.5;
-var s$2 = Math.sqrt(3) / 2;
+var s$1 = Math.sqrt(3) / 2;
 var k = 1 / Math.sqrt(12);
 var a$1 = (k / 2 + 1) * 3;
 
@@ -10730,12 +10588,12 @@ var wye = {
     context.moveTo(x0, y0);
     context.lineTo(x1, y1);
     context.lineTo(x2, y2);
-    context.lineTo(c * x0 - s$2 * y0, s$2 * x0 + c * y0);
-    context.lineTo(c * x1 - s$2 * y1, s$2 * x1 + c * y1);
-    context.lineTo(c * x2 - s$2 * y2, s$2 * x2 + c * y2);
-    context.lineTo(c * x0 + s$2 * y0, c * y0 - s$2 * x0);
-    context.lineTo(c * x1 + s$2 * y1, c * y1 - s$2 * x1);
-    context.lineTo(c * x2 + s$2 * y2, c * y2 - s$2 * x2);
+    context.lineTo(c * x0 - s$1 * y0, s$1 * x0 + c * y0);
+    context.lineTo(c * x1 - s$1 * y1, s$1 * x1 + c * y1);
+    context.lineTo(c * x2 - s$1 * y2, s$1 * x2 + c * y2);
+    context.lineTo(c * x0 + s$1 * y0, c * y0 - s$1 * x0);
+    context.lineTo(c * x1 + s$1 * y1, c * y1 - s$1 * x1);
+    context.lineTo(c * x2 + s$1 * y2, c * y2 - s$1 * x2);
     context.closePath();
   }
 };
@@ -10751,8 +10609,8 @@ var symbols = [
 ];
 
 var symbol = function() {
-  var type = constant$7(circle),
-      size = constant$7(64),
+  var type = constant$6(circle),
+      size = constant$6(64),
       context = null;
 
   function symbol() {
@@ -10763,11 +10621,11 @@ var symbol = function() {
   }
 
   symbol.type = function(_) {
-    return arguments.length ? (type = typeof _ === "function" ? _ : constant$7(_), symbol) : type;
+    return arguments.length ? (type = typeof _ === "function" ? _ : constant$6(_), symbol) : type;
   };
 
   symbol.size = function(_) {
-    return arguments.length ? (size = typeof _ === "function" ? _ : constant$7(+_), symbol) : size;
+    return arguments.length ? (size = typeof _ === "function" ? _ : constant$6(+_), symbol) : size;
   };
 
   symbol.context = function(_) {
@@ -11636,7 +11494,7 @@ function stackValue(d, key) {
 }
 
 var stack = function() {
-  var keys = constant$7([]),
+  var keys = constant$6([]),
       order = none$2,
       offset = none$1,
       value = stackValue;
@@ -11666,15 +11524,15 @@ var stack = function() {
   }
 
   stack.keys = function(_) {
-    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$7(slice$2.call(_)), stack) : keys;
+    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$6(slice$2.call(_)), stack) : keys;
   };
 
   stack.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$7(+_), stack) : value;
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$6(+_), stack) : value;
   };
 
   stack.order = function(_) {
-    return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$7(slice$2.call(_)), stack) : order;
+    return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$6(slice$2.call(_)), stack) : order;
   };
 
   stack.offset = function(_) {
@@ -11830,12 +11688,12 @@ var Area = (function (Shape$$1) {
     this._curve = "linear";
     this._defined = function () { return true; };
     this._name = "Area";
-    this._x = accessor$1("x");
-    this._x0 = accessor$1("x");
+    this._x = accessor("x");
+    this._x0 = accessor("x");
     this._x1 = null;
-    this._y = constant$6(0);
-    this._y0 = constant$6(0);
-    this._y1 = accessor$1("y");
+    this._y = constant$5(0);
+    this._y0 = constant$5(0);
+    this._y1 = accessor("y");
 
   }
 
@@ -11969,7 +11827,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.x0 = function x0 (_) {
     return arguments.length
-         ? (this._x0 = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._x0 = typeof _ === "function" ? _ : constant$5(_), this)
          : this._x0;
   };
 
@@ -11980,7 +11838,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.x1 = function x1 (_) {
     return arguments.length
-         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$6(_), this)
+         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$5(_), this)
          : this._x1;
   };
 
@@ -11991,7 +11849,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.y0 = function y0 (_) {
     return arguments.length
-         ? (this._y0 = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._y0 = typeof _ === "function" ? _ : constant$5(_), this)
          : this._y0;
   };
 
@@ -12002,7 +11860,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.y1 = function y1 (_) {
     return arguments.length
-         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$6(_), this)
+         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$5(_), this)
          : this._y1;
   };
 
@@ -12018,7 +11876,7 @@ var Circle = (function (Shape$$1) {
   function Circle() {
     Shape$$1.call(this);
     this._name = "Circle";
-    this._r = accessor$1("r");
+    this._r = accessor("r");
   }
 
   if ( Shape$$1 ) Circle.__proto__ = Shape$$1;
@@ -12085,7 +11943,7 @@ function(d) {
 }
   */
   Circle.prototype.r = function r (_) {
-    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$6(_), this) : this._r;
+    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$5(_), this) : this._r;
   };
 
   return Circle;
@@ -12103,10 +11961,10 @@ var Line = (function (Shape$$1) {
 
     this._curve = "linear";
     this._defined = function (d) { return d; };
-    this._fill = constant$6("none");
+    this._fill = constant$5("none");
     this._name = "Line";
     this._path = line();
-    this._strokeWidth = constant$6(1);
+    this._strokeWidth = constant$5(1);
 
   }
 
@@ -12227,7 +12085,7 @@ var Line = (function (Shape$$1) {
 var Path$1 = (function (Shape$$1) {
   function Path() {
     Shape$$1.call(this);
-    this._d = accessor$1("path");
+    this._d = accessor("path");
     this._name = "Path";
   }
 
@@ -12274,7 +12132,7 @@ function(d) {
   */
   Path.prototype.d = function d (_) {
     return arguments.length
-         ? (this._d = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._d = typeof _ === "function" ? _ : constant$5(_), this)
          : this._d;
   };
 
@@ -12289,10 +12147,10 @@ function(d) {
 var Rect = (function (Shape$$1) {
   function Rect() {
     Shape$$1.call(this);
-    this._height = accessor$1("height");
+    this._height = accessor("height");
     this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
     this._name = "Rect";
-    this._width = accessor$1("width");
+    this._width = accessor("width");
   }
 
   if ( Shape$$1 ) Rect.__proto__ = Shape$$1;
@@ -12365,7 +12223,7 @@ function(d) {
   */
   Rect.prototype.height = function height (_) {
     return arguments.length
-         ? (this._height = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._height = typeof _ === "function" ? _ : constant$5(_), this)
          : this._height;
   };
 
@@ -12380,7 +12238,7 @@ function(d) {
   */
   Rect.prototype.width = function width (_) {
     return arguments.length
-         ? (this._width = typeof _ === "function" ? _ : constant$6(_), this)
+         ? (this._width = typeof _ === "function" ? _ : constant$5(_), this)
          : this._width;
   };
 
@@ -12765,7 +12623,7 @@ var Axis = (function (BaseClass$$1) {
 
     var labels = this._labels
                ? this._scale === "time" ? this._labels.map(date$2) : this._labels
-               : this._d3Scale.ticks
+               : this._ticks ? ticks$$1 : this._d3Scale.ticks
                ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
                : ticks$$1;
 
