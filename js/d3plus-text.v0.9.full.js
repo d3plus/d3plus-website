@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.8
+  d3plus-text v0.9.9
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -3317,7 +3317,7 @@ var consoleLogger = {
 
 var Logger = function () {
   function Logger(concreteLogger) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck$1(this, Logger);
 
@@ -3326,7 +3326,7 @@ var Logger = function () {
   }
 
   Logger.prototype.init = function init(concreteLogger) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     this.prefix = options.prefix || 'i18next:';
     this.logger = concreteLogger || consoleLogger;
@@ -3476,21 +3476,17 @@ function getLastOfPath(object, path, Empty) {
 }
 
 function setPath(object, path, newValue) {
-  var _getLastOfPath = getLastOfPath(object, path, Object);
-
-  var obj = _getLastOfPath.obj;
-  var k = _getLastOfPath.k;
-
+  var _getLastOfPath = getLastOfPath(object, path, Object),
+      obj = _getLastOfPath.obj,
+      k = _getLastOfPath.k;
 
   obj[k] = newValue;
 }
 
 function pushPath(object, path, newValue, concat) {
-  var _getLastOfPath2 = getLastOfPath(object, path, Object);
-
-  var obj = _getLastOfPath2.obj;
-  var k = _getLastOfPath2.k;
-
+  var _getLastOfPath2 = getLastOfPath(object, path, Object),
+      obj = _getLastOfPath2.obj,
+      k = _getLastOfPath2.k;
 
   obj[k] = obj[k] || [];
   if (concat) obj[k] = obj[k].concat(newValue);
@@ -3498,11 +3494,9 @@ function pushPath(object, path, newValue, concat) {
 }
 
 function getPath(object, path) {
-  var _getLastOfPath3 = getLastOfPath(object, path);
-
-  var obj = _getLastOfPath3.obj;
-  var k = _getLastOfPath3.k;
-
+  var _getLastOfPath3 = getLastOfPath(object, path),
+      obj = _getLastOfPath3.obj,
+      k = _getLastOfPath3.k;
 
   if (!obj) return undefined;
   return obj[k];
@@ -3564,8 +3558,8 @@ var ResourceStore = function (_EventEmitter) {
   _inherits$1(ResourceStore, _EventEmitter);
 
   function ResourceStore() {
-    var data = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-    var options = arguments.length <= 1 || arguments[1] === undefined ? { ns: ['translation'], defaultNS: 'translation' } : arguments[1];
+    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { ns: ['translation'], defaultNS: 'translation' };
 
     _classCallCheck$3(this, ResourceStore);
 
@@ -3590,7 +3584,7 @@ var ResourceStore = function (_EventEmitter) {
   };
 
   ResourceStore.prototype.getResource = function getResource(lng, ns, key) {
-    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
     var keySeparator = options.keySeparator || this.options.keySeparator;
     if (keySeparator === undefined) keySeparator = '.';
@@ -3607,7 +3601,7 @@ var ResourceStore = function (_EventEmitter) {
   };
 
   ResourceStore.prototype.addResource = function addResource(lng, ns, key, value) {
-    var options = arguments.length <= 4 || arguments[4] === undefined ? { silent: false } : arguments[4];
+    var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : { silent: false };
 
     var keySeparator = this.options.keySeparator;
     if (keySeparator === undefined) keySeparator = '.';
@@ -3851,7 +3845,7 @@ var _extends$3 = Object.assign || function (target) {
 var arguments$1 = arguments;
  for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _defaults$2(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
 
@@ -3865,7 +3859,7 @@ var Translator = function (_EventEmitter) {
   _inherits$2(Translator, _EventEmitter);
 
   function Translator(services) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck$4(this, Translator);
 
@@ -3883,7 +3877,7 @@ var Translator = function (_EventEmitter) {
   };
 
   Translator.prototype.exists = function exists(key) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? { interpolation: {} } : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { interpolation: {} };
 
     if (this.options.compatibilityAPI === 'v1') {
       options = convertTOptions(options);
@@ -3913,7 +3907,7 @@ var Translator = function (_EventEmitter) {
   Translator.prototype.translate = function translate(keys) {
     var this$1 = this;
 
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     if ((typeof options === 'undefined' ? 'undefined' : _typeof$1(options)) !== 'object') {
       options = this.options.overloadTranslationOptionHandler(arguments);
@@ -3935,10 +3929,9 @@ var Translator = function (_EventEmitter) {
 
     // get namespace(s)
 
-    var _extractFromKey = this.extractFromKey(keys[keys.length - 1], options);
-
-    var key = _extractFromKey.key;
-    var namespaces = _extractFromKey.namespaces;
+    var _extractFromKey = this.extractFromKey(keys[keys.length - 1], options),
+        key = _extractFromKey.key,
+        namespaces = _extractFromKey.namespaces;
 
     var namespace = namespaces[namespaces.length - 1];
 
@@ -3988,9 +3981,10 @@ var Translator = function (_EventEmitter) {
             this.logger.log('missingKey', lng, namespace, key, res);
 
             var lngs = [];
-            if (this.options.saveMissingTo === 'fallback' && this.options.fallbackLng && this.options.fallbackLng[0]) {
-              for (var i = 0; i < this.options.fallbackLng.length; i++) {
-                lngs.push(this$1.options.fallbackLng[i]);
+            var fallbackLngs = this.languageUtils.getFallbackCodes(this.options.fallbackLng, options.lng || this.language);
+            if (this.options.saveMissingTo === 'fallback' && fallbackLngs && fallbackLngs[0]) {
+              for (var i = 0; i < fallbackLngs.length; i++) {
+                lngs.push(fallbackLngs[i]);
               }
             } else if (this.options.saveMissingTo === 'all') {
               lngs = this.languageUtils.toResolveHierarchy(options.lng || this.language);
@@ -4027,7 +4021,7 @@ var Translator = function (_EventEmitter) {
   Translator.prototype.extendTranslation = function extendTranslation(res, key, options) {
     var _this2 = this;
 
-    if (options.interpolation) this.interpolator.init(options);
+    if (options.interpolation) this.interpolator.init(_extends$3({}, options, { interpolation: _extends$3({}, this.options.interpolation, options.interpolation) }));
 
     // interpolate
     var data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
@@ -4061,7 +4055,7 @@ var Translator = function (_EventEmitter) {
   Translator.prototype.resolve = function resolve(keys) {
     var _this3 = this;
 
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     var found = void 0;
 
@@ -4071,10 +4065,9 @@ var Translator = function (_EventEmitter) {
     keys.forEach(function (k) {
       if (_this3.isValidLookup(found)) return;
 
-      var _extractFromKey2 = _this3.extractFromKey(k, options);
-
-      var key = _extractFromKey2.key;
-      var namespaces = _extractFromKey2.namespaces;
+      var _extractFromKey2 = _this3.extractFromKey(k, options),
+          key = _extractFromKey2.key,
+          namespaces = _extractFromKey2.namespaces;
 
       if (_this3.options.fallbackNS) namespaces = namespaces.concat(_this3.options.fallbackNS);
 
@@ -4122,7 +4115,7 @@ var Translator = function (_EventEmitter) {
   };
 
   Translator.prototype.getResource = function getResource(code, ns, key) {
-    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
     return this.resourceStore.getResource(code, ns, key, options);
   };
@@ -4145,6 +4138,23 @@ var LanguageUtil = function () {
     this.whitelist = this.options.whitelist || false;
     this.logger = baseLogger.create('languageUtils');
   }
+
+  LanguageUtil.prototype.getLanguagePartFromCode = function getLanguagePartFromCode(code) {
+    if (code.indexOf('-') < 0) return code;
+
+    var specialCases = ['NB-NO', 'NN-NO', 'nb-NO', 'nn-NO', 'nb-no', 'nn-no'];
+    var p = code.split('-');
+    return this.formatLanguageCode(specialCases.indexOf(code) > -1 ? p[1].toLowerCase() : p[0]);
+  };
+
+  LanguageUtil.prototype.getScriptPartFromCode = function getScriptPartFromCode(code) {
+    if (code.indexOf('-') < 0) return null;
+
+    var p = code.split('-');
+    if (p.length === 2) return null;
+    p.pop();
+    return this.formatLanguageCode(p.join('-'));
+  };
 
   LanguageUtil.prototype.getLanguagePartFromCode = function getLanguagePartFromCode(code) {
     if (code.indexOf('-') < 0) return code;
@@ -4193,16 +4203,30 @@ var LanguageUtil = function () {
     return !this.whitelist || !this.whitelist.length || this.whitelist.indexOf(code) > -1 ? true : false;
   };
 
+  LanguageUtil.prototype.getFallbackCodes = function getFallbackCodes(fallbacks, code) {
+    if (!fallbacks) return [];
+    if (typeof fallbacks === 'string') fallbacks = [fallbacks];
+    if (Object.prototype.toString.apply(fallbacks) === '[object Array]') return fallbacks;
+
+    // asume we have an object defining fallbacks
+    var found = fallbacks[code];
+    if (!found) found = fallbacks[this.getScriptPartFromCode(code)];
+    if (!found) found = fallbacks[this.formatLanguageCode(code)];
+    if (!found) found = fallbacks.default;
+
+    return found || [];
+  };
+
   LanguageUtil.prototype.toResolveHierarchy = function toResolveHierarchy(code, fallbackCode) {
     var _this = this;
 
-    fallbackCode = fallbackCode || this.options.fallbackLng || [];
-    if (typeof fallbackCode === 'string') fallbackCode = [fallbackCode];
+    var fallbackCodes = this.getFallbackCodes(fallbackCode || this.options.fallbackLng || [], code);
 
     var codes = [];
     var addCode = function addCode(code) {
-      var exactMatch = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+      var exactMatch = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
+      if (!code) return;
       if (_this.isWhitelisted(code, exactMatch)) {
         codes.push(code);
       } else {
@@ -4212,12 +4236,13 @@ var LanguageUtil = function () {
 
     if (typeof code === 'string' && code.indexOf('-') > -1) {
       if (this.options.load !== 'languageOnly') addCode(this.formatLanguageCode(code), true);
+      if (this.options.load !== 'languageOnly' && this.options.load !== 'currentOnly') addCode(this.getScriptPartFromCode(code), true);
       if (this.options.load !== 'currentOnly') addCode(this.getLanguagePartFromCode(code));
     } else if (typeof code === 'string') {
       addCode(this.formatLanguageCode(code));
     }
 
-    fallbackCode.forEach(function (fc) {
+    fallbackCodes.forEach(function (fc) {
       if (codes.indexOf(fc) < 0) addCode(_this.formatLanguageCode(fc));
     });
 
@@ -4227,7 +4252,7 @@ var LanguageUtil = function () {
   return LanguageUtil;
 }();
 
-var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _classCallCheck$6(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -4318,7 +4343,7 @@ function createRules() {
 
 var PluralResolver = function () {
   function PluralResolver(languageUtils) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck$6(this, PluralResolver);
 
@@ -4415,7 +4440,7 @@ function _classCallCheck$7(instance, Constructor) { if (!(instance instanceof Co
 
 var Interpolator = function () {
   function Interpolator() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     _classCallCheck$7(this, Interpolator);
 
@@ -4425,7 +4450,7 @@ var Interpolator = function () {
   }
 
   Interpolator.prototype.init = function init() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var reset = arguments[1];
 
     if (reset) {
@@ -4519,7 +4544,7 @@ var Interpolator = function () {
   Interpolator.prototype.nest = function nest(str, fc) {
     var this$1 = this;
 
-    var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
     var match = void 0,
         value = void 0;
@@ -4594,7 +4619,7 @@ var Connector = function (_EventEmitter) {
   _inherits$3(Connector, _EventEmitter);
 
   function Connector(backend, store, services) {
-    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
     _classCallCheck$8(this, Connector);
 
@@ -4631,18 +4656,18 @@ var Connector = function (_EventEmitter) {
         if (_this2.store.hasResourceBundle(lng, ns)) {
           _this2.state[name] = 2; // loaded
         } else if (_this2.state[name] < 0) {
-            // nothing to do for err
-          } else if (_this2.state[name] === 1) {
-              if (pending.indexOf(name) < 0) pending.push(name);
-            } else {
-              _this2.state[name] = 1; // pending
+          // nothing to do for err
+        } else if (_this2.state[name] === 1) {
+          if (pending.indexOf(name) < 0) pending.push(name);
+        } else {
+          _this2.state[name] = 1; // pending
 
-              hasAllNamespaces = false;
+          hasAllNamespaces = false;
 
-              if (pending.indexOf(name) < 0) pending.push(name);
-              if (toLoad.indexOf(name) < 0) toLoad.push(name);
-              if (toLoadNamespaces.indexOf(ns) < 0) toLoadNamespaces.push(ns);
-            }
+          if (pending.indexOf(name) < 0) pending.push(name);
+          if (toLoad.indexOf(name) < 0) toLoad.push(name);
+          if (toLoadNamespaces.indexOf(ns) < 0) toLoadNamespaces.push(ns);
+        }
       });
 
       if (!hasAllNamespaces) toLoadLanguages.push(lng);
@@ -4668,13 +4693,10 @@ var Connector = function (_EventEmitter) {
   Connector.prototype.loaded = function loaded(name, err, data) {
     var _this3 = this;
 
-    var _name$split = name.split('|');
-
-    var _name$split2 = _slicedToArray(_name$split, 2);
-
-    var lng = _name$split2[0];
-    var ns = _name$split2[1];
-
+    var _name$split = name.split('|'),
+        _name$split2 = _slicedToArray(_name$split, 2),
+        lng = _name$split2[0],
+        ns = _name$split2[1];
 
     if (err) this.emit('failedLoading', lng, ns, err);
 
@@ -4748,13 +4770,10 @@ var Connector = function (_EventEmitter) {
         if (!err && data) _this5.logger.log('loaded namespaces ' + toLoad.toLoadNamespaces.join(', ') + ' for languages ' + toLoad.toLoadLanguages.join(', ') + ' via multiloading', data);
 
         toLoad.toLoad.forEach(function (name) {
-          var _name$split3 = name.split('|');
-
-          var _name$split4 = _slicedToArray(_name$split3, 2);
-
-          var l = _name$split4[0];
-          var n = _name$split4[1];
-
+          var _name$split3 = name.split('|'),
+              _name$split4 = _slicedToArray(_name$split3, 2),
+              l = _name$split4[0],
+              n = _name$split4[1];
 
           var bundle = getPath(data, [l, n]);
           if (bundle) {
@@ -4774,13 +4793,10 @@ var Connector = function (_EventEmitter) {
           var readOne = function readOne(name) {
             var _this6 = this;
 
-            var _name$split5 = name.split('|');
-
-            var _name$split6 = _slicedToArray(_name$split5, 2);
-
-            var lng = _name$split6[0];
-            var ns = _name$split6[1];
-
+            var _name$split5 = name.split('|'),
+                _name$split6 = _slicedToArray(_name$split5, 2),
+                lng = _name$split6[0],
+                ns = _name$split6[1];
 
             this.read(lng, ns, 'read', null, null, function (err, data) {
               if (err) _this6.logger.warn('loading namespace ' + ns + ' for language ' + lng + ' failed', err);
@@ -4837,13 +4853,10 @@ var Connector = function (_EventEmitter) {
           var readOne = function readOne(name) {
             var _this8 = this;
 
-            var _name$split7 = name.split('|');
-
-            var _name$split8 = _slicedToArray(_name$split7, 2);
-
-            var lng = _name$split8[0];
-            var ns = _name$split8[1];
-
+            var _name$split7 = name.split('|'),
+                _name$split8 = _slicedToArray(_name$split7, 2),
+                lng = _name$split8[0],
+                ns = _name$split8[1];
 
             this.read(lng, ns, 'read', null, null, function (err, data) {
               if (err) _this8.logger.warn('reloading namespace ' + ns + ' for language ' + lng + ' failed', err);
@@ -4891,7 +4904,7 @@ var Connector$1 = function (_EventEmitter) {
   _inherits$4(Connector, _EventEmitter);
 
   function Connector(cache, store, services) {
-    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
     _classCallCheck$9(this, Connector);
 
@@ -5012,7 +5025,7 @@ function transformOptions(options) {
   return options;
 }
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _extends = Object.assign || function (target) {
 var arguments$1 = arguments;
@@ -5030,7 +5043,7 @@ var I18n = function (_EventEmitter) {
   _inherits(I18n, _EventEmitter);
 
   function I18n() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments[1];
 
     _classCallCheck(this, I18n);
@@ -5334,7 +5347,7 @@ var I18n = function (_EventEmitter) {
   };
 
   I18n.prototype.createInstance = function createInstance() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments[1];
 
     return new I18n(options, callback);
@@ -5343,13 +5356,23 @@ var I18n = function (_EventEmitter) {
   I18n.prototype.cloneInstance = function cloneInstance() {
     var _this7 = this;
 
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments[1];
 
     var clone = new I18n(_extends({}, options, this.options, { isClone: true }), callback);
-    var membersToCopy = ['store', 'translator', 'services', 'language'];
+    var membersToCopy = ['store', 'services', 'language'];
     membersToCopy.forEach(function (m) {
       clone[m] = _this7[m];
+    });
+    clone.translator = new Translator(clone.services, clone.options);
+    clone.translator.on('*', function (event) {
+      var arguments$1 = arguments;
+
+      for (var _len5 = arguments.length, args = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
+        args[_key5 - 1] = arguments$1[_key5];
+      }
+
+      clone.emit.apply(clone, [event].concat(args));
     });
 
     return clone;
@@ -5532,6 +5555,42 @@ merge([
     @example <caption>returns this</caption>
 {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
 */
+function objectMerge(objects, aggs) {
+  if ( aggs === void 0 ) aggs = {};
+
+
+  var availableKeys = new Set(merge(objects.map(function (o) { return keys(o); }))),
+        newObject = {};
+
+  availableKeys.forEach(function (k) {
+    var values$$1 = objects.map(function (o) { return o[k]; });
+    var value;
+    if (aggs[k]) value = aggs[k](values$$1);
+    else {
+      var types = values$$1.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
+      if (!types.length) value = undefined;
+      else if (types.indexOf(Array) >= 0) {
+        value = merge(values$$1.map(function (v) { return v instanceof Array ? v : [v]; }));
+        value = Array.from(new Set(value));
+        if (value.length === 1) value = value[0];
+      }
+      else if (types.indexOf(String) >= 0) {
+        value = Array.from(new Set(values$$1));
+        if (value.length === 1) value = value[0];
+      }
+      else if (types.indexOf(Number) >= 0) value = sum(values$$1);
+      else if (types.indexOf(Object) >= 0) value = objectMerge(values$$1.filter(function (v) { return v; }));
+      else {
+        value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
+        if (value.length === 1) value = value[0];
+      }
+    }
+    newObject[k] = value;
+  });
+
+  return newObject;
+
+}
 
 var val = undefined;
 
@@ -5571,7 +5630,8 @@ var splitChars = ["-",  "/",  ";",  ":",  "&",
   "u3000",  // simplified chinese ideographic space
   "u3001",  // simplified chinese ideographic comma
   "u3002",  // simplified chinese ideographic full stop
-  "uFF5E"  // wave dash
+  "uFF0C",  // full-width comma
+  "uFF5E"   // wave dash
 ];
 
 var prefixChars = ["'",  "<",  "(",  "{",  "[",
@@ -5587,7 +5647,7 @@ var suffixChars = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
 ].concat(splitChars);
 
 var burmeseRange = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-var japaneseRange = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u3400-\u4dbf";
+var japaneseRange = "぀-ゟ\n                       ゠-ヿ\n                       ＀-＋\n                       －-｝\n                       ｟-ﾟ\n                       㐀-䶿";
 var chineseRange = "\u3400-\u9FBF";
 var laoRange = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
 
@@ -5647,8 +5707,9 @@ var measure = function(text, style) {
 */
 var wrap = function() {
 
-  var fontFamily = "sans-serif",
+  var fontFamily = "Verdana",
       fontSize = 10,
+      fontWeight = 400,
       height = 200,
       lineHeight,
       overflow = false,
@@ -5670,6 +5731,7 @@ var wrap = function() {
     var style = {
       "font-family": fontFamily,
       "font-size": fontSize,
+      "font-weight": fontWeight,
       "line-height": lineHeight
     };
 
@@ -5718,7 +5780,7 @@ var wrap = function() {
   /**
       @memberof textWrap
       @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value*]
+      @param {Function|String} [*value* = "Verdana"]
   */
   textWrap.fontFamily = function(_) {
     return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
@@ -5727,10 +5789,19 @@ var wrap = function() {
   /**
       @memberof textWrap
       @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
-      @param {Function|Number} [*value*]
+      @param {Function|Number} [*value* = 10]
   */
   textWrap.fontSize = function(_) {
     return arguments.length ? (fontSize = _, textWrap) : fontSize;
+  };
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
+      @param {Function|Number|String} [*value* = 400]
+  */
+  textWrap.fontWeight = function(_) {
+    return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
   };
 
   /**
@@ -5801,6 +5872,7 @@ var TextBox = (function (BaseClass$$1) {
     this._fontMin = constant$4(8);
     this._fontResize = constant$4(false);
     this._fontSize = constant$4(10);
+    this._fontWeight = constant$4(400);
     this._height = accessor("height", 200);
     this._id = function (d, i) { return d.id || ("" + i); };
     this._on = {};
@@ -5849,6 +5921,7 @@ var TextBox = (function (BaseClass$$1) {
       var style = {
         "font-family": this$1._fontFamily(d, i),
         "font-size": fS,
+        "font-weight": this$1._fontWeight(d, i),
         "line-height": lH
       };
 
@@ -5858,6 +5931,7 @@ var TextBox = (function (BaseClass$$1) {
       var wrapper = wrap()
         .fontFamily(style["font-family"])
         .fontSize(fS)
+        .fontWeight(style["font-weight"])
         .lineHeight(lH)
         .height(h)
         .overflow(this$1._overflow(d, i))
@@ -5946,6 +6020,7 @@ var TextBox = (function (BaseClass$$1) {
           lines: lineData,
           fC: this$1._fontColor(d, i),
           fF: style["font-family"],
+          fW: style["font-weight"],
           id: this$1._id(d, i),
           tA: this$1._textAnchor(d, i),
           fS: fS, lH: lH, w: w, x: this$1._x(d, i), y: this$1._y(d, i) + yP
@@ -5991,6 +6066,8 @@ var TextBox = (function (BaseClass$$1) {
       .style("font-family", function (d) { return d.fF; })
       .attr("font-size", function (d) { return ((d.fS) + "px"); })
       .style("font-size", function (d) { return ((d.fS) + "px"); })
+      .attr("font-weight", function (d) { return d.fW; })
+      .style("font-weight", function (d) { return d.fW; })
       .each(function(d) {
 
         var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
@@ -6150,6 +6227,15 @@ function(d) {
   */
   TextBox.prototype.fontSize = function fontSize (_) {
     return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$4(_), this) : this._fontSize;
+  };
+
+  /**
+      @memberof TextBox
+      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight accessor, which is inferred from the [container element](#textBox.select) by default.
+      @param {Function|Number|String} [*value* = 400]
+  */
+  TextBox.prototype.fontWeight = function fontWeight (_) {
+    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$4(_), this) : this._fontWeight;
   };
 
   /**

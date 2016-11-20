@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.8
+  d3plus-text v0.9.9
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -86,7 +86,8 @@ var splitChars = ["-",  "/",  ";",  ":",  "&",
   "u3000",  // simplified chinese ideographic space
   "u3001",  // simplified chinese ideographic comma
   "u3002",  // simplified chinese ideographic full stop
-  "uFF5E"  // wave dash
+  "uFF0C",  // full-width comma
+  "uFF5E"   // wave dash
 ];
 
 var prefixChars = ["'",  "<",  "(",  "{",  "[",
@@ -102,7 +103,7 @@ var suffixChars = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
 ].concat(splitChars);
 
 var burmeseRange = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-var japaneseRange = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u3400-\u4dbf";
+var japaneseRange = "぀-ゟ\n                       ゠-ヿ\n                       ＀-＋\n                       －-｝\n                       ｟-ﾟ\n                       㐀-䶿";
 var chineseRange = "\u3400-\u9FBF";
 var laoRange = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
 
@@ -162,8 +163,9 @@ var measure = function(text, style) {
 */
 var wrap = function() {
 
-  var fontFamily = "sans-serif",
+  var fontFamily = "Verdana",
       fontSize = 10,
+      fontWeight = 400,
       height = 200,
       lineHeight,
       overflow = false,
@@ -185,6 +187,7 @@ var wrap = function() {
     var style = {
       "font-family": fontFamily,
       "font-size": fontSize,
+      "font-weight": fontWeight,
       "line-height": lineHeight
     };
 
@@ -233,7 +236,7 @@ var wrap = function() {
   /**
       @memberof textWrap
       @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value*]
+      @param {Function|String} [*value* = "Verdana"]
   */
   textWrap.fontFamily = function(_) {
     return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
@@ -242,10 +245,19 @@ var wrap = function() {
   /**
       @memberof textWrap
       @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
-      @param {Function|Number} [*value*]
+      @param {Function|Number} [*value* = 10]
   */
   textWrap.fontSize = function(_) {
     return arguments.length ? (fontSize = _, textWrap) : fontSize;
+  };
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
+      @param {Function|Number|String} [*value* = 400]
+  */
+  textWrap.fontWeight = function(_) {
+    return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
   };
 
   /**
@@ -316,6 +328,7 @@ var TextBox = (function (BaseClass$$1) {
     this._fontMin = d3plusCommon.constant(8);
     this._fontResize = d3plusCommon.constant(false);
     this._fontSize = d3plusCommon.constant(10);
+    this._fontWeight = d3plusCommon.constant(400);
     this._height = d3plusCommon.accessor("height", 200);
     this._id = function (d, i) { return d.id || ("" + i); };
     this._on = {};
@@ -364,6 +377,7 @@ var TextBox = (function (BaseClass$$1) {
       var style = {
         "font-family": this$1._fontFamily(d, i),
         "font-size": fS,
+        "font-weight": this$1._fontWeight(d, i),
         "line-height": lH
       };
 
@@ -373,6 +387,7 @@ var TextBox = (function (BaseClass$$1) {
       var wrapper = wrap()
         .fontFamily(style["font-family"])
         .fontSize(fS)
+        .fontWeight(style["font-weight"])
         .lineHeight(lH)
         .height(h)
         .overflow(this$1._overflow(d, i))
@@ -461,6 +476,7 @@ var TextBox = (function (BaseClass$$1) {
           lines: lineData,
           fC: this$1._fontColor(d, i),
           fF: style["font-family"],
+          fW: style["font-weight"],
           id: this$1._id(d, i),
           tA: this$1._textAnchor(d, i),
           fS: fS, lH: lH, w: w, x: this$1._x(d, i), y: this$1._y(d, i) + yP
@@ -506,6 +522,8 @@ var TextBox = (function (BaseClass$$1) {
       .style("font-family", function (d) { return d.fF; })
       .attr("font-size", function (d) { return ((d.fS) + "px"); })
       .style("font-size", function (d) { return ((d.fS) + "px"); })
+      .attr("font-weight", function (d) { return d.fW; })
+      .style("font-weight", function (d) { return d.fW; })
       .each(function(d) {
 
         var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
@@ -665,6 +683,15 @@ function(d) {
   */
   TextBox.prototype.fontSize = function fontSize (_) {
     return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._fontSize;
+  };
+
+  /**
+      @memberof TextBox
+      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight accessor, which is inferred from the [container element](#textBox.select) by default.
+      @param {Function|Number|String} [*value* = 400]
+  */
+  TextBox.prototype.fontWeight = function fontWeight (_) {
+    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._fontWeight;
   };
 
   /**
