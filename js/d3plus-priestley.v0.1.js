@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.8
+  d3plus-priestley v0.1.9
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -43,6 +43,7 @@ var Priestley = (function (Viz$$1) {
     Viz$$1.prototype.render.call(this, callback);
 
     var data = this._filteredData.map(function (data, i) { return ({
+      __d3plus__: true,
       data: data,
       end: this$1._axisConfig.scale === "time" ? d3plusAxis.date(this$1._end(data, i)) : this$1._end(data, i),
       i: i,
@@ -93,6 +94,7 @@ var Priestley = (function (Viz$$1) {
       .config(this._axisConfig)
       .select(d3plusCommon.elem("g.d3plus-priestley-axis-test", {parent: this._select, enter: {opacity: 0}}).node())
       .render();
+
     this._axis
       .config(axisConfig)
       .config(this._axisConfig)
@@ -110,23 +112,7 @@ var Priestley = (function (Viz$$1) {
 
     var step = yScale.step();
 
-    var c = this._shapeConfig, config = {};
-    var loop$1 = function ( k ) {
-      if (k !== "labelBounds" && {}.hasOwnProperty.call(c, k)) {
-        if (typeof c[k] === "function") config[k] = function (d, i) { return c[k](d.data, i); };
-        else config[k] = c[k];
-      }
-    };
-
-    for (var k in c) loop$1( k );
-
     this._shapes.push(new d3plusShape.Rect()
-      .config({on: Object.keys(this._on)
-        .filter(function (e) { return !e.includes(".") || e.includes(".shape"); })
-        .reduce(function (obj, e) {
-          obj[e] = function (d, i) { return this$1._on[e] ? this$1._on[e](d.data, i) : null; };
-          return obj;
-        }, {})})
       .data(data)
       .duration(this._duration)
       .height(step >= this._padding * 2 ? step - this._padding : step > 2 ? step - 2 : step)
@@ -138,7 +124,7 @@ var Priestley = (function (Viz$$1) {
       })
       .x(function (d) { return xScale(d.start) + (xScale(d.end) - xScale(d.start)) / 2; })
       .y(function (d) { return yScale(d.lane); })
-      .config(config)
+      .config(this._shapeConfigPrep("Rect"))
       .render());
 
     return this;
