@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.17
+  d3plus-legend v0.6.18
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -83,6 +83,11 @@ var Legend = (function (BaseClass$$1) {
   Legend.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Legend.prototype.constructor = Legend;
 
+  Legend.prototype._fetchConfig = function _fetchConfig (key, d, i) {
+    return typeof this._shapeConfig[key] === "function"
+         ? this._shapeConfig[key](d, i) : this._shapeConfig[key];
+  };
+
   Legend.prototype._rowHeight = function _rowHeight (row) {
     return d3Array.max(row.map(function (d) { return d.height; }).concat(row.map(function (d) { return d.shapeHeight; }))) + this._padding;
   };
@@ -103,7 +108,7 @@ var Legend = (function (BaseClass$$1) {
 
 
     if (this._select === void 0) this.select(d3Selection.select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node());
-    if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
+    if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._fetchConfig("fontSize", d, i) * 1.1; };
 
     // Shape <g> Group
     this._group = d3plusCommon.elem("g.d3plus-Legend", {parent: this._select});
@@ -114,20 +119,32 @@ var Legend = (function (BaseClass$$1) {
       var f = this._titleConfig.fontFamily,
             lH = this._titleConfig.lineHeight,
             s = this._titleConfig.fontSize;
-      var res = d3plusText.textWrap().fontFamily(f).fontSize(s).lineHeight(lH).width(this._width).height(this._height)(this._title);
+      var res = d3plusText.textWrap()
+        .fontFamily(f)
+        .fontSize(s)
+        .lineHeight(lH)
+        .width(this._width)
+        .height(this._height)
+        (this._title);
       this._titleHeight = lH + res.lines.length + this._padding;
       availableHeight -= this._titleHeight;
     }
 
     // Calculate Text Sizes
     this._lineData = this._data.map(function (d, i) {
-      var shapeWidth = this$1._shapeConfig.width(d, i);
-      var f = this$1._shapeConfig.fontFamily(d, i),
+      var f = this$1._fetchConfig("fontFamily", d, i),
             lh = this$1._lineHeight(d, i),
-            s = this$1._shapeConfig.fontSize(d, i);
+            s = this$1._fetchConfig("fontSize", d, i),
+            shapeWidth = this$1._fetchConfig("width", d, i);
       var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
             w = this$1._width;
-      var res = d3plusText.textWrap().fontFamily(f).fontSize(s).lineHeight(lh).width(w).height(h)(this$1._label(d, i));
+      var res = d3plusText.textWrap()
+        .fontFamily(f)
+        .fontSize(s)
+        .lineHeight(lh)
+        .width(w)
+        .height(h)
+        (this$1._label(d, i));
       res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); }))) + s;
       res.height = Math.ceil(res.lines.length * (lh + 1));
       res.og = {height: res.height, width: res.width};
@@ -139,7 +156,7 @@ var Legend = (function (BaseClass$$1) {
       res.id = this$1._id(d, i);
       res.i = i;
       res.shapeWidth = shapeWidth;
-      res.shapeHeight = this$1._shapeConfig.height(d, i);
+      res.shapeHeight = this$1._fetchConfig("height", d, i);
       return res;
     });
 
@@ -246,7 +263,7 @@ var Legend = (function (BaseClass$$1) {
       }
     }
 
-    var innerHeight = d3Array.max(this._lineData, function (d, i) { return d3Array.max([d.height, this$1._shapeConfig.height(d.data, i)]) + d.y; }) + this._titleHeight,
+    var innerHeight = d3Array.max(this._lineData, function (d, i) { return d3Array.max([d.height, this$1._fetchConfig("height", d.data, i)]) + d.y; }) + this._titleHeight,
           innerWidth = spaceNeeded;
 
     this._outerBounds.width = innerWidth;
