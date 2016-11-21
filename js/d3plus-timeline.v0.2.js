@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.2.1
+  d3plus-timeline v0.2.2
   An easy-to-use javascript timeline.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -21,6 +21,7 @@ var Timeline = (function (Axis$$1) {
 
     Axis$$1.call(this);
 
+    this._brushFilter = function () { return !d3Selection.event.button && d3Selection.event.detail < 2; };
     this._domain = [2001, 2010];
     this._gridSize = 0;
     this._handleConfig = {
@@ -32,7 +33,8 @@ var Timeline = (function (Axis$$1) {
     this.orient("bottom");
     this._scale = "time";
     this._selectionConfig = {
-      fill: "#777"
+      "fill": "#777",
+      "stroke-width": 0
     };
     this._shape = "Rect";
     this._shapeConfig = Object.assign({}, this._shapeConfig, {
@@ -143,6 +145,7 @@ var Timeline = (function (Axis$$1) {
 
     var brush = this._brush = d3Brush.brushX()
       .extent([[range[0], offset], [range[1], offset + this._outerBounds[height]]])
+      .filter(this._brushFilter)
       .handleSize(this._handleSize)
       .on("start", this._brushStart.bind(this))
       .on("brush", this._brushBrush.bind(this))
@@ -167,6 +170,19 @@ var Timeline = (function (Axis$$1) {
 
     return this;
 
+  };
+
+  /**
+      @memberof Timeline
+      @desc If *value* is specified, sets the brush event filter and returns the current class instance. If *value* is not specified, returns the current brush event filter.
+      @param {Function} [*value*]
+      @example
+function() {
+  return !event.button && event.detail < 2;
+}
+  */
+  Timeline.prototype.brushFilter = function brushFilter (_) {
+    return arguments.length ? (this._brushFilter = _, this) : this._brushFilter;
   };
 
   /**
