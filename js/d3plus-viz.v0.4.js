@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.1
+  d3plus-viz v0.4.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -353,7 +353,7 @@ var Viz = (function (BaseClass$$1) {
         .duration(this._duration)
         .height(this._height / 2 - this._margin.bottom)
         .select(timelineGroup.node())
-        .ticks(ticks)
+        .ticks(ticks.sort())
         .width(this._width);
 
       if (timeline.selection() === void 0) {
