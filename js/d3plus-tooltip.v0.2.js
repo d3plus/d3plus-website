@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.2.2
+  d3plus-tooltip v0.2.3
   A javascript-only tooltip.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -9,18 +9,6 @@
   typeof define === 'function' && define.amd ? define('d3plus-tooltip', ['exports', 'd3-selection', 'd3-transition', 'd3plus-common'], factory) :
   (factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3plusCommon));
 }(this, (function (exports,d3Selection,d3Transition,d3plusCommon) { 'use strict';
-
-/**
-    @function prefix
-    @desc Returns the appropriate vendor prefix to use in CSS styles.
-*/
-var prefix = function() {
-  if ("-webkit-transform" in document.body.style) return "-webkit-";
-  else if ("-moz-transform" in document.body.style) return "-moz-";
-  else if ("-ms-transform" in document.body.style) return "-ms-";
-  else if ("-o-transform" in document.body.style) return "-o-";
-  else return "";
-};
 
 /**
     @class Tooltip
@@ -54,7 +42,7 @@ var Tooltip = (function (BaseClass$$1) {
     this._offset = d3plusCommon.constant(10);
     this._padding = d3plusCommon.constant("5px");
     this._pointerEvents = d3plusCommon.constant("auto");
-    this._prefix = prefix();
+    this._prefix = d3plusCommon.prefix();
     this._tableStyle = {
       "border-spacing": "0",
       "width": "100%"
@@ -76,8 +64,7 @@ var Tooltip = (function (BaseClass$$1) {
     this._titleStyle = {
       "font-family": "Verdana",
       "font-size": "12px",
-      "font-weight": "600",
-      "padding-bottom": "5px"
+      "font-weight": "600"
     };
     this._translate = function (d) { return [d.x, d.y]; };
     this._width = d3plusCommon.constant("auto");
@@ -481,7 +468,6 @@ function value(d) {
   return Tooltip;
 }(d3plusCommon.BaseClass));
 
-exports.prefix = prefix;
 exports.Tooltip = Tooltip;
 
 Object.defineProperty(exports, '__esModule', { value: true });

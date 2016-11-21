@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.2.2
+  d3plus-tooltip v0.2.3
   A javascript-only tooltip.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -9,18 +9,6 @@
 	typeof define === 'function' && define.amd ? define('d3plus-tooltip', ['exports'], factory) :
 	(factory((global.d3plus = global.d3plus || {})));
 }(this, (function (exports) { 'use strict';
-
-/**
-    @function prefix
-    @desc Returns the appropriate vendor prefix to use in CSS styles.
-*/
-var prefix = function() {
-  if ("-webkit-transform" in document.body.style) return "-webkit-";
-  else if ("-moz-transform" in document.body.style) return "-moz-";
-  else if ("-ms-transform" in document.body.style) return "-ms-";
-  else if ("-o-transform" in document.body.style) return "-o-";
-  else return "";
-};
 
 var xhtml = "http://www.w3.org/1999/xhtml";
 
@@ -5320,63 +5308,63 @@ function length(d) {
   return d.length;
 }
 
-var prefix$1 = "$";
+var prefix = "$";
 
 function Map() {}
 
 Map.prototype = map$1.prototype = {
   constructor: Map,
   has: function(key) {
-    return (prefix$1 + key) in this;
+    return (prefix + key) in this;
   },
   get: function(key) {
-    return this[prefix$1 + key];
+    return this[prefix + key];
   },
   set: function(key, value) {
-    this[prefix$1 + key] = value;
+    this[prefix + key] = value;
     return this;
   },
   remove: function(key) {
-    var property = prefix$1 + key;
+    var property = prefix + key;
     return property in this && delete this[property];
   },
   clear: function() {
     var this$1 = this;
 
-    for (var property in this) if (property[0] === prefix$1) delete this$1[property];
+    for (var property in this) if (property[0] === prefix) delete this$1[property];
   },
   keys: function() {
     var keys = [];
-    for (var property in this) if (property[0] === prefix$1) keys.push(property.slice(1));
+    for (var property in this) if (property[0] === prefix) keys.push(property.slice(1));
     return keys;
   },
   values: function() {
     var this$1 = this;
 
     var values = [];
-    for (var property in this) if (property[0] === prefix$1) values.push(this$1[property]);
+    for (var property in this) if (property[0] === prefix) values.push(this$1[property]);
     return values;
   },
   entries: function() {
     var this$1 = this;
 
     var entries = [];
-    for (var property in this) if (property[0] === prefix$1) entries.push({key: property.slice(1), value: this$1[property]});
+    for (var property in this) if (property[0] === prefix) entries.push({key: property.slice(1), value: this$1[property]});
     return entries;
   },
   size: function() {
     var size = 0;
-    for (var property in this) if (property[0] === prefix$1) ++size;
+    for (var property in this) if (property[0] === prefix) ++size;
     return size;
   },
   empty: function() {
-    for (var property in this) if (property[0] === prefix$1) return false;
+    for (var property in this) if (property[0] === prefix) return false;
     return true;
   },
   each: function(f) {
     var this$1 = this;
 
-    for (var property in this) if (property[0] === prefix$1) f(this$1[property], property.slice(1), this$1);
+    for (var property in this) if (property[0] === prefix) f(this$1[property], property.slice(1), this$1);
   }
 };
 
@@ -5427,7 +5415,7 @@ Set$1.prototype = set$2.prototype = {
   has: proto.has,
   add: function(value) {
     value += "";
-    this[prefix$1 + value] = value;
+    this[prefix + value] = value;
     return this;
   },
   remove: proto.remove,
@@ -5480,6 +5468,15 @@ var val = undefined;
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
+var prefix$1 = function() {
+  if (val !== void 0) return val;
+  if ("-webkit-transform" in document.body.style) val = "-webkit-";
+  else if ("-moz-transform" in document.body.style) val = "-moz-";
+  else if ("-ms-transform" in document.body.style) val = "-ms-";
+  else if ("-o-transform" in document.body.style) val = "-o-";
+  else val = "";
+  return val;
+};
 
 /**
     @function stylize
@@ -5525,7 +5522,7 @@ var Tooltip = (function (BaseClass$$1) {
     this._offset = constant$3(10);
     this._padding = constant$3("5px");
     this._pointerEvents = constant$3("auto");
-    this._prefix = prefix();
+    this._prefix = prefix$1();
     this._tableStyle = {
       "border-spacing": "0",
       "width": "100%"
@@ -5547,8 +5544,7 @@ var Tooltip = (function (BaseClass$$1) {
     this._titleStyle = {
       "font-family": "Verdana",
       "font-size": "12px",
-      "font-weight": "600",
-      "padding-bottom": "5px"
+      "font-weight": "600"
     };
     this._translate = function (d) { return [d.x, d.y]; };
     this._width = constant$3("auto");
@@ -5952,7 +5948,6 @@ function value(d) {
   return Tooltip;
 }(BaseClass));
 
-exports.prefix = prefix;
 exports.Tooltip = Tooltip;
 
 Object.defineProperty(exports, '__esModule', { value: true });
