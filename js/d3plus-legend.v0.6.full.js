@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.16
+  d3plus-legend v0.6.17
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -12446,6 +12446,7 @@ var Legend = (function (BaseClass$$1) {
     var data = this._data.map(function (d, i) {
 
       var obj = {
+        __d3plus__: true,
         data: d, i: i,
         id: this$1._id(d, i),
         label: this$1._lineData[i].width ? this$1._label(d, i) : false,
