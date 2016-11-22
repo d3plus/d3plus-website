@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.16
+  d3plus-plot v0.3.17
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -119,7 +119,7 @@ var Plot = (function (Viz$$1) {
       Rect: RectBuffer
     };
     this._shape = d3plusCommon.constant("Circle");
-    this._shapeConfig = Object.assign(this._shapeConfig, {
+    this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       Circle: {
         r: d3plusCommon.constant(5)
       },
@@ -166,6 +166,7 @@ var Plot = (function (Viz$$1) {
     Viz$$1.prototype.render.call(this, callback);
 
     var data = this._filteredData.map(function (d, i) { return ({
+      __d3plus__: true,
       data: d,
       i: i,
       id: this$1._id(d, i),
@@ -211,6 +212,7 @@ var Plot = (function (Viz$$1) {
               var d = data.filter(function (d) { return d.id === k; })[0];
               if (d.shape === "Area") {
                 var fillerPoint = {
+                  __d3plus__: true,
                   data: d.data,
                   id: k,
                   shape: d.shape
@@ -347,7 +349,7 @@ var Plot = (function (Viz$$1) {
       return obj;
     }
 
-    shapeConfig = Object.assign(shapeConfig, wrapConfig(this._shapeConfig));
+    shapeConfig = d3plusCommon.assign(shapeConfig, wrapConfig(this._shapeConfig));
 
     var positions = {
       x0: this._discrete === "x" ? shapeConfig.x : x(0),
@@ -368,7 +370,7 @@ var Plot = (function (Viz$$1) {
       };
     }
 
-    shapeConfig = Object.assign(shapeConfig, positions);
+    shapeConfig = d3plusCommon.assign(shapeConfig, positions);
 
     /**
         @desc Handles mouse events for nested shapes, finding the closest discrete data point to send to the defined event function.
@@ -411,6 +413,15 @@ var Plot = (function (Viz$$1) {
   */
   Plot.prototype.baseline = function baseline (_) {
     return arguments.length ? (this._baseline = _, this) : this._baseline;
+  };
+
+  /**
+      @memberof Plot
+      @desc If *value* is specified, sets the discrete axis to the specified string and returns the current class instance. If *value* is not specified, returns the current discrete axis.
+      @param {String} [*value*]
+  */
+  Plot.prototype.discrete = function discrete (_) {
+    return arguments.length ? (this._discrete = _, this) : this._discrete;
   };
 
   /**
@@ -468,7 +479,7 @@ var Plot = (function (Viz$$1) {
       @param {Object} [*value*]
   */
   Plot.prototype.xConfig = function xConfig (_) {
-    return arguments.length ? (this._xConfig = Object.assign(this._xConfig, _), this) : this._xConfig;
+    return arguments.length ? (this._xConfig = d3plusCommon.assign(this._xConfig, _), this) : this._xConfig;
   };
 
   /**
@@ -505,10 +516,17 @@ var Plot = (function (Viz$$1) {
   /**
       @memberof Plot
       @desc If *value* is specified, sets the config method for the y-axis and returns the current class instance. If *value* is not specified, returns the current y-axis configuration.
+
+*Note:* If a "domain" array is passed to the y-axis config, it will be reversed.
       @param {Object} [*value*]
   */
   Plot.prototype.yConfig = function yConfig (_) {
-    return arguments.length ? (this._yConfig = Object.assign(this._yConfig, _), this) : this._yConfig;
+    if (arguments.length) {
+      if (_.domain) _.domain = _.domain.slice().reverse();
+      this._yConfig = d3plusCommon.assign(this._yConfig, _);
+      return this;
+    }
+    return this._yConfig;
   };
 
   /**
