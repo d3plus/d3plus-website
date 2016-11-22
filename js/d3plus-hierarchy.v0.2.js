@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.2.0
+  d3plus-hierarchy v0.2.1
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -22,7 +22,7 @@ var Pie = (function (Viz$$1) {
 
     Viz$$1.call(this);
 
-    this._shapeConfig = Object.assign({}, this._shapeConfig, {
+    this._shapeConfig = d3plusCommon.assign({}, this._shapeConfig, {
       Path: {
         id: function (d) { return this$1._ids(d).join("-"); },
         x: 0,
@@ -231,43 +231,46 @@ var Tree = (function (Viz$$1) {
     this._orient = "vertical";
     this._separation = function (a, b) { return a.parent === b.parent ? 1 : 2; };
 
-    this._shapeConfig = Object.assign({}, this._shapeConfig, {
-      Circle: {
-        fontColor: "#444",
-        id: function (d, i) { return this$1._ids(d, i).join("-"); },
-        label: function (d, i) {
-          if (this$1._label) return this$1._label(d.data, i);
-          var ids = this$1._ids(d, i).slice(0, d.depth);
-          return ids[ids.length - 1];
-        },
-        hitArea: function (d, i, s) {
-          var h = this$1._labelHeight,
-                w = this$1._labelWidths[d.depth - 1];
-          return {
-            width: this$1._orient === "vertical" ? w : s.r * 2 + w,
-            height: this$1._orient === "horizontal" ? h : s.r * 2 + h,
-            x: this$1._orient === "vertical" ? -w / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + w) : -s.r,
-            y: this$1._orient === "horizontal" ? -h / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + this$1._labelHeight) : -s.r
-          };
-        },
-        labelBounds: function (d, i, s) {
-          var h = this$1._labelHeight,
-                height = this$1._orient === "vertical" ? "height" : "width",
-                w = this$1._labelWidths[d.depth - 1],
-                width = this$1._orient === "vertical" ? "width" : "height",
-                x = this$1._orient === "vertical" ? "x" : "y",
-                y = this$1._orient === "vertical" ? "y" : "x";
-          var obj;
-          return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
-        },
-        r: d3plusCommon.constant(5),
-        textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
-                       : d.children && d.depth !== this$1._groupBy.length ? "end" : "start"; },
-        verticalAlign: function (d) { return this$1._orient === "vertical" ? d.depth === 1 ? "bottom" : "top" : "middle"; }
+    var nodeConfig = {
+      id: function (d, i) { return this$1._ids(d, i).join("-"); },
+      label: function (d, i) {
+        if (this$1._label) return this$1._label(d.data, i);
+        var ids = this$1._ids(d, i).slice(0, d.depth);
+        return ids[ids.length - 1];
       },
+      hitArea: function (d, i, s) {
+        var h = this$1._labelHeight,
+              w = this$1._labelWidths[d.depth - 1];
+        return {
+          width: this$1._orient === "vertical" ? w : s.r * 2 + w,
+          height: this$1._orient === "horizontal" ? h : s.r * 2 + h,
+          x: this$1._orient === "vertical" ? -w / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + w) : -s.r,
+          y: this$1._orient === "horizontal" ? -h / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + this$1._labelHeight) : -s.r
+        };
+      },
+      labelBounds: function (d, i, s) {
+        var h = this$1._labelHeight,
+              height = this$1._orient === "vertical" ? "height" : "width",
+              w = this$1._labelWidths[d.depth - 1],
+              width = this$1._orient === "vertical" ? "width" : "height",
+              x = this$1._orient === "vertical" ? "x" : "y",
+              y = this$1._orient === "vertical" ? "y" : "x";
+        var obj;
+        return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
+      },
+      textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
+                     : d.children && d.depth !== this$1._groupBy.length ? "end" : "start"; },
+      verticalAlign: function (d) { return this$1._orient === "vertical" ? d.depth === 1 ? "bottom" : "top" : "middle"; }
+    };
+
+    this._shape = d3plusCommon.constant("Circle");
+    this._shapeConfig = d3plusCommon.assign({}, this._shapeConfig, {
+      Circle: nodeConfig,
+      fontColor: "#444",
       Path: {
         d: function (d) {
-          var r = this$1._shapeConfig.Circle.r(d.data, d.i);
+          var r = this$1._shapeConfig.Circle.r || this$1._shapeConfig.r;
+          if (typeof r === "function") r = r(d.data, d.i);
           var px = d.parent.x - d.x + (this$1._orient === "vertical" ? 0 : r),
                 py = d.parent.y - d.y + (this$1._orient === "vertical" ? r : 0),
                 x = this$1._orient === "vertical" ? 0 : -r,
@@ -280,7 +283,10 @@ var Tree = (function (Viz$$1) {
         id: function (d, i) { return this$1._ids(d, i).join("-"); },
         stroke: "#ccc",
         strokeWidth: 1
-      }
+      },
+      r: d3plusCommon.constant(5),
+      width: d3plusCommon.constant(10),
+      height: d3plusCommon.constant(10)
     });
 
     this._tree = d3Hierarchy.tree();
@@ -335,7 +341,8 @@ var Tree = (function (Viz$$1) {
       d.i = i;
     });
 
-    var r = this._shapeConfig.Circle.r;
+    var r = this._shapeConfig.Circle.r || this._shapeConfig.r;
+    if (typeof r !== "function") r = d3plusCommon.constant(r);
     var rBufferRoot = d3Array.max(treeData, function (d) { return d.depth === 1 ? r(d.data, d.i) : 0; });
     var rBufferEnd = d3Array.max(treeData, function (d) { return d.children ? 0 : r(d.data, d.i); });
 
@@ -427,9 +434,9 @@ var Treemap = (function (Viz$$1) {
     Viz$$1.call(this);
 
     this._padding = 1;
-    this._shapeConfig = Object.assign({}, this._shapeConfig, {
+    this._shapeConfig = d3plusCommon.assign({}, this._shapeConfig, {
+      fontResize: true,
       Rect: {
-        fontResize: true,
         height: function (d) { return d.y1 - d.y0; },
         labelBounds: function (d, i, s) {
           var h = s.height;
@@ -439,10 +446,10 @@ var Treemap = (function (Viz$$1) {
             {width: s.width, height: sh, x: -s.width / 2, y: h / 2 - sh}
           ];
         },
-        textAnchor: ["start", "middle"],
-        width: function (d) { return d.x1 - d.x0; },
-        verticalAlign: ["top", "bottom"]
-      }
+        width: function (d) { return d.x1 - d.x0; }
+      },
+      textAnchor: ["start", "middle"],
+      verticalAlign: ["top", "bottom"]
     });
     this._sort = function (a, b) { return b.value - a.value; };
     this._sum = d3plusCommon.accessor("value");

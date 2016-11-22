@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.2.0
+  d3plus-hierarchy v0.2.1
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -2252,6 +2252,81 @@ var accessor = function(key, def) {
   if (def === void 0) return function (d) { return d[key]; };
   return function (d) { return d[key] === void 0 ? def : d[key]; };
 };
+
+/**
+    @function isObject
+    @desc Detects if a variable is a javascript Object.
+    @param {*} item
+*/
+var isObject = function(item) {
+  return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
+};
+
+/**
+    @function assign
+    @desc A deeply recursive version of `Object.assign`.
+    @param {...Object} objects
+    @example <caption>this</caption>
+assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
+    @example <caption>returns this</caption>
+{id: "bar", group: "A", value: 20}
+*/
+function assign() {
+  var objects = [], len = arguments.length;
+  while ( len-- ) objects[ len ] = arguments[ len ];
+
+
+  var target = objects[0];
+  var loop = function ( i ) {
+
+    var source = objects[i];
+
+    Object.keys(source).forEach(function (prop) {
+
+      var value = source[prop];
+
+      if (isObject(value)) {
+
+        if (target.hasOwnProperty(prop) && isObject(target[prop])) target[prop] = assign(target[prop], value);
+        else target[prop] = value;
+
+      }
+      else if (Array.isArray(value)) {
+
+        if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
+
+          var targetArray = target[prop];
+
+          value.forEach(function (sourceItem, itemIndex) {
+
+            if (itemIndex < targetArray.length) {
+              var targetItem = targetArray[itemIndex];
+
+              if (Object.is(targetItem, sourceItem)) return;
+
+              if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
+                targetArray[itemIndex] = assign(targetItem, sourceItem);
+              }
+              else targetArray[itemIndex] = sourceItem;
+
+            }
+            else targetArray.push(sourceItem);
+
+          });
+        }
+        else target[prop] = value;
+
+      }
+      else target[prop] = value;
+
+    });
+  };
+
+  for (var i = 1; i < objects.length; i++) loop( i );
+
+  return target;
+
+}
 
 /**
     @function attrize
@@ -7628,20 +7703,16 @@ function objectMerge(objects, aggs) {
 
 }
 
-var val = undefined;
-
 /**
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
 var prefix$1 = function() {
-  if (val !== void 0) return val;
-  if ("-webkit-transform" in document.body.style) val = "-webkit-";
-  else if ("-moz-transform" in document.body.style) val = "-moz-";
-  else if ("-ms-transform" in document.body.style) val = "-ms-";
-  else if ("-o-transform" in document.body.style) val = "-o-";
-  else val = "";
-  return val;
+  if ("-webkit-transform" in document.body.style) return "-webkit-";
+  else if ("-moz-transform" in document.body.style) return "-moz-";
+  else if ("-ms-transform" in document.body.style) return "-ms-";
+  else if ("-o-transform" in document.body.style) return "-o-";
+  else return "";
 };
 
 /**
@@ -9966,7 +10037,7 @@ function getColor(k, u) {
     @param {Object} [u = defaults] An object containing overrides of the default colors.
     @returns {String}
 */
-var assign = function(c, u) {
+var colorAssign = function(c, u) {
   if ( u === void 0 ) u = {};
 
 
@@ -13041,6 +13112,322 @@ var Axis = (function (BaseClass$$1) {
 }(BaseClass));
 
 /**
+    @function accessor
+    @desc Wraps an object key in a simple accessor function.
+    @param {String} key The key to be returned from each Object passed to the function.
+    @param {*} [def] A default value to be returned if the key is not present.
+    @example <caption>this</caption>
+accessor("id");
+    @example <caption>returns this</caption>
+function(d) {
+  return d["id"];
+}
+*/
+var accessor$1 = function(key, def) {
+  if (def === void 0) return function (d) { return d[key]; };
+  return function (d) { return d[key] === void 0 ? def : d[key]; };
+};
+
+/**
+    @function isObject
+    @desc Detects if a variable is a javascript Object.
+    @param {*} item
+*/
+var isObject$1 = function(item) {
+  return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
+};
+
+/**
+    @function assign
+    @desc A deeply recursive version of `Object.assign`.
+    @param {...Object} objects
+    @example <caption>this</caption>
+assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
+    @example <caption>returns this</caption>
+{id: "bar", group: "A", value: 20}
+*/
+function assign$2() {
+  var objects = [], len = arguments.length;
+  while ( len-- ) objects[ len ] = arguments[ len ];
+
+
+  var target = objects[0];
+  var loop = function ( i ) {
+
+    var source = objects[i];
+
+    Object.keys(source).forEach(function (prop) {
+
+      var value = source[prop];
+
+      if (isObject$1(value)) {
+
+        if (target.hasOwnProperty(prop) && isObject$1(target[prop])) target[prop] = assign$2(target[prop], value);
+        else target[prop] = value;
+
+      }
+      else if (Array.isArray(value)) {
+
+        if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
+
+          var targetArray = target[prop];
+
+          value.forEach(function (sourceItem, itemIndex) {
+
+            if (itemIndex < targetArray.length) {
+              var targetItem = targetArray[itemIndex];
+
+              if (Object.is(targetItem, sourceItem)) return;
+
+              if (isObject$1(targetItem) && isObject$1(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
+                targetArray[itemIndex] = assign$2(targetItem, sourceItem);
+              }
+              else targetArray[itemIndex] = sourceItem;
+
+            }
+            else targetArray.push(sourceItem);
+
+          });
+        }
+        else target[prop] = value;
+
+      }
+      else target[prop] = value;
+
+    });
+  };
+
+  for (var i = 1; i < objects.length; i++) loop( i );
+
+  return target;
+
+}
+
+/**
+    @function attrize
+    @desc Applies each key/value in an object as an attr.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} attrs An object of key/value attr pairs.
+*/
+var attrize$1 = function(e, a) {
+  if ( a === void 0 ) a = {};
+
+  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
+};
+
+/**
+    @function s
+    @desc Returns 4 random characters, used for constructing unique identifiers.
+    @private
+*/
+function s$2() {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+
+/**
+    @class BaseClass
+    @desc An abstract class that contains some global methods and functionality.
+*/
+var BaseClass$2 = function BaseClass$2() {
+  this._on = {};
+  this._uuid = "" + (s$2()) + (s$2()) + "-" + (s$2()) + "-" + (s$2()) + "-" + (s$2()) + "-" + (s$2()) + (s$2()) + (s$2());
+};
+
+/**
+    @memberof BaseClass
+    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
+    @param {Object} [*value*]
+*/
+BaseClass$2.prototype.config = function config (_) {
+    var this$1 = this;
+
+  if (arguments.length) {
+    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+    return this;
+  }
+  else {
+    var config = {};
+    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    return config;
+  }
+};
+
+/**
+    @memberof BaseClass
+    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
+    @param {String} [*typenames*]
+    @param {Function} [*listener*]
+    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
+new Plot
+.on("click.Shape", function(d) {
+  console.log("data for shape clicked:", d);
+})
+.on("click.Legend", function(d) {
+  console.log("data for legend clicked:", d);
+})
+*/
+BaseClass$2.prototype.on = function on (_, f) {
+  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
+};
+
+/**
+    @function closest
+    @desc Finds the closest numeric value in an array.
+    @param {Number} n The number value to use when searching the array.
+    @param {Array} arr The array of values to test against.
+*/
+
+/**
+    @function constant
+    @desc Wraps non-function variables in a simple return function.
+    @param {Array|Number|Object|String} value The value to be returned from the function.
+    @example <caption>this</caption>
+constant(42);
+    @example <caption>returns this</caption>
+function() {
+  return 42;
+}
+*/
+var constant$7 = function(value) {
+  return function constant() {
+    return value;
+  };
+};
+
+/**
+    @function elem
+    @desc Manages the enter/update/exit pattern for a single DOM element.
+    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
+    @param {Object} params Additional parameters.
+    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
+    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
+    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
+    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
+    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
+    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
+*/
+var elem$1 = function(selector$$1, p) {
+
+  // overrides default params
+  p = Object.assign({}, {
+    condition: true,
+    enter: {},
+    exit: {},
+    parent: select("body"),
+    transition: transition().duration(0),
+    update: {}
+  }, p);
+
+  var className = (/\.([^#]+)/g).exec(selector$$1),
+        id = (/#([^\.]+)/g).exec(selector$$1),
+        tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
+
+  var elem = p.parent.selectAll(selector$$1).data(p.condition ? [null] : []);
+
+  var enter = elem.enter().append(tag).call(attrize$1, p.enter);
+
+  if (id) enter.attr("id", id[1]);
+  if (className) enter.attr("class", className[1]);
+
+  elem.exit().transition(p.transition).call(attrize$1, p.exit).remove();
+
+  var update = enter.merge(elem);
+  update.transition(p.transition).call(attrize$1, p.update);
+
+  return update;
+
+};
+
+var array$5 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
+var enUS$1 = {
+	array: array$5
+};
+
+var array$6 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
+var esES$1 = {
+	array: array$6
+};
+
+i18next$1.init({
+  fallbackLng: "en-US",
+  initImmediate: false,
+  resources: {
+    "en-US": {translation: enUS$1},
+    "es-ES": {translation: esES$1}
+  }
+});
+
+/**
+    @function merge
+    @desc Combines an Array of Objects together and returns a new Object.
+    @param {Array} objects The Array of objects to be merged together.
+    @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
+    @example <caption>this</caption>
+merge([
+  {id: "foo", group: "A", value: 10, links: [1, 2]},
+  {id: "bar", group: "A", value: 20, links: [1, 3]}
+]);
+    @example <caption>returns this</caption>
+{id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
+*/
+function objectMerge$1(objects, aggs) {
+  if ( aggs === void 0 ) aggs = {};
+
+
+  var availableKeys = new Set(merge(objects.map(function (o) { return keys(o); }))),
+        newObject = {};
+
+  availableKeys.forEach(function (k) {
+    var values$$1 = objects.map(function (o) { return o[k]; });
+    var value;
+    if (aggs[k]) value = aggs[k](values$$1);
+    else {
+      var types = values$$1.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
+      if (!types.length) value = undefined;
+      else if (types.indexOf(Array) >= 0) {
+        value = merge(values$$1.map(function (v) { return v instanceof Array ? v : [v]; }));
+        value = Array.from(new Set(value));
+        if (value.length === 1) value = value[0];
+      }
+      else if (types.indexOf(String) >= 0) {
+        value = Array.from(new Set(values$$1));
+        if (value.length === 1) value = value[0];
+      }
+      else if (types.indexOf(Number) >= 0) value = sum$1(values$$1);
+      else if (types.indexOf(Object) >= 0) value = objectMerge$1(values$$1.filter(function (v) { return v; }));
+      else {
+        value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
+        if (value.length === 1) value = value[0];
+      }
+    }
+    newObject[k] = value;
+  });
+
+  return newObject;
+
+}
+
+/**
+    @function prefix
+    @desc Returns the appropriate CSS vendor prefix, given the current browser.
+*/
+var prefix$2 = function() {
+  if ("-webkit-transform" in document.body.style) return "-webkit-";
+  else if ("-moz-transform" in document.body.style) return "-moz-";
+  else if ("-ms-transform" in document.body.style) return "-ms-";
+  else if ("-o-transform" in document.body.style) return "-o-";
+  else return "";
+};
+
+/**
+    @function stylize
+    @desc Applies each key/value in an object as a style.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} styles An object of key/value style pairs.
+*/
+
+/**
     @class Legend
     @extends BaseClass
     @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
@@ -13564,7 +13951,7 @@ function yesdrag(view, noclick) {
   }
 }
 
-var constant$7 = function(x) {
+var constant$8 = function(x) {
   return function() {
     return x;
   };
@@ -13601,7 +13988,7 @@ function defaultSubject(d) {
   return d == null ? {x: event.x, y: event.y} : d;
 }
 
-var constant$8 = function(x) {
+var constant$9 = function(x) {
   return function() {
     return x;
   };
@@ -14125,11 +14512,11 @@ function brush$1(dim) {
   }
 
   brush.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$8([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$9([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
   };
 
   brush.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$8(!!_), brush) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$9(!!_), brush) : filter;
   };
 
   brush.handleSize = function(_) {
@@ -14852,7 +15239,7 @@ var colorNest = function(raw, fill, groupBy) {
             uniques = new Set(merge(ids)).size;
       if (total === numColors && uniques === numColors || i === groupBy.length - 1) {
         id = groupBy[i];
-        data = nest$1().key(id).entries(raw).map(function (d) { return objectMerge(d.values); });
+        data = nest$1().key(id).entries(raw).map(function (d) { return objectMerge$1(d.values); });
         return 'break';
       }
     };
@@ -14865,7 +15252,7 @@ var colorNest = function(raw, fill, groupBy) {
   }
   else {
     id = fill;
-    data = colors.map(function (d) { return objectMerge(d.values); });
+    data = colors.map(function (d) { return objectMerge$1(d.values); });
   }
 
   return {data: data, id: id};
@@ -14940,7 +15327,7 @@ var Viz = (function (BaseClass$$1) {
     this._duration = 600;
     this._highlightOpacity = 0.5;
     this._history = [];
-    this._groupBy = [accessor("id")];
+    this._groupBy = [accessor$1("id")];
     this._legend = true;
     this._legendConfig = {
       shapeConfig: {
@@ -15008,10 +15395,10 @@ var Viz = (function (BaseClass$$1) {
     this._padding = 5;
     this._shapes = [];
     this._shapeConfig = {
-      fill: function (d, i) { return assign(this$1._groupBy[0](d, i)); },
-      opacity: constant$3(1),
-      stroke: function (d, i) { return color(assign(this$1._groupBy[0](d, i))).darker(); },
-      strokeWidth: constant$3(0)
+      fill: function (d, i) { return colorAssign(this$1._groupBy[0](d, i)); },
+      opacity: constant$7(1),
+      stroke: function (d, i) { return color(colorAssign(this$1._groupBy[0](d, i))).darker(); },
+      strokeWidth: constant$7(0)
     };
     this._timeline = true;
     this._timelineClass = new Timeline()
@@ -15071,7 +15458,7 @@ var Viz = (function (BaseClass$$1) {
         return obj;
       }, {});
 
-    if (shape) newConfig = Object.assign(newConfig, this._shapeConfig[shape]);
+    if (shape) newConfig = assign$2(newConfig, this._shapeConfig[shape]);
     return newConfig;
 
   };
@@ -15085,7 +15472,7 @@ var Viz = (function (BaseClass$$1) {
   Viz.prototype._uiGroup = function _uiGroup (type, condition) {
     if ( condition === void 0 ) condition = true;
 
-    return elem(("g.d3plus-viz-" + type), {
+    return elem$1(("g.d3plus-viz-" + type), {
       condition: condition,
       enter: {transform: ("translate(0, " + (this._height / 2) + ")")},
       exit: {opacity: 0},
@@ -15151,9 +15538,9 @@ var Viz = (function (BaseClass$$1) {
 
       var dataNest = nest$1();
       for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
-      dataNest.rollup(function (leaves) { return this$1._legendData.push(objectMerge(leaves, this$1._aggs)); }).entries(data);
+      dataNest.rollup(function (leaves) { return this$1._legendData.push(objectMerge$1(leaves, this$1._aggs)); }).entries(data);
       if (this._discrete && ("_" + (this._discrete)) in this) dataNest.key(this[("_" + (this._discrete))]);
-      dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(data);
+      dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge$1(leaves, this$1._aggs)); }).entries(data);
 
     }
 
@@ -15222,7 +15609,7 @@ var Viz = (function (BaseClass$$1) {
 
     }
 
-    var titleGroup = elem("g.d3plus-viz-titles", {parent: this._select});
+    var titleGroup = elem$1("g.d3plus-viz-titles", {parent: this._select});
 
     this._backClass
       .data(this._history.length ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
@@ -15253,7 +15640,7 @@ var Viz = (function (BaseClass$$1) {
       @param {Object} [*value*]
   */
   Viz.prototype.aggs = function aggs (_) {
-    return arguments.length ? (this._aggs = Object.assign(this._aggs, _), this) : this._aggs;
+    return arguments.length ? (this._aggs = assign$2(this._aggs, _), this) : this._aggs;
   };
 
   /**
@@ -15324,7 +15711,7 @@ function value(d) {
             return v.length === 1 ? v[0] : v;
           };
         }
-        return accessor(k);
+        return accessor$1(k);
       }
     }), this;
   };
@@ -15358,9 +15745,13 @@ function value(d) {
 
     function opacity(group) {
       group.selectAll(".d3plus-Shape")
-        .style(((prefix$1()) + "transition"), ("opacity " + (that._tooltipClass.duration() / 1000) + "s"))
+        .style(((prefix$2()) + "transition"), ("opacity " + (that._tooltipClass.duration() / 1000) + "s"))
         .style("opacity", function (d, i) {
           if (!highlightIds.length || !d) return 1;
+          if (d.__d3plusShape__) {
+            d = d.data;
+            i = d.i;
+          }
           return highlightIds.includes(JSON.stringify(that._ids(d, i))) ? 1 : that._highlightOpacity;
         });
     }
@@ -15386,7 +15777,7 @@ function value(d) {
       @param {Function|String} [*value*]
   */
   Viz.prototype.label = function label (_) {
-    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$3(_), this) : this._label;
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$7(_), this) : this._label;
   };
 
   /**
@@ -15422,7 +15813,7 @@ function value(d) {
       @param {Function|String} [*value*]
   */
   Viz.prototype.shape = function shape (_) {
-    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$3(_), this) : this._shape;
+    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$7(_), this) : this._shape;
   };
 
   /**
@@ -15431,7 +15822,7 @@ function value(d) {
       @param {Object} [*value*]
   */
   Viz.prototype.shapeConfig = function shapeConfig (_) {
-    return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+    return arguments.length ? (this._shapeConfig = assign$2(this._shapeConfig, _), this) : this._shapeConfig;
   };
 
   /**
@@ -15445,7 +15836,7 @@ function value(d) {
         this._time = _;
       }
       else {
-        this._time = accessor(_);
+        this._time = accessor$1(_);
         if (!this._aggs[_]) {
           this._aggs[_] = function (a) {
             var v = Array.from(new Set(a));
@@ -15482,7 +15873,7 @@ function value(d) {
       @param {Object} [*value*]
   */
   Viz.prototype.timelineConfig = function timelineConfig (_) {
-    return arguments.length ? (this._timelineConfig = Object.assign(this._timelineConfig, _), this) : this._timelineConfig;
+    return arguments.length ? (this._timelineConfig = assign$2(this._timelineConfig, _), this) : this._timelineConfig;
   };
 
   /**
@@ -15500,7 +15891,7 @@ function value(d) {
       @param {Object} [*value*]
   */
   Viz.prototype.tooltipConfig = function tooltipConfig (_) {
-    return arguments.length ? (this._tooltipConfig = Object.assign(this._tooltipConfig, _), this) : this._tooltipConfig;
+    return arguments.length ? (this._tooltipConfig = assign$2(this._tooltipConfig, _), this) : this._tooltipConfig;
   };
 
   /**
@@ -15513,7 +15904,7 @@ function value(d) {
   };
 
   return Viz;
-}(BaseClass));
+}(BaseClass$2));
 
 /**
     @class Pie
@@ -15527,7 +15918,7 @@ var Pie = (function (Viz$$1) {
 
     Viz$$1.call(this);
 
-    this._shapeConfig = Object.assign({}, this._shapeConfig, {
+    this._shapeConfig = assign({}, this._shapeConfig, {
       Path: {
         id: function (d) { return this$1._ids(d).join("-"); },
         x: 0,
@@ -16173,7 +16564,7 @@ function constantZero() {
   return 0;
 }
 
-var constant$9 = function(x) {
+var constant$10 = function(x) {
   return function() {
     return x;
   };
@@ -16625,7 +17016,7 @@ var treemap = function() {
   };
 
   treemap.paddingInner = function(x) {
-    return arguments.length ? (paddingInner = typeof x === "function" ? x : constant$9(+x), treemap) : paddingInner;
+    return arguments.length ? (paddingInner = typeof x === "function" ? x : constant$10(+x), treemap) : paddingInner;
   };
 
   treemap.paddingOuter = function(x) {
@@ -16633,19 +17024,19 @@ var treemap = function() {
   };
 
   treemap.paddingTop = function(x) {
-    return arguments.length ? (paddingTop = typeof x === "function" ? x : constant$9(+x), treemap) : paddingTop;
+    return arguments.length ? (paddingTop = typeof x === "function" ? x : constant$10(+x), treemap) : paddingTop;
   };
 
   treemap.paddingRight = function(x) {
-    return arguments.length ? (paddingRight = typeof x === "function" ? x : constant$9(+x), treemap) : paddingRight;
+    return arguments.length ? (paddingRight = typeof x === "function" ? x : constant$10(+x), treemap) : paddingRight;
   };
 
   treemap.paddingBottom = function(x) {
-    return arguments.length ? (paddingBottom = typeof x === "function" ? x : constant$9(+x), treemap) : paddingBottom;
+    return arguments.length ? (paddingBottom = typeof x === "function" ? x : constant$10(+x), treemap) : paddingBottom;
   };
 
   treemap.paddingLeft = function(x) {
-    return arguments.length ? (paddingLeft = typeof x === "function" ? x : constant$9(+x), treemap) : paddingLeft;
+    return arguments.length ? (paddingLeft = typeof x === "function" ? x : constant$10(+x), treemap) : paddingLeft;
   };
 
   return treemap;
@@ -16737,43 +17128,46 @@ var Tree = (function (Viz$$1) {
     this._orient = "vertical";
     this._separation = function (a, b) { return a.parent === b.parent ? 1 : 2; };
 
-    this._shapeConfig = Object.assign({}, this._shapeConfig, {
-      Circle: {
-        fontColor: "#444",
-        id: function (d, i) { return this$1._ids(d, i).join("-"); },
-        label: function (d, i) {
-          if (this$1._label) return this$1._label(d.data, i);
-          var ids = this$1._ids(d, i).slice(0, d.depth);
-          return ids[ids.length - 1];
-        },
-        hitArea: function (d, i, s) {
-          var h = this$1._labelHeight,
-                w = this$1._labelWidths[d.depth - 1];
-          return {
-            width: this$1._orient === "vertical" ? w : s.r * 2 + w,
-            height: this$1._orient === "horizontal" ? h : s.r * 2 + h,
-            x: this$1._orient === "vertical" ? -w / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + w) : -s.r,
-            y: this$1._orient === "horizontal" ? -h / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + this$1._labelHeight) : -s.r
-          };
-        },
-        labelBounds: function (d, i, s) {
-          var h = this$1._labelHeight,
-                height = this$1._orient === "vertical" ? "height" : "width",
-                w = this$1._labelWidths[d.depth - 1],
-                width = this$1._orient === "vertical" ? "width" : "height",
-                x = this$1._orient === "vertical" ? "x" : "y",
-                y = this$1._orient === "vertical" ? "y" : "x";
-          var obj;
-          return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
-        },
-        r: constant$3(5),
-        textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
-                       : d.children && d.depth !== this$1._groupBy.length ? "end" : "start"; },
-        verticalAlign: function (d) { return this$1._orient === "vertical" ? d.depth === 1 ? "bottom" : "top" : "middle"; }
+    var nodeConfig = {
+      id: function (d, i) { return this$1._ids(d, i).join("-"); },
+      label: function (d, i) {
+        if (this$1._label) return this$1._label(d.data, i);
+        var ids = this$1._ids(d, i).slice(0, d.depth);
+        return ids[ids.length - 1];
       },
+      hitArea: function (d, i, s) {
+        var h = this$1._labelHeight,
+              w = this$1._labelWidths[d.depth - 1];
+        return {
+          width: this$1._orient === "vertical" ? w : s.r * 2 + w,
+          height: this$1._orient === "horizontal" ? h : s.r * 2 + h,
+          x: this$1._orient === "vertical" ? -w / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + w) : -s.r,
+          y: this$1._orient === "horizontal" ? -h / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + this$1._labelHeight) : -s.r
+        };
+      },
+      labelBounds: function (d, i, s) {
+        var h = this$1._labelHeight,
+              height = this$1._orient === "vertical" ? "height" : "width",
+              w = this$1._labelWidths[d.depth - 1],
+              width = this$1._orient === "vertical" ? "width" : "height",
+              x = this$1._orient === "vertical" ? "x" : "y",
+              y = this$1._orient === "vertical" ? "y" : "x";
+        var obj;
+        return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
+      },
+      textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
+                     : d.children && d.depth !== this$1._groupBy.length ? "end" : "start"; },
+      verticalAlign: function (d) { return this$1._orient === "vertical" ? d.depth === 1 ? "bottom" : "top" : "middle"; }
+    };
+
+    this._shape = constant$3("Circle");
+    this._shapeConfig = assign({}, this._shapeConfig, {
+      Circle: nodeConfig,
+      fontColor: "#444",
       Path: {
         d: function (d) {
-          var r = this$1._shapeConfig.Circle.r(d.data, d.i);
+          var r = this$1._shapeConfig.Circle.r || this$1._shapeConfig.r;
+          if (typeof r === "function") r = r(d.data, d.i);
           var px = d.parent.x - d.x + (this$1._orient === "vertical" ? 0 : r),
                 py = d.parent.y - d.y + (this$1._orient === "vertical" ? r : 0),
                 x = this$1._orient === "vertical" ? 0 : -r,
@@ -16786,7 +17180,10 @@ var Tree = (function (Viz$$1) {
         id: function (d, i) { return this$1._ids(d, i).join("-"); },
         stroke: "#ccc",
         strokeWidth: 1
-      }
+      },
+      r: constant$3(5),
+      width: constant$3(10),
+      height: constant$3(10)
     });
 
     this._tree = tree();
@@ -16841,7 +17238,8 @@ var Tree = (function (Viz$$1) {
       d.i = i;
     });
 
-    var r = this._shapeConfig.Circle.r;
+    var r = this._shapeConfig.Circle.r || this._shapeConfig.r;
+    if (typeof r !== "function") r = constant$3(r);
     var rBufferRoot = max(treeData, function (d) { return d.depth === 1 ? r(d.data, d.i) : 0; });
     var rBufferEnd = max(treeData, function (d) { return d.children ? 0 : r(d.data, d.i); });
 
@@ -16933,9 +17331,9 @@ var Treemap = (function (Viz$$1) {
     Viz$$1.call(this);
 
     this._padding = 1;
-    this._shapeConfig = Object.assign({}, this._shapeConfig, {
+    this._shapeConfig = assign({}, this._shapeConfig, {
+      fontResize: true,
       Rect: {
-        fontResize: true,
         height: function (d) { return d.y1 - d.y0; },
         labelBounds: function (d, i, s) {
           var h = s.height;
@@ -16945,10 +17343,10 @@ var Treemap = (function (Viz$$1) {
             {width: s.width, height: sh, x: -s.width / 2, y: h / 2 - sh}
           ];
         },
-        textAnchor: ["start", "middle"],
-        width: function (d) { return d.x1 - d.x0; },
-        verticalAlign: ["top", "bottom"]
-      }
+        width: function (d) { return d.x1 - d.x0; }
+      },
+      textAnchor: ["start", "middle"],
+      verticalAlign: ["top", "bottom"]
     });
     this._sort = function (a, b) { return b.value - a.value; };
     this._sum = accessor("value");
