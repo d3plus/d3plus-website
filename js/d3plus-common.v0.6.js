@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.8
+  d3plus-common v0.6.9
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -28,6 +28,81 @@ var accessor = function(key, def) {
   if (def === void 0) return function (d) { return d[key]; };
   return function (d) { return d[key] === void 0 ? def : d[key]; };
 };
+
+/**
+    @function isObject
+    @desc Detects if a variable is a javascript Object.
+    @param {*} item
+*/
+var isObject = function(item) {
+  return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
+};
+
+/**
+    @function assign
+    @desc A deeply recursive version of `Object.assign`.
+    @param {...Object} objects
+    @example <caption>this</caption>
+assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
+    @example <caption>returns this</caption>
+{id: "bar", group: "A", value: 20}
+*/
+function assign() {
+  var objects = [], len = arguments.length;
+  while ( len-- ) objects[ len ] = arguments[ len ];
+
+
+  var target = objects[0];
+  var loop = function ( i ) {
+
+    var source = objects[i];
+
+    Object.keys(source).forEach(function (prop) {
+
+      var value = source[prop];
+
+      if (isObject(value)) {
+
+        if (target.hasOwnProperty(prop) && isObject(target[prop])) target[prop] = assign(target[prop], value);
+        else target[prop] = value;
+
+      }
+      else if (Array.isArray(value)) {
+
+        if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
+
+          var targetArray = target[prop];
+
+          value.forEach(function (sourceItem, itemIndex) {
+
+            if (itemIndex < targetArray.length) {
+              var targetItem = targetArray[itemIndex];
+
+              if (Object.is(targetItem, sourceItem)) return;
+
+              if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
+                targetArray[itemIndex] = assign(targetItem, sourceItem);
+              }
+              else targetArray[itemIndex] = sourceItem;
+
+            }
+            else targetArray.push(sourceItem);
+
+          });
+        }
+        else target[prop] = value;
+
+      }
+      else target[prop] = value;
+
+    });
+  };
+
+  for (var i = 1; i < objects.length; i++) loop( i );
+
+  return target;
+
+}
 
 /**
     @function attrize
@@ -237,20 +312,16 @@ function objectMerge(objects, aggs) {
 
 }
 
-var val = undefined;
-
 /**
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
 var prefix = function() {
-  if (val !== void 0) return val;
-  if ("-webkit-transform" in document.body.style) val = "-webkit-";
-  else if ("-moz-transform" in document.body.style) val = "-moz-";
-  else if ("-ms-transform" in document.body.style) val = "-ms-";
-  else if ("-o-transform" in document.body.style) val = "-o-";
-  else val = "";
-  return val;
+  if ("-webkit-transform" in document.body.style) return "-webkit-";
+  else if ("-moz-transform" in document.body.style) return "-moz-";
+  else if ("-ms-transform" in document.body.style) return "-ms-";
+  else if ("-o-transform" in document.body.style) return "-o-";
+  else return "";
 };
 
 /**
@@ -266,11 +337,13 @@ var stylize = function(e, s) {
 };
 
 exports.accessor = accessor;
+exports.assign = assign;
 exports.attrize = attrize;
 exports.BaseClass = BaseClass;
 exports.closest = closest;
 exports.constant = constant$1;
 exports.elem = elem;
+exports.isObject = isObject;
 exports.locale = locale;
 exports.merge = objectMerge;
 exports.prefix = prefix;
