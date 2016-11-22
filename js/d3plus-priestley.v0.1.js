@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.10
+  d3plus-priestley v0.1.11
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -137,7 +137,7 @@ var Priestley = (function (Viz$$1) {
       @param {Object} [*value*]
   */
   Priestley.prototype.axisConfig = function axisConfig (_) {
-    return arguments.length ? (this._axisConfig = Object.assign(this._axisConfig, _), this) : this._axisConfig;
+    return arguments.length ? (this._axisConfig = d3plusCommon.assign(this._axisConfig, _), this) : this._axisConfig;
   };
 
   /**

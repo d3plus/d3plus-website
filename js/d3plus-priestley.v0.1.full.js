@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.10
+  d3plus-priestley v0.1.11
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5418,6 +5418,81 @@ var accessor = function(key, def) {
 };
 
 /**
+    @function isObject
+    @desc Detects if a variable is a javascript Object.
+    @param {*} item
+*/
+var isObject = function(item) {
+  return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
+};
+
+/**
+    @function assign
+    @desc A deeply recursive version of `Object.assign`.
+    @param {...Object} objects
+    @example <caption>this</caption>
+assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
+    @example <caption>returns this</caption>
+{id: "bar", group: "A", value: 20}
+*/
+function assign() {
+  var objects = [], len = arguments.length;
+  while ( len-- ) objects[ len ] = arguments[ len ];
+
+
+  var target = objects[0];
+  var loop = function ( i ) {
+
+    var source = objects[i];
+
+    Object.keys(source).forEach(function (prop) {
+
+      var value = source[prop];
+
+      if (isObject(value)) {
+
+        if (target.hasOwnProperty(prop) && isObject(target[prop])) target[prop] = assign(target[prop], value);
+        else target[prop] = value;
+
+      }
+      else if (Array.isArray(value)) {
+
+        if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
+
+          var targetArray = target[prop];
+
+          value.forEach(function (sourceItem, itemIndex) {
+
+            if (itemIndex < targetArray.length) {
+              var targetItem = targetArray[itemIndex];
+
+              if (Object.is(targetItem, sourceItem)) return;
+
+              if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
+                targetArray[itemIndex] = assign(targetItem, sourceItem);
+              }
+              else targetArray[itemIndex] = sourceItem;
+
+            }
+            else targetArray.push(sourceItem);
+
+          });
+        }
+        else target[prop] = value;
+
+      }
+      else target[prop] = value;
+
+    });
+  };
+
+  for (var i = 1; i < objects.length; i++) loop( i );
+
+  return target;
+
+}
+
+/**
     @function attrize
     @desc Applies each key/value in an object as an attr.
     @param {D3selection} elem The D3 element to apply the styles to.
@@ -7693,20 +7768,16 @@ function objectMerge(objects, aggs) {
 
 }
 
-var val = undefined;
-
 /**
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
 var prefix$1 = function() {
-  if (val !== void 0) return val;
-  if ("-webkit-transform" in document.body.style) val = "-webkit-";
-  else if ("-moz-transform" in document.body.style) val = "-moz-";
-  else if ("-ms-transform" in document.body.style) val = "-ms-";
-  else if ("-o-transform" in document.body.style) val = "-o-";
-  else val = "";
-  return val;
+  if ("-webkit-transform" in document.body.style) return "-webkit-";
+  else if ("-moz-transform" in document.body.style) return "-moz-";
+  else if ("-ms-transform" in document.body.style) return "-ms-";
+  else if ("-o-transform" in document.body.style) return "-o-";
+  else return "";
 };
 
 /**
@@ -7980,7 +8051,7 @@ function getColor(k, u) {
     @param {Object} [u = defaults] An object containing overrides of the default colors.
     @returns {String}
 */
-var assign = function(c, u) {
+var colorAssign = function(c, u) {
   if ( u === void 0 ) u = {};
 
 
@@ -17097,9 +17168,9 @@ var Viz = (function (BaseClass$$1) {
     this._padding = 5;
     this._shapes = [];
     this._shapeConfig = {
-      fill: function (d, i) { return assign(this$1._groupBy[0](d, i)); },
+      fill: function (d, i) { return colorAssign(this$1._groupBy[0](d, i)); },
       opacity: constant$5(1),
-      stroke: function (d, i) { return color$1(assign(this$1._groupBy[0](d, i))).darker(); },
+      stroke: function (d, i) { return color$1(colorAssign(this$1._groupBy[0](d, i))).darker(); },
       strokeWidth: constant$5(0)
     };
     this._timeline = true;
@@ -17160,7 +17231,7 @@ var Viz = (function (BaseClass$$1) {
         return obj;
       }, {});
 
-    if (shape) newConfig = Object.assign(newConfig, this._shapeConfig[shape]);
+    if (shape && this._shapeConfig[shape]) newConfig = assign(newConfig, this._shapeConfig[shape]);
     return newConfig;
 
   };
@@ -17342,7 +17413,7 @@ var Viz = (function (BaseClass$$1) {
       @param {Object} [*value*]
   */
   Viz.prototype.aggs = function aggs (_) {
-    return arguments.length ? (this._aggs = Object.assign(this._aggs, _), this) : this._aggs;
+    return arguments.length ? (this._aggs = assign(this._aggs, _), this) : this._aggs;
   };
 
   /**
@@ -17450,6 +17521,10 @@ function value(d) {
         .style(((prefix$1()) + "transition"), ("opacity " + (that._tooltipClass.duration() / 1000) + "s"))
         .style("opacity", function (d, i) {
           if (!highlightIds.length || !d) return 1;
+          if (d.__d3plusShape__) {
+            d = d.data;
+            i = d.i;
+          }
           return highlightIds.includes(JSON.stringify(that._ids(d, i))) ? 1 : that._highlightOpacity;
         });
     }
@@ -17520,7 +17595,7 @@ function value(d) {
       @param {Object} [*value*]
   */
   Viz.prototype.shapeConfig = function shapeConfig (_) {
-    return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+    return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
   };
 
   /**
@@ -17571,7 +17646,7 @@ function value(d) {
       @param {Object} [*value*]
   */
   Viz.prototype.timelineConfig = function timelineConfig (_) {
-    return arguments.length ? (this._timelineConfig = Object.assign(this._timelineConfig, _), this) : this._timelineConfig;
+    return arguments.length ? (this._timelineConfig = assign(this._timelineConfig, _), this) : this._timelineConfig;
   };
 
   /**
@@ -17589,7 +17664,7 @@ function value(d) {
       @param {Object} [*value*]
   */
   Viz.prototype.tooltipConfig = function tooltipConfig (_) {
-    return arguments.length ? (this._tooltipConfig = Object.assign(this._tooltipConfig, _), this) : this._tooltipConfig;
+    return arguments.length ? (this._tooltipConfig = assign(this._tooltipConfig, _), this) : this._tooltipConfig;
   };
 
   /**
@@ -17731,7 +17806,7 @@ var Priestley = (function (Viz$$1) {
       @param {Object} [*value*]
   */
   Priestley.prototype.axisConfig = function axisConfig (_) {
-    return arguments.length ? (this._axisConfig = Object.assign(this._axisConfig, _), this) : this._axisConfig;
+    return arguments.length ? (this._axisConfig = assign(this._axisConfig, _), this) : this._axisConfig;
   };
 
   /**
