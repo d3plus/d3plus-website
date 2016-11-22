@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.3
+  d3plus-viz v0.4.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -255,7 +255,7 @@ var Viz = (function (BaseClass$$1) {
         return obj;
       }, {});
 
-    if (shape) newConfig = Object.assign(newConfig, this._shapeConfig[shape]);
+    if (shape) newConfig = d3plusCommon.assign(newConfig, this._shapeConfig[shape]);
     return newConfig;
 
   };
@@ -437,7 +437,7 @@ var Viz = (function (BaseClass$$1) {
       @param {Object} [*value*]
   */
   Viz.prototype.aggs = function aggs (_) {
-    return arguments.length ? (this._aggs = Object.assign(this._aggs, _), this) : this._aggs;
+    return arguments.length ? (this._aggs = d3plusCommon.assign(this._aggs, _), this) : this._aggs;
   };
 
   /**
@@ -615,7 +615,7 @@ function value(d) {
       @param {Object} [*value*]
   */
   Viz.prototype.shapeConfig = function shapeConfig (_) {
-    return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+    return arguments.length ? (this._shapeConfig = d3plusCommon.assign(this._shapeConfig, _), this) : this._shapeConfig;
   };
 
   /**
@@ -666,7 +666,7 @@ function value(d) {
       @param {Object} [*value*]
   */
   Viz.prototype.timelineConfig = function timelineConfig (_) {
-    return arguments.length ? (this._timelineConfig = Object.assign(this._timelineConfig, _), this) : this._timelineConfig;
+    return arguments.length ? (this._timelineConfig = d3plusCommon.assign(this._timelineConfig, _), this) : this._timelineConfig;
   };
 
   /**
@@ -684,7 +684,7 @@ function value(d) {
       @param {Object} [*value*]
   */
   Viz.prototype.tooltipConfig = function tooltipConfig (_) {
-    return arguments.length ? (this._tooltipConfig = Object.assign(this._tooltipConfig, _), this) : this._tooltipConfig;
+    return arguments.length ? (this._tooltipConfig = d3plusCommon.assign(this._tooltipConfig, _), this) : this._tooltipConfig;
   };
 
   /**
