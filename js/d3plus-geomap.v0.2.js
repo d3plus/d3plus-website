@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.2.1
+  d3plus-geomap v0.2.2
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -35,7 +35,7 @@ var Geomap = (function (Viz$$1) {
     this._rotate = [0, 0];
 
     this._shape = d3plusCommon.constant("Circle");
-    this._shapeConfig = Object.assign({}, this._shapeConfig, {
+    this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       Path: {
         fill: "#f5f5f3",
         stroke: "#b1babe",
