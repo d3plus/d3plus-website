@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.5
+  d3plus-viz v0.4.6
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -15962,7 +15962,7 @@ var Viz = (function (BaseClass$$1) {
         return obj;
       }, {});
 
-    if (shape) newConfig = assign(newConfig, this._shapeConfig[shape]);
+    if (shape && this._shapeConfig[shape]) newConfig = assign(newConfig, this._shapeConfig[shape]);
     return newConfig;
 
   };
