@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.4
+  d3plus-viz v0.4.5
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -545,6 +545,10 @@ function value(d) {
         .style(((d3plusCommon.prefix()) + "transition"), ("opacity " + (that._tooltipClass.duration() / 1000) + "s"))
         .style("opacity", function (d, i) {
           if (!highlightIds.length || !d) return 1;
+          if (d.__d3plusShape__) {
+            d = d.data;
+            i = d.i;
+          }
           return highlightIds.includes(JSON.stringify(that._ids(d, i))) ? 1 : that._highlightOpacity;
         });
     }
