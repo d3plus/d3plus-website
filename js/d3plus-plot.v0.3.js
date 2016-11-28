@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.17
+  d3plus-plot v0.3.18
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -21,19 +21,19 @@ var CircleBuffer = function(data, x, y, config) {
     var r = config.r(d.data, d.i);
     if (x(d.x) - xR[0] < r * 2) {
       var v = x.invert(x(d.x) - r * 2);
-      if (v < xD[0]) xD[0] = v;
+      if (v < xD[0]) { xD[0] = v; }
     }
     if (xR[1] - x(d.x) < r * 2) {
       var v$1 = x.invert(x(d.x) + r * 2);
-      if (v$1 > xD[1]) xD[1] = v$1;
+      if (v$1 > xD[1]) { xD[1] = v$1; }
     }
     if (y(d.y) - yR[0] < r * 2) {
       var v$2 = y.invert(y(d.y) - r * 2);
-      if (v$2 > yD[0]) yD[0] = v$2;
+      if (v$2 > yD[0]) { yD[0] = v$2; }
     }
     if (yR[1] - y(d.y) < r * 2) {
       var v$3 = y.invert(y(d.y) + r * 2);
-      if (v$3 < yD[1]) yD[1] = v$3;
+      if (v$3 < yD[1]) { yD[1] = v$3; }
     }
   });
 
@@ -56,19 +56,19 @@ var RectBuffer = function(data, x, y, config) {
           w = config.width(d.data, d.i);
     if (x(d.x) - xR[0] < w) {
       var v = x.invert(x(d.x) - w);
-      if (v < xD[0]) xD[0] = v;
+      if (v < xD[0]) { xD[0] = v; }
     }
     if (xR[1] - x(d.x) < w) {
       var v$1 = x.invert(x(d.x) + w);
-      if (v$1 > xD[1]) xD[1] = v$1;
+      if (v$1 > xD[1]) { xD[1] = v$1; }
     }
     if (y(d.y) - yR[0] < h) {
       var v$2 = y.invert(y(d.y) - h);
-      if (v$2 > yD[0]) yD[0] = v$2;
+      if (v$2 > yD[0]) { yD[0] = v$2; }
     }
     if (yR[1] - y(d.y) < h) {
       var v$3 = y.invert(y(d.y) + h);
-      if (v$3 < yD[1]) yD[1] = v$3;
+      if (v$3 < yD[1]) { yD[1] = v$3; }
     }
   });
 
@@ -87,14 +87,14 @@ var LineBuffer = function(data, x, y) {
 
   var d = s.domain().slice();
 
-  if (this._discrete === "x") d.reverse();
+  if (this._discrete === "x") { d.reverse(); }
 
   var vals = data.map(function (d) { return d[this$1._discrete === "x" ? "y" : "x"]; });
   var b = s.invert(s(d3Array.max(vals)) + (this._discrete === "x" ? -10 : 10));
 
-  if (b > d[1]) d[1] = b;
+  if (b > d[1]) { d[1] = b; }
 
-  if (this._discrete === "x") d.reverse();
+  if (this._discrete === "x") { d.reverse(); }
 
   s.domain(d);
 
@@ -188,12 +188,12 @@ var Plot = (function (Viz$$1) {
 
     if (xTime || yTime) {
       data.forEach(function (d) {
-        if (xTime) d.x = d3plusAxis.date(d.x);
-        if (yTime) d.y = d3plusAxis.date(d.y);
+        if (xTime) { d.x = d3plusAxis.date(d.x); }
+        if (yTime) { d.y = d3plusAxis.date(d.y); }
       });
     }
 
-    var domains, stackData, stackKeys;
+    var discreteKeys, domains, stackData, stackKeys;
     if (this._stacked) {
 
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
@@ -201,8 +201,11 @@ var Plot = (function (Viz$$1) {
       stackData = d3Collection.nest()
         .key(function (d) { return Number(d[this$1._discrete]); })
         .entries(data)
-        .sort(function (a, b) { return a.key - b.key; })
-        .map(function (d) { return d.values; });
+        .sort(function (a, b) { return a.key - b.key; });
+
+      discreteKeys = stackData.map(function (d) { return d.key; });
+
+      stackData = stackData.map(function (d) { return d.values; });
 
       stackData.forEach(function (g) {
         var ids = Array.from(new Set(g.map(function (d) { return d.id; })));
@@ -242,24 +245,24 @@ var Plot = (function (Viz$$1) {
       domains[opp] = [d3Array.min(stackData.map(function (g) { return d3Array.min(g.map(function (p) { return p[1]; })); })), d3Array.max(stackData.map(function (g) { return d3Array.max(g.map(function (p) { return p[1]; })); }))];
 
     }
-    else domains = {x: d3Array.extent(data, function (d) { return d.x; }), y: d3Array.extent(data, function (d) { return d.y; })};
+    else { domains = {x: d3Array.extent(data, function (d) { return d.x; }), y: d3Array.extent(data, function (d) { return d.y; })}; }
 
     var xDomain = this._xDomain ? this._xDomain.slice() : domains.x;
-    if (xDomain[0] === void 0) xDomain[0] = domains.x[0];
-    if (xDomain[1] === void 0) xDomain[1] = domains.x[1];
-    if (xTime) xDomain = xDomain.map(d3plusAxis.date);
+    if (xDomain[0] === void 0) { xDomain[0] = domains.x[0]; }
+    if (xDomain[1] === void 0) { xDomain[1] = domains.x[1]; }
+    if (xTime) { xDomain = xDomain.map(d3plusAxis.date); }
 
     var yDomain = this._yDomain ? this._yDomain.slice() : domains.y;
-    if (yDomain[0] === void 0) yDomain[0] = domains.y[0];
-    if (yDomain[1] === void 0) yDomain[1] = domains.y[1];
-    if (yTime) yDomain = yDomain.map(d3plusAxis.date);
+    if (yDomain[0] === void 0) { yDomain[0] = domains.y[0]; }
+    if (yDomain[1] === void 0) { yDomain[1] = domains.y[1]; }
+    if (yTime) { yDomain = yDomain.map(d3plusAxis.date); }
 
     domains = {x: xDomain, y: yDomain};
 
     if (opp && this._baseline !== void 0) {
       var b = this._baseline;
-      if (domains[opp][0] > b) domains[opp][0] = b;
-      else if (domains[opp][1] < b) domains[opp][1] = b;
+      if (domains[opp][0] > b) { domains[opp][0] = b; }
+      else if (domains[opp][1] < b) { domains[opp][1] = b; }
     }
 
     var x = scales[("scale" + (xTime ? "Time" : "Linear"))]().domain(domains.x).range([0, width]),
@@ -360,13 +363,15 @@ var Plot = (function (Viz$$1) {
 
     if (this._stacked) {
       var scale = opp === "x" ? x : y;
-      positions[("" + opp)] = positions[(opp + "0")] = function (d, i) {
-        var index = stackKeys.indexOf(d.id);
-        return index >= 0 ? scale(stackData[index][i][0]) : scale(0);
+      positions[("" + opp)] = positions[(opp + "0")] = function (d) {
+        var dataIndex = stackKeys.indexOf(d.id),
+              discreteIndex = discreteKeys.indexOf(d[this$1._discrete]);
+        return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][0]) : scale(0);
       };
-      positions[(opp + "1")] = function (d, i) {
-        var index = stackKeys.indexOf(d.id);
-        return index >= 0 ? scale(stackData[index][i][1]) : scale(0);
+      positions[(opp + "1")] = function (d) {
+        var dataIndex = stackKeys.indexOf(d.id),
+              discreteIndex = discreteKeys.indexOf(d[this$1._discrete]);
+        return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][1]) : scale(0);
       };
     }
 
@@ -377,7 +382,7 @@ var Plot = (function (Viz$$1) {
         @private
     */
     function mouseEvent(d) {
-      if (!this) return false;
+      if (!this) { return false; }
       if (d.nested && d.values) {
         var axis = that._discrete,
               cursor = d3Selection.mouse(that._select.node())[axis === "x" ? 0 : 1],
@@ -394,9 +399,9 @@ var Plot = (function (Viz$$1) {
       var classEvents = events.filter(function (e) { return e.includes(("." + (d.key))); }),
             globalEvents = events.filter(function (e) { return !e.includes("."); }),
             shapeEvents = events.filter(function (e) { return e.includes(".shape"); });
-      for (var e = 0; e < globalEvents.length; e++) s.on(globalEvents[e], mouseEvent.bind(this$1._on[globalEvents[e]]));
-      for (var e$1 = 0; e$1 < shapeEvents.length; e$1++) s.on(shapeEvents[e$1], mouseEvent.bind(this$1._on[shapeEvents[e$1]]));
-      for (var e$2 = 0; e$2 < classEvents.length; e$2++) s.on(classEvents[e$2], mouseEvent.bind(this$1._on[classEvents[e$2]]));
+      for (var e = 0; e < globalEvents.length; e++) { s.on(globalEvents[e], mouseEvent.bind(this$1._on[globalEvents[e]])); }
+      for (var e$1 = 0; e$1 < shapeEvents.length; e$1++) { s.on(shapeEvents[e$1], mouseEvent.bind(this$1._on[shapeEvents[e$1]])); }
+      for (var e$2 = 0; e$2 < classEvents.length; e$2++) { s.on(classEvents[e$2], mouseEvent.bind(this$1._on[classEvents[e$2]])); }
       s.config(this$1._shapeConfig[d.key] ? wrapConfig(this$1._shapeConfig[d.key]) : {}).render();
       this$1._shapes.push(s);
 
@@ -458,7 +463,7 @@ var Plot = (function (Viz$$1) {
   */
   Plot.prototype.x = function x (_) {
     if (arguments.length) {
-      if (typeof _ === "function") this._x = _;
+      if (typeof _ === "function") { this._x = _; }
       else {
         this._x = d3plusCommon.accessor(_);
         if (!this._aggs[_] && this._discrete === "x") {
@@ -470,7 +475,7 @@ var Plot = (function (Viz$$1) {
       }
       return this;
     }
-    else return this._x;
+    else { return this._x; }
   };
 
   /**
@@ -498,7 +503,7 @@ var Plot = (function (Viz$$1) {
   */
   Plot.prototype.y = function y (_) {
     if (arguments.length) {
-      if (typeof _ === "function") this._y = _;
+      if (typeof _ === "function") { this._y = _; }
       else {
         this._y = d3plusCommon.accessor(_);
         if (!this._aggs[_] && this._discrete === "y") {
@@ -510,7 +515,7 @@ var Plot = (function (Viz$$1) {
       }
       return this;
     }
-    else return this._y;
+    else { return this._y; }
   };
 
   /**
@@ -522,7 +527,7 @@ var Plot = (function (Viz$$1) {
   */
   Plot.prototype.yConfig = function yConfig (_) {
     if (arguments.length) {
-      if (_.domain) _.domain = _.domain.slice().reverse();
+      if (_.domain) { _.domain = _.domain.slice().reverse(); }
       this._yConfig = d3plusCommon.assign(this._yConfig, _);
       return this;
     }
