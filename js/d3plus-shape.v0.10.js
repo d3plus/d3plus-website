@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.0
+  d3plus-shape v0.10.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -303,7 +303,7 @@ var Shape = (function (BaseClass$$1) {
       @param {HTMLElement} *elem*
       @private
   */
-  Shape.prototype._applyStyle = function _applyStyle (elem) {
+  Shape.prototype._applyStyle = function _applyStyle (elem$$1) {
 
     var that = this;
 
@@ -319,7 +319,7 @@ var Shape = (function (BaseClass$$1) {
            : this(d, i);
     }
 
-    elem
+    elem$$1
       .attr("fill", styleLogic.bind(this._fill))
       .attr("stroke", styleLogic.bind(this._stroke))
       .attr("stroke-width", styleLogic.bind(this._strokeWidth))
@@ -332,11 +332,11 @@ var Shape = (function (BaseClass$$1) {
       @param {HTMLElement} *elem*
       @private
   */
-  Shape.prototype._applyTransform = function _applyTransform (elem) {
+  Shape.prototype._applyTransform = function _applyTransform (elem$$1) {
     var this$1 = this;
 
 
-    elem
+    elem$$1
       .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plusShape__
                   ? d.translate ? d.translate
                   : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
@@ -400,7 +400,7 @@ var Shape = (function (BaseClass$$1) {
     new Image()
       .data(imageData)
       .duration(this._duration)
-      .select(this._select.node())
+      .select(this._group.node())
       .render();
 
   };
@@ -489,7 +489,7 @@ var Shape = (function (BaseClass$$1) {
       .lineHeight(function (d) { return d.lH; })
       .textAnchor(function (d) { return d.tA; })
       .verticalAlign(function (d) { return d.vA; })
-      .select(this._select.node())
+      .select(this._group.node())
       .render();
 
   };
@@ -525,7 +525,8 @@ var Shape = (function (BaseClass$$1) {
     if (this._sort) { data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ ? a.data : a, b.__d3plusShape__ ? b.data : b); }); }
 
     // Makes the update state of the group selection accessible.
-    var update = this._update = this._select.selectAll((".d3plus-" + (this._name)))
+    this._group = d3plusCommon.elem(("g.d3plus-" + (this._name) + "-Group"), {parent: this._select});
+    var update = this._update = this._group.selectAll((".d3plus-" + (this._name)))
       .data(data, key);
 
     // Orders and transforms the updating Shapes.
@@ -1115,10 +1116,10 @@ var Circle = (function (Shape$$1) {
       Provides the default positioning to the <rect> elements.
       @private
   */
-  Circle.prototype._applyPosition = function _applyPosition (elem) {
+  Circle.prototype._applyPosition = function _applyPosition (elem$$1) {
     var this$1 = this;
 
-    elem
+    elem$$1
       .attr("r", function (d, i) { return this$1._r(d, i); })
       .attr("x", function (d, i) { return -this$1._r(d, i) / 2; })
       .attr("y", function (d, i) { return -this$1._r(d, i) / 2; });
@@ -1430,10 +1431,10 @@ var Rect = (function (Shape$$1) {
       @param {D3Selection} *elem*
       @private
   */
-  Rect.prototype._applyPosition = function _applyPosition (elem) {
+  Rect.prototype._applyPosition = function _applyPosition (elem$$1) {
     var this$1 = this;
 
-    elem
+    elem$$1
       .attr("width", function (d, i) { return this$1._width(d, i); })
       .attr("height", function (d, i) { return this$1._height(d, i); })
       .attr("x", function (d, i) { return -this$1._width(d, i) / 2; })

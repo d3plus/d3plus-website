@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.0
+  d3plus-shape v0.10.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -3069,6 +3069,37 @@ var constant$3 = function(value) {
     @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
     @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
 */
+var elem = function(selector$$1, p) {
+
+  // overrides default params
+  p = Object.assign({}, {
+    condition: true,
+    enter: {},
+    exit: {},
+    parent: select("body"),
+    transition: transition().duration(0),
+    update: {}
+  }, p);
+
+  var className = (/\.([^#]+)/g).exec(selector$$1),
+        id = (/#([^\.]+)/g).exec(selector$$1),
+        tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
+
+  var elem = p.parent.selectAll(selector$$1).data(p.condition ? [null] : []);
+
+  var enter = elem.enter().append(tag).call(attrize, p.enter);
+
+  if (id) { enter.attr("id", id[1]); }
+  if (className) { enter.attr("class", className[1]); }
+
+  elem.exit().transition(p.transition).call(attrize, p.exit).remove();
+
+  var update = enter.merge(elem);
+  update.transition(p.transition).call(attrize, p.update);
+
+  return update;
+
+};
 
 var _extends$1 = Object.assign || function (target) {
 var arguments$1 = arguments;
@@ -8942,7 +8973,7 @@ var Shape = (function (BaseClass$$1) {
     new Image()
       .data(imageData)
       .duration(this._duration)
-      .select(this._select.node())
+      .select(this._group.node())
       .render();
 
   };
@@ -9031,7 +9062,7 @@ var Shape = (function (BaseClass$$1) {
       .lineHeight(function (d) { return d.lH; })
       .textAnchor(function (d) { return d.tA; })
       .verticalAlign(function (d) { return d.vA; })
-      .select(this._select.node())
+      .select(this._group.node())
       .render();
 
   };
@@ -9067,7 +9098,8 @@ var Shape = (function (BaseClass$$1) {
     if (this._sort) { data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ ? a.data : a, b.__d3plusShape__ ? b.data : b); }); }
 
     // Makes the update state of the group selection accessible.
-    var update = this._update = this._select.selectAll((".d3plus-" + (this._name)))
+    this._group = elem(("g.d3plus-" + (this._name) + "-Group"), {parent: this._select});
+    var update = this._update = this._group.selectAll((".d3plus-" + (this._name)))
       .data(data, key);
 
     // Orders and transforms the updating Shapes.
