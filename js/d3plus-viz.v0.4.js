@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.6
+  d3plus-viz v0.4.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -22,10 +22,10 @@ var colorNest = function(raw, fill, groupBy) {
   if ( groupBy === void 0 ) groupBy = [];
 
 
-  if (groupBy && !(groupBy instanceof Array)) groupBy = [groupBy];
+  if (groupBy && !(groupBy instanceof Array)) { groupBy = [groupBy]; }
 
   var colors = d3Collection.nest().key(fill).entries(raw);
-  if (colors.length < 2) return {data: [], id: fill};
+  if (colors.length < 2) { return {data: [], id: fill}; }
   var data, id;
 
   if (groupBy.length) {
@@ -86,8 +86,8 @@ function elementSize(element, s) {
   else {
 
     var val$1 = parseFloat(d3Selection.select(element).style(s), 10);
-    if (typeof val$1 === "number" && val$1 > 0) return val$1;
-    else return elementSize(element.parentNode, s);
+    if (typeof val$1 === "number" && val$1 > 0) { return val$1; }
+    else { return elementSize(element.parentNode, s); }
 
   }
 }
@@ -116,8 +116,8 @@ var Viz = (function (BaseClass$$1) {
     this._aggs = {};
     this._backClass = new d3plusText.TextBox()
       .on("click", function () {
-        if (this$1._history.length) this$1.config(this$1._history.pop()).render();
-        else this$1.depth(this$1._drawDepth - 1).filter(false).render();
+        if (this$1._history.length) { this$1.config(this$1._history.pop()).render(); }
+        else { this$1.depth(this$1._drawDepth - 1).filter(false).render(); }
       })
       .on("mousemove", function () { return this$1._backClass.select().style("cursor", "pointer"); });
     this._data = [];
@@ -142,7 +142,7 @@ var Viz = (function (BaseClass$$1) {
                 filterId = filterGroup(d, i);
 
           this$1.highlight(false);
-          if (this$1._tooltip) this$1._tooltipClass.data([]).render();
+          if (this$1._tooltip) { this$1._tooltipClass.data([]).render(); }
 
           this$1._history.push({
             depth: this$1._depth,
@@ -186,7 +186,7 @@ var Viz = (function (BaseClass$$1) {
       mouseleave: function () {
         this$1.highlight(false);
         this$1._select.style("cursor", "auto");
-        if (this$1._tooltip) this$1._tooltipClass.data([]).render();
+        if (this$1._tooltip) { this$1._tooltipClass.data([]).render(); }
       }
     };
     this._padding = 5;
@@ -201,7 +201,7 @@ var Viz = (function (BaseClass$$1) {
     this._timelineClass = new d3plusTimeline.Timeline()
       .align("end")
       .on("end", function (s) {
-        if (!(s instanceof Array)) s = [s, s];
+        if (!(s instanceof Array)) { s = [s, s]; }
         s = s.map(Number);
         this$1._timelineClass.selection(s);
         this$1.timeFilter(function (d) {
@@ -240,7 +240,7 @@ var Viz = (function (BaseClass$$1) {
         if (typeof this$1._shapeConfig[key] === "function") {
           newConfig[key] = function (d, i, s) { return this$1._shapeConfig[key](d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i, s); };
         }
-        else newConfig[key] = this$1._shapeConfig[key];
+        else { newConfig[key] = this$1._shapeConfig[key]; }
 
       }
 
@@ -255,7 +255,7 @@ var Viz = (function (BaseClass$$1) {
         return obj;
       }, {});
 
-    if (shape && this._shapeConfig[shape]) newConfig = d3plusCommon.assign(newConfig, this._shapeConfig[shape]);
+    if (shape && this._shapeConfig[shape]) { newConfig = d3plusCommon.assign(newConfig, this._shapeConfig[shape]); }
     return newConfig;
 
   };
@@ -297,8 +297,8 @@ var Viz = (function (BaseClass$$1) {
       var ref = getSize(parent.node());
       var w = ref[0];
       var h = ref[1];
-      if (!this._width) this.width(w);
-      if (!this._height) this.height(h);
+      if (!this._width) { this.width(w); }
+      if (!this._height) { this.height(h); }
       w = this._width;
       h = this._height;
       this.select(parent.append("svg").style("width", (w + "px")).style("height", (h + "px")).style("display", "block").node());
@@ -309,8 +309,8 @@ var Viz = (function (BaseClass$$1) {
       var ref$1 = getSize(this._select.node());
       var w$1 = ref$1[0];
       var h$1 = ref$1[1];
-      if (!this._width) this.width(w$1);
-      if (!this._height) this.height(h$1);
+      if (!this._width) { this.width(w$1); }
+      if (!this._height) { this.height(h$1); }
     }
 
     var that = this;
@@ -331,12 +331,12 @@ var Viz = (function (BaseClass$$1) {
     if (this._data.length) {
 
       var data = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
-      if (this._filter) data = data.filter(this._filter);
+      if (this._filter) { data = data.filter(this._filter); }
 
       var dataNest = d3Collection.nest();
-      for (var i = 0; i <= this._drawDepth; i++) dataNest.key(this$1._groupBy[i]);
+      for (var i = 0; i <= this._drawDepth; i++) { dataNest.key(this$1._groupBy[i]); }
       dataNest.rollup(function (leaves) { return this$1._legendData.push(d3plusCommon.merge(leaves, this$1._aggs)); }).entries(data);
-      if (this._discrete && ("_" + (this._discrete)) in this) dataNest.key(this[("_" + (this._discrete))]);
+      if (this._discrete && ("_" + (this._discrete)) in this) { dataNest.key(this[("_" + (this._discrete))]); }
       dataNest.rollup(function (leaves) { return this$1._filteredData.push(d3plusCommon.merge(leaves, this$1._aggs)); }).entries(data);
 
     }
@@ -363,7 +363,7 @@ var Viz = (function (BaseClass$$1) {
           return t instanceof Array ? t : [t];
         })))).map(d3plusAxis.date));
 
-        if (selection.length === 1) selection = selection[0];
+        if (selection.length === 1) { selection = selection[0]; }
         timeline.selection(selection);
 
       }
@@ -402,7 +402,7 @@ var Viz = (function (BaseClass$$1) {
         .render();
 
       var legendBounds = this._legendClass.outerBounds();
-      if (legendBounds.height) this._margin.bottom += legendBounds.height + this._legendClass.padding() * 2;
+      if (legendBounds.height) { this._margin.bottom += legendBounds.height + this._legendClass.padding() * 2; }
 
     }
 
@@ -417,7 +417,7 @@ var Viz = (function (BaseClass$$1) {
 
     this._tooltipClass.title(this._drawLabel).config(this._tooltipConfig);
 
-    if (callback) setTimeout(callback, this._duration + 100);
+    if (callback) { setTimeout(callback, this._duration + 100); }
 
     // Draws a rectangle showing the available space for a visualization.
     // const tester = this._select.selectAll(".tester").data([0]);
@@ -497,10 +497,10 @@ function value(d) {
   Viz.prototype.groupBy = function groupBy (_) {
     var this$1 = this;
 
-    if (!arguments.length) return this._groupBy;
-    if (!(_ instanceof Array)) _ = [_];
+    if (!arguments.length) { return this._groupBy; }
+    if (!(_ instanceof Array)) { _ = [_]; }
     return this._groupBy = _.map(function (k) {
-      if (typeof k === "function") return k;
+      if (typeof k === "function") { return k; }
       else {
         if (!this$1._aggs[k]) {
           this$1._aggs[k] = function (a) {
@@ -544,7 +544,7 @@ function value(d) {
       group.selectAll(".d3plus-Shape")
         .style(((d3plusCommon.prefix()) + "transition"), ("opacity " + (that._tooltipClass.duration() / 1000) + "s"))
         .style("opacity", function (d, i) {
-          if (!highlightIds.length || !d) return 1;
+          if (!highlightIds.length || !d) { return 1; }
           if (d.__d3plusShape__) {
             d = d.data;
             i = d.i;
@@ -643,7 +643,7 @@ function value(d) {
       }
       return this;
     }
-    else return this._time;
+    else { return this._time; }
   };
 
   /**
