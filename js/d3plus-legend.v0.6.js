@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.18
+  d3plus-legend v0.6.19
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -107,8 +107,8 @@ var Legend = (function (BaseClass$$1) {
     var this$1 = this;
 
 
-    if (this._select === void 0) this.select(d3Selection.select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node());
-    if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._fetchConfig("fontSize", d, i) * 1.1; };
+    if (this._select === void 0) { this.select(d3Selection.select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node()); }
+    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fetchConfig("fontSize", d, i) * 1.1; }; }
 
     // Shape <g> Group
     this._group = d3plusCommon.elem("g.d3plus-Legend", {parent: this._select});
@@ -174,7 +174,7 @@ var Legend = (function (BaseClass$$1) {
 
         lines++;
 
-        if (lines > maxLines) return;
+        if (lines > maxLines) { return; }
 
         var wrappable = lines === 1 ? this._lineData.slice()
                         : this._lineData.filter(function (d) { return d.width + d.shapeWidth + this$1._padding * (d.width ? 2 : 1) > availableWidth && d.words.length >= lines; })
@@ -202,7 +202,7 @@ var Legend = (function (BaseClass$$1) {
 
             if ( returned === 'break' ) break;
           }
-          if (!truncated) this._wrapRows();
+          if (!truncated) { this._wrapRows(); }
         }
         else {
           newRows = [];
@@ -235,7 +235,7 @@ var Legend = (function (BaseClass$$1) {
             rowWidth = w;
             row++;
           }
-          if (!newRows[row - 1]) newRows[row - 1] = [];
+          if (!newRows[row - 1]) { newRows[row - 1] = []; }
           newRows[row - 1].push(d);
         }
       };
@@ -271,10 +271,10 @@ var Legend = (function (BaseClass$$1) {
 
     var xOffset = this._padding,
         yOffset = this._padding;
-    if (this._align === "center") xOffset = (this._width - innerWidth) / 2;
-    else if (this._align === "right") xOffset = this._width - this._padding - innerWidth;
-    if (this._verticalAlign === "middle") yOffset = (this._height - innerHeight) / 2;
-    else if (this._verticalAlign === "bottom") yOffset = this._height - this._padding - innerHeight;
+    if (this._align === "center") { xOffset = (this._width - innerWidth) / 2; }
+    else if (this._align === "right") { xOffset = this._width - this._padding - innerWidth; }
+    if (this._verticalAlign === "middle") { yOffset = (this._height - innerHeight) / 2; }
+    else if (this._verticalAlign === "bottom") { yOffset = this._height - this._padding - innerHeight; }
     this._outerBounds.x = xOffset;
     this._outerBounds.y = yOffset;
 
@@ -319,7 +319,7 @@ var Legend = (function (BaseClass$$1) {
             var loop$1 = function ( t ) {
               if ({}.hasOwnProperty.call(baseConfig[k], t)) {
                 config[k][t] = function(d) {
-                  if (!baseConfig[k][t]) return;
+                  if (!baseConfig[k][t]) { return; }
                   baseConfig[k][t].bind(this)(d.data, d.i);
                 };
               }
@@ -350,7 +350,7 @@ var Legend = (function (BaseClass$$1) {
 
     });
 
-    if (callback) setTimeout(callback, this._duration + 100);
+    if (callback) { setTimeout(callback, this._duration + 100); }
 
     return this;
 
