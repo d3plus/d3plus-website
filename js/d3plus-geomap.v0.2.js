@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.2.2
+  d3plus-geomap v0.2.3
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -281,7 +281,7 @@ var Geomap = (function (Viz$$1) {
                     ? topojsonClient.feature(this._topojson, this._topojson.objects[this._topojsonKey])
                     : {type: "FeatureCollection", features: []};
 
-    if (this._topojsonFilter) coordData.features = coordData.features.filter(this._topojsonFilter);
+    if (this._topojsonFilter) { coordData.features = coordData.features.filter(this._topojsonFilter); }
 
     var path = this._path = d3Geo.geoPath()
       .projection(this._projection);
@@ -333,7 +333,7 @@ var Geomap = (function (Viz$$1) {
           });
 
           var distCutoff = d3Array.quantile(areas.reduce(function (arr, dist, i) {
-            if (dist) arr.push(areas[i] / dist);
+            if (dist) { arr.push(areas[i] / dist); }
             return arr;
           }, []), 0.9);
 
@@ -356,10 +356,10 @@ var Geomap = (function (Viz$$1) {
         pointData.forEach(function (d, i) {
 
           var point = this$1._projection(this$1._point(d, i));
-          if (bounds[0][0] === void 0 || point[0] < bounds[0][0]) bounds[0][0] = point[0];
-          if (bounds[1][0] === void 0 || point[0] > bounds[1][0]) bounds[1][0] = point[0];
-          if (bounds[0][1] === void 0 || point[1] < bounds[0][1]) bounds[0][1] = point[1];
-          if (bounds[1][1] === void 0 || point[1] > bounds[1][1]) bounds[1][1] = point[1];
+          if (bounds[0][0] === void 0 || point[0] < bounds[0][0]) { bounds[0][0] = point[0]; }
+          if (bounds[1][0] === void 0 || point[0] > bounds[1][0]) { bounds[1][0] = point[0]; }
+          if (bounds[0][1] === void 0 || point[1] < bounds[0][1]) { bounds[0][1] = point[1]; }
+          if (bounds[1][1] === void 0 || point[1] > bounds[1][1]) { bounds[1][1] = point[1]; }
 
         });
 
@@ -493,9 +493,9 @@ var Geomap = (function (Viz$$1) {
     var classEvents = events.filter(function (e) { return e.includes(".Circle"); }),
           globalEvents = events.filter(function (e) { return !e.includes("."); }),
           shapeEvents = events.filter(function (e) { return e.includes(".shape"); });
-    for (var e = 0; e < globalEvents.length; e++) circles.on(globalEvents[e], this$1._on[globalEvents[e]]);
-    for (var e$1 = 0; e$1 < shapeEvents.length; e$1++) circles.on(shapeEvents[e$1], this$1._on[shapeEvents[e$1]]);
-    for (var e$2 = 0; e$2 < classEvents.length; e$2++) circles.on(classEvents[e$2], this$1._on[classEvents[e$2]]);
+    for (var e = 0; e < globalEvents.length; e++) { circles.on(globalEvents[e], this$1._on[globalEvents[e]]); }
+    for (var e$1 = 0; e$1 < shapeEvents.length; e$1++) { circles.on(shapeEvents[e$1], this$1._on[shapeEvents[e$1]]); }
+    for (var e$2 = 0; e$2 < classEvents.length; e$2++) { circles.on(classEvents[e$2], this$1._on[classEvents[e$2]]); }
 
     this._shapes.push(circles.render());
 
@@ -545,8 +545,8 @@ var Geomap = (function (Viz$$1) {
   */
   Geomap.prototype.bounds = function bounds (_) {
     if (arguments.length) {
-      if (typeof _ === "function") return this._bounds = _, this;
-      if (!(_ instanceof Array)) _ = [_];
+      if (typeof _ === "function") { return this._bounds = _, this; }
+      if (!(_ instanceof Array)) { _ = [_]; }
       return this._bounds = function (d) { return _.includes(d.id); }, this;
     }
     return this._bounds;
@@ -631,8 +631,8 @@ var Geomap = (function (Viz$$1) {
   */
   Geomap.prototype.topojsonFilter = function topojsonFilter (_) {
     if (arguments.length) {
-      if (typeof _ === "function") return this._topojsonFilter = _, this;
-      if (!(_ instanceof Array)) _ = [_];
+      if (typeof _ === "function") { return this._topojsonFilter = _, this; }
+      if (!(_ instanceof Array)) { _ = [_]; }
       return this._topojsonFilter = function (d) { return _.includes(d.id); }, this;
     }
     return this._topojsonFilter;
