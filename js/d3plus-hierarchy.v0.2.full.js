@@ -16932,24 +16932,30 @@ var Tree = (function (Viz$$1) {
         return ids[ids.length - 1];
       },
       hitArea: function (d, i, s) {
+
         var h = this$1._labelHeight,
               w = this$1._labelWidths[d.depth - 1];
+
         return {
           width: this$1._orient === "vertical" ? w : s.r * 2 + w,
           height: this$1._orient === "horizontal" ? h : s.r * 2 + h,
           x: this$1._orient === "vertical" ? -w / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + w) : -s.r,
           y: this$1._orient === "horizontal" ? -h / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + this$1._labelHeight) : -s.r
         };
+
       },
       labelBounds: function (d, i, s) {
+
         var h = this$1._labelHeight,
               height = this$1._orient === "vertical" ? "height" : "width",
               w = this$1._labelWidths[d.depth - 1],
               width = this$1._orient === "vertical" ? "width" : "height",
               x = this$1._orient === "vertical" ? "x" : "y",
               y = this$1._orient === "vertical" ? "y" : "x";
+
         var obj;
         return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
+
       },
       textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
                      : d.children && d.depth !== this$1._groupBy.length ? "end" : "start"; },
