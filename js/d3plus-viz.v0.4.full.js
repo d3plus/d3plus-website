@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.7
+  d3plus-viz v0.4.8
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -13095,7 +13095,7 @@ var data = {"url": "file.png", "width": "100", "height": "50"};
 @example <caption>passed to the generator</caption>
 new Image().data([data]).render();
 @example <caption>creates the following</caption>
-<image class="d3plus-shape-image" opacity="1" href="file.png" width="100" height="50" x="0" y="0"></image>
+<image class="d3plus-Image" opacity="1" href="file.png" width="100" height="50" x="0" y="0"></image>
 @example <caption>this is shorthand for the following</caption>
 image().data([data])();
 @example <caption>which also allows a post-draw callback function</caption>
@@ -13123,10 +13123,10 @@ Image$2.prototype.render = function render (callback) {
 
   if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node()); }
 
-  var images = this._select.selectAll(".d3plus-shape-image").data(this._data, this._id);
+  var images = this._select.selectAll(".d3plus-Image").data(this._data, this._id);
 
   var enter = images.enter().append("image")
-    .attr("class", "d3plus-shape-image")
+    .attr("class", "d3plus-Image")
     .attr("opacity", 0)
     .attr("width", 0)
     .attr("height", 0)
@@ -13303,6 +13303,8 @@ var Shape$2 = (function (BaseClass$$1) {
     this._fontResize = constant$5(false);
     this._fontSize = constant$5(12);
 
+    this._highlightDuration = 200;
+    this._highlightOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = constant$5(false);
     this._labelPadding = constant$5(5);
@@ -13428,7 +13430,13 @@ var Shape$2 = (function (BaseClass$$1) {
     var imageData = [];
 
     this._update.merge(this._enter).data()
-      .forEach(function (d, i) {
+      .forEach(function (datum, i) {
+
+        var d = datum;
+        if (datum.nested && datum.key && datum.values) {
+          d = datum.values[0];
+          i = this$1._data.indexOf(d);
+        }
 
         var aes = this$1._aes(d, i);
 
@@ -13445,8 +13453,16 @@ var Shape$2 = (function (BaseClass$$1) {
                   y = d.__d3plusShape__ ? d.translate ? d.translate[1]
                     : this$1._y(d.data, d.i) : this$1._y(d, d);
 
+            if (d.__d3plusShape__) {
+              d = d.data;
+              i = d.i;
+            }
+
             imageData.push({
+              __d3plus__: true,
+              data: d,
               height: height,
+              i: i,
               url: url,
               width: width,
               x: x + -width / 2,
@@ -13502,6 +13518,11 @@ var Shape$2 = (function (BaseClass$$1) {
                   y = d.__d3plusShape__ ? d.translate ? d.translate[1]
                     : this$1._y(d.data, d.i) : this$1._y(d, d);
 
+            if (d.__d3plusShape__) {
+              d = d.data;
+              i = d.i;
+            }
+
             var fC = this$1._fontColor(d, i),
                   fF = this$1._fontFamily(d, i),
                   fR = this$1._fontResize(d, i),
@@ -13517,11 +13538,14 @@ var Shape$2 = (function (BaseClass$$1) {
                     p = padding.constructor === Array ? padding[l] : padding;
 
               labelData.push(Object.assign(b, {
+                __d3plusShape__: true,
+                data: d,
                 fC: fC.constructor === Array ? fC[l] : fC,
                 fF: fF.constructor === Array ? fF[l] : fF,
                 fR: fR.constructor === Array ? fR[l] : fR,
                 fS: fS.constructor === Array ? fS[l] : fS,
                 height: b.height - p * 2,
+                i: i,
                 id: ((this$1._id(d, i)) + "_" + l),
                 lH: lH.constructor === Array ? lH[l] : lH,
                 tA: tA.constructor === Array ? tA[l] : tA,
@@ -13615,9 +13639,12 @@ var Shape$2 = (function (BaseClass$$1) {
     var exit = this._exit = update.exit();
     exit.transition().delay(this._duration).remove();
 
+    this._renderImage();
+    this._renderLabels();
+
     var that = this;
 
-    var hitAreas = this._select.selectAll((".d3plus-" + (this._name) + "-HitArea"))
+    var hitAreas = this._group.selectAll((".d3plus-" + (this._name) + "-HitArea"))
       .data(this._hitArea ? data : [], key);
 
     hitAreas.order().transition(this._transition)
@@ -13637,9 +13664,6 @@ var Shape$2 = (function (BaseClass$$1) {
     hitAreas.exit().remove();
 
     this._applyEvents(this._hitArea ? hitUpdates : enterUpdate);
-
-    this._renderImage();
-    this._renderLabels();
 
     if (callback) { setTimeout(callback, this._duration + 100); }
 
@@ -13733,6 +13757,48 @@ var Shape$2 = (function (BaseClass$$1) {
     return arguments.length
          ? (this._fontSize = typeof _ === "function" ? _ : constant$5(_), this)
          : this._fontSize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
+      @param {Function} [*value*]
+  */
+  Shape.prototype.highlight = function highlight (_) {
+
+    var that = this;
+
+    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .style(((prefix$1()) + "transition"), ("opacity " + (this._highlightDuration / 1000) + "s"))
+      .style("opacity", function(d, i) {
+        if (!_ || typeof _ !== "function") { return 1; }
+        if (this.tagName === "text") { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          d = d.data;
+          i = d.i;
+        }
+        return _(d, i) ? 1 : that._highlightOpacity;
+      });
+
+    return this;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *ms* is specified, sets the highlight duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current highlight duration.
+      @param {Number} [*ms* = 200]
+  */
+  Shape.prototype.highlightDuration = function highlightDuration (_) {
+    return arguments.length ? (this._highlightDuration = _, this) : this._highlightDuration;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the highlight opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight opacity.
+      @param {Number} [*value* = 0.5]
+  */
+  Shape.prototype.highlightOpacity = function highlightOpacity (_) {
+    return arguments.length ? (this._highlightOpacity = _, this) : this._highlightOpacity;
   };
 
   /**
@@ -14876,16 +14942,17 @@ var Legend = (function (BaseClass$$1) {
     });
 
     // Legend Shapes
+    this._shapes = [];
     ["Circle", "Rect"].forEach(function (Shape$$1) {
 
-      new shapes$1[Shape$$1]()
+      this$1._shapes.push(new shapes$1[Shape$$1]()
         .data(data.filter(function (d) { return d.shape === Shape$$1; }))
         .duration(this$1._duration)
         .labelPadding(0)
         .select(this$1._group.node())
         .verticalAlign("top")
         .config(Object.assign({}, baseConfig, config))
-        .render();
+        .render());
 
     });
 
@@ -14929,6 +14996,16 @@ var Legend = (function (BaseClass$$1) {
   */
   Legend.prototype.height = function height (_) {
     return arguments.length ? (this._height = _, this) : this._height;
+  };
+
+  /**
+      @memberof Legend
+      @desc If *value* is specified, sets the highlight method for all shapes to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight method.
+      @param {Function} [*value*]
+  */
+  Legend.prototype.highlight = function highlight (_) {
+    this._shapes.forEach(function (s) { return s.highlight(_); });
+    return this;
   };
 
   /**
@@ -16428,6 +16505,124 @@ var getSize = function(elem) {
 };
 
 /**
+    @desc On click event for all shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var click = function(d, i) {
+
+  this._select.style("cursor", "auto");
+  if (this._drawDepth < this._groupBy.length - 1) {
+
+    var filterGroup = this._groupBy[this._drawDepth],
+          filterId = filterGroup(d, i);
+
+    this.highlight(false);
+    if (this._tooltip) { this._tooltipClass.data([]).render(); }
+
+    this._history.push({
+      depth: this._depth,
+      filter: this._filter
+    });
+
+    this.config({
+      depth: this._drawDepth + 1,
+      filter: function (f, x) { return filterGroup(f, x) === filterId; }
+    }).render();
+
+  }
+
+};
+
+/**
+    @desc On mouseenter event for all shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mouseenter = function(d, i) {
+  var this$1 = this;
+
+
+  var filterId = this._ids(d, i);
+
+  this.highlight(function (h, x) {
+    var ids = this$1._ids(h, x);
+    return filterId[filterId.length - 1] === ids[filterId.length - 1];
+  });
+
+};
+
+/**
+    @desc On mouseenter event for all legend shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mouseenterLegend = function(d) {
+
+  if (this._tooltip) {
+    var depth = this._drawDepth < this._groupBy.length - 1;
+    this._select.style("cursor", depth ? "pointer" : "auto");
+    this._tooltipClass.data([d])
+      .footer(depth ? "Click to Expand" : "")
+      .title(this._legendClass.label())
+      .translate(mouse(select("html").node()))
+      .render();
+  }
+
+};
+
+/**
+    @desc On mouseenter event for all primary shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mouseenterShape = function(d) {
+
+  if (this._tooltip) {
+    var depth = this._drawDepth < this._groupBy.length - 1;
+    this._select.style("cursor", depth ? "pointer" : "auto");
+    this._tooltipClass.data([d])
+      .footer(depth ? "Click to Expand" : "")
+      .title(this._drawLabel)
+      .translate(mouse(select("html").node()))
+      .render();
+  }
+
+};
+
+/**
+    @desc On mouse move event for all shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mousemove = function() {
+
+  if (this._tooltip) {
+    this._tooltipClass.translate(mouse(select("html").node())).render();
+  }
+
+};
+
+/**
+    @desc On mouseleave event for all shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mouseleave = function() {
+
+  this.highlight(false);
+  this._select.style("cursor", "auto");
+  if (this._tooltip) { this._tooltipClass.data([]).render(); }
+
+};
+
+/**
     @class Viz
     @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
 */
@@ -16458,61 +16653,12 @@ var Viz = (function (BaseClass$$1) {
     };
     this._legendClass = new Legend();
     this._on = {
-      click: function (d, i) {
-
-        this$1._select.style("cursor", "auto");
-        if (this$1._drawDepth < this$1._groupBy.length - 1) {
-
-          var filterGroup = this$1._groupBy[this$1._drawDepth],
-                filterId = filterGroup(d, i);
-
-          this$1.highlight(false);
-          if (this$1._tooltip) { this$1._tooltipClass.data([]).render(); }
-
-          this$1._history.push({
-            depth: this$1._depth,
-            filter: this$1._filter
-          });
-
-          this$1.config({
-            depth: this$1._drawDepth + 1,
-            filter: function (f, x) { return filterGroup(f, x) === filterId; }
-          }).render();
-
-        }
-
-      },
-      mouseenter: function (d, i) {
-
-        var filterId = this$1._ids(d, i);
-
-        this$1.highlight(function (h, x) {
-          var ids = this$1._ids(h, x);
-          return filterId[filterId.length - 1] === ids[filterId.length - 1];
-        });
-
-        if (this$1._tooltip) {
-          var depth = this$1._drawDepth < this$1._groupBy.length - 1;
-          this$1._select.style("cursor", depth ? "pointer" : "auto");
-          this$1._tooltipClass.data([d])
-            .footer(depth ? "Click to Expand" : "")
-            .translate(mouse(select("html").node()))
-            .render();
-        }
-
-      },
-      mousemove: function () {
-
-        if (this$1._tooltip) {
-          this$1._tooltipClass.translate(mouse(select("html").node())).render();
-        }
-
-      },
-      mouseleave: function () {
-        this$1.highlight(false);
-        this$1._select.style("cursor", "auto");
-        if (this$1._tooltip) { this$1._tooltipClass.data([]).render(); }
-      }
+      "click": click.bind(this),
+      "mouseenter": mouseenter.bind(this),
+      "mouseenter.legend": mouseenterLegend.bind(this),
+      "mouseenter.shape": mouseenterShape.bind(this),
+      "mousemove": mousemove.bind(this),
+      "mouseleave": mouseleave.bind(this)
     };
     this._padding = 5;
     this._shapes = [];
@@ -16740,7 +16886,7 @@ var Viz = (function (BaseClass$$1) {
 
     this._margin.top += this._history.length ? this._backClass.fontSize()() + this._padding : 0;
 
-    this._tooltipClass.title(this._drawLabel).config(this._tooltipConfig);
+    this._tooltipClass.config(this._tooltipConfig);
 
     if (callback) { setTimeout(callback, this._duration + 100); }
 
@@ -16840,7 +16986,7 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc If *value* is specified, sets the overallheight to the specified number and returns the current class instance. If *value* is not specified, returns the current overall height.
+      @desc If *value* is specified, sets the overall height to the specified number and returns the current class instance. If *value* is not specified, returns the current overall height.
       @param {Number} [*value* = window.innerHeight]
   */
   Viz.prototype.height = function height (_) {
@@ -16849,13 +16995,14 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc Highlights elements elements based on supplied data.
-      @param {Array|Object} [*data*]
+      @desc If *value* is specified, sets the highlight method to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight method.
+      @param {Function} [*value*]
   */
   Viz.prototype.highlight = function highlight (_) {
+    var this$1 = this;
 
-    var highlightData = _ ? this._data.filter(_) : [],
-          that = this;
+
+    var highlightData = _ ? this._data.filter(_) : [];
 
     var highlightIds = [];
     highlightData.map(this._ids).forEach(function (ids) {
@@ -16865,32 +17012,13 @@ function value(d) {
     });
     highlightIds = highlightIds.filter(function (id, i) { return highlightIds.indexOf(id) === i; });
 
-    function opacity(group) {
-      group.selectAll(".d3plus-Shape")
-        .style(((prefix$1()) + "transition"), ("opacity " + (that._tooltipClass.duration() / 1000) + "s"))
-        .style("opacity", function (d, i) {
-          if (!highlightIds.length || !d) { return 1; }
-          if (d.__d3plusShape__) {
-            d = d.data;
-            i = d.i;
-          }
-          return highlightIds.includes(JSON.stringify(that._ids(d, i))) ? 1 : that._highlightOpacity;
-        });
-    }
+    var highlightFunction;
+    if (highlightIds.length) { highlightFunction = function (d, i) { return highlightIds.includes(JSON.stringify(this$1._ids(d, i))); }; }
 
-    this._shapes.forEach(function (s) { return s.select().call(opacity); });
-    this._select.select(".d3plus-viz-legend").call(opacity);
+    this._shapes.forEach(function (s) { return s.highlight(highlightFunction); });
+    if (this._legend) { this._legendClass.highlight(highlightFunction); }
 
     return this;
-  };
-
-  /**
-      @memberof Viz
-      @desc If *value* is specified, sets the highlight opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight opacity.
-      @param {Number} [*value* = 0.5]
-  */
-  Viz.prototype.highlightOpacity = function highlightOpacity (_) {
-    return arguments.length ? (this._highlightOpacity = _, this) : this._highlightOpacity;
   };
 
   /**

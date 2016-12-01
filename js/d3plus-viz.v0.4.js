@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.7
+  d3plus-viz v0.4.8
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -103,6 +103,124 @@ var getSize = function(elem$$1) {
 };
 
 /**
+    @desc On click event for all shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var click = function(d, i) {
+
+  this._select.style("cursor", "auto");
+  if (this._drawDepth < this._groupBy.length - 1) {
+
+    var filterGroup = this._groupBy[this._drawDepth],
+          filterId = filterGroup(d, i);
+
+    this.highlight(false);
+    if (this._tooltip) { this._tooltipClass.data([]).render(); }
+
+    this._history.push({
+      depth: this._depth,
+      filter: this._filter
+    });
+
+    this.config({
+      depth: this._drawDepth + 1,
+      filter: function (f, x) { return filterGroup(f, x) === filterId; }
+    }).render();
+
+  }
+
+};
+
+/**
+    @desc On mouseenter event for all shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mouseenter = function(d, i) {
+  var this$1 = this;
+
+
+  var filterId = this._ids(d, i);
+
+  this.highlight(function (h, x) {
+    var ids = this$1._ids(h, x);
+    return filterId[filterId.length - 1] === ids[filterId.length - 1];
+  });
+
+};
+
+/**
+    @desc On mouseenter event for all legend shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mouseenterLegend = function(d) {
+
+  if (this._tooltip) {
+    var depth = this._drawDepth < this._groupBy.length - 1;
+    this._select.style("cursor", depth ? "pointer" : "auto");
+    this._tooltipClass.data([d])
+      .footer(depth ? "Click to Expand" : "")
+      .title(this._legendClass.label())
+      .translate(d3Selection.mouse(d3Selection.select("html").node()))
+      .render();
+  }
+
+};
+
+/**
+    @desc On mouseenter event for all primary shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mouseenterShape = function(d) {
+
+  if (this._tooltip) {
+    var depth = this._drawDepth < this._groupBy.length - 1;
+    this._select.style("cursor", depth ? "pointer" : "auto");
+    this._tooltipClass.data([d])
+      .footer(depth ? "Click to Expand" : "")
+      .title(this._drawLabel)
+      .translate(d3Selection.mouse(d3Selection.select("html").node()))
+      .render();
+  }
+
+};
+
+/**
+    @desc On mouse move event for all shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mousemove = function() {
+
+  if (this._tooltip) {
+    this._tooltipClass.translate(d3Selection.mouse(d3Selection.select("html").node())).render();
+  }
+
+};
+
+/**
+    @desc On mouseleave event for all shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mouseleave = function() {
+
+  this.highlight(false);
+  this._select.style("cursor", "auto");
+  if (this._tooltip) { this._tooltipClass.data([]).render(); }
+
+};
+
+/**
     @class Viz
     @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
 */
@@ -133,61 +251,12 @@ var Viz = (function (BaseClass$$1) {
     };
     this._legendClass = new d3plusLegend.Legend();
     this._on = {
-      click: function (d, i) {
-
-        this$1._select.style("cursor", "auto");
-        if (this$1._drawDepth < this$1._groupBy.length - 1) {
-
-          var filterGroup = this$1._groupBy[this$1._drawDepth],
-                filterId = filterGroup(d, i);
-
-          this$1.highlight(false);
-          if (this$1._tooltip) { this$1._tooltipClass.data([]).render(); }
-
-          this$1._history.push({
-            depth: this$1._depth,
-            filter: this$1._filter
-          });
-
-          this$1.config({
-            depth: this$1._drawDepth + 1,
-            filter: function (f, x) { return filterGroup(f, x) === filterId; }
-          }).render();
-
-        }
-
-      },
-      mouseenter: function (d, i) {
-
-        var filterId = this$1._ids(d, i);
-
-        this$1.highlight(function (h, x) {
-          var ids = this$1._ids(h, x);
-          return filterId[filterId.length - 1] === ids[filterId.length - 1];
-        });
-
-        if (this$1._tooltip) {
-          var depth = this$1._drawDepth < this$1._groupBy.length - 1;
-          this$1._select.style("cursor", depth ? "pointer" : "auto");
-          this$1._tooltipClass.data([d])
-            .footer(depth ? "Click to Expand" : "")
-            .translate(d3Selection.mouse(d3Selection.select("html").node()))
-            .render();
-        }
-
-      },
-      mousemove: function () {
-
-        if (this$1._tooltip) {
-          this$1._tooltipClass.translate(d3Selection.mouse(d3Selection.select("html").node())).render();
-        }
-
-      },
-      mouseleave: function () {
-        this$1.highlight(false);
-        this$1._select.style("cursor", "auto");
-        if (this$1._tooltip) { this$1._tooltipClass.data([]).render(); }
-      }
+      "click": click.bind(this),
+      "mouseenter": mouseenter.bind(this),
+      "mouseenter.legend": mouseenterLegend.bind(this),
+      "mouseenter.shape": mouseenterShape.bind(this),
+      "mousemove": mousemove.bind(this),
+      "mouseleave": mouseleave.bind(this)
     };
     this._padding = 5;
     this._shapes = [];
@@ -415,7 +484,7 @@ var Viz = (function (BaseClass$$1) {
 
     this._margin.top += this._history.length ? this._backClass.fontSize()() + this._padding : 0;
 
-    this._tooltipClass.title(this._drawLabel).config(this._tooltipConfig);
+    this._tooltipClass.config(this._tooltipConfig);
 
     if (callback) { setTimeout(callback, this._duration + 100); }
 
@@ -515,7 +584,7 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc If *value* is specified, sets the overallheight to the specified number and returns the current class instance. If *value* is not specified, returns the current overall height.
+      @desc If *value* is specified, sets the overall height to the specified number and returns the current class instance. If *value* is not specified, returns the current overall height.
       @param {Number} [*value* = window.innerHeight]
   */
   Viz.prototype.height = function height (_) {
@@ -524,13 +593,14 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc Highlights elements elements based on supplied data.
-      @param {Array|Object} [*data*]
+      @desc If *value* is specified, sets the highlight method to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight method.
+      @param {Function} [*value*]
   */
   Viz.prototype.highlight = function highlight (_) {
+    var this$1 = this;
 
-    var highlightData = _ ? this._data.filter(_) : [],
-          that = this;
+
+    var highlightData = _ ? this._data.filter(_) : [];
 
     var highlightIds = [];
     highlightData.map(this._ids).forEach(function (ids) {
@@ -540,32 +610,13 @@ function value(d) {
     });
     highlightIds = highlightIds.filter(function (id, i) { return highlightIds.indexOf(id) === i; });
 
-    function opacity(group) {
-      group.selectAll(".d3plus-Shape")
-        .style(((d3plusCommon.prefix()) + "transition"), ("opacity " + (that._tooltipClass.duration() / 1000) + "s"))
-        .style("opacity", function (d, i) {
-          if (!highlightIds.length || !d) { return 1; }
-          if (d.__d3plusShape__) {
-            d = d.data;
-            i = d.i;
-          }
-          return highlightIds.includes(JSON.stringify(that._ids(d, i))) ? 1 : that._highlightOpacity;
-        });
-    }
+    var highlightFunction;
+    if (highlightIds.length) { highlightFunction = function (d, i) { return highlightIds.includes(JSON.stringify(this$1._ids(d, i))); }; }
 
-    this._shapes.forEach(function (s) { return s.select().call(opacity); });
-    this._select.select(".d3plus-viz-legend").call(opacity);
+    this._shapes.forEach(function (s) { return s.highlight(highlightFunction); });
+    if (this._legend) { this._legendClass.highlight(highlightFunction); }
 
     return this;
-  };
-
-  /**
-      @memberof Viz
-      @desc If *value* is specified, sets the highlight opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight opacity.
-      @param {Number} [*value* = 0.5]
-  */
-  Viz.prototype.highlightOpacity = function highlightOpacity (_) {
-    return arguments.length ? (this._highlightOpacity = _, this) : this._highlightOpacity;
   };
 
   /**
