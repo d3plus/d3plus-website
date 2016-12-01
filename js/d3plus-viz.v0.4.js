@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.9
+  d3plus-viz v0.4.10
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -262,6 +262,7 @@ var Viz = (function (BaseClass$$1) {
     this._shapes = [];
     this._shapeConfig = {
       fill: function (d, i) { return d3plusColor.assign(this$1._groupBy[0](d, i)); },
+      highlightDuration: 50,
       opacity: d3plusCommon.constant(1),
       stroke: function (d, i) { return d3Color.color(d3plusColor.assign(this$1._groupBy[0](d, i))).darker(); },
       strokeWidth: d3plusCommon.constant(0)
