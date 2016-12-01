@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.8
+  d3plus-viz v0.4.9
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -600,7 +600,9 @@ function value(d) {
     var this$1 = this;
 
 
-    var highlightData = _ ? this._data.filter(_) : [];
+    var shapeData = d3Array.merge(this._shapes.map(function (s) { return s.data(); }));
+    shapeData = shapeData.concat(this._legendClass.data());
+    var highlightData = _ ? shapeData.filter(_) : [];
 
     var highlightIds = [];
     highlightData.map(this._ids).forEach(function (ids) {
