@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.11
+  d3plus-priestley v0.1.12
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -61,7 +61,7 @@ var Priestley = (function (Viz$$1) {
       for (var i = 0; i < this._drawDepth; i++) loop( i );
       nestedData = dataNest.entries(data);
     }
-    else nestedData = [{values: data}];
+    else { nestedData = [{values: data}]; }
 
     var maxLane = 0;
     nestedData.forEach(function (g) {
@@ -147,14 +147,14 @@ var Priestley = (function (Viz$$1) {
   */
   Priestley.prototype.end = function end (_) {
     if (arguments.length) {
-      if (typeof _ === "function") this._end = _;
+      if (typeof _ === "function") { this._end = _; }
       else {
         this._end = d3plusCommon.accessor(_);
-        if (!this._aggs[_]) this._aggs[_] = function (a) { return d3Array.max(a); };
+        if (!this._aggs[_]) { this._aggs[_] = function (a) { return d3Array.max(a); }; }
       }
       return this;
     }
-    else return this._end;
+    else { return this._end; }
   };
 
   /**
@@ -164,14 +164,14 @@ var Priestley = (function (Viz$$1) {
   */
   Priestley.prototype.start = function start (_) {
     if (arguments.length) {
-      if (typeof _ === "function") this._start = _;
+      if (typeof _ === "function") { this._start = _; }
       else {
         this._start = d3plusCommon.accessor(_);
-        if (!this._aggs[_]) this._aggs[_] = function (a) { return d3Array.min(a); };
+        if (!this._aggs[_]) { this._aggs[_] = function (a) { return d3Array.min(a); }; }
       }
       return this;
     }
-    else return this._start;
+    else { return this._start; }
   };
 
   return Priestley;
