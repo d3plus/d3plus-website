@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.2.1
+  d3plus-hierarchy v0.2.2
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -186,10 +186,10 @@ var Donut = (function (Pie$$1) {
 */
 var nest$1 = function(data, keys) {
 
-  if (!(keys instanceof Array)) keys = [keys];
+  if (!(keys instanceof Array)) { keys = [keys]; }
 
   var dataNest = d3Collection.nest();
-  for (var i = 0; i < keys.length; i++) dataNest.key(keys[i]);
+  for (var i = 0; i < keys.length; i++) { dataNest.key(keys[i]); }
   var nestedData = dataNest.entries(data);
 
   return bubble(nestedData);
@@ -206,8 +206,8 @@ function bubble(values) {
   return values.map(function (d) {
 
     if (d.key && d.values) {
-      if (d.values[0].key === "undefined") return d.values[0].values[0];
-      else d.values = bubble(d.values);
+      if (d.values[0].key === "undefined") { return d.values[0].values[0]; }
+      else { d.values = bubble(d.values); }
     }
 
     return d;
@@ -234,7 +234,7 @@ var Tree = (function (Viz$$1) {
     var nodeConfig = {
       id: function (d, i) { return this$1._ids(d, i).join("-"); },
       label: function (d, i) {
-        if (this$1._label) return this$1._label(d.data, i);
+        if (this$1._label) { return this$1._label(d.data, i); }
         var ids = this$1._ids(d, i).slice(0, d.depth);
         return ids[ids.length - 1];
       },
@@ -270,7 +270,7 @@ var Tree = (function (Viz$$1) {
       Path: {
         d: function (d) {
           var r = this$1._shapeConfig.Circle.r || this$1._shapeConfig.r;
-          if (typeof r === "function") r = r(d.data, d.i);
+          if (typeof r === "function") { r = r(d.data, d.i); }
           var px = d.parent.x - d.x + (this$1._orient === "vertical" ? 0 : r),
                 py = d.parent.y - d.y + (this$1._orient === "vertical" ? r : 0),
                 x = this$1._orient === "vertical" ? 0 : -r,
@@ -336,13 +336,13 @@ var Tree = (function (Viz$$1) {
     }
 
     treeData.forEach(function (d, i) {
-      if (d.data.key && d.data.values) d.data = flattenBranchData(d.data);
+      if (d.data.key && d.data.values) { d.data = flattenBranchData(d.data); }
       d.__d3plus__ = true;
       d.i = i;
     });
 
     var r = this._shapeConfig.Circle.r || this._shapeConfig.r;
-    if (typeof r !== "function") r = d3plusCommon.constant(r);
+    if (typeof r !== "function") { r = d3plusCommon.constant(r); }
     var rBufferRoot = d3Array.max(treeData, function (d) { return d.depth === 1 ? r(d.data, d.i) : 0; });
     var rBufferEnd = d3Array.max(treeData, function (d) { return d.children ? 0 : r(d.data, d.i); });
 
@@ -370,7 +370,7 @@ var Tree = (function (Viz$$1) {
         d.y = d.x;
         d.x = val;
       }
-      else d.y = val;
+      else { d.y = val; }
     });
 
     var elemObject = {parent: this._select, enter: {transform: transform}, update: {transform: transform}};
@@ -473,7 +473,7 @@ var Treemap = (function (Viz$$1) {
     Viz$$1.prototype.render.call(this, callback);
 
     var nestedData = d3Collection.nest();
-    for (var i = 0; i <= this._drawDepth; i++) nestedData.key(this$1._groupBy[i]);
+    for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this$1._groupBy[i]); }
     nestedData = nestedData.entries(this._filteredData);
 
     var tmapData = this._treemap
@@ -494,7 +494,7 @@ var Treemap = (function (Viz$$1) {
     function extractLayout(children) {
       for (var i = 0; i < children.length; i++) {
         var node = children[i];
-        if (node.depth <= that._drawDepth) extractLayout(node.children);
+        if (node.depth <= that._drawDepth) { extractLayout(node.children); }
         else {
           node.__d3plus__ = true;
           node.id = node.data.key;
@@ -506,7 +506,7 @@ var Treemap = (function (Viz$$1) {
         }
       }
     }
-    if (tmapData.children) extractLayout(tmapData.children);
+    if (tmapData.children) { extractLayout(tmapData.children); }
     var total = tmapData.value;
 
     var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
