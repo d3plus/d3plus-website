@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.1
+  d3plus-shape v0.10.2
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -33,7 +33,7 @@ var data = {"url": "file.png", "width": "100", "height": "50"};
 @example <caption>passed to the generator</caption>
 new Image().data([data]).render();
 @example <caption>creates the following</caption>
-<image class="d3plus-shape-image" opacity="1" href="file.png" width="100" height="50" x="0" y="0"></image>
+<image class="d3plus-Image" opacity="1" href="file.png" width="100" height="50" x="0" y="0"></image>
 @example <caption>this is shorthand for the following</caption>
 image().data([data])();
 @example <caption>which also allows a post-draw callback function</caption>
@@ -61,10 +61,10 @@ Image.prototype.render = function render (callback) {
 
   if (this._select === void 0) { this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node()); }
 
-  var images = this._select.selectAll(".d3plus-shape-image").data(this._data, this._id);
+  var images = this._select.selectAll(".d3plus-Image").data(this._data, this._id);
 
   var enter = images.enter().append("image")
-    .attr("class", "d3plus-shape-image")
+    .attr("class", "d3plus-Image")
     .attr("opacity", 0)
     .attr("width", 0)
     .attr("height", 0)
@@ -366,7 +366,13 @@ var Shape = (function (BaseClass$$1) {
     var imageData = [];
 
     this._update.merge(this._enter).data()
-      .forEach(function (d, i) {
+      .forEach(function (datum, i) {
+
+        var d = datum;
+        if (datum.nested && datum.key && datum.values) {
+          d = datum.values[0];
+          i = this$1._data.indexOf(d);
+        }
 
         var aes = this$1._aes(d, i);
 
@@ -383,8 +389,16 @@ var Shape = (function (BaseClass$$1) {
                   y = d.__d3plusShape__ ? d.translate ? d.translate[1]
                     : this$1._y(d.data, d.i) : this$1._y(d, d);
 
+            if (d.__d3plusShape__) {
+              d = d.data;
+              i = d.i;
+            }
+
             imageData.push({
+              __d3plus__: true,
+              data: d,
               height: height,
+              i: i,
               url: url,
               width: width,
               x: x + -width / 2,
@@ -440,6 +454,11 @@ var Shape = (function (BaseClass$$1) {
                   y = d.__d3plusShape__ ? d.translate ? d.translate[1]
                     : this$1._y(d.data, d.i) : this$1._y(d, d);
 
+            if (d.__d3plusShape__) {
+              d = d.data;
+              i = d.i;
+            }
+
             var fC = this$1._fontColor(d, i),
                   fF = this$1._fontFamily(d, i),
                   fR = this$1._fontResize(d, i),
@@ -455,11 +474,14 @@ var Shape = (function (BaseClass$$1) {
                     p = padding.constructor === Array ? padding[l] : padding;
 
               labelData.push(Object.assign(b, {
+                __d3plusShape__: true,
+                data: d,
                 fC: fC.constructor === Array ? fC[l] : fC,
                 fF: fF.constructor === Array ? fF[l] : fF,
                 fR: fR.constructor === Array ? fR[l] : fR,
                 fS: fS.constructor === Array ? fS[l] : fS,
                 height: b.height - p * 2,
+                i: i,
                 id: ((this$1._id(d, i)) + "_" + l),
                 lH: lH.constructor === Array ? lH[l] : lH,
                 tA: tA.constructor === Array ? tA[l] : tA,
@@ -553,9 +575,12 @@ var Shape = (function (BaseClass$$1) {
     var exit = this._exit = update.exit();
     exit.transition().delay(this._duration).remove();
 
+    this._renderImage();
+    this._renderLabels();
+
     var that = this;
 
-    var hitAreas = this._select.selectAll((".d3plus-" + (this._name) + "-HitArea"))
+    var hitAreas = this._group.selectAll((".d3plus-" + (this._name) + "-HitArea"))
       .data(this._hitArea ? data : [], key);
 
     hitAreas.order().transition(this._transition)
@@ -575,9 +600,6 @@ var Shape = (function (BaseClass$$1) {
     hitAreas.exit().remove();
 
     this._applyEvents(this._hitArea ? hitUpdates : enterUpdate);
-
-    this._renderImage();
-    this._renderLabels();
 
     if (callback) { setTimeout(callback, this._duration + 100); }
 
