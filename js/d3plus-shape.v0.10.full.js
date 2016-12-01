@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.5
+  d3plus-shape v0.10.6
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -8950,15 +8950,15 @@ var Shape = (function (BaseClass$$1) {
     this._update.merge(this._enter).data()
       .forEach(function (datum, i) {
 
-        var d = datum;
-        if (datum.nested && datum.key && datum.values) {
-          d = datum.values[0];
-          i = this$1._data.indexOf(d);
-        }
-
-        var aes = this$1._aes(d, i);
+        var aes = this$1._aes(datum, i);
 
         if (aes.r || aes.width && aes.height) {
+
+          var d = datum;
+          if (datum.nested && datum.key && datum.values) {
+            d = datum.values[0];
+            i = this$1._data.indexOf(d);
+          }
 
           var height = aes.r ? aes.r * 2 : aes.height,
                 url = this$1._backgroundImage(d, i),
