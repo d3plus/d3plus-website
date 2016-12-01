@@ -1,14 +1,14 @@
 /*
-  d3plus-network v0.1.0
+  d3plus-network v0.1.1
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3plus-color'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
-  typeof define === 'function' && define.amd ? define('d3plus-network', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3plus-color', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.scales,global.d3plusColor,global.d3plusCommon,global.shapes,global.d3plusViz));
-}(this, (function (exports,d3Array,d3Collection,scales,d3plusColor,d3plusCommon,shapes,d3plusViz) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
+  typeof define === 'function' && define.amd ? define('d3plus-network', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.scales,global.d3plusCommon,global.shapes,global.d3plusViz));
+}(this, (function (exports,d3Array,d3Collection,scales,d3plusCommon,shapes,d3plusViz) { 'use strict';
 
 // import {forceSimulation} from "d3-force";
 /**
@@ -18,8 +18,6 @@
 */
 var Network = (function (Viz$$1) {
   function Network() {
-    var this$1 = this;
-
 
     Viz$$1.call(this);
     this._links = [];
@@ -29,10 +27,10 @@ var Network = (function (Viz$$1) {
     this._shape = d3plusCommon.constant("Circle");
     this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       Path: {
-        fill: d3plusCommon.constant("none"),
+        fill: "none",
         label: false,
-        stroke: function (d, i) { return d3plusColor.assign(this$1._id(d, i)); },
-        strokeWidth: d3plusCommon.constant(1)
+        stroke: "#eee",
+        strokeWidth: 1
       },
       textAnchor: "middle",
       verticalAlign: "middle"
@@ -156,17 +154,27 @@ var Network = (function (Viz$$1) {
       n.height = n.r * 2;
     });
 
+    var nodeLookup = nodes.reduce(function (obj, d) {
+      obj[d.id] = d;
+      return obj;
+    }, {});
+
     // forceSimulation(nodes)
     //   .on("tick", () => this._shapes.forEach(s => s.render()));
 
     var nodeIndices = nodes.map(function (n) { return n.node; });
     var links = this._links.map(function (l) { return ({
-      source: typeof l.source === "number" ? nodes[nodeIndices.indexOf(this$1._nodes[l.source])] : l.source,
-      target: typeof l.target === "number" ? nodes[nodeIndices.indexOf(this$1._nodes[l.target])] : l.target
+      source: typeof l.source === "number"
+            ? nodes[nodeIndices.indexOf(this$1._nodes[l.source])]
+            : nodeLookup[l.source.id],
+      target: typeof l.target === "number"
+            ? nodes[nodeIndices.indexOf(this$1._nodes[l.target])]
+            : nodeLookup[l.target.id]
     }); });
 
     this._shapes.push(new shapes.Path()
-      .config(this._shapeConfigPrep("Path"))
+      .config(this._shapeConfig)
+      .config(this._shapeConfig.Path)
       .d(function (d) { return ("M" + (d.source.x) + "," + (d.source.y) + " " + (d.target.x) + "," + (d.target.y)); })
       .data(links)
       // .duration(0)
@@ -176,9 +184,7 @@ var Network = (function (Viz$$1) {
     var shapeConfig = {
       // duration: 0,
       label: function (d) { return this$1._drawLabel(d.data || d.node, d.i); },
-      select: d3plusCommon.elem("g.d3plus-network-nodes", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node(),
-      x: function (d) { return d.x; },
-      y: function (d) { return d.y; }
+      select: d3plusCommon.elem("g.d3plus-network-nodes", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node()
     };
 
     d3Collection.nest().key(function (d) { return d.shape; }).entries(nodes).forEach(function (d) {
