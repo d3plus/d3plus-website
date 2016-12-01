@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.4
+  d3plus-shape v0.10.5
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -474,8 +474,6 @@ var Shape = (function (BaseClass$$1) {
 
               var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
                     p = padding.constructor === Array ? padding[l] : padding;
-
-              console.log(d);
 
               labelData.push(Object.assign(b, {
                 __d3plusShape__: true,
