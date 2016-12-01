@@ -104,6 +104,7 @@ var Axis = (function (BaseClass$$1) {
       @private
   */
   Axis.prototype._barPosition = function _barPosition (bar) {
+
     var ref = this._position;
     var height = ref.height;
     var x = ref.x;
@@ -112,12 +113,14 @@ var Axis = (function (BaseClass$$1) {
     var domain = this._d3Scale.domain(),
           offset = this._margin[opposite],
           position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
+
     bar
       .call(d3plusCommon.attrize, this._barConfig)
       .attr((x + "1"), this._d3Scale(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
       .attr((x + "2"), this._d3Scale(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
       .attr((y + "1"), position)
       .attr((y + "2"), position);
+
   };
 
   /**
