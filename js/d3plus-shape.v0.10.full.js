@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.2
+  d3plus-shape v0.10.3
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5680,6 +5680,13 @@ function objectMerge(objects, aggs) {
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
+var prefix$1 = function() {
+  if ("-webkit-transform" in document.body.style) { return "-webkit-"; }
+  else if ("-moz-transform" in document.body.style) { return "-moz-"; }
+  else if ("-ms-transform" in document.body.style) { return "-ms-"; }
+  else if ("-o-transform" in document.body.style) { return "-o-"; }
+  else { return ""; }
+};
 
 /**
     @function stylize
@@ -8814,6 +8821,8 @@ var Shape = (function (BaseClass$$1) {
     this._fontResize = constant$3(false);
     this._fontSize = constant$3(12);
 
+    this._highlightDuration = 200;
+    this._highlightOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = constant$3(false);
     this._labelPadding = constant$3(5);
@@ -9046,6 +9055,8 @@ var Shape = (function (BaseClass$$1) {
               var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
                     p = padding.constructor === Array ? padding[l] : padding;
 
+              console.log(d);
+
               labelData.push(Object.assign(b, {
                 __d3plusShape__: true,
                 data: d,
@@ -9266,6 +9277,48 @@ var Shape = (function (BaseClass$$1) {
     return arguments.length
          ? (this._fontSize = typeof _ === "function" ? _ : constant$3(_), this)
          : this._fontSize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
+      @param {Function} [*value*]
+  */
+  Shape.prototype.highlight = function highlight (_) {
+
+    var that = this;
+
+    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .style(((prefix$1()) + "transition"), ("opacity " + (this._highlightDuration / 1000) + "s"))
+      .style("opacity", function(d, i) {
+        if (_ === void 0) { return 1; }
+        if (this.tagName === "text") { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          d = d.data;
+          i = d.i;
+        }
+        return _(d, i) ? 1 : that._highlightOpacity;
+      });
+
+    return this;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *ms* is specified, sets the highlight duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current highlight duration.
+      @param {Number} [*ms* = 200]
+  */
+  Shape.prototype.highlightDuration = function highlightDuration (_) {
+    return arguments.length ? (this._highlightDuration = _, this) : this._highlightDuration;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the highlight opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight opacity.
+      @param {Number} [*value* = 0.5]
+  */
+  Shape.prototype.highlightOpacity = function highlightOpacity (_) {
+    return arguments.length ? (this._highlightOpacity = _, this) : this._highlightOpacity;
   };
 
   /**
