@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.3
+  d3plus-shape v0.10.4
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -711,7 +711,7 @@ var Shape = (function (BaseClass$$1) {
     this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .style(((d3plusCommon.prefix()) + "transition"), ("opacity " + (this._highlightDuration / 1000) + "s"))
       .style("opacity", function(d, i) {
-        if (_ === void 0) { return 1; }
+        if (!_ || typeof _ !== "function") { return 1; }
         if (this.tagName === "text") { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
           d = d.data;
