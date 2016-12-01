@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.13
+  d3plus-axis v0.3.14
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -18,9 +18,9 @@
 var date = function(d) {
 
   // returns if already Date object
-  if (d.constructor === Date) return d;
+  if (d.constructor === Date) { return d; }
   // detects if milliseconds
-  else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) return new Date(d);
+  else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) { return new Date(d); }
 
   var s = "" + d;
   // detects if only passing a year value
@@ -30,7 +30,7 @@ var date = function(d) {
     return date;
   }
   // parses string to Date object
-  else return new Date(s);
+  else { return new Date(s); }
 
 };
 
@@ -334,8 +334,8 @@ var Axis = (function (BaseClass$$1) {
           t = d3Transition.transition().duration(this._duration);
 
     var range = this._range ? this._range.slice() : [undefined, undefined];
-    if (range[0] === void 0) range[0] = p;
-    if (range[1] === void 0) range[1] = this[("_" + width)] - p;
+    if (range[0] === void 0) { range[0] = p; }
+    if (range[1] === void 0) { range[1] = this[("_" + width)] - p; }
     this._size = range[1] - range[0];
     if (this._scale === "ordinal" && this._domain.length > range.length) {
       range = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range[0]; });
@@ -358,12 +358,12 @@ var Axis = (function (BaseClass$$1) {
     this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
       .domain(this._scale === "time" ? this._domain.map(date) : this._domain);
 
-    if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range);
-    else this._d3Scale.range(range);
+    if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range); }
+    else { this._d3Scale.range(range); }
 
-    if (this._d3Scale.round) this._d3Scale.round(true);
-    if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
-    if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
+    if (this._d3Scale.round) { this._d3Scale.round(true); }
+    if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
+    if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
 
     var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 45 : 75]);
 
@@ -398,10 +398,10 @@ var Axis = (function (BaseClass$$1) {
     this._availableTicks = ticks;
     ticks.forEach(function (d, i) {
       var s = tickGet(d, i);
-      if (this$1._shape === "Circle") s *= 2;
+      if (this$1._shape === "Circle") { s *= 2; }
       var t = this$1._d3Scale(d);
-      if (!pixels.length || !pixels.includes(t) && d3Array.max(pixels) < t - s * 2) pixels.push(t);
-      else pixels.push(false);
+      if (!pixels.length || !pixels.includes(t) && d3Array.max(pixels) < t - s * 2) { pixels.push(t); }
+      else { pixels.push(false); }
     });
     ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
 
@@ -414,10 +414,10 @@ var Axis = (function (BaseClass$$1) {
               : this._shape === "Rect" ? this._shapeConfig[width]
               : this._shapeConfig.strokeWidth;
 
-    if (typeof hBuff === "function") hBuff = d3Array.max(ticks.map(hBuff));
-    if (this._shape === "Rect") hBuff /= 2;
-    if (typeof wBuff === "function") wBuff = d3Array.max(ticks.map(wBuff));
-    if (this._shape !== "Circle") wBuff /= 2;
+    if (typeof hBuff === "function") { hBuff = d3Array.max(ticks.map(hBuff)); }
+    if (this._shape === "Rect") { hBuff /= 2; }
+    if (typeof wBuff === "function") { wBuff = d3Array.max(ticks.map(wBuff)); }
+    if (this._shape !== "Circle") { wBuff /= 2; }
 
     if (this._scale === "band") {
       this._space = this._d3Scale.bandwidth();
@@ -426,10 +426,10 @@ var Axis = (function (BaseClass$$1) {
       this._space = 0;
       for (var i = 0; i < labels.length - 1; i++) {
         var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
-        if (s > this$1._space) this$1._space = s;
+        if (s > this$1._space) { this$1._space = s; }
       }
     }
-    else this._space = this._size;
+    else { this._space = this._size; }
 
     // Measures size of ticks
     var textData = labels.map(function (d, i) {
@@ -452,7 +452,7 @@ var Axis = (function (BaseClass$$1) {
       res.fS = s;
       res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); }))) + s / 4;
       res.height = Math.ceil(res.lines.length * (lh + 1));
-      if (res.width % 2) res.width++;
+      if (res.width % 2) { res.width++; }
 
       return res;
 
@@ -490,8 +490,8 @@ var Axis = (function (BaseClass$$1) {
         }
       }
 
-      if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range);
-      else this._d3Scale.range(range);
+      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range); }
+      else { this._d3Scale.range(range); }
 
     }
 
@@ -589,7 +589,7 @@ var Axis = (function (BaseClass$$1) {
 
     this._lastScale = this._d3Scale;
 
-    if (callback) setTimeout(callback, this._duration + 100);
+    if (callback) { setTimeout(callback, this._duration + 100); }
 
     return this;
 
