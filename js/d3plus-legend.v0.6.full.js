@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.20
+  d3plus-legend v0.6.21
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5668,6 +5668,13 @@ function objectMerge(objects, aggs) {
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
+var prefix$1 = function() {
+  if ("-webkit-transform" in document.body.style) { return "-webkit-"; }
+  else if ("-moz-transform" in document.body.style) { return "-moz-"; }
+  else if ("-ms-transform" in document.body.style) { return "-ms-"; }
+  else if ("-o-transform" in document.body.style) { return "-o-"; }
+  else { return ""; }
+};
 
 /**
     @function stylize
@@ -8817,6 +8824,8 @@ var Shape = (function (BaseClass$$1) {
     this._fontResize = constant$3(false);
     this._fontSize = constant$3(12);
 
+    this._highlightDuration = 200;
+    this._highlightOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = constant$3(false);
     this._labelPadding = constant$3(5);
@@ -9269,6 +9278,48 @@ var Shape = (function (BaseClass$$1) {
     return arguments.length
          ? (this._fontSize = typeof _ === "function" ? _ : constant$3(_), this)
          : this._fontSize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
+      @param {Function} [*value*]
+  */
+  Shape.prototype.highlight = function highlight (_) {
+
+    var that = this;
+
+    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .style(((prefix$1()) + "transition"), ("opacity " + (this._highlightDuration / 1000) + "s"))
+      .style("opacity", function(d, i) {
+        if (!_ || typeof _ !== "function") { return 1; }
+        if (this.tagName === "text") { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          d = d.data;
+          i = d.i;
+        }
+        return _(d, i) ? 1 : that._highlightOpacity;
+      });
+
+    return this;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *ms* is specified, sets the highlight duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current highlight duration.
+      @param {Number} [*ms* = 200]
+  */
+  Shape.prototype.highlightDuration = function highlightDuration (_) {
+    return arguments.length ? (this._highlightDuration = _, this) : this._highlightDuration;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the highlight opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight opacity.
+      @param {Number} [*value* = 0.5]
+  */
+  Shape.prototype.highlightOpacity = function highlightOpacity (_) {
+    return arguments.length ? (this._highlightOpacity = _, this) : this._highlightOpacity;
   };
 
   /**
@@ -12623,16 +12674,17 @@ var Legend = (function (BaseClass$$1) {
     });
 
     // Legend Shapes
+    this._shapes = [];
     ["Circle", "Rect"].forEach(function (Shape$$1) {
 
-      new shapes[Shape$$1]()
+      this$1._shapes.push(new shapes[Shape$$1]()
         .data(data.filter(function (d) { return d.shape === Shape$$1; }))
         .duration(this$1._duration)
         .labelPadding(0)
         .select(this$1._group.node())
         .verticalAlign("top")
         .config(Object.assign({}, baseConfig, config))
-        .render();
+        .render());
 
     });
 
@@ -12676,6 +12728,16 @@ var Legend = (function (BaseClass$$1) {
   */
   Legend.prototype.height = function height (_) {
     return arguments.length ? (this._height = _, this) : this._height;
+  };
+
+  /**
+      @memberof Legend
+      @desc If *value* is specified, sets the highlight method for all shapes to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight method.
+      @param {Function} [*value*]
+  */
+  Legend.prototype.highlight = function highlight (_) {
+    this._shapes.forEach(function (s) { return s.highlight(_); });
+    return this;
   };
 
   /**

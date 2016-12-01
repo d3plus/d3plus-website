@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.6.20
+  d3plus-legend v0.6.21
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -337,16 +337,17 @@ var Legend = (function (BaseClass$$1) {
     });
 
     // Legend Shapes
+    this._shapes = [];
     ["Circle", "Rect"].forEach(function (Shape) {
 
-      new shapes[Shape]()
+      this$1._shapes.push(new shapes[Shape]()
         .data(data.filter(function (d) { return d.shape === Shape; }))
         .duration(this$1._duration)
         .labelPadding(0)
         .select(this$1._group.node())
         .verticalAlign("top")
         .config(Object.assign({}, baseConfig, config))
-        .render();
+        .render());
 
     });
 
@@ -390,6 +391,16 @@ var Legend = (function (BaseClass$$1) {
   */
   Legend.prototype.height = function height (_) {
     return arguments.length ? (this._height = _, this) : this._height;
+  };
+
+  /**
+      @memberof Legend
+      @desc If *value* is specified, sets the highlight method for all shapes to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight method.
+      @param {Function} [*value*]
+  */
+  Legend.prototype.highlight = function highlight (_) {
+    this._shapes.forEach(function (s) { return s.highlight(_); });
+    return this;
   };
 
   /**
