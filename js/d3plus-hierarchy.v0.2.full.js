@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.2.2
+  d3plus-hierarchy v0.2.3
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -16968,15 +16968,20 @@ var Tree = (function (Viz$$1) {
       fontColor: "#444",
       Path: {
         d: function (d) {
+
           var r = this$1._shapeConfig.Circle.r || this$1._shapeConfig.r;
+
           if (typeof r === "function") { r = r(d.data, d.i); }
+
           var px = d.parent.x - d.x + (this$1._orient === "vertical" ? 0 : r),
                 py = d.parent.y - d.y + (this$1._orient === "vertical" ? r : 0),
                 x = this$1._orient === "vertical" ? 0 : -r,
                 y = this$1._orient === "vertical" ? -r : 0;
+
           return this$1._orient === "vertical"
                ? ("M" + x + "," + y + "C" + x + "," + ((y + py) / 2) + " " + px + "," + ((y + py) / 2) + " " + px + "," + py)
                : ("M" + x + "," + y + "C" + ((x + px) / 2) + "," + y + " " + ((x + px) / 2) + "," + py + " " + px + "," + py);
+
         },
         fill: "none",
         id: function (d, i) { return this$1._ids(d, i).join("-"); },
