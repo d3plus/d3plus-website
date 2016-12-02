@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.6
+  d3plus-shape v0.10.7
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -8967,9 +8967,12 @@ var Shape = (function (BaseClass$$1) {
           if (url) {
 
             var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
-                    : this$1._x(d.data, d.i) : this$1._x(d, d),
-                  y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                    : this$1._y(d.data, d.i) : this$1._y(d, d);
+                  : this$1._x(d.data, d.i) : this$1._x(d, i),
+                y = d.__d3plusShape__ ? d.translate ? d.translate[1]
+                  : this$1._y(d.data, d.i) : this$1._y(d, i);
+
+            if (aes.x) { x += aes.x; }
+            if (aes.y) { y += aes.y; }
 
             if (d.__d3plusShape__) {
               d = d.data;
@@ -9025,16 +9028,20 @@ var Shape = (function (BaseClass$$1) {
 
         if (this$1._labelBounds && labels !== false && labels !== void 0) {
 
-          var bounds = this$1._labelBounds(d, i, this$1._aes(datum, i));
+          var aes = this$1._aes(datum, i),
+                bounds = this$1._labelBounds(d, i, aes);
 
           if (bounds) {
 
             if (labels.constructor !== Array) { labels = [labels]; }
 
             var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
-                    : this$1._x(d.data, d.i) : this$1._x(d, d),
-                  y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                    : this$1._y(d.data, d.i) : this$1._y(d, d);
+                  : this$1._x(d.data, d.i) : this$1._x(d, i),
+                y = d.__d3plusShape__ ? d.translate ? d.translate[1]
+                  : this$1._y(d.data, d.i) : this$1._y(d, i);
+
+            if (aes.x) { x += aes.x; }
+            if (aes.y) { y += aes.y; }
 
             if (d.__d3plusShape__) {
               d = d.data;
@@ -11912,9 +11919,10 @@ var Area = (function (Shape$$1) {
       @param {Function|Number} [*value*]
   */
   Area.prototype.x0 = function x0 (_) {
-    return arguments.length
-         ? (this._x0 = typeof _ === "function" ? _ : constant$3(_), this)
-         : this._x0;
+    if (!arguments.length) { return this._x0; }
+    this._x0 = typeof _ === "function" ? _ : constant$3(_);
+    this._x = this._x0;
+    return this;
   };
 
   /**
@@ -11934,9 +11942,10 @@ var Area = (function (Shape$$1) {
       @param {Function|Number} [*value*]
   */
   Area.prototype.y0 = function y0 (_) {
-    return arguments.length
-         ? (this._y0 = typeof _ === "function" ? _ : constant$3(_), this)
-         : this._y0;
+    if (!arguments.length) { return this._y0; }
+    this._y0 = typeof _ === "function" ? _ : constant$3(_);
+    this._y = this._y0;
+    return this;
   };
 
   /**
@@ -11951,6 +11960,200 @@ var Area = (function (Shape$$1) {
   };
 
   return Area;
+}(Shape));
+
+/**
+    @class Bar
+    @extends Shape
+    @desc Creates SVG areas based on an array of data.
+*/
+var Bar = (function (Shape$$1) {
+  function Bar() {
+
+    Shape$$1.call(this, "rect");
+
+    this._name = "Bar";
+    this._height = constant$3(10);
+    this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
+    this._width = constant$3(10);
+    this._x = accessor("x");
+    this._x0 = accessor("x");
+    this._x1 = null;
+    this._y = constant$3(0);
+    this._y0 = constant$3(0);
+    this._y1 = accessor("y");
+
+  }
+
+  if ( Shape$$1 ) Bar.__proto__ = Shape$$1;
+  Bar.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
+  Bar.prototype.constructor = Bar;
+
+  /**
+      Draws the rectangles.
+      @param {Function} [*callback* = undefined]
+      @private
+  */
+  Bar.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape$$1.prototype.render.call(this, callback);
+
+    this._enter
+        .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
+        .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
+        .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
+        .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; })
+        .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .call(this._applyPosition.bind(this));
+
+    this._update.transition(this._transition)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    this._exit.transition(this._transition)
+      .attr("width", 0).attr("height", 0)
+      .attr("x", 0).attr("y", 0);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Bar
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Bar.prototype._aes = function _aes (d, i) {
+    return {
+      height: this._getHeight(d, i),
+      width: this._getWidth(d, i),
+      x: this._x1 !== null ? -this._getWidth(d, i) / 2 : 0,
+      y: this._x1 === null ? -this._getHeight(d, i) / 2 : 0
+    };
+  };
+
+  /**
+      @memberof Bar
+      @desc Provides the default positioning to the <rect> elements.
+      @param {D3Selection} *elem*
+      @private
+  */
+  Bar.prototype._applyPosition = function _applyPosition (elem$$1) {
+    var this$1 = this;
+
+    elem$$1
+      .attr("width", function (d, i) { return this$1._getWidth(d, i); })
+      .attr("height", function (d, i) { return this$1._getHeight(d, i); })
+      .attr("x", function (d, i) { return this$1._x1 !== null ? -this$1._getWidth(d, i) : -this$1._getWidth(d, i) / 2; })
+      .attr("y", function (d, i) { return this$1._x1 === null ? -this$1._getHeight(d, i) : -this$1._getHeight(d, i) / 2; });
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the height of the <rect> by assessing the x and y properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getHeight = function _getHeight (d, i) {
+    if (this._x1 !== null) { return this._height(d, i); }
+    return Math.abs(this._y1(d, i) - this._y(d, i));
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the width of the <rect> by assessing the x and y properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getWidth = function _getWidth (d, i) {
+    if (this._x1 === null) { return this._width(d, i); }
+    return Math.abs(this._x1(d, i) - this._x(d, i));
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.height;
+}
+  */
+  Bar.prototype.height = function height (_) {
+    return arguments.length
+         ? (this._height = typeof _ === "function" ? _ : constant$3(_), this)
+         : this._height;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+      @param {Function|Number} [*value*]
+      @example
+function(d) {
+  return d.width;
+}
+  */
+  Bar.prototype.width = function width (_) {
+    return arguments.length
+         ? (this._width = typeof _ === "function" ? _ : constant$3(_), this)
+         : this._width;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
+      @param {Function|Number} [*value*]
+  */
+  Bar.prototype.x0 = function x0 (_) {
+    if (!arguments.length) { return this._x0; }
+    this._x0 = typeof _ === "function" ? _ : constant$3(_);
+    this._x = this._x0;
+    return this;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
+      @param {Function|Number|null} [*value*]
+  */
+  Bar.prototype.x1 = function x1 (_) {
+    return arguments.length
+         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$3(_), this)
+         : this._x1;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
+      @param {Function|Number} [*value*]
+  */
+  Bar.prototype.y0 = function y0 (_) {
+    if (!arguments.length) { return this._y0; }
+    this._y0 = typeof _ === "function" ? _ : constant$3(_);
+    this._y = this._y0;
+    return this;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
+      @param {Function|Number|null} [*value*]
+  */
+  Bar.prototype.y1 = function y1 (_) {
+    return arguments.length
+         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$3(_), this)
+         : this._y1;
+  };
+
+  return Bar;
 }(Shape));
 
 /**
@@ -12335,6 +12538,7 @@ exports.pointDistance = pointDistance;
 exports.Image = Image;
 exports.Shape = Shape;
 exports.Area = Area;
+exports.Bar = Bar;
 exports.Circle = Circle;
 exports.Line = Line;
 exports.Path = Path$1;
