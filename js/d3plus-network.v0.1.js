@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.1.1
+  d3plus-network v0.1.2
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -121,7 +121,7 @@ var Network = (function (Viz$$1) {
         ) / 2;
 
     var r = scales[("scale" + (this._sizeScale.charAt(0).toUpperCase()) + (this._sizeScale.slice(1)))]()
-                .domain(rExtent).range([rExtent[0] === rExtent[1] ? rMax : this._sizeMin, rMax]),
+                .domain(rExtent).range([rExtent[0] === rExtent[1] ? rMax : d3Array.min([rMax / 2, this._sizeMin]), rMax]),
           xDomain = x.domain(),
           yDomain = y.domain();
 
@@ -140,7 +140,7 @@ var Network = (function (Viz$$1) {
           yNewSize = yDomain[1] - yDomain[0];
 
     rMax *= d3Array.min([xOldSize / xNewSize, yOldSize / yNewSize]);
-    r.range([rExtent[0] === rExtent[1] ? rMax : this._sizeMin, rMax]);
+    r.range([rExtent[0] === rExtent[1] ? rMax : d3Array.min([rMax / 2, this._sizeMin]), rMax]);
     x.domain(xDomain);
     y.domain(yDomain);
 
