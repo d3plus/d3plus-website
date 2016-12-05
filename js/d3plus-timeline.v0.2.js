@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.2.2
+  d3plus-timeline v0.2.3
   An easy-to-use javascript timeline.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -56,7 +56,7 @@ var Timeline = (function (Axis$$1) {
   Timeline.prototype._brushBrush = function _brushBrush () {
 
     this._brushStyle();
-    if (this._on.brush) this._on.brush();
+    if (this._on.brush) { this._on.brush(); }
 
   };
 
@@ -67,7 +67,7 @@ var Timeline = (function (Axis$$1) {
   */
   Timeline.prototype._brushEnd = function _brushEnd () {
 
-    if (!d3Selection.event.sourceEvent) return; // Only transition after input.
+    if (!d3Selection.event.sourceEvent) { return; } // Only transition after input.
 
     var domain = (d3Selection.event.selection ? d3Selection.event.selection
                  : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX])
@@ -88,7 +88,7 @@ var Timeline = (function (Axis$$1) {
 
     this._brushStyle();
 
-    if (this._on.end) this._on.end(single ? domain[0] : domain);
+    if (this._on.end) { this._on.end(single ? domain[0] : domain); }
 
   };
 
@@ -100,7 +100,7 @@ var Timeline = (function (Axis$$1) {
   Timeline.prototype._brushStart = function _brushStart () {
 
     this._brushStyle();
-    if (this._on.start) this._on.start();
+    if (this._on.start) { this._on.start(); }
 
   };
 
