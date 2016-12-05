@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.8
+  d3plus-shape v0.10.9
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -42,7 +42,7 @@ image().data([data])(function() { alert("draw complete!"); })
 var Image = function Image() {
   this._duration = 600;
   this._height = d3plusCommon.accessor("height");
-  this._id = d3plusCommon.accessor("url");
+  this._id = d3plusCommon.accessor("id");
   this._pointerEvents = d3plusCommon.constant("auto");
   this._select;
   this._url = d3plusCommon.accessor("url");
@@ -153,7 +153,7 @@ Image.prototype.height = function height (_) {
     @param {Function} [*value*]
     @example
 function(d) {
-return d.url;
+return d.id;
 }
 */
 Image.prototype.id = function id (_) {
@@ -415,6 +415,7 @@ var Shape = (function (BaseClass$$1) {
               data: d,
               height: height,
               i: i,
+              id: this$1._id(d, i),
               url: url,
               width: width,
               x: x + -width / 2,
@@ -431,7 +432,7 @@ var Shape = (function (BaseClass$$1) {
       .data(imageData)
       .duration(this._duration)
       .pointerEvents("none")
-      .select(this._group.node())
+      .select(d3plusCommon.elem(("g.d3plus-" + (this._name) + "-images"), {parent: this._group}).node())
       .render();
 
   };
@@ -533,7 +534,7 @@ var Shape = (function (BaseClass$$1) {
       .pointerEvents("none")
       .textAnchor(function (d) { return d.tA; })
       .verticalAlign(function (d) { return d.vA; })
-      .select(this._group.node())
+      .select(d3plusCommon.elem(("g.d3plus-" + (this._name) + "-labels"), {parent: this._group}).node())
       .render();
 
   };
@@ -569,9 +570,10 @@ var Shape = (function (BaseClass$$1) {
     if (this._sort) { data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ ? a.data : a, b.__d3plusShape__ ? b.data : b); }); }
 
     // Makes the update state of the group selection accessible.
-    this._group = d3plusCommon.elem(("g.d3plus-" + (this._name) + "-Group"), {parent: this._select});
-    var update = this._update = this._group.selectAll((".d3plus-" + (this._name)))
-      .data(data, key);
+    this._group = d3plusCommon.elem(("g.d3plus-" + (this._name) + "-group"), {parent: this._select});
+    var update = this._update = d3plusCommon.elem(("g.d3plus-" + (this._name) + "-shapes"), {parent: this._group})
+      .selectAll((".d3plus-" + (this._name)))
+        .data(data, key);
 
     // Orders and transforms the updating Shapes.
     update.order().transition(this._transition)
@@ -1236,8 +1238,10 @@ var Bar = (function (Shape$$1) {
       .call(this._applyPosition.bind(this));
 
     this._exit.transition(this._transition)
-      .attr("width", 0).attr("height", 0)
-      .attr("x", 0).attr("y", 0);
+      .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
+      .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
+      .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
+      .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; });
 
     return this;
 
@@ -1254,8 +1258,8 @@ var Bar = (function (Shape$$1) {
     return {
       height: this._getHeight(d, i),
       width: this._getWidth(d, i),
-      x: this._x1 !== null ? -this._getWidth(d, i) / 2 : 0,
-      y: this._x1 === null ? -this._getHeight(d, i) / 2 : 0
+      x: this._x1 !== null ? this._getX(d, i) + this._getWidth(d, i) / 2 : this._getX(d, i),
+      y: this._x1 === null ? this._getY(d, i) + this._getHeight(d, i) / 2 : this._getY(d, i)
     };
   };
 
@@ -1271,8 +1275,8 @@ var Bar = (function (Shape$$1) {
     elem$$1
       .attr("width", function (d, i) { return this$1._getWidth(d, i); })
       .attr("height", function (d, i) { return this$1._getHeight(d, i); })
-      .attr("x", function (d, i) { return this$1._x1 !== null ? -this$1._getWidth(d, i) : -this$1._getWidth(d, i) / 2; })
-      .attr("y", function (d, i) { return this$1._x1 === null ? -this$1._getHeight(d, i) : -this$1._getHeight(d, i) / 2; });
+      .attr("x", function (d, i) { return this$1._x1 !== null ? this$1._getX(d, i) : -this$1._getWidth(d, i) / 2; })
+      .attr("y", function (d, i) { return this$1._x1 === null ? this$1._getY(d, i) : -this$1._getHeight(d, i) / 2; });
   };
 
   /**
@@ -1297,6 +1301,32 @@ var Bar = (function (Shape$$1) {
   Bar.prototype._getWidth = function _getWidth (d, i) {
     if (this._x1 === null) { return this._width(d, i); }
     return Math.abs(this._x1(d, i) - this._x(d, i));
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the x of the <rect> by assessing the x and width properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getX = function _getX (d, i) {
+    var w = this._x1 === null ? this._width(d, i) : this._x1(d, i) - this._x(d, i);
+    if (w < 0) { return w; }
+    else { return 0; }
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the y of the <rect> by assessing the y and height properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getY = function _getY (d, i) {
+    var h = this._x1 !== null ? this._height(d, i) : this._y1(d, i) - this._y(d, i);
+    if (h < 0) { return h; }
+    else { return 0; }
   };
 
   /**
