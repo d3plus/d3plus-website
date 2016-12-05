@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.7
+  d3plus-shape v0.10.8
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5713,6 +5713,7 @@ var Image = function Image() {
   this._duration = 600;
   this._height = accessor("height");
   this._id = accessor("url");
+  this._pointerEvents = constant$3("auto");
   this._select;
   this._url = accessor("url");
   this._width = accessor("width");
@@ -5747,6 +5748,7 @@ Image.prototype.render = function render (callback) {
 
   update
       .attr("xlink:href", this._url)
+      .style("pointer-events", this._pointerEvents)
     .transition(t)
       .attr("opacity", 1)
       .attr("width", function (d, i) { return this$1._width(d, i); })
@@ -5826,6 +5828,15 @@ return d.url;
 */
 Image.prototype.id = function id (_) {
   return arguments.length ? (this._id = _, this) : this._id;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current pointer-events accessor.
+    @param {Function|String} [*value* = "auto"]
+*/
+Image.prototype.pointerEvents = function pointerEvents (_) {
+  return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$3(_), this) : this._pointerEvents;
 };
 
 /**
@@ -8286,6 +8297,7 @@ var TextBox = (function (BaseClass$$1) {
     this._id = function (d, i) { return d.id || ("" + i); };
     this._on = {};
     this._overflow = constant$3(false);
+    this._pointerEvents = constant$3("auto");
     this._rotate = constant$3(0);
     this._split = textSplit;
     this._text = accessor("text");
@@ -8426,6 +8438,7 @@ var TextBox = (function (BaseClass$$1) {
 
         arr.push({
           data: d,
+          i: i,
           lines: lineData,
           fC: this$1._fontColor(d, i),
           fF: style["font-family"],
@@ -8477,6 +8490,7 @@ var TextBox = (function (BaseClass$$1) {
       .style("font-size", function (d) { return ((d.fS) + "px"); })
       .attr("font-weight", function (d) { return d.fW; })
       .style("font-weight", function (d) { return d.fW; })
+      .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
       .each(function(d) {
 
         var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
@@ -8689,6 +8703,15 @@ function(d, i) {
   */
   TextBox.prototype.overflow = function overflow (_) {
     return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$3(_), this) : this._overflow;
+  };
+
+  /**
+      @memberof TextBox
+      @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current pointer-events accessor.
+      @param {Function|String} [*value* = "auto"]
+  */
+  TextBox.prototype.pointerEvents = function pointerEvents (_) {
+    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$3(_), this) : this._pointerEvents;
   };
 
   /**
@@ -8999,6 +9022,7 @@ var Shape = (function (BaseClass$$1) {
     new Image()
       .data(imageData)
       .duration(this._duration)
+      .pointerEvents("none")
       .select(this._group.node())
       .render();
 
@@ -9098,6 +9122,7 @@ var Shape = (function (BaseClass$$1) {
       .fontResize(function (d) { return d.fR; })
       .fontSize(function (d) { return d.fS; })
       .lineHeight(function (d) { return d.lH; })
+      .pointerEvents("none")
       .textAnchor(function (d) { return d.tA; })
       .verticalAlign(function (d) { return d.vA; })
       .select(this._group.node())

@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.10.7
+  d3plus-shape v0.10.8
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -43,6 +43,7 @@ var Image = function Image() {
   this._duration = 600;
   this._height = d3plusCommon.accessor("height");
   this._id = d3plusCommon.accessor("url");
+  this._pointerEvents = d3plusCommon.constant("auto");
   this._select;
   this._url = d3plusCommon.accessor("url");
   this._width = d3plusCommon.accessor("width");
@@ -77,6 +78,7 @@ Image.prototype.render = function render (callback) {
 
   update
       .attr("xlink:href", this._url)
+      .style("pointer-events", this._pointerEvents)
     .transition(t)
       .attr("opacity", 1)
       .attr("width", function (d, i) { return this$1._width(d, i); })
@@ -156,6 +158,15 @@ return d.url;
 */
 Image.prototype.id = function id (_) {
   return arguments.length ? (this._id = _, this) : this._id;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current pointer-events accessor.
+    @param {Function|String} [*value* = "auto"]
+*/
+Image.prototype.pointerEvents = function pointerEvents (_) {
+  return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._pointerEvents;
 };
 
 /**
@@ -419,6 +430,7 @@ var Shape = (function (BaseClass$$1) {
     new Image()
       .data(imageData)
       .duration(this._duration)
+      .pointerEvents("none")
       .select(this._group.node())
       .render();
 
@@ -518,6 +530,7 @@ var Shape = (function (BaseClass$$1) {
       .fontResize(function (d) { return d.fR; })
       .fontSize(function (d) { return d.fS; })
       .lineHeight(function (d) { return d.lH; })
+      .pointerEvents("none")
       .textAnchor(function (d) { return d.tA; })
       .verticalAlign(function (d) { return d.vA; })
       .select(this._group.node())
