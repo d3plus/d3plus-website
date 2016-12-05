@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.4.10
+  d3plus-viz v0.4.11
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -164,9 +164,10 @@ var mouseenterLegend = function(d) {
     var depth = this._drawDepth < this._groupBy.length - 1;
     this._select.style("cursor", depth ? "pointer" : "auto");
     this._tooltipClass.data([d])
-      .footer(depth ? "Click to Expand" : "")
+      .footer(depth ?  d3plusCommon.locale.t("Click to Expand", {lng: this._locale}) : "")
       .title(this._legendClass.label())
       .translate(d3Selection.mouse(d3Selection.select("html").node()))
+      .config(this._tooltipConfig)
       .render();
   }
 
@@ -184,9 +185,10 @@ var mouseenterShape = function(d) {
     var depth = this._drawDepth < this._groupBy.length - 1;
     this._select.style("cursor", depth ? "pointer" : "auto");
     this._tooltipClass.data([d])
-      .footer(depth ? "Click to Expand" : "")
+      .footer(depth ? d3plusCommon.locale.t("Click to Expand", {lng: this._locale}) : "")
       .title(this._drawLabel)
       .translate(d3Selection.mouse(d3Selection.select("html").node()))
+      .config(this._tooltipConfig)
       .render();
   }
 
@@ -250,6 +252,7 @@ var Viz = (function (BaseClass$$1) {
       }
     };
     this._legendClass = new d3plusLegend.Legend();
+    this._locale = "en-US";
     this._on = {
       "click": click.bind(this),
       "mouseenter": mouseenter.bind(this),
@@ -281,8 +284,11 @@ var Viz = (function (BaseClass$$1) {
       });
     this._timelineConfig = {};
     this._tooltip = true;
-    this._tooltipClass = new d3plusTooltip.Tooltip().pointerEvents("none");
-    this._tooltipConfig = {duration: 50};
+    this._tooltipClass = new d3plusTooltip.Tooltip();
+    this._tooltipConfig = {
+      duration: 50,
+      pointerEvents: "none"
+    };
 
   }
 
@@ -423,18 +429,19 @@ var Viz = (function (BaseClass$$1) {
         .duration(this._duration)
         .height(this._height / 2 - this._margin.bottom)
         .select(timelineGroup.node())
-        .ticks(ticks.sort())
+        .ticks(ticks.sort(function (a, b) { return +a - +b; }))
         .width(this._width);
 
       if (timeline.selection() === void 0) {
 
-        var selection = d3Array.extent(Array.from(new Set(d3Array.merge(this._filteredData.map(function (d) {
+        var dates = Array.from(new Set(d3Array.merge(this._filteredData.map(function (d) {
           var t = this$1._time(d);
           return t instanceof Array ? t : [t];
-        })))).map(d3plusAxis.date));
+        })))).map(d3plusAxis.date);
 
-        if (selection.length === 1) { selection = selection[0]; }
-        timeline.selection(selection);
+        var d = this._data[0], i$1 = 0;
+        if (this._discrete && ("_" + (this._discrete)) in this && this[("_" + (this._discrete))](d, i$1) === this._time(d, i$1)) { timeline.selection(d3Array.extent(dates)); }
+        else { timeline.selection(d3Array.max(dates)); }
 
       }
 
@@ -479,13 +486,11 @@ var Viz = (function (BaseClass$$1) {
     var titleGroup = d3plusCommon.elem("g.d3plus-viz-titles", {parent: this._select});
 
     this._backClass
-      .data(this._history.length ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
+      .data(this._history.length ? [{text: d3plusCommon.locale.t("Back", {lng: this._locale}), x: this._padding * 2, y: 0}] : [])
       .select(titleGroup.node())
       .render();
 
     this._margin.top += this._history.length ? this._backClass.fontSize()() + this._padding : 0;
-
-    this._tooltipClass.config(this._tooltipConfig);
 
     if (callback) { setTimeout(callback, this._duration + 100); }
 
@@ -647,6 +652,15 @@ function value(d) {
   */
   Viz.prototype.legendConfig = function legendConfig (_) {
     return arguments.length ? (this._legendConfig = _, this) : this._legendConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the locale to the specified string and returns the current class instance. If *value* is not specified, returns the current locale.
+      @param {String} [*value* = "en-US"]
+  */
+  Viz.prototype.locale = function locale$1 (_) {
+    return arguments.length ? (this._locale = _, this) : this._locale;
   };
 
   /**
