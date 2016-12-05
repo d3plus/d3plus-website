@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.9
+  d3plus-text v0.9.10
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -333,6 +333,7 @@ var TextBox = (function (BaseClass$$1) {
     this._id = function (d, i) { return d.id || ("" + i); };
     this._on = {};
     this._overflow = d3plusCommon.constant(false);
+    this._pointerEvents = d3plusCommon.constant("auto");
     this._rotate = d3plusCommon.constant(0);
     this._split = textSplit;
     this._text = d3plusCommon.accessor("text");
@@ -473,6 +474,7 @@ var TextBox = (function (BaseClass$$1) {
 
         arr.push({
           data: d,
+          i: i,
           lines: lineData,
           fC: this$1._fontColor(d, i),
           fF: style["font-family"],
@@ -524,6 +526,7 @@ var TextBox = (function (BaseClass$$1) {
       .style("font-size", function (d) { return ((d.fS) + "px"); })
       .attr("font-weight", function (d) { return d.fW; })
       .style("font-weight", function (d) { return d.fW; })
+      .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
       .each(function(d) {
 
         var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
@@ -736,6 +739,15 @@ function(d, i) {
   */
   TextBox.prototype.overflow = function overflow (_) {
     return arguments.length ? (this._overflow = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._overflow;
+  };
+
+  /**
+      @memberof TextBox
+      @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current pointer-events accessor.
+      @param {Function|String} [*value* = "auto"]
+  */
+  TextBox.prototype.pointerEvents = function pointerEvents (_) {
+    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._pointerEvents;
   };
 
   /**
