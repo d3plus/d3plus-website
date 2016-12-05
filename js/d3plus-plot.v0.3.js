@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.3.19
+  d3plus-plot v0.3.20
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -199,7 +199,7 @@ var Plot = (function (Viz$$1) {
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
 
       stackData = d3Collection.nest()
-        .key(function (d) { return Number(d[this$1._discrete]); })
+        .key(function (d) { return d[this$1._discrete]; })
         .entries(data)
         .sort(function (a, b) { return a.key - b.key; });
 
@@ -365,12 +365,12 @@ var Plot = (function (Viz$$1) {
       var scale = opp === "x" ? x : y;
       positions[("" + opp)] = positions[(opp + "0")] = function (d) {
         var dataIndex = stackKeys.indexOf(d.id),
-              discreteIndex = discreteKeys.indexOf(d[this$1._discrete]);
+              discreteIndex = discreteKeys.indexOf(("" + (d[this$1._discrete])));
         return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][0]) : scale(0);
       };
       positions[(opp + "1")] = function (d) {
         var dataIndex = stackKeys.indexOf(d.id),
-              discreteIndex = discreteKeys.indexOf(d[this$1._discrete]);
+              discreteIndex = discreteKeys.indexOf(("" + (d[this$1._discrete])));
         return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][1]) : scale(0);
       };
     }
