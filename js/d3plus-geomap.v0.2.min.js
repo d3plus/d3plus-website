@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.2.3
+  d3plus-geomap v0.2.4
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
