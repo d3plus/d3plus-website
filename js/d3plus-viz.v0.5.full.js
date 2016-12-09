@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.5.0
+  d3plus-viz v0.5.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -18200,8 +18200,13 @@ function brush$1(dim) {
 }
 
 /**
+    @external Axis
+    @see https://github.com/d3plus/d3plus-axis#Axis
+*/
+
+/**
     @class Timeline
-    @extends Axis
+    @extends external:Axis
 */
 var Timeline = (function (Axis$$1) {
   function Timeline() {
@@ -18210,6 +18215,7 @@ var Timeline = (function (Axis$$1) {
 
     Axis$$1.call(this);
 
+    this._brushing = true;
     this._brushFilter = function () { return !event.button && event.detail < 2; };
     this._domain = [2001, 2010];
     this._gridSize = 0;
@@ -18230,6 +18236,7 @@ var Timeline = (function (Axis$$1) {
       height: 10,
       width: function (d) { return this$1._domain.map(function (t) { return date$2(t).getTime(); }).includes(d.id) ? 2 : 1; }
     });
+    this._snapping = true;
 
   }
 
@@ -18243,6 +18250,36 @@ var Timeline = (function (Axis$$1) {
       @private
   */
   Timeline.prototype._brushBrush = function _brushBrush () {
+
+    if (event.sourceEvent && event.sourceEvent.offsetX && event.selection !== null && (!this._brushing || this._snapping)) {
+
+      var domain = (this._brushing ? event.selection
+                   : [event.selection[0], event.selection[0]])
+                   .map(this._d3Scale.invert)
+                   .map(Number);
+
+      var ticks = this._availableTicks.map(Number);
+      domain[0] = date$2(closest(domain[0], ticks));
+      domain[1] = date$2(closest(domain[1], ticks));
+
+      var single = +domain[0] === +domain[1],
+            value = single ? domain[0] : domain;
+
+      if (this._selection && JSON.stringify(value) !== JSON.stringify(this._selection)) {
+        this._selection = value;
+        if (this._on.end) { this._on.end(value); }
+      }
+
+      var pixelDomain = domain.map(this._d3Scale);
+
+      if (single) {
+        pixelDomain[0] -= 0.1;
+        pixelDomain[1] += 0.1;
+      }
+
+      this._brushGroup.call(this._brush.move, pixelDomain);
+
+    }
 
     this._brushStyle();
     if (this._on.brush) { this._on.brush(); }
@@ -18258,7 +18295,7 @@ var Timeline = (function (Axis$$1) {
 
     if (!event.sourceEvent) { return; } // Only transition after input.
 
-    var domain = (event.selection ? event.selection
+    var domain = (event.selection && this._brushing ? event.selection
                  : [event.sourceEvent.offsetX, event.sourceEvent.offsetX])
                  .map(this._d3Scale.invert)
                  .map(Number);
@@ -18266,18 +18303,28 @@ var Timeline = (function (Axis$$1) {
     var ticks = this._availableTicks.map(Number);
     domain[0] = date$2(closest(domain[0], ticks));
     domain[1] = date$2(closest(domain[1], ticks));
-    var pixelDomain = domain.map(this._d3Scale),
-          single = pixelDomain[0] === pixelDomain[1];
-    if (single) {
-      pixelDomain[0] -= 0.1;
-      pixelDomain[1] += 0.1;
+
+    var single = +domain[0] === +domain[1];
+
+    if (this._brushing || !this._snapping) {
+
+      var pixelDomain = domain.map(this._d3Scale);
+
+      if (single) {
+        pixelDomain[0] -= 0.1;
+        pixelDomain[1] += 0.1;
+      }
+
+      this._brushGroup.transition(this._transition).call(this._brush.move, pixelDomain);
+
     }
 
-    this._brushGroup.transition(this._transition).call(this._brush.move, pixelDomain);
-
     this._brushStyle();
-
-    if (this._on.end) { this._on.end(single ? domain[0] : domain); }
+    var value = single ? domain[0] : domain;
+    if (JSON.stringify(value) !== JSON.stringify(this._selection)) {
+      if (this._on.end) { this._on.end(value); }
+      this._selection = value;
+    }
 
   };
 
@@ -18287,6 +18334,30 @@ var Timeline = (function (Axis$$1) {
       @private
   */
   Timeline.prototype._brushStart = function _brushStart () {
+
+    if (event.sourceEvent !== null && (!this._brushing || this._snapping)) {
+
+      var domain = (event.selection && this._brushing ? event.selection
+                   : [event.sourceEvent.offsetX, event.sourceEvent.offsetX])
+                   .map(this._d3Scale.invert)
+                   .map(Number);
+
+      var ticks = this._availableTicks.map(Number);
+      domain[0] = date$2(closest(domain[0], ticks));
+      domain[1] = date$2(closest(domain[1], ticks));
+
+      var single = +domain[0] === +domain[1];
+
+      var pixelDomain = domain.map(this._d3Scale);
+
+      if (single) {
+        pixelDomain[0] -= 0.1;
+        pixelDomain[1] += 0.1;
+      }
+
+      this._brushGroup.call(this._brush.move, pixelDomain);
+
+    }
 
     this._brushStyle();
     if (this._on.start) { this._on.start(); }
@@ -18306,6 +18377,9 @@ var Timeline = (function (Axis$$1) {
              : this._shape === "Rect" ? this._shapeConfig[height]
              : this._tickSize;
 
+    this._brushGroup.selectAll(".overlay")
+      .attr("cursor", this._brushing ? "crosshair" : "pointer");
+
     this._brushGroup.selectAll(".selection")
       .call(attrize, this._selectionConfig)
       .attr("height", timelineHeight);
@@ -18317,9 +18391,10 @@ var Timeline = (function (Axis$$1) {
   };
 
   /**
-      Draws the timeline.
+      @memberof Timeline
+      @desc Draws the timeline.
       @param {Function} [*callback* = undefined]
-      @private
+      @chainable
   */
   Timeline.prototype.render = function render (callback) {
 
@@ -18363,8 +18438,19 @@ var Timeline = (function (Axis$$1) {
 
   /**
       @memberof Timeline
+      @desc If *value* is specified, toggles the brushing value and returns the current class instance. If *value* is not specified, returns the current brushing value.
+      @param {Boolean} [*value* = true]
+      @chainable
+  */
+  Timeline.prototype.brushing = function brushing (_) {
+    return arguments.length ? (this._brushing = _, this) : this._brushing;
+  };
+
+  /**
+      @memberof Timeline
       @desc If *value* is specified, sets the brush event filter and returns the current class instance. If *value* is not specified, returns the current brush event filter.
       @param {Function} [*value*]
+      @chainable
       @example
 function() {
   return !event.button && event.detail < 2;
@@ -18378,6 +18464,7 @@ function() {
       @memberof Timeline
       @desc If *value* is specified, sets the handle style and returns the current class instance. If *value* is not specified, returns the current handle style.
       @param {Object} [*value*]
+      @chainable
   */
   Timeline.prototype.handleConfig = function handleConfig (_) {
     return arguments.length ? (this._handleConfig = Object.assign(this._handleConfig, _), this) : this._handleConfig;
@@ -18387,6 +18474,7 @@ function() {
       @memberof Timeline
       @desc If *value* is specified, sets the handle size and returns the current class instance. If *value* is not specified, returns the current handle size.
       @param {Number} [*value* = 6]
+      @chainable
   */
   Timeline.prototype.handleSize = function handleSize (_) {
     return arguments.length ? (this._handleSize = _, this) : this._handleSize;
@@ -18397,6 +18485,7 @@ function() {
       @desc Adds or removes a *listener* for the specified brush event *typename*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-brush](https://github.com/d3/d3-brush#brush_on) behavior.
       @param {String|Object} [*typename*]
       @param {Function} [*listener*]
+      @chainable
   */
   Timeline.prototype.on = function on (_, f) {
     return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
@@ -18406,6 +18495,7 @@ function() {
       @memberof Timeline
       @desc If *value* is specified, sets the selection style and returns the current class instance. If *value* is not specified, returns the current selection style.
       @param {Object} [*value*]
+      @chainable
   */
   Timeline.prototype.selectionConfig = function selectionConfig (_) {
     return arguments.length ? (this._selectionConfig = Object.assign(this._selectionConfig, _), this) : this._selectionConfig;
@@ -18415,9 +18505,20 @@ function() {
       @memberof Timeline
       @desc If *value* is specified, sets the selection and returns the current class instance. If *value* is not specified, returns the current selection. Defaults to the most recent year in the timeline.
       @param {Array|Date|Number|String} [*value*]
+      @chainable
   */
   Timeline.prototype.selection = function selection (_) {
     return arguments.length ? (this._selection = _, this) : this._selection;
+  };
+
+  /**
+      @memberof Timeline
+      @desc If *value* is specified, toggles the snapping value and returns the current class instance. If *value* is not specified, returns the current snapping value.
+      @param {Boolean} [*value* = true]
+      @chainable
+  */
+  Timeline.prototype.snapping = function snapping (_) {
+    return arguments.length ? (this._snapping = _, this) : this._snapping;
   };
 
   return Timeline;
