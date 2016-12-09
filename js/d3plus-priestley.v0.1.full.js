@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.13
+  d3plus-priestley v0.1.14
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -1836,7 +1836,7 @@ var formatLocale = function(locale) {
   };
 };
 
-var locale$1$1;
+var locale$1;
 var format$1;
 var formatPrefix;
 
@@ -1848,10 +1848,10 @@ defaultLocale({
 });
 
 function defaultLocale(definition) {
-  locale$1$1 = formatLocale(definition);
-  format$1 = locale$1$1.format;
-  formatPrefix = locale$1$1.formatPrefix;
-  return locale$1$1;
+  locale$1 = formatLocale(definition);
+  format$1 = locale$1.format;
+  formatPrefix = locale$1.formatPrefix;
+  return locale$1;
 }
 
 var precisionFixed = function(step) {
@@ -4234,6 +4234,12 @@ var select = function(selector) {
   return typeof selector === "string"
       ? new Selection([[document.querySelector(selector)]], [document.documentElement])
       : new Selection([[selector]], root);
+};
+
+var selectAll = function(selector) {
+  return typeof selector === "string"
+      ? new Selection([document.querySelectorAll(selector)], [document.documentElement])
+      : new Selection([selector == null ? [] : selector], root);
 };
 
 var touch = function(node, touches, identifier) {
@@ -7803,7 +7809,7 @@ image().data([data])(function() { alert("draw complete!"); })
 var Image = function Image() {
   this._duration = 600;
   this._height = accessor("height");
-  this._id = accessor("url");
+  this._id = accessor("id");
   this._pointerEvents = constant$5("auto");
   this._select;
   this._url = accessor("url");
@@ -7815,7 +7821,8 @@ var Image = function Image() {
 /**
     @memberof Image
     @desc Renders the current Image to the page. If a *callback* is specified, it will be called once the images are done drawing.
-    @param {Function} [*callback* = undefined]
+    @param {Function} [*callback*]
+    @chainable
 */
 Image.prototype.render = function render (callback) {
     var this$1 = this;
@@ -7881,15 +7888,17 @@ Image.prototype.render = function render (callback) {
     @memberof Image
     @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. An <image> tag will be drawn for each object in the array.
     @param {Array} [*data* = []]
+    @chainable
 */
 Image.prototype.data = function data (_) {
   return arguments.length ? (this._data = _, this) : this._data;
-};
+  };
 
 /**
     @memberof Image
     @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
     @param {Number} [*ms* = 600]
+    @chainable
 */
 Image.prototype.duration = function duration (_) {
   return arguments.length ? (this._duration = _, this) : this._duration;
@@ -7899,6 +7908,7 @@ Image.prototype.duration = function duration (_) {
     @memberof Image
     @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
     @param {Function|Number} [*value*]
+    @chainable
     @example
 function(d) {
 return d.height;
@@ -7912,9 +7922,10 @@ Image.prototype.height = function height (_) {
     @memberof Image
     @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor. This is useful if you want to duplicate the same image.
     @param {Function} [*value*]
+    @chainable
     @example
 function(d) {
-return d.url;
+return d.id;
 }
 */
 Image.prototype.id = function id (_) {
@@ -7925,6 +7936,7 @@ Image.prototype.id = function id (_) {
     @memberof Image
     @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current pointer-events accessor.
     @param {Function|String} [*value* = "auto"]
+    @chainable
 */
 Image.prototype.pointerEvents = function pointerEvents (_) {
   return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$5(_), this) : this._pointerEvents;
@@ -7934,6 +7946,7 @@ Image.prototype.pointerEvents = function pointerEvents (_) {
     @memberof Image
     @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
     @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+    @chainable
 */
 Image.prototype.select = function select$1 (_) {
   return arguments.length ? (this._select = select(_), this) : this._select;
@@ -7943,6 +7956,7 @@ Image.prototype.select = function select$1 (_) {
     @memberof Image
     @desc If *value* is specified, sets the URL accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current URL accessor.
     @param {Function} [*value*]
+    @chainable
     @example
 function(d) {
 return d.url;
@@ -7956,6 +7970,7 @@ Image.prototype.url = function url (_) {
     @memberof Image
     @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
     @param {Function|Number} [*value*]
+    @chainable
     @example
 function(d) {
 return d.width;
@@ -7969,6 +7984,7 @@ Image.prototype.width = function width (_) {
     @memberof Image
     @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
     @param {Function|Number} [*value*]
+    @chainable
     @example
 function(d) {
 return d.x || 0;
@@ -7982,6 +7998,7 @@ Image.prototype.x = function x (_) {
     @memberof Image
     @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
     @param {Function|Number} [*value*]
+    @chainable
     @example
 function(d) {
 return d.y || 0;
@@ -8227,7 +8244,7 @@ var textSplit = function(sentence) {
     @param {String|Array} text Can be either a single string or an array of strings to analyze.
     @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
 */
-var measure = function(text, style) {
+var textWidth = function(text, style) {
   if ( style === void 0 ) style = {"font-size": 10, "font-family": "sans-serif"};
 
 
@@ -8255,7 +8272,7 @@ var measure = function(text, style) {
     @function textWrap
     @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
 */
-var wrap = function() {
+var textWrap = function() {
 
   var fontFamily = "Verdana",
       fontSize = 10,
@@ -8291,8 +8308,8 @@ var wrap = function() {
         widthProg = 0;
 
     var lineData = [],
-          sizes = measure(words, style),
-          space = measure(" ", style);
+          sizes = textWidth(words, style),
+          space = textWidth(" ", style);
 
     for (var i = 0; i < words.length; i++) {
       var word = words[i];
@@ -8479,7 +8496,7 @@ var TextBox = (function (BaseClass$$1) {
       var h = this$1._height(d, i),
             w = this$1._width(d, i);
 
-      var wrapper = wrap()
+      var wrapper = textWrap()
         .fontFamily(style["font-family"])
         .fontSize(fS)
         .fontWeight(style["font-weight"])
@@ -8537,7 +8554,7 @@ var TextBox = (function (BaseClass$$1) {
 
         if (resize) {
 
-          sizes = measure(words, style);
+          sizes = textWidth(words, style);
 
           var areaMod = 1.165 + w / h * 0.1,
                 boxArea = w * h,
@@ -8953,7 +8970,13 @@ function(d) {
 */
 
 /**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
+
+/**
     @class Shape
+    @extends external:BaseClass
     @desc An abstracted class for generating shapes.
 */
 var Shape = (function (BaseClass$$1) {
@@ -8964,6 +8987,14 @@ var Shape = (function (BaseClass$$1) {
 
     BaseClass$$1.call(this);
 
+    this._activeOpacity = 0.75;
+    this._activeStyle = {
+      "stroke": function (d, i) { return color(this$1._stroke(d, i)).darker(2); },
+      "stroke-width": function (d, i) {
+        var s = this$1._strokeWidth(d, i);
+        return s ? s * 2 : 1;
+      }
+    };
     this._backgroundImage = constant$5(false);
     this._data = [];
     this._duration = 600;
@@ -8974,8 +9005,7 @@ var Shape = (function (BaseClass$$1) {
     this._fontResize = constant$5(false);
     this._fontSize = constant$5(12);
 
-    this._highlightDuration = 200;
-    this._highlightOpacity = 0.5;
+    this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = constant$5(false);
     this._labelPadding = constant$5(5);
@@ -8983,7 +9013,7 @@ var Shape = (function (BaseClass$$1) {
     this._opacity = constant$5(1);
     this._scale = constant$5(1);
     this._shapeRendering = constant$5("geometricPrecision");
-    this._stroke = constant$5("black");
+    this._stroke = function (d, i) { return color(this$1._fill(d, i)).darker(1); };
     this._strokeWidth = constant$5(0);
     this._tagName = tagName;
     this._textAnchor = constant$5("start");
@@ -9017,18 +9047,62 @@ var Shape = (function (BaseClass$$1) {
       @private
   */
   Shape.prototype._applyEvents = function _applyEvents (handler) {
+    var this$1 = this;
 
-    var that = this;
 
     var events = Object.keys(this._on);
     var loop = function ( e ) {
-      handler.on(events[e], function(d, i) {
-        if (!that._on[events[e]]) { return; }
-        that._on[events[e]].bind(this)(d, i);
+      handler.on(events[e], function (d, i) {
+        if (!this$1._on[events[e]]) { return; }
+        if (d.i !== void 0) { i = d.i; }
+        if (d.nested && d.values) {
+          var cursor = mouse(this$1._select.node()),
+                values = d.values.map(function (d) { return pointDistance(cursor, [this$1._x(d, i), this$1._y(d, i)]); });
+          d = d.values[values.indexOf(min(values))];
+        }
+        this$1._on[events[e]].bind(this$1)(d, i);
       });
     };
 
     for (var e = 0; e < events.length; e++) loop( e );
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Provides the default styling to the active shape elements.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._applyActive = function _applyActive (elem$$1) {
+    var this$1 = this;
+
+
+    var that = this;
+
+    if (elem$$1.size() && elem$$1.node().tagName === "g") { elem$$1 = elem$$1.selectAll("*"); }
+
+    /**
+        @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
+        @param {Object} *d* data point
+        @param {Number} *i* index
+        @private
+    */
+    function styleLogic(d, i) {
+      return typeof this !== "function" ? this
+           : d.nested && d.key && d.values
+           ? this(d.values[0], that._data.indexOf(d.values[0]))
+           : this(d, i);
+    }
+
+    var activeStyle = {};
+    for (var key in this._activeStyle) {
+      if ({}.hasOwnProperty.call(this$1._activeStyle, key)) {
+        activeStyle[key] = styleLogic.bind(this$1._activeStyle[key]);
+      }
+    }
+
+    elem$$1.transition().duration(0).call(attrize, activeStyle);
 
   };
 
@@ -9042,6 +9116,8 @@ var Shape = (function (BaseClass$$1) {
 
     var that = this;
 
+    if (elem$$1.size() && elem$$1.node().tagName === "g") { elem$$1 = elem$$1.selectAll("*"); }
+
     /**
         @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
         @param {Object} *d* data point
@@ -9049,7 +9125,8 @@ var Shape = (function (BaseClass$$1) {
         @private
     */
     function styleLogic(d, i) {
-      return d.nested && d.key && d.values
+      return typeof this !== "function" ? this
+           : d.nested && d.key && d.values
            ? this(d.values[0], that._data.indexOf(d.values[0]))
            : this(d, i);
     }
@@ -9137,6 +9214,7 @@ var Shape = (function (BaseClass$$1) {
               data: d,
               height: height,
               i: i,
+              id: this$1._id(d, i),
               url: url,
               width: width,
               x: x + -width / 2,
@@ -9149,11 +9227,11 @@ var Shape = (function (BaseClass$$1) {
 
       });
 
-    new Image()
+    return new Image()
       .data(imageData)
       .duration(this._duration)
       .pointerEvents("none")
-      .select(this._group.node())
+      .select(elem(("g.d3plus-" + (this._name) + "-image"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
       .render();
 
   };
@@ -9243,7 +9321,7 @@ var Shape = (function (BaseClass$$1) {
 
       });
 
-    new TextBox()
+    return new TextBox()
       .data(labelData)
       .delay(this._duration / 2)
       .duration(this._duration)
@@ -9255,7 +9333,7 @@ var Shape = (function (BaseClass$$1) {
       .pointerEvents("none")
       .textAnchor(function (d) { return d.tA; })
       .verticalAlign(function (d) { return d.vA; })
-      .select(this._group.node())
+      .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
       .render();
 
   };
@@ -9263,7 +9341,8 @@ var Shape = (function (BaseClass$$1) {
   /**
       @memberof Shape
       @desc Renders the current Shape to the page. If a *callback* is specified, it will be called once the shapes are done drawing.
-      @param {Function} [*callback* = undefined]
+      @param {Function} [*callback*]
+      @chainable
   */
   Shape.prototype.render = function render (callback) {
     var this$1 = this;
@@ -9290,10 +9369,16 @@ var Shape = (function (BaseClass$$1) {
 
     if (this._sort) { data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ ? a.data : a, b.__d3plusShape__ ? b.data : b); }); }
 
+    selectAll(("g.d3plus-" + (this._name) + "-hover > *, g.d3plus-" + (this._name) + "-active > *")).each(function(d) {
+      if (d && d.parentNode) { d.parentNode.appendChild(this); }
+      else { this.parentNode.removeChild(this); }
+    });
+
     // Makes the update state of the group selection accessible.
-    this._group = elem(("g.d3plus-" + (this._name) + "-Group"), {parent: this._select});
-    var update = this._update = this._group.selectAll((".d3plus-" + (this._name)))
-      .data(data, key);
+    this._group = elem(("g.d3plus-" + (this._name) + "-group"), {parent: this._select});
+    var update = this._update = elem(("g.d3plus-" + (this._name) + "-shape"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}})
+      .selectAll((".d3plus-" + (this._name)))
+        .data(data, key);
 
     // Orders and transforms the updating Shapes.
     update.order().transition(this._transition)
@@ -9322,16 +9407,19 @@ var Shape = (function (BaseClass$$1) {
     this._renderImage();
     this._renderLabels();
 
+    this._hoverGroup = elem(("g.d3plus-" + (this._name) + "-hover"), {parent: this._group});
+    this._activeGroup = elem(("g.d3plus-" + (this._name) + "-active"), {parent: this._group});
+
     var that = this;
 
-    var hitAreas = this._group.selectAll((".d3plus-" + (this._name) + "-HitArea"))
+    var hitAreas = this._group.selectAll(".d3plus-HitArea")
       .data(this._hitArea ? data : [], key);
 
     hitAreas.order().transition(this._transition)
       .call(this._applyTransform.bind(this));
 
     var hitEnter = hitAreas.enter().append("rect")
-        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-" + (this$1._name) + "-HitArea d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
+        .attr("class", function (d, i) { return ("d3plus-HitArea d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
         .attr("fill", "transparent")
       .call(this._applyTransform.bind(this));
 
@@ -9344,6 +9432,7 @@ var Shape = (function (BaseClass$$1) {
     hitAreas.exit().remove();
 
     this._applyEvents(this._hitArea ? hitUpdates : enterUpdate);
+    this.active(this._active);
 
     if (callback) { setTimeout(callback, this._duration + 100); }
 
@@ -9353,8 +9442,63 @@ var Shape = (function (BaseClass$$1) {
 
   /**
       @memberof Shape
+      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Shape.prototype.active = function active (_) {
+
+    if (!arguments.length || _ === void 0) { return this._active; }
+    this._active = _;
+
+    var that = this;
+
+    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (this.tagName === "text") { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          i = d.i;
+          d = d.data;
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
+        if (group !== this.parentNode) {
+          group.appendChild(this);
+          if (this.className.baseVal.includes("d3plus-Shape")) {
+            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
+            else { select(this).call(that._applyActive.bind(that)); }
+          }
+        }
+
+      });
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the active opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current active opacity.
+      @param {Number} [*value* = 0.75]
+      @chainable
+  */
+  Shape.prototype.activeOpacity = function activeOpacity (_) {
+    return arguments.length ? (this._activeOpacity = _, this) : this._activeOpacity;
+  };
+
+  /**
+      @memberof Shape
       @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
       @param {Function|String} [*value* = false]
+      @chainable
   */
   Shape.prototype.backgroundImage = function backgroundImage (_) {
     return arguments.length
@@ -9366,6 +9510,7 @@ var Shape = (function (BaseClass$$1) {
       @memberof Shape
       @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape will be drawn for each object in the array.
       @param {Array} [*data* = []]
+      @chainable
   */
   Shape.prototype.data = function data (_) {
     return arguments.length
@@ -9377,6 +9522,7 @@ var Shape = (function (BaseClass$$1) {
       @memberof Shape
       @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
       @param {Number} [*ms* = 600]
+      @chainable
   */
   Shape.prototype.duration = function duration (_) {
     return arguments.length
@@ -9388,6 +9534,7 @@ var Shape = (function (BaseClass$$1) {
       @memberof Shape
       @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current fill accessor.
       @param {Function|String} [*value* = "black"]
+      @chainable
   */
   Shape.prototype.fill = function fill (_) {
     return arguments.length
@@ -9399,6 +9546,7 @@ var Shape = (function (BaseClass$$1) {
       @memberof Shape
       @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value*]
+      @chainable
   */
   Shape.prototype.fontColor = function fontColor (_) {
     return arguments.length
@@ -9410,6 +9558,7 @@ var Shape = (function (BaseClass$$1) {
       @memberof Shape
       @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value* = "Verdana"]
+      @chainable
   */
   Shape.prototype.fontFamily = function fontFamily (_) {
     return arguments.length
@@ -9421,6 +9570,7 @@ var Shape = (function (BaseClass$$1) {
       @memberof Shape
       @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|Boolean|Array} [*value*]
+      @chainable
   */
   Shape.prototype.fontResize = function fontResize (_) {
     return arguments.length
@@ -9432,6 +9582,7 @@ var Shape = (function (BaseClass$$1) {
       @memberof Shape
       @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value* = 12]
+      @chainable
   */
   Shape.prototype.fontSize = function fontSize (_) {
     return arguments.length
@@ -9443,48 +9594,55 @@ var Shape = (function (BaseClass$$1) {
       @memberof Shape
       @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
       @param {Function} [*value*]
+      @chainable
   */
-  Shape.prototype.highlight = function highlight (_) {
+  Shape.prototype.hover = function hover (_) {
+
+    if (!arguments.length || _ === void 0) { return this._hover; }
+    this._hover = _;
 
     var that = this;
 
-    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
-      .style(((prefix$1()) + "transition"), ("opacity " + (this._highlightDuration / 1000) + "s"))
-      .style("opacity", function(d, i) {
-        if (!_ || typeof _ !== "function") { return 1; }
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
+      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
         if (this.tagName === "text") { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
-          d = d.data;
           i = d.i;
+          d = d.data;
         }
-        return _(d, i) ? 1 : that._highlightOpacity;
+        else { i = that._data.indexOf(d); }
+
+        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
+        if (group !== this.parentNode) { group.appendChild(this); }
+
       });
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
 
     return this;
   };
 
   /**
       @memberof Shape
-      @desc If *ms* is specified, sets the highlight duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current highlight duration.
-      @param {Number} [*ms* = 200]
-  */
-  Shape.prototype.highlightDuration = function highlightDuration (_) {
-    return arguments.length ? (this._highlightDuration = _, this) : this._highlightDuration;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the highlight opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight opacity.
+      @desc If *value* is specified, sets the hover opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current hover opacity.
       @param {Number} [*value* = 0.5]
+      @chainable
   */
-  Shape.prototype.highlightOpacity = function highlightOpacity (_) {
-    return arguments.length ? (this._highlightOpacity = _, this) : this._highlightOpacity;
+  Shape.prototype.hoverOpacity = function hoverOpacity (_) {
+    return arguments.length ? (this._hoverOpacity = _, this) : this._hoverOpacity;
   };
 
   /**
       @memberof Shape
       @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
       @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
+      @chainable
       @example
 function(d, i, shape) {
   return {
@@ -9505,6 +9663,7 @@ function(d, i, shape) {
       @memberof Shape
       @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
       @param {Function} [*value*]
+      @chainable
   */
   Shape.prototype.id = function id (_) {
     return arguments.length
@@ -9516,6 +9675,7 @@ function(d, i, shape) {
       @memberof Shape
       @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
       @param {Function|String|Array} [*value*]
+      @chainable
   */
   Shape.prototype.label = function label (_) {
     return arguments.length
@@ -9527,6 +9687,7 @@ function(d, i, shape) {
       @memberof Shape
       @desc If *bounds* is specified, sets the label bounds to the specified function and returns the current class instance. If *bounds* is not specified, returns the current inner bounds accessor.
       @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`. If an array is returned from the function, each value will be used in conjunction with each label.
+      @chainable
       @example
 function(d, i, shape) {
   return {
@@ -9547,6 +9708,7 @@ function(d, i, shape) {
       @memberof Shape
       @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|Number|Array} [*value* = 10]
+      @chainable
   */
   Shape.prototype.labelPadding = function labelPadding (_) {
     return arguments.length
@@ -9558,6 +9720,7 @@ function(d, i, shape) {
       @memberof Shape
       @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value*]
+      @chainable
   */
   Shape.prototype.lineHeight = function lineHeight (_) {
     return arguments.length
@@ -9569,6 +9732,7 @@ function(d, i, shape) {
       @memberof Shape
       @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current opacity accessor.
       @param {Number} [*value* = 1]
+      @chainable
   */
   Shape.prototype.opacity = function opacity (_) {
     return arguments.length
@@ -9580,6 +9744,7 @@ function(d, i, shape) {
       @memberof Shape
       @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current scale accessor.
       @param {Function|Number} [*value* = 1]
+      @chainable
   */
   Shape.prototype.scale = function scale (_) {
     return arguments.length
@@ -9591,6 +9756,7 @@ function(d, i, shape) {
       @memberof Shape
       @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
       @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+      @chainable
   */
   Shape.prototype.select = function select$1 (_) {
     return arguments.length
@@ -9602,6 +9768,7 @@ function(d, i, shape) {
       @memberof Shape
       @desc If *value* is specified, sets the shape-rendering accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current shape-rendering accessor.
       @param {Function|String} [*value* = "geometricPrecision"]
+      @chainable
       @example
 function(d) {
   return d.x;
@@ -9617,6 +9784,7 @@ function(d) {
       @memberof Shape
       @desc If *value* is specified, sets the sort comparator to the specified function and returns the current class instance. If *value* is not specified, returns the current sort comparator.
       @param {false|Function} [*value* = []]
+      @chainable
   */
   Shape.prototype.sort = function sort (_) {
     return arguments.length
@@ -9628,6 +9796,7 @@ function(d) {
       @memberof Shape
       @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke accessor.
       @param {Function|String} [*value* = "black"]
+      @chainable
   */
   Shape.prototype.stroke = function stroke (_) {
     return arguments.length
@@ -9639,6 +9808,7 @@ function(d) {
       @memberof Shape
       @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke-width accessor.
       @param {Function|Number} [*value* = 0]
+      @chainable
   */
   Shape.prototype.strokeWidth = function strokeWidth (_) {
     return arguments.length
@@ -9650,6 +9820,7 @@ function(d) {
       @memberof Shape
       @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value* = "start"]
+      @chainable
   */
   Shape.prototype.textAnchor = function textAnchor (_) {
     return arguments.length
@@ -9661,6 +9832,7 @@ function(d) {
       @memberof Shape
       @desc If *value* is specified, sets the vector-effect accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vector-effect accessor.
       @param {Function|String} [*value* = "non-scaling-stroke"]
+      @chainable
   */
   Shape.prototype.vectorEffect = function vectorEffect (_) {
     return arguments.length
@@ -9672,6 +9844,7 @@ function(d) {
       @memberof Shape
       @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
       @param {Function|String|Array} [*value* = "start"]
+      @chainable
   */
   Shape.prototype.verticalAlign = function verticalAlign (_) {
     return arguments.length
@@ -9683,6 +9856,7 @@ function(d) {
       @memberof Shape
       @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
       @param {Function|Number} [*value*]
+      @chainable
       @example
 function(d) {
   return d.x;
@@ -9698,6 +9872,7 @@ function(d) {
       @memberof Shape
       @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
       @param {Function|Number} [*value*]
+      @chainable
       @example
 function(d) {
   return d.y;
@@ -11950,7 +12125,8 @@ var Area = (function (Shape$$1) {
   Area.prototype.constructor = Area;
 
   /**
-      Filters/manipulates the data array before binding each point to an SVG group.
+      @memberof Area
+      @desc Filters/manipulates the data array before binding each point to an SVG group.
       @param {Array} [*data* = the data array to be filtered]
       @private
   */
@@ -11992,9 +12168,10 @@ var Area = (function (Shape$$1) {
   };
 
   /**
-      Draws the area polygons.
-      @param {Function} [*callback* = undefined]
-      @private
+      @memberof Area
+      @desc Draws the area polygons.
+      @param {Function} [*callback*]
+      @chainable
   */
   Area.prototype.render = function render (callback) {
 
@@ -12050,6 +12227,7 @@ var Area = (function (Shape$$1) {
       @memberof Area
       @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
       @param {String} [*value* = "linear"]
+      @chainable
   */
   Area.prototype.curve = function curve (_) {
     return arguments.length
@@ -12061,6 +12239,7 @@ var Area = (function (Shape$$1) {
       @memberof Area
       @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
       @param {Function} [*value*]
+      @chainable
   */
   Area.prototype.defined = function defined (_) {
     return arguments.length
@@ -12072,6 +12251,7 @@ var Area = (function (Shape$$1) {
       @memberof Area
       @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
       @param {Function|Number} [*value*]
+      @chainable
   */
   Area.prototype.x0 = function x0 (_) {
     if (!arguments.length) { return this._x0; }
@@ -12084,6 +12264,7 @@ var Area = (function (Shape$$1) {
       @memberof Area
       @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
       @param {Function|Number|null} [*value*]
+      @chainable
   */
   Area.prototype.x1 = function x1 (_) {
     return arguments.length
@@ -12095,6 +12276,7 @@ var Area = (function (Shape$$1) {
       @memberof Area
       @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
       @param {Function|Number} [*value*]
+      @chainable
   */
   Area.prototype.y0 = function y0 (_) {
     if (!arguments.length) { return this._y0; }
@@ -12107,6 +12289,7 @@ var Area = (function (Shape$$1) {
       @memberof Area
       @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
       @param {Function|Number|null} [*value*]
+      @chainable
   */
   Area.prototype.y1 = function y1 (_) {
     return arguments.length
@@ -12145,9 +12328,10 @@ var Bar = (function (Shape$$1) {
   Bar.prototype.constructor = Bar;
 
   /**
-      Draws the rectangles.
-      @param {Function} [*callback* = undefined]
-      @private
+      @memberof Bar
+      @desc Draws the bars.
+      @param {Function} [*callback*]
+      @chainable
   */
   Bar.prototype.render = function render (callback) {
     var this$1 = this;
@@ -12169,8 +12353,10 @@ var Bar = (function (Shape$$1) {
       .call(this._applyPosition.bind(this));
 
     this._exit.transition(this._transition)
-      .attr("width", 0).attr("height", 0)
-      .attr("x", 0).attr("y", 0);
+      .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
+      .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
+      .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
+      .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; });
 
     return this;
 
@@ -12187,8 +12373,8 @@ var Bar = (function (Shape$$1) {
     return {
       height: this._getHeight(d, i),
       width: this._getWidth(d, i),
-      x: this._x1 !== null ? -this._getWidth(d, i) / 2 : 0,
-      y: this._x1 === null ? -this._getHeight(d, i) / 2 : 0
+      x: this._x1 !== null ? this._getX(d, i) + this._getWidth(d, i) / 2 : this._getX(d, i),
+      y: this._x1 === null ? this._getY(d, i) + this._getHeight(d, i) / 2 : this._getY(d, i)
     };
   };
 
@@ -12204,8 +12390,8 @@ var Bar = (function (Shape$$1) {
     elem$$1
       .attr("width", function (d, i) { return this$1._getWidth(d, i); })
       .attr("height", function (d, i) { return this$1._getHeight(d, i); })
-      .attr("x", function (d, i) { return this$1._x1 !== null ? -this$1._getWidth(d, i) : -this$1._getWidth(d, i) / 2; })
-      .attr("y", function (d, i) { return this$1._x1 === null ? -this$1._getHeight(d, i) : -this$1._getHeight(d, i) / 2; });
+      .attr("x", function (d, i) { return this$1._x1 !== null ? this$1._getX(d, i) : -this$1._getWidth(d, i) / 2; })
+      .attr("y", function (d, i) { return this$1._x1 === null ? this$1._getY(d, i) : -this$1._getHeight(d, i) / 2; });
   };
 
   /**
@@ -12234,8 +12420,35 @@ var Bar = (function (Shape$$1) {
 
   /**
       @memberof Bar
+      @desc Calculates the x of the <rect> by assessing the x and width properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getX = function _getX (d, i) {
+    var w = this._x1 === null ? this._width(d, i) : this._x1(d, i) - this._x(d, i);
+    if (w < 0) { return w; }
+    else { return 0; }
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the y of the <rect> by assessing the y and height properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getY = function _getY (d, i) {
+    var h = this._x1 !== null ? this._height(d, i) : this._y1(d, i) - this._y(d, i);
+    if (h < 0) { return h; }
+    else { return 0; }
+  };
+
+  /**
+      @memberof Bar
       @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
       @param {Function|Number} [*value*]
+      @chainable
       @example
 function(d) {
   return d.height;
@@ -12251,6 +12464,7 @@ function(d) {
       @memberof Bar
       @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
       @param {Function|Number} [*value*]
+      @chainable
       @example
 function(d) {
   return d.width;
@@ -12266,6 +12480,7 @@ function(d) {
       @memberof Bar
       @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
       @param {Function|Number} [*value*]
+      @chainable
   */
   Bar.prototype.x0 = function x0 (_) {
     if (!arguments.length) { return this._x0; }
@@ -12278,6 +12493,7 @@ function(d) {
       @memberof Bar
       @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
       @param {Function|Number|null} [*value*]
+      @chainable
   */
   Bar.prototype.x1 = function x1 (_) {
     return arguments.length
@@ -12289,6 +12505,7 @@ function(d) {
       @memberof Bar
       @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
       @param {Function|Number} [*value*]
+      @chainable
   */
   Bar.prototype.y0 = function y0 (_) {
     if (!arguments.length) { return this._y0; }
@@ -12301,6 +12518,7 @@ function(d) {
       @memberof Bar
       @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
       @param {Function|Number|null} [*value*]
+      @chainable
   */
   Bar.prototype.y1 = function y1 (_) {
     return arguments.length
@@ -12328,7 +12546,8 @@ var Circle = (function (Shape$$1) {
   Circle.prototype.constructor = Circle;
 
   /**
-      Provides the default positioning to the <rect> elements.
+      @memberof Circle
+      @desc Provides the default positioning to the <rect> elements.
       @private
   */
   Circle.prototype._applyPosition = function _applyPosition (elem$$1) {
@@ -12341,9 +12560,10 @@ var Circle = (function (Shape$$1) {
   };
 
   /**
-      Draws the circles.
-      @param {Function} [*callback* = undefined]
-      @private
+      @memberof Circle
+      @desc Draws the circles.
+      @param {Function} [*callback*]
+      @chainable
   */
   Circle.prototype.render = function render (callback) {
 
@@ -12381,6 +12601,7 @@ var Circle = (function (Shape$$1) {
       @memberof Circle
       @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current radius accessor.
       @param {Function|Number} [*value*]
+      @chainable
       @example
 function(d) {
   return d.r;
@@ -12417,7 +12638,8 @@ var Line = (function (Shape$$1) {
   Line.prototype.constructor = Line;
 
   /**
-      Filters/manipulates the data array before binding each point to an SVG group.
+      @memberof Line
+      @desc Filters/manipulates the data array before binding each point to an SVG group.
       @param {Array} [*data* = the data array to be filtered]
       @private
   */
@@ -12453,9 +12675,10 @@ var Line = (function (Shape$$1) {
   };
 
   /**
-      Draws the lines.
-      @param {Function} [*callback* = undefined]
-      @private
+      @memberof Line
+      @desc Draws the lines.
+      @param {Function} [*callback*]
+      @chainable
   */
   Line.prototype.render = function render (callback) {
     var this$1 = this;
@@ -12504,6 +12727,7 @@ var Line = (function (Shape$$1) {
       @memberof Line
       @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
       @param {String} [*value* = "linear"]
+      @chainable
   */
   Line.prototype.curve = function curve (_) {
     return arguments.length ? (this._curve = _, this) : this._curve;
@@ -12513,6 +12737,7 @@ var Line = (function (Shape$$1) {
       @memberof Line
       @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
       @param {Function} [*value*]
+      @chainable
   */
   Line.prototype.defined = function defined (_) {
     return arguments.length ? (this._defined = _, this) : this._defined;
@@ -12538,9 +12763,10 @@ var Path$1 = (function (Shape$$1) {
   Path.prototype.constructor = Path;
 
   /**
-      Draws the rectangles.
-      @param {Function} [*callback* = undefined]
-      @private
+      @memberof Path
+      @desc Draws the paths.
+      @param {Function} [*callback*]
+      @chainable
   */
   Path.prototype.render = function render (callback) {
 
@@ -12569,6 +12795,7 @@ var Path$1 = (function (Shape$$1) {
       @memberof Path
       @desc If *value* is specified, sets the "d" attribute accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current "d" attribute accessor.
       @param {Function|String} [*value*]
+      @chainable
       @example
 function(d) {
   return d.path;
@@ -12602,9 +12829,10 @@ var Rect = (function (Shape$$1) {
   Rect.prototype.constructor = Rect;
 
   /**
-      Draws the rectangles.
-      @param {Function} [*callback* = undefined]
-      @private
+      @memberof Rect
+      @desc Draws the rectangles.
+      @param {Function} [*callback*]
+      @chainable
   */
   Rect.prototype.render = function render (callback) {
 
@@ -12660,6 +12888,7 @@ var Rect = (function (Shape$$1) {
       @memberof Rect
       @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
       @param {Function|Number} [*value*]
+      @chainable
       @example
 function(d) {
   return d.height;
@@ -12675,6 +12904,7 @@ function(d) {
       @memberof Rect
       @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
       @param {Function|Number} [*value*]
+      @chainable
       @example
 function(d) {
   return d.width;
@@ -12702,836 +12932,6 @@ var shapes = Object.freeze({
 	Path: Path$1,
 	Rect: Rect
 });
-
-/**
-    @function stringify
-    @desc Coerces value into a String.
-    @param {String} value
-*/
-var stringify$1 = function(value) {
-  if (value === void 0) { value = "undefined"; }
-  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
-  return value;
-};
-
-// great unicode list: http://asecuritysite.com/coding/asc2
-
-var diacritics$1 = [
-  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
-  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
-  [/[\337]/g, "B"],
-  [/[\307]/g, "C"], [/[\347]/g, "c"],
-  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
-  [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
-  [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
-  [/[\321]/g, "N"], [/[\361]/g, "n"],
-  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
-  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
-  [/[\327]/g, "x"],
-  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
-];
-
-/**
-    @function strip
-    @desc Removes all non ASCII characters from a string.
-    @param {String} value
-*/
-
-// scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
-// and http://www.fileformat.info/info/unicode/category/Mn/list.htm
-// JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
-var a$2 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
-var b$1 = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
-var combiningMarks$1 = a$2.concat(b$1);
-
-var splitChars$1 = ["-",  "/",  ";",  ":",  "&",
-  "u0E2F",  // thai character pairannoi
-  "u0EAF",  // lao ellipsis
-  "u0EC6",  // lao ko la (word repetition)
-  "u0ECC",  // lao cancellation mark
-  "u104A",  // myanmar sign little section
-  "u104B",  // myanmar sign section
-  "u104C",  // myanmar symbol locative
-  "u104D",  // myanmar symbol completed
-  "u104E",  // myanmar symbol aforementioned
-  "u104F",  // myanmar symbol genitive
-  "u2013",  // en dash
-  "u2014",  // em dash
-  "u2027",  // simplified chinese hyphenation point
-  "u3000",  // simplified chinese ideographic space
-  "u3001",  // simplified chinese ideographic comma
-  "u3002",  // simplified chinese ideographic full stop
-  "uFF0C",  // full-width comma
-  "uFF5E"   // wave dash
-];
-
-var prefixChars$1 = ["'",  "<",  "(",  "{",  "[",
-  "u00AB",  // left-pointing double angle quotation mark
-  "u300A",  // left double angle bracket
-  "u3008"  // left angle bracket
-];
-
-var suffixChars$1 = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
-  "u00BB",  // right-pointing double angle quotation mark
-  "u300B",  // right double angle bracket
-  "u3009"  // right angle bracket
-].concat(splitChars$1);
-
-var burmeseRange$1 = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-var japaneseRange$1 = "぀-ゟ\n                       ゠-ヿ\n                       ＀-＋\n                       －-｝\n                       ｟-ﾟ\n                       㐀-䶿";
-var chineseRange$1 = "\u3400-\u9FBF";
-var laoRange$1 = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
-
-var noSpaceRange$1 = burmeseRange$1 + chineseRange$1 + laoRange$1;
-
-var splitWords$1 = new RegExp(("(\\" + (splitChars$1.join("|\\")) + ")*[^\\s|\\" + (splitChars$1.join("|\\")) + "]+(\\" + (splitChars$1.join("|\\")) + ")*"), "g");
-var japaneseChars$1 = new RegExp(("[" + japaneseRange$1 + "]"));
-var noSpaceLanguage$1 = new RegExp(("[" + noSpaceRange$1 + "]"));
-var splitAllChars$1 = new RegExp(("(\\" + (prefixChars$1.join("|\\")) + ")*[" + noSpaceRange$1 + "](\\" + (suffixChars$1.join("|\\")) + "|\\" + (combiningMarks$1.join("|\\")) + ")*|[a-z0-9]+"), "gi");
-
-/**
-    @function textSplit
-    @desc Splits a given sentence into an array of words.
-    @param {String} sentence
-*/
-var textSplit$1 = function(sentence) {
-  if (!noSpaceLanguage$1.test(sentence)) { return stringify$1(sentence).match(splitWords$1); }
-  return merge(stringify$1(sentence).match(splitWords$1).map(function (d) {
-    if (!japaneseChars$1.test(d) && noSpaceLanguage$1.test(d)) { return d.match(splitAllChars$1); }
-    return [d];
-  }));
-};
-
-/**
-    @function textWidth
-    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
-    @param {String|Array} text Can be either a single string or an array of strings to analyze.
-    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
-*/
-var measure$1 = function(text, style) {
-  if ( style === void 0 ) style = {"font-size": 10, "font-family": "sans-serif"};
-
-
-  var context = document.createElement("canvas").getContext("2d");
-
-  var font = [];
-  if ("font-style" in style) { font.push(style["font-style"]); }
-  if ("font-variant" in style) { font.push(style["font-variant"]); }
-  if ("font-weight" in style) { font.push(style["font-weight"]); }
-  if ("font-size" in style) {
-    var s = (style["font-size"]) + "px";
-    if ("line-height" in style) { s += "/" + (style["line-height"]) + "px"; }
-    font.push(s);
-  }
-  if ("font-family" in style) { font.push(style["font-family"]); }
-
-  context.font = font.join(" ");
-
-  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-  return context.measureText(text).width;
-
-};
-
-/**
-    @function textWrap
-    @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
-*/
-var wrap$1 = function() {
-
-  var fontFamily = "Verdana",
-      fontSize = 10,
-      fontWeight = 400,
-      height = 200,
-      lineHeight,
-      overflow = false,
-      split = textSplit$1,
-      width = 200;
-
-  /**
-      The inner return object and wraps the text and returns the line data array.
-      @private
-  */
-  function textWrap(sentence) {
-
-    sentence = stringify$1(sentence);
-
-    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.1); }
-
-    var words = split(sentence);
-
-    var style = {
-      "font-family": fontFamily,
-      "font-size": fontSize,
-      "font-weight": fontWeight,
-      "line-height": lineHeight
-    };
-
-    var line = 1,
-        textProg = "",
-        truncated = false,
-        widthProg = 0;
-
-    var lineData = [],
-          sizes = measure$1(words, style),
-          space = measure$1(" ", style);
-
-    for (var i = 0; i < words.length; i++) {
-      var word = words[i];
-      var nextChar = sentence.charAt(textProg.length + word.length),
-            wordWidth = sizes[words.indexOf(word)];
-      if (nextChar === " ") { word += nextChar; }
-      if (widthProg + wordWidth > width) {
-        if (!i && !overflow) {
-          truncated = true;
-          break;
-        }
-        lineData[line - 1] = lineData[line - 1].trimRight();
-        line++;
-        if (lineHeight * line > height || wordWidth > width && !overflow) {
-          truncated = true;
-          break;
-        }
-        widthProg = 0;
-        lineData.push(word);
-      }
-      else if (!i) { lineData[0] = word; }
-      else { lineData[line - 1] += word; }
-      textProg += word;
-      widthProg += wordWidth;
-      if (nextChar === " ") { widthProg += space; }
-    }
-
-    return {
-      lines: lineData,
-      sentence: sentence, truncated: truncated, words: words
-    };
-
-  }
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value* = "Verdana"]
-  */
-  textWrap.fontFamily = function(_) {
-    return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
-      @param {Function|Number} [*value* = 10]
-  */
-  textWrap.fontSize = function(_) {
-    return arguments.length ? (fontSize = _, textWrap) : fontSize;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  textWrap.fontWeight = function(_) {
-    return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets height limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.height = function(_) {
-    return arguments.length ? (height = _, textWrap) : height;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textWrap.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  textWrap.lineHeight = function(_) {
-    return arguments.length ? (lineHeight = _, textWrap) : lineHeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
-      @param {Boolean} [*value* = false]
-  */
-  textWrap.overflow = function(_) {
-    return arguments.length ? (overflow = _, textWrap) : overflow;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
-      @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to textWrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
-  */
-  textWrap.split = function(_) {
-    return arguments.length ? (split = _, textWrap) : split;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets width limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.width = function(_) {
-    return arguments.length ? (width = _, textWrap) : width;
-  };
-
-  return textWrap;
-
-};
-
-/**
-    @function TextBox
-    @extends BaseClass
-    @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the textBox function.
-*/
-var TextBox$2 = (function (BaseClass$$1) {
-  function TextBox() {
-
-    BaseClass$$1.call(this);
-
-    this._delay = 0;
-    this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
-    this._fontColor = constant$5("black");
-    this._fontFamily = constant$5("Verdana");
-    this._fontMax = constant$5(50);
-    this._fontMin = constant$5(8);
-    this._fontResize = constant$5(false);
-    this._fontSize = constant$5(10);
-    this._fontWeight = constant$5(400);
-    this._height = accessor("height", 200);
-    this._id = function (d, i) { return d.id || ("" + i); };
-    this._on = {};
-    this._overflow = constant$5(false);
-    this._pointerEvents = constant$5("auto");
-    this._rotate = constant$5(0);
-    this._split = textSplit$1;
-    this._text = accessor("text");
-    this._textAnchor = constant$5("start");
-    this._verticalAlign = constant$5("top");
-    this._width = accessor("width", 200);
-    this._x = accessor("x", 0);
-    this._y = accessor("y", 0);
-
-  }
-
-  if ( BaseClass$$1 ) TextBox.__proto__ = BaseClass$$1;
-  TextBox.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
-  TextBox.prototype.constructor = TextBox;
-
-  /**
-      @memberof TextBox
-      @desc Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
-      @param {Function} [*callback* = undefined]
-  */
-  TextBox.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
-    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; }; }
-    var that = this;
-
-    var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
-
-      var t = this$1._text(d, i);
-      if (t === void 0) { return arr; }
-
-      var resize = this$1._fontResize(d, i);
-
-      var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
-          lH = resize ? fS * 1.1 : this$1._lineHeight(d, i),
-          line = 1,
-          lineData = [],
-          sizes;
-
-      var style = {
-        "font-family": this$1._fontFamily(d, i),
-        "font-size": fS,
-        "font-weight": this$1._fontWeight(d, i),
-        "line-height": lH
-      };
-
-      var h = this$1._height(d, i),
-            w = this$1._width(d, i);
-
-      var wrapper = wrap$1()
-        .fontFamily(style["font-family"])
-        .fontSize(fS)
-        .fontWeight(style["font-weight"])
-        .lineHeight(lH)
-        .height(h)
-        .overflow(this$1._overflow(d, i))
-        .width(w);
-
-      var fMax = this$1._fontMax(d, i),
-            fMin = this$1._fontMin(d, i),
-            vA = this$1._verticalAlign(d, i),
-            words = this$1._split(t, i);
-
-      /**
-          Figures out the lineData to be used for wrapping.
-          @private
-      */
-      function checkSize() {
-
-        if (fS < fMin) {
-          lineData = [];
-          return;
-        }
-        else if (fS > fMax) { fS = fMax; }
-
-        if (resize) {
-          lH = fS * 1.1;
-          wrapper
-            .fontSize(fS)
-            .lineHeight(lH);
-          style["font-size"] = fS;
-          style["line-height"] = lH;
-        }
-
-        var wrapResults = wrapper(t);
-        lineData = wrapResults.lines.filter(function (l) { return l !== ""; });
-        line = lineData.length;
-
-        if (wrapResults.truncated) {
-
-          if (resize) {
-            fS--;
-            if (fS < fMin) { lineData = []; }
-            else { checkSize(); }
-          }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
-
-        }
-
-
-      }
-
-      if (w > fMin && (h > lH || resize && h > fMin * 1.1)) {
-
-        if (resize) {
-
-          sizes = measure$1(words, style);
-
-          var areaMod = 1.165 + w / h * 0.1,
-                boxArea = w * h,
-                maxWidth = max(sizes),
-                textArea = sum(sizes, function (d) { return d * lH; }) * areaMod;
-
-          if (maxWidth > w || textArea > boxArea) {
-            var areaRatio = Math.sqrt(boxArea / textArea),
-                  widthRatio = w / maxWidth;
-            var sizeRatio = min([areaRatio, widthRatio]);
-            fS = Math.floor(fS * sizeRatio);
-          }
-
-          var heightMax = Math.floor(h * 0.8);
-          if (fS > heightMax) { fS = heightMax; }
-
-        }
-
-        checkSize();
-
-      }
-
-      if (lineData.length) {
-
-        var tH = line * lH;
-        var yP = vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH;
-        yP -= lH * 0.1;
-
-        arr.push({
-          data: d,
-          i: i,
-          lines: lineData,
-          fC: this$1._fontColor(d, i),
-          fF: style["font-family"],
-          fW: style["font-weight"],
-          id: this$1._id(d, i),
-          tA: this$1._textAnchor(d, i),
-          fS: fS, lH: lH, w: w, x: this$1._x(d, i), y: this$1._y(d, i) + yP
-        });
-
-      }
-
-      return arr;
-
-    }, []), this._id);
-
-    var t = transition().duration(this._duration);
-
-    if (this._duration === 0) {
-
-      boxes.exit().remove();
-
-    }
-    else {
-
-      boxes.exit().transition().delay(this._duration).remove();
-
-      boxes.exit().selectAll("tspan").transition(t)
-        .attr("opacity", 0);
-
-    }
-
-    function rotate(text) {
-      text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + " " + (d.x + d.w / 2) + " " + (d.y + d.lH / 4 + d.lH * d.lines.length / 2) + ")"); });
-    }
-
-    var update = boxes.enter().append("text")
-        .attr("class", "d3plus-textBox")
-        .attr("id", function (d) { return ("d3plus-textBox-" + (d.id)); })
-        .attr("y", function (d) { return ((d.y) + "px"); })
-        .call(rotate)
-      .merge(boxes);
-
-    update
-      .attr("fill", function (d) { return d.fC; })
-      .attr("text-anchor", function (d) { return d.tA; })
-      .attr("font-family", function (d) { return d.fF; })
-      .style("font-family", function (d) { return d.fF; })
-      .attr("font-size", function (d) { return ((d.fS) + "px"); })
-      .style("font-size", function (d) { return ((d.fS) + "px"); })
-      .attr("font-weight", function (d) { return d.fW; })
-      .style("font-weight", function (d) { return d.fW; })
-      .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
-      .each(function(d) {
-
-        var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
-              tB = select(this);
-
-        if (that._duration === 0) { tB.attr("y", function (d) { return ((d.y) + "px"); }); }
-        else { tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); }); }
-
-        /**
-            Styles to apply to each <tspan> element.
-            @private
-        */
-        function tspanStyle(tspan) {
-          tspan
-            .text(function (t) { return t.trimRight(); })
-            .attr("x", ((d.x) + "px"))
-            .attr("dx", (dx + "px"))
-            .attr("dy", ((d.lH) + "px"));
-        }
-
-        var tspans = tB.selectAll("tspan").data(d.lines);
-
-        if (that._duration === 0) {
-
-          tspans.call(tspanStyle);
-
-          tspans.exit().remove();
-
-          tspans.enter().append("tspan")
-            .attr("dominant-baseline", "alphabetic")
-            .style("baseline-shift", "0%")
-            .call(tspanStyle);
-
-        }
-        else {
-
-          tspans.transition(t).call(tspanStyle);
-
-          tspans.exit().transition(t)
-            .attr("opacity", 0).remove();
-
-          tspans.enter().append("tspan")
-            .attr("dominant-baseline", "alphabetic")
-            .style("baseline-shift", "0%")
-            .attr("opacity", 0)
-            .call(tspanStyle)
-            .transition(t).delay(that._delay)
-              .attr("opacity", 1);
-
-        }
-
-      })
-      .transition(t).call(rotate);
-
-    var events = Object.keys(this._on),
-          on = events.reduce(function (obj, e) {
-            obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
-            return obj;
-          }, {});
-    for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
-
-    if (callback) { setTimeout(callback, this._duration + 100); }
-
-    return this;
-
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *data* is specified, sets the data array to the specified array and returns this generator. If *data* is not specified, returns the current data array. A text box will be drawn for each object in the array.
-      @param {Array} [*data* = []]
-  */
-  TextBox.prototype.data = function data (_) {
-    return arguments.length ? (this._data = _, this) : this._data;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the animation delay to the specified number and returns this generator. If *value* is not specified, returns the current animation delay.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.delay = function delay (_) {
-    return arguments.length ? (this._delay = _, this) : this._delay;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the animation duration to the specified number and returns this generator. If *value* is not specified, returns the current animation duration.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.duration = function duration (_) {
-    return arguments.length ? (this._duration = _, this) : this._duration;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the ellipsis method to the specified function or string and returns this generator. If *value* is not specified, returns the current ellipsis method, which simply adds an ellipsis to the string by default.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
-}
-  */
-  TextBox.prototype.ellipsis = function ellipsis (_) {
-    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$5(_), this) : this._ellipsis;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the font color accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font color accessor, which is inferred from the [container element](#textBox.select) by default.
-      @param {Function|String} [*value* = "black"]
-  */
-  TextBox.prototype.fontColor = function fontColor (_) {
-    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$5(_), this) : this._fontColor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family accessor, which is inferred from the [container element](#textBox.select) by default.
-      @param {Function|String} [*value* = "Verdana"]
-  */
-  TextBox.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$5(_), this) : this._fontFamily;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the maximum font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current maximum font size accessor. The maximum font size is used when [resizing fonts](#textBox.fontResize) dynamically.
-      @param {Function|Number} [*value* = 50]
-  */
-  TextBox.prototype.fontMax = function fontMax (_) {
-    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$5(_), this) : this._fontMax;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the minimum font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current minimum font size accessor. The minimum font size is used when [resizing fonts](#textBox.fontResize) dynamically.
-      @param {Function|Number} [*value* = 8]
-  */
-  TextBox.prototype.fontMin = function fontMin (_) {
-    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$5(_), this) : this._fontMin;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns this generator. If *value* is not specified, returns the current font resizing accessor.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.fontResize = function fontResize (_) {
-    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$5(_), this) : this._fontResize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size accessor, which is inferred from the [container element](#textBox.select) by default.
-      @param {Function|Number} [*value* = 10]
-  */
-  TextBox.prototype.fontSize = function fontSize (_) {
-    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$5(_), this) : this._fontSize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight accessor, which is inferred from the [container element](#textBox.select) by default.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  TextBox.prototype.fontWeight = function fontWeight (_) {
-    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$5(_), this) : this._fontWeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current height accessor.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.height || 200;
-}
-  */
-  TextBox.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$5(_), this) : this._height;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the id accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current id accessor.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d, i) {
-  return d.id || i + "";
-}
-  */
-  TextBox.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$5(_), this) : this._id;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textBox.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  TextBox.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$5(_), this) : this._lineHeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the overflow accessor to the specified function or boolean and returns this generator. If *value* is not specified, returns the current overflow accessor.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.overflow = function overflow (_) {
-    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$5(_), this) : this._overflow;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current pointer-events accessor.
-      @param {Function|String} [*value* = "auto"]
-  */
-  TextBox.prototype.pointerEvents = function pointerEvents (_) {
-    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$5(_), this) : this._pointerEvents;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the rotate accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current rotate accessor.
-      @param {Function|Number} [*value* = 0]
-  */
-  TextBox.prototype.rotate = function rotate (_) {
-    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$5(_), this) : this._rotate;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns this generator. If *selector* is not specified, returns the current SVG container element, which adds an SVG element to the page by default.
-      @param {String|HTMLElement} [*selector*]
-  */
-  TextBox.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = select(_), this) : this._select;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
-      @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to wrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
-  */
-  TextBox.prototype.split = function split (_) {
-    return arguments.length ? (this._split = _, this) : this._split;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the text accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current text accessor.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.text;
-}
-  */
-  TextBox.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$5(_), this) : this._text;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the horizontal text anchor accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current horizontal text anchor accessor.
-      @param {Function|String} [*value* = "start"] Analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
-  */
-  TextBox.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$5(_), this) : this._textAnchor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current vertical alignment accessor.
-      @param {Function|String} [*value* = "top"] Accepts `"top"`, `"middle"`, and `"bottom"`.
-  */
-  TextBox.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$5(_), this) : this._verticalAlign;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current width accessor.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.width || 200;
-}
-  */
-  TextBox.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$5(_), this) : this._width;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current x accessor. The number returned should correspond to the left position of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.x || 0;
-}
-  */
-  TextBox.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$5(_), this) : this._x;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current y accessor. The number returned should correspond to the top position of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.y || 0;
-}
-  */
-  TextBox.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$5(_), this) : this._y;
-  };
-
-  return TextBox;
-}(BaseClass));
-
-/**
-    @function titleCase
-    @desc Capitalizes the first letter of each word in a phrase/sentence.
-    @param {String} str The string to apply the title case logic.
-    @param {Object} [opts] Optional parameters to apply.
-    @param {String} [opts.lng] The locale to use when looking up all lowercase or uppecase words.
-*/
 
 /**
     @function date
@@ -13591,7 +12991,7 @@ var Axis = (function (BaseClass$$1) {
     this._shapeConfig = {
       fill: "#000",
       fontColor: "#000",
-      fontFamily: new TextBox$2().fontFamily(),
+      fontFamily: new TextBox().fontFamily(),
       fontResize: false,
       fontSize: constant$5(10),
       height: 8,
@@ -13871,7 +13271,7 @@ var Axis = (function (BaseClass$$1) {
 
     if (this._title) {
       var lH = this._titleConfig.lineHeight ? this._titleConfig.lineHeight : this._titleConfig.fontSize * 1.1,
-            titleWrap = wrap$1()
+            titleWrap = textWrap()
               .fontFamily(this._titleConfig.fontFamily)
               .fontSize(this._titleConfig.fontSize)
               .lineHeight(lH)
@@ -13965,7 +13365,7 @@ var Axis = (function (BaseClass$$1) {
 
       var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
 
-      var res = wrap$1()
+      var res = textWrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lh)
@@ -13976,7 +13376,7 @@ var Axis = (function (BaseClass$$1) {
       res.lines = res.lines.filter(function (d) { return d !== ""; });
       res.d = d;
       res.fS = s;
-      res.width = Math.ceil(max(res.lines.map(function (t) { return measure$1(t, {"font-family": f, "font-size": s}); }))) + s / 4;
+      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s / 4;
       res.height = Math.ceil(res.lines.length * (lh + 1));
       if (res.width % 2) { res.width++; }
 
@@ -14098,7 +13498,7 @@ var Axis = (function (BaseClass$$1) {
         .attr("opacity", 1)
         .call(this._barPosition.bind(this));
 
-    new TextBox$2()
+    new TextBox()
       .data(this._title ? [{text: this._title}] : [])
       .duration(this._duration)
       .height(this._outerBounds.height)
@@ -14215,838 +13615,13 @@ var Axis = (function (BaseClass$$1) {
 }(BaseClass));
 
 /**
-    @function stringify
-    @desc Coerces value into a String.
-    @param {String} value
-*/
-var stringify$2 = function(value) {
-  if (value === void 0) { value = "undefined"; }
-  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
-  return value;
-};
-
-// great unicode list: http://asecuritysite.com/coding/asc2
-
-var diacritics$2 = [
-  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
-  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
-  [/[\337]/g, "B"],
-  [/[\307]/g, "C"], [/[\347]/g, "c"],
-  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
-  [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
-  [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
-  [/[\321]/g, "N"], [/[\361]/g, "n"],
-  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
-  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
-  [/[\327]/g, "x"],
-  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
-];
-
-/**
-    @function strip
-    @desc Removes all non ASCII characters from a string.
-    @param {String} value
-*/
-
-// scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
-// and http://www.fileformat.info/info/unicode/category/Mn/list.htm
-// JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
-var a$3 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
-var b$2 = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
-var combiningMarks$2 = a$3.concat(b$2);
-
-var splitChars$2 = ["-",  "/",  ";",  ":",  "&",
-  "u0E2F",  // thai character pairannoi
-  "u0EAF",  // lao ellipsis
-  "u0EC6",  // lao ko la (word repetition)
-  "u0ECC",  // lao cancellation mark
-  "u104A",  // myanmar sign little section
-  "u104B",  // myanmar sign section
-  "u104C",  // myanmar symbol locative
-  "u104D",  // myanmar symbol completed
-  "u104E",  // myanmar symbol aforementioned
-  "u104F",  // myanmar symbol genitive
-  "u2013",  // en dash
-  "u2014",  // em dash
-  "u2027",  // simplified chinese hyphenation point
-  "u3000",  // simplified chinese ideographic space
-  "u3001",  // simplified chinese ideographic comma
-  "u3002",  // simplified chinese ideographic full stop
-  "uFF0C",  // full-width comma
-  "uFF5E"   // wave dash
-];
-
-var prefixChars$2 = ["'",  "<",  "(",  "{",  "[",
-  "u00AB",  // left-pointing double angle quotation mark
-  "u300A",  // left double angle bracket
-  "u3008"  // left angle bracket
-];
-
-var suffixChars$2 = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
-  "u00BB",  // right-pointing double angle quotation mark
-  "u300B",  // right double angle bracket
-  "u3009"  // right angle bracket
-].concat(splitChars$2);
-
-var burmeseRange$2 = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-var japaneseRange$2 = "぀-ゟ\n                       ゠-ヿ\n                       ＀-＋\n                       －-｝\n                       ｟-ﾟ\n                       㐀-䶿";
-var chineseRange$2 = "\u3400-\u9FBF";
-var laoRange$2 = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
-
-var noSpaceRange$2 = burmeseRange$2 + chineseRange$2 + laoRange$2;
-
-var splitWords$2 = new RegExp(("(\\" + (splitChars$2.join("|\\")) + ")*[^\\s|\\" + (splitChars$2.join("|\\")) + "]+(\\" + (splitChars$2.join("|\\")) + ")*"), "g");
-var japaneseChars$2 = new RegExp(("[" + japaneseRange$2 + "]"));
-var noSpaceLanguage$2 = new RegExp(("[" + noSpaceRange$2 + "]"));
-var splitAllChars$2 = new RegExp(("(\\" + (prefixChars$2.join("|\\")) + ")*[" + noSpaceRange$2 + "](\\" + (suffixChars$2.join("|\\")) + "|\\" + (combiningMarks$2.join("|\\")) + ")*|[a-z0-9]+"), "gi");
-
-/**
-    @function textSplit
-    @desc Splits a given sentence into an array of words.
-    @param {String} sentence
-*/
-var textSplit$2 = function(sentence) {
-  if (!noSpaceLanguage$2.test(sentence)) { return stringify$2(sentence).match(splitWords$2); }
-  return merge(stringify$2(sentence).match(splitWords$2).map(function (d) {
-    if (!japaneseChars$2.test(d) && noSpaceLanguage$2.test(d)) { return d.match(splitAllChars$2); }
-    return [d];
-  }));
-};
-
-/**
-    @function textWidth
-    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
-    @param {String|Array} text Can be either a single string or an array of strings to analyze.
-    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
-*/
-var measure$2 = function(text, style) {
-  if ( style === void 0 ) style = {"font-size": 10, "font-family": "sans-serif"};
-
-
-  var context = document.createElement("canvas").getContext("2d");
-
-  var font = [];
-  if ("font-style" in style) { font.push(style["font-style"]); }
-  if ("font-variant" in style) { font.push(style["font-variant"]); }
-  if ("font-weight" in style) { font.push(style["font-weight"]); }
-  if ("font-size" in style) {
-    var s = (style["font-size"]) + "px";
-    if ("line-height" in style) { s += "/" + (style["line-height"]) + "px"; }
-    font.push(s);
-  }
-  if ("font-family" in style) { font.push(style["font-family"]); }
-
-  context.font = font.join(" ");
-
-  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-  return context.measureText(text).width;
-
-};
-
-/**
-    @function textWrap
-    @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
-*/
-var wrap$2 = function() {
-
-  var fontFamily = "Verdana",
-      fontSize = 10,
-      fontWeight = 400,
-      height = 200,
-      lineHeight,
-      overflow = false,
-      split = textSplit$2,
-      width = 200;
-
-  /**
-      The inner return object and wraps the text and returns the line data array.
-      @private
-  */
-  function textWrap(sentence) {
-
-    sentence = stringify$2(sentence);
-
-    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.1); }
-
-    var words = split(sentence);
-
-    var style = {
-      "font-family": fontFamily,
-      "font-size": fontSize,
-      "font-weight": fontWeight,
-      "line-height": lineHeight
-    };
-
-    var line = 1,
-        textProg = "",
-        truncated = false,
-        widthProg = 0;
-
-    var lineData = [],
-          sizes = measure$2(words, style),
-          space = measure$2(" ", style);
-
-    for (var i = 0; i < words.length; i++) {
-      var word = words[i];
-      var nextChar = sentence.charAt(textProg.length + word.length),
-            wordWidth = sizes[words.indexOf(word)];
-      if (nextChar === " ") { word += nextChar; }
-      if (widthProg + wordWidth > width) {
-        if (!i && !overflow) {
-          truncated = true;
-          break;
-        }
-        lineData[line - 1] = lineData[line - 1].trimRight();
-        line++;
-        if (lineHeight * line > height || wordWidth > width && !overflow) {
-          truncated = true;
-          break;
-        }
-        widthProg = 0;
-        lineData.push(word);
-      }
-      else if (!i) { lineData[0] = word; }
-      else { lineData[line - 1] += word; }
-      textProg += word;
-      widthProg += wordWidth;
-      if (nextChar === " ") { widthProg += space; }
-    }
-
-    return {
-      lines: lineData,
-      sentence: sentence, truncated: truncated, words: words
-    };
-
-  }
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value* = "Verdana"]
-  */
-  textWrap.fontFamily = function(_) {
-    return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
-      @param {Function|Number} [*value* = 10]
-  */
-  textWrap.fontSize = function(_) {
-    return arguments.length ? (fontSize = _, textWrap) : fontSize;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  textWrap.fontWeight = function(_) {
-    return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets height limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.height = function(_) {
-    return arguments.length ? (height = _, textWrap) : height;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textWrap.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  textWrap.lineHeight = function(_) {
-    return arguments.length ? (lineHeight = _, textWrap) : lineHeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
-      @param {Boolean} [*value* = false]
-  */
-  textWrap.overflow = function(_) {
-    return arguments.length ? (overflow = _, textWrap) : overflow;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
-      @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to textWrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
-  */
-  textWrap.split = function(_) {
-    return arguments.length ? (split = _, textWrap) : split;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets width limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.width = function(_) {
-    return arguments.length ? (width = _, textWrap) : width;
-  };
-
-  return textWrap;
-
-};
-
-/**
-    @function TextBox
-    @extends BaseClass
-    @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the textBox function.
-*/
-var TextBox$4 = (function (BaseClass$$1) {
-  function TextBox() {
-
-    BaseClass$$1.call(this);
-
-    this._delay = 0;
-    this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
-    this._fontColor = constant$5("black");
-    this._fontFamily = constant$5("Verdana");
-    this._fontMax = constant$5(50);
-    this._fontMin = constant$5(8);
-    this._fontResize = constant$5(false);
-    this._fontSize = constant$5(10);
-    this._fontWeight = constant$5(400);
-    this._height = accessor("height", 200);
-    this._id = function (d, i) { return d.id || ("" + i); };
-    this._on = {};
-    this._overflow = constant$5(false);
-    this._pointerEvents = constant$5("auto");
-    this._rotate = constant$5(0);
-    this._split = textSplit$2;
-    this._text = accessor("text");
-    this._textAnchor = constant$5("start");
-    this._verticalAlign = constant$5("top");
-    this._width = accessor("width", 200);
-    this._x = accessor("x", 0);
-    this._y = accessor("y", 0);
-
-  }
-
-  if ( BaseClass$$1 ) TextBox.__proto__ = BaseClass$$1;
-  TextBox.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
-  TextBox.prototype.constructor = TextBox;
-
-  /**
-      @memberof TextBox
-      @desc Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
-      @param {Function} [*callback* = undefined]
-  */
-  TextBox.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
-    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; }; }
-    var that = this;
-
-    var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
-
-      var t = this$1._text(d, i);
-      if (t === void 0) { return arr; }
-
-      var resize = this$1._fontResize(d, i);
-
-      var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
-          lH = resize ? fS * 1.1 : this$1._lineHeight(d, i),
-          line = 1,
-          lineData = [],
-          sizes;
-
-      var style = {
-        "font-family": this$1._fontFamily(d, i),
-        "font-size": fS,
-        "font-weight": this$1._fontWeight(d, i),
-        "line-height": lH
-      };
-
-      var h = this$1._height(d, i),
-            w = this$1._width(d, i);
-
-      var wrapper = wrap$2()
-        .fontFamily(style["font-family"])
-        .fontSize(fS)
-        .fontWeight(style["font-weight"])
-        .lineHeight(lH)
-        .height(h)
-        .overflow(this$1._overflow(d, i))
-        .width(w);
-
-      var fMax = this$1._fontMax(d, i),
-            fMin = this$1._fontMin(d, i),
-            vA = this$1._verticalAlign(d, i),
-            words = this$1._split(t, i);
-
-      /**
-          Figures out the lineData to be used for wrapping.
-          @private
-      */
-      function checkSize() {
-
-        if (fS < fMin) {
-          lineData = [];
-          return;
-        }
-        else if (fS > fMax) { fS = fMax; }
-
-        if (resize) {
-          lH = fS * 1.1;
-          wrapper
-            .fontSize(fS)
-            .lineHeight(lH);
-          style["font-size"] = fS;
-          style["line-height"] = lH;
-        }
-
-        var wrapResults = wrapper(t);
-        lineData = wrapResults.lines.filter(function (l) { return l !== ""; });
-        line = lineData.length;
-
-        if (wrapResults.truncated) {
-
-          if (resize) {
-            fS--;
-            if (fS < fMin) { lineData = []; }
-            else { checkSize(); }
-          }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
-
-        }
-
-
-      }
-
-      if (w > fMin && (h > lH || resize && h > fMin * 1.1)) {
-
-        if (resize) {
-
-          sizes = measure$2(words, style);
-
-          var areaMod = 1.165 + w / h * 0.1,
-                boxArea = w * h,
-                maxWidth = max(sizes),
-                textArea = sum(sizes, function (d) { return d * lH; }) * areaMod;
-
-          if (maxWidth > w || textArea > boxArea) {
-            var areaRatio = Math.sqrt(boxArea / textArea),
-                  widthRatio = w / maxWidth;
-            var sizeRatio = min([areaRatio, widthRatio]);
-            fS = Math.floor(fS * sizeRatio);
-          }
-
-          var heightMax = Math.floor(h * 0.8);
-          if (fS > heightMax) { fS = heightMax; }
-
-        }
-
-        checkSize();
-
-      }
-
-      if (lineData.length) {
-
-        var tH = line * lH;
-        var yP = vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH;
-        yP -= lH * 0.1;
-
-        arr.push({
-          data: d,
-          i: i,
-          lines: lineData,
-          fC: this$1._fontColor(d, i),
-          fF: style["font-family"],
-          fW: style["font-weight"],
-          id: this$1._id(d, i),
-          tA: this$1._textAnchor(d, i),
-          fS: fS, lH: lH, w: w, x: this$1._x(d, i), y: this$1._y(d, i) + yP
-        });
-
-      }
-
-      return arr;
-
-    }, []), this._id);
-
-    var t = transition().duration(this._duration);
-
-    if (this._duration === 0) {
-
-      boxes.exit().remove();
-
-    }
-    else {
-
-      boxes.exit().transition().delay(this._duration).remove();
-
-      boxes.exit().selectAll("tspan").transition(t)
-        .attr("opacity", 0);
-
-    }
-
-    function rotate(text) {
-      text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + " " + (d.x + d.w / 2) + " " + (d.y + d.lH / 4 + d.lH * d.lines.length / 2) + ")"); });
-    }
-
-    var update = boxes.enter().append("text")
-        .attr("class", "d3plus-textBox")
-        .attr("id", function (d) { return ("d3plus-textBox-" + (d.id)); })
-        .attr("y", function (d) { return ((d.y) + "px"); })
-        .call(rotate)
-      .merge(boxes);
-
-    update
-      .attr("fill", function (d) { return d.fC; })
-      .attr("text-anchor", function (d) { return d.tA; })
-      .attr("font-family", function (d) { return d.fF; })
-      .style("font-family", function (d) { return d.fF; })
-      .attr("font-size", function (d) { return ((d.fS) + "px"); })
-      .style("font-size", function (d) { return ((d.fS) + "px"); })
-      .attr("font-weight", function (d) { return d.fW; })
-      .style("font-weight", function (d) { return d.fW; })
-      .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
-      .each(function(d) {
-
-        var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
-              tB = select(this);
-
-        if (that._duration === 0) { tB.attr("y", function (d) { return ((d.y) + "px"); }); }
-        else { tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); }); }
-
-        /**
-            Styles to apply to each <tspan> element.
-            @private
-        */
-        function tspanStyle(tspan) {
-          tspan
-            .text(function (t) { return t.trimRight(); })
-            .attr("x", ((d.x) + "px"))
-            .attr("dx", (dx + "px"))
-            .attr("dy", ((d.lH) + "px"));
-        }
-
-        var tspans = tB.selectAll("tspan").data(d.lines);
-
-        if (that._duration === 0) {
-
-          tspans.call(tspanStyle);
-
-          tspans.exit().remove();
-
-          tspans.enter().append("tspan")
-            .attr("dominant-baseline", "alphabetic")
-            .style("baseline-shift", "0%")
-            .call(tspanStyle);
-
-        }
-        else {
-
-          tspans.transition(t).call(tspanStyle);
-
-          tspans.exit().transition(t)
-            .attr("opacity", 0).remove();
-
-          tspans.enter().append("tspan")
-            .attr("dominant-baseline", "alphabetic")
-            .style("baseline-shift", "0%")
-            .attr("opacity", 0)
-            .call(tspanStyle)
-            .transition(t).delay(that._delay)
-              .attr("opacity", 1);
-
-        }
-
-      })
-      .transition(t).call(rotate);
-
-    var events = Object.keys(this._on),
-          on = events.reduce(function (obj, e) {
-            obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
-            return obj;
-          }, {});
-    for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
-
-    if (callback) { setTimeout(callback, this._duration + 100); }
-
-    return this;
-
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *data* is specified, sets the data array to the specified array and returns this generator. If *data* is not specified, returns the current data array. A text box will be drawn for each object in the array.
-      @param {Array} [*data* = []]
-  */
-  TextBox.prototype.data = function data (_) {
-    return arguments.length ? (this._data = _, this) : this._data;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the animation delay to the specified number and returns this generator. If *value* is not specified, returns the current animation delay.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.delay = function delay (_) {
-    return arguments.length ? (this._delay = _, this) : this._delay;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the animation duration to the specified number and returns this generator. If *value* is not specified, returns the current animation duration.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.duration = function duration (_) {
-    return arguments.length ? (this._duration = _, this) : this._duration;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the ellipsis method to the specified function or string and returns this generator. If *value* is not specified, returns the current ellipsis method, which simply adds an ellipsis to the string by default.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
-}
-  */
-  TextBox.prototype.ellipsis = function ellipsis (_) {
-    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$5(_), this) : this._ellipsis;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the font color accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font color accessor, which is inferred from the [container element](#textBox.select) by default.
-      @param {Function|String} [*value* = "black"]
-  */
-  TextBox.prototype.fontColor = function fontColor (_) {
-    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$5(_), this) : this._fontColor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family accessor, which is inferred from the [container element](#textBox.select) by default.
-      @param {Function|String} [*value* = "Verdana"]
-  */
-  TextBox.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$5(_), this) : this._fontFamily;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the maximum font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current maximum font size accessor. The maximum font size is used when [resizing fonts](#textBox.fontResize) dynamically.
-      @param {Function|Number} [*value* = 50]
-  */
-  TextBox.prototype.fontMax = function fontMax (_) {
-    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$5(_), this) : this._fontMax;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the minimum font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current minimum font size accessor. The minimum font size is used when [resizing fonts](#textBox.fontResize) dynamically.
-      @param {Function|Number} [*value* = 8]
-  */
-  TextBox.prototype.fontMin = function fontMin (_) {
-    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$5(_), this) : this._fontMin;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns this generator. If *value* is not specified, returns the current font resizing accessor.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.fontResize = function fontResize (_) {
-    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$5(_), this) : this._fontResize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size accessor, which is inferred from the [container element](#textBox.select) by default.
-      @param {Function|Number} [*value* = 10]
-  */
-  TextBox.prototype.fontSize = function fontSize (_) {
-    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$5(_), this) : this._fontSize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight accessor, which is inferred from the [container element](#textBox.select) by default.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  TextBox.prototype.fontWeight = function fontWeight (_) {
-    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$5(_), this) : this._fontWeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current height accessor.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.height || 200;
-}
-  */
-  TextBox.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$5(_), this) : this._height;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the id accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current id accessor.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d, i) {
-  return d.id || i + "";
-}
-  */
-  TextBox.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$5(_), this) : this._id;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textBox.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  TextBox.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$5(_), this) : this._lineHeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the overflow accessor to the specified function or boolean and returns this generator. If *value* is not specified, returns the current overflow accessor.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.overflow = function overflow (_) {
-    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$5(_), this) : this._overflow;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current pointer-events accessor.
-      @param {Function|String} [*value* = "auto"]
-  */
-  TextBox.prototype.pointerEvents = function pointerEvents (_) {
-    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$5(_), this) : this._pointerEvents;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the rotate accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current rotate accessor.
-      @param {Function|Number} [*value* = 0]
-  */
-  TextBox.prototype.rotate = function rotate (_) {
-    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$5(_), this) : this._rotate;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns this generator. If *selector* is not specified, returns the current SVG container element, which adds an SVG element to the page by default.
-      @param {String|HTMLElement} [*selector*]
-  */
-  TextBox.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = select(_), this) : this._select;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
-      @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to wrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
-  */
-  TextBox.prototype.split = function split (_) {
-    return arguments.length ? (this._split = _, this) : this._split;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the text accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current text accessor.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.text;
-}
-  */
-  TextBox.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$5(_), this) : this._text;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the horizontal text anchor accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current horizontal text anchor accessor.
-      @param {Function|String} [*value* = "start"] Analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
-  */
-  TextBox.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$5(_), this) : this._textAnchor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current vertical alignment accessor.
-      @param {Function|String} [*value* = "top"] Accepts `"top"`, `"middle"`, and `"bottom"`.
-  */
-  TextBox.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$5(_), this) : this._verticalAlign;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current width accessor.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.width || 200;
-}
-  */
-  TextBox.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$5(_), this) : this._width;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current x accessor. The number returned should correspond to the left position of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.x || 0;
-}
-  */
-  TextBox.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$5(_), this) : this._x;
-  };
-
-  /**
-      @memberof TextBox
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current y accessor. The number returned should correspond to the top position of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.y || 0;
-}
-  */
-  TextBox.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$5(_), this) : this._y;
-  };
-
-  return TextBox;
-}(BaseClass));
-
-/**
-    @function titleCase
-    @desc Capitalizes the first letter of each word in a phrase/sentence.
-    @param {String} str The string to apply the title case logic.
-    @param {Object} [opts] Optional parameters to apply.
-    @param {String} [opts.lng] The locale to use when looking up all lowercase or uppecase words.
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
 */
 
 /**
     @class Legend
-    @extends BaseClass
+    @extends external:BaseClass
     @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
 */
 var Legend = (function (BaseClass$$1) {
@@ -15136,6 +13711,7 @@ var Legend = (function (BaseClass$$1) {
       @memberof Legend
       @desc Renders the current Legend to the page. If a *callback* is specified, it will be called once the legend is done drawing.
       @param {Function} [*callback* = undefined]
+      @chainable
   */
   Legend.prototype.render = function render (callback) {
     var this$1 = this;
@@ -15153,7 +13729,7 @@ var Legend = (function (BaseClass$$1) {
       var f = this._titleConfig.fontFamily,
             lH = this._titleConfig.lineHeight,
             s = this._titleConfig.fontSize;
-      var res = wrap$2()
+      var res = textWrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lH)
@@ -15172,14 +13748,14 @@ var Legend = (function (BaseClass$$1) {
             shapeWidth = this$1._fetchConfig("width", d, i);
       var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
             w = this$1._width;
-      var res = wrap$2()
+      var res = textWrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lh)
         .width(w)
         .height(h)
         (this$1._label(d, i));
-      res.width = Math.ceil(max(res.lines.map(function (t) { return measure$2(t, {"font-family": f, "font-size": s}); }))) + s;
+      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s;
       res.height = Math.ceil(res.lines.length * (lh + 1));
       res.og = {height: res.height, width: res.width};
       res.data = d;
@@ -15220,9 +13796,9 @@ var Legend = (function (BaseClass$$1) {
           var loop = function ( x ) {
             var label = wrappable[x];
             var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
-            var res = wrap$2().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+            var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
             if (!res.truncated) {
-              label.width = Math.ceil(max(res.lines.map(function (t) { return measure$2(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+              label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
               label.height = res.lines.length * (label.lh + 1);
             }
             else {
@@ -15312,7 +13888,7 @@ var Legend = (function (BaseClass$$1) {
     this._outerBounds.x = xOffset;
     this._outerBounds.y = yOffset;
 
-    new TextBox$4()
+    new TextBox()
       .data(this._title ? [{text: this._title}] : [])
       .duration(this._duration)
       .select(this._group.node())
@@ -15393,8 +13969,20 @@ var Legend = (function (BaseClass$$1) {
 
   /**
       @memberof Legend
+      @desc If *value* is specified, sets the active method for all shapes to the specified function and returns the current class instance. If *value* is not specified, returns the current active method.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Legend.prototype.active = function active (_) {
+    this._shapes.forEach(function (s) { return s.active(_); });
+    return this;
+  };
+
+  /**
+      @memberof Legend
       @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
       @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
+      @chainable
   */
   Legend.prototype.align = function align (_) {
     return arguments.length ? (this._align = _, this) : this._align;
@@ -15404,6 +13992,7 @@ var Legend = (function (BaseClass$$1) {
       @memberof Legend
       @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape key will be drawn for each object in the array.
       @param {Array} [*data* = []]
+      @chainable
   */
   Legend.prototype.data = function data (_) {
     return arguments.length ? (this._data = _, this) : this._data;
@@ -15413,6 +14002,7 @@ var Legend = (function (BaseClass$$1) {
       @memberof Legend
       @desc If *value* is specified, sets the transition duration of the legend and returns the current class instance. If *value* is not specified, returns the current duration.
       @param {Number} [*value* = 600]
+      @chainable
   */
   Legend.prototype.duration = function duration (_) {
     return arguments.length ? (this._duration = _, this) : this._duration;
@@ -15422,6 +14012,7 @@ var Legend = (function (BaseClass$$1) {
       @memberof Legend
       @desc If *value* is specified, sets the overall height of the legend and returns the current class instance. If *value* is not specified, returns the current height value.
       @param {Number} [*value* = 100]
+      @chainable
   */
   Legend.prototype.height = function height (_) {
     return arguments.length ? (this._height = _, this) : this._height;
@@ -15429,11 +14020,12 @@ var Legend = (function (BaseClass$$1) {
 
   /**
       @memberof Legend
-      @desc If *value* is specified, sets the highlight method for all shapes to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight method.
+      @desc If *value* is specified, sets the hover method for all shapes to the specified function and returns the current class instance. If *value* is not specified, returns the current hover method.
       @param {Function} [*value*]
+      @chainable
   */
-  Legend.prototype.highlight = function highlight (_) {
-    this._shapes.forEach(function (s) { return s.highlight(_); });
+  Legend.prototype.hover = function hover (_) {
+    this._shapes.forEach(function (s) { return s.hover(_); });
     return this;
   };
 
@@ -15441,6 +14033,7 @@ var Legend = (function (BaseClass$$1) {
       @memberof Legend
       @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
       @param {Function} [*value*]
+      @chainable
       @example
 function value(d) {
   return d.id;
@@ -15454,6 +14047,7 @@ function value(d) {
       @memberof Legend
       @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current label accessor, which is the [id](#shape.id) accessor by default.
       @param {Function|String} [*value*]
+      @chainable
   */
   Legend.prototype.label = function label (_) {
     return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$5(_), this) : this._label;
@@ -15473,6 +14067,7 @@ function value(d) {
       @memberof Legend
       @desc If *value* is specified, sets the padding between each key to the specified number and returns the current class instance. If *value* is not specified, returns the current padding value.
       @param {Number} [*value* = 10]
+      @chainable
   */
   Legend.prototype.padding = function padding (_) {
     return arguments.length ? (this._padding = _, this) : this._padding;
@@ -15482,6 +14077,7 @@ function value(d) {
       @memberof Legend
       @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
       @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+      @chainable
   */
   Legend.prototype.select = function select$1 (_) {
     return arguments.length ? (this._select = select(_), this) : this._select;
@@ -15491,6 +14087,7 @@ function value(d) {
       @memberof Legend
       @desc If *value* is specified, sets the shape accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current shape accessor.
       @param {Function|String} [*value* = "Rect"]
+      @chainable
   */
   Legend.prototype.shape = function shape (_) {
     return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$5(_), this) : this._shape;
@@ -15500,6 +14097,7 @@ function value(d) {
       @memberof Legend
       @desc If *config* is specified, sets the methods that correspond to the key/value pairs for each shape and returns the current class instance. If *config* is not specified, returns the current shape configuration.
       @param {Object} [*config* = {}]
+      @chainable
   */
   Legend.prototype.shapeConfig = function shapeConfig (_) {
     return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
@@ -15509,6 +14107,7 @@ function value(d) {
       @memberof Legend
       @desc If *value* is specified, sets the title of the legend and returns the current class instance. If *value* is not specified, returns the current title.
       @param {String} [*value*]
+      @chainable
   */
   Legend.prototype.title = function title (_) {
     return arguments.length ? (this._title = _, this) : this._title;
@@ -15518,6 +14117,7 @@ function value(d) {
       @memberof Legend
       @desc If *value* is specified, sets the title configuration of the legend and returns the current class instance. If *value* is not specified, returns the current title configuration.
       @param {Object} [*value*]
+      @chainable
   */
   Legend.prototype.titleConfig = function titleConfig (_) {
     return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
@@ -15527,6 +14127,7 @@ function value(d) {
       @memberof Legend
       @desc If *value* is specified, sets the vertical alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current vertical alignment.
       @param {String} [*value* = "middle"] Supports `"top"` and `"middle"` and `"bottom"`.
+      @chainable
   */
   Legend.prototype.verticalAlign = function verticalAlign (_) {
     return arguments.length ? (this._verticalAlign = _, this) : this._verticalAlign;
@@ -15536,6 +14137,7 @@ function value(d) {
       @memberof Legend
       @desc If *value* is specified, sets the overall width of the legend and returns the current class instance. If *value* is not specified, returns the current width value.
       @param {Number} [*value* = 400]
+      @chainable
   */
   Legend.prototype.width = function width (_) {
     return arguments.length ? (this._width = _, this) : this._width;
@@ -16160,8 +14762,13 @@ function brush$1(dim) {
 }
 
 /**
+    @external Axis
+    @see https://github.com/d3plus/d3plus-axis#Axis
+*/
+
+/**
     @class Timeline
-    @extends Axis
+    @extends external:Axis
 */
 var Timeline = (function (Axis$$1) {
   function Timeline() {
@@ -16170,6 +14777,7 @@ var Timeline = (function (Axis$$1) {
 
     Axis$$1.call(this);
 
+    this._brushing = true;
     this._brushFilter = function () { return !event.button && event.detail < 2; };
     this._domain = [2001, 2010];
     this._gridSize = 0;
@@ -16190,6 +14798,7 @@ var Timeline = (function (Axis$$1) {
       height: 10,
       width: function (d) { return this$1._domain.map(function (t) { return date$2(t).getTime(); }).includes(d.id) ? 2 : 1; }
     });
+    this._snapping = true;
 
   }
 
@@ -16203,6 +14812,36 @@ var Timeline = (function (Axis$$1) {
       @private
   */
   Timeline.prototype._brushBrush = function _brushBrush () {
+
+    if (event.sourceEvent && event.sourceEvent.offsetX && event.selection !== null && (!this._brushing || this._snapping)) {
+
+      var domain = (this._brushing ? event.selection
+                   : [event.selection[0], event.selection[0]])
+                   .map(this._d3Scale.invert)
+                   .map(Number);
+
+      var ticks = this._availableTicks.map(Number);
+      domain[0] = date$2(closest(domain[0], ticks));
+      domain[1] = date$2(closest(domain[1], ticks));
+
+      var single = +domain[0] === +domain[1],
+            value = single ? domain[0] : domain;
+
+      if (this._selection && JSON.stringify(value) !== JSON.stringify(this._selection)) {
+        this._selection = value;
+        if (this._on.end) { this._on.end(value); }
+      }
+
+      var pixelDomain = domain.map(this._d3Scale);
+
+      if (single) {
+        pixelDomain[0] -= 0.1;
+        pixelDomain[1] += 0.1;
+      }
+
+      this._brushGroup.call(this._brush.move, pixelDomain);
+
+    }
 
     this._brushStyle();
     if (this._on.brush) { this._on.brush(); }
@@ -16218,7 +14857,7 @@ var Timeline = (function (Axis$$1) {
 
     if (!event.sourceEvent) { return; } // Only transition after input.
 
-    var domain = (event.selection ? event.selection
+    var domain = (event.selection && this._brushing ? event.selection
                  : [event.sourceEvent.offsetX, event.sourceEvent.offsetX])
                  .map(this._d3Scale.invert)
                  .map(Number);
@@ -16226,18 +14865,28 @@ var Timeline = (function (Axis$$1) {
     var ticks = this._availableTicks.map(Number);
     domain[0] = date$2(closest(domain[0], ticks));
     domain[1] = date$2(closest(domain[1], ticks));
-    var pixelDomain = domain.map(this._d3Scale),
-          single = pixelDomain[0] === pixelDomain[1];
-    if (single) {
-      pixelDomain[0] -= 0.1;
-      pixelDomain[1] += 0.1;
+
+    var single = +domain[0] === +domain[1];
+
+    if (this._brushing || !this._snapping) {
+
+      var pixelDomain = domain.map(this._d3Scale);
+
+      if (single) {
+        pixelDomain[0] -= 0.1;
+        pixelDomain[1] += 0.1;
+      }
+
+      this._brushGroup.transition(this._transition).call(this._brush.move, pixelDomain);
+
     }
 
-    this._brushGroup.transition(this._transition).call(this._brush.move, pixelDomain);
-
     this._brushStyle();
-
-    if (this._on.end) { this._on.end(single ? domain[0] : domain); }
+    var value = single ? domain[0] : domain;
+    if (JSON.stringify(value) !== JSON.stringify(this._selection)) {
+      if (this._on.end) { this._on.end(value); }
+      this._selection = value;
+    }
 
   };
 
@@ -16247,6 +14896,30 @@ var Timeline = (function (Axis$$1) {
       @private
   */
   Timeline.prototype._brushStart = function _brushStart () {
+
+    if (event.sourceEvent !== null && (!this._brushing || this._snapping)) {
+
+      var domain = (event.selection && this._brushing ? event.selection
+                   : [event.sourceEvent.offsetX, event.sourceEvent.offsetX])
+                   .map(this._d3Scale.invert)
+                   .map(Number);
+
+      var ticks = this._availableTicks.map(Number);
+      domain[0] = date$2(closest(domain[0], ticks));
+      domain[1] = date$2(closest(domain[1], ticks));
+
+      var single = +domain[0] === +domain[1];
+
+      var pixelDomain = domain.map(this._d3Scale);
+
+      if (single) {
+        pixelDomain[0] -= 0.1;
+        pixelDomain[1] += 0.1;
+      }
+
+      this._brushGroup.call(this._brush.move, pixelDomain);
+
+    }
 
     this._brushStyle();
     if (this._on.start) { this._on.start(); }
@@ -16266,6 +14939,9 @@ var Timeline = (function (Axis$$1) {
              : this._shape === "Rect" ? this._shapeConfig[height]
              : this._tickSize;
 
+    this._brushGroup.selectAll(".overlay")
+      .attr("cursor", this._brushing ? "crosshair" : "pointer");
+
     this._brushGroup.selectAll(".selection")
       .call(attrize, this._selectionConfig)
       .attr("height", timelineHeight);
@@ -16277,9 +14953,10 @@ var Timeline = (function (Axis$$1) {
   };
 
   /**
-      Draws the timeline.
+      @memberof Timeline
+      @desc Draws the timeline.
       @param {Function} [*callback* = undefined]
-      @private
+      @chainable
   */
   Timeline.prototype.render = function render (callback) {
 
@@ -16323,8 +15000,19 @@ var Timeline = (function (Axis$$1) {
 
   /**
       @memberof Timeline
+      @desc If *value* is specified, toggles the brushing value and returns the current class instance. If *value* is not specified, returns the current brushing value.
+      @param {Boolean} [*value* = true]
+      @chainable
+  */
+  Timeline.prototype.brushing = function brushing (_) {
+    return arguments.length ? (this._brushing = _, this) : this._brushing;
+  };
+
+  /**
+      @memberof Timeline
       @desc If *value* is specified, sets the brush event filter and returns the current class instance. If *value* is not specified, returns the current brush event filter.
       @param {Function} [*value*]
+      @chainable
       @example
 function() {
   return !event.button && event.detail < 2;
@@ -16338,6 +15026,7 @@ function() {
       @memberof Timeline
       @desc If *value* is specified, sets the handle style and returns the current class instance. If *value* is not specified, returns the current handle style.
       @param {Object} [*value*]
+      @chainable
   */
   Timeline.prototype.handleConfig = function handleConfig (_) {
     return arguments.length ? (this._handleConfig = Object.assign(this._handleConfig, _), this) : this._handleConfig;
@@ -16347,6 +15036,7 @@ function() {
       @memberof Timeline
       @desc If *value* is specified, sets the handle size and returns the current class instance. If *value* is not specified, returns the current handle size.
       @param {Number} [*value* = 6]
+      @chainable
   */
   Timeline.prototype.handleSize = function handleSize (_) {
     return arguments.length ? (this._handleSize = _, this) : this._handleSize;
@@ -16357,6 +15047,7 @@ function() {
       @desc Adds or removes a *listener* for the specified brush event *typename*. If a *listener* is not specified, returns the currently-assigned listener for the specified event *typename*. Mirrors the core [d3-brush](https://github.com/d3/d3-brush#brush_on) behavior.
       @param {String|Object} [*typename*]
       @param {Function} [*listener*]
+      @chainable
   */
   Timeline.prototype.on = function on (_, f) {
     return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
@@ -16366,6 +15057,7 @@ function() {
       @memberof Timeline
       @desc If *value* is specified, sets the selection style and returns the current class instance. If *value* is not specified, returns the current selection style.
       @param {Object} [*value*]
+      @chainable
   */
   Timeline.prototype.selectionConfig = function selectionConfig (_) {
     return arguments.length ? (this._selectionConfig = Object.assign(this._selectionConfig, _), this) : this._selectionConfig;
@@ -16375,9 +15067,20 @@ function() {
       @memberof Timeline
       @desc If *value* is specified, sets the selection and returns the current class instance. If *value* is not specified, returns the current selection. Defaults to the most recent year in the timeline.
       @param {Array|Date|Number|String} [*value*]
+      @chainable
   */
   Timeline.prototype.selection = function selection (_) {
     return arguments.length ? (this._selection = _, this) : this._selection;
+  };
+
+  /**
+      @memberof Timeline
+      @desc If *value* is specified, toggles the snapping value and returns the current class instance. If *value* is not specified, returns the current snapping value.
+      @param {Boolean} [*value* = true]
+      @chainable
+  */
+  Timeline.prototype.snapping = function snapping (_) {
+    return arguments.length ? (this._snapping = _, this) : this._snapping;
   };
 
   return Timeline;
@@ -16842,7 +15545,32 @@ function value(d) {
 }(BaseClass));
 
 /**
-    @function colorNest
+    @function _drawBack
+    @desc Draws a back button if there are states in this._history.
+    @private
+*/
+var drawBack = function() {
+
+  var visible = this._history.length;
+
+  var backGroup = elem("g.d3plus-viz-back", {
+    parent: this._select,
+    transition: this._transition,
+    update: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")}
+  }).node();
+
+  this._backClass
+    .data(visible ? [{text: locale$3.t("Back", {lng: this._locale}), x: this._padding * 2, y: 0}] : [])
+    .select(backGroup)
+    .config(this._backConfig)
+    .render();
+
+  this._margin.top += visible ? this._backClass.fontSize()() + this._padding : 0;
+
+};
+
+/**
+    @function _colorNest
     @desc Returns an Array of data objects based on a given color accessor and groupBy levels.
     @param {Array} raw The raw data Array to be grouped by color.
     @param {Function} fill The color accessor for each data object.
@@ -16888,10 +15616,178 @@ var colorNest = function(raw, fill, groupBy) {
 };
 
 /**
-  Given an HTMLElement and a "width" or "height" string, this function returns the current calculated size for the DOM element.
+    @function _drawLegend
+    @desc Renders the legend if this._legend is not falsy.
+    @param {Array} dara The filtered data array to be displayed.
+    @private
+*/
+var drawLegend = function(data) {
+  var this$1 = this;
+  if ( data === void 0 ) data = [];
+
+
+  this._legendData = [];
+  if (data.length) {
+
+    var dataNest = nest$1();
+    for (var i = 0; i <= this._drawDepth; i++) { dataNest.key(this$1._groupBy[i]); }
+    dataNest.rollup(function (leaves) { return this$1._legendData.push(objectMerge(leaves, this$1._aggs)); }).entries(data);
+
+  }
+
+  var legendGroup = elem("g.d3plus-viz-legend", {
+    condition: this._legend,
+    parent: this._select,
+    transition: this._transition
+  }).node();
+
+  if (this._legend) {
+
+    var legend = colorNest(this._legendData, this._shapeConfig.fill, this._groupBy);
+
+    this._legendClass
+      .id(legend.id)
+      .duration(this._duration)
+      .data(legend.data.length > 1 ? legend.data : [])
+      .height(this._height - this._margin.bottom)
+      .label(this._label || legend.id)
+      .select(legendGroup)
+      .verticalAlign("bottom")
+      .width(this._width)
+      .shapeConfig(this._shapeConfig)
+      .shapeConfig({on: Object.keys(this._on)
+        .filter(function (e) { return !e.includes(".") || e.includes(".legend"); })
+        .reduce(function (obj, e) {
+          obj[e] = this$1._on[e];
+          return obj;
+        }, {})})
+      .config(this._legendConfig)
+      .render();
+
+    var legendBounds = this._legendClass.outerBounds();
+    if (legendBounds.height) { this._margin.bottom += legendBounds.height + this._legendClass.padding() * 2; }
+
+  }
+
+};
+
+/**
+    @function _drawTimeline
+    @desc Renders the timeline if this._time and this._timeline are not falsy and there are more than 1 tick available.
+    @param {Array} dara The filtered data array to be displayed.
+    @private
+*/
+var drawTimeline = function(data) {
+  if ( data === void 0 ) data = [];
+
+
+  var timelinePossible = this._time && this._timeline;
+  var ticks$$1 = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$2) : [];
+  timelinePossible = timelinePossible && ticks$$1.length > 1;
+
+  var timelineGroup = elem("g.d3plus-viz-timeline", {
+    condition: timelinePossible,
+    parent: this._select,
+    transition: this._transition
+  }).node();
+
+  if (timelinePossible) {
+
+    var timeline = this._timelineClass
+      .domain(extent(ticks$$1))
+      .duration(this._duration)
+      .height(this._height - this._margin.bottom)
+      .select(timelineGroup)
+      .ticks(ticks$$1.sort(function (a, b) { return +a - +b; }))
+      .width(this._width);
+
+    if (timeline.selection() === void 0) {
+
+      var dates = extent(data.map(this._time).map(date$2));
+
+      if (dates[0] === dates[1]) { timeline.selection(dates[0]); }
+      else { timeline.selection(dates); }
+
+    }
+
+    timeline
+      .config(this._timelineConfig)
+      .render();
+
+    this._margin.bottom += timeline.outerBounds().height + timeline.padding() * 2;
+
+  }
+
+};
+
+/**
+    @function _drawTitle
+    @desc Draws a title if this._title is defined.
+    @param {Array} [*data*] The currently filtered dataset.
+    @private
+*/
+var drawTitle = function(data) {
+  if ( data === void 0 ) data = [];
+
+
+  var text = this._title ? this._title(data) : false;
+
+  var group = elem("g.d3plus-viz-title", {
+    enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
+    parent: this._select,
+    transition: this._transition,
+    update: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")}
+  }).node();
+
+  this._titleClass
+    .data(text ? [{text: text}] : [])
+    .select(group)
+    .width(this._width - this._margin.left - this._margin.right)
+    .config(this._titleConfig)
+    .render();
+
+  this._margin.top += text ? group.getBBox().height + this._padding : 0;
+
+};
+
+/**
+    @function _drawTotal
+    @desc Draws a total title if this._total is defined.
+    @param {Array} [*data*] The currently filtered dataset.
+    @private
+*/
+var drawTotal = function(data) {
+  if ( data === void 0 ) data = [];
+
+
+  var total = typeof this._total === "function" ? sum(data.map(this._total))
+              : this._total === true && this._size ? sum(data.map(this._size)) : false;
+
+  var group = elem("g.d3plus-viz-total", {
+    enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
+    parent: this._select,
+    transition: this._transition,
+    update: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")}
+  }).node();
+
+  var visible = typeof total === "number";
+
+  this._totalClass
+    .data(visible ? [{text: ((locale$3.t("Total", {lng: this._locale})) + ": " + total)}] : [])
+    .select(group)
+    .width(this._width - this._margin.left - this._margin.right)
+    .config(this._totalConfig)
+    .render();
+
+  this._margin.top += visible ? group.getBBox().height + this._padding : 0;
+
+};
+
+/**
+  @desc Given an HTMLElement and a "width" or "height" string, this function returns the current calculated size for the DOM element.
   @private
 */
-function elementSize(element, s) {
+function _elementSize(element, s) {
 
   if (element.tagName === undefined || ["BODY", "HTML"].indexOf(element.tagName) >= 0) {
 
@@ -16918,7 +15814,7 @@ function elementSize(element, s) {
 
     var val$1 = parseFloat(select(element).style(s), 10);
     if (typeof val$1 === "number" && val$1 > 0) { return val$1; }
-    else { return elementSize(element.parentNode, s); }
+    else { return _elementSize(element.parentNode, s); }
 
   }
 }
@@ -16930,7 +15826,7 @@ function elementSize(element, s) {
     @private
 */
 var getSize = function(elem) {
-  return [elementSize(elem, "width"), elementSize(elem, "height")];
+  return [_elementSize(elem, "width"), _elementSize(elem, "height")];
 };
 
 /**
@@ -16942,12 +15838,13 @@ var getSize = function(elem) {
 var click = function(d, i) {
 
   this._select.style("cursor", "auto");
+  
   if (this._drawDepth < this._groupBy.length - 1) {
 
     var filterGroup = this._groupBy[this._drawDepth],
           filterId = filterGroup(d, i);
 
-    this.highlight(false);
+    this.hover(false);
     if (this._tooltip) { this._tooltipClass.data([]).render(); }
 
     this._history.push({
@@ -16976,7 +15873,7 @@ var mouseenter = function(d, i) {
 
   var filterId = this._ids(d, i);
 
-  this.highlight(function (h, x) {
+  this.hover(function (h, x) {
     var ids = this$1._ids(h, x);
     return filterId[filterId.length - 1] === ids[filterId.length - 1];
   });
@@ -16984,41 +15881,29 @@ var mouseenter = function(d, i) {
 };
 
 /**
-    @desc On mouseenter event for all legend shapes in a Viz.
+    @desc Tooltip logic for a specified data point.
     @param {Object} *d* The data object being interacted with.
     @param {Number} *i* The index of the data object being interacted with.
+    @param {Object} [*config*] Optional configuration methods for the Tooltip class.
     @private
 */
-var mouseenterLegend = function(d) {
+var tooltip$1 = function(d, i, config) {
+  if ( config === void 0 ) config = {};
+
 
   if (this._tooltip) {
-    var depth = this._drawDepth < this._groupBy.length - 1;
-    this._select.style("cursor", depth ? "pointer" : "auto");
+    this._select.style("cursor", "pointer");
     this._tooltipClass.data([d])
-      .footer(depth ?  locale$3.t("Click to Expand", {lng: this._locale}) : "")
-      .title(this._legendClass.label())
-      .translate(mouse(select("html").node()))
-      .config(this._tooltipConfig)
-      .render();
-  }
-
-};
-
-/**
-    @desc On mouseenter event for all primary shapes in a Viz.
-    @param {Object} *d* The data object being interacted with.
-    @param {Number} *i* The index of the data object being interacted with.
-    @private
-*/
-var mouseenterShape = function(d) {
-
-  if (this._tooltip) {
-    var depth = this._drawDepth < this._groupBy.length - 1;
-    this._select.style("cursor", depth ? "pointer" : "auto");
-    this._tooltipClass.data([d])
-      .footer(depth ? locale$3.t("Click to Expand", {lng: this._locale}) : "")
+      .footer(this._drawDepth < this._groupBy.length - 1
+            ? locale$3.t("Click to Expand", {lng: this._locale})
+            : this._active && this._active(d, i)
+            ? !this._focus || this._focus === this._id(d, i)
+            ? locale$3.t("Click to Remove Highlight", {lng: this._locale})
+            : locale$3.t("Click to Highlight", {lng: this._locale})
+            : locale$3.t("Click to Highlight", {lng: this._locale}))
       .title(this._drawLabel)
       .translate(mouse(select("html").node()))
+      .config(config)
       .config(this._tooltipConfig)
       .render();
   }
@@ -17026,15 +15911,65 @@ var mouseenterShape = function(d) {
 };
 
 /**
-    @desc On mouse move event for all shapes in a Viz.
+    @desc On click event for Legend class.
     @param {Object} *d* The data object being interacted with.
     @param {Number} *i* The index of the data object being interacted with.
     @private
 */
-var mousemove = function() {
+var clickLegend = function(d, i) {
+  var this$1 = this;
 
-  if (this._tooltip) {
-    this._tooltipClass.translate(mouse(select("html").node())).render();
+
+  if (this._hover && this._drawDepth >= this._groupBy.length - 1) {
+
+    if (this._active && this._active(d, i)) {
+      this.active(false);
+      mouseenter.bind(this)(d, i);
+    }
+    else {
+
+      var filterId = this._ids(d, i);
+
+      this.active(function (h, x) {
+        var ids = this$1._ids(h, x);
+        return filterId[filterId.length - 1] === ids[filterId.length - 1];
+      });
+    }
+
+    tooltip$1.bind(this)(d, i, {title: this._legendClass.label()});
+
+  }
+
+};
+
+/**
+    @desc On click event for Shape classes.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var clickShape = function(d, i) {
+  var this$1 = this;
+
+
+  if (this._hover && this._drawDepth >= this._groupBy.length - 1) {
+
+    if (this._active && this._active(d, i)) {
+      this.active(false);
+      mouseenter.bind(this)(d, i);
+    }
+    else {
+
+      var filterId = this._ids(d, i);
+
+      this.active(function (h, x) {
+        var ids = this$1._ids(h, x);
+        return filterId[filterId.length - 1] === ids[filterId.length - 1];
+      });
+    }
+
+    tooltip$1.bind(this)(d, i);
+
   }
 
 };
@@ -17047,14 +15982,44 @@ var mousemove = function() {
 */
 var mouseleave = function() {
 
-  this.highlight(false);
+  this.hover(false);
   this._select.style("cursor", "auto");
   if (this._tooltip) { this._tooltipClass.data([]).render(); }
 
 };
 
 /**
+    @desc On mousemove event for all legend shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mousemoveLegend = function(d, i) {
+
+  tooltip$1.bind(this)(d, i, {title: this._legendClass.label()});
+
+};
+
+/**
+    @desc On mousemove event for all primary shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mousemoveShape = function(d, i) {
+
+  tooltip$1.bind(this)(d, i);
+
+};
+
+/**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
+
+/**
     @class Viz
+    @extends external:BaseClass
     @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
 */
 var Viz = (function (BaseClass$$1) {
@@ -17065,15 +16030,18 @@ var Viz = (function (BaseClass$$1) {
     BaseClass$$1.call(this);
 
     this._aggs = {};
-    this._backClass = new TextBox$4()
+    this._backClass = new TextBox()
       .on("click", function () {
         if (this$1._history.length) { this$1.config(this$1._history.pop()).render(); }
         else { this$1.depth(this$1._drawDepth - 1).filter(false).render(); }
       })
       .on("mousemove", function () { return this$1._backClass.select().style("cursor", "pointer"); });
+    this._backConfig = {
+      fontSize: 10,
+      resize: false
+    };
     this._data = [];
     this._duration = 600;
-    this._highlightOpacity = 0.5;
     this._history = [];
     this._groupBy = [accessor("id")];
     this._legend = true;
@@ -17086,21 +16054,22 @@ var Viz = (function (BaseClass$$1) {
     this._locale = "en-US";
     this._on = {
       "click": click.bind(this),
+      "click.legend": clickLegend.bind(this),
+      "click.shape": clickShape.bind(this),
       "mouseenter": mouseenter.bind(this),
-      "mouseenter.legend": mouseenterLegend.bind(this),
-      "mouseenter.shape": mouseenterShape.bind(this),
-      "mousemove": mousemove.bind(this),
+      "mousemove.legend": mousemoveLegend.bind(this),
+      "mousemove.shape": mousemoveShape.bind(this),
       "mouseleave": mouseleave.bind(this)
     };
     this._padding = 5;
-    this._shapes = [];
+
     this._shapeConfig = {
       fill: function (d, i) { return colorAssign(this$1._groupBy[0](d, i)); },
-      highlightDuration: 50,
       opacity: constant$5(1),
       stroke: function (d, i) { return color(colorAssign(this$1._groupBy[0](d, i))).darker(); },
       strokeWidth: constant$5(0)
     };
+
     this._timeline = true;
     this._timelineClass = new Timeline()
       .align("end")
@@ -17113,12 +16082,27 @@ var Viz = (function (BaseClass$$1) {
           return ms >= s[0] && ms <= s[1];
         }).render();
       });
+
+    this._titleClass = new TextBox();
+    this._titleConfig = {
+      fontSize: 12,
+      resize: false,
+      textAnchor: "middle"
+    };
+
     this._timelineConfig = {};
     this._tooltip = true;
     this._tooltipClass = new Tooltip();
     this._tooltipConfig = {
       duration: 50,
       pointerEvents: "none"
+    };
+
+    this._totalClass = new TextBox();
+    this._totalConfig = {
+      fontSize: 10,
+      resize: false,
+      textAnchor: "middle"
     };
 
   }
@@ -17169,26 +16153,9 @@ var Viz = (function (BaseClass$$1) {
 
   /**
       @memberof Viz
-      @desc Manages the SVG group for a UI element.
-      @param {String} type
-      @private
-  */
-  Viz.prototype._uiGroup = function _uiGroup (type, condition) {
-    if ( condition === void 0 ) condition = true;
-
-    return elem(("g.d3plus-viz-" + type), {
-      condition: condition,
-      enter: {transform: ("translate(0, " + (this._height / 2) + ")")},
-      exit: {opacity: 0},
-      parent: this._select,
-      transition: this._transition,
-      update: {opacity: 1, transform: ("translate(0, " + (this._height / 2) + ")")}
-    });
-  };
-
-  /**
-      The inner return object and draw function that gets assigned the public methods.
-      @private
+      @desc Draws the visualization given the specified configuration.
+      @param {Function} [*callback*] An optional callback function that, if passed, will be called after animation is complete.
+      @chainable
   */
   Viz.prototype.render = function render (callback) {
     var this$1 = this;
@@ -17233,96 +16200,43 @@ var Viz = (function (BaseClass$$1) {
       return l[l.length - 1];
     };
 
-    this._legendData = [];
-    this._filteredData = [];
-    if (this._data.length) {
+    // set the default timeFilter if it has not been specified
+    if (this._time && this._timeFilter === void 0) {
 
-      var data = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
-      if (this._filter) { data = data.filter(this._filter); }
+      var dates = this._data.map(this._time).map(date$2);
+      var d = this._data[0], i = 0;
 
-      var dataNest = nest$1();
-      for (var i = 0; i <= this._drawDepth; i++) { dataNest.key(this$1._groupBy[i]); }
-      dataNest.rollup(function (leaves) { return this$1._legendData.push(objectMerge(leaves, this$1._aggs)); }).entries(data);
-      if (this._discrete && ("_" + (this._discrete)) in this) { dataNest.key(this[("_" + (this._discrete))]); }
-      dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(data);
-
-    }
-
-    // Renders the timeline if this._time and this._timeline are not falsy and there are more than 1 tick available.
-    var timelinePossible = this._time && this._timeline;
-    var ticks$$1 = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$2) : [];
-    timelinePossible = timelinePossible && ticks$$1.length > 1;
-    var timelineGroup = this._uiGroup("timeline", timelinePossible);
-    if (timelinePossible) {
-
-      var timeline = this._timelineClass
-        .domain(extent(ticks$$1))
-        .duration(this._duration)
-        .height(this._height / 2 - this._margin.bottom)
-        .select(timelineGroup.node())
-        .ticks(ticks$$1.sort(function (a, b) { return +a - +b; }))
-        .width(this._width);
-
-      if (timeline.selection() === void 0) {
-
-        var dates = Array.from(new Set(merge(this._filteredData.map(function (d) {
-          var t = this$1._time(d);
-          return t instanceof Array ? t : [t];
-        })))).map(date$2);
-
-        var d = this._data[0], i$1 = 0;
-        if (this._discrete && ("_" + (this._discrete)) in this && this[("_" + (this._discrete))](d, i$1) === this._time(d, i$1)) { timeline.selection(extent(dates)); }
-        else { timeline.selection(max(dates)); }
-
+      if (this._discrete && ("_" + (this._discrete)) in this && this[("_" + (this._discrete))](d, i) === this._time(d, i)) {
+        this._timeFilter = function () { return true; };
+      }
+      else {
+        var latestTime = +max(dates);
+        this._timeFilter = function (d, i) { return +date$2(this$1._time(d, i)) === latestTime; };
       }
 
-      timeline
-        .config(this._timelineConfig)
-        .render();
+    }
 
-      this._margin.bottom += timeline.outerBounds().height + timeline.padding() * 2;
+    this._filteredData = [];
+    var flatData = [];
+    if (this._data.length) {
+
+      flatData = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
+      if (this._filter) { flatData = flatData.filter(this._filter); }
+
+      var dataNest = nest$1();
+      for (var i$1 = 0; i$1 <= this._drawDepth; i$1++) { dataNest.key(this$1._groupBy[i$1]); }
+      if (this._discrete && ("_" + (this._discrete)) in this) { dataNest.key(this[("_" + (this._discrete))]); }
+      dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
 
     }
 
-    // Renders the legend if this._legend is not falsy.
-    var legendGroup = this._uiGroup("legend", this._legend);
-    if (this._legend) {
+    drawTimeline.bind(this)(flatData);
+    drawLegend.bind(this)(flatData);
+    drawBack.bind(this)();
+    drawTitle.bind(this)(flatData);
+    drawTotal.bind(this)(flatData);
 
-      var legend = colorNest(this._legendData, this._shapeConfig.fill, this._groupBy);
-
-      this._legendClass
-        .id(legend.id)
-        .duration(this._duration)
-        .data(legend.data.length > 1 ? legend.data : [])
-        .height(this._height / 2 - this._margin.bottom)
-        .label(this._label || legend.id)
-        .select(legendGroup.node())
-        .verticalAlign("bottom")
-        .width(this._width)
-        .shapeConfig(this._shapeConfig)
-        .shapeConfig({on: Object.keys(this._on)
-          .filter(function (e) { return !e.includes(".") || e.includes(".legend"); })
-          .reduce(function (obj, e) {
-            obj[e] = this$1._on[e];
-            return obj;
-          }, {})})
-        .config(this._legendConfig)
-        .render();
-
-      var legendBounds = this._legendClass.outerBounds();
-      if (legendBounds.height) { this._margin.bottom += legendBounds.height + this._legendClass.padding() * 2; }
-
-    }
-
-    var titleGroup = elem("g.d3plus-viz-titles", {parent: this._select});
-
-    this._backClass
-      .data(this._history.length ? [{text: locale$3.t("Back", {lng: this._locale}), x: this._padding * 2, y: 0}] : [])
-      .select(titleGroup.node())
-      .render();
-
-    this._margin.top += this._history.length ? this._backClass.fontSize()() + this._padding : 0;
-
+    this._shapes = [];
     if (callback) { setTimeout(callback, this._duration + 100); }
 
     // Draws a rectangle showing the available space for a visualization.
@@ -17339,8 +16253,24 @@ var Viz = (function (BaseClass$$1) {
 
   /**
       @memberof Viz
+      @desc If *value* is specified, sets the active method to the specified function and returns the current class instance. If *value* is not specified, returns the current active method.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Viz.prototype.active = function active (_) {
+
+    this._active = _;
+    this._shapes.forEach(function (s) { return s.active(_); });
+    if (this._legend) { this._legendClass.active(_); }
+
+    return this;
+  };
+
+  /**
+      @memberof Viz
       @desc If *value* is specified, sets the aggregation method for each key in the object and returns the current class instance. If *value* is not specified, returns the current defined aggregation methods.
       @param {Object} [*value*]
+      @chainable
   */
   Viz.prototype.aggs = function aggs (_) {
     return arguments.length ? (this._aggs = assign(this._aggs, _), this) : this._aggs;
@@ -17348,8 +16278,19 @@ var Viz = (function (BaseClass$$1) {
 
   /**
       @memberof Viz
+      @desc If *value* is specified, sets the config method for the back button and returns the current class instance. If *value* is not specified, returns the current back button configuration.
+      @param {Object} [*value*]
+      @chainable
+  */
+  Viz.prototype.backConfig = function backConfig (_) {
+    return arguments.length ? (this._backConfig = assign(this._backConfig, _), this) : this._backConfig;
+  };
+
+  /**
+      @memberof Viz
       @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array.
       @param {Array} [*data* = []]
+      @chainable
   */
   Viz.prototype.data = function data (_) {
     return arguments.length ? (this._data = _, this) : this._data;
@@ -17359,6 +16300,7 @@ var Viz = (function (BaseClass$$1) {
       @memberof Viz
       @desc If *value* is specified, sets the depth to the specified number and returns the current class instance. The *value* should correspond with an index in the [groupBy](#groupBy) array. If *value* is not specified, returns the current depth.
       @param {Number} [*value*]
+      @chainable
   */
   Viz.prototype.depth = function depth (_) {
     return arguments.length ? (this._depth = _, this) : this._depth;
@@ -17368,6 +16310,7 @@ var Viz = (function (BaseClass$$1) {
       @memberof Viz
       @desc If *value* is specified, sets the discrete accessor to the specified method name (usually an axis) and returns the current class instance. If *value* is not specified, returns the current discrete method.
       @param {String} [*value*]
+      @chainable
   */
   Viz.prototype.discrete = function discrete (_) {
     return arguments.length ? (this._discrete = _, this) : this._discrete;
@@ -17377,6 +16320,7 @@ var Viz = (function (BaseClass$$1) {
       @memberof Viz
       @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
       @param {Number} [*ms* = 600]
+      @chainable
   */
   Viz.prototype.duration = function duration (_) {
     return arguments.length ? (this._duration = _, this) : this._duration;
@@ -17386,6 +16330,7 @@ var Viz = (function (BaseClass$$1) {
       @memberof Viz
       @desc If *value* is specified, sets the filter to the specified function and returns the current class instance. If *value* is not specified, returns the current filter.
       @param {Function} [*value*]
+      @chainable
   */
   Viz.prototype.filter = function filter (_) {
     return arguments.length ? (this._filter = _, this) : this._filter;
@@ -17395,6 +16340,7 @@ var Viz = (function (BaseClass$$1) {
       @memberof Viz
       @desc If *value* is specified, sets the group accessor(s) to the specified string, function, or array of values and returns the current class instance. If *value* is not specified, returns the current group accessor.
       @param {String|Function|Array} [*value*]
+      @chainable
       @example
 function value(d) {
   return d.id;
@@ -17423,6 +16369,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, sets the overall height to the specified number and returns the current class instance. If *value* is not specified, returns the current overall height.
       @param {Number} [*value* = window.innerHeight]
+      @chainable
   */
   Viz.prototype.height = function height (_) {
     return arguments.length ? (this._height = _, this) : this._height;
@@ -17430,30 +16377,35 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc If *value* is specified, sets the highlight method to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight method.
+      @desc If *value* is specified, sets the hover method to the specified function and returns the current class instance. If *value* is not specified, returns the current hover method.
       @param {Function} [*value*]
+      @chainable
   */
-  Viz.prototype.highlight = function highlight (_) {
+  Viz.prototype.hover = function hover (_) {
     var this$1 = this;
 
 
-    var shapeData = merge(this._shapes.map(function (s) { return s.data(); }));
-    shapeData = shapeData.concat(this._legendClass.data());
-    var highlightData = _ ? shapeData.filter(_) : [];
+    var hoverFunction = this._hover = _;
+    if (typeof _ === "function") {
 
-    var highlightIds = [];
-    highlightData.map(this._ids).forEach(function (ids) {
-      for (var x = 1; x <= ids.length; x++) {
-        highlightIds.push(JSON.stringify(ids.slice(0, x)));
-      }
-    });
-    highlightIds = highlightIds.filter(function (id, i) { return highlightIds.indexOf(id) === i; });
+      var shapeData = merge(this._shapes.map(function (s) { return s.data(); }));
+      shapeData = shapeData.concat(this._legendClass.data());
+      var activeData = _ ? shapeData.filter(_) : [];
 
-    var highlightFunction;
-    if (highlightIds.length) { highlightFunction = function (d, i) { return highlightIds.includes(JSON.stringify(this$1._ids(d, i))); }; }
+      var activeIds = [];
+      activeData.map(this._ids).forEach(function (ids) {
+        for (var x = 1; x <= ids.length; x++) {
+          activeIds.push(JSON.stringify(ids.slice(0, x)));
+        }
+      });
+      activeIds = activeIds.filter(function (id, i) { return activeIds.indexOf(id) === i; });
 
-    this._shapes.forEach(function (s) { return s.highlight(highlightFunction); });
-    if (this._legend) { this._legendClass.highlight(highlightFunction); }
+      if (activeIds.length) { hoverFunction = function (d, i) { return activeIds.includes(JSON.stringify(this$1._ids(d, i))); }; }
+
+    }
+
+    this._shapes.forEach(function (s) { return s.hover(hoverFunction); });
+    if (this._legend) { this._legendClass.hover(hoverFunction); }
 
     return this;
   };
@@ -17462,6 +16414,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default.
       @param {Function|String} [*value*]
+      @chainable
   */
   Viz.prototype.label = function label (_) {
     return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$5(_), this) : this._label;
@@ -17471,6 +16424,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, toggles the legend based on the specified boolean and returns the current class instance. If *value* is not specified, returns the current value.
       @param {Boolean} [*value* = true]
+      @chainable
   */
   Viz.prototype.legend = function legend (_) {
     return arguments.length ? (this._legend = _, this) : this._legend;
@@ -17480,6 +16434,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, the object is passed to the legend's config method. If *value* is not specified, returns the current legend config.
       @param {Object} [*value*]
+      @chainable
   */
   Viz.prototype.legendConfig = function legendConfig (_) {
     return arguments.length ? (this._legendConfig = _, this) : this._legendConfig;
@@ -17489,8 +16444,9 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, sets the locale to the specified string and returns the current class instance. If *value* is not specified, returns the current locale.
       @param {String} [*value* = "en-US"]
+      @chainable
   */
-  Viz.prototype.locale = function locale$1 (_) {
+  Viz.prototype.locale = function locale (_) {
     return arguments.length ? (this._locale = _, this) : this._locale;
   };
 
@@ -17498,6 +16454,7 @@ function value(d) {
       @memberof Viz
       @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element, which is `undefined` by default.
       @param {String|HTMLElement} [*selector*]
+      @chainable
   */
   Viz.prototype.select = function select$1 (_) {
     return arguments.length ? (this._select = select(_), this) : this._select;
@@ -17507,6 +16464,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, sets the shape accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current shape accessor.
       @param {Function|String} [*value*]
+      @chainable
   */
   Viz.prototype.shape = function shape (_) {
     return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$5(_), this) : this._shape;
@@ -17516,6 +16474,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, sets the config method for each shape and returns the current class instance. If *value* is not specified, returns the current shape configuration.
       @param {Object} [*value*]
+      @chainable
   */
   Viz.prototype.shapeConfig = function shapeConfig (_) {
     return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
@@ -17525,6 +16484,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, sets the time accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current time accessor. The time values that are returned should be valid Date objects, 4-digit year values, or strings that can be parsed into javascript Date objects (click [here](http://dygraphs.com/date-formats.html) for valid string formats).
       @param {Function|String} [*value*]
+      @chainable
   */
   Viz.prototype.time = function time (_) {
     if (arguments.length) {
@@ -17549,6 +16509,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, sets the time filter to the specified function and returns the current class instance. If *value* is not specified, returns the current time filter.
       @param {Function} [*value*]
+      @chainable
   */
   Viz.prototype.timeFilter = function timeFilter (_) {
     return arguments.length ? (this._timeFilter = _, this) : this._timeFilter;
@@ -17558,6 +16519,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, toggles the timeline based on the specified boolean and returns the current class instance. If *value* is not specified, returns the current timeline visibility.
       @param {Boolean} [*value* = true]
+      @chainable
   */
   Viz.prototype.timeline = function timeline (_) {
     return arguments.length ? (this._timeline = _, this) : this._timeline;
@@ -17567,6 +16529,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, sets the config method for the timeline and returns the current class instance. If *value* is not specified, returns the current timeline configuration.
       @param {Object} [*value*]
+      @chainable
   */
   Viz.prototype.timelineConfig = function timelineConfig (_) {
     return arguments.length ? (this._timelineConfig = assign(this._timelineConfig, _), this) : this._timelineConfig;
@@ -17574,8 +16537,29 @@ function value(d) {
 
   /**
       @memberof Viz
+      @desc If *value* is specified, sets the title accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current title accessor.
+      @param {Function|String} [*value*]
+      @chainable
+  */
+  Viz.prototype.title = function title (_) {
+    return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$5(_), this) : this._title;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the config method for the title and returns the current class instance. If *value* is not specified, returns the current title configuration.
+      @param {Object} [*value*]
+      @chainable
+  */
+  Viz.prototype.titleConfig = function titleConfig (_) {
+    return arguments.length ? (this._titleConfig = assign(this._titleConfig, _), this) : this._titleConfig;
+  };
+
+  /**
+      @memberof Viz
       @desc If *value* is specified, toggles the tooltip based on the specified boolean and returns the current class instance. If *value* is not specified, returns the current tooltip visibility.
       @param {Boolean} [*value* = true]
+      @chainable
   */
   Viz.prototype.tooltip = function tooltip (_) {
     return arguments.length ? (this._tooltip = _, this) : this._tooltip;
@@ -17585,6 +16569,7 @@ function value(d) {
       @memberof Viz
       @desc If *value* is specified, sets the config method for the tooltip and returns the current class instance. If *value* is not specified, returns the current tooltip configuration.
       @param {Object} [*value*]
+      @chainable
   */
   Viz.prototype.tooltipConfig = function tooltipConfig (_) {
     return arguments.length ? (this._tooltipConfig = assign(this._tooltipConfig, _), this) : this._tooltipConfig;
@@ -17592,8 +16577,29 @@ function value(d) {
 
   /**
       @memberof Viz
+      @desc If *value* is specified, sets the total accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current total accessor.
+      @param {Boolean|Function|String} [*value*]
+      @chainable
+  */
+  Viz.prototype.total = function total (_) {
+    return arguments.length ? (this._total = typeof _ === "function" ? _ : accessor(_), this) : this._total;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the config method for the total and returns the current class instance. If *value* is not specified, returns the current total configuration.
+      @param {Object} [*value*]
+      @chainable
+  */
+  Viz.prototype.totalConfig = function totalConfig (_) {
+    return arguments.length ? (this._totalConfig = assign(this._totalConfig, _), this) : this._totalConfig;
+  };
+
+  /**
+      @memberof Viz
       @desc If *value* is specified, sets the overallwidth to the specified number and returns the current class instance. If *value* is not specified, returns the current overall width.
       @param {Number} [*value* = window.innerWidth]
+      @chainable
   */
   Viz.prototype.width = function width (_) {
     return arguments.length ? (this._width = _, this) : this._width;
@@ -17603,8 +16609,13 @@ function value(d) {
 }(BaseClass));
 
 /**
+    @external Viz
+    @see https://github.com/d3plus/d3plus-viz#Viz
+*/
+
+/**
     @class Priestley
-    @extends Viz
+    @extends external:Viz
     @desc Creates a priestley timeline based on an array of data.
 */
 var Priestley = (function (Viz$$1) {
@@ -17727,6 +16738,7 @@ var Priestley = (function (Viz$$1) {
       @memberof Priestley
       @desc If *value* is specified, sets the config method for the axis and returns the current class instance. If *value* is not specified, returns the current axis configuration.
       @param {Object} [*value*]
+      @chainable
   */
   Priestley.prototype.axisConfig = function axisConfig (_) {
     return arguments.length ? (this._axisConfig = assign(this._axisConfig, _), this) : this._axisConfig;
@@ -17736,6 +16748,7 @@ var Priestley = (function (Viz$$1) {
       @memberof Priestley
       @desc If *value* is specified, sets the end accessor to the specified function or key and returns the current class instance. If *value* is not specified, returns the current end accessor.
       @param {Function|String} [*value*]
+      @chainable
   */
   Priestley.prototype.end = function end (_) {
     if (arguments.length) {
@@ -17753,6 +16766,7 @@ var Priestley = (function (Viz$$1) {
       @memberof Priestley
       @desc If *value* is specified, sets the start accessor to the specified function or key and returns the current class instance. If *value* is not specified, returns the current start accessor.
       @param {Function|String} [*value*]
+      @chainable
   */
   Priestley.prototype.start = function start (_) {
     if (arguments.length) {

@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.13
+  d3plus-priestley v0.1.14
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -11,8 +11,13 @@
 }(this, (function (exports,d3Array,d3Collection,d3Scale,d3plusAxis,d3plusCommon,d3plusShape,d3plusViz) { 'use strict';
 
 /**
+    @external Viz
+    @see https://github.com/d3plus/d3plus-viz#Viz
+*/
+
+/**
     @class Priestley
-    @extends Viz
+    @extends external:Viz
     @desc Creates a priestley timeline based on an array of data.
 */
 var Priestley = (function (Viz$$1) {
@@ -135,6 +140,7 @@ var Priestley = (function (Viz$$1) {
       @memberof Priestley
       @desc If *value* is specified, sets the config method for the axis and returns the current class instance. If *value* is not specified, returns the current axis configuration.
       @param {Object} [*value*]
+      @chainable
   */
   Priestley.prototype.axisConfig = function axisConfig (_) {
     return arguments.length ? (this._axisConfig = d3plusCommon.assign(this._axisConfig, _), this) : this._axisConfig;
@@ -144,6 +150,7 @@ var Priestley = (function (Viz$$1) {
       @memberof Priestley
       @desc If *value* is specified, sets the end accessor to the specified function or key and returns the current class instance. If *value* is not specified, returns the current end accessor.
       @param {Function|String} [*value*]
+      @chainable
   */
   Priestley.prototype.end = function end (_) {
     if (arguments.length) {
@@ -161,6 +168,7 @@ var Priestley = (function (Viz$$1) {
       @memberof Priestley
       @desc If *value* is specified, sets the start accessor to the specified function or key and returns the current class instance. If *value* is not specified, returns the current start accessor.
       @param {Function|String} [*value*]
+      @chainable
   */
   Priestley.prototype.start = function start (_) {
     if (arguments.length) {
