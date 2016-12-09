@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.5.1
+  d3plus-viz v0.5.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -363,7 +363,9 @@ var tooltip$1 = function(d, i, config) {
       .footer(this._drawDepth < this._groupBy.length - 1
             ? d3plusCommon.locale.t("Click to Expand", {lng: this._locale})
             : this._active && this._active(d, i)
+            ? !this._focus || this._focus === this._id(d, i)
             ? d3plusCommon.locale.t("Click to Remove Highlight", {lng: this._locale})
+            : d3plusCommon.locale.t("Click to Highlight", {lng: this._locale})
             : d3plusCommon.locale.t("Click to Highlight", {lng: this._locale}))
       .title(this._drawLabel)
       .translate(d3Selection.mouse(d3Selection.select("html").node()))
@@ -527,7 +529,6 @@ var Viz = (function (BaseClass$$1) {
     };
     this._padding = 5;
 
-    this._shapes = [];
     this._shapeConfig = {
       fill: function (d, i) { return d3plusColor.assign(this$1._groupBy[0](d, i)); },
       opacity: d3plusCommon.constant(1),
@@ -701,6 +702,7 @@ var Viz = (function (BaseClass$$1) {
     drawTitle.bind(this)(flatData);
     drawTotal.bind(this)(flatData);
 
+    this._shapes = [];
     if (callback) { setTimeout(callback, this._duration + 100); }
 
     // Draws a rectangle showing the available space for a visualization.
@@ -722,30 +724,10 @@ var Viz = (function (BaseClass$$1) {
       @chainable
   */
   Viz.prototype.active = function active (_) {
-    var this$1 = this;
 
-
-    var activeFunction = this._active = _;
-    if (typeof _ === "function") {
-
-      var shapeData = d3Array.merge(this._shapes.map(function (s) { return s.data(); }));
-      shapeData = shapeData.concat(this._legendClass.data());
-      var activeData = _ ? shapeData.filter(_) : [];
-
-      var activeIds = [];
-      activeData.map(this._ids).forEach(function (ids) {
-        for (var x = 1; x <= ids.length; x++) {
-          activeIds.push(JSON.stringify(ids.slice(0, x)));
-        }
-      });
-      activeIds = activeIds.filter(function (id, i) { return activeIds.indexOf(id) === i; });
-
-      if (activeIds.length) { activeFunction = function (d, i) { return activeIds.includes(JSON.stringify(this$1._ids(d, i))); }; }
-
-    }
-
-    this._shapes.forEach(function (s) { return s.active(activeFunction); });
-    if (this._legend) { this._legendClass.active(activeFunction); }
+    this._active = _;
+    this._shapes.forEach(function (s) { return s.active(_); });
+    if (this._legend) { this._legendClass.active(_); }
 
     return this;
   };
