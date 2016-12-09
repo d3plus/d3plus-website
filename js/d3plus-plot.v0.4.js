@@ -1,14 +1,14 @@
 /*
-  d3plus-plot v0.4.0
+  d3plus-plot v0.4.1
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-common'), require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-shape'), require('d3-selection'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-shape'), require('d3plus-viz')) :
-  typeof define === 'function' && define.amd ? define('d3plus-plot', ['exports', 'd3plus-common', 'd3-array', 'd3-collection', 'd3-scale', 'd3-shape', 'd3-selection', 'd3plus-axis', 'd3plus-color', 'd3plus-shape', 'd3plus-viz'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3plusCommon,global.d3Array,global.d3Collection,global.scales,global.d3Shape,global.d3Selection,global.d3plusAxis,global.d3plusColor,global.shapes,global.d3plusViz));
-}(this, (function (exports,d3plusCommon,d3Array,d3Collection,scales,d3Shape,d3Selection,d3plusAxis,d3plusColor,shapes,d3plusViz) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-common'), require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-shape'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-shape'), require('d3plus-viz')) :
+  typeof define === 'function' && define.amd ? define('d3plus-plot', ['exports', 'd3plus-common', 'd3-array', 'd3-collection', 'd3-scale', 'd3-shape', 'd3plus-axis', 'd3plus-color', 'd3plus-shape', 'd3plus-viz'], factory) :
+  (factory((global.d3plus = global.d3plus || {}),global.d3plusCommon,global.d3Array,global.d3Collection,global.scales,global.d3Shape,global.d3plusAxis,global.d3plusColor,global.shapes,global.d3plusViz));
+}(this, (function (exports,d3plusCommon,d3Array,d3Collection,scales,d3Shape,d3plusAxis,d3plusColor,shapes,d3plusViz) { 'use strict';
 
 var ordinalBuffer = function(domain) {
 
@@ -239,7 +239,6 @@ var Plot = (function (Viz$$1) {
     var height = this._height - this._margin.top - this._margin.bottom,
           opp = this._discrete ? this._discrete === "x" ? "y" : "x" : undefined,
           parent = this._select,
-          that = this,
           transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")",
           transition = this._transition,
           width = this._width - this._margin.left - this._margin.right;
@@ -459,21 +458,6 @@ var Plot = (function (Viz$$1) {
 
     shapeConfig = d3plusCommon.assign(shapeConfig, positions);
 
-    /**
-        @desc Handles mouse events for nested shapes, finding the closest discrete data point to send to the defined event function.
-        @private
-    */
-    function mouseEvent(d) {
-      if (!this) { return false; }
-      if (d.nested && d.values) {
-        var axis = that._discrete,
-              cursor = d3Selection.mouse(that._select.node())[axis === "x" ? 0 : 1],
-              values = d.values.map(function (d) { return shapeConfig[axis](d); });
-        d = d.values[values.indexOf(d3plusCommon.closest(cursor, values))];
-      }
-      return this(d.data, d.i);
-    }
-
     var events = Object.keys(this._on);
     shapeData.forEach(function (d) {
 
@@ -514,9 +498,21 @@ var Plot = (function (Viz$$1) {
       var classEvents = events.filter(function (e) { return e.includes(("." + (d.key))); }),
             globalEvents = events.filter(function (e) { return !e.includes("."); }),
             shapeEvents = events.filter(function (e) { return e.includes(".shape"); });
-      for (var e = 0; e < globalEvents.length; e++) { s.on(globalEvents[e], mouseEvent.bind(this$1._on[globalEvents[e]])); }
-      for (var e$1 = 0; e$1 < shapeEvents.length; e$1++) { s.on(shapeEvents[e$1], mouseEvent.bind(this$1._on[shapeEvents[e$1]])); }
-      for (var e$2 = 0; e$2 < classEvents.length; e$2++) { s.on(classEvents[e$2], mouseEvent.bind(this$1._on[classEvents[e$2]])); }
+      var loop = function ( e ) {
+        s.on(globalEvents[e], function (d) { return this$1._on[globalEvents[e]](d.data, d.i); });
+      };
+
+      for (var e = 0; e < globalEvents.length; e++) loop( e );
+      var loop$1 = function ( e ) {
+        s.on(shapeEvents[e], function (d) { return this$1._on[shapeEvents[e]](d.data, d.i); });
+      };
+
+      for (var e$1 = 0; e$1 < shapeEvents.length; e$1++) loop$1( e$1 );
+      var loop$2 = function ( e ) {
+        s.on(classEvents[e], function (d) { return this$1._on[classEvents[e]](d.data, d.i); });
+      };
+
+      for (var e$2 = 0; e$2 < classEvents.length; e$2++) loop$2( e$2 );
 
       s.config(this$1._shapeConfig[d.key] ? wrapConfig(this$1._shapeConfig[d.key]) : {}).render();
       this$1._shapes.push(s);
