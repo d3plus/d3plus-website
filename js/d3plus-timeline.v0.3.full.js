@@ -14218,7 +14218,6 @@ var Timeline = (function (Axis$$1) {
       @desc If *value* is specified, toggles the brushing value and returns the current class instance. If *value* is not specified, returns the current brushing value.
       @param {Boolean} [*value* = true]
       @chainable
-      @example
   */
   Timeline.prototype.brushing = function brushing (_) {
     return arguments.length ? (this._brushing = _, this) : this._brushing;
@@ -14294,7 +14293,6 @@ function() {
       @desc If *value* is specified, toggles the snapping value and returns the current class instance. If *value* is not specified, returns the current snapping value.
       @param {Boolean} [*value* = true]
       @chainable
-      @example
   */
   Timeline.prototype.snapping = function snapping (_) {
     return arguments.length ? (this._snapping = _, this) : this._snapping;
