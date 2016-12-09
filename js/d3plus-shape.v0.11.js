@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.11.0
+  d3plus-shape v0.11.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -642,7 +642,7 @@ var Shape = (function (BaseClass$$1) {
     if (this._sort) { data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ ? a.data : a, b.__d3plusShape__ ? b.data : b); }); }
 
     d3Selection.selectAll(("g.d3plus-" + (this._name) + "-hover > *, g.d3plus-" + (this._name) + "-active > *")).each(function(d) {
-      if (d && d.parent) { d.parent.appendChild(this); }
+      if (d && d.parentNode) { d.parentNode.appendChild(this); }
       else { this.parentNode.removeChild(this); }
     });
 
@@ -728,8 +728,8 @@ var Shape = (function (BaseClass$$1) {
     this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
-        if (!d.parent) { d.parent = this.parentNode; }
-        var parent = d.parent;
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
 
         if (this.tagName === "text") { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
@@ -879,8 +879,8 @@ var Shape = (function (BaseClass$$1) {
       .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
-        if (!d.parent) { d.parent = this.parentNode; }
-        var parent = d.parent;
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
 
         if (this.tagName === "text") { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
