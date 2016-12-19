@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.19
+  d3plus-axis v0.3.20
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5507,6 +5507,9 @@ BaseClass.prototype.on = function on (_, f) {
     @param {Number} n The number value to use when searching the array.
     @param {Array} arr The array of values to test against.
 */
+var closest = function(n, arr) {
+  return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
+};
 
 /**
     @function constant
@@ -13262,7 +13265,7 @@ var Axis = (function (BaseClass$$1) {
     if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
     if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
 
-    var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 45 : 75]);
+    var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
 
     var ticks$$1 = this._ticks
               ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
@@ -13297,7 +13300,7 @@ var Axis = (function (BaseClass$$1) {
       var s = tickGet(d, i);
       if (this$1._shape === "Circle") { s *= 2; }
       var t = this$1._d3Scale(d);
-      if (!pixels.length || !pixels.includes(t) && max(pixels) < t - s * 2) { pixels.push(t); }
+      if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
       else { pixels.push(false); }
     });
     ticks$$1 = ticks$$1.filter(function (d, i) { return pixels[i] !== false; });

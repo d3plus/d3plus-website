@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.19
+  d3plus-axis v0.3.20
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -388,7 +388,7 @@ var Axis = (function (BaseClass$$1) {
     if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
     if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
 
-    var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 45 : 75]);
+    var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
 
     var ticks = this._ticks
               ? this._scale === "time" ? this._ticks.map(date) : this._ticks
@@ -423,7 +423,7 @@ var Axis = (function (BaseClass$$1) {
       var s = tickGet(d, i);
       if (this$1._shape === "Circle") { s *= 2; }
       var t = this$1._d3Scale(d);
-      if (!pixels.length || !pixels.includes(t) && d3Array.max(pixels) < t - s * 2) { pixels.push(t); }
+      if (!pixels.length || Math.abs(d3plusCommon.closest(t, pixels) - t) > s * 2) { pixels.push(t); }
       else { pixels.push(false); }
     });
     ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
