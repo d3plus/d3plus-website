@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.17
+  d3plus-axis v0.3.18
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -35,8 +35,13 @@ var date = function(d) {
 };
 
 /**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
+
+/**
     @class Axis
-    @extends BaseClass
+    @extends external:BaseClass
     @desc Creates an SVG scale based on an array of data.
 */
 var Axis = (function (BaseClass$$1) {
@@ -155,6 +160,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
       @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
+      @chainable
   */
   Axis.prototype.align = function align (_) {
     return arguments.length ? (this._align = _, this) : this._align;
@@ -164,6 +170,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the axis line style and returns the current class instance. If *value* is not specified, returns the current axis line style.
       @param {Object} [*value*]
+      @chainable
   */
   Axis.prototype.barConfig = function barConfig (_) {
     return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
@@ -173,6 +180,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance. If *value* is not specified, returns the current scale domain.
       @param {Array} [*value* = [0, 10]]
+      @chainable
   */
   Axis.prototype.domain = function domain (_) {
     return arguments.length ? (this._domain = _, this) : this._domain;
@@ -182,6 +190,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance. If *value* is not specified, returns the current duration.
       @param {Number} [*value* = 600]
+      @chainable
   */
   Axis.prototype.duration = function duration (_) {
     return arguments.length ? (this._duration = _, this) : this._duration;
@@ -191,6 +200,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the grid values of the axis and returns the current class instance. If *value* is not specified, returns the current grid values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
       @param {Array} [*value*]
+      @chainable
   */
   Axis.prototype.grid = function grid (_) {
     return arguments.length ? (this._grid = _, this) : this._grid;
@@ -200,6 +210,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the grid style of the axis and returns the current class instance. If *value* is not specified, returns the current grid style.
       @param {Object} [*value*]
+      @chainable
   */
   Axis.prototype.gridConfig = function gridConfig (_) {
     return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
@@ -209,6 +220,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the grid size of the axis and returns the current class instance. If *value* is not specified, returns the current grid size, which defaults to taking up as much space as available.
       @param {Number} [*value* = undefined]
+      @chainable
   */
   Axis.prototype.gridSize = function gridSize (_) {
     return arguments.length ? (this._gridSize = _, this) : this._gridSize;
@@ -218,6 +230,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the overall height of the axis and returns the current class instance. If *value* is not specified, returns the current height value.
       @param {Number} [*value* = 100]
+      @chainable
   */
   Axis.prototype.height = function height (_) {
     return arguments.length ? (this._height = _, this) : this._height;
@@ -227,6 +240,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance. If *value* is not specified, returns the current visible tick labels, which defaults to showing all labels.
       @param {Array} [*value*]
+      @chainable
   */
   Axis.prototype.labels = function labels (_) {
     return arguments.length ? (this._labels = _, this) : this._labels;
@@ -236,6 +250,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
       @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
+      @chainable
   */
   Axis.prototype.orient = function orient (_) {
     if (arguments.length) {
@@ -272,6 +287,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance. If *value* is not specified, returns the current padding value.
       @param {Number} [*value* = 10]
+      @chainable
   */
   Axis.prototype.padding = function padding (_) {
     return arguments.length ? (this._padding = _, this) : this._padding;
@@ -281,6 +297,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance. If *value* is not specified, returns the current inner padding value.
       @param {Number} [*value* = 0.1]
+      @chainable
   */
   Axis.prototype.paddingInner = function paddingInner (_) {
     return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
@@ -290,6 +307,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance. If *value* is not specified, returns the current outer padding value.
       @param {Number} [*value* = 0.1]
+      @chainable
   */
   Axis.prototype.paddingOuter = function paddingOuter (_) {
     return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
@@ -299,6 +317,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value. If *value* is not specified, returns the current scale range.
       @param {Array} [*value*]
+      @chainable
   */
   Axis.prototype.range = function range (_) {
     return arguments.length ? (this._range = _, this) : this._range;
@@ -308,6 +327,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
       @param {Function} [*callback* = undefined]
+      @chainable
   */
   Axis.prototype.render = function render (callback) {
     var this$1 = this;
@@ -545,7 +565,7 @@ var Axis = (function (BaseClass$$1) {
             width: labelWidth,
             height: labelHeight
           },
-          size: size,
+          size: ticks.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false
         }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
       });
@@ -602,6 +622,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the scale of the axis and returns the current class instance. If *value* is not specified, returns the current this._d3Scale
       @param {String} [*value* = "linear"]
+      @chainable
   */
   Axis.prototype.scale = function scale (_) {
     return arguments.length ? (this._scale = _, this) : this._scale;
@@ -611,6 +632,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
       @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+      @chainable
   */
   Axis.prototype.select = function select$1 (_) {
     return arguments.length ? (this._select = d3Selection.select(_), this) : this._select;
@@ -620,6 +642,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the tick shape constructor and returns the current class instance. If *value* is not specified, returns the current shape.
       @param {String} [*value* = "Line"]
+      @chainable
   */
   Axis.prototype.shape = function shape (_) {
     return arguments.length ? (this._shape = _, this) : this._shape;
@@ -629,6 +652,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the tick style of the axis and returns the current class instance. If *value* is not specified, returns the current tick style.
       @param {Object} [*value*]
+      @chainable
   */
   Axis.prototype.shapeConfig = function shapeConfig (_) {
     return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
@@ -638,6 +662,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the tick formatter and returns the current class instance. If *value* is not specified, returns the current tick formatter, which by default is retrieved from the [d3-scale](https://github.com/d3/d3-scale#continuous_tickFormat).
       @param {Function} [*value*]
+      @chainable
   */
   Axis.prototype.tickFormat = function tickFormat (_) {
     return arguments.length ? (this._tickFormat = _, this) : this._tickFormat;
@@ -647,6 +672,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the tick values of the axis and returns the current class instance. If *value* is not specified, returns the current tick values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
       @param {Array} [*value*]
+      @chainable
   */
   Axis.prototype.ticks = function ticks (_) {
     return arguments.length ? (this._ticks = _, this) : this._ticks;
@@ -656,6 +682,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the tick size of the axis and returns the current class instance. If *value* is not specified, returns the current tick size.
       @param {Number} [*value* = 5]
+      @chainable
   */
   Axis.prototype.tickSize = function tickSize (_) {
     return arguments.length ? (this._tickSize = _, this) : this._tickSize;
@@ -665,6 +692,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the title of the axis and returns the current class instance. If *value* is not specified, returns the current title.
       @param {String} [*value*]
+      @chainable
   */
   Axis.prototype.title = function title (_) {
     return arguments.length ? (this._title = _, this) : this._title;
@@ -674,6 +702,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance. If *value* is not specified, returns the current title configuration.
       @param {Object} [*value*]
+      @chainable
   */
   Axis.prototype.titleConfig = function titleConfig (_) {
     return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
@@ -683,6 +712,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the overall width of the axis and returns the current class instance. If *value* is not specified, returns the current width value.
       @param {Number} [*value* = 400]
+      @chainable
   */
   Axis.prototype.width = function width (_) {
     return arguments.length ? (this._width = _, this) : this._width;
