@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.18
+  d3plus-axis v0.3.19
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5477,7 +5477,7 @@ BaseClass.prototype.config = function config (_) {
   }
   else {
     var config = {};
-    for (var k$1 in this.__proto__) { if (k$1 !== "config") { config[k$1] = this$1[k$1](); } }
+    for (var k$1 in this.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
     return config;
   }
 };
