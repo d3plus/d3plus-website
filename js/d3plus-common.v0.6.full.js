@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.11
+  d3plus-common v0.6.12
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -148,7 +148,7 @@ BaseClass.prototype.config = function config (_) {
   }
   else {
     var config = {};
-    for (var k$1 in this.__proto__) if (k$1.indexOf("_") !== 0 && k$1 !== "config") config[k$1] = this$1[k$1]();
+    for (var k$1 in this.__proto__) if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) config[k$1] = this$1[k$1]();
     return config;
   }
 };
@@ -169,10 +169,6 @@ new Plot
 })
 */
 BaseClass.prototype.on = function on (_, f) {
-  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-};
-
-BaseClass.prototype._private = function _private (_, f) {
   return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
 };
 
