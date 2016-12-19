@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.7.0
+  d3plus-legend v0.7.1
   An easy to use javascript chart legend.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -1250,6 +1250,7 @@ var BaseClass = function BaseClass() {
     @memberof BaseClass
     @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
     @param {Object} [*value*]
+    @chainable
 */
 BaseClass.prototype.config = function config (_) {
     var this$1 = this;
@@ -1260,7 +1261,7 @@ BaseClass.prototype.config = function config (_) {
   }
   else {
     var config = {};
-    for (var k$1 in this.prototype.constructor) { if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) { config[k$1] = this$1[k$1](); } }
+    for (var k$1 in this.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
     return config;
   }
 };
@@ -1270,6 +1271,7 @@ BaseClass.prototype.config = function config (_) {
     @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
     @param {String} [*typenames*]
     @param {Function} [*listener*]
+    @chainable
     @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
 new Plot
 .on("click.Shape", function(d) {
@@ -3349,7 +3351,6 @@ var Logger = function () {
 
     _classCallCheck$1(this, Logger);
 
-    this.subs = [];
     this.init(concreteLogger, options);
   }
 
@@ -3364,9 +3365,6 @@ var Logger = function () {
 
   Logger.prototype.setDebug = function setDebug(bool) {
     this.debug = bool;
-    this.subs.forEach(function (sub) {
-      sub.setDebug(bool);
-    });
   };
 
   Logger.prototype.log = function log() {
@@ -3393,7 +3391,6 @@ var Logger = function () {
 
   Logger.prototype.create = function create(moduleName) {
     var sub = new Logger(this.logger, _extends$1({ prefix: this.prefix + ':' + moduleName + ':' }, this.options));
-    this.subs.push(sub);
 
     return sub;
   };
@@ -4486,6 +4483,7 @@ var Interpolator = function () {
       this.format = options.interpolation && options.interpolation.format || function (value) {
         return value;
       };
+      this.escape = options.interpolation && options.interpolation.escape || escape;
     }
     if (!options.interpolation) { options.interpolation = { escapeValue: true }; }
 
@@ -4562,7 +4560,7 @@ var Interpolator = function () {
         this$1.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
         value = '';
       }
-      value = this$1.escapeValue ? regexSafe(escape(value)) : regexSafe(value);
+      value = this$1.escapeValue ? regexSafe(this$1.escape(value)) : regexSafe(value);
       str = str.replace(match[0], value);
       this$1.regexp.lastIndex = 0;
     }
@@ -4592,6 +4590,7 @@ var Interpolator = function () {
       key = p.shift();
       var optionsString = p.join(',');
       optionsString = this.interpolate(optionsString, clonedOptions);
+      optionsString = optionsString.replace(/'/g, '"');
 
       try {
         clonedOptions = JSON.parse(optionsString);
@@ -5411,13 +5410,21 @@ var I18n = function (_EventEmitter) {
 
 var i18next$1 = new I18n();
 
+var Back = "Back";
+var Total = "Total";
 var array$2 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
 var enUS = {
+	Back: Back,
+	Total: Total,
 	array: array$2
 };
 
+var Back$1 = "Atrás";
+var Total$1 = "Total";
 var array$3 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
 var esES = {
+	Back: Back$1,
+	Total: Total$1,
 	array: array$3
 };
 
@@ -8552,11 +8559,12 @@ var TextBox = (function (BaseClass$$1) {
             .attr("opacity", 0).remove();
 
           tspans.enter().append("tspan")
-            .attr("dominant-baseline", "alphabetic")
-            .style("baseline-shift", "0%")
-            .attr("opacity", 0)
-            .call(tspanStyle)
-            .transition(t).delay(that._delay)
+              .attr("dominant-baseline", "alphabetic")
+              .style("baseline-shift", "0%")
+              .attr("opacity", 0)
+              .call(tspanStyle)
+            .merge(tspans).transition(t).delay(that._delay)
+              .call(tspanStyle)
               .attr("opacity", 1);
 
         }
@@ -9242,7 +9250,7 @@ var Shape = (function (BaseClass$$1) {
     if (this._sort) { data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ ? a.data : a, b.__d3plusShape__ ? b.data : b); }); }
 
     selectAll(("g.d3plus-" + (this._name) + "-hover > *, g.d3plus-" + (this._name) + "-active > *")).each(function(d) {
-      if (d && d.parent) { d.parent.appendChild(this); }
+      if (d && d.parentNode) { d.parentNode.appendChild(this); }
       else { this.parentNode.removeChild(this); }
     });
 
@@ -9328,8 +9336,8 @@ var Shape = (function (BaseClass$$1) {
     this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
-        if (!d.parent) { d.parent = this.parentNode; }
-        var parent = d.parent;
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
 
         if (this.tagName === "text") { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
@@ -9479,8 +9487,8 @@ var Shape = (function (BaseClass$$1) {
       .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
-        if (!d.parent) { d.parent = this.parentNode; }
-        var parent = d.parent;
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
 
         if (this.tagName === "text") { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
