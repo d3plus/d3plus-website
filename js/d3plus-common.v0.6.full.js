@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.9
+  d3plus-common v0.6.10
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -137,6 +137,7 @@ var BaseClass = function BaseClass() {
     @memberof BaseClass
     @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
     @param {Object} [*value*]
+    @chainable
 */
 BaseClass.prototype.config = function config (_) {
     var this$1 = this;
@@ -147,7 +148,7 @@ BaseClass.prototype.config = function config (_) {
   }
   else {
     var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    for (var k$1 in this.__proto__) if (k$1 !== "config") config[k$1] = this$1[k$1]();
     return config;
   }
 };
@@ -157,6 +158,7 @@ BaseClass.prototype.config = function config (_) {
     @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
     @param {String} [*typenames*]
     @param {Function} [*listener*]
+    @chainable
     @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
 new Plot
 .on("click.Shape", function(d) {
@@ -3108,16 +3110,15 @@ var consoleLogger = {
 
 var Logger = function () {
   function Logger(concreteLogger) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck$1(this, Logger);
 
-    this.subs = [];
     this.init(concreteLogger, options);
   }
 
   Logger.prototype.init = function init(concreteLogger) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     this.prefix = options.prefix || 'i18next:';
     this.logger = concreteLogger || consoleLogger;
@@ -3127,9 +3128,6 @@ var Logger = function () {
 
   Logger.prototype.setDebug = function setDebug(bool) {
     this.debug = bool;
-    this.subs.forEach(function (sub) {
-      sub.setDebug(bool);
-    });
   };
 
   Logger.prototype.log = function log() {
@@ -3156,7 +3154,6 @@ var Logger = function () {
 
   Logger.prototype.create = function create(moduleName) {
     var sub = new Logger(this.logger, _extends$1({ prefix: this.prefix + ':' + moduleName + ':' }, this.options));
-    this.subs.push(sub);
 
     return sub;
   };
@@ -3267,21 +3264,17 @@ function getLastOfPath(object, path, Empty) {
 }
 
 function setPath(object, path, newValue) {
-  var _getLastOfPath = getLastOfPath(object, path, Object);
-
-  var obj = _getLastOfPath.obj;
-  var k = _getLastOfPath.k;
-
+  var _getLastOfPath = getLastOfPath(object, path, Object),
+      obj = _getLastOfPath.obj,
+      k = _getLastOfPath.k;
 
   obj[k] = newValue;
 }
 
 function pushPath(object, path, newValue, concat) {
-  var _getLastOfPath2 = getLastOfPath(object, path, Object);
-
-  var obj = _getLastOfPath2.obj;
-  var k = _getLastOfPath2.k;
-
+  var _getLastOfPath2 = getLastOfPath(object, path, Object),
+      obj = _getLastOfPath2.obj,
+      k = _getLastOfPath2.k;
 
   obj[k] = obj[k] || [];
   if (concat) obj[k] = obj[k].concat(newValue);
@@ -3289,11 +3282,9 @@ function pushPath(object, path, newValue, concat) {
 }
 
 function getPath(object, path) {
-  var _getLastOfPath3 = getLastOfPath(object, path);
-
-  var obj = _getLastOfPath3.obj;
-  var k = _getLastOfPath3.k;
-
+  var _getLastOfPath3 = getLastOfPath(object, path),
+      obj = _getLastOfPath3.obj,
+      k = _getLastOfPath3.k;
 
   if (!obj) return undefined;
   return obj[k];
@@ -3355,8 +3346,8 @@ var ResourceStore = function (_EventEmitter) {
   _inherits$1(ResourceStore, _EventEmitter);
 
   function ResourceStore() {
-    var data = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-    var options = arguments.length <= 1 || arguments[1] === undefined ? { ns: ['translation'], defaultNS: 'translation' } : arguments[1];
+    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { ns: ['translation'], defaultNS: 'translation' };
 
     _classCallCheck$3(this, ResourceStore);
 
@@ -3381,7 +3372,7 @@ var ResourceStore = function (_EventEmitter) {
   };
 
   ResourceStore.prototype.getResource = function getResource(lng, ns, key) {
-    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
     var keySeparator = options.keySeparator || this.options.keySeparator;
     if (keySeparator === undefined) keySeparator = '.';
@@ -3398,7 +3389,7 @@ var ResourceStore = function (_EventEmitter) {
   };
 
   ResourceStore.prototype.addResource = function addResource(lng, ns, key, value) {
-    var options = arguments.length <= 4 || arguments[4] === undefined ? { silent: false } : arguments[4];
+    var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : { silent: false };
 
     var keySeparator = this.options.keySeparator;
     if (keySeparator === undefined) keySeparator = '.';
@@ -3642,7 +3633,7 @@ var _extends$3 = Object.assign || function (target) {
 var arguments$1 = arguments;
  for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _defaults$2(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
 
@@ -3656,7 +3647,7 @@ var Translator = function (_EventEmitter) {
   _inherits$2(Translator, _EventEmitter);
 
   function Translator(services) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck$4(this, Translator);
 
@@ -3674,7 +3665,7 @@ var Translator = function (_EventEmitter) {
   };
 
   Translator.prototype.exists = function exists(key) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? { interpolation: {} } : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { interpolation: {} };
 
     if (this.options.compatibilityAPI === 'v1') {
       options = convertTOptions(options);
@@ -3704,7 +3695,7 @@ var Translator = function (_EventEmitter) {
   Translator.prototype.translate = function translate(keys) {
     var this$1 = this;
 
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     if ((typeof options === 'undefined' ? 'undefined' : _typeof$1(options)) !== 'object') {
       options = this.options.overloadTranslationOptionHandler(arguments);
@@ -3726,10 +3717,9 @@ var Translator = function (_EventEmitter) {
 
     // get namespace(s)
 
-    var _extractFromKey = this.extractFromKey(keys[keys.length - 1], options);
-
-    var key = _extractFromKey.key;
-    var namespaces = _extractFromKey.namespaces;
+    var _extractFromKey = this.extractFromKey(keys[keys.length - 1], options),
+        key = _extractFromKey.key,
+        namespaces = _extractFromKey.namespaces;
 
     var namespace = namespaces[namespaces.length - 1];
 
@@ -3779,9 +3769,10 @@ var Translator = function (_EventEmitter) {
             this.logger.log('missingKey', lng, namespace, key, res);
 
             var lngs = [];
-            if (this.options.saveMissingTo === 'fallback' && this.options.fallbackLng && this.options.fallbackLng[0]) {
-              for (var i = 0; i < this.options.fallbackLng.length; i++) {
-                lngs.push(this$1.options.fallbackLng[i]);
+            var fallbackLngs = this.languageUtils.getFallbackCodes(this.options.fallbackLng, options.lng || this.language);
+            if (this.options.saveMissingTo === 'fallback' && fallbackLngs && fallbackLngs[0]) {
+              for (var i = 0; i < fallbackLngs.length; i++) {
+                lngs.push(fallbackLngs[i]);
               }
             } else if (this.options.saveMissingTo === 'all') {
               lngs = this.languageUtils.toResolveHierarchy(options.lng || this.language);
@@ -3818,7 +3809,7 @@ var Translator = function (_EventEmitter) {
   Translator.prototype.extendTranslation = function extendTranslation(res, key, options) {
     var _this2 = this;
 
-    if (options.interpolation) this.interpolator.init(options);
+    if (options.interpolation) this.interpolator.init(_extends$3({}, options, { interpolation: _extends$3({}, this.options.interpolation, options.interpolation) }));
 
     // interpolate
     var data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
@@ -3852,7 +3843,7 @@ var Translator = function (_EventEmitter) {
   Translator.prototype.resolve = function resolve(keys) {
     var _this3 = this;
 
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     var found = void 0;
 
@@ -3862,10 +3853,9 @@ var Translator = function (_EventEmitter) {
     keys.forEach(function (k) {
       if (_this3.isValidLookup(found)) return;
 
-      var _extractFromKey2 = _this3.extractFromKey(k, options);
-
-      var key = _extractFromKey2.key;
-      var namespaces = _extractFromKey2.namespaces;
+      var _extractFromKey2 = _this3.extractFromKey(k, options),
+          key = _extractFromKey2.key,
+          namespaces = _extractFromKey2.namespaces;
 
       if (_this3.options.fallbackNS) namespaces = namespaces.concat(_this3.options.fallbackNS);
 
@@ -3913,7 +3903,7 @@ var Translator = function (_EventEmitter) {
   };
 
   Translator.prototype.getResource = function getResource(code, ns, key) {
-    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
     return this.resourceStore.getResource(code, ns, key, options);
   };
@@ -3936,6 +3926,23 @@ var LanguageUtil = function () {
     this.whitelist = this.options.whitelist || false;
     this.logger = baseLogger.create('languageUtils');
   }
+
+  LanguageUtil.prototype.getLanguagePartFromCode = function getLanguagePartFromCode(code) {
+    if (code.indexOf('-') < 0) return code;
+
+    var specialCases = ['NB-NO', 'NN-NO', 'nb-NO', 'nn-NO', 'nb-no', 'nn-no'];
+    var p = code.split('-');
+    return this.formatLanguageCode(specialCases.indexOf(code) > -1 ? p[1].toLowerCase() : p[0]);
+  };
+
+  LanguageUtil.prototype.getScriptPartFromCode = function getScriptPartFromCode(code) {
+    if (code.indexOf('-') < 0) return null;
+
+    var p = code.split('-');
+    if (p.length === 2) return null;
+    p.pop();
+    return this.formatLanguageCode(p.join('-'));
+  };
 
   LanguageUtil.prototype.getLanguagePartFromCode = function getLanguagePartFromCode(code) {
     if (code.indexOf('-') < 0) return code;
@@ -3984,16 +3991,30 @@ var LanguageUtil = function () {
     return !this.whitelist || !this.whitelist.length || this.whitelist.indexOf(code) > -1 ? true : false;
   };
 
+  LanguageUtil.prototype.getFallbackCodes = function getFallbackCodes(fallbacks, code) {
+    if (!fallbacks) return [];
+    if (typeof fallbacks === 'string') fallbacks = [fallbacks];
+    if (Object.prototype.toString.apply(fallbacks) === '[object Array]') return fallbacks;
+
+    // asume we have an object defining fallbacks
+    var found = fallbacks[code];
+    if (!found) found = fallbacks[this.getScriptPartFromCode(code)];
+    if (!found) found = fallbacks[this.formatLanguageCode(code)];
+    if (!found) found = fallbacks.default;
+
+    return found || [];
+  };
+
   LanguageUtil.prototype.toResolveHierarchy = function toResolveHierarchy(code, fallbackCode) {
     var _this = this;
 
-    fallbackCode = fallbackCode || this.options.fallbackLng || [];
-    if (typeof fallbackCode === 'string') fallbackCode = [fallbackCode];
+    var fallbackCodes = this.getFallbackCodes(fallbackCode || this.options.fallbackLng || [], code);
 
     var codes = [];
     var addCode = function addCode(code) {
-      var exactMatch = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+      var exactMatch = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
+      if (!code) return;
       if (_this.isWhitelisted(code, exactMatch)) {
         codes.push(code);
       } else {
@@ -4003,12 +4024,13 @@ var LanguageUtil = function () {
 
     if (typeof code === 'string' && code.indexOf('-') > -1) {
       if (this.options.load !== 'languageOnly') addCode(this.formatLanguageCode(code), true);
+      if (this.options.load !== 'languageOnly' && this.options.load !== 'currentOnly') addCode(this.getScriptPartFromCode(code), true);
       if (this.options.load !== 'currentOnly') addCode(this.getLanguagePartFromCode(code));
     } else if (typeof code === 'string') {
       addCode(this.formatLanguageCode(code));
     }
 
-    fallbackCode.forEach(function (fc) {
+    fallbackCodes.forEach(function (fc) {
       if (codes.indexOf(fc) < 0) addCode(_this.formatLanguageCode(fc));
     });
 
@@ -4018,7 +4040,7 @@ var LanguageUtil = function () {
   return LanguageUtil;
 }();
 
-var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _classCallCheck$6(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -4109,7 +4131,7 @@ function createRules() {
 
 var PluralResolver = function () {
   function PluralResolver(languageUtils) {
-    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
     _classCallCheck$6(this, PluralResolver);
 
@@ -4206,7 +4228,7 @@ function _classCallCheck$7(instance, Constructor) { if (!(instance instanceof Co
 
 var Interpolator = function () {
   function Interpolator() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     _classCallCheck$7(this, Interpolator);
 
@@ -4216,7 +4238,7 @@ var Interpolator = function () {
   }
 
   Interpolator.prototype.init = function init() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var reset = arguments[1];
 
     if (reset) {
@@ -4224,6 +4246,7 @@ var Interpolator = function () {
       this.format = options.interpolation && options.interpolation.format || function (value) {
         return value;
       };
+      this.escape = options.interpolation && options.interpolation.escape || escape;
     }
     if (!options.interpolation) options.interpolation = { escapeValue: true };
 
@@ -4300,7 +4323,7 @@ var Interpolator = function () {
         this$1.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
         value = '';
       }
-      value = this$1.escapeValue ? regexSafe(escape(value)) : regexSafe(value);
+      value = this$1.escapeValue ? regexSafe(this$1.escape(value)) : regexSafe(value);
       str = str.replace(match[0], value);
       this$1.regexp.lastIndex = 0;
     }
@@ -4310,7 +4333,7 @@ var Interpolator = function () {
   Interpolator.prototype.nest = function nest(str, fc) {
     var this$1 = this;
 
-    var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
     var match = void 0,
         value = void 0;
@@ -4330,6 +4353,7 @@ var Interpolator = function () {
       key = p.shift();
       var optionsString = p.join(',');
       optionsString = this.interpolate(optionsString, clonedOptions);
+      optionsString = optionsString.replace(/'/g, '"');
 
       try {
         clonedOptions = JSON.parse(optionsString);
@@ -4385,7 +4409,7 @@ var Connector = function (_EventEmitter) {
   _inherits$3(Connector, _EventEmitter);
 
   function Connector(backend, store, services) {
-    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
     _classCallCheck$8(this, Connector);
 
@@ -4422,18 +4446,18 @@ var Connector = function (_EventEmitter) {
         if (_this2.store.hasResourceBundle(lng, ns)) {
           _this2.state[name] = 2; // loaded
         } else if (_this2.state[name] < 0) {
-            // nothing to do for err
-          } else if (_this2.state[name] === 1) {
-              if (pending.indexOf(name) < 0) pending.push(name);
-            } else {
-              _this2.state[name] = 1; // pending
+          // nothing to do for err
+        } else if (_this2.state[name] === 1) {
+          if (pending.indexOf(name) < 0) pending.push(name);
+        } else {
+          _this2.state[name] = 1; // pending
 
-              hasAllNamespaces = false;
+          hasAllNamespaces = false;
 
-              if (pending.indexOf(name) < 0) pending.push(name);
-              if (toLoad.indexOf(name) < 0) toLoad.push(name);
-              if (toLoadNamespaces.indexOf(ns) < 0) toLoadNamespaces.push(ns);
-            }
+          if (pending.indexOf(name) < 0) pending.push(name);
+          if (toLoad.indexOf(name) < 0) toLoad.push(name);
+          if (toLoadNamespaces.indexOf(ns) < 0) toLoadNamespaces.push(ns);
+        }
       });
 
       if (!hasAllNamespaces) toLoadLanguages.push(lng);
@@ -4459,13 +4483,10 @@ var Connector = function (_EventEmitter) {
   Connector.prototype.loaded = function loaded(name, err, data) {
     var _this3 = this;
 
-    var _name$split = name.split('|');
-
-    var _name$split2 = _slicedToArray(_name$split, 2);
-
-    var lng = _name$split2[0];
-    var ns = _name$split2[1];
-
+    var _name$split = name.split('|'),
+        _name$split2 = _slicedToArray(_name$split, 2),
+        lng = _name$split2[0],
+        ns = _name$split2[1];
 
     if (err) this.emit('failedLoading', lng, ns, err);
 
@@ -4539,13 +4560,10 @@ var Connector = function (_EventEmitter) {
         if (!err && data) _this5.logger.log('loaded namespaces ' + toLoad.toLoadNamespaces.join(', ') + ' for languages ' + toLoad.toLoadLanguages.join(', ') + ' via multiloading', data);
 
         toLoad.toLoad.forEach(function (name) {
-          var _name$split3 = name.split('|');
-
-          var _name$split4 = _slicedToArray(_name$split3, 2);
-
-          var l = _name$split4[0];
-          var n = _name$split4[1];
-
+          var _name$split3 = name.split('|'),
+              _name$split4 = _slicedToArray(_name$split3, 2),
+              l = _name$split4[0],
+              n = _name$split4[1];
 
           var bundle = getPath(data, [l, n]);
           if (bundle) {
@@ -4565,13 +4583,10 @@ var Connector = function (_EventEmitter) {
           var readOne = function readOne(name) {
             var _this6 = this;
 
-            var _name$split5 = name.split('|');
-
-            var _name$split6 = _slicedToArray(_name$split5, 2);
-
-            var lng = _name$split6[0];
-            var ns = _name$split6[1];
-
+            var _name$split5 = name.split('|'),
+                _name$split6 = _slicedToArray(_name$split5, 2),
+                lng = _name$split6[0],
+                ns = _name$split6[1];
 
             this.read(lng, ns, 'read', null, null, function (err, data) {
               if (err) _this6.logger.warn('loading namespace ' + ns + ' for language ' + lng + ' failed', err);
@@ -4628,13 +4643,10 @@ var Connector = function (_EventEmitter) {
           var readOne = function readOne(name) {
             var _this8 = this;
 
-            var _name$split7 = name.split('|');
-
-            var _name$split8 = _slicedToArray(_name$split7, 2);
-
-            var lng = _name$split8[0];
-            var ns = _name$split8[1];
-
+            var _name$split7 = name.split('|'),
+                _name$split8 = _slicedToArray(_name$split7, 2),
+                lng = _name$split8[0],
+                ns = _name$split8[1];
 
             this.read(lng, ns, 'read', null, null, function (err, data) {
               if (err) _this8.logger.warn('reloading namespace ' + ns + ' for language ' + lng + ' failed', err);
@@ -4682,7 +4694,7 @@ var Connector$1 = function (_EventEmitter) {
   _inherits$4(Connector, _EventEmitter);
 
   function Connector(cache, store, services) {
-    var options = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 
     _classCallCheck$9(this, Connector);
 
@@ -4803,7 +4815,7 @@ function transformOptions(options) {
   return options;
 }
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _extends = Object.assign || function (target) {
 var arguments$1 = arguments;
@@ -4821,7 +4833,7 @@ var I18n = function (_EventEmitter) {
   _inherits(I18n, _EventEmitter);
 
   function I18n() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments[1];
 
     _classCallCheck(this, I18n);
@@ -5125,7 +5137,7 @@ var I18n = function (_EventEmitter) {
   };
 
   I18n.prototype.createInstance = function createInstance() {
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments[1];
 
     return new I18n(options, callback);
@@ -5134,13 +5146,23 @@ var I18n = function (_EventEmitter) {
   I18n.prototype.cloneInstance = function cloneInstance() {
     var _this7 = this;
 
-    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments[1];
 
     var clone = new I18n(_extends({}, options, this.options, { isClone: true }), callback);
-    var membersToCopy = ['store', 'translator', 'services', 'language'];
+    var membersToCopy = ['store', 'services', 'language'];
     membersToCopy.forEach(function (m) {
       clone[m] = _this7[m];
+    });
+    clone.translator = new Translator(clone.services, clone.options);
+    clone.translator.on('*', function (event) {
+      var arguments$1 = arguments;
+
+      for (var _len5 = arguments.length, args = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
+        args[_key5 - 1] = arguments$1[_key5];
+      }
+
+      clone.emit.apply(clone, [event].concat(args));
     });
 
     return clone;
@@ -5151,13 +5173,21 @@ var I18n = function (_EventEmitter) {
 
 var i18next$1 = new I18n();
 
+var Back = "Back";
+var Total = "Total";
 var array$1 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
 var enUS = {
+	Back: Back,
+	Total: Total,
 	array: array$1
 };
 
+var Back$1 = "Atrás";
+var Total$1 = "Total";
 var array$2 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
 var esES = {
+	Back: Back$1,
+	Total: Total$1,
 	array: array$2
 };
 

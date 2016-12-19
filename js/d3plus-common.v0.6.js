@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.9
+  d3plus-common v0.6.10
   Common functions and methods used across D3plus modules.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -139,6 +139,7 @@ var BaseClass = function BaseClass() {
     @memberof BaseClass
     @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
     @param {Object} [*value*]
+    @chainable
 */
 BaseClass.prototype.config = function config (_) {
     var this$1 = this;
@@ -149,7 +150,7 @@ BaseClass.prototype.config = function config (_) {
   }
   else {
     var config = {};
-    for (var k$1 in this.prototype.constructor) if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) config[k$1] = this$1[k$1]();
+    for (var k$1 in this.__proto__) if (k$1 !== "config") config[k$1] = this$1[k$1]();
     return config;
   }
 };
@@ -159,6 +160,7 @@ BaseClass.prototype.config = function config (_) {
     @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
     @param {String} [*typenames*]
     @param {Function} [*listener*]
+    @chainable
     @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
 new Plot
 .on("click.Shape", function(d) {
@@ -243,13 +245,21 @@ var elem = function(selector, p) {
 
 };
 
+var Back = "Back";
+var Total = "Total";
 var array = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
 var enUS = {
+	Back: Back,
+	Total: Total,
 	array: array
 };
 
+var Back$1 = "Atrás";
+var Total$1 = "Total";
 var array$1 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
 var esES = {
+	Back: Back$1,
+	Total: Total$1,
 	array: array$1
 };
 
