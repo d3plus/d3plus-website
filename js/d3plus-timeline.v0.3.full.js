@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.3.3
+  d3plus-timeline v0.3.4
   An easy-to-use javascript timeline.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -14301,13 +14301,9 @@ var Timeline = (function (Axis$$1) {
       domain[0] = date$2(closest(domain[0], ticks));
       domain[1] = date$2(closest(domain[1], ticks));
 
-      var single = +domain[0] === +domain[1],
-            value = single ? domain[0] : domain;
+      var single = +domain[0] === +domain[1];
 
-      if (this._selection && JSON.stringify(value) !== JSON.stringify(this._selection)) {
-        this._selection = value;
-        if (this._on.end) { this._on.end(value); }
-      }
+      this._selection = single ? domain[0] : domain;
 
       var pixelDomain = domain.map(this._d3Scale);
 
@@ -14321,7 +14317,7 @@ var Timeline = (function (Axis$$1) {
     }
 
     this._brushStyle();
-    if (this._on.brush) { this._on.brush(); }
+    if (this._on.brush) { this._on.brush(this._selection); }
 
   };
 
@@ -14359,11 +14355,8 @@ var Timeline = (function (Axis$$1) {
     }
 
     this._brushStyle();
-    var value = single ? domain[0] : domain;
-    if (JSON.stringify(value) !== JSON.stringify(this._selection)) {
-      if (this._on.end) { this._on.end(value); }
-      this._selection = value;
-    }
+    this._selection = single ? domain[0] : domain;
+    if (this._on.end) { this._on.end(this._selection); }
 
   };
 
@@ -14472,6 +14465,9 @@ var Timeline = (function (Axis$$1) {
     this._brushGroup = elem("g.brushGroup", {parent: this._group});
     this._brushGroup.call(brush$$1).transition(this._transition)
       .call(brush$$1.move, selection$$1);
+
+    this._outerBounds.y -= this._handleSize / 2;
+    this._outerBounds.height += this._handleSize / 2;
 
     return this;
 
