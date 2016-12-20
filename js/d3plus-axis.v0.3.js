@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.21
+  d3plus-axis v0.3.22
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -420,7 +420,7 @@ var Axis = (function (BaseClass$$1) {
     var pixels = [];
     this._availableTicks = ticks;
     ticks.forEach(function (d, i) {
-      var s = tickGet(d, i);
+      var s = tickGet({id: d, tick: true}, i);
       if (this$1._shape === "Circle") { s *= 2; }
       var t = this$1._d3Scale(d);
       if (!pixels.length || Math.abs(d3plusCommon.closest(t, pixels) - t) > s * 2) { pixels.push(t); }
@@ -430,12 +430,12 @@ var Axis = (function (BaseClass$$1) {
 
     this._visibleTicks = ticks;
 
-    var hBuff = this._shape === "Circle" ? this._shapeConfig.r
-              : this._shape === "Rect" ? this._shapeConfig[height]
+    var hBuff = this._shape === "Circle"
+              ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
+              : this._shape === "Rect"
+              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
               : this._tickSize,
-        wBuff = this._shape === "Circle" ? this._shapeConfig.r
-              : this._shape === "Rect" ? this._shapeConfig[width]
-              : this._shapeConfig.strokeWidth;
+        wBuff = tickGet({tick: true});
 
     if (typeof hBuff === "function") { hBuff = d3Array.max(ticks.map(hBuff)); }
     if (this._shape === "Rect") { hBuff /= 2; }
