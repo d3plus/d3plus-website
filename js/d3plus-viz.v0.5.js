@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.5.3
+  d3plus-viz v0.5.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -167,12 +167,11 @@ var drawTimeline = function(data) {
       .ticks(ticks.sort(function (a, b) { return +a - +b; }))
       .width(this._width);
 
-    if (timeline.selection() === void 0) {
+    if (this._timelineSelection === void 0) {
 
       var dates = d3Array.extent(data.map(this._time).map(d3plusAxis.date));
-
-      if (dates[0] === dates[1]) { timeline.selection(dates[0]); }
-      else { timeline.selection(dates); }
+      this._timelineSelection = dates[0] === dates[1] ? dates[0] : dates;
+      timeline.selection(this._timelineSelection);
 
     }
 
@@ -539,15 +538,18 @@ var Viz = (function (BaseClass$$1) {
     this._timeline = true;
     this._timelineClass = new d3plusTimeline.Timeline()
       .align("end")
-      .on("end", function (s) {
-        if (!(s instanceof Array)) { s = [s, s]; }
-        s = s.map(Number);
-        this$1._timelineClass.selection(s);
-        this$1.timeFilter(function (d) {
-          var ms = d3plusAxis.date(this$1._time(d)).getTime();
-          return ms >= s[0] && ms <= s[1];
-        }).render();
+      .on("brush", function (s) {
+        if (JSON.stringify(s) !== JSON.stringify(this$1._timelineSelection)) {
+          this$1._timelineSelection = s;
+          if (!(s instanceof Array)) { s = [s, s]; }
+          s = s.map(Number);
+          this$1.timeFilter(function (d) {
+            var ms = d3plusAxis.date(this$1._time(d)).getTime();
+            return ms >= s[0] && ms <= s[1];
+          }).render();
+        }
       });
+    this._timelineConfig = {};
 
     this._titleClass = new d3plusText.TextBox();
     this._titleConfig = {
@@ -556,7 +558,6 @@ var Viz = (function (BaseClass$$1) {
       textAnchor: "middle"
     };
 
-    this._timelineConfig = {};
     this._tooltip = true;
     this._tooltipClass = new d3plusTooltip.Tooltip();
     this._tooltipConfig = {

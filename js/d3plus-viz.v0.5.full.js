@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.5.3
+  d3plus-viz v0.5.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -14183,16 +14183,16 @@ var Axis$2 = (function (BaseClass$$1) {
       fontFamily: new TextBox().fontFamily(),
       fontResize: false,
       fontSize: constant$5(10),
-      height: 8,
+      height: function (d) { return d.tick ? 8 : 0; },
       label: function (d) { return d.text; },
       labelBounds: function (d) { return d.labelBounds; },
       labelPadding: 0,
-      r: 4,
+      r: function (d) { return d.tick ? 4 : 0; },
       stroke: "#000",
       strokeWidth: 1,
       textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
       verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; },
-      width: 8
+      width: function (d) { return d.tick ? 8 : 0; }
     };
     this._tickSize = 5;
     this._titleConfig = {
@@ -14527,7 +14527,7 @@ var Axis$2 = (function (BaseClass$$1) {
     var pixels = [];
     this._availableTicks = ticks$$1;
     ticks$$1.forEach(function (d, i) {
-      var s = tickGet(d, i);
+      var s = tickGet({id: d, tick: true}, i);
       if (this$1._shape === "Circle") { s *= 2; }
       var t = this$1._d3Scale(d);
       if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
@@ -14537,12 +14537,12 @@ var Axis$2 = (function (BaseClass$$1) {
 
     this._visibleTicks = ticks$$1;
 
-    var hBuff = this._shape === "Circle" ? this._shapeConfig.r
-              : this._shape === "Rect" ? this._shapeConfig[height]
+    var hBuff = this._shape === "Circle"
+              ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
+              : this._shape === "Rect"
+              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
               : this._tickSize,
-        wBuff = this._shape === "Circle" ? this._shapeConfig.r
-              : this._shape === "Rect" ? this._shapeConfig[width]
-              : this._shapeConfig.strokeWidth;
+        wBuff = tickGet({tick: true});
 
     if (typeof hBuff === "function") { hBuff = max(ticks$$1.map(hBuff)); }
     if (this._shape === "Rect") { hBuff /= 2; }
@@ -14673,7 +14673,8 @@ var Axis$2 = (function (BaseClass$$1) {
             height: labelHeight
           },
           size: ticks$$1.includes(d) ? size : 0,
-          text: labels.includes(d) ? tickFormat(d) : false
+          text: labels.includes(d) ? tickFormat(d) : false,
+          tick: ticks$$1.includes(d)
         }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
       });
 
@@ -14862,8 +14863,8 @@ var Timeline = (function (Axis$$1) {
     };
     this._shape = "Rect";
     this._shapeConfig = Object.assign({}, this._shapeConfig, {
-      height: 10,
-      width: function (d) { return this$1._domain.map(function (t) { return date$3(t).getTime(); }).includes(d.id) ? 2 : 1; }
+      height: function (d) { return d.tick ? 10 : 0; },
+      width: function (d) { return d.tick ? this$1._domain.map(function (t) { return date$3(t).getTime(); }).includes(d.id) ? 2 : 1 : 0; }
     });
     this._snapping = true;
 
@@ -14891,13 +14892,9 @@ var Timeline = (function (Axis$$1) {
       domain[0] = date$3(closest(domain[0], ticks));
       domain[1] = date$3(closest(domain[1], ticks));
 
-      var single = +domain[0] === +domain[1],
-            value = single ? domain[0] : domain;
+      var single = +domain[0] === +domain[1];
 
-      if (this._selection && JSON.stringify(value) !== JSON.stringify(this._selection)) {
-        this._selection = value;
-        if (this._on.end) { this._on.end(value); }
-      }
+      this._selection = single ? domain[0] : domain;
 
       var pixelDomain = domain.map(this._d3Scale);
 
@@ -14911,7 +14908,7 @@ var Timeline = (function (Axis$$1) {
     }
 
     this._brushStyle();
-    if (this._on.brush) { this._on.brush(); }
+    if (this._on.brush) { this._on.brush(this._selection); }
 
   };
 
@@ -14949,11 +14946,8 @@ var Timeline = (function (Axis$$1) {
     }
 
     this._brushStyle();
-    var value = single ? domain[0] : domain;
-    if (JSON.stringify(value) !== JSON.stringify(this._selection)) {
-      if (this._on.end) { this._on.end(value); }
-      this._selection = value;
-    }
+    this._selection = single ? domain[0] : domain;
+    if (this._on.end) { this._on.end(this._selection); }
 
   };
 
@@ -15002,9 +14996,11 @@ var Timeline = (function (Axis$$1) {
 
     var ref = this._position;
     var height = ref.height;
-    var timelineHeight = this._shape === "Circle" ? this._shapeConfig.r * 2
-             : this._shape === "Rect" ? this._shapeConfig[height]
-             : this._tickSize;
+    var timelineHeight = this._shape === "Circle"
+                         ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) * 2 : this._shapeConfig.r
+                         : this._shape === "Rect"
+                         ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
+                         : this._tickSize;
 
     this._brushGroup.selectAll(".overlay")
       .attr("cursor", this._brushing ? "crosshair" : "pointer");
@@ -15060,6 +15056,9 @@ var Timeline = (function (Axis$$1) {
     this._brushGroup = elem("g.brushGroup", {parent: this._group});
     this._brushGroup.call(brush$$1).transition(this._transition)
       .call(brush$$1.move, selection$$1);
+
+    this._outerBounds.y -= this._handleSize / 2;
+    this._outerBounds.height += this._handleSize / 2;
 
     return this;
 
@@ -15768,12 +15767,11 @@ var drawTimeline = function(data) {
       .ticks(ticks$$1.sort(function (a, b) { return +a - +b; }))
       .width(this._width);
 
-    if (timeline.selection() === void 0) {
+    if (this._timelineSelection === void 0) {
 
       var dates = extent(data.map(this._time).map(date$2));
-
-      if (dates[0] === dates[1]) { timeline.selection(dates[0]); }
-      else { timeline.selection(dates); }
+      this._timelineSelection = dates[0] === dates[1] ? dates[0] : dates;
+      timeline.selection(this._timelineSelection);
 
     }
 
@@ -16140,15 +16138,18 @@ var Viz = (function (BaseClass$$1) {
     this._timeline = true;
     this._timelineClass = new Timeline()
       .align("end")
-      .on("end", function (s) {
-        if (!(s instanceof Array)) { s = [s, s]; }
-        s = s.map(Number);
-        this$1._timelineClass.selection(s);
-        this$1.timeFilter(function (d) {
-          var ms = date$2(this$1._time(d)).getTime();
-          return ms >= s[0] && ms <= s[1];
-        }).render();
+      .on("brush", function (s) {
+        if (JSON.stringify(s) !== JSON.stringify(this$1._timelineSelection)) {
+          this$1._timelineSelection = s;
+          if (!(s instanceof Array)) { s = [s, s]; }
+          s = s.map(Number);
+          this$1.timeFilter(function (d) {
+            var ms = date$2(this$1._time(d)).getTime();
+            return ms >= s[0] && ms <= s[1];
+          }).render();
+        }
       });
+    this._timelineConfig = {};
 
     this._titleClass = new TextBox();
     this._titleConfig = {
@@ -16157,7 +16158,6 @@ var Viz = (function (BaseClass$$1) {
       textAnchor: "middle"
     };
 
-    this._timelineConfig = {};
     this._tooltip = true;
     this._tooltipClass = new Tooltip();
     this._tooltipConfig = {
