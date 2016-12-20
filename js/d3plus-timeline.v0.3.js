@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.3.2
+  d3plus-timeline v0.3.3
   An easy-to-use javascript timeline.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -44,8 +44,8 @@ var Timeline = (function (Axis$$1) {
     };
     this._shape = "Rect";
     this._shapeConfig = Object.assign({}, this._shapeConfig, {
-      height: 10,
-      width: function (d) { return this$1._domain.map(function (t) { return d3plusAxis.date(t).getTime(); }).includes(d.id) ? 2 : 1; }
+      height: function (d) { return d.tick ? 10 : 0; },
+      width: function (d) { return d.tick ? this$1._domain.map(function (t) { return d3plusAxis.date(t).getTime(); }).includes(d.id) ? 2 : 1 : 0; }
     });
     this._snapping = true;
 
@@ -184,9 +184,11 @@ var Timeline = (function (Axis$$1) {
 
     var ref = this._position;
     var height = ref.height;
-    var timelineHeight = this._shape === "Circle" ? this._shapeConfig.r * 2
-             : this._shape === "Rect" ? this._shapeConfig[height]
-             : this._tickSize;
+    var timelineHeight = this._shape === "Circle"
+                         ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) * 2 : this._shapeConfig.r
+                         : this._shape === "Rect"
+                         ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
+                         : this._tickSize;
 
     this._brushGroup.selectAll(".overlay")
       .attr("cursor", this._brushing ? "crosshair" : "pointer");
