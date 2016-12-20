@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.4.1
+  d3plus-plot v0.4.2
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -207,6 +207,12 @@ var Plot = (function (Viz$$1) {
     this._yAxis = new d3plusAxis.AxisLeft().align("start");
     this._yTest = new d3plusAxis.AxisLeft().align("start").gridSize(0);
     this._yConfig = {
+      gridConfig: {
+        stroke: function (d) {
+          var domain = this$1._yAxis.domain();
+          return domain[domain.length - 1] === d.id ? "transparent" : "#ccc";
+        }
+      },
       title: "Y Axis"
     };
 
