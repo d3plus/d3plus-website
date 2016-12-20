@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.2.4
+  d3plus-geomap v0.2.5
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -55,9 +55,9 @@ var Geomap = (function (Viz$$1) {
     this._zoom = true;
     this._zoomBehavior = d3Zoom.zoom();
     this._zoomBrush = false;
-    this._zoomFactor = 2;
+    // this._zoomFactor = 2;
     this._zoomPan = true;
-    this._zoomReset = true;
+    // this._zoomReset = true;
     this._zoomScroll = true;
     this._zoomSet = false;
 
@@ -387,6 +387,8 @@ var Geomap = (function (Viz$$1) {
         .scaleExtent([1, 16])
         .translateExtent([[0, 0], [width, height]])
         .on("zoom", this._zoomed.bind(this));
+
+      this._zoomSet = true;
 
     }
 
