@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.20
+  d3plus-axis v0.3.21
   Beautiful javascript scales and axes.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -12953,16 +12953,16 @@ var Axis = (function (BaseClass$$1) {
       fontFamily: new TextBox().fontFamily(),
       fontResize: false,
       fontSize: constant$5(10),
-      height: 8,
+      height: function (d) { return d.tick ? 8 : 0; },
       label: function (d) { return d.text; },
       labelBounds: function (d) { return d.labelBounds; },
       labelPadding: 0,
-      r: 4,
+      r: function (d) { return d.tick ? 4 : 0; },
       stroke: "#000",
       strokeWidth: 1,
       textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
       verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; },
-      width: 8
+      width: function (d) { return d.tick ? 8 : 0; }
     };
     this._tickSize = 5;
     this._titleConfig = {
@@ -13443,7 +13443,8 @@ var Axis = (function (BaseClass$$1) {
             height: labelHeight
           },
           size: ticks$$1.includes(d) ? size : 0,
-          text: labels.includes(d) ? tickFormat(d) : false
+          text: labels.includes(d) ? tickFormat(d) : false,
+          tick: ticks$$1.includes(d)
         }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
       });
 
