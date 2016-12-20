@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.1.14
+  d3plus-priestley v0.1.15
   A reusable Priestley timeline built on D3.
   Copyright (c) 2016 D3plus - https://d3plus.org
   @license MIT
@@ -5489,6 +5489,7 @@ var BaseClass = function BaseClass() {
     @memberof BaseClass
     @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
     @param {Object} [*value*]
+    @chainable
 */
 BaseClass.prototype.config = function config (_) {
     var this$1 = this;
@@ -5499,7 +5500,7 @@ BaseClass.prototype.config = function config (_) {
   }
   else {
     var config = {};
-    for (var k$1 in this.prototype.constructor) { if (k$1 !== "config" && {}.hasOwnProperty.call(this$1, k$1)) { config[k$1] = this$1[k$1](); } }
+    for (var k$1 in this.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
     return config;
   }
 };
@@ -5509,6 +5510,7 @@ BaseClass.prototype.config = function config (_) {
     @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
     @param {String} [*typenames*]
     @param {Function} [*listener*]
+    @chainable
     @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
 new Plot
 .on("click.Shape", function(d) {
@@ -5622,7 +5624,6 @@ var Logger = function () {
 
     _classCallCheck$1(this, Logger);
 
-    this.subs = [];
     this.init(concreteLogger, options);
   }
 
@@ -5637,9 +5638,6 @@ var Logger = function () {
 
   Logger.prototype.setDebug = function setDebug(bool) {
     this.debug = bool;
-    this.subs.forEach(function (sub) {
-      sub.setDebug(bool);
-    });
   };
 
   Logger.prototype.log = function log() {
@@ -5666,7 +5664,6 @@ var Logger = function () {
 
   Logger.prototype.create = function create(moduleName) {
     var sub = new Logger(this.logger, _extends$1({ prefix: this.prefix + ':' + moduleName + ':' }, this.options));
-    this.subs.push(sub);
 
     return sub;
   };
@@ -6759,6 +6756,7 @@ var Interpolator = function () {
       this.format = options.interpolation && options.interpolation.format || function (value) {
         return value;
       };
+      this.escape = options.interpolation && options.interpolation.escape || escape;
     }
     if (!options.interpolation) { options.interpolation = { escapeValue: true }; }
 
@@ -6835,7 +6833,7 @@ var Interpolator = function () {
         this$1.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
         value = '';
       }
-      value = this$1.escapeValue ? regexSafe(escape(value)) : regexSafe(value);
+      value = this$1.escapeValue ? regexSafe(this$1.escape(value)) : regexSafe(value);
       str = str.replace(match[0], value);
       this$1.regexp.lastIndex = 0;
     }
@@ -6865,6 +6863,7 @@ var Interpolator = function () {
       key = p.shift();
       var optionsString = p.join(',');
       optionsString = this.interpolate(optionsString, clonedOptions);
+      optionsString = optionsString.replace(/'/g, '"');
 
       try {
         clonedOptions = JSON.parse(optionsString);
@@ -7684,13 +7683,21 @@ var I18n = function (_EventEmitter) {
 
 var i18next$1 = new I18n();
 
+var Back = "Back";
+var Total = "Total";
 var array$3 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
 var enUS = {
+	Back: Back,
+	Total: Total,
 	array: array$3
 };
 
+var Back$1 = "Atrás";
+var Total$1 = "Total";
 var array$4 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
 var esES = {
+	Back: Back$1,
+	Total: Total$1,
 	array: array$4
 };
 
@@ -8680,11 +8687,12 @@ var TextBox = (function (BaseClass$$1) {
             .attr("opacity", 0).remove();
 
           tspans.enter().append("tspan")
-            .attr("dominant-baseline", "alphabetic")
-            .style("baseline-shift", "0%")
-            .attr("opacity", 0)
-            .call(tspanStyle)
-            .transition(t).delay(that._delay)
+              .attr("dominant-baseline", "alphabetic")
+              .style("baseline-shift", "0%")
+              .attr("opacity", 0)
+              .call(tspanStyle)
+            .merge(tspans).transition(t).delay(that._delay)
+              .call(tspanStyle)
               .attr("opacity", 1);
 
         }
@@ -12958,8 +12966,13 @@ var date$2 = function(d) {
 };
 
 /**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
+
+/**
     @class Axis
-    @extends BaseClass
+    @extends external:BaseClass
     @desc Creates an SVG scale based on an array of data.
 */
 var Axis = (function (BaseClass$$1) {
@@ -12994,16 +13007,16 @@ var Axis = (function (BaseClass$$1) {
       fontFamily: new TextBox().fontFamily(),
       fontResize: false,
       fontSize: constant$5(10),
-      height: 8,
+      height: function (d) { return d.tick ? 8 : 0; },
       label: function (d) { return d.text; },
       labelBounds: function (d) { return d.labelBounds; },
       labelPadding: 0,
-      r: 4,
+      r: function (d) { return d.tick ? 4 : 0; },
       stroke: "#000",
       strokeWidth: 1,
       textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
       verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; },
-      width: 8
+      width: function (d) { return d.tick ? 8 : 0; }
     };
     this._tickSize = 5;
     this._titleConfig = {
@@ -13078,6 +13091,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
       @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
+      @chainable
   */
   Axis.prototype.align = function align (_) {
     return arguments.length ? (this._align = _, this) : this._align;
@@ -13087,6 +13101,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the axis line style and returns the current class instance. If *value* is not specified, returns the current axis line style.
       @param {Object} [*value*]
+      @chainable
   */
   Axis.prototype.barConfig = function barConfig (_) {
     return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
@@ -13096,6 +13111,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance. If *value* is not specified, returns the current scale domain.
       @param {Array} [*value* = [0, 10]]
+      @chainable
   */
   Axis.prototype.domain = function domain (_) {
     return arguments.length ? (this._domain = _, this) : this._domain;
@@ -13105,6 +13121,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance. If *value* is not specified, returns the current duration.
       @param {Number} [*value* = 600]
+      @chainable
   */
   Axis.prototype.duration = function duration (_) {
     return arguments.length ? (this._duration = _, this) : this._duration;
@@ -13114,6 +13131,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the grid values of the axis and returns the current class instance. If *value* is not specified, returns the current grid values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
       @param {Array} [*value*]
+      @chainable
   */
   Axis.prototype.grid = function grid (_) {
     return arguments.length ? (this._grid = _, this) : this._grid;
@@ -13123,6 +13141,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the grid style of the axis and returns the current class instance. If *value* is not specified, returns the current grid style.
       @param {Object} [*value*]
+      @chainable
   */
   Axis.prototype.gridConfig = function gridConfig (_) {
     return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
@@ -13132,6 +13151,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the grid size of the axis and returns the current class instance. If *value* is not specified, returns the current grid size, which defaults to taking up as much space as available.
       @param {Number} [*value* = undefined]
+      @chainable
   */
   Axis.prototype.gridSize = function gridSize (_) {
     return arguments.length ? (this._gridSize = _, this) : this._gridSize;
@@ -13141,6 +13161,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the overall height of the axis and returns the current class instance. If *value* is not specified, returns the current height value.
       @param {Number} [*value* = 100]
+      @chainable
   */
   Axis.prototype.height = function height (_) {
     return arguments.length ? (this._height = _, this) : this._height;
@@ -13150,6 +13171,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance. If *value* is not specified, returns the current visible tick labels, which defaults to showing all labels.
       @param {Array} [*value*]
+      @chainable
   */
   Axis.prototype.labels = function labels (_) {
     return arguments.length ? (this._labels = _, this) : this._labels;
@@ -13159,6 +13181,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
       @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
+      @chainable
   */
   Axis.prototype.orient = function orient (_) {
     if (arguments.length) {
@@ -13195,6 +13218,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance. If *value* is not specified, returns the current padding value.
       @param {Number} [*value* = 10]
+      @chainable
   */
   Axis.prototype.padding = function padding (_) {
     return arguments.length ? (this._padding = _, this) : this._padding;
@@ -13204,6 +13228,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance. If *value* is not specified, returns the current inner padding value.
       @param {Number} [*value* = 0.1]
+      @chainable
   */
   Axis.prototype.paddingInner = function paddingInner (_) {
     return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
@@ -13213,6 +13238,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance. If *value* is not specified, returns the current outer padding value.
       @param {Number} [*value* = 0.1]
+      @chainable
   */
   Axis.prototype.paddingOuter = function paddingOuter (_) {
     return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
@@ -13222,6 +13248,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value. If *value* is not specified, returns the current scale range.
       @param {Array} [*value*]
+      @chainable
   */
   Axis.prototype.range = function range (_) {
     return arguments.length ? (this._range = _, this) : this._range;
@@ -13231,6 +13258,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
       @param {Function} [*callback* = undefined]
+      @chainable
   */
   Axis.prototype.render = function render (callback) {
     var this$1 = this;
@@ -13291,7 +13319,7 @@ var Axis = (function (BaseClass$$1) {
     if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
     if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
 
-    var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 45 : 75]);
+    var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
 
     var ticks$$1 = this._ticks
               ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
@@ -13301,7 +13329,7 @@ var Axis = (function (BaseClass$$1) {
 
     var labels = this._labels
                ? this._scale === "time" ? this._labels.map(date$2) : this._labels
-               : this._ticks ? ticks$$1 : this._d3Scale.ticks
+               : this._d3Scale.ticks
                ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
                : ticks$$1;
 
@@ -13323,22 +13351,22 @@ var Axis = (function (BaseClass$$1) {
     var pixels = [];
     this._availableTicks = ticks$$1;
     ticks$$1.forEach(function (d, i) {
-      var s = tickGet(d, i);
+      var s = tickGet({id: d, tick: true}, i);
       if (this$1._shape === "Circle") { s *= 2; }
       var t = this$1._d3Scale(d);
-      if (!pixels.length || !pixels.includes(t) && max(pixels) < t - s * 2) { pixels.push(t); }
+      if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
       else { pixels.push(false); }
     });
     ticks$$1 = ticks$$1.filter(function (d, i) { return pixels[i] !== false; });
 
     this._visibleTicks = ticks$$1;
 
-    var hBuff = this._shape === "Circle" ? this._shapeConfig.r
-              : this._shape === "Rect" ? this._shapeConfig[height]
+    var hBuff = this._shape === "Circle"
+              ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
+              : this._shape === "Rect"
+              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
               : this._tickSize,
-        wBuff = this._shape === "Circle" ? this._shapeConfig.r
-              : this._shape === "Rect" ? this._shapeConfig[width]
-              : this._shapeConfig.strokeWidth;
+        wBuff = tickGet({tick: true});
 
     if (typeof hBuff === "function") { hBuff = max(ticks$$1.map(hBuff)); }
     if (this._shape === "Rect") { hBuff /= 2; }
@@ -13468,8 +13496,9 @@ var Axis = (function (BaseClass$$1) {
             width: labelWidth,
             height: labelHeight
           },
-          size: size,
-          text: labels.includes(d) ? tickFormat(d) : false
+          size: ticks$$1.includes(d) ? size : 0,
+          text: labels.includes(d) ? tickFormat(d) : false,
+          tick: ticks$$1.includes(d)
         }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
       });
 
@@ -13525,6 +13554,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the scale of the axis and returns the current class instance. If *value* is not specified, returns the current this._d3Scale
       @param {String} [*value* = "linear"]
+      @chainable
   */
   Axis.prototype.scale = function scale (_) {
     return arguments.length ? (this._scale = _, this) : this._scale;
@@ -13534,6 +13564,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
       @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+      @chainable
   */
   Axis.prototype.select = function select$1 (_) {
     return arguments.length ? (this._select = select(_), this) : this._select;
@@ -13543,6 +13574,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the tick shape constructor and returns the current class instance. If *value* is not specified, returns the current shape.
       @param {String} [*value* = "Line"]
+      @chainable
   */
   Axis.prototype.shape = function shape (_) {
     return arguments.length ? (this._shape = _, this) : this._shape;
@@ -13552,6 +13584,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the tick style of the axis and returns the current class instance. If *value* is not specified, returns the current tick style.
       @param {Object} [*value*]
+      @chainable
   */
   Axis.prototype.shapeConfig = function shapeConfig (_) {
     return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
@@ -13561,6 +13594,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the tick formatter and returns the current class instance. If *value* is not specified, returns the current tick formatter, which by default is retrieved from the [d3-scale](https://github.com/d3/d3-scale#continuous_tickFormat).
       @param {Function} [*value*]
+      @chainable
   */
   Axis.prototype.tickFormat = function tickFormat (_) {
     return arguments.length ? (this._tickFormat = _, this) : this._tickFormat;
@@ -13570,6 +13604,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the tick values of the axis and returns the current class instance. If *value* is not specified, returns the current tick values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
       @param {Array} [*value*]
+      @chainable
   */
   Axis.prototype.ticks = function ticks (_) {
     return arguments.length ? (this._ticks = _, this) : this._ticks;
@@ -13579,6 +13614,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the tick size of the axis and returns the current class instance. If *value* is not specified, returns the current tick size.
       @param {Number} [*value* = 5]
+      @chainable
   */
   Axis.prototype.tickSize = function tickSize (_) {
     return arguments.length ? (this._tickSize = _, this) : this._tickSize;
@@ -13588,6 +13624,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the title of the axis and returns the current class instance. If *value* is not specified, returns the current title.
       @param {String} [*value*]
+      @chainable
   */
   Axis.prototype.title = function title (_) {
     return arguments.length ? (this._title = _, this) : this._title;
@@ -13597,6 +13634,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance. If *value* is not specified, returns the current title configuration.
       @param {Object} [*value*]
+      @chainable
   */
   Axis.prototype.titleConfig = function titleConfig (_) {
     return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
@@ -13606,6 +13644,7 @@ var Axis = (function (BaseClass$$1) {
       @memberof Axis
       @desc If *value* is specified, sets the overall width of the axis and returns the current class instance. If *value* is not specified, returns the current width value.
       @param {Number} [*value* = 400]
+      @chainable
   */
   Axis.prototype.width = function width (_) {
     return arguments.length ? (this._width = _, this) : this._width;
@@ -14795,8 +14834,8 @@ var Timeline = (function (Axis$$1) {
     };
     this._shape = "Rect";
     this._shapeConfig = Object.assign({}, this._shapeConfig, {
-      height: 10,
-      width: function (d) { return this$1._domain.map(function (t) { return date$2(t).getTime(); }).includes(d.id) ? 2 : 1; }
+      height: function (d) { return d.tick ? 10 : 0; },
+      width: function (d) { return d.tick ? this$1._domain.map(function (t) { return date$2(t).getTime(); }).includes(d.id) ? 2 : 1 : 0; }
     });
     this._snapping = true;
 
@@ -14824,13 +14863,9 @@ var Timeline = (function (Axis$$1) {
       domain[0] = date$2(closest(domain[0], ticks));
       domain[1] = date$2(closest(domain[1], ticks));
 
-      var single = +domain[0] === +domain[1],
-            value = single ? domain[0] : domain;
+      var single = +domain[0] === +domain[1];
 
-      if (this._selection && JSON.stringify(value) !== JSON.stringify(this._selection)) {
-        this._selection = value;
-        if (this._on.end) { this._on.end(value); }
-      }
+      this._selection = single ? domain[0] : domain;
 
       var pixelDomain = domain.map(this._d3Scale);
 
@@ -14844,7 +14879,7 @@ var Timeline = (function (Axis$$1) {
     }
 
     this._brushStyle();
-    if (this._on.brush) { this._on.brush(); }
+    if (this._on.brush) { this._on.brush(this._selection); }
 
   };
 
@@ -14882,11 +14917,8 @@ var Timeline = (function (Axis$$1) {
     }
 
     this._brushStyle();
-    var value = single ? domain[0] : domain;
-    if (JSON.stringify(value) !== JSON.stringify(this._selection)) {
-      if (this._on.end) { this._on.end(value); }
-      this._selection = value;
-    }
+    this._selection = single ? domain[0] : domain;
+    if (this._on.end) { this._on.end(this._selection); }
 
   };
 
@@ -14935,9 +14967,11 @@ var Timeline = (function (Axis$$1) {
 
     var ref = this._position;
     var height = ref.height;
-    var timelineHeight = this._shape === "Circle" ? this._shapeConfig.r * 2
-             : this._shape === "Rect" ? this._shapeConfig[height]
-             : this._tickSize;
+    var timelineHeight = this._shape === "Circle"
+                         ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) * 2 : this._shapeConfig.r
+                         : this._shape === "Rect"
+                         ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
+                         : this._tickSize;
 
     this._brushGroup.selectAll(".overlay")
       .attr("cursor", this._brushing ? "crosshair" : "pointer");
@@ -14993,6 +15027,9 @@ var Timeline = (function (Axis$$1) {
     this._brushGroup = elem("g.brushGroup", {parent: this._group});
     this._brushGroup.call(brush$$1).transition(this._transition)
       .call(brush$$1.move, selection$$1);
+
+    this._outerBounds.y -= this._handleSize / 2;
+    this._outerBounds.height += this._handleSize / 2;
 
     return this;
 
@@ -15701,12 +15738,11 @@ var drawTimeline = function(data) {
       .ticks(ticks$$1.sort(function (a, b) { return +a - +b; }))
       .width(this._width);
 
-    if (timeline.selection() === void 0) {
+    if (this._timelineSelection === void 0) {
 
       var dates = extent(data.map(this._time).map(date$2));
-
-      if (dates[0] === dates[1]) { timeline.selection(dates[0]); }
-      else { timeline.selection(dates); }
+      this._timelineSelection = dates[0] === dates[1] ? dates[0] : dates;
+      timeline.selection(this._timelineSelection);
 
     }
 
@@ -16073,15 +16109,18 @@ var Viz = (function (BaseClass$$1) {
     this._timeline = true;
     this._timelineClass = new Timeline()
       .align("end")
-      .on("end", function (s) {
-        if (!(s instanceof Array)) { s = [s, s]; }
-        s = s.map(Number);
-        this$1._timelineClass.selection(s);
-        this$1.timeFilter(function (d) {
-          var ms = date$2(this$1._time(d)).getTime();
-          return ms >= s[0] && ms <= s[1];
-        }).render();
+      .on("brush", function (s) {
+        if (JSON.stringify(s) !== JSON.stringify(this$1._timelineSelection)) {
+          this$1._timelineSelection = s;
+          if (!(s instanceof Array)) { s = [s, s]; }
+          s = s.map(Number);
+          this$1.timeFilter(function (d) {
+            var ms = date$2(this$1._time(d)).getTime();
+            return ms >= s[0] && ms <= s[1];
+          }).render();
+        }
       });
+    this._timelineConfig = {};
 
     this._titleClass = new TextBox();
     this._titleConfig = {
@@ -16090,7 +16129,6 @@ var Viz = (function (BaseClass$$1) {
       textAnchor: "middle"
     };
 
-    this._timelineConfig = {};
     this._tooltip = true;
     this._tooltipClass = new Tooltip();
     this._tooltipConfig = {
