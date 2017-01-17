@@ -1,7 +1,7 @@
 /*
-  d3plus-dev v0.1.13
+  d3plus-dev v0.1.14
   A collection of scripts for developing D3plus modules.
-  Copyright (c) 2016 D3plus - https://d3plus.org
+  Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
