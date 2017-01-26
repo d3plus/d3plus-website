@@ -1,7 +1,7 @@
 /*
-  d3plus-timeline v0.3.4
+  d3plus-timeline v0.3.5
   An easy-to-use javascript timeline.
-  Copyright (c) 2016 D3plus - https://d3plus.org
+  Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
@@ -135,8 +135,6 @@ var creator = function(name) {
       ? creatorFixed
       : creatorInherit)(fullname);
 };
-
-var nextId = 0;
 
 var matcher = function(selector) {
   return function() {
@@ -387,7 +385,7 @@ EnterNode.prototype = {
   querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
 };
 
-var constant$1 = function(x) {
+var constant = function(x) {
   return function() {
     return x;
   };
@@ -476,7 +474,7 @@ var selection_data = function(value, key) {
       parents = this._parents,
       groups = this._groups;
 
-  if (typeof value !== "function") { value = constant$1(value); }
+  if (typeof value !== "function") { value = constant(value); }
 
   for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
     var parent = parents[j],
@@ -953,11 +951,11 @@ function Selection(groups, parents) {
   this._parents = parents;
 }
 
-function selection$1() {
+function selection() {
   return new Selection([[document.documentElement]], root);
 }
 
-Selection.prototype = selection$1.prototype = {
+Selection.prototype = selection.prototype = {
   constructor: Selection,
   select: selection_select,
   selectAll: selection_selectAll,
@@ -1002,22 +1000,6 @@ var selectAll = function(selector) {
       : new Selection([selector == null ? [] : selector], root);
 };
 
-var touch = function(node, touches, identifier) {
-  if (arguments.length < 3) { identifier = touches, touches = sourceEvent().changedTouches; }
-
-  for (var i = 0, n = touches ? touches.length : 0, touch; i < n; ++i) {
-    if ((touch = touches[i]).identifier === identifier) {
-      return point(node, touch);
-    }
-  }
-
-  return null;
-};
-
-function nopropagation() {
-  event.stopImmediatePropagation();
-}
-
 var noevent = function() {
   event.preventDefault();
   event.stopImmediatePropagation();
@@ -1047,43 +1029,6 @@ function yesdrag(view, noclick) {
     root.style.MozUserSelect = root.__noselect;
     delete root.__noselect;
   }
-}
-
-var constant$2 = function(x) {
-  return function() {
-    return x;
-  };
-};
-
-function DragEvent(target, type, subject, id, active, x, y, dx, dy, dispatch) {
-  this.target = target;
-  this.type = type;
-  this.subject = subject;
-  this.identifier = id;
-  this.active = active;
-  this.x = x;
-  this.y = y;
-  this.dx = dx;
-  this.dy = dy;
-  this._ = dispatch;
-}
-
-DragEvent.prototype.on = function() {
-  var value = this._.on.apply(this._, arguments);
-  return value === this._ ? this : value;
-};
-
-// Ignore right-click, since that should open the context menu.
-function defaultFilter$1() {
-  return !event.button;
-}
-
-function defaultContainer() {
-  return this.parentNode;
-}
-
-function defaultSubject(d) {
-  return d == null ? {x: event.x, y: event.y} : d;
 }
 
 var define = function(constructor, factory, prototype) {
@@ -1600,7 +1545,7 @@ function basis(t1, v0, v1, v2, v3) {
       + t3 * v3) / 6;
 }
 
-var constant$3 = function(x) {
+var constant$2 = function(x) {
   return function() {
     return x;
   };
@@ -1620,28 +1565,28 @@ function exponential(a, b, y) {
 
 function hue(a, b) {
   var d = b - a;
-  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$3(isNaN(a) ? b : a);
+  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$2(isNaN(a) ? b : a);
 }
 
 function gamma(y) {
   return (y = +y) === 1 ? nogamma : function(a, b) {
-    return b - a ? exponential(a, b, y) : constant$3(isNaN(a) ? b : a);
+    return b - a ? exponential(a, b, y) : constant$2(isNaN(a) ? b : a);
   };
 }
 
 function nogamma(a, b) {
   var d = b - a;
-  return d ? linear(a, d) : constant$3(isNaN(a) ? b : a);
+  return d ? linear(a, d) : constant$2(isNaN(a) ? b : a);
 }
 
-var interpolateRgb = (function rgbGamma(y) {
+var interpolateRgb = ((function rgbGamma(y) {
   var color$$1 = gamma(y);
 
   function rgb$$1(start, end) {
     var r = color$$1((start = rgb(start)).r, (end = rgb(end)).r),
         g = color$$1(start.g, end.g),
         b = color$$1(start.b, end.b),
-        opacity = color$$1(start.opacity, end.opacity);
+        opacity = nogamma(start.opacity, end.opacity);
     return function(t) {
       start.r = r(t);
       start.g = g(t);
@@ -1654,7 +1599,7 @@ var interpolateRgb = (function rgbGamma(y) {
   rgb$$1.gamma = rgbGamma;
 
   return rgb$$1;
-})(1);
+}))(1);
 
 var array = function(a, b) {
   var nb = b ? b.length : 0,
@@ -1772,7 +1717,7 @@ var interpolateString = function(a, b) {
 
 var interpolateValue = function(a, b) {
   var t = typeof b, c;
-  return b == null || t === "boolean" ? constant$3(b)
+  return b == null || t === "boolean" ? constant$2(b)
       : (t === "number" ? reinterpolate
       : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
       : b instanceof color ? interpolateRgb
@@ -1899,23 +1844,6 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
 
 var interpolateTransformCss = interpolateTransform(parseCss, "px, ", "px)", "deg)");
 var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
-
-var rho = Math.SQRT2;
-var rho2 = 2;
-var rho4 = 4;
-var epsilon2 = 1e-12;
-
-function cosh(x) {
-  return ((x = Math.exp(x)) + 1 / x) / 2;
-}
-
-function sinh(x) {
-  return ((x = Math.exp(x)) - 1 / x) / 2;
-}
-
-function tanh(x) {
-  return ((x = Math.exp(2 * x)) - 1) / (x + 1);
-}
 
 // p0 = [ux0, uy0, w0]
 // p1 = [ux1, uy1, w1]
@@ -2083,7 +2011,7 @@ var schedule = function(node, name, id, index, group, timing) {
   var schedules = node.__transition;
   if (!schedules) { node.__transition = {}; }
   else if (id in schedules) { return; }
-  create$1(node, id, {
+  create(node, id, {
     name: name,
     index: index, // For context during callback.
     group: group, // For context during callback.
@@ -2098,7 +2026,7 @@ var schedule = function(node, name, id, index, group, timing) {
   });
 };
 
-function init$1(node, id) {
+function init(node, id) {
   var schedule = node.__transition;
   if (!schedule || !(schedule = schedule[id]) || schedule.state > CREATED) { throw new Error("too late"); }
   return schedule;
@@ -2116,7 +2044,7 @@ function get$1(node, id) {
   return schedule;
 }
 
-function create$1(node, id, self) {
+function create(node, id, self) {
   var schedules = node.__transition,
       tween;
 
@@ -2330,7 +2258,7 @@ function tweenValue(transition, name, value) {
   };
 }
 
-var interpolate$1 = function(a, b) {
+var interpolate$$1 = function(a, b) {
   var c;
   return (typeof b === "number" ? reinterpolate
       : b instanceof color ? interpolateRgb
@@ -2401,7 +2329,7 @@ function attrFunctionNS$1(fullname, interpolate$$1, value) {
 }
 
 var transition_attr = function(name, value) {
-  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate$1;
+  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate$$1;
   return this.attrTween(name, typeof value === "function"
       ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
       : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
@@ -2441,13 +2369,13 @@ var transition_attrTween = function(name, value) {
 
 function delayFunction(id, value) {
   return function() {
-    init$1(this, id).delay = +value.apply(this, arguments);
+    init(this, id).delay = +value.apply(this, arguments);
   };
 }
 
 function delayConstant(id, value) {
   return value = +value, function() {
-    init$1(this, id).delay = value;
+    init(this, id).delay = value;
   };
 }
 
@@ -2539,7 +2467,7 @@ function start(name) {
 }
 
 function onFunction(id, name, listener) {
-  var on0, on1, sit = start(name) ? init$1 : set$1;
+  var on0, on1, sit = start(name) ? init : set$1;
   return function() {
     var schedule = sit(this, id),
         on = schedule.on;
@@ -2563,8 +2491,10 @@ var transition_on = function(name, listener) {
 
 function removeFunction(id) {
   return function() {
+    var this$1 = this;
+
     var parent = this.parentNode;
-    for (var i in this.__transition) { if (+i !== id) { return; } }
+    for (var i in this$1.__transition) { if (+i !== id) { return; } }
     if (parent) { parent.removeChild(this); }
   };
 }
@@ -2615,13 +2545,13 @@ var transition_selectAll = function(select$$1) {
   return new Transition(subgroups, parents, name, id);
 };
 
-var Selection$1 = selection$1.prototype.constructor;
+var Selection$1 = selection.prototype.constructor;
 
 var transition_selection = function() {
   return new Selection$1(this._groups, this._parents);
 };
 
-function styleRemove$1(name, interpolate$$1) {
+function styleRemove$1(name, interpolate$$2) {
   var value00,
       value10,
       interpolate0;
@@ -2631,7 +2561,7 @@ function styleRemove$1(name, interpolate$$1) {
         value1 = (this.style.removeProperty(name), style.getPropertyValue(name));
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate$$2(value00 = value0, value10 = value1);
   };
 }
 
@@ -2641,18 +2571,18 @@ function styleRemoveEnd(name) {
   };
 }
 
-function styleConstant$1(name, interpolate$$1, value1) {
+function styleConstant$1(name, interpolate$$2, value1) {
   var value00,
       interpolate0;
   return function() {
     var value0 = window$1(this).getComputedStyle(this, null).getPropertyValue(name);
     return value0 === value1 ? null
         : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value1);
+        : interpolate0 = interpolate$$2(value00 = value0, value1);
   };
 }
 
-function styleFunction$1(name, interpolate$$1, value) {
+function styleFunction$1(name, interpolate$$2, value) {
   var value00,
       value10,
       interpolate0;
@@ -2663,12 +2593,12 @@ function styleFunction$1(name, interpolate$$1, value) {
     if (value1 == null) { value1 = (this.style.removeProperty(name), style.getPropertyValue(name)); }
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate$$2(value00 = value0, value10 = value1);
   };
 }
 
 var transition_style = function(name, value, priority) {
-  var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$1;
+  var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$$1;
   return value == null ? this
           .styleTween(name, styleRemove$1(name, i))
           .on("end.style." + name, styleRemoveEnd(name))
@@ -2737,7 +2667,7 @@ var transition_transition = function() {
   return new Transition(groups, this._parents, name, id1);
 };
 
-var id$1 = 0;
+var id = 0;
 
 function Transition(groups, parents, name, id) {
   this._groups = groups;
@@ -2747,14 +2677,14 @@ function Transition(groups, parents, name, id) {
 }
 
 function transition(name) {
-  return selection$1().transition(name);
+  return selection().transition(name);
 }
 
 function newId() {
-  return ++id$1;
+  return ++id;
 }
 
-var selection_prototype = selection$1.prototype;
+var selection_prototype = selection.prototype;
 
 Transition.prototype = transition.prototype = {
   constructor: Transition,
@@ -2824,23 +2754,6 @@ var polyInOut = (function custom(e) {
 
   return polyInOut;
 })(exponent);
-
-var b1 = 4 / 11;
-var b2 = 6 / 11;
-var b3 = 8 / 11;
-var b4 = 3 / 4;
-var b5 = 9 / 11;
-var b6 = 10 / 11;
-var b7 = 15 / 16;
-var b8 = 21 / 22;
-var b9 = 63 / 64;
-var b0 = 1 / b1 / b1;
-
-
-
-function bounceOut(t) {
-  return (t = +t) < b1 ? b0 * t * t : t < b3 ? b0 * (t -= b2) * t + b4 : t < b6 ? b0 * (t -= b5) * t + b7 : b0 * (t -= b8) * t + b9;
-}
 
 var overshoot = 1.70158;
 
@@ -2963,12 +2876,10 @@ var selection_transition = function(name) {
   return new Transition(groups, this._parents, name, id);
 };
 
-selection$1.prototype.interrupt = selection_interrupt;
-selection$1.prototype.transition = selection_transition;
+selection.prototype.interrupt = selection_interrupt;
+selection.prototype.transition = selection_transition;
 
-var root$1 = [null];
-
-var constant$4 = function(x) {
+var constant$3 = function(x) {
   return function() {
     return x;
   };
@@ -3492,11 +3403,11 @@ function brush$1(dim) {
   }
 
   brush.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$4([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$3([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
   };
 
   brush.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$4(!!_), brush) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$3(!!_), brush) : filter;
   };
 
   brush.handleSize = function(_) {
@@ -3580,17 +3491,6 @@ var extent = function(array, f) {
   return [a, c];
 };
 
-var array$1 = Array.prototype;
-
-var slice = array$1.slice;
-var map = array$1.map;
-
-var constant$5 = function(x) {
-  return function() {
-    return x;
-  };
-};
-
 var identity$1 = function(x) {
   return x;
 };
@@ -3613,7 +3513,7 @@ var e10 = Math.sqrt(50);
 var e5 = Math.sqrt(10);
 var e2 = Math.sqrt(2);
 
-var ticks$1 = function(start, stop, count) {
+var ticks = function(start, stop, count) {
   var step = tickStep(start, stop, count);
   return sequence(
     Math.ceil(start / step) * step,
@@ -3753,40 +3653,46 @@ Map.prototype = map$1.prototype = {
   clear: function() {
     var this$1 = this;
 
-    for (var property in this) { if (property[0] === prefix) { delete this$1[property]; } }
+    for (var property in this$1) { if (property[0] === prefix) { delete this$1[property]; } }
   },
   keys: function() {
+    var this$1 = this;
+
     var keys = [];
-    for (var property in this) { if (property[0] === prefix) { keys.push(property.slice(1)); } }
+    for (var property in this$1) { if (property[0] === prefix) { keys.push(property.slice(1)); } }
     return keys;
   },
   values: function() {
     var this$1 = this;
 
     var values = [];
-    for (var property in this) { if (property[0] === prefix) { values.push(this$1[property]); } }
+    for (var property in this$1) { if (property[0] === prefix) { values.push(this$1[property]); } }
     return values;
   },
   entries: function() {
     var this$1 = this;
 
     var entries = [];
-    for (var property in this) { if (property[0] === prefix) { entries.push({key: property.slice(1), value: this$1[property]}); } }
+    for (var property in this$1) { if (property[0] === prefix) { entries.push({key: property.slice(1), value: this$1[property]}); } }
     return entries;
   },
   size: function() {
+    var this$1 = this;
+
     var size = 0;
-    for (var property in this) { if (property[0] === prefix) { ++size; } }
+    for (var property in this$1) { if (property[0] === prefix) { ++size; } }
     return size;
   },
   empty: function() {
-    for (var property in this) { if (property[0] === prefix) { return false; } }
+    var this$1 = this;
+
+    for (var property in this$1) { if (property[0] === prefix) { return false; } }
     return true;
   },
   each: function(f) {
     var this$1 = this;
 
-    for (var property in this) { if (property[0] === prefix) { f(this$1[property], property.slice(1), this$1); } }
+    for (var property in this$1) { if (property[0] === prefix) { f(this$1[property], property.slice(1), this$1); } }
   }
 };
 
@@ -3812,7 +3718,7 @@ function map$1(object, f) {
   return map;
 }
 
-var nest$1 = function() {
+var nest = function() {
   var keys = [],
       sortKeys = [],
       sortValues,
@@ -4074,7 +3980,7 @@ function point$1() {
   return pointish(band().paddingInner(1));
 }
 
-var constant$6 = function(x) {
+var constant$5 = function(x) {
   return function() {
     return x;
   };
@@ -4089,7 +3995,7 @@ var unit = [0, 1];
 function deinterpolateLinear(a, b) {
   return (b -= (a = +a))
       ? function(x) { return (x - a) / b; }
-      : constant$6(b);
+      : constant$5(b);
 }
 
 function deinterpolateClamp(deinterpolate) {
@@ -4477,7 +4383,7 @@ var formatLocale = function(locale) {
 };
 
 var locale$1;
-var format$1;
+var format;
 var formatPrefix;
 
 defaultLocale({
@@ -4489,7 +4395,7 @@ defaultLocale({
 
 function defaultLocale(definition) {
   locale$1 = formatLocale(definition);
-  format$1 = locale$1.format;
+  format = locale$1.format;
   formatPrefix = locale$1.formatPrefix;
   return locale$1;
 }
@@ -4507,7 +4413,7 @@ var precisionRound = function(step, max) {
   return Math.max(0, exponent$1(max) - exponent$1(step)) + 1;
 };
 
-var tickFormat$1 = function(domain, count, specifier) {
+var tickFormat = function(domain, count, specifier) {
   var start = domain[0],
       stop = domain[domain.length - 1],
       step = tickStep(start, stop, count == null ? 10 : count),
@@ -4533,7 +4439,7 @@ var tickFormat$1 = function(domain, count, specifier) {
       break;
     }
   }
-  return format$1(specifier);
+  return format(specifier);
 };
 
 function linearish(scale) {
@@ -4541,11 +4447,11 @@ function linearish(scale) {
 
   scale.ticks = function(count) {
     var d = domain();
-    return ticks$1(d[0], d[d.length - 1], count == null ? 10 : count);
+    return ticks(d[0], d[d.length - 1], count == null ? 10 : count);
   };
 
   scale.tickFormat = function(count, specifier) {
-    return tickFormat$1(domain(), count, specifier);
+    return tickFormat(domain(), count, specifier);
   };
 
   scale.nice = function(count) {
@@ -4621,7 +4527,7 @@ var nice = function(domain, interval) {
 function deinterpolate(a, b) {
   return (b = Math.log(b / a))
       ? function(x) { return Math.log(x / a) / b; }
-      : constant$6(b);
+      : constant$5(b);
 }
 
 function reinterpolate$1(a, b) {
@@ -4653,7 +4559,7 @@ function reflect(f) {
   };
 }
 
-function log$1() {
+function log() {
   var scale = continuous(deinterpolate, reinterpolate$1).domain([1, 10]),
       domain = scale.domain,
       base = 10,
@@ -4708,7 +4614,7 @@ function log$1() {
         }
       } }
     } else {
-      z = ticks$1(i, j, Math.min(j - i, n)).map(pows);
+      z = ticks(i, j, Math.min(j - i, n)).map(pows);
     }
 
     return r ? z.reverse() : z;
@@ -4716,7 +4622,7 @@ function log$1() {
 
   scale.tickFormat = function(count, specifier) {
     if (specifier == null) { specifier = base === 10 ? ".0e" : ","; }
-    if (typeof specifier !== "function") { specifier = format$1(specifier); }
+    if (typeof specifier !== "function") { specifier = format(specifier); }
     if (count === Infinity) { return specifier; }
     if (count == null) { count = 10; }
     var k = Math.max(1, base * count / scale.ticks().length); // TODO fast estimate?
@@ -4735,7 +4641,7 @@ function log$1() {
   };
 
   scale.copy = function() {
-    return copy(scale, log$1().base(base));
+    return copy(scale, log().base(base));
   };
 
   return scale;
@@ -4753,7 +4659,7 @@ function pow() {
   function deinterpolate(a, b) {
     return (b = raise$1(b, exponent) - (a = raise$1(a, exponent)))
         ? function(x) { return (raise$1(x, exponent) - a) / b; }
-        : constant$6(b);
+        : constant$5(b);
   }
 
   function reinterpolate(a, b) {
@@ -5952,7 +5858,7 @@ var scales = Object.freeze({
 	scalePoint: point$1,
 	scaleIdentity: identity$2,
 	scaleLinear: linear$2,
-	scaleLog: log$1,
+	scaleLog: log,
 	scaleOrdinal: ordinal,
 	scaleImplicit: implicit,
 	scalePow: pow,
@@ -6115,7 +6021,7 @@ BaseClass.prototype.config = function config (_) {
   }
   else {
     var config = {};
-    for (var k$1 in this.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
+    for (var k$1 in this$1.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
     return config;
   }
 };
@@ -6160,7 +6066,7 @@ function() {
   return 42;
 }
 */
-var constant$7 = function(value) {
+var constant$6 = function(value) {
   return function constant() {
     return value;
   };
@@ -7629,8 +7535,8 @@ var Connector = function (_EventEmitter) {
       if (err) { q.errors.push(err); }
 
       if (q.pending.length === 0 && !q.done) {
-        q.errors.length ? q.callback(q.errors) : q.callback();
         _this3.emit('loaded', q.loaded);
+        q.errors.length ? q.callback(q.errors) : q.callback();
         q.done = true;
       }
     });
@@ -7954,6 +7860,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults(subClass, superClass); } }
 
+function noop$1() {}
+
 var I18n = function (_EventEmitter) {
   _inherits(I18n, _EventEmitter);
 
@@ -7990,7 +7898,7 @@ var I18n = function (_EventEmitter) {
     } else {
       this.options = _extends({}, get$2(), this.options, transformOptions(options));
     }
-    if (!callback) { callback = function callback() {}; }
+    if (!callback) { callback = noop$1; }
 
     function createClassOnDemand(ClassOrObject) {
       if (!ClassOrObject) { return; }
@@ -8078,6 +7986,7 @@ var I18n = function (_EventEmitter) {
 
     var load = function load() {
       _this2.changeLanguage(_this2.options.lng, function (err, t) {
+        _this2.isInitialized = true;
         _this2.emit('initialized', _this2.options);
         _this2.logger.log('initialized', _this2.options);
 
@@ -8097,7 +8006,7 @@ var I18n = function (_EventEmitter) {
   I18n.prototype.loadResources = function loadResources(callback) {
     var _this3 = this;
 
-    if (!callback) { callback = function callback() {}; }
+    if (!callback) { callback = noop$1; }
 
     if (!this.options.resources) {
       var _ret = function () {
@@ -8202,8 +8111,10 @@ var I18n = function (_EventEmitter) {
   I18n.prototype.getFixedT = function getFixedT(lng, ns) {
     var _this5 = this;
 
-    var fixedT = function fixedT(key, options) {
-      options = options || {};
+    var fixedT = function fixedT(key) {
+      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      var options = _extends({}, opts);
       options.lng = options.lng || fixedT.lng;
       options.ns = options.ns || fixedT.ns;
       return _this5.t(key, options);
@@ -8316,7 +8227,7 @@ var esES = {
 	array: array$4
 };
 
-var locale$3 = i18next$1.init({
+i18next$1.init({
   fallbackLng: "en-US",
   initImmediate: false,
   resources: {
@@ -8420,7 +8331,7 @@ var Image = function Image() {
   this._duration = 600;
   this._height = accessor("height");
   this._id = accessor("id");
-  this._pointerEvents = constant$7("auto");
+  this._pointerEvents = constant$6("auto");
   this._select;
   this._url = accessor("url");
   this._width = accessor("width");
@@ -8502,7 +8413,7 @@ Image.prototype.render = function render (callback) {
 */
 Image.prototype.data = function data (_) {
   return arguments.length ? (this._data = _, this) : this._data;
-  };
+};
 
 /**
     @memberof Image
@@ -8525,7 +8436,7 @@ return d.height;
 }
 */
 Image.prototype.height = function height (_) {
-  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$7(_), this) : this._height;
+  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$6(_), this) : this._height;
 };
 
 /**
@@ -8549,7 +8460,7 @@ Image.prototype.id = function id (_) {
     @chainable
 */
 Image.prototype.pointerEvents = function pointerEvents (_) {
-  return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$7(_), this) : this._pointerEvents;
+  return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$6(_), this) : this._pointerEvents;
 };
 
 /**
@@ -8587,7 +8498,7 @@ return d.width;
 }
 */
 Image.prototype.width = function width (_) {
-  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$7(_), this) : this._width;
+  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$6(_), this) : this._width;
 };
 
 /**
@@ -8601,7 +8512,7 @@ return d.x || 0;
 }
 */
 Image.prototype.x = function x (_) {
-  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$7(_), this) : this._x;
+  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$6(_), this) : this._x;
 };
 
 /**
@@ -8615,7 +8526,7 @@ return d.y || 0;
 }
 */
 Image.prototype.y = function y (_) {
-  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$7(_), this) : this._y;
+  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$6(_), this) : this._y;
 };
 
 /**
@@ -9025,23 +8936,23 @@ var TextBox = (function (BaseClass$$1) {
     this._delay = 0;
     this._duration = 0;
     this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
-    this._fontColor = constant$7("black");
-    this._fontFamily = constant$7("Verdana");
-    this._fontMax = constant$7(50);
-    this._fontMin = constant$7(8);
-    this._fontResize = constant$7(false);
-    this._fontSize = constant$7(10);
-    this._fontWeight = constant$7(400);
+    this._fontColor = constant$6("black");
+    this._fontFamily = constant$6("Verdana");
+    this._fontMax = constant$6(50);
+    this._fontMin = constant$6(8);
+    this._fontResize = constant$6(false);
+    this._fontSize = constant$6(10);
+    this._fontWeight = constant$6(400);
     this._height = accessor("height", 200);
     this._id = function (d, i) { return d.id || ("" + i); };
     this._on = {};
-    this._overflow = constant$7(false);
-    this._pointerEvents = constant$7("auto");
-    this._rotate = constant$7(0);
+    this._overflow = constant$6(false);
+    this._pointerEvents = constant$6("auto");
+    this._rotate = constant$6(0);
     this._split = textSplit;
     this._text = accessor("text");
-    this._textAnchor = constant$7("start");
-    this._verticalAlign = constant$7("top");
+    this._textAnchor = constant$6("start");
+    this._verticalAlign = constant$6("top");
     this._width = accessor("width", 200);
     this._x = accessor("x", 0);
     this._y = accessor("y", 0);
@@ -9335,7 +9246,7 @@ function(d) {
 }
   */
   TextBox.prototype.ellipsis = function ellipsis (_) {
-    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$7(_), this) : this._ellipsis;
+    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$6(_), this) : this._ellipsis;
   };
 
   /**
@@ -9344,7 +9255,7 @@ function(d) {
       @param {Function|String} [*value* = "black"]
   */
   TextBox.prototype.fontColor = function fontColor (_) {
-    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$7(_), this) : this._fontColor;
+    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$6(_), this) : this._fontColor;
   };
 
   /**
@@ -9353,7 +9264,7 @@ function(d) {
       @param {Function|String} [*value* = "Verdana"]
   */
   TextBox.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$7(_), this) : this._fontFamily;
+    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$6(_), this) : this._fontFamily;
   };
 
   /**
@@ -9362,7 +9273,7 @@ function(d) {
       @param {Function|Number} [*value* = 50]
   */
   TextBox.prototype.fontMax = function fontMax (_) {
-    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$7(_), this) : this._fontMax;
+    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$6(_), this) : this._fontMax;
   };
 
   /**
@@ -9371,7 +9282,7 @@ function(d) {
       @param {Function|Number} [*value* = 8]
   */
   TextBox.prototype.fontMin = function fontMin (_) {
-    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$7(_), this) : this._fontMin;
+    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$6(_), this) : this._fontMin;
   };
 
   /**
@@ -9380,7 +9291,7 @@ function(d) {
       @param {Function|Boolean} [*value* = false]
   */
   TextBox.prototype.fontResize = function fontResize (_) {
-    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$7(_), this) : this._fontResize;
+    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$6(_), this) : this._fontResize;
   };
 
   /**
@@ -9389,7 +9300,7 @@ function(d) {
       @param {Function|Number} [*value* = 10]
   */
   TextBox.prototype.fontSize = function fontSize (_) {
-    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$7(_), this) : this._fontSize;
+    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$6(_), this) : this._fontSize;
   };
 
   /**
@@ -9398,7 +9309,7 @@ function(d) {
       @param {Function|Number|String} [*value* = 400]
   */
   TextBox.prototype.fontWeight = function fontWeight (_) {
-    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$7(_), this) : this._fontWeight;
+    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$6(_), this) : this._fontWeight;
   };
 
   /**
@@ -9411,7 +9322,7 @@ function(d) {
 }
   */
   TextBox.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$7(_), this) : this._height;
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$6(_), this) : this._height;
   };
 
   /**
@@ -9424,7 +9335,7 @@ function(d, i) {
 }
   */
   TextBox.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$7(_), this) : this._id;
+    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$6(_), this) : this._id;
   };
 
   /**
@@ -9433,7 +9344,7 @@ function(d, i) {
       @param {Function|Number} [*value*]
   */
   TextBox.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$7(_), this) : this._lineHeight;
+    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$6(_), this) : this._lineHeight;
   };
 
   /**
@@ -9442,7 +9353,7 @@ function(d, i) {
       @param {Function|Boolean} [*value* = false]
   */
   TextBox.prototype.overflow = function overflow (_) {
-    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$7(_), this) : this._overflow;
+    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$6(_), this) : this._overflow;
   };
 
   /**
@@ -9451,7 +9362,7 @@ function(d, i) {
       @param {Function|String} [*value* = "auto"]
   */
   TextBox.prototype.pointerEvents = function pointerEvents (_) {
-    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$7(_), this) : this._pointerEvents;
+    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$6(_), this) : this._pointerEvents;
   };
 
   /**
@@ -9460,7 +9371,7 @@ function(d, i) {
       @param {Function|Number} [*value* = 0]
   */
   TextBox.prototype.rotate = function rotate (_) {
-    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$7(_), this) : this._rotate;
+    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$6(_), this) : this._rotate;
   };
 
   /**
@@ -9491,7 +9402,7 @@ function(d) {
 }
   */
   TextBox.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$7(_), this) : this._text;
+    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$6(_), this) : this._text;
   };
 
   /**
@@ -9500,7 +9411,7 @@ function(d) {
       @param {Function|String} [*value* = "start"] Analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
   */
   TextBox.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$7(_), this) : this._textAnchor;
+    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$6(_), this) : this._textAnchor;
   };
 
   /**
@@ -9509,7 +9420,7 @@ function(d) {
       @param {Function|String} [*value* = "top"] Accepts `"top"`, `"middle"`, and `"bottom"`.
   */
   TextBox.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$7(_), this) : this._verticalAlign;
+    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$6(_), this) : this._verticalAlign;
   };
 
   /**
@@ -9522,7 +9433,7 @@ function(d) {
 }
   */
   TextBox.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$7(_), this) : this._width;
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$6(_), this) : this._width;
   };
 
   /**
@@ -9535,7 +9446,7 @@ function(d) {
 }
   */
   TextBox.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$7(_), this) : this._x;
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$6(_), this) : this._x;
   };
 
   /**
@@ -9548,7 +9459,7 @@ function(d) {
 }
   */
   TextBox.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$7(_), this) : this._y;
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$6(_), this) : this._y;
   };
 
   return TextBox;
@@ -9588,30 +9499,30 @@ var Shape = (function (BaseClass$$1) {
         return s ? s * 2 : 1;
       }
     };
-    this._backgroundImage = constant$7(false);
+    this._backgroundImage = constant$6(false);
     this._data = [];
     this._duration = 600;
-    this._fill = constant$7("black");
+    this._fill = constant$6("black");
 
     this._fontColor = function (d, i) { return contrast(this$1._fill(d, i)); };
-    this._fontFamily = constant$7("Verdana");
-    this._fontResize = constant$7(false);
-    this._fontSize = constant$7(12);
+    this._fontFamily = constant$6("Verdana");
+    this._fontResize = constant$6(false);
+    this._fontSize = constant$6(12);
 
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
-    this._label = constant$7(false);
-    this._labelPadding = constant$7(5);
+    this._label = constant$6(false);
+    this._labelPadding = constant$6(5);
     this._name = "Shape";
-    this._opacity = constant$7(1);
-    this._scale = constant$7(1);
-    this._shapeRendering = constant$7("geometricPrecision");
+    this._opacity = constant$6(1);
+    this._scale = constant$6(1);
+    this._shapeRendering = constant$6("geometricPrecision");
     this._stroke = function (d, i) { return color(this$1._fill(d, i)).darker(1); };
-    this._strokeWidth = constant$7(0);
+    this._strokeWidth = constant$6(0);
     this._tagName = tagName;
-    this._textAnchor = constant$7("start");
-    this._vectorEffect = constant$7("non-scaling-stroke");
-    this._verticalAlign = constant$7("top");
+    this._textAnchor = constant$6("start");
+    this._vectorEffect = constant$6("non-scaling-stroke");
+    this._verticalAlign = constant$6("top");
 
     this._x = accessor("x", 0);
     this._y = accessor("y", 0);
@@ -9689,7 +9600,7 @@ var Shape = (function (BaseClass$$1) {
     }
 
     var activeStyle = {};
-    for (var key in this._activeStyle) {
+    for (var key in this$1._activeStyle) {
       if ({}.hasOwnProperty.call(this$1._activeStyle, key)) {
         activeStyle[key] = styleLogic.bind(this$1._activeStyle[key]);
       }
@@ -10039,7 +9950,7 @@ var Shape = (function (BaseClass$$1) {
       @param {Function} [*value*]
       @chainable
   */
-  Shape.prototype.active = function active (_) {
+  Shape.prototype.active = function active$$1 (_) {
 
     if (!arguments.length || _ === void 0) { return this._active; }
     this._active = _;
@@ -10095,7 +10006,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.backgroundImage = function backgroundImage (_) {
     return arguments.length
-         ? (this._backgroundImage = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._backgroundImage = typeof _ === "function" ? _ : constant$6(_), this)
          : this._backgroundImage;
   };
 
@@ -10131,7 +10042,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fill = function fill (_) {
     return arguments.length
-         ? (this._fill = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._fill = typeof _ === "function" ? _ : constant$6(_), this)
          : this._fill;
   };
 
@@ -10143,7 +10054,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fontColor = function fontColor (_) {
     return arguments.length
-         ? (this._fontColor = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._fontColor = typeof _ === "function" ? _ : constant$6(_), this)
          : this._fontColor;
   };
 
@@ -10155,7 +10066,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fontFamily = function fontFamily (_) {
     return arguments.length
-         ? (this._fontFamily = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._fontFamily = typeof _ === "function" ? _ : constant$6(_), this)
          : this._fontFamily;
   };
 
@@ -10167,7 +10078,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fontResize = function fontResize (_) {
     return arguments.length
-         ? (this._fontResize = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._fontResize = typeof _ === "function" ? _ : constant$6(_), this)
          : this._fontResize;
   };
 
@@ -10179,7 +10090,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fontSize = function fontSize (_) {
     return arguments.length
-         ? (this._fontSize = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._fontSize = typeof _ === "function" ? _ : constant$6(_), this)
          : this._fontSize;
   };
 
@@ -10248,7 +10159,7 @@ function(d, i, shape) {
   */
   Shape.prototype.hitArea = function hitArea (_) {
     return arguments.length
-         ? (this._hitArea = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._hitArea = typeof _ === "function" ? _ : constant$6(_), this)
          : this._hitArea;
   };
 
@@ -10272,7 +10183,7 @@ function(d, i, shape) {
   */
   Shape.prototype.label = function label (_) {
     return arguments.length
-         ? (this._label = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._label = typeof _ === "function" ? _ : constant$6(_), this)
          : this._label;
   };
 
@@ -10293,7 +10204,7 @@ function(d, i, shape) {
   */
   Shape.prototype.labelBounds = function labelBounds (_) {
     return arguments.length
-         ? (this._labelBounds = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._labelBounds = typeof _ === "function" ? _ : constant$6(_), this)
          : this._labelBounds;
   };
 
@@ -10305,7 +10216,7 @@ function(d, i, shape) {
   */
   Shape.prototype.labelPadding = function labelPadding (_) {
     return arguments.length
-         ? (this._labelPadding = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._labelPadding = typeof _ === "function" ? _ : constant$6(_), this)
          : this._labelPadding;
   };
 
@@ -10317,7 +10228,7 @@ function(d, i, shape) {
   */
   Shape.prototype.lineHeight = function lineHeight (_) {
     return arguments.length
-         ? (this._lineHeight = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._lineHeight = typeof _ === "function" ? _ : constant$6(_), this)
          : this._lineHeight;
   };
 
@@ -10329,7 +10240,7 @@ function(d, i, shape) {
   */
   Shape.prototype.opacity = function opacity (_) {
     return arguments.length
-         ? (this._opacity = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._opacity = typeof _ === "function" ? _ : constant$6(_), this)
          : this._opacity;
   };
 
@@ -10341,7 +10252,7 @@ function(d, i, shape) {
   */
   Shape.prototype.scale = function scale (_) {
     return arguments.length
-         ? (this._scale = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._scale = typeof _ === "function" ? _ : constant$6(_), this)
          : this._scale;
   };
 
@@ -10369,7 +10280,7 @@ function(d) {
   */
   Shape.prototype.shapeRendering = function shapeRendering (_) {
     return arguments.length
-         ? (this._shapeRendering = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._shapeRendering = typeof _ === "function" ? _ : constant$6(_), this)
          : this._shapeRendering;
   };
 
@@ -10393,7 +10304,7 @@ function(d) {
   */
   Shape.prototype.stroke = function stroke (_) {
     return arguments.length
-         ? (this._stroke = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._stroke = typeof _ === "function" ? _ : constant$6(_), this)
          : this._stroke;
   };
 
@@ -10405,7 +10316,7 @@ function(d) {
   */
   Shape.prototype.strokeWidth = function strokeWidth (_) {
     return arguments.length
-         ? (this._strokeWidth = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._strokeWidth = typeof _ === "function" ? _ : constant$6(_), this)
          : this._strokeWidth;
   };
 
@@ -10417,7 +10328,7 @@ function(d) {
   */
   Shape.prototype.textAnchor = function textAnchor (_) {
     return arguments.length
-         ? (this._textAnchor = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._textAnchor = typeof _ === "function" ? _ : constant$6(_), this)
          : this._textAnchor;
   };
 
@@ -10429,7 +10340,7 @@ function(d) {
   */
   Shape.prototype.vectorEffect = function vectorEffect (_) {
     return arguments.length
-         ? (this._vectorEffect = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._vectorEffect = typeof _ === "function" ? _ : constant$6(_), this)
          : this._vectorEffect;
   };
 
@@ -10441,7 +10352,7 @@ function(d) {
   */
   Shape.prototype.verticalAlign = function verticalAlign (_) {
     return arguments.length
-         ? (this._verticalAlign = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._verticalAlign = typeof _ === "function" ? _ : constant$6(_), this)
          : this._verticalAlign;
   };
 
@@ -10457,7 +10368,7 @@ function(d) {
   */
   Shape.prototype.x = function x (_) {
     return arguments.length
-         ? (this._x = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._x = typeof _ === "function" ? _ : constant$6(_), this)
          : this._x;
   };
 
@@ -10473,7 +10384,7 @@ function(d) {
   */
   Shape.prototype.y = function y (_) {
     return arguments.length
-         ? (this._y = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._y = typeof _ === "function" ? _ : constant$6(_), this)
          : this._y;
   };
 
@@ -10875,7 +10786,7 @@ Path.prototype = path.prototype = {
   }
 };
 
-var constant$8 = function(x) {
+var constant$7 = function(x) {
   return function constant() {
     return x;
   };
@@ -10963,7 +10874,7 @@ function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
 var arc = function() {
   var innerRadius = arcInnerRadius,
       outerRadius = arcOuterRadius,
-      cornerRadius = constant$8(0),
+      cornerRadius = constant$7(0),
       padRadius = null,
       startAngle = arcStartAngle,
       endAngle = arcEndAngle,
@@ -11112,31 +11023,31 @@ var arc = function() {
   };
 
   arc.innerRadius = function(_) {
-    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$8(+_), arc) : innerRadius;
+    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$7(+_), arc) : innerRadius;
   };
 
   arc.outerRadius = function(_) {
-    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$8(+_), arc) : outerRadius;
+    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$7(+_), arc) : outerRadius;
   };
 
   arc.cornerRadius = function(_) {
-    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$8(+_), arc) : cornerRadius;
+    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$7(+_), arc) : cornerRadius;
   };
 
   arc.padRadius = function(_) {
-    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$8(+_), arc) : padRadius;
+    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$7(+_), arc) : padRadius;
   };
 
   arc.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$8(+_), arc) : startAngle;
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$7(+_), arc) : startAngle;
   };
 
   arc.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$8(+_), arc) : endAngle;
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$7(+_), arc) : endAngle;
   };
 
   arc.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$8(+_), arc) : padAngle;
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$7(+_), arc) : padAngle;
   };
 
   arc.context = function(_) {
@@ -11178,18 +11089,18 @@ var curveLinear = function(context) {
   return new Linear(context);
 };
 
-function x$1(p) {
+function x(p) {
   return p[0];
 }
 
-function y$1(p) {
+function y(p) {
   return p[1];
 }
 
 var line = function() {
-  var x$$1 = x$1,
-      y$$1 = y$1,
-      defined = constant$8(true),
+  var x$$1 = x,
+      y$$1 = y,
+      defined = constant$7(true),
       context = null,
       curve = curveLinear,
       output = null;
@@ -11215,15 +11126,15 @@ var line = function() {
   }
 
   line.x = function(_) {
-    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$8(+_), line) : x$$1;
+    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$7(+_), line) : x$$1;
   };
 
   line.y = function(_) {
-    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$8(+_), line) : y$$1;
+    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$7(+_), line) : y$$1;
   };
 
   line.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$8(!!_), line) : defined;
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$7(!!_), line) : defined;
   };
 
   line.curve = function(_) {
@@ -11238,11 +11149,11 @@ var line = function() {
 };
 
 var area = function() {
-  var x0 = x$1,
+  var x0 = x,
       x1 = null,
-      y0 = constant$8(0),
-      y1 = y$1,
-      defined = constant$8(true),
+      y0 = constant$7(0),
+      y1 = y,
+      defined = constant$7(true),
       context = null,
       curve = curveLinear,
       output = null;
@@ -11290,27 +11201,27 @@ var area = function() {
   }
 
   area.x = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$8(+_), x1 = null, area) : x0;
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$7(+_), x1 = null, area) : x0;
   };
 
   area.x0 = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$8(+_), area) : x0;
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$7(+_), area) : x0;
   };
 
   area.x1 = function(_) {
-    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$8(+_), area) : x1;
+    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$7(+_), area) : x1;
   };
 
   area.y = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$8(+_), y1 = null, area) : y0;
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$7(+_), y1 = null, area) : y0;
   };
 
   area.y0 = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$8(+_), area) : y0;
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$7(+_), area) : y0;
   };
 
   area.y1 = function(_) {
-    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$8(+_), area) : y1;
+    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$7(+_), area) : y1;
   };
 
   area.lineX0 =
@@ -11327,7 +11238,7 @@ var area = function() {
   };
 
   area.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$8(!!_), area) : defined;
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$7(!!_), area) : defined;
   };
 
   area.curve = function(_) {
@@ -11353,9 +11264,9 @@ var pie = function() {
   var value = identity$4,
       sortValues = descending$1,
       sort = null,
-      startAngle = constant$8(0),
-      endAngle = constant$8(tau$2),
-      padAngle = constant$8(0);
+      startAngle = constant$7(0),
+      endAngle = constant$7(tau$2),
+      padAngle = constant$7(0);
 
   function pie(data) {
     var i,
@@ -11398,7 +11309,7 @@ var pie = function() {
   }
 
   pie.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$8(+_), pie) : value;
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$7(+_), pie) : value;
   };
 
   pie.sortValues = function(_) {
@@ -11410,15 +11321,15 @@ var pie = function() {
   };
 
   pie.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$8(+_), pie) : startAngle;
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$7(+_), pie) : startAngle;
   };
 
   pie.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$8(+_), pie) : endAngle;
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$7(+_), pie) : endAngle;
   };
 
   pie.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$8(+_), pie) : padAngle;
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$7(+_), pie) : padAngle;
   };
 
   return pie;
@@ -11625,8 +11536,8 @@ var symbols = [
 ];
 
 var symbol = function() {
-  var type = constant$8(circle),
-      size = constant$8(64),
+  var type = constant$7(circle),
+      size = constant$7(64),
       context = null;
 
   function symbol() {
@@ -11637,11 +11548,11 @@ var symbol = function() {
   }
 
   symbol.type = function(_) {
-    return arguments.length ? (type = typeof _ === "function" ? _ : constant$8(_), symbol) : type;
+    return arguments.length ? (type = typeof _ === "function" ? _ : constant$7(_), symbol) : type;
   };
 
   symbol.size = function(_) {
-    return arguments.length ? (size = typeof _ === "function" ? _ : constant$8(+_), symbol) : size;
+    return arguments.length ? (size = typeof _ === "function" ? _ : constant$7(+_), symbol) : size;
   };
 
   symbol.context = function(_) {
@@ -11651,7 +11562,7 @@ var symbol = function() {
   return symbol;
 };
 
-var noop$1 = function() {};
+var noop$2 = function() {};
 
 function point$2(that, x, y) {
   that._context.bezierCurveTo(
@@ -11710,8 +11621,8 @@ function BasisClosed(context) {
 }
 
 BasisClosed.prototype = {
-  areaStart: noop$1,
-  areaEnd: noop$1,
+  areaStart: noop$2,
+  areaEnd: noop$2,
   lineStart: function() {
     this._x0 = this._x1 = this._x2 = this._x3 = this._x4 =
     this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = NaN;
@@ -11837,7 +11748,7 @@ Bundle.prototype = {
   }
 };
 
-var bundle = (function custom(beta) {
+var bundle = ((function custom(beta) {
 
   function bundle(context) {
     return beta === 1 ? new Basis(context) : new Bundle(context, beta);
@@ -11848,7 +11759,7 @@ var bundle = (function custom(beta) {
   };
 
   return bundle;
-})(0.85);
+}))(0.85);
 
 function point$3(that, x, y) {
   that._context.bezierCurveTo(
@@ -11899,7 +11810,7 @@ Cardinal.prototype = {
   }
 };
 
-var cardinal = (function custom(tension) {
+var cardinal = ((function custom(tension) {
 
   function cardinal(context) {
     return new Cardinal(context, tension);
@@ -11910,7 +11821,7 @@ var cardinal = (function custom(tension) {
   };
 
   return cardinal;
-})(0);
+}))(0);
 
 function CardinalClosed(context, tension) {
   this._context = context;
@@ -11918,8 +11829,8 @@ function CardinalClosed(context, tension) {
 }
 
 CardinalClosed.prototype = {
-  areaStart: noop$1,
-  areaEnd: noop$1,
+  areaStart: noop$2,
+  areaEnd: noop$2,
   lineStart: function() {
     this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
     this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
@@ -11958,7 +11869,7 @@ CardinalClosed.prototype = {
   }
 };
 
-var cardinalClosed = (function custom(tension) {
+var cardinalClosed = ((function custom(tension) {
 
   function cardinal(context) {
     return new CardinalClosed(context, tension);
@@ -11969,7 +11880,7 @@ var cardinalClosed = (function custom(tension) {
   };
 
   return cardinal;
-})(0);
+}))(0);
 
 function CardinalOpen(context, tension) {
   this._context = context;
@@ -12006,7 +11917,7 @@ CardinalOpen.prototype = {
   }
 };
 
-var cardinalOpen = (function custom(tension) {
+var cardinalOpen = ((function custom(tension) {
 
   function cardinal(context) {
     return new CardinalOpen(context, tension);
@@ -12017,7 +11928,7 @@ var cardinalOpen = (function custom(tension) {
   };
 
   return cardinal;
-})(0);
+}))(0);
 
 function point$4(that, x, y) {
   var x1 = that._x1,
@@ -12092,7 +12003,7 @@ CatmullRom.prototype = {
   }
 };
 
-var catmullRom = (function custom(alpha) {
+var catmullRom = ((function custom(alpha) {
 
   function catmullRom(context) {
     return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
@@ -12103,7 +12014,7 @@ var catmullRom = (function custom(alpha) {
   };
 
   return catmullRom;
-})(0.5);
+}))(0.5);
 
 function CatmullRomClosed(context, alpha) {
   this._context = context;
@@ -12111,8 +12022,8 @@ function CatmullRomClosed(context, alpha) {
 }
 
 CatmullRomClosed.prototype = {
-  areaStart: noop$1,
-  areaEnd: noop$1,
+  areaStart: noop$2,
+  areaEnd: noop$2,
   lineStart: function() {
     this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
     this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
@@ -12163,7 +12074,7 @@ CatmullRomClosed.prototype = {
   }
 };
 
-var catmullRomClosed = (function custom(alpha) {
+var catmullRomClosed = ((function custom(alpha) {
 
   function catmullRom(context) {
     return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
@@ -12174,7 +12085,7 @@ var catmullRomClosed = (function custom(alpha) {
   };
 
   return catmullRom;
-})(0.5);
+}))(0.5);
 
 function CatmullRomOpen(context, alpha) {
   this._context = context;
@@ -12223,7 +12134,7 @@ CatmullRomOpen.prototype = {
   }
 };
 
-var catmullRomOpen = (function custom(alpha) {
+var catmullRomOpen = ((function custom(alpha) {
 
   function catmullRom(context) {
     return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
@@ -12234,15 +12145,15 @@ var catmullRomOpen = (function custom(alpha) {
   };
 
   return catmullRom;
-})(0.5);
+}))(0.5);
 
 function LinearClosed(context) {
   this._context = context;
 }
 
 LinearClosed.prototype = {
-  areaStart: noop$1,
-  areaEnd: noop$1,
+  areaStart: noop$2,
+  areaEnd: noop$2,
   lineStart: function() {
     this._point = 0;
   },
@@ -12510,7 +12421,7 @@ function stackValue(d, key) {
 }
 
 var stack = function() {
-  var keys = constant$8([]),
+  var keys = constant$7([]),
       order = none$2,
       offset = none$1,
       value = stackValue;
@@ -12540,15 +12451,15 @@ var stack = function() {
   }
 
   stack.keys = function(_) {
-    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$8(slice$2.call(_)), stack) : keys;
+    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$7(slice$2.call(_)), stack) : keys;
   };
 
   stack.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$8(+_), stack) : value;
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$7(+_), stack) : value;
   };
 
   stack.order = function(_) {
-    return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$8(slice$2.call(_)), stack) : order;
+    return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$7(slice$2.call(_)), stack) : order;
   };
 
   stack.offset = function(_) {
@@ -12707,8 +12618,8 @@ var Area = (function (Shape$$1) {
     this._x = accessor("x");
     this._x0 = accessor("x");
     this._x1 = null;
-    this._y = constant$7(0);
-    this._y0 = constant$7(0);
+    this._y = constant$6(0);
+    this._y0 = constant$6(0);
     this._y1 = accessor("y");
 
   }
@@ -12727,7 +12638,7 @@ var Area = (function (Shape$$1) {
     var this$1 = this;
 
 
-    var areas = nest$1().key(this._id).entries(data).map(function (d) {
+    var areas = nest().key(this._id).entries(data).map(function (d) {
 
       d.data = objectMerge(d.values);
       d.i = data.indexOf(d.values[0]);
@@ -12848,7 +12759,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.x0 = function x0 (_) {
     if (!arguments.length) { return this._x0; }
-    this._x0 = typeof _ === "function" ? _ : constant$7(_);
+    this._x0 = typeof _ === "function" ? _ : constant$6(_);
     this._x = this._x0;
     return this;
   };
@@ -12861,7 +12772,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.x1 = function x1 (_) {
     return arguments.length
-         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$6(_), this)
          : this._x1;
   };
 
@@ -12873,7 +12784,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.y0 = function y0 (_) {
     if (!arguments.length) { return this._y0; }
-    this._y0 = typeof _ === "function" ? _ : constant$7(_);
+    this._y0 = typeof _ === "function" ? _ : constant$6(_);
     this._y = this._y0;
     return this;
   };
@@ -12886,7 +12797,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.y1 = function y1 (_) {
     return arguments.length
-         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$6(_), this)
          : this._y1;
   };
 
@@ -12904,14 +12815,14 @@ var Bar = (function (Shape$$1) {
     Shape$$1.call(this, "rect");
 
     this._name = "Bar";
-    this._height = constant$7(10);
+    this._height = constant$6(10);
     this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
-    this._width = constant$7(10);
+    this._width = constant$6(10);
     this._x = accessor("x");
     this._x0 = accessor("x");
     this._x1 = null;
-    this._y = constant$7(0);
-    this._y0 = constant$7(0);
+    this._y = constant$6(0);
+    this._y0 = constant$6(0);
     this._y1 = accessor("y");
 
   }
@@ -13049,7 +12960,7 @@ function(d) {
   */
   Bar.prototype.height = function height (_) {
     return arguments.length
-         ? (this._height = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._height = typeof _ === "function" ? _ : constant$6(_), this)
          : this._height;
   };
 
@@ -13065,7 +12976,7 @@ function(d) {
   */
   Bar.prototype.width = function width (_) {
     return arguments.length
-         ? (this._width = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._width = typeof _ === "function" ? _ : constant$6(_), this)
          : this._width;
   };
 
@@ -13077,7 +12988,7 @@ function(d) {
   */
   Bar.prototype.x0 = function x0 (_) {
     if (!arguments.length) { return this._x0; }
-    this._x0 = typeof _ === "function" ? _ : constant$7(_);
+    this._x0 = typeof _ === "function" ? _ : constant$6(_);
     this._x = this._x0;
     return this;
   };
@@ -13090,7 +13001,7 @@ function(d) {
   */
   Bar.prototype.x1 = function x1 (_) {
     return arguments.length
-         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$6(_), this)
          : this._x1;
   };
 
@@ -13102,7 +13013,7 @@ function(d) {
   */
   Bar.prototype.y0 = function y0 (_) {
     if (!arguments.length) { return this._y0; }
-    this._y0 = typeof _ === "function" ? _ : constant$7(_);
+    this._y0 = typeof _ === "function" ? _ : constant$6(_);
     this._y = this._y0;
     return this;
   };
@@ -13115,7 +13026,7 @@ function(d) {
   */
   Bar.prototype.y1 = function y1 (_) {
     return arguments.length
-         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$6(_), this)
          : this._y1;
   };
 
@@ -13201,7 +13112,7 @@ function(d) {
 }
   */
   Circle.prototype.r = function r (_) {
-    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$7(_), this) : this._r;
+    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$6(_), this) : this._r;
   };
 
   return Circle;
@@ -13219,10 +13130,10 @@ var Line = (function (Shape$$1) {
 
     this._curve = "linear";
     this._defined = function (d) { return d; };
-    this._fill = constant$7("none");
+    this._fill = constant$6("none");
     this._name = "Line";
     this._path = line();
-    this._strokeWidth = constant$7(1);
+    this._strokeWidth = constant$6(1);
 
   }
 
@@ -13240,7 +13151,7 @@ var Line = (function (Shape$$1) {
     var this$1 = this;
 
 
-    var lines = nest$1().key(this._id).entries(data).map(function (d) {
+    var lines = nest().key(this._id).entries(data).map(function (d) {
 
       d.data = objectMerge(d.values);
       d.i = data.indexOf(d.values[0]);
@@ -13396,7 +13307,7 @@ function(d) {
   */
   Path.prototype.d = function d (_) {
     return arguments.length
-         ? (this._d = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._d = typeof _ === "function" ? _ : constant$6(_), this)
          : this._d;
   };
 
@@ -13489,7 +13400,7 @@ function(d) {
   */
   Rect.prototype.height = function height (_) {
     return arguments.length
-         ? (this._height = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._height = typeof _ === "function" ? _ : constant$6(_), this)
          : this._height;
   };
 
@@ -13505,7 +13416,7 @@ function(d) {
   */
   Rect.prototype.width = function width (_) {
     return arguments.length
-         ? (this._width = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._width = typeof _ === "function" ? _ : constant$6(_), this)
          : this._width;
   };
 
@@ -13591,7 +13502,7 @@ var Axis = (function (BaseClass$$1) {
       fontColor: "#000",
       fontFamily: new TextBox().fontFamily(),
       fontResize: false,
-      fontSize: constant$7(10),
+      fontSize: constant$6(10),
       height: function (d) { return d.tick ? 8 : 0; },
       label: function (d) { return d.text; },
       labelBounds: function (d) { return d.labelBounds; },
@@ -13835,7 +13746,7 @@ var Axis = (function (BaseClass$$1) {
       @param {Array} [*value*]
       @chainable
   */
-  Axis.prototype.range = function range (_) {
+  Axis.prototype.range = function range$$1 (_) {
     return arguments.length ? (this._range = _, this) : this._range;
   };
 
@@ -14035,8 +13946,8 @@ var Axis = (function (BaseClass$$1) {
     }
 
     var tBuff = this._shape === "Line" ? 0 : hBuff;
-    var obj;
     this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    var obj;
     this._margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
     this._margin[this._orient] += hBuff;
     this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
@@ -14072,7 +13983,6 @@ var Axis = (function (BaseClass$$1) {
               position = ["top", "left"].includes(this$1._orient) ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
               size = ["top", "left"].includes(this$1._orient) ? -hBuff : hBuff,
               sizeOffset = this$1._shape === "Line" ? size / 2 : size;
-        var obj;
         return ( obj = {
           id: d,
           labelBounds: {
@@ -14085,6 +13995,7 @@ var Axis = (function (BaseClass$$1) {
           text: labels.includes(d) ? tickFormat(d) : false,
           tick: ticks$$1.includes(d)
         }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
+        var obj;
       });
 
     if (this._shape === "Line") {
@@ -14191,7 +14102,7 @@ var Axis = (function (BaseClass$$1) {
       @param {Array} [*value*]
       @chainable
   */
-  Axis.prototype.ticks = function ticks (_) {
+  Axis.prototype.ticks = function ticks$$1 (_) {
     return arguments.length ? (this._ticks = _, this) : this._ticks;
   };
 
@@ -14544,7 +14455,7 @@ function() {
       @param {Array|Date|Number|String} [*value*]
       @chainable
   */
-  Timeline.prototype.selection = function selection (_) {
+  Timeline.prototype.selection = function selection$$1 (_) {
     return arguments.length ? (this._selection = _, this) : this._selection;
   };
 
