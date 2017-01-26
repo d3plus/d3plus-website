@@ -1,13 +1,13 @@
 /*
-  d3plus-legend v0.7.1
+  d3plus-legend v0.7.2
   An easy to use javascript chart legend.
-  Copyright (c) 2016 D3plus - https://d3plus.org
+  Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-selection'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
-  typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-selection', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Selection,global.d3plusCommon,global.shapes,global.d3plusText));
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-selection'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
+	typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-selection', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Selection,global.d3plusCommon,global.shapes,global.d3plusText));
 }(this, (function (exports,d3Array,d3Selection,d3plusCommon,shapes,d3plusText) { 'use strict';
 
 /**
