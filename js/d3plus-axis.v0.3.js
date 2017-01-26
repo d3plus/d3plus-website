@@ -1,13 +1,13 @@
 /*
-  d3plus-axis v0.3.22
+  d3plus-axis v0.3.23
   Beautiful javascript scales and axes.
-  Copyright (c) 2016 D3plus - https://d3plus.org
+  Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-scale'), require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
-  typeof define === 'function' && define.amd ? define('d3plus-axis', ['exports', 'd3-array', 'd3-scale', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.scales,global.d3Selection,global.d3Transition,global.d3plusCommon,global.shapes,global.d3plusText));
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-scale'), require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
+	typeof define === 'function' && define.amd ? define('d3plus-axis', ['exports', 'd3-array', 'd3-scale', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.scales,global.d3Selection,global.d3Transition,global.d3plusCommon,global.shapes,global.d3plusText));
 }(this, (function (exports,d3Array,scales,d3Selection,d3Transition,d3plusCommon,shapes,d3plusText) { 'use strict';
 
 /**
@@ -319,7 +319,7 @@ var Axis = (function (BaseClass$$1) {
       @param {Array} [*value*]
       @chainable
   */
-  Axis.prototype.range = function range (_) {
+  Axis.prototype.range = function range$$1 (_) {
     return arguments.length ? (this._range = _, this) : this._range;
   };
 
@@ -356,12 +356,12 @@ var Axis = (function (BaseClass$$1) {
           parent = this._select,
           t = d3Transition.transition().duration(this._duration);
 
-    var range = this._range ? this._range.slice() : [undefined, undefined];
-    if (range[0] === void 0) { range[0] = p; }
-    if (range[1] === void 0) { range[1] = this[("_" + width)] - p; }
-    this._size = range[1] - range[0];
-    if (this._scale === "ordinal" && this._domain.length > range.length) {
-      range = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range[0]; });
+    var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
+    if (range$$1[0] === void 0) { range$$1[0] = p; }
+    if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
+    this._size = range$$1[1] - range$$1[0];
+    if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
+      range$$1 = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
     }
 
     this._margin = {top: 0, right: 0, bottom: 0, left: 0};
@@ -381,8 +381,8 @@ var Axis = (function (BaseClass$$1) {
     this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
       .domain(this._scale === "time" ? this._domain.map(date) : this._domain);
 
-    if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range); }
-    else { this._d3Scale.range(range); }
+    if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
+    else { this._d3Scale.range(range$$1); }
 
     if (this._d3Scale.round) { this._d3Scale.round(true); }
     if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
@@ -482,45 +482,45 @@ var Axis = (function (BaseClass$$1) {
     });
 
     // Calculates new range, based on any text that may be overflowing.
-    var rangeOuter = range.slice();
-    var lastI = range.length - 1;
+    var rangeOuter = range$$1.slice();
+    var lastI = range$$1.length - 1;
     if (this._scale !== "band" && textData.length) {
 
       var first = textData[0],
             last = textData[textData.length - 1];
 
-      var firstB = d3Array.min([this._d3Scale(first.d) - first[width] / 2, range[0] - wBuff]);
-      if (firstB < range[0]) {
-        var d = range[0] - firstB;
+      var firstB = d3Array.min([this._d3Scale(first.d) - first[width] / 2, range$$1[0] - wBuff]);
+      if (firstB < range$$1[0]) {
+        var d = range$$1[0] - firstB;
         if (this._range === void 0 || this._range[0] === void 0) {
           this._size -= d;
-          range[0] += d;
+          range$$1[0] += d;
         }
         else if (this._range) {
           rangeOuter[0] -= d;
         }
       }
 
-      var lastB = d3Array.max([this._d3Scale(last.d) + last[width] / 2, range[lastI] + wBuff]);
-      if (lastB > range[lastI]) {
-        var d$1 = lastB - range[lastI];
+      var lastB = d3Array.max([this._d3Scale(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
+      if (lastB > range$$1[lastI]) {
+        var d$1 = lastB - range$$1[lastI];
         if (this._range === void 0 || this._range[lastI] === void 0) {
           this._size -= d$1;
-          range[lastI] -= d$1;
+          range$$1[lastI] -= d$1;
         }
         else if (this._range) {
           rangeOuter[lastI] += d$1;
         }
       }
 
-      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range); }
-      else { this._d3Scale.range(range); }
+      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
+      else { this._d3Scale.range(range$$1); }
 
     }
 
     var tBuff = this._shape === "Line" ? 0 : hBuff;
-    var obj;
     this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    var obj;
     this._margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
     this._margin[this._orient] += hBuff;
     this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
@@ -556,7 +556,6 @@ var Axis = (function (BaseClass$$1) {
               position = ["top", "left"].includes(this$1._orient) ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
               size = ["top", "left"].includes(this$1._orient) ? -hBuff : hBuff,
               sizeOffset = this$1._shape === "Line" ? size / 2 : size;
-        var obj;
         return ( obj = {
           id: d,
           labelBounds: {
@@ -569,6 +568,7 @@ var Axis = (function (BaseClass$$1) {
           text: labels.includes(d) ? tickFormat(d) : false,
           tick: ticks.includes(d)
         }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
+        var obj;
       });
 
     if (this._shape === "Line") {
