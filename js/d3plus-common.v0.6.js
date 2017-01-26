@@ -1,7 +1,7 @@
 /*
-  d3plus-common v0.6.12
+  d3plus-common v0.6.13
   Common functions and methods used across D3plus modules.
-  Copyright (c) 2016 D3plus - https://d3plus.org
+  Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
@@ -25,7 +25,7 @@ function(d) {
 }
 */
 var accessor = function(key, def) {
-  if (def === void 0) return function (d) { return d[key]; };
+  if (def === void 0) { return function (d) { return d[key]; }; }
   return function (d) { return d[key] === void 0 ? def : d[key]; };
 };
 
@@ -63,8 +63,8 @@ function assign() {
 
       if (isObject(value)) {
 
-        if (target.hasOwnProperty(prop) && isObject(target[prop])) target[prop] = assign(target[prop], value);
-        else target[prop] = value;
+        if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign(target[prop], value); }
+        else { target[prop] = value; }
 
       }
       else if (Array.isArray(value)) {
@@ -78,22 +78,22 @@ function assign() {
             if (itemIndex < targetArray.length) {
               var targetItem = targetArray[itemIndex];
 
-              if (Object.is(targetItem, sourceItem)) return;
+              if (Object.is(targetItem, sourceItem)) { return; }
 
               if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
                 targetArray[itemIndex] = assign(targetItem, sourceItem);
               }
-              else targetArray[itemIndex] = sourceItem;
+              else { targetArray[itemIndex] = sourceItem; }
 
             }
-            else targetArray.push(sourceItem);
+            else { targetArray.push(sourceItem); }
 
           });
         }
-        else target[prop] = value;
+        else { target[prop] = value; }
 
       }
-      else target[prop] = value;
+      else { target[prop] = value; }
 
     });
   };
@@ -113,7 +113,7 @@ function assign() {
 var attrize = function(e, a) {
   if ( a === void 0 ) a = {};
 
-  for (var k in a) if ({}.hasOwnProperty.call(a, k)) e.attr(k, a[k]);
+  for (var k in a) { if ({}.hasOwnProperty.call(a, k)) { e.attr(k, a[k]); } }
 };
 
 /**
@@ -145,12 +145,12 @@ BaseClass.prototype.config = function config (_) {
     var this$1 = this;
 
   if (arguments.length) {
-    for (var k in _) if ({}.hasOwnProperty.call(_, k) && k in this$1) this$1[k](_[k]);
+    for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
     return this;
   }
   else {
     var config = {};
-    for (var k$1 in this.__proto__) if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) config[k$1] = this$1[k$1]();
+    for (var k$1 in this$1.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
     return config;
   }
 };
@@ -181,6 +181,9 @@ BaseClass.prototype.on = function on (_, f) {
     @param {Array} arr The array of values to test against.
 */
 var closest = function(n, arr) {
+  if ( arr === void 0 ) arr = [];
+
+  if (!arr || !(arr instanceof Array) || !arr.length) { return undefined; }
   return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
 };
 
@@ -195,7 +198,7 @@ function() {
   return 42;
 }
 */
-var constant$1 = function(value) {
+var constant = function(value) {
   return function constant() {
     return value;
   };
@@ -233,8 +236,8 @@ var elem = function(selector, p) {
 
   var enter = elem.enter().append(tag).call(attrize, p.enter);
 
-  if (id) enter.attr("id", id[1]);
-  if (className) enter.attr("class", className[1]);
+  if (id) { enter.attr("id", id[1]); }
+  if (className) { enter.attr("class", className[1]); }
 
   elem.exit().transition(p.transition).call(attrize, p.exit).remove();
 
@@ -295,24 +298,24 @@ function objectMerge(objects, aggs) {
   availableKeys.forEach(function (k) {
     var values = objects.map(function (o) { return o[k]; });
     var value;
-    if (aggs[k]) value = aggs[k](values);
+    if (aggs[k]) { value = aggs[k](values); }
     else {
       var types = values.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
-      if (!types.length) value = undefined;
+      if (!types.length) { value = undefined; }
       else if (types.indexOf(Array) >= 0) {
         value = d3Array.merge(values.map(function (v) { return v instanceof Array ? v : [v]; }));
         value = Array.from(new Set(value));
-        if (value.length === 1) value = value[0];
+        if (value.length === 1) { value = value[0]; }
       }
       else if (types.indexOf(String) >= 0) {
         value = Array.from(new Set(values));
-        if (value.length === 1) value = value[0];
+        if (value.length === 1) { value = value[0]; }
       }
-      else if (types.indexOf(Number) >= 0) value = d3Array.sum(values);
-      else if (types.indexOf(Object) >= 0) value = objectMerge(values.filter(function (v) { return v; }));
+      else if (types.indexOf(Number) >= 0) { value = d3Array.sum(values); }
+      else if (types.indexOf(Object) >= 0) { value = objectMerge(values.filter(function (v) { return v; })); }
       else {
         value = Array.from(new Set(values.filter(function (v) { return v !== void 0; })));
-        if (value.length === 1) value = value[0];
+        if (value.length === 1) { value = value[0]; }
       }
     }
     newObject[k] = value;
@@ -327,11 +330,11 @@ function objectMerge(objects, aggs) {
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
 var prefix = function() {
-  if ("-webkit-transform" in document.body.style) return "-webkit-";
-  else if ("-moz-transform" in document.body.style) return "-moz-";
-  else if ("-ms-transform" in document.body.style) return "-ms-";
-  else if ("-o-transform" in document.body.style) return "-o-";
-  else return "";
+  if ("-webkit-transform" in document.body.style) { return "-webkit-"; }
+  else if ("-moz-transform" in document.body.style) { return "-moz-"; }
+  else if ("-ms-transform" in document.body.style) { return "-ms-"; }
+  else if ("-o-transform" in document.body.style) { return "-o-"; }
+  else { return ""; }
 };
 
 /**
@@ -343,7 +346,7 @@ var prefix = function() {
 var stylize = function(e, s) {
   if ( s === void 0 ) s = {};
 
-  for (var k in s) if ({}.hasOwnProperty.call(s, k)) e.style(k, s[k]);
+  for (var k in s) { if ({}.hasOwnProperty.call(s, k)) { e.style(k, s[k]); } }
 };
 
 exports.accessor = accessor;
@@ -351,7 +354,7 @@ exports.assign = assign;
 exports.attrize = attrize;
 exports.BaseClass = BaseClass;
 exports.closest = closest;
-exports.constant = constant$1;
+exports.constant = constant;
 exports.elem = elem;
 exports.isObject = isObject;
 exports.locale = locale;
