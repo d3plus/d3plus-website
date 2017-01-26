@@ -1,13 +1,13 @@
 /*
-  d3plus-text v0.9.11
+  d3plus-text v0.9.12
   A smart SVG text box with line wrapping and automatic font size scaling.
-  Copyright (c) 2016 D3plus - https://d3plus.org
+  Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3-array'), require('d3plus-common')) :
-  typeof define === 'function' && define.amd ? define('d3plus-text', ['exports', 'd3-selection', 'd3-transition', 'd3-array', 'd3plus-common'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3Array,global.d3plusCommon));
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3-array'), require('d3plus-common')) :
+	typeof define === 'function' && define.amd ? define('d3plus-text', ['exports', 'd3-selection', 'd3-transition', 'd3-array', 'd3plus-common'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3Array,global.d3plusCommon));
 }(this, (function (exports,d3Selection,d3Transition,d3Array,d3plusCommon) { 'use strict';
 
 /**
@@ -16,8 +16,8 @@
     @param {String} value
 */
 var stringify = function(value) {
-  if (value === void 0) value = "undefined";
-  else if (!(typeof value === "string" || value instanceof String)) value = JSON.stringify(value);
+  if (value === void 0) { value = "undefined"; }
+  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
   return value;
 };
 
@@ -47,7 +47,7 @@ var strip = function(value) {
 
   return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
 
-    if (char === " ") return "-";
+    if (char === " ") { return "-"; }
 
     var ret = false;
     for (var d = 0; d < diacritics.length; d++) {
@@ -120,9 +120,9 @@ var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSp
     @param {String} sentence
 */
 var textSplit = function(sentence) {
-  if (!noSpaceLanguage.test(sentence)) return stringify(sentence).match(splitWords);
+  if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords); }
   return d3Array.merge(stringify(sentence).match(splitWords).map(function (d) {
-    if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) return d.match(splitAllChars);
+    if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
     return [d];
   }));
 };
@@ -140,19 +140,19 @@ var measure = function(text, style) {
   var context = document.createElement("canvas").getContext("2d");
 
   var font = [];
-  if ("font-style" in style) font.push(style["font-style"]);
-  if ("font-variant" in style) font.push(style["font-variant"]);
-  if ("font-weight" in style) font.push(style["font-weight"]);
+  if ("font-style" in style) { font.push(style["font-style"]); }
+  if ("font-variant" in style) { font.push(style["font-variant"]); }
+  if ("font-weight" in style) { font.push(style["font-weight"]); }
   if ("font-size" in style) {
     var s = (style["font-size"]) + "px";
-    if ("line-height" in style) s += "/" + (style["line-height"]) + "px";
+    if ("line-height" in style) { s += "/" + (style["line-height"]) + "px"; }
     font.push(s);
   }
-  if ("font-family" in style) font.push(style["font-family"]);
+  if ("font-family" in style) { font.push(style["font-family"]); }
 
   context.font = font.join(" ");
 
-  if (text instanceof Array) return text.map(function (t) { return context.measureText(t).width; });
+  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
   return context.measureText(text).width;
 
 };
@@ -180,7 +180,7 @@ var wrap = function() {
 
     sentence = stringify(sentence);
 
-    if (lineHeight === void 0) lineHeight = Math.ceil(fontSize * 1.1);
+    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.1); }
 
     var words = split(sentence);
 
@@ -202,9 +202,8 @@ var wrap = function() {
 
     for (var i = 0; i < words.length; i++) {
       var word = words[i];
-      var nextChar = sentence.charAt(textProg.length + word.length),
-            wordWidth = sizes[words.indexOf(word)];
-      if (nextChar === " ") word += nextChar;
+      var wordWidth = sizes[words.indexOf(word)];
+      word = sentence.match(("^" + (textProg + word) + " *"), "g")[0].slice(textProg.length);
       if (widthProg + wordWidth > width) {
         if (!i && !overflow) {
           truncated = true;
@@ -219,11 +218,11 @@ var wrap = function() {
         widthProg = 0;
         lineData.push(word);
       }
-      else if (!i) lineData[0] = word;
-      else lineData[line - 1] += word;
+      else if (!i) { lineData[0] = word; }
+      else { lineData[line - 1] += word; }
       textProg += word;
       widthProg += wordWidth;
-      if (nextChar === " ") widthProg += space;
+      widthProg += word.match(/[\s]*$/g)[0].length * space;
     }
 
     return {
@@ -358,14 +357,14 @@ var TextBox = (function (BaseClass$$1) {
     var this$1 = this;
 
 
-    if (this._select === void 0) this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node());
-    if (this._lineHeight === void 0) this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; };
+    if (this._select === void 0) { this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
+    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; }; }
     var that = this;
 
     var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
 
       var t = this$1._text(d, i);
-      if (t === void 0) return arr;
+      if (t === void 0) { return arr; }
 
       var resize = this$1._fontResize(d, i);
 
@@ -409,7 +408,7 @@ var TextBox = (function (BaseClass$$1) {
           lineData = [];
           return;
         }
-        else if (fS > fMax) fS = fMax;
+        else if (fS > fMax) { fS = fMax; }
 
         if (resize) {
           lH = fS * 1.1;
@@ -428,11 +427,11 @@ var TextBox = (function (BaseClass$$1) {
 
           if (resize) {
             fS--;
-            if (fS < fMin) lineData = [];
-            else checkSize();
+            if (fS < fMin) { lineData = []; }
+            else { checkSize(); }
           }
-          else if (line < 1) lineData = [that._ellipsis("")];
-          else lineData[line - 1] = that._ellipsis(lineData[line - 1]);
+          else if (line < 1) { lineData = [that._ellipsis("")]; }
+          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
 
         }
 
@@ -458,7 +457,7 @@ var TextBox = (function (BaseClass$$1) {
           }
 
           var heightMax = Math.floor(h * 0.8);
-          if (fS > heightMax) fS = heightMax;
+          if (fS > heightMax) { fS = heightMax; }
 
         }
 
@@ -532,8 +531,8 @@ var TextBox = (function (BaseClass$$1) {
         var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
               tB = d3Selection.select(this);
 
-        if (that._duration === 0) tB.attr("y", function (d) { return ((d.y) + "px"); });
-        else tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); });
+        if (that._duration === 0) { tB.attr("y", function (d) { return ((d.y) + "px"); }); }
+        else { tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); }); }
 
         /**
             Styles to apply to each <tspan> element.
@@ -587,9 +586,9 @@ var TextBox = (function (BaseClass$$1) {
             obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
             return obj;
           }, {});
-    for (var e = 0; e < events.length; e++) update.on(events[e], on[events[e]]);
+    for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
 
-    if (callback) setTimeout(callback, this._duration + 100);
+    if (callback) { setTimeout(callback, this._duration + 100); }
 
     return this;
 
@@ -860,7 +859,7 @@ function(d) {
 */
 var titleCase = function(str, opts) {
 
-  if (str === void 0) return "";
+  if (str === void 0) { return ""; }
 
   opts = Object.assign({
     lng: "en-US"
@@ -880,13 +879,13 @@ var titleCase = function(str, opts) {
       var lower = s.toLowerCase();
       var stripped = suffixChars.includes(lower.charAt(lower.length - 1)) ? lower.slice(0, -1) : lower;
       var bigindex = biglow.indexOf(stripped);
-      if (bigindex >= 0) return bigs[bigindex];
-      else if (smalls.includes(stripped) && i !== 0 && i !== split.length - 1) return lower;
-      else return s.charAt(0).toUpperCase() + s.substr(1).toLowerCase();
+      if (bigindex >= 0) { return bigs[bigindex]; }
+      else if (smalls.includes(stripped) && i !== 0 && i !== split.length - 1) { return lower; }
+      else { return s.charAt(0).toUpperCase() + s.substr(1).toLowerCase(); }
     }
-    else return "";
+    else { return ""; }
   }).reduce(function (ret, s, i) {
-    if (i && str.charAt(ret.length) === " ") ret += " ";
+    if (i && str.charAt(ret.length) === " ") { ret += " "; }
     ret += s;
     return ret;
   }, "");
