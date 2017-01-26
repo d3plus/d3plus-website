@@ -1,13 +1,13 @@
 /*
-  d3plus-tooltip v0.2.3
+  d3plus-tooltip v0.2.4
   A javascript-only tooltip.
-  Copyright (c) 2016 D3plus - https://d3plus.org
+  Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3plus-common')) :
-  typeof define === 'function' && define.amd ? define('d3plus-tooltip', ['exports', 'd3-selection', 'd3-transition', 'd3plus-common'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3plusCommon));
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3plus-common')) :
+	typeof define === 'function' && define.amd ? define('d3plus-tooltip', ['exports', 'd3-selection', 'd3-transition', 'd3plus-common'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3plusCommon));
 }(this, (function (exports,d3Selection,d3Transition,d3plusCommon) { 'use strict';
 
 /**
@@ -115,7 +115,7 @@ var Tooltip = (function (BaseClass$$1) {
         var datum = d3Selection.select(this.parentNode.parentNode).datum();
         return d(datum, that._data.indexOf(datum));
       }
-      else return d;
+      else { return d; }
     }
 
     /**
@@ -185,7 +185,7 @@ var Tooltip = (function (BaseClass$$1) {
         .style(((this._prefix) + "transform"), "scale(0)")
         .remove();
 
-    if (callback) setTimeout(callback, this._duration + 100);
+    if (callback) { setTimeout(callback, this._duration + 100); }
 
     return this;
 
