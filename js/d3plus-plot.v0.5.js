@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.0
+  d3plus-plot v0.5.1
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
