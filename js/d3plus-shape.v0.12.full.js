@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.12.1
+  d3plus-shape v0.12.2
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -7333,6 +7333,49 @@ var colorContrast = function(c, u) {
 */
 
 /**
+    @function textWidth
+    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
+    @param {String|Array} text Can be either a single string or an array of strings to analyze.
+    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
+*/
+var measure = function(text, style) {
+
+  style = Object.assign({
+    "font-size": 10,
+    "font-family": "sans-serif",
+    "font-style": "normal",
+    "font-weight": 400,
+    "font-variant": "normal"
+  }, style);
+
+  var context = document.createElement("canvas").getContext("2d");
+
+  var font = [];
+  font.push(style["font-style"]);
+  font.push(style["font-variant"]);
+  font.push(style["font-weight"]);
+  font.push(typeof style["font-size"] === "string" ? style["font-size"] : ((style["font-size"]) + "px"));
+  // let s = `${style["font-size"]}px`;
+  // if ("line-height" in style) s += `/${style["line-height"]}px`;
+  // font.push(s);
+  font.push(style["font-family"]);
+
+  context.font = font.join(" ");
+
+  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
+  return context.measureText(text).width;
+
+};
+
+var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
+var checked = {};
+var height = 32;
+var macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
+var monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
+var proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
+var ubuntu = measure(alpha, {"font-family": "Ubuntu", "font-size": height});
+
+/**
     @function stringify
     @desc Coerces value into a String.
     @param {String} value
@@ -7447,36 +7490,6 @@ var textSplit = function(sentence) {
     if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
     return [d];
   }));
-};
-
-/**
-    @function textWidth
-    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
-    @param {String|Array} text Can be either a single string or an array of strings to analyze.
-    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
-*/
-var measure = function(text, style) {
-  if ( style === void 0 ) style = {"font-size": 10, "font-family": "sans-serif"};
-
-
-  var context = document.createElement("canvas").getContext("2d");
-
-  var font = [];
-  if ("font-style" in style) { font.push(style["font-style"]); }
-  if ("font-variant" in style) { font.push(style["font-variant"]); }
-  if ("font-weight" in style) { font.push(style["font-weight"]); }
-  if ("font-size" in style) {
-    var s = (style["font-size"]) + "px";
-    if ("line-height" in style) { s += "/" + (style["line-height"]) + "px"; }
-    font.push(s);
-  }
-  if ("font-family" in style) { font.push(style["font-family"]); }
-
-  context.font = font.join(" ");
-
-  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-  return context.measureText(text).width;
-
 };
 
 /**
@@ -11857,7 +11870,6 @@ var largestRect = function(poly, options) {
   var maxRect = null;
 
   angles.forEach(function (angle) {
-
     var angleRad = -angle * Math.PI / 180;
     if (options.events) { events.push({type: "angle", angle: angle}); }
     origins.forEach(function (origOrigin, i) {
@@ -11932,7 +11944,7 @@ var largestRect = function(poly, options) {
               // we know that the area is already greater than the maxArea found so far
               maxArea = width * height;
               rectPoly.push(rectPoly[0]);
-              maxRect = {area: maxArea, cx: cx, cy: cy, width: width, height: height, angle: angle, points: rectPoly};
+              maxRect = {area: maxArea, cx: cx, cy: cy, width: width, height: height, angle: -angle, points: rectPoly};
               left = width; // increase the width in the binary search
             }
             else {
@@ -12117,6 +12129,19 @@ var Area = (function (Shape$$1) {
 
   /**
       @memberof Area
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.x = function x (_) {
+    if (!arguments.length) { return this._x; }
+    this._x = typeof _ === "function" ? _ : constant$2(_);
+    this._x0 = this._x;
+    return this;
+  };
+
+  /**
+      @memberof Area
       @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
       @param {Function|Number} [*value*]
       @chainable
@@ -12138,6 +12163,19 @@ var Area = (function (Shape$$1) {
     return arguments.length
          ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$2(_), this)
          : this._x1;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.y = function y (_) {
+    if (!arguments.length) { return this._y; }
+    this._y = typeof _ === "function" ? _ : constant$2(_);
+    this._y0 = this._y;
+    return this;
   };
 
   /**

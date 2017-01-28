@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.12.1
+  d3plus-shape v0.12.2
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -1610,7 +1610,6 @@ var largestRect = function(poly, options) {
   var maxRect = null;
 
   angles.forEach(function (angle) {
-
     var angleRad = -angle * Math.PI / 180;
     if (options.events) { events.push({type: "angle", angle: angle}); }
     origins.forEach(function (origOrigin, i) {
@@ -1685,7 +1684,7 @@ var largestRect = function(poly, options) {
               // we know that the area is already greater than the maxArea found so far
               maxArea = width * height;
               rectPoly.push(rectPoly[0]);
-              maxRect = {area: maxArea, cx: cx, cy: cy, width: width, height: height, angle: angle, points: rectPoly};
+              maxRect = {area: maxArea, cx: cx, cy: cy, width: width, height: height, angle: -angle, points: rectPoly};
               left = width; // increase the width in the binary search
             }
             else {
@@ -1870,6 +1869,19 @@ var Area = (function (Shape$$1) {
 
   /**
       @memberof Area
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.x = function x (_) {
+    if (!arguments.length) { return this._x; }
+    this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_);
+    this._x0 = this._x;
+    return this;
+  };
+
+  /**
+      @memberof Area
       @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
       @param {Function|Number} [*value*]
       @chainable
@@ -1891,6 +1903,19 @@ var Area = (function (Shape$$1) {
     return arguments.length
          ? (this._x1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this)
          : this._x1;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.y = function y (_) {
+    if (!arguments.length) { return this._y; }
+    this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_);
+    this._y0 = this._y;
+    return this;
   };
 
   /**
