@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.6.0
+  d3plus-viz v0.6.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -9,6 +9,20 @@
 	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports'], factory) :
 	(factory((global.d3plus = global.d3plus || {})));
 }(this, (function (exports) { 'use strict';
+
+/**
+  @function datafold
+  @desc Given a JSON object where the data values and headers have been split into separate key lookups, this function will combine the data values with the headers and returns one large array of objects.
+  @param {Object} json A JSON data Object with `data` and `headers` keys.
+  @param {String} [data = "data"] The key used for the flat data array inside of the JSON object.
+  @param {String} [headers = "headers"] The key used for the flat headers array inside of the JSON object.
+*/
+var datafold = function (json, data, headers) {
+    if ( data === void 0 ) data = "data";
+    if ( headers === void 0 ) headers = "headers";
+
+    return json[data].map(function (data) { return json[headers].reduce(function (obj, header, i) { return (obj[header] = data[i], obj); }, {}); });
+};
 
 var ascending = function(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
@@ -16397,6 +16411,7 @@ var loadData = function(key, path, formatter, callback) {
       }
 
       data = err ? [] : formatter ? formatter(data) : data;
+      if (data && !(data instanceof Array) && data.data && data.headers) { data = datafold(data); }
       if (("_" + key) in this$1) { this$1[("_" + key)] = data; }
       callback(err, data);
 
@@ -17318,6 +17333,7 @@ function value(d) {
   return Viz;
 }(BaseClass));
 
+exports.datafold = datafold;
 exports.Viz = Viz;
 
 Object.defineProperty(exports, '__esModule', { value: true });

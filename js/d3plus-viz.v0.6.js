@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.6.0
+  d3plus-viz v0.6.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -9,6 +9,20 @@
 	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-array', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip', 'd3-request'], factory) :
 	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Color,global.d3Collection,global.d3Queue,global.d3Selection,global.d3Transition,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip,global.d3Request));
 }(this, (function (exports,d3Array,d3Color,d3Collection,d3Queue,d3Selection,d3Transition,d3plusAxis,d3plusColor,d3plusCommon,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip,d3Request) { 'use strict';
+
+/**
+  @function datafold
+  @desc Given a JSON object where the data values and headers have been split into separate key lookups, this function will combine the data values with the headers and returns one large array of objects.
+  @param {Object} json A JSON data Object with `data` and `headers` keys.
+  @param {String} [data = "data"] The key used for the flat data array inside of the JSON object.
+  @param {String} [headers = "headers"] The key used for the flat headers array inside of the JSON object.
+*/
+var datafold = function (json$$1, data, headers) {
+    if ( data === void 0 ) data = "data";
+    if ( headers === void 0 ) headers = "headers";
+
+    return json$$1[data].map(function (data) { return json$$1[headers].reduce(function (obj, header, i) { return (obj[header] = data[i], obj); }, {}); });
+};
 
 /**
     @function _drawBack
@@ -368,6 +382,7 @@ var loadData = function(key, path, formatter, callback) {
       }
 
       data = err ? [] : formatter ? formatter(data) : data;
+      if (data && !(data instanceof Array) && data.data && data.headers) { data = datafold(data); }
       if (("_" + key) in this$1) { this$1[("_" + key)] = data; }
       callback(err, data);
 
@@ -1289,6 +1304,7 @@ function value(d) {
   return Viz;
 }(d3plusCommon.BaseClass));
 
+exports.datafold = datafold;
 exports.Viz = Viz;
 
 Object.defineProperty(exports, '__esModule', { value: true });
