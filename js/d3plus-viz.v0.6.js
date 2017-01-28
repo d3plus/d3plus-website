@@ -1,27 +1,78 @@
 /*
-  d3plus-viz v0.6.1
+  d3plus-viz v0.6.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip'), require('d3-request')) :
-	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-array', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip', 'd3-request'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Color,global.d3Collection,global.d3Queue,global.d3Selection,global.d3Transition,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip,global.d3Request));
-}(this, (function (exports,d3Array,d3Color,d3Collection,d3Queue,d3Selection,d3Transition,d3plusAxis,d3plusColor,d3plusCommon,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip,d3Request) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
+	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3Request,global.d3Array,global.d3Color,global.d3Collection,global.d3Queue,global.d3Selection,global.d3Transition,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
+}(this, (function (exports,d3Request,d3Array,d3Color,d3Collection,d3Queue,d3Selection,d3Transition,d3plusAxis,d3plusColor,d3plusCommon,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
 
 /**
-  @function datafold
+  @function dataFold
   @desc Given a JSON object where the data values and headers have been split into separate key lookups, this function will combine the data values with the headers and returns one large array of objects.
   @param {Object} json A JSON data Object with `data` and `headers` keys.
   @param {String} [data = "data"] The key used for the flat data array inside of the JSON object.
   @param {String} [headers = "headers"] The key used for the flat headers array inside of the JSON object.
 */
-var datafold = function (json$$1, data, headers) {
+var fold = function (json$$1, data, headers) {
     if ( data === void 0 ) data = "data";
     if ( headers === void 0 ) headers = "headers";
 
     return json$$1[data].map(function (data) { return json$$1[headers].reduce(function (obj, header, i) { return (obj[header] = data[i], obj); }, {}); });
+};
+
+/**
+  @function dataLoad
+  @desc Loads data from a filepath or URL, converts it to a valid JSON object, and returns it to a callback function.
+  @param {Array|String} path The path to the file or url to be loaded. If an Array is passed, the xhr request logic is skipped.
+  @param {Function} [formatter] An optional formatter function that is run on the loaded data.
+  @param {String} [key] The key in the `this` context to save the resulting data to.
+  @param {Function} [callback] A function that is called when the final data is loaded. It is passed 2 variables, any error present and the data loaded.
+*/
+var load = function(path, formatter, key, callback) {
+  var this$1 = this;
+
+
+  if (typeof path !== "string") {
+
+    var data = formatter ? formatter(path) : path;
+    if (key && ("_" + key) in this) { this[("_" + key)] = data; }
+    if (callback) { callback(null, data); }
+
+  }
+  else {
+
+    var parser = path.slice(path.length - 4) === ".csv" ? d3Request.csv
+                 : path.slice(path.length - 4) === ".tsv" ? d3Request.tsv
+                 : path.slice(path.length - 4) === ".txt" ? d3Request.text
+                 : d3Request.json;
+
+    parser(path, function (err, data) {
+
+      if (parser !== d3Request.json && !err && data && data instanceof Array) {
+        data.forEach(function (d) {
+          for (var k in d) {
+            if (!isNaN(d[k])) { d[k] = parseFloat(d[k]); }
+            else if (d[k].toLowerCase() === "false") { d[k] = false; }
+            else if (d[k].toLowerCase() === "true") { d[k] = true; }
+            else if (d[k].toLowerCase() === "null") { d[k] = null; }
+            else if (d[k].toLowerCase() === "undefined") { d[k] = undefined; }
+          }
+        });
+      }
+
+      data = err ? [] : formatter ? formatter(data) : data;
+      if (data && !(data instanceof Array) && data.data && data.headers) { data = fold(data); }
+      if (key && ("_" + key) in this$1) { this$1[("_" + key)] = data; }
+      if (callback) { callback(err, data); }
+
+    });
+
+  }
+
 };
 
 /**
@@ -338,57 +389,6 @@ var inViewport = function(elem$$1, buffer) {
 
   return pageY + window.innerHeight > top + buffer && pageY + buffer < top + height &&
          pageX + window.innerWidth > left + buffer && pageX + buffer < left + width;
-
-};
-
-/**
-  @desc Loads data from a filepath or URL, converts it to a valid JSON object, and returns it to a callback function.
-  @param {String} key The key in the `this` context to save the resulting data to.
-  @param {Array|String} path The path to the file or url to be loaded. If an Array is passed, the xhr request logic is skipped.
-  @param {Function} [*formatter*] An optional formatter function that is run on the loaded data.
-  @param {Function} callback A function that is called when the final data is loaded. It is passed 2 variables, any error present and the data loaded.
-  @private
-*/
-var loadData = function(key, path, formatter, callback) {
-  var this$1 = this;
-
-
-  if (typeof path !== "string") {
-
-    var data = formatter ? formatter(path) : path;
-    if (("_" + key) in this) { this[("_" + key)] = data; }
-    callback(null, data);
-
-  }
-  else {
-
-    var parser = path.slice(path.length - 4) === ".csv" ? d3Request.csv
-                 : path.slice(path.length - 4) === ".tsv" ? d3Request.tsv
-                 : path.slice(path.length - 4) === ".txt" ? d3Request.text
-                 : d3Request.json;
-
-    parser(path, function (err, data) {
-
-      if (parser !== d3Request.json && !err && data && data instanceof Array) {
-        data.forEach(function (d) {
-          for (var k in d) {
-            if (!isNaN(d[k])) { d[k] = parseFloat(d[k]); }
-            else if (d[k].toLowerCase() === "false") { d[k] = false; }
-            else if (d[k].toLowerCase() === "true") { d[k] = true; }
-            else if (d[k].toLowerCase() === "null") { d[k] = null; }
-            else if (d[k].toLowerCase() === "undefined") { d[k] = undefined; }
-          }
-        });
-      }
-
-      data = err ? [] : formatter ? formatter(data) : data;
-      if (data && !(data instanceof Array) && data.data && data.headers) { data = datafold(data); }
-      if (("_" + key) in this$1) { this$1[("_" + key)] = data; }
-      callback(err, data);
-
-    });
-
-  }
 
 };
 
@@ -965,7 +965,7 @@ If *data* is not specified, this method returns the current primary data array, 
       @chainable
   */
   Viz.prototype.data = function data (_, f) {
-    return arguments.length ? (this._queue.push([loadData.bind(this), "data", _, f]), this) : this._data;
+    return arguments.length ? (this._queue.push([load.bind(this), _, f, "data"]), this) : this._data;
   };
 
   /**
@@ -1304,7 +1304,8 @@ function value(d) {
   return Viz;
 }(d3plusCommon.BaseClass));
 
-exports.datafold = datafold;
+exports.dataFold = fold;
+exports.dataLoad = load;
 exports.Viz = Viz;
 
 Object.defineProperty(exports, '__esModule', { value: true });
