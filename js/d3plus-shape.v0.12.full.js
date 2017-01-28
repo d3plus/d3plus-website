@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.12.0
+  d3plus-shape v0.12.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -8505,9 +8505,11 @@ var Shape = (function (BaseClass$$1) {
             if (labels.constructor !== Array) { labels = [labels]; }
 
             var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
-                  : this$1._x(d.data, d.i) : this$1._x(d, i),
+                  : this$1._x1 ? 0 : this$1._x(d.data, d.i)
+                  : this$1._x1 ? 0 : this$1._x(d, i),
                 y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                  : this$1._y(d.data, d.i) : this$1._y(d, i);
+                  : this$1._y1 ? 0 : this$1._y(d.data, d.i)
+                  : this$1._y1 ? 0 : this$1._y(d, i);
 
             if (aes.x) { x += aes.x; }
             if (aes.y) { y += aes.y; }
@@ -11995,8 +11997,10 @@ var Area = (function (Shape$$1) {
     var this$1 = this;
 
     var values$$1 = d.values.slice().sort(function (a, b) { return this$1._y1 ? this$1._x(a) - this$1._x(b) : this$1._y(a) - this$1._y(b); });
-    var points = values$$1.map(function (v, z) { return [this$1._x0(v, z), this$1._y0(v, z)]; })
-      .concat(values$$1.reverse().map(function (v, z) { return this$1._y1 ? [this$1._x(v, z), this$1._y1(v, z)] : [this$1._x1(v, z), this$1._y(v, z)]; }));
+    var points1 = values$$1.map(function (v, z) { return [this$1._x0(v, z), this$1._y0(v, z)]; });
+    var points2 = values$$1.reverse().map(function (v, z) { return this$1._y1 ? [this$1._x(v, z), this$1._y1(v, z)] : [this$1._x1(v, z), this$1._y(v, z)]; });
+    var points = points1.concat(points2);
+    if (points1[0][1] > points2[0][1]) { points = points.reverse(); }
     points.push(points[0]);
     return {points: points};
   };
