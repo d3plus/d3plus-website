@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.13
+  d3plus-text v0.9.14
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -48,10 +48,11 @@ var measure = function(text, style) {
 var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
 var checked = {};
 var height = 32;
-var macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
-var monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
-var proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
-var ubuntu = measure(alpha, {"font-family": "Ubuntu", "font-size": height});
+
+var dejavu;
+var macos;
+var monospace;
+var proportional;
 
 /**
     @function fontExists
@@ -61,18 +62,25 @@ var ubuntu = measure(alpha, {"font-family": "Ubuntu", "font-size": height});
 */
 var fontExists = function (font) {
 
+  if (!dejavu) {
+    dejavu = measure(alpha, {"font-family": "DejaVuSans", "font-size": height});
+    macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
+    monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
+    proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
+  }
+
   if (!(font instanceof Array)) { font = font.split(","); }
   font = font.map(function (f) { return f.trim(); });
 
   for (var i = 0; i < font.length; i++) {
     var fam = font[i];
-    if (checked[fam] || ["-apple-system", "monospace", "sans-serif", "Ubuntu"].includes(fam)) { return fam; }
+    if (checked[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
     else if (checked[fam] === false) { continue; }
     var width = measure(alpha, {"font-family": fam, "font-size": height});
     checked[fam] = width !== monospace;
     if (checked[fam]) { checked[fam] = width !== proportional; }
     if (macos && checked[fam]) { checked[fam] = width !== macos; }
-    if (ubuntu && checked[fam]) { checked[fam] = width !== ubuntu; }
+    if (dejavu && checked[fam]) { checked[fam] = width !== dejavu; }
     if (checked[fam]) { return fam; }
   }
 
