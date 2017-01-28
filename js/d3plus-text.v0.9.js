@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.12
+  d3plus-text v0.9.13
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -9,6 +9,76 @@
 	typeof define === 'function' && define.amd ? define('d3plus-text', ['exports', 'd3-selection', 'd3-transition', 'd3-array', 'd3plus-common'], factory) :
 	(factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3Array,global.d3plusCommon));
 }(this, (function (exports,d3Selection,d3Transition,d3Array,d3plusCommon) { 'use strict';
+
+/**
+    @function textWidth
+    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
+    @param {String|Array} text Can be either a single string or an array of strings to analyze.
+    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
+*/
+var measure = function(text, style) {
+
+  style = Object.assign({
+    "font-size": 10,
+    "font-family": "sans-serif",
+    "font-style": "normal",
+    "font-weight": 400,
+    "font-variant": "normal"
+  }, style);
+
+  var context = document.createElement("canvas").getContext("2d");
+
+  var font = [];
+  font.push(style["font-style"]);
+  font.push(style["font-variant"]);
+  font.push(style["font-weight"]);
+  font.push(typeof style["font-size"] === "string" ? style["font-size"] : ((style["font-size"]) + "px"));
+  // let s = `${style["font-size"]}px`;
+  // if ("line-height" in style) s += `/${style["line-height"]}px`;
+  // font.push(s);
+  font.push(style["font-family"]);
+
+  context.font = font.join(" ");
+
+  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
+  return context.measureText(text).width;
+
+};
+
+var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
+var checked = {};
+var height = 32;
+var macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
+var monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
+var proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
+var ubuntu = measure(alpha, {"font-family": "Ubuntu", "font-size": height});
+
+/**
+    @function fontExists
+    @desc Given either a single font-family or a list of fonts, returns the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
+    @param {String|Array} font Can be either a valid CSS font-family string (single or comma-separated names) or an Array of string names.
+    @return {String|Boolean} Either the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
+*/
+var fontExists = function (font) {
+
+  if (!(font instanceof Array)) { font = font.split(","); }
+  font = font.map(function (f) { return f.trim(); });
+
+  for (var i = 0; i < font.length; i++) {
+    var fam = font[i];
+    if (checked[fam] || ["-apple-system", "monospace", "sans-serif", "Ubuntu"].includes(fam)) { return fam; }
+    else if (checked[fam] === false) { continue; }
+    var width = measure(alpha, {"font-family": fam, "font-size": height});
+    checked[fam] = width !== monospace;
+    if (checked[fam]) { checked[fam] = width !== proportional; }
+    if (macos && checked[fam]) { checked[fam] = width !== macos; }
+    if (ubuntu && checked[fam]) { checked[fam] = width !== ubuntu; }
+    if (checked[fam]) { return fam; }
+  }
+
+  return false;
+
+};
 
 /**
     @function stringify
@@ -125,36 +195,6 @@ var textSplit = function(sentence) {
     if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
     return [d];
   }));
-};
-
-/**
-    @function textWidth
-    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
-    @param {String|Array} text Can be either a single string or an array of strings to analyze.
-    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
-*/
-var measure = function(text, style) {
-  if ( style === void 0 ) style = {"font-size": 10, "font-family": "sans-serif"};
-
-
-  var context = document.createElement("canvas").getContext("2d");
-
-  var font = [];
-  if ("font-style" in style) { font.push(style["font-style"]); }
-  if ("font-variant" in style) { font.push(style["font-variant"]); }
-  if ("font-weight" in style) { font.push(style["font-weight"]); }
-  if ("font-size" in style) {
-    var s = (style["font-size"]) + "px";
-    if ("line-height" in style) { s += "/" + (style["line-height"]) + "px"; }
-    font.push(s);
-  }
-  if ("font-family" in style) { font.push(style["font-family"]); }
-
-  context.font = font.join(" ");
-
-  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-  return context.measureText(text).width;
-
 };
 
 /**
@@ -892,6 +932,7 @@ var titleCase = function(str, opts) {
 
 };
 
+exports.fontExists = fontExists;
 exports.stringify = stringify;
 exports.strip = strip;
 exports.TextBox = TextBox;
