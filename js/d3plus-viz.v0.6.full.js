@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.6.2
+  d3plus-viz v0.6.3
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -778,7 +778,7 @@ var identity = function(x) {
   return x;
 };
 
-var sequence = function(start, stop, step) {
+var range = function(start, stop, step) {
   start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
 
   var i = -1,
@@ -798,7 +798,7 @@ var e2 = Math.sqrt(2);
 
 var ticks = function(start, stop, count) {
   var step = tickStep(start, stop, count);
-  return sequence(
+  return range(
     Math.ceil(start / step) * step,
     Math.floor(stop / step) * step + step / 2, // inclusive
     step
@@ -3855,7 +3855,7 @@ function band() {
     start += (stop - start - step * (n - paddingInner)) * align;
     bandwidth = step * (1 - paddingInner);
     if (round) { start = Math.round(start), bandwidth = Math.round(bandwidth); }
-    var values = sequence(n).map(function(i) { return start + step * i; });
+    var values = range(n).map(function(i) { return start + step * i; });
     return ordinalRange(reverse ? values.reverse() : values);
   }
 
@@ -6002,6 +6002,9 @@ BaseClass.prototype.on = function on (_, f) {
     @param {Array} arr The array of values to test against.
 */
 var closest = function(n, arr) {
+  if ( arr === void 0 ) arr = [];
+
+  if (!arr || !(arr instanceof Array) || !arr.length) { return undefined; }
   return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
 };
 
@@ -6195,13 +6198,15 @@ var EventEmitter = function () {
 		}
 
 		if (this.observers[event]) {
-			this.observers[event].forEach(function (observer) {
+			var cloned = [].concat(this.observers[event]);
+			cloned.forEach(function (observer) {
 				observer.apply(undefined, args);
 			});
 		}
 
 		if (this.observers['*']) {
-			this.observers['*'].forEach(function (observer) {
+			var _cloned = [].concat(this.observers['*']);
+			_cloned.forEach(function (observer) {
 				var _ref;
 
 				observer.apply(observer, (_ref = [event]).concat.apply(_ref, args));
@@ -6510,8 +6515,8 @@ function convertAPIOptions(options) {
   options.parseMissingKeyHandler = options.parseMissingKey;
   options.appendNamespaceToMissingKey = true;
 
-  options.nsSeparator = options.nsseparator;
-  options.keySeparator = options.keyseparator;
+  options.nsSeparator = options.nsseparator || ':';
+  options.keySeparator = options.keyseparator || '.';
 
   if (options.shortcutFunction === 'sprintf') {
     options.overloadTranslationOptionHandler = function (args) {
@@ -6689,10 +6694,6 @@ var Translator = function (_EventEmitter) {
     if (typeof keys === 'number') { keys = String(keys); }
     if (typeof keys === 'string') { keys = [keys]; }
 
-    // return key on CIMode
-    var lng = options.lng || this.language;
-    if (lng && lng.toLowerCase() === 'cimode') { return keys[keys.length - 1]; }
-
     // separators
     var keySeparator = options.keySeparator || this.options.keySeparator || '.';
 
@@ -6703,6 +6704,18 @@ var Translator = function (_EventEmitter) {
         namespaces = _extractFromKey.namespaces;
 
     var namespace = namespaces[namespaces.length - 1];
+
+    // return key on CIMode
+    var lng = options.lng || this.language;
+    var appendNamespaceToCIMode = options.appendNamespaceToCIMode || this.options.appendNamespaceToCIMode;
+    if (lng && lng.toLowerCase() === 'cimode') {
+      if (appendNamespaceToCIMode) {
+        var nsSeparator = options.nsSeparator || this.options.nsSeparator;
+        return namespace + nsSeparator + key;
+      }
+
+      return key;
+    }
 
     // resolve from store
     var res = this.resolve(keys, options);
@@ -6718,12 +6731,16 @@ var Translator = function (_EventEmitter) {
         return this.options.returnedObjectHandler ? this.options.returnedObjectHandler(key, res, options) : 'key \'' + key + ' (' + this.language + ')\' returned an object instead of string.';
       }
 
-      var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
+      // if we got a separator we loop over children - else we just return object as is
+      // as having it set to false means no hierarchy so no lookup for nested values
+      if (options.keySeparator || this.options.keySeparator) {
+        var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
 
-      for (var m in res) {
-        copy$$1[m] = this$1.translate('' + key + keySeparator + m, _extends$3({ joinArrays: false, ns: namespaces }, options));
+        for (var m in res) {
+          copy$$1[m] = this$1.translate('' + key + keySeparator + m, _extends$3({ joinArrays: false, ns: namespaces }, options));
+        }
+        res = copy$$1;
       }
-      res = copy$$1;
     }
     // array special treatment
     else if (joinArrays && resType === '[object Array]') {
@@ -7322,11 +7339,6 @@ var Interpolator = function () {
     var clonedOptions = JSON.parse(JSON.stringify(options));
     clonedOptions.applyPostProcessor = false; // avoid post processing on nested lookup
 
-    function regexSafe(val) {
-      return val.replace(/\$/g, '$$$$');
-    }
-
-    // if value is something like "myKey": "lorem $(anotherKey, { "count": {{aValueInOptions}} })"
     function handleHasOptions(key) {
       if (key.indexOf(',') < 0) { return key; }
 
@@ -7353,7 +7365,8 @@ var Interpolator = function () {
         this$1.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
         value = '';
       }
-      value = this$1.escapeValue ? regexSafe(escape(value)) : regexSafe(value);
+      // Nested keys should not be escaped by default #854
+      // value = this.escapeValue ? regexSafe(utils.escape(value)) : regexSafe(value);
       str = str.replace(match[0], value);
       this$1.regexp.lastIndex = 0;
     }
@@ -7758,6 +7771,7 @@ function get$2() {
     returnedObjectHandler: function returnedObjectHandler() {}, // function(key, value, options) triggered if key returns object but returnObjects is set to false
     parseMissingKeyHandler: false, // function(key) parsed a key that was not found in t() before returning
     appendNamespaceToMissingKey: false,
+    appendNamespaceToCIMode: false,
     overloadTranslationOptionHandler: function overloadTranslationOptionHandler(args) {
       return { defaultValue: args[1] };
     },
@@ -7828,7 +7842,7 @@ var I18n = function (_EventEmitter) {
     _this.logger = baseLogger;
     _this.modules = {};
 
-    if (callback && !_this.isInitialized) { _this.init(options, callback); }
+    if (callback && !_this.isInitialized && !options.isClone) { _this.init(options, callback); }
     return _this;
   }
 
@@ -7937,8 +7951,8 @@ var I18n = function (_EventEmitter) {
     var load = function load() {
       _this2.changeLanguage(_this2.options.lng, function (err, t) {
         _this2.isInitialized = true;
-        _this2.emit('initialized', _this2.options);
         _this2.logger.log('initialized', _this2.options);
+        _this2.emit('initialized', _this2.options);
 
         callback(err, t);
       });
@@ -7953,10 +7967,10 @@ var I18n = function (_EventEmitter) {
     return this;
   };
 
-  I18n.prototype.loadResources = function loadResources(callback) {
+  I18n.prototype.loadResources = function loadResources() {
     var _this3 = this;
 
-    if (!callback) { callback = noop$1; }
+    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : noop$1;
 
     if (!this.options.resources) {
       var _ret = function () {
@@ -8133,9 +8147,10 @@ var I18n = function (_EventEmitter) {
     var _this7 = this;
 
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    var callback = arguments[1];
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$1;
 
-    var clone = new I18n(_extends({}, options, this.options, { isClone: true }), callback);
+    var mergedOptions = _extends({}, options, this.options, { isClone: true });
+    var clone = new I18n(mergedOptions, callback);
     var membersToCopy = ['store', 'services', 'language'];
     membersToCopy.forEach(function (m) {
       clone[m] = _this7[m];
@@ -8150,6 +8165,7 @@ var I18n = function (_EventEmitter) {
 
       clone.emit.apply(clone, [event].concat(args));
     });
+    clone.init(mergedOptions, callback);
 
     return clone;
   };
@@ -8258,21 +8274,6 @@ var stylize = function(e, s) {
   if ( s === void 0 ) s = {};
 
   for (var k in s) { if ({}.hasOwnProperty.call(s, k)) { e.style(k, s[k]); } }
-};
-
-/**
-    @function distance
-    @desc Calculates the pixel distance between two points.
-    @param {Array|Object} p1 The first point, either an Array formatted like `[x, y]` or a keyed object formatted like `{x, y}`.
-    @param {Array|Object} p2 The second point, either an Array formatted like `[x, y]` or a keyed object formatted like `{x, y}`
-    @returns {Number}
-*/
-var pointDistance = function(p1, p2) {
-  if (!(p1 instanceof Array)) { p1 = [p1.x, p1.y]; }
-  if (!(p2 instanceof Array)) { p2 = [p2.x, p2.y]; }
-  var xx = Math.abs(p1[0] - p2[0]);
-  var yy = Math.abs(p1[1] - p2[1]);
-  return Math.sqrt(xx * xx + yy * yy);
 };
 
 /**
@@ -8492,7 +8493,7 @@ Image.prototype.y = function y (_) {
 };
 
 /**
-    @function add
+    @function colorAdd
     @desc Adds two colors together.
     @param {String} c1 The first color, a valid CSS color string.
     @param {String} c2 The second color, also a valid CSS color string.
@@ -8502,7 +8503,7 @@ Image.prototype.y = function y (_) {
 */
 
 /**
-    @module {Object} defaults
+    @module {Object} colorDefaults
     @desc A set of default color values used when assigning colors based on data.
       *
       * | Name | Default | Description |
@@ -8529,8 +8530,8 @@ var defaults = {
 
 /**
     Returns a color based on a key, whether it is present in a user supplied object or in the default object.
-    @private
     @returns {String}
+    @private
 */
 function getColor(k, u) {
   if ( u === void 0 ) u = {};
@@ -8539,21 +8540,39 @@ function getColor(k, u) {
 }
 
 /**
-    @function assign
+    @function colorAssign
     @desc Assigns a color to a value using a predefined set of defaults.
     @param {String} c A valid CSS color string.
     @param {Object} [u = defaults] An object containing overrides of the default colors.
     @returns {String}
 */
+var colorAssign = function(c, u) {
+  if ( u === void 0 ) u = {};
+
+
+  // If the value is null or undefined, set to grey.
+  if ([null, void 0].indexOf(c) >= 0) { return getColor("missing", u); }
+  // Else if the value is true, set to green.
+  else if (c === true) { return getColor("on", u); }
+  // Else if the value is false, set to red.
+  else if (c === false) { return getColor("off", u); }
+
+  var p = color(c);
+  // If the value is not a valid color string, use the color scale.
+  if (!p) { return getColor("scale", u)(c); }
+
+  return c.toString();
+
+};
 
 /**
-    @function contrast
+    @function colorContrast
     @desc A set of default color values used when assigning colors based on data.
     @param {String} c A valid CSS color string.
     @param {Object} [u = defaults] An object containing overrides of the default colors.
     @returns {String}
 */
-var contrast = function(c, u) {
+var colorContrast = function(c, u) {
   if ( u === void 0 ) u = {};
 
   c = rgb(c);
@@ -8562,14 +8581,14 @@ var contrast = function(c, u) {
 };
 
 /**
-    @function legible
+    @function colorLegible
     @desc Darkens a color so that it will appear legible on a white background.
     @param {String} c A valid CSS color string.
     @returns {String}
 */
 
 /**
-    @function lighter
+    @function colorLighter
     @desc Similar to d3.color.brighter, except that this also reduces saturation so that colors don't appear neon.
     @param {String} c A valid CSS color string.
     @param {String} [i = 0.5] A value from 0 to 1 dictating the strength of the function.
@@ -8577,7 +8596,7 @@ var contrast = function(c, u) {
 */
 
 /**
-    @function subtract
+    @function colorSubtract
     @desc Subtracts one color from another.
     @param {String} c1 The base color, a valid CSS color string.
     @param {String} c2 The color to remove from the base color, also a valid CSS color string.
@@ -8585,6 +8604,41 @@ var contrast = function(c, u) {
     @param {String} [o2 = 1] Value from 0 to 1 of the first color's opacity.
     @returns {String}
 */
+
+/**
+    @function textWidth
+    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
+    @param {String|Array} text Can be either a single string or an array of strings to analyze.
+    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
+*/
+var textWidth = function(text, style) {
+
+  style = Object.assign({
+    "font-size": 10,
+    "font-family": "sans-serif",
+    "font-style": "normal",
+    "font-weight": 400,
+    "font-variant": "normal"
+  }, style);
+
+  var context = document.createElement("canvas").getContext("2d");
+
+  var font = [];
+  font.push(style["font-style"]);
+  font.push(style["font-variant"]);
+  font.push(style["font-weight"]);
+  font.push(typeof style["font-size"] === "string" ? style["font-size"] : ((style["font-size"]) + "px"));
+  // let s = `${style["font-size"]}px`;
+  // if ("line-height" in style) s += `/${style["line-height"]}px`;
+  // font.push(s);
+  font.push(style["font-family"]);
+
+  context.font = font.join(" ");
+
+  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
+  return context.measureText(text).width;
+
+};
 
 /**
     @function stringify
@@ -8704,36 +8758,6 @@ var textSplit = function(sentence) {
 };
 
 /**
-    @function textWidth
-    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
-    @param {String|Array} text Can be either a single string or an array of strings to analyze.
-    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
-*/
-var textWidth = function(text, style) {
-  if ( style === void 0 ) style = {"font-size": 10, "font-family": "sans-serif"};
-
-
-  var context = document.createElement("canvas").getContext("2d");
-
-  var font = [];
-  if ("font-style" in style) { font.push(style["font-style"]); }
-  if ("font-variant" in style) { font.push(style["font-variant"]); }
-  if ("font-weight" in style) { font.push(style["font-weight"]); }
-  if ("font-size" in style) {
-    var s = (style["font-size"]) + "px";
-    if ("line-height" in style) { s += "/" + (style["line-height"]) + "px"; }
-    font.push(s);
-  }
-  if ("font-family" in style) { font.push(style["font-family"]); }
-
-  context.font = font.join(" ");
-
-  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-  return context.measureText(text).width;
-
-};
-
-/**
     @function textWrap
     @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
 */
@@ -8778,9 +8802,8 @@ var textWrap = function() {
 
     for (var i = 0; i < words.length; i++) {
       var word = words[i];
-      var nextChar = sentence.charAt(textProg.length + word.length),
-            wordWidth = sizes[words.indexOf(word)];
-      if (nextChar === " ") { word += nextChar; }
+      var wordWidth = sizes[words.indexOf(word)];
+      word = sentence.match(("^" + (textProg + word) + " *"), "g")[0].slice(textProg.length);
       if (widthProg + wordWidth > width) {
         if (!i && !overflow) {
           truncated = true;
@@ -8799,7 +8822,7 @@ var textWrap = function() {
       else { lineData[line - 1] += word; }
       textProg += word;
       widthProg += wordWidth;
-      if (nextChar === " ") { widthProg += space; }
+      widthProg += word.match(/[\s]*$/g)[0].length * space;
     }
 
     return {
@@ -9436,6 +9459,31 @@ function(d) {
 */
 
 /**
+    @function pointDistanceSquared
+    @desc Returns the squared euclidean distance between two points.
+    @param {Array} p1 The first point, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The second point, which should always be an `[x, y]` formatted Array.
+    @returns {Number}
+*/
+var pointDistanceSquared = function (p1, p2) {
+
+  var dx = p2[0] - p1[0],
+        dy = p2[1] - p1[1];
+
+  return dx * dx + dy * dy;
+
+};
+
+/**
+    @function pointDistance
+    @desc Calculates the pixel distance between two points.
+    @param {Array} p1 The first point, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The second point, which should always be an `[x, y]` formatted Array.
+    @returns {Number}
+*/
+var pointDistance = function (p1, p2) { return Math.sqrt(pointDistanceSquared(p1, p2)); };
+
+/**
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
@@ -9466,7 +9514,7 @@ var Shape = (function (BaseClass$$1) {
     this._duration = 600;
     this._fill = constant$4("black");
 
-    this._fontColor = function (d, i) { return contrast(this$1._fill(d, i)); };
+    this._fontColor = function (d, i) { return colorContrast(this$1._fill(d, i)); };
     this._fontFamily = constant$4("Verdana");
     this._fontResize = constant$4(false);
     this._fontSize = constant$4(12);
@@ -9474,6 +9522,7 @@ var Shape = (function (BaseClass$$1) {
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = constant$4(false);
+    this._labelRotate = constant$4(0);
     this._labelPadding = constant$4(5);
     this._name = "Shape";
     this._opacity = constant$4(1);
@@ -9734,9 +9783,11 @@ var Shape = (function (BaseClass$$1) {
             if (labels.constructor !== Array) { labels = [labels]; }
 
             var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
-                  : this$1._x(d.data, d.i) : this$1._x(d, i),
+                  : this$1._x1 ? 0 : this$1._x(d.data, d.i)
+                  : this$1._x1 ? 0 : this$1._x(d, i),
                 y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                  : this$1._y(d.data, d.i) : this$1._y(d, i);
+                  : this$1._y1 ? 0 : this$1._y(d.data, d.i)
+                  : this$1._y1 ? 0 : this$1._y(d, i);
 
             if (aes.x) { x += aes.x; }
             if (aes.y) { y += aes.y; }
@@ -9752,6 +9803,7 @@ var Shape = (function (BaseClass$$1) {
                   fS = this$1._fontSize(d, i),
                   lH = this$1._lineHeight(d, i),
                   padding = this$1._labelPadding(d, i),
+                  r = this$1._labelRotate(d, i),
                   tA = this$1._textAnchor(d, i),
                   vA = this$1._verticalAlign(d, i);
 
@@ -9771,6 +9823,7 @@ var Shape = (function (BaseClass$$1) {
                 i: i,
                 id: ((this$1._id(d, i)) + "_" + l),
                 lH: lH.constructor === Array ? lH[l] : lH,
+                r: bounds.angle !== void 0 ? bounds.angle : r.constructor === Array ? r[l] : r,
                 tA: tA.constructor === Array ? tA[l] : tA,
                 text: labels[l],
                 vA: vA.constructor === Array ? vA[l] : vA,
@@ -9797,6 +9850,7 @@ var Shape = (function (BaseClass$$1) {
       .fontSize(function (d) { return d.fS; })
       .lineHeight(function (d) { return d.lH; })
       .pointerEvents("none")
+      .rotate(function (d) { return d.data.r; })
       .textAnchor(function (d) { return d.tA; })
       .verticalAlign(function (d) { return d.vA; })
       .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
@@ -10168,6 +10222,18 @@ function(d, i, shape) {
     return arguments.length
          ? (this._labelBounds = typeof _ === "function" ? _ : constant$4(_), this)
          : this._labelBounds;
+  };
+
+  /**
+      @memberof Shape
+      @desc Specifies the rotation angle, in degrees, of a shape's label. If *value* is not specified, returns the current label rotation. If an array is passed or returned from the function, each value will be used consecutively with each label.
+      @param {Function|Number|Array} [angle = 0]
+      @chainable
+  */
+  Shape.prototype.labelRotate = function labelRotate (_) {
+    return arguments.length
+         ? (this._labelRotate = typeof _ === "function" ? _ : constant$4(_), this)
+         : this._labelRotate;
   };
 
   /**
@@ -12564,6 +12630,607 @@ var paths = Object.freeze({
 	stackOrderReverse: reverse
 });
 
+var polygonArea = function(polygon) {
+  var i = -1,
+      n = polygon.length,
+      a,
+      b = polygon[n - 1],
+      area = 0;
+
+  while (++i < n) {
+    a = b;
+    b = polygon[i];
+    area += a[1] * b[0] - a[0] * b[1];
+  }
+
+  return area / 2;
+};
+
+var polygonCentroid = function(polygon) {
+  var i = -1,
+      n = polygon.length,
+      x = 0,
+      y = 0,
+      a,
+      b = polygon[n - 1],
+      c,
+      k = 0;
+
+  while (++i < n) {
+    a = b;
+    b = polygon[i];
+    k += c = a[0] * b[1] - b[0] * a[1];
+    x += (a[0] + b[0]) * c;
+    y += (a[1] + b[1]) * c;
+  }
+
+  return k *= 3, [x / k, y / k];
+};
+
+// Returns the 2D cross product of AB and AC vectors, i.e., the z-component of
+// the 3D cross product in a quadrant I Cartesian coordinate system (+x is
+// right, +y is up). Returns a positive value if ABC is counter-clockwise,
+// negative if clockwise, and zero if the points are collinear.
+var cross$1 = function(a, b, c) {
+  return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+};
+
+function lexicographicOrder(a, b) {
+  return a[0] - b[0] || a[1] - b[1];
+}
+
+// Computes the upper convex hull per the monotone chain algorithm.
+// Assumes points.length >= 3, is sorted by x, unique in y.
+// Returns an array of indices into points in left-to-right order.
+function computeUpperHullIndexes(points) {
+  var n = points.length,
+      indexes = [0, 1],
+      size = 2;
+
+  for (var i = 2; i < n; ++i) {
+    while (size > 1 && cross$1(points[indexes[size - 2]], points[indexes[size - 1]], points[i]) <= 0) { --size; }
+    indexes[size++] = i;
+  }
+
+  return indexes.slice(0, size); // remove popped points
+}
+
+var polygonContains = function(polygon, point) {
+  var n = polygon.length,
+      p = polygon[n - 1],
+      x = point[0], y = point[1],
+      x0 = p[0], y0 = p[1],
+      x1, y1,
+      inside = false;
+
+  for (var i = 0; i < n; ++i) {
+    p = polygon[i], x1 = p[0], y1 = p[1];
+    if (((y1 > y) !== (y0 > y)) && (x < (x0 - x1) * (y - y1) / (y0 - y1) + x1)) { inside = !inside; }
+    x0 = x1, y0 = y1;
+  }
+
+  return inside;
+};
+
+/**
+    @function lineIntersection
+    @desc Finds the intersection point (if there is one) of the lines p1q1 and p2q2.
+    @param {Array} p1 The first point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q1 The second point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The first point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var lineIntersection = function(p1, q1, p2, q2) {
+
+  // allow for some margins due to numerical errors
+  var eps = 1e-9;
+
+  // find the intersection point between the two infinite lines
+  var dx1 = p1[0] - q1[0],
+        dx2 = p2[0] - q2[0],
+        dy1 = p1[1] - q1[1],
+        dy2 = p2[1] - q2[1];
+
+  var denom = dx1 * dy2 - dy1 * dx2;
+
+  if (Math.abs(denom) < eps) { return null; }
+
+  var cross1 = p1[0] * q1[1] - p1[1] * q1[0],
+        cross2 = p2[0] * q2[1] - p2[1] * q2[0];
+
+  var px = (cross1 * dx2 - cross2 * dx1) / denom,
+        py = (cross1 * dy2 - cross2 * dy1) / denom;
+
+  return [px, py];
+
+};
+
+/**
+    @function segmentBoxContains
+    @desc Checks whether a point is inside the bounding box of a line segment.
+    @param {Array} s1 The first point of the line segment to be used for the bounding box, which should always be an `[x, y]` formatted Array.
+    @param {Array} s2 The second point of the line segment to be used for the bounding box, which should always be an `[x, y]` formatted Array.
+    @param {Array} p The point to be checked, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var segmentBoxContains = function(s1, s2, p) {
+
+  var eps = 1e-9;
+  var px = p[0];
+  var py = p[1];
+
+  return !(px < Math.min(s1[0], s2[0]) - eps || px > Math.max(s1[0], s2[0]) + eps ||
+           py < Math.min(s1[1], s2[1]) - eps || py > Math.max(s1[1], s2[1]) + eps);
+
+};
+
+/**
+    @function segmentsIntersect
+    @desc Checks whether the line segments p1q1 && p2q2 intersect.
+    @param {Array} p1 The first point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q1 The second point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The first point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var segmentsIntersect = function(p1, q1, p2, q2) {
+
+  var p = lineIntersection(p1, q1, p2, q2);
+  if (!p) { return false; }
+  return segmentBoxContains(p1, q1, p) && segmentBoxContains(p2, q2, p);
+
+};
+
+/**
+    @function polygonInside
+    @desc Checks if one polygon is inside another polygon.
+    @param {Array} polyA An Array of `[x, y]` points to be used as the inner polygon, checking if it is inside polyA.
+    @param {Array} polyB An Array of `[x, y]` points to be used as the containing polygon.
+    @returns {Boolean}
+*/
+var polygonInside = function(polyA, polyB) {
+
+  var iA = -1;
+  var nA = polyA.length;
+  var nB = polyB.length;
+  var bA = polyA[nA - 1];
+
+  while (++iA < nA) {
+
+    var aA = bA;
+    bA = polyA[iA];
+
+    var iB = -1;
+    var bB = polyB[nB - 1];
+    while (++iB < nB) {
+      var aB = bB;
+      bB = polyB[iB];
+      if (segmentsIntersect(aA, bA, aB, bB)) { return false; }
+    }
+  }
+
+  return polygonContains(polyB, polyA[0]);
+
+};
+
+/**
+    @function polygonRayCast
+    @desc Gives the two closest intersection points between a ray cast from a point inside a polygon. The two points should lie on opposite sides of the origin.
+    @param {Array} poly The polygon to test against, which should be an `[x, y]` formatted Array.
+    @param {Array} origin The origin point of the ray to be cast, which should be an `[x, y]` formatted Array.
+    @param {Number} [alpha = 0] The angle in radians of the ray.
+    @returns {Array} An array containing two values, the closest point on the left and the closest point on the right. If either point cannot be found, that value will be `null`.
+*/
+var polygonRayCast = function(poly, origin, alpha) {
+  if ( alpha === void 0 ) alpha = 0;
+
+
+  var eps = 1e-9;
+  origin = [origin[0] + eps * Math.cos(alpha), origin[1] + eps * Math.sin(alpha)];
+  var x0 = origin[0];
+  var y0 = origin[1];
+  var shiftedOrigin = [x0 + Math.cos(alpha), y0 + Math.sin(alpha)];
+
+  var idx = 0;
+  if (Math.abs(shiftedOrigin[0] - x0) < eps) { idx = 1; }
+  var i = -1;
+  var n = poly.length;
+  var b = poly[n - 1];
+  var minSqDistLeft = Number.MAX_VALUE;
+  var minSqDistRight = Number.MAX_VALUE;
+  var closestPointLeft = null;
+  var closestPointRight = null;
+  while (++i < n) {
+    var a = b;
+    b = poly[i];
+    var p = lineIntersection(origin, shiftedOrigin, a, b);
+    if (p && segmentBoxContains(a, b, p)) {
+      var sqDist = pointDistanceSquared(origin, p);
+      if (p[idx] < origin[idx]) {
+        if (sqDist < minSqDistLeft) {
+          minSqDistLeft = sqDist;
+          closestPointLeft = p;
+        }
+      }
+      else if (p[idx] > origin[idx]) {
+        if (sqDist < minSqDistRight) {
+          minSqDistRight = sqDist;
+          closestPointRight = p;
+        }
+      }
+    }
+  }
+
+  return [closestPointLeft, closestPointRight];
+
+};
+
+/**
+    @function pointRotate
+    @desc Rotates a point around a given origin.
+    @param {Array} p The point to be rotated, which should always be an `[x, y]` formatted Array.
+    @param {Number} alpha The angle in radians to rotate.
+    @param {Array} [origin = [0, 0]] The origin point of the rotation, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var pointRotate = function(p, alpha, origin) {
+  if ( origin === void 0 ) origin = [0, 0];
+
+
+  var cosAlpha = Math.cos(alpha),
+        sinAlpha = Math.sin(alpha),
+        xshifted = p[0] - origin[0],
+        yshifted = p[1] - origin[1];
+
+  return [
+    cosAlpha * xshifted - sinAlpha * yshifted + origin[0],
+    sinAlpha * xshifted + cosAlpha * yshifted + origin[1]
+  ];
+
+};
+
+/**
+    @function polygonRotate
+    @desc Rotates a point around a given origin.
+    @param {Array} poly The polygon to be rotated, which should be an Array of `[x, y]` values.
+    @param {Number} alpha The angle in radians to rotate.
+    @param {Array} [origin = [0, 0]] The origin point of the rotation, which should be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var polygonRotate = function (poly, alpha, origin) {
+    if ( origin === void 0 ) origin = [0, 0];
+
+    return poly.map(function (p) { return pointRotate(p, alpha, origin); });
+};
+
+// square distance from a point to a segment
+function getSqSegDist(p, p1, p2) {
+
+  var x = p1[0],
+      y = p1[1];
+
+  var dx = p2[0] - x,
+      dy = p2[1] - y;
+
+  if (dx !== 0 || dy !== 0) {
+
+    var t = ((p[0] - x) * dx + (p[1] - y) * dy) / (dx * dx + dy * dy);
+
+    if (t > 1) {
+      x = p2[0];
+      y = p2[1];
+
+    }
+    else if (t > 0) {
+      x += dx * t;
+      y += dy * t;
+    }
+
+  }
+
+  dx = p[0] - x;
+  dy = p[1] - y;
+
+  return dx * dx + dy * dy;
+
+}
+// rest of the code doesn't care about point format
+
+// basic distance-based simplification
+function simplifyRadialDist(poly, sqTolerance) {
+
+  var point,
+      prevPoint = poly[0];
+
+  var newPoints = [prevPoint];
+
+  for (var i = 1, len = poly.length; i < len; i++) {
+    point = poly[i];
+
+    if (pointDistanceSquared(point, prevPoint) > sqTolerance) {
+      newPoints.push(point);
+      prevPoint = point;
+    }
+  }
+
+  if (prevPoint !== point) { newPoints.push(point); }
+
+  return newPoints;
+}
+
+function simplifyDPStep(poly, first, last, sqTolerance, simplified) {
+
+  var index, maxSqDist = sqTolerance;
+
+  for (var i = first + 1; i < last; i++) {
+    var sqDist = getSqSegDist(poly[i], poly[first], poly[last]);
+
+    if (sqDist > maxSqDist) {
+      index = i;
+      maxSqDist = sqDist;
+    }
+  }
+
+  if (maxSqDist > sqTolerance) {
+    if (index - first > 1) { simplifyDPStep(poly, first, index, sqTolerance, simplified); }
+    simplified.push(poly[index]);
+    if (last - index > 1) { simplifyDPStep(poly, index, last, sqTolerance, simplified); }
+  }
+}
+
+// simplification using Ramer-Douglas-Peucker algorithm
+function simplifyDouglasPeucker(poly, sqTolerance) {
+  var last = poly.length - 1;
+
+  var simplified = [poly[0]];
+  simplifyDPStep(poly, 0, last, sqTolerance, simplified);
+  simplified.push(poly[last]);
+
+  return simplified;
+}
+
+/**
+    @function largestRect
+    @desc Simplifies the points of a polygon using both the Ramer-Douglas-Peucker algorithm and basic distance-based simplification. Adapted to an ES6 module from the excellent [Simplify.js](http://mourner.github.io/simplify-js/).
+    @author Vladimir Agafonkin
+    @param {Array} poly An Array of points that represent a polygon.
+    @param {Number} [tolerance = 1] Affects the amount of simplification (in the same metric as the point coordinates).
+    @param {Boolean} [highestQuality = false] Excludes distance-based preprocessing step which leads to highest quality simplification but runs ~10-20 times slower.
+
+*/
+var simplify = function (poly, tolerance, highestQuality) {
+  if ( tolerance === void 0 ) tolerance = 1;
+  if ( highestQuality === void 0 ) highestQuality = false;
+
+
+  if (poly.length <= 2) { return poly; }
+
+  var sqTolerance = tolerance * tolerance;
+
+  poly = highestQuality ? poly : simplifyRadialDist(poly, sqTolerance);
+  poly = simplifyDouglasPeucker(poly, sqTolerance);
+
+  return poly;
+
+};
+
+// Algorithm constants
+var aspectRatioStep = 0.5; // step size for the aspect ratio
+var angleStep = 5; // step size for angles (in degrees); has linear impact on running time
+
+/**
+    @typedef {Object} LargestRect
+    @desc The returned Object of the largestRect function.
+    @property {Number} width The width of the rectangle
+    @property {Number} height The height of the rectangle
+    @property {Number} cx The x coordinate of the rectangle's center
+    @property {Number} cy The y coordinate of the rectangle's center
+    @property {Number} angle The rotation angle of the rectangle in degrees. The anchor of rotation is the center point.
+    @property {Number} area The area of the largest rectangle.
+    @property {Array} points An array of x/y coordinates for each point in the rectangle, useful for rendering paths.
+*/
+
+/**
+    @function largestRect
+    @author Daniel Smilkov [dsmilkov@gmail.com]
+    @desc An angle of zero means that the longer side of the polygon (the width) will be aligned with the x axis. An angle of 90 and/or -90 means that the longer side of the polygon (the width) will be aligned with the y axis. The value can be a number between -90 and 90 specifying the angle of rotation of the polygon, a string which is parsed to a number, or an array of numbers specifying the possible rotations of the polygon.
+    @param {Array} poly An Array of points that represent a polygon.
+    @param {Object} [options] An Object that allows for overriding various parameters of the algorithm.
+    @param {Number|String|Array} [options.angle = d3.range(-90, 95, 5)] The allowed rotations of the final rectangle.
+    @param {Number|String|Array} [options.aspectRatio] The ratio between the width and height of the rectangle. The value can be a number, a string which is parsed to a number, or an array of numbers specifying the possible aspect ratios of the final rectangle.
+    @param {Number} [options.maxAspectRatio = 15] The maximum aspect ratio (width/height) allowed for the rectangle. This property should only be used if the aspectRatio is not provided.
+    @param {Number} [options.minAspectRatio = 1] The minimum aspect ratio (width/height) allowed for the rectangle. This property should only be used if the aspectRatio is not provided.
+    @param {Number} [options.nTries = 20] The number of randomly drawn points inside the polygon which the algorithm explores as possible center points of the maximal rectangle.
+    @param {Number} [options.minHeight = 0] The minimum height of the rectangle.
+    @param {Number} [options.minWidth = 0] The minimum width of the rectangle.
+    @param {Number} [options.tolerance = 0.02] The simplification tolerance factor, between 0 and 1. A larger tolerance corresponds to more extensive simplification.
+    @param {Array} [options.origin] The center point of the rectangle. If specified, the rectangle will be fixed at that point, otherwise the algorithm optimizes across all possible points. The given value can be either a two dimensional array specifying the x and y coordinate of the origin or an array of two dimensional points specifying multiple possible center points of the rectangle.
+    @return {LargestRect}
+*/
+var largestRect = function(poly, options) {
+  if ( options === void 0 ) options = {};
+
+
+  if (poly.length < 3) {
+    if (options.verbose) { console.error("polygon has to have at least 3 points", poly); }
+    return null;
+  }
+
+  // For visualization debugging purposes
+  var events = [];
+
+  // User's input normalization
+  options = Object.assign({
+    angle: range(-90, 90 + angleStep, angleStep),
+    maxAspectRatio: 15,
+    minAspectRatio: 1,
+    minHeight: 0,
+    minWidth: 0,
+    nTries: 20,
+    tolerance: 0.02,
+    verbose: false
+  }, options);
+
+  var angles = options.angle instanceof Array ? options.angle
+               : typeof options.angle === "number" ? [options.angle]
+               : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
+               : [];
+
+  var aspectRatios = options.aspectRatio instanceof Array ? options.aspectRatio
+               : typeof options.aspectRatio === "number" ? [options.aspectRatio]
+               : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
+               : [];
+
+  var origins = options.origin && options.origin instanceof Array
+                ? options.origin[0] instanceof Array ? options.origin
+                : [options.origin] : [];
+
+  var area = Math.abs(polygonArea(poly)); // take absolute value of the signed area
+  if (area === 0) {
+    if (options.verbose) { console.error("polygon has 0 area", poly); }
+    return null;
+  }
+  // get the width of the bounding box of the original polygon to determine tolerance
+  var ref = extent(poly, function (d) { return d[0]; });
+  var minx = ref[0];
+  var maxx = ref[1];
+  var ref$1 = extent(poly, function (d) { return d[1]; });
+  var miny = ref$1[0];
+  var maxy = ref$1[1];
+
+  // simplify polygon
+  var tolerance = Math.min(maxx - minx, maxy - miny) * options.tolerance;
+
+  if (tolerance > 0) { poly = simplify(poly, tolerance); }
+  if (options.events) { events.push({type: "simplify", poly: poly}); }
+
+  // get the width of the bounding box of the simplified polygon
+  var assign;
+  (assign = extent(poly, function (d) { return d[0]; }), minx = assign[0], maxx = assign[1]);
+  var assign$1;
+  (assign$1 = extent(poly, function (d) { return d[1]; }), miny = assign$1[0], maxy = assign$1[1]);
+  var ref$2 = [maxx - minx, maxy - miny];
+  var boxWidth = ref$2[0];
+  var boxHeight = ref$2[1];
+
+  // discretize the binary search for optimal width to a resolution of this times the polygon width
+  var widthStep = Math.min(boxWidth, boxHeight) / 50;
+
+  // populate possible center points with random points inside the polygon
+  if (!origins.length) {
+    // get the centroid of the polygon
+    var centroid = polygonCentroid(poly);
+    if (polygonContains(poly, centroid)) { origins.push(centroid); }
+    // get few more points inside the polygon
+    while (origins.length < options.nTries) {
+      var rndX = Math.random() * boxWidth + minx;
+      var rndY = Math.random() * boxHeight + miny;
+      var rndPoint = [rndX, rndY];
+      if (polygonContains(poly, rndPoint)) { origins.push(rndPoint); }
+    }
+  }
+  if (options.events) { events.push({type: "origins", points: origins}); }
+  var maxArea = 0;
+  var maxRect = null;
+
+  angles.forEach(function (angle) {
+    var angleRad = -angle * Math.PI / 180;
+    if (options.events) { events.push({type: "angle", angle: angle}); }
+    origins.forEach(function (origOrigin, i) {
+
+      // generate improved origins
+      var ref = polygonRayCast(poly, origOrigin, angleRad);
+      var p1W = ref[0];
+      var p2W = ref[1];
+      var ref$1 = polygonRayCast(poly, origOrigin, angleRad + Math.PI / 2);
+      var p1H = ref$1[0];
+      var p2H = ref$1[1];
+      var modifOrigins = [];
+      if (p1W && p2W) { modifOrigins.push([(p1W[0] + p2W[0]) / 2, (p1W[1] + p2W[1]) / 2]); } // average along with width axis
+      if (p1H && p2H) { modifOrigins.push([(p1H[0] + p2H[0]) / 2, (p1H[1] + p2H[1]) / 2]); } // average along with height axis
+
+      if (options.events) { events.push({type: "modifOrigin", idx: i, p1W: p1W, p2W: p2W, p1H: p1H, p2H: p2H, modifOrigins: modifOrigins}); }
+
+      for (var i$1 = 0; i$1 < modifOrigins.length; i$1++) {
+
+        var origin = modifOrigins[i$1];
+
+        if (options.events) { events.push({type: "origin", cx: origin[0], cy: origin[1]}); }
+
+        var ref$2 = polygonRayCast(poly, origin, angleRad);
+        var p1W$1 = ref$2[0];
+        var p2W$1 = ref$2[1];
+        if (p1W$1 === null || p2W$1 === null) { continue; }
+        var minSqDistW = Math.min(pointDistanceSquared(origin, p1W$1), pointDistanceSquared(origin, p2W$1));
+        var maxWidth = 2 * Math.sqrt(minSqDistW);
+
+        var ref$3 = polygonRayCast(poly, origin, angleRad + Math.PI / 2);
+        var p1H$1 = ref$3[0];
+        var p2H$1 = ref$3[1];
+        if (p1H$1 === null || p2H$1 === null) { continue; }
+        var minSqDistH = Math.min(pointDistanceSquared(origin, p1H$1), pointDistanceSquared(origin, p2H$1));
+        var maxHeight = 2 * Math.sqrt(minSqDistH);
+
+        if (maxWidth * maxHeight < maxArea) { continue; }
+
+        var aRatios = aspectRatios;
+        if (!aRatios.length) {
+          var minAspectRatio = Math.max(options.minAspectRatio, options.minWidth / maxHeight, maxArea / (maxHeight * maxHeight));
+          var maxAspectRatio = Math.min(options.maxAspectRatio, maxWidth / options.minHeight, maxWidth * maxWidth / maxArea);
+          aRatios = range(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
+        }
+
+        for (var a = 0; a < aRatios.length; a++) {
+
+          var aRatio = aRatios[a];
+
+          // do a binary search to find the max width that works
+          var left = Math.max(options.minWidth, Math.sqrt(maxArea * aRatio));
+          var right = Math.min(maxWidth, maxHeight * aRatio);
+          if (right * maxHeight < maxArea) { continue; }
+
+          if (options.events && right - left >= widthStep) { events.push({type: "aRatio", aRatio: aRatio}); }
+
+          while (right - left >= widthStep) {
+            var width = (left + right) / 2;
+            var height = width / aRatio;
+            var cx = origin[0];
+            var cy = origin[1];
+            var rectPoly = [
+              [cx - width / 2, cy - height / 2],
+              [cx + width / 2, cy - height / 2],
+              [cx + width / 2, cy + height / 2],
+              [cx - width / 2, cy + height / 2]
+            ];
+            rectPoly = polygonRotate(rectPoly, angleRad, origin);
+            var insidePoly = polygonInside(rectPoly, poly);
+            if (insidePoly) {
+              // we know that the area is already greater than the maxArea found so far
+              maxArea = width * height;
+              rectPoly.push(rectPoly[0]);
+              maxRect = {area: maxArea, cx: cx, cy: cy, width: width, height: height, angle: -angle, points: rectPoly};
+              left = width; // increase the width in the binary search
+            }
+            else {
+              right = width; // decrease the width in the binary search
+            }
+            if (options.events) { events.push({type: "rectangle", areaFraction: width * height / area, cx: cx, cy: cy, width: width, height: height, angle: angle, insidePoly: insidePoly}); }
+
+          }
+
+        }
+
+      }
+
+    });
+
+  });
+
+  return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
+
+};
+
 /**
     @class Area
     @extends Shape
@@ -12576,7 +13243,13 @@ var Area = (function (Shape$$1) {
 
     this._curve = "linear";
     this._defined = function () { return true; };
+    this._labelBounds = function (d, i, aes) {
+      var r = largestRect(aes.points);
+      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2};
+    };
     this._name = "Area";
+    this.textAnchor("middle");
+    this.verticalAlign("middle");
     this._x = accessor("x");
     this._x0 = accessor("x");
     this._x1 = null;
@@ -12589,6 +13262,25 @@ var Area = (function (Shape$$1) {
   if ( Shape$$1 ) Area.__proto__ = Shape$$1;
   Area.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
   Area.prototype.constructor = Area;
+
+  /**
+      @memberof Area
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Area.prototype._aes = function _aes (d) {
+    var this$1 = this;
+
+    var values$$1 = d.values.slice().sort(function (a, b) { return this$1._y1 ? this$1._x(a) - this$1._x(b) : this$1._y(a) - this$1._y(b); });
+    var points1 = values$$1.map(function (v, z) { return [this$1._x0(v, z), this$1._y0(v, z)]; });
+    var points2 = values$$1.reverse().map(function (v, z) { return this$1._y1 ? [this$1._x(v, z), this$1._y1(v, z)] : [this$1._x1(v, z), this$1._y(v, z)]; });
+    var points = points1.concat(points2);
+    if (points1[0][1] > points2[0][1]) { points = points.reverse(); }
+    points.push(points[0]);
+    return {points: points};
+  };
 
   /**
       @memberof Area
@@ -12678,19 +13370,6 @@ var Area = (function (Shape$$1) {
 
   /**
       @memberof Area
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Area.prototype._aes = function _aes (d, i) {
-    var this$1 = this;
-
-    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
-  };
-
-  /**
-      @memberof Area
       @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
       @param {String} [*value* = "linear"]
       @chainable
@@ -12711,6 +13390,19 @@ var Area = (function (Shape$$1) {
     return arguments.length
          ? (this._defined = _, this)
          : this._defined;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.x = function x (_) {
+    if (!arguments.length) { return this._x; }
+    this._x = typeof _ === "function" ? _ : constant$4(_);
+    this._x0 = this._x;
+    return this;
   };
 
   /**
@@ -12736,6 +13428,19 @@ var Area = (function (Shape$$1) {
     return arguments.length
          ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$4(_), this)
          : this._x1;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.y = function y (_) {
+    if (!arguments.length) { return this._y; }
+    this._y = typeof _ === "function" ? _ : constant$4(_);
+    this._y0 = this._y;
+    return this;
   };
 
   /**
@@ -13095,6 +13800,7 @@ var Line = (function (Shape$$1) {
     this._fill = constant$4("none");
     this._name = "Line";
     this._path = line();
+    this._stroke = constant$4("black");
     this._strokeWidth = constant$4(1);
 
   }
@@ -13212,6 +13918,113 @@ var Line = (function (Shape$$1) {
   return Line;
 }(Shape));
 
+var pi$4 = Math.PI;
+
+/**
+    @function shapeEdgePoint
+    @desc Calculates the x/y position of a point at the edge of a shape, from the center of the shape, given a specified pixel distance and radian angle.
+    @param {Number} angle The angle, in radians, of the offset point.
+    @param {Number} distance The pixel distance away from the origin.
+    @returns {String} [shape = "circle"] The type of shape, which can be either "circle" or "square".
+*/
+var shapeEdgePoint = function (angle, distance, shape) {
+  if ( shape === void 0 ) shape = "circle";
+
+
+  if (angle < 0) { angle = pi$4 * 2 + angle; }
+
+  if (shape === "square") {
+
+    var diagonal = 45 * (pi$4 / 180);
+    var x = 0, y = 0;
+
+    if (angle < pi$4 / 2) {
+      var tan = Math.tan(angle);
+      x += angle < diagonal ? distance : distance / tan;
+      y += angle < diagonal ? tan * distance : distance;
+    }
+    else if (angle <= pi$4) {
+      var tan$1 = Math.tan(pi$4 - angle);
+      x -= angle < pi$4 - diagonal ? distance / tan$1 : distance;
+      y += angle < pi$4 - diagonal ? distance : tan$1 * distance;
+    }
+    else if (angle < diagonal + pi$4) {
+      x -= distance;
+      y -= Math.tan(angle - pi$4) * distance;
+    }
+    else if (angle < 3 * pi$4 / 2) {
+      x -= distance / Math.tan(angle - pi$4);
+      y -= distance;
+    }
+    else if (angle < 2 * pi$4 - diagonal) {
+      x += distance / Math.tan(2 * pi$4 - angle);
+      y -= distance;
+    }
+    else {
+      x += distance;
+      y -= Math.tan(2 * pi$4 - angle) * distance;
+    }
+
+    return [x, y];
+
+  }
+  else if (shape === "circle") {
+    return [distance * Math.cos(angle), distance * Math.sin(angle)];
+  }
+  else { return null; }
+
+};
+
+var pi$3 = Math.PI;
+
+/**
+    @function path2polygon
+    @desc Transforms a path string into an Array of points.
+    @param {String} path An SVG string path, commonly the "d" property of a <path> element.
+    @param {Number} [segmentLength = 20] The lenght of line segments when converting curves line segments. Higher values lower computation time, but will result in curves that are more rigid.
+    @returns {Array}
+*/
+var path2polygon = function (path, segmentLength) {
+  if ( segmentLength === void 0 ) segmentLength = 20;
+
+
+  var poly = [],
+        regex = /([MLA])([^MLAZ]+)/ig;
+
+  var match = regex.exec(path);
+  while (match !== null) {
+
+    if (["M", "L"].includes(match[1])) { poly.push(match[2].split(",").map(Number)); }
+    else if (match[1] === "A") {
+
+      var points = match[2].split(",").map(Number);
+
+      var last = points.slice(points.length - 2, points.length),
+            prev = poly[poly.length - 1],
+            radius = points[0],
+            width = pointDistance(prev, last);
+
+      var angle = Math.acos((radius * radius + radius * radius - width * width) / (2 * radius * radius));
+      if (points[2]) { angle = pi$3 * 2 - angle; }
+
+      var step = angle / (angle / (pi$3 * 2) * (radius * pi$3 * 2) / segmentLength);
+      var start = Math.atan2(-prev[1], -prev[0]) - pi$3;
+      var i = step;
+      while (i < angle) {
+        poly.push(shapeEdgePoint(start + i, radius));
+        i += step;
+      }
+      poly.push(last);
+
+    }
+    match = regex.exec(path);
+
+  }
+
+  return poly;
+
+};
+
 /**
     @class Path
     @extends Shape
@@ -13219,14 +14032,33 @@ var Line = (function (Shape$$1) {
 */
 var Path$1 = (function (Shape$$1) {
   function Path() {
+    var this$1 = this;
+
     Shape$$1.call(this, "path");
     this._d = accessor("path");
+    this._labelBounds = function (d, i, aes) {
+      var r = largestRect(aes.points, {angle: this$1._labelRotate(d, i)});
+      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2};
+    };
     this._name = "Path";
+    this.textAnchor("middle");
+    this.verticalAlign("middle");
   }
 
   if ( Shape$$1 ) Path.__proto__ = Shape$$1;
   Path.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
   Path.prototype.constructor = Path;
+
+  /**
+      @memberof Path
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Path.prototype._aes = function _aes (d, i) {
+    return {points: path2polygon(this._d(d, i))};
+  };
 
   /**
       @memberof Path
@@ -13388,7 +14220,6 @@ function(d) {
 
 
 var shapes = Object.freeze({
-	pointDistance: pointDistance,
 	Image: Image,
 	Shape: Shape,
 	Area: Area,
@@ -13396,7 +14227,20 @@ var shapes = Object.freeze({
 	Circle: Circle,
 	Line: Line,
 	Path: Path$1,
-	Rect: Rect
+	Rect: Rect,
+	largestRect: largestRect,
+	lineIntersection: lineIntersection,
+	path2polygon: path2polygon,
+	pointDistance: pointDistance,
+	pointDistanceSquared: pointDistanceSquared,
+	pointRotate: pointRotate,
+	polygonInside: polygonInside,
+	polygonRayCast: polygonRayCast,
+	polygonRotate: polygonRotate,
+	segmentBoxContains: segmentBoxContains,
+	segmentsIntersect: segmentsIntersect,
+	shapeEdgePoint: shapeEdgePoint,
+	simplify: simplify
 });
 
 /**
@@ -13750,7 +14594,7 @@ var Axis = (function (BaseClass$$1) {
     if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
     this._size = range$$1[1] - range$$1[0];
     if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
-      range$$1 = sequence(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
+      range$$1 = range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
     }
 
     this._margin = {top: 0, right: 0, bottom: 0, left: 0};
@@ -14110,112 +14954,6 @@ var Axis = (function (BaseClass$$1) {
 
   return Axis;
 }(BaseClass));
-
-/**
-    @function colorAdd
-    @desc Adds two colors together.
-    @param {String} c1 The first color, a valid CSS color string.
-    @param {String} c2 The second color, also a valid CSS color string.
-    @param {String} [o1 = 1] Value from 0 to 1 of the first color's opacity.
-    @param {String} [o2 = 1] Value from 0 to 1 of the first color's opacity.
-    @returns {String}
-*/
-
-/**
-    @module {Object} colorDefaults
-    @desc A set of default color values used when assigning colors based on data.
-      *
-      * | Name | Default | Description |
-      * |---|---|---|
-      * | dark | #444444 | Used in the [contrast](#contrast) function when the color given is very light. |
-      * | light | #f7f7f7 | Used in the [contrast](#contrast) function when the color given is very dark. |
-      * | missing | #cccccc | Used in the [assign](#assign) function when the value passed is `null` or `undefined`. |
-      * | off | #b22200 | Used in the [assign](#assign) function when the value passed is `false`. |
-      * | on | #224f20 | Used in the [assign](#assign) function when the value passed is `true`. |
-      * | scale | `scale.ordinal().range([ "#b22200", "#eace3f", "#282f6b", "#b35c1e", "#224f20", "#5f487c", "#759143", "#419391", "#993c88", "#e89c89", "#ffee8d", "#afd5e8", "#f7ba77", "#a5c697", "#c5b5e5", "#d1d392", "#bbefd0", "#e099cf"])` | An ordinal scale used in the [assign](#assign) function for non-valid color strings and numbers. |
-*/
-var defaults$2 = {
-  dark: "#444444",
-  light: "#f7f7f7",
-  missing: "#cccccc",
-  off: "#b22200",
-  on: "#224f20",
-  scale: ordinal().range([
-    "#b22200", "#282f6b", "#eace3f", "#b35c1e", "#224f20", "#5f487c",
-    "#759143", "#419391", "#993c88", "#e89c89", "#ffee8d", "#afd5e8",
-    "#f7ba77", "#a5c697", "#c5b5e5", "#d1d392", "#bbefd0", "#e099cf"
-  ])
-};
-
-/**
-    Returns a color based on a key, whether it is present in a user supplied object or in the default object.
-    @returns {String}
-    @private
-*/
-function getColor$1(k, u) {
-  if ( u === void 0 ) u = {};
-
-  return k in u ? u[k] : k in defaults$2 ? defaults$2[k] : defaults$2.missing;
-}
-
-/**
-    @function colorAssign
-    @desc Assigns a color to a value using a predefined set of defaults.
-    @param {String} c A valid CSS color string.
-    @param {Object} [u = defaults] An object containing overrides of the default colors.
-    @returns {String}
-*/
-var colorAssign = function(c, u) {
-  if ( u === void 0 ) u = {};
-
-
-  // If the value is null or undefined, set to grey.
-  if ([null, void 0].indexOf(c) >= 0) { return getColor$1("missing", u); }
-  // Else if the value is true, set to green.
-  else if (c === true) { return getColor$1("on", u); }
-  // Else if the value is false, set to red.
-  else if (c === false) { return getColor$1("off", u); }
-
-  var p = color(c);
-  // If the value is not a valid color string, use the color scale.
-  if (!p) { return getColor$1("scale", u)(c); }
-
-  return c.toString();
-
-};
-
-/**
-    @function colorContrast
-    @desc A set of default color values used when assigning colors based on data.
-    @param {String} c A valid CSS color string.
-    @param {Object} [u = defaults] An object containing overrides of the default colors.
-    @returns {String}
-*/
-
-/**
-    @function colorLegible
-    @desc Darkens a color so that it will appear legible on a white background.
-    @param {String} c A valid CSS color string.
-    @returns {String}
-*/
-
-/**
-    @function colorLighter
-    @desc Similar to d3.color.brighter, except that this also reduces saturation so that colors don't appear neon.
-    @param {String} c A valid CSS color string.
-    @param {String} [i = 0.5] A value from 0 to 1 dictating the strength of the function.
-    @returns {String}
-*/
-
-/**
-    @function colorSubtract
-    @desc Subtracts one color from another.
-    @param {String} c1 The base color, a valid CSS color string.
-    @param {String} c2 The color to remove from the base color, also a valid CSS color string.
-    @param {String} [o1 = 1] Value from 0 to 1 of the first color's opacity.
-    @param {String} [o2 = 1] Value from 0 to 1 of the first color's opacity.
-    @returns {String}
-*/
 
 /**
     @external BaseClass
