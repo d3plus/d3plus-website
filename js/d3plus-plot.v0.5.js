@@ -462,7 +462,7 @@ var Plot = (function (Viz$$1) {
       .height(height)
       .labels([])
       .range([this._xAxis.outerBounds().y, this._xTest.outerBounds().y])
-      .scale(xScale.toLowerCase())
+      .scale(yScale.toLowerCase())
       .select(yGroup.node())
       .ticks([])
       .width(x.range()[x.range().length - 1] + this._xAxis.padding())
@@ -548,7 +548,7 @@ var Plot = (function (Viz$$1) {
 
             var offset = space / 2 - barSize / 2;
 
-            var xMod = scales.scaleOrdinal()
+            var xMod = scales.scaleLinear()
               .domain([0, uniqueIds.length - 1])
               .range([-offset, offset]);
 
