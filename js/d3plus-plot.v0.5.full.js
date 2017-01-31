@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.3
+  d3plus-plot v0.5.4
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -19496,10 +19496,10 @@ var Plot = (function (Viz$$1) {
 
         if (!this$1._stacked) {
 
-          var ids = d.values.map(function (d) { return d.id; });
+          var ids = d.values.map(function (d) { return this$1._ids(d).join("_"); });
           var uniqueIds = Array.from(new Set(ids));
 
-          if (ids.length === uniqueIds.length) {
+          if (max(nest().key(function (d) { return d.y; }).entries(d.values).map(function (d) { return d.values.length; })) === 1) {
             s[this$1._discrete](function (d, i) { return shapeConfig[this$1._discrete](d, i); });
           }
           else {
@@ -19511,7 +19511,7 @@ var Plot = (function (Viz$$1) {
               .domain([0, uniqueIds.length - 1])
               .range([-offset, offset]);
 
-            s[this$1._discrete](function (d, i) { return shapeConfig[this$1._discrete](d, i) + xMod(uniqueIds.indexOf(d.id)); });
+            s[this$1._discrete](function (d, i) { return shapeConfig[this$1._discrete](d, i) + xMod(uniqueIds.indexOf(this$1._ids(d).join("_"))); });
           }
 
         }
