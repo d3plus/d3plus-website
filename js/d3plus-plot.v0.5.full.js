@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.4
+  d3plus-plot v0.5.5
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -19494,26 +19494,32 @@ var Plot = (function (Viz$$1) {
 
         var barSize = space;
 
-        if (!this$1._stacked) {
+        var barId = function (d) { return this$1._stacked
+                    ? ("" + (this$1._groupBy.length > 1 ? this$1._ids(d).slice(0, -1).join("_") : "group"))
+                    : ("" + (this$1._ids(d).join("_"))); };
 
-          var ids = d.values.map(function (d) { return this$1._ids(d).join("_"); });
-          var uniqueIds = Array.from(new Set(ids));
+        var groups = nest()
+          .key(function (d) { return d.y; })
+          .key(barId)
+          .entries(d.values);
 
-          if (max(nest().key(function (d) { return d.y; }).entries(d.values).map(function (d) { return d.values.length; })) === 1) {
-            s[this$1._discrete](function (d, i) { return shapeConfig[this$1._discrete](d, i); });
-          }
-          else {
-            barSize /= uniqueIds.length;
+        var ids = merge(groups.map(function (d) { return d.values.map(function (v) { return v.key; }); }));
+        var uniqueIds = Array.from(new Set(ids));
 
-            var offset = space / 2 - barSize / 2;
+        if (max(groups.map(function (d) { return d.values.length; })) === 1) {
+          s[this$1._discrete](function (d, i) { return shapeConfig[this$1._discrete](d, i); });
+        }
+        else {
 
-            var xMod = linear$2()
-              .domain([0, uniqueIds.length - 1])
-              .range([-offset, offset]);
+          barSize /= uniqueIds.length;
 
-            s[this$1._discrete](function (d, i) { return shapeConfig[this$1._discrete](d, i) + xMod(uniqueIds.indexOf(this$1._ids(d).join("_"))); });
-          }
+          var offset = space / 2 - barSize / 2;
 
+          var xMod = linear$2()
+            .domain([0, uniqueIds.length - 1])
+            .range([-offset, offset]);
+
+          s[this$1._discrete](function (d, i) { return shapeConfig[this$1._discrete](d, i) + xMod(uniqueIds.indexOf(barId(d))); });
         }
 
         s.width(barSize);
