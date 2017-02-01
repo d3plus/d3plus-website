@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.12.2
+  d3plus-shape v0.12.3
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -7367,14 +7367,6 @@ var measure = function(text, style) {
 
 };
 
-var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
-var checked = {};
-var height = 32;
-var macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
-var monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
-var proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
-var ubuntu = measure(alpha, {"font-family": "Ubuntu", "font-size": height});
-
 /**
     @function stringify
     @desc Coerces value into a String.
@@ -8518,14 +8510,11 @@ var Shape = (function (BaseClass$$1) {
             if (labels.constructor !== Array) { labels = [labels]; }
 
             var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
-                  : this$1._x1 ? 0 : this$1._x(d.data, d.i)
-                  : this$1._x1 ? 0 : this$1._x(d, i),
-                y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                  : this$1._y1 ? 0 : this$1._y(d.data, d.i)
-                  : this$1._y1 ? 0 : this$1._y(d, i);
-
-            if (aes.x) { x += aes.x; }
-            if (aes.y) { y += aes.y; }
+                    : this$1._x1 ? 0 : this$1._x(d.data, d.i)
+                    : this$1._x1 ? 0 : this$1._x(d, i),
+                  y = d.__d3plusShape__ ? d.translate ? d.translate[1]
+                    : this$1._y1 ? 0 : this$1._y(d.data, d.i)
+                    : this$1._y1 ? 0 : this$1._y(d, i);
 
             if (d.__d3plusShape__) {
               d = d.data;
@@ -12213,12 +12202,19 @@ var Area = (function (Shape$$1) {
 */
 var Bar = (function (Shape$$1) {
   function Bar() {
+    var this$1 = this;
+
 
     Shape$$1.call(this, "rect");
 
     this._name = "Bar";
     this._height = constant$2(10);
-    this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
+    this._labelBounds = function (d, i, s) { return ({
+      width: s.width,
+      height: s.height,
+      x: this$1._x1 !== null ? this$1._x(d, i) + this$1._getX(d, i) : -s.width / 2,
+      y: this$1._x1 === null ? this$1._y(d, i) + this$1._getY(d, i) : this$1._y(d, i) - s.height / 2
+    }); };
     this._width = constant$2(10);
     this._x = accessor("x");
     this._x0 = accessor("x");
@@ -12276,12 +12272,7 @@ var Bar = (function (Shape$$1) {
       @private
   */
   Bar.prototype._aes = function _aes (d, i) {
-    return {
-      height: this._getHeight(d, i),
-      width: this._getWidth(d, i),
-      x: this._x1 !== null ? this._getX(d, i) + this._getWidth(d, i) / 2 : this._getX(d, i),
-      y: this._x1 === null ? this._getY(d, i) + this._getHeight(d, i) / 2 : this._getY(d, i)
-    };
+    return {height: this._getHeight(d, i), width: this._getWidth(d, i)};
   };
 
   /**
@@ -12332,7 +12323,7 @@ var Bar = (function (Shape$$1) {
       @private
   */
   Bar.prototype._getX = function _getX (d, i) {
-    var w = this._x1 === null ? this._width(d, i) : this._x1(d, i) - this._x(d, i);
+    var w = this._x1 === null ? this._x(d, i) : this._x1(d, i) - this._x(d, i);
     if (w < 0) { return w; }
     else { return 0; }
   };
@@ -12345,7 +12336,7 @@ var Bar = (function (Shape$$1) {
       @private
   */
   Bar.prototype._getY = function _getY (d, i) {
-    var h = this._x1 !== null ? this._height(d, i) : this._y1(d, i) - this._y(d, i);
+    var h = this._x1 !== null ? this._y(d, i) : this._y1(d, i) - this._y(d, i);
     if (h < 0) { return h; }
     else { return 0; }
   };
