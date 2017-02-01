@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.12.3
+  d3plus-shape v0.12.4
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -551,11 +551,9 @@ var Shape = (function (BaseClass$$1) {
             if (labels.constructor !== Array) { labels = [labels]; }
 
             var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
-                    : this$1._x1 ? 0 : this$1._x(d.data, d.i)
-                    : this$1._x1 ? 0 : this$1._x(d, i),
+                    : this$1._x(d.data, d.i) : this$1._x(d, i),
                   y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                    : this$1._y1 ? 0 : this$1._y(d.data, d.i)
-                    : this$1._y1 ? 0 : this$1._y(d, i);
+                    : this$1._y(d.data, d.i) : this$1._y(d, i);
 
             if (d.__d3plusShape__) {
               d = d.data;
@@ -1710,6 +1708,8 @@ var largestRect = function(poly, options) {
 */
 var Area = (function (Shape$$1) {
   function Area() {
+    var this$1 = this;
+
 
     Shape$$1.call(this);
 
@@ -1717,7 +1717,7 @@ var Area = (function (Shape$$1) {
     this._defined = function () { return true; };
     this._labelBounds = function (d, i, aes) {
       var r = largestRect(aes.points);
-      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2};
+      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2 - this$1._x(d, i), y: r.cy - r.height / 2 - this$1._y(d, i)};
     };
     this._name = "Area";
     this.textAnchor("middle");
@@ -1960,8 +1960,8 @@ var Bar = (function (Shape$$1) {
     this._labelBounds = function (d, i, s) { return ({
       width: s.width,
       height: s.height,
-      x: this$1._x1 !== null ? this$1._x(d, i) + this$1._getX(d, i) : -s.width / 2,
-      y: this$1._x1 === null ? this$1._y(d, i) + this$1._getY(d, i) : this$1._y(d, i) - s.height / 2
+      x: this$1._x1 !== null ? this$1._getX(d, i) : -s.width / 2,
+      y: this$1._x1 === null ? this$1._getY(d, i) : -s.height / 2
     }); };
     this._width = d3plusCommon.constant(10);
     this._x = d3plusCommon.accessor("x");
