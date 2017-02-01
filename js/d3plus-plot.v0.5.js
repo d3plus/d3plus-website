@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.5
+  d3plus-plot v0.5.6
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -533,7 +533,7 @@ var Plot = (function (Viz$$1) {
         var range$$1 = scale.range();
         if (vals.length > 1) { space = scale(vals[1]) - scale(vals[0]); }
         else { space = range$$1[range$$1.length - 1] - range$$1[0]; }
-        space -= 20;
+        space -= this$1._barPadding;
 
         var barSize = space;
 
@@ -774,6 +774,7 @@ var BarChart = (function (Plot$$1) {
   function BarChart() {
 
     Plot$$1.call(this);
+    this._barPadding = 20;
     this._baseline = 0;
     this._discrete = "x";
     this._shape = d3plusCommon.constant("Bar");
@@ -784,6 +785,15 @@ var BarChart = (function (Plot$$1) {
   if ( Plot$$1 ) BarChart.__proto__ = Plot$$1;
   BarChart.prototype = Object.create( Plot$$1 && Plot$$1.prototype );
   BarChart.prototype.constructor = BarChart;
+
+  /**
+      @memberof BarChart
+      @desc Sets the pixel space between groups of bars.
+      @param {Number} [*value* = 20]
+  */
+  BarChart.prototype.barPadding = function barPadding (_) {
+    return arguments.length ? (this._barPadding = _, this) : this._barPadding;
+  };
 
   return BarChart;
 }(Plot));
