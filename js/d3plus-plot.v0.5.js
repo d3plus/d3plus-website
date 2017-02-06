@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.6
+  d3plus-plot v0.5.7
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -240,11 +240,16 @@ var Plot = (function (Viz$$1) {
 
     if (!this._filteredData.length) { return this; }
 
+    var stackGroup = function (d, i) { return this$1._stacked
+                ? ("" + (this$1._groupBy.length > 1 ? this$1._ids(d, i).slice(0, -1).join("_") : "group"))
+                : ("" + (this$1._ids(d, i).join("_"))); };
+
     var data = this._filteredData.map(function (d, i) { return ({
       __d3plus__: true,
       data: d,
+      group: stackGroup(d, i),
       i: i,
-      id: this$1._id(d, i),
+      id: this$1._ids(d, i).join("_"),
       shape: this$1._shape(d, i),
       x: this$1._x(d, i),
       y: this$1._y(d, i)
@@ -273,7 +278,7 @@ var Plot = (function (Viz$$1) {
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
 
       stackData = d3Collection.nest()
-        .key(function (d) { return d[this$1._discrete]; })
+        .key(function (d) { return ((d[this$1._discrete]) + "_" + (d.group)); })
         .entries(data)
         .sort(function (a, b) { return a.key - b.key; });
 
@@ -291,6 +296,7 @@ var Plot = (function (Viz$$1) {
                 var fillerPoint = {
                   __d3plus__: true,
                   data: d.data,
+                  group: stackGroup(d.data, d.i),
                   id: k,
                   shape: d.shape
                 };
@@ -508,12 +514,12 @@ var Plot = (function (Viz$$1) {
       var scale = opp === "x" ? x : y;
       positions[("" + opp)] = positions[(opp + "0")] = function (d) {
         var dataIndex = stackKeys.indexOf(d.id),
-              discreteIndex = discreteKeys.indexOf(("" + (d[this$1._discrete])));
+              discreteIndex = discreteKeys.indexOf(((d[this$1._discrete]) + "_" + (d.group)));
         return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][0]) : scale(0);
       };
       positions[(opp + "1")] = function (d) {
         var dataIndex = stackKeys.indexOf(d.id),
-              discreteIndex = discreteKeys.indexOf(("" + (d[this$1._discrete])));
+              discreteIndex = discreteKeys.indexOf(((d[this$1._discrete]) + "_" + (d.group)));
         return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][1]) : scale(0);
       };
     }
@@ -537,13 +543,9 @@ var Plot = (function (Viz$$1) {
 
         var barSize = space;
 
-        var barId = function (d) { return this$1._stacked
-                    ? ("" + (this$1._groupBy.length > 1 ? this$1._ids(d).slice(0, -1).join("_") : "group"))
-                    : ("" + (this$1._ids(d).join("_"))); };
-
         var groups = d3Collection.nest()
           .key(function (d) { return d.y; })
-          .key(barId)
+          .key(function (d) { return d.group; })
           .entries(d.values);
 
         var ids = d3Array.merge(groups.map(function (d) { return d.values.map(function (v) { return v.key; }); }));
@@ -562,7 +564,8 @@ var Plot = (function (Viz$$1) {
             .domain([0, uniqueIds.length - 1])
             .range([-offset, offset]);
 
-          s[this$1._discrete](function (d, i) { return shapeConfig[this$1._discrete](d, i) + xMod(uniqueIds.indexOf(barId(d))); });
+          s[this$1._discrete](function (d, i) { return shapeConfig[this$1._discrete](d, i) + xMod(uniqueIds.indexOf(d.group)); });
+
         }
 
         s.width(barSize);
