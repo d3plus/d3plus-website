@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.7.4
+  d3plus-legend v0.7.5
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -49,7 +49,7 @@ var Legend = (function (BaseClass$$1) {
       hitArea: function (dd) {
         var d = this$1._lineData[this$1._data.indexOf(dd)],
               h = d3Array.max([d.height, d.shapeHeight]);
-        return {width: d.width + d.shapeWidth + (d.width ? this$1._padding : 0), height: h, x: -d.shapeWidth / 2, y: -h / 2};
+        return {width: d.width + d.shapeWidth, height: h, x: -d.shapeWidth / 2, y: -h / 2};
       },
       labelBounds: function (dd, i, s) {
         var d = this$1._lineData[dd.i],
@@ -65,7 +65,8 @@ var Legend = (function (BaseClass$$1) {
         var pad = this$1._align === "left" || this$1._align === "right" && this$1._direction === "column" ? 0 : this$1._align === "center"
                   ? (this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }))) / 2
                   : this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }));
-        return this$1._rowWidth(this$1._lineData.slice(0, i).filter(function (l) { return y === l.y; })) + this$1._padding +
+        var prevWords = this$1._lineData.slice(0, i).filter(function (l) { return y === l.y; });
+        return this$1._rowWidth(prevWords) + this$1._padding * (prevWords.length ? 2 : 0) +
                this$1._outerBounds.x + s(d, i) / 2 + pad;
       },
       y: function (d, i) {
@@ -101,7 +102,10 @@ var Legend = (function (BaseClass$$1) {
   Legend.prototype._rowWidth = function _rowWidth (row) {
     var this$1 = this;
 
-    return d3Array.sum(row.map(function (d) { return d.shapeWidth + d.width + this$1._padding * (d.width ? 2 : 1); })) - this._padding;
+    return d3Array.sum(row.map(function (d, i) {
+      var p = this$1._padding * (i === row.length - 1 ? 0 : d.width ? 2 : 1);
+      return d.shapeWidth + d.width + p;
+    }));
   };
 
   /**
@@ -152,7 +156,7 @@ var Legend = (function (BaseClass$$1) {
         .width(w)
         .height(h)
         (this$1._label(d, i));
-      res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); }))) + s;
+      res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
       res.height = Math.ceil(res.lines.length * (lh + 1));
       res.og = {height: res.height, width: res.width};
       res.data = d;
@@ -169,9 +173,9 @@ var Legend = (function (BaseClass$$1) {
 
     var spaceNeeded;
     var availableWidth = this._width - this._padding * 2;
-    spaceNeeded = d3Array.sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding * 2 + d.width; })) - this._padding;
+    spaceNeeded = this._rowWidth(this._lineData);
 
-    if (spaceNeeded > availableWidth) {
+    if (this._direction === "column" || spaceNeeded > availableWidth) {
       var lines = 1, newRows = [];
 
       var maxLines = d3Array.max(this._lineData.map(function (d) { return d.words.length; }));
@@ -254,7 +258,7 @@ var Legend = (function (BaseClass$$1) {
       this._wrapRows();
 
       if (!newRows.length || d3Array.sum(newRows, this._rowHeight.bind(this)) + this._padding > availableHeight) {
-        spaceNeeded = d3Array.sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding * 1; })) - this._padding;
+        spaceNeeded = d3Array.sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding; })) - this._padding;
         for (var i = 0; i < this._lineData.length; i++) {
           this$1._lineData[i].width = 0;
           this$1._lineData[i].height = 0;
@@ -270,7 +274,7 @@ var Legend = (function (BaseClass$$1) {
             }
           });
         });
-        spaceNeeded = d3Array.max(newRows, function (l) { return d3Array.sum(l, function (d) { return d.shapeWidth + this$1._padding * (d.width ? 2 : 1) + d.width; }); }) - this._padding;
+        spaceNeeded = d3Array.max(newRows, this._rowWidth.bind(this));
       }
     }
 
