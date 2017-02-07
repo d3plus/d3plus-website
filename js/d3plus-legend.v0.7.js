@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.7.2
+  d3plus-legend v0.7.3
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -29,6 +29,7 @@ var Legend = (function (BaseClass$$1) {
 
     this._align = "center";
     this._data = [];
+    this._direction = "row";
     this._duration = 600;
     this._height = 200;
     this._id = d3plusCommon.accessor("id");
@@ -229,20 +230,24 @@ var Legend = (function (BaseClass$$1) {
             newRows = [];
             break;
           }
-          if (rowWidth + w < availableWidth) {
-            rowWidth += w;
-          }
-          else if (w > availableWidth) {
+          if (w > availableWidth) {
             newRows = [];
             this$1._wrapLines();
             break;
           }
-          else {
+          else if (rowWidth + w < availableWidth) {
+            rowWidth += w;
+          }
+          else if (this$1._direction !== "column") {
             rowWidth = w;
             row++;
           }
           if (!newRows[row - 1]) { newRows[row - 1] = []; }
           newRows[row - 1].push(d);
+          if (this$1._direction === "column") {
+            rowWidth = 0;
+            row++;
+          }
         }
       };
 
@@ -392,6 +397,16 @@ var Legend = (function (BaseClass$$1) {
   */
   Legend.prototype.data = function data (_) {
     return arguments.length ? (this._data = _, this) : this._data;
+  };
+
+  /**
+      @memberof Legend
+      @desc Sets the flow of the items inside the legend. If no value is passed, the current flow will be returned.
+      @param {String} [*value* = "row"]
+      @chainable
+  */
+  Legend.prototype.direction = function direction (_) {
+    return arguments.length ? (this._direction = _, this) : this._direction;
   };
 
   /**
