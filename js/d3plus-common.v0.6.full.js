@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.13
+  d3plus-common v0.6.14
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -2962,7 +2962,8 @@ var elem = function(selector$$1, p) {
         id = (/#([^\.]+)/g).exec(selector$$1),
         tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
 
-  var elem = p.parent.selectAll(selector$$1).data(p.condition ? [null] : []);
+  var elem = p.parent.selectAll(selector$$1.includes(":") ? selector$$1.split(":")[1] : selector$$1)
+    .data(p.condition ? [null] : []);
 
   var enter = elem.enter().append(tag).call(attrize, p.enter);
 
