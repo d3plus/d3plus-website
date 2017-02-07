@@ -1,14 +1,14 @@
 /*
-  d3plus-viz v0.6.3
+  d3plus-viz v0.6.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
-	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Request,global.d3Array,global.d3Color,global.d3Collection,global.d3Queue,global.d3Selection,global.d3Transition,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
-}(this, (function (exports,d3Request,d3Array,d3Color,d3Collection,d3Queue,d3Selection,d3Transition,d3plusAxis,d3plusColor,d3plusCommon,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-form'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
+	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-form', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3Request,global.d3Array,global.d3Color,global.d3Collection,global.d3Queue,global.d3Selection,global.d3Transition,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusForm,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
+}(this, (function (exports,d3Request,d3Array,d3Color,d3Collection,d3Queue,d3Selection,d3Transition,d3plusAxis,d3plusColor,d3plusCommon,d3plusForm,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
 
 /**
   @function dataFold
@@ -101,6 +101,87 @@ var drawBack = function() {
 };
 
 /**
+    @function _drawLegend
+    @desc Renders the legend if this._legend is not falsy.
+    @param {Array} dara The filtered data array to be displayed.
+    @private
+*/
+var drawControls = function() {
+  var this$1 = this;
+
+
+  var condition = this._controls && this._controls.length;
+  var that = this;
+  var transform = {
+    height: this._height - this._margin.top - this._margin.bottom,
+    width: this._width - this._margin.left - this._margin.right,
+    x: this._margin.left,
+    y: this._margin.top
+  };
+
+  var foreign = d3plusCommon.elem("foreignObject.d3plus-viz-controls", {
+    condition: condition,
+    enter: Object.assign({opacity: 0}, transform),
+    exit: Object.assign({opacity: 0}, transform),
+    parent: this._select,
+    transition: this._transition,
+    update: Object.assign({opacity: 1}, transform)
+  });
+
+  var container = foreign.selectAll("div.d3plus-viz-controls-container")
+    .data([null]);
+
+  container = container.enter().append("xhtml:div")
+      .attr("class", "d3plus-viz-controls-container")
+      .style("margin-top", ((transform.height) + "px"))
+    .merge(container);
+
+  if (condition) {
+
+    var loop = function ( i ) {
+
+      var control = this$1._controls[i];
+
+      var on = {};
+      if (control.on) {
+        var loop$1 = function ( event ) {
+          if ({}.hasOwnProperty.call(control.on, event)) {
+            on[event] = function() {
+              control.on[event].bind(that)(this.value);
+            };
+          }
+        };
+
+        for (var event in control.on) loop$1( event );
+
+      }
+
+      var id = control.label || i;
+      if (!this$1._controlCache[id]) { this$1._controlCache[id] = new d3plusForm.Select().container(container.node()); }
+      this$1._controlCache[id]
+        .config(control)
+        .config({on: on})
+        .config(this$1._controlConfig)
+        .render();
+
+    };
+
+    for (var i = 0; i < this._controls.length; i++) loop( i );
+
+    var bounds = container.node().getBoundingClientRect();
+
+    container
+        .style("text-align", "center")
+      .transition(this._transition)
+        .style("margin-top", ((transform.height - bounds.height) + "px"));
+
+    this._margin.bottom += bounds.height;
+
+  }
+
+};
+
+/**
     @function _colorNest
     @desc Returns an Array of data objects based on a given color accessor and groupBy levels.
     @param {Array} raw The raw data Array to be grouped by color.
@@ -157,6 +238,10 @@ var drawLegend = function(data) {
   if ( data === void 0 ) data = [];
 
 
+  var position = this._legendPosition;
+  var wide = ["top", "bottom"].includes(position);
+  var transform = {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")};
+
   this._legendData = [];
   if (data.length) {
 
@@ -168,8 +253,10 @@ var drawLegend = function(data) {
 
   var legendGroup = d3plusCommon.elem("g.d3plus-viz-legend", {
     condition: this._legend,
+    enter: transform,
     parent: this._select,
-    transition: this._transition
+    transition: this._transition,
+    update: transform
   }).node();
 
   if (this._legend) {
@@ -178,13 +265,15 @@ var drawLegend = function(data) {
 
     this._legendClass
       .id(legend.id)
+      .align(wide ? "center" : position)
+      .direction(wide ? "row" : "column")
       .duration(this._duration)
       .data(legend.data.length > 1 ? legend.data : [])
-      .height(this._height - this._margin.bottom)
+      .height(this._height - this._margin.bottom - this._margin.top)
       .label(this._label || legend.id)
       .select(legendGroup)
-      .verticalAlign("bottom")
-      .width(this._width)
+      .verticalAlign(!wide ? "middle" : position)
+      .width(this._width - this._margin.left - this._margin.right)
       .shapeConfig(this._shapeConfig)
       .shapeConfig({on: Object.keys(this._on)
         .filter(function (e) { return !e.includes(".") || e.includes(".legend"); })
@@ -196,7 +285,10 @@ var drawLegend = function(data) {
       .render();
 
     var legendBounds = this._legendClass.outerBounds();
-    if (legendBounds.height) { this._margin.bottom += legendBounds.height + this._legendClass.padding() * 2; }
+    if (legendBounds.height) {
+      if (wide) { this._margin[position] += legendBounds.height + this._legendClass.padding() * 2; }
+      else { this._margin[position] += legendBounds.width + this._legendClass.padding() * 2; }
+    }
 
   }
 
@@ -603,6 +695,11 @@ var Viz = (function (BaseClass$$1) {
       fontSize: 10,
       resize: false
     };
+    var controlTest = new d3plusForm.Select();
+    this._controlCache = {};
+    this._controlConfig = {
+      selectStyle: Object.assign({margin: "5px"}, controlTest.selectStyle())
+    };
     this._data = [];
     this._detectResize = true;
     this._detectVisible = true;
@@ -616,6 +713,7 @@ var Viz = (function (BaseClass$$1) {
       }
     };
     this._legendClass = new d3plusLegend.Legend();
+    this._legendPosition = "bottom";
     this._locale = "en-US";
     this._on = {
       "click": click.bind(this),
@@ -771,21 +869,26 @@ var Viz = (function (BaseClass$$1) {
 
     }
 
+    drawTitle.bind(this)(flatData);
+    drawControls.bind(this)(flatData);
     drawTimeline.bind(this)(flatData);
     drawLegend.bind(this)(flatData);
     drawBack.bind(this)();
-    drawTitle.bind(this)(flatData);
     drawTotal.bind(this)(flatData);
 
     this._shapes = [];
 
     // Draws a rectangle showing the available space for a visualization.
     // const tester = this._select.selectAll(".tester").data([0]);
-    // tester.enter().append("rect").attr("fill", "#ccc").merge(tester)
-    //   .attr("width", this._width - this._margin.left - this._margin.right)
-    //   .attr("height", this._height - this._margin.top - this._margin.bottom)
-    //   .attr("x", this._margin.left)
-    //   .attr("y", this._margin.top);
+    // console.log(this._margin);
+    // tester.enter().append("rect")
+    //     .attr("class", "tester")
+    //     .attr("fill", "#ccc")
+    //   .merge(tester)
+    //     .attr("width", this._width - this._margin.left - this._margin.right)
+    //     .attr("height", this._height - this._margin.top - this._margin.bottom)
+    //     .attr("x", this._margin.left)
+    //     .attr("y", this._margin.top);
 
   };
 
@@ -951,6 +1054,26 @@ var Viz = (function (BaseClass$$1) {
   */
   Viz.prototype.backConfig = function backConfig (_) {
     return arguments.length ? (this._backConfig = d3plusCommon.assign(this._backConfig, _), this) : this._backConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc Defines a list of controls to be rendered at the bottom of the visualization.
+      @param {Array} [*value*]
+      @chainable
+  */
+  Viz.prototype.controls = function controls (_) {
+    return arguments.length ? (this._controls = _, this) : this._controls;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the config method for the controls and returns the current class instance. If *value* is not specified, returns the current control configuration.
+      @param {Object} [*value*]
+      @chainable
+  */
+  Viz.prototype.controlConfig = function controlConfig (_) {
+    return arguments.length ? (this._controlConfig = d3plusCommon.assign(this._controlConfig, _), this) : this._controlConfig;
   };
 
   /**
@@ -1134,6 +1257,16 @@ function value(d) {
   */
   Viz.prototype.legendConfig = function legendConfig (_) {
     return arguments.length ? (this._legendConfig = _, this) : this._legendConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc Defines which side of the visualization to anchor the legend. Acceptable values are `"top"`, `"bottom"`, `"left"`, and `"right"`. If no value is passed, the current legend position will be returned.
+      @param {String} [*value* = "bottom"]
+      @chainable
+  */
+  Viz.prototype.legendPosition = function legendPosition (_) {
+    return arguments.length ? (this._legendPosition = _, this) : this._legendPosition;
   };
 
   /**
