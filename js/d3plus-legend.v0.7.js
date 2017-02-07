@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.7.3
+  d3plus-legend v0.7.4
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -62,7 +62,7 @@ var Legend = (function (BaseClass$$1) {
       x: function (d, i) {
         var s = this$1._shapeConfig.width;
         var y = this$1._lineData[i].y;
-        var pad = this$1._align === "left" ? 0 : this$1._align === "center"
+        var pad = this$1._align === "left" || this$1._align === "right" && this$1._direction === "column" ? 0 : this$1._align === "center"
                   ? (this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }))) / 2
                   : this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }));
         return this$1._rowWidth(this$1._lineData.slice(0, i).filter(function (l) { return y === l.y; })) + this$1._padding +
