@@ -1,5 +1,5 @@
 /*
-  d3plus-form v0.1.0
+  d3plus-form v0.1.1
   Javascript rendered input forms.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -5424,7 +5424,9 @@ var Select = (function (BaseClass$$1) {
     var that = this;
 
     var container = this._container.selectAll(("select#d3plus-Select-" + (this._uuid))).data([0]);
-    container = container.enter().append("select")
+    var svg = this._container.node().tagName.toLowerCase() === "foreignobject";
+
+    container = container.enter().append(svg ? "xhtml:select" : "select")
         .attr("id", ("d3plus-Select-" + (this._uuid)))
         .attr("class", "d3plus-Select")
       .merge(container)
@@ -5450,9 +5452,9 @@ var Select = (function (BaseClass$$1) {
         .html(function (d, i) { return this$1._text(d, i); })
         .property("selected", function (d, i) { return this$1._selected === void 0 ? !i : ("" + (this$1._value(d, i))) === ("" + (this$1._selected)); });
 
-    var label = this._container.selectAll(("select#d3plus-Label-" + (this._uuid))).data(this._label ? [0] : []);
+    var label = this._container.selectAll(("label#d3plus-Label-" + (this._uuid))).data(this._label ? [0] : []);
     label.exit().remove();
-    label.enter().insert("label", ("#d3plus-Select-" + (this._uuid)))
+    label.enter().insert(svg ? "xhtml:label" : "label", ("#d3plus-Select-" + (this._uuid)))
         .attr("id", ("d3plus-Label-" + (this._uuid)))
         .attr("class", "d3plus-Label")
         .attr("for", ("d3plus-Select-" + (this._uuid)))
