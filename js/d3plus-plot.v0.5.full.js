@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.7
+  d3plus-plot v0.5.8
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -3068,7 +3068,8 @@ var elem = function(selector$$1, p) {
         id = (/#([^\.]+)/g).exec(selector$$1),
         tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
 
-  var elem = p.parent.selectAll(selector$$1).data(p.condition ? [null] : []);
+  var elem = p.parent.selectAll(selector$$1.includes(":") ? selector$$1.split(":")[1] : selector$$1)
+    .data(p.condition ? [null] : []);
 
   var enter = elem.enter().append(tag).call(attrize, p.enter);
 
@@ -11257,7 +11258,6 @@ var Shape = (function (BaseClass$$1) {
 
     return new TextBox()
       .data(labelData)
-      .delay(this._duration / 2)
       .duration(this._duration)
       .fontColor(function (d) { return d.fC; })
       .fontFamily(function (d) { return d.fF; })
@@ -12593,6 +12593,10 @@ var largestRect = function(poly, options) {
   if (!origins.length) {
     // get the centroid of the polygon
     var centroid = polygonCentroid(poly);
+    if (isNaN(centroid[0])) {
+      if (options.verbose) { console.error("cannot find centroid", poly); }
+      return null;
+    }
     if (polygonContains(poly, centroid)) { origins.push(centroid); }
     // get few more points inside the polygon
     while (origins.length < options.nTries) {
@@ -12606,18 +12610,19 @@ var largestRect = function(poly, options) {
   var maxArea = 0;
   var maxRect = null;
 
-  angles.forEach(function (angle) {
+  for (var ai = 0; ai < angles.length; ai++) {
+    var angle = angles[ai];
     var angleRad = -angle * Math.PI / 180;
     if (options.events) { events.push({type: "angle", angle: angle}); }
-    origins.forEach(function (origOrigin, i) {
-
+    for (var i = 0; i < origins.length; i++) {
+      var origOrigin = origins[i];
       // generate improved origins
-      var ref = polygonRayCast(poly, origOrigin, angleRad);
-      var p1W = ref[0];
-      var p2W = ref[1];
-      var ref$1 = polygonRayCast(poly, origOrigin, angleRad + Math.PI / 2);
-      var p1H = ref$1[0];
-      var p2H = ref$1[1];
+      var ref$3 = polygonRayCast(poly, origOrigin, angleRad);
+      var p1W = ref$3[0];
+      var p2W = ref$3[1];
+      var ref$4 = polygonRayCast(poly, origOrigin, angleRad + Math.PI / 2);
+      var p1H = ref$4[0];
+      var p2H = ref$4[1];
       var modifOrigins = [];
       if (p1W && p2W) { modifOrigins.push([(p1W[0] + p2W[0]) / 2, (p1W[1] + p2W[1]) / 2]); } // average along with width axis
       if (p1H && p2H) { modifOrigins.push([(p1H[0] + p2H[0]) / 2, (p1H[1] + p2H[1]) / 2]); } // average along with height axis
@@ -12630,16 +12635,16 @@ var largestRect = function(poly, options) {
 
         if (options.events) { events.push({type: "origin", cx: origin[0], cy: origin[1]}); }
 
-        var ref$2 = polygonRayCast(poly, origin, angleRad);
-        var p1W$1 = ref$2[0];
-        var p2W$1 = ref$2[1];
+        var ref$5 = polygonRayCast(poly, origin, angleRad);
+        var p1W$1 = ref$5[0];
+        var p2W$1 = ref$5[1];
         if (p1W$1 === null || p2W$1 === null) { continue; }
         var minSqDistW = Math.min(pointDistanceSquared(origin, p1W$1), pointDistanceSquared(origin, p2W$1));
         var maxWidth = 2 * Math.sqrt(minSqDistW);
 
-        var ref$3 = polygonRayCast(poly, origin, angleRad + Math.PI / 2);
-        var p1H$1 = ref$3[0];
-        var p2H$1 = ref$3[1];
+        var ref$6 = polygonRayCast(poly, origin, angleRad + Math.PI / 2);
+        var p1H$1 = ref$6[0];
+        var p2H$1 = ref$6[1];
         if (p1H$1 === null || p2H$1 === null) { continue; }
         var minSqDistH = Math.min(pointDistanceSquared(origin, p1H$1), pointDistanceSquared(origin, p2H$1));
         var maxHeight = 2 * Math.sqrt(minSqDistH);
@@ -12695,9 +12700,9 @@ var largestRect = function(poly, options) {
 
       }
 
-    });
+    }
 
-  });
+  }
 
   return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
 
@@ -12719,6 +12724,7 @@ var Area = (function (Shape$$1) {
     this._defined = function () { return true; };
     this._labelBounds = function (d, i, aes) {
       var r = largestRect(aes.points);
+      if (!r) { return null; }
       return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2 - this$1._x(d, i), y: r.cy - r.height / 2 - this$1._y(d, i)};
     };
     this._name = "Area";
@@ -15031,6 +15037,197 @@ function queue(concurrency) {
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
+/**
+    @class Select
+    @extends external:BaseClass
+    @desc Creates an HTML select element.
+*/
+var Select = (function (BaseClass$$1) {
+  function Select() {
+
+    BaseClass$$1.call(this);
+
+    this._labelStyle = {
+      "font-family": "Verdana",
+      "font-size": "12px",
+      "margin-right": "5px"
+    };
+    this._options = [];
+    this._optionStyle = {
+      "font-family": "Verdana",
+      "font-size": "12px"
+    };
+    this._selectStyle = ( obj = {
+      "background": "#fafafa",
+      "border": "1px solid #ccc",
+      "border-radius": "0",
+      "font-family": "Verdana",
+      "font-size": "12px",
+      "outline": "0",
+      "padding": "3px 5px 4px"
+    }, obj[((prefix$1()) + "appearance")] = "none", obj );
+    var obj;
+    this._text = accessor("text");
+    this._value = accessor("value");
+
+  }
+
+  if ( BaseClass$$1 ) Select.__proto__ = BaseClass$$1;
+  Select.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  Select.prototype.constructor = Select;
+
+  /**
+      @memberof Select
+      @desc Renders the element to the page.
+      @chainable
+  */
+  Select.prototype.render = function render () {
+    var this$1 = this;
+
+
+    if (this._container === void 0) { this.container(select("body").append("div").node()); }
+    var that = this;
+
+    var container = this._container.selectAll(("select#d3plus-Select-" + (this._uuid))).data([0]);
+    var svg = this._container.node().tagName.toLowerCase() === "foreignobject";
+
+    container = container.enter().append(svg ? "xhtml:select" : "select")
+        .attr("id", ("d3plus-Select-" + (this._uuid)))
+        .attr("class", "d3plus-Select")
+      .merge(container)
+        .call(stylize, this._selectStyle)
+        .on("change.d3plus", function() {
+          that.selected(this.value);
+        });
+
+    for (var event$$1 in this$1._on) {
+      if ({}.hasOwnProperty.call(this$1._on, event$$1)) { container.on(event$$1, this$1._on[event$$1]); }
+    }
+
+    var options = container.selectAll("option")
+      .data(this._options, function (d, i) { return this$1._value(d, i); });
+
+    options.exit().remove();
+
+    options.enter().append("option")
+        .attr("class", "d3plus-Option")
+      .merge(options)
+        .call(stylize, this._optionStyle)
+        .attr("value", function (d, i) { return this$1._value(d, i); })
+        .html(function (d, i) { return this$1._text(d, i); })
+        .property("selected", function (d, i) { return this$1._selected === void 0 ? !i : ("" + (this$1._value(d, i))) === ("" + (this$1._selected)); });
+
+    var label = this._container.selectAll(("label#d3plus-Label-" + (this._uuid))).data(this._label ? [0] : []);
+    label.exit().remove();
+    label.enter().insert(svg ? "xhtml:label" : "label", ("#d3plus-Select-" + (this._uuid)))
+        .attr("id", ("d3plus-Label-" + (this._uuid)))
+        .attr("class", "d3plus-Label")
+        .attr("for", ("d3plus-Select-" + (this._uuid)))
+      .merge(label)
+        .call(stylize, this._labelStyle)
+        .html(this._label);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Select
+      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element, which is `undefined` by default.
+      @param {String|HTMLElement} [*selector*]
+      @chainable
+  */
+  Select.prototype.container = function container (_) {
+    return arguments.length ? (this._container = select(_), this) : this._container;
+  };
+
+  /**
+      @memberof Select
+      @desc Creates a <label> tag for the <select> element.
+      @param {String} [*value*]
+      @chainable
+  */
+  Select.prototype.label = function label (_) {
+    return arguments.length ? (this._label = _, this) : this._label;
+  };
+
+  /**
+      @memberof Select
+      @desc Sets the css styles for the <label> element.
+      @param {Object} [*value*]
+      @chainable
+  */
+  Select.prototype.labelStyle = function labelStyle (_) {
+    return arguments.length ? (this._labelStyle = _, this) : this._labelStyle;
+  };
+
+  /**
+      @memberof Select
+      @desc Defines the array of values to be used as <option> tags inside of the <select> element. If no value is passed, the current array is returned.
+      @param {Array} [*value* = []]
+      @chainable
+  */
+  Select.prototype.options = function options (_) {
+    return arguments.length ? (this._options = _, this) : this._options;
+  };
+
+  /**
+      @memberof Select
+      @desc Sets the css styles for the <option> elements.
+      @param {Object} [*value*]
+      @chainable
+  */
+  Select.prototype.optionStyle = function optionStyle (_) {
+    return arguments.length ? (this._optionStyle = _, this) : this._optionStyle;
+  };
+
+  /**
+      @memberof Select
+      @desc Defines the selected option.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Select.prototype.selected = function selected (_) {
+    return arguments.length ? (this._selected = _, this) : this._selected;
+  };
+
+  /**
+      @memberof Select
+      @desc Sets the css styles for the <select> element.
+      @param {Object} [*value*]
+      @chainable
+  */
+  Select.prototype.selectStyle = function selectStyle (_) {
+    return arguments.length ? (this._selectStyle = _, this) : this._selectStyle;
+  };
+
+  /**
+      @memberof Select
+      @desc Sets the inner text for each <option> element.
+      @param {Function|String} [*value* = function(d) { return d.text; }]
+      @chainable
+  */
+  Select.prototype.text = function text (_) {
+    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant(_), this) : this._text;
+  };
+
+  /**
+      @memberof Select
+      @desc Sets the value for each <option> element.
+      @param {Function} [*value* = function(d) { return d.value; }]
+      @chainable
+  */
+  Select.prototype.value = function value (_) {
+    return arguments.length ? (this._value = _, this) : this._value;
+  };
+
+  return Select;
+}(BaseClass));
+
+/**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
 
 /**
     @class Legend
@@ -15046,6 +15243,7 @@ var Legend = (function (BaseClass$$1) {
 
     this._align = "center";
     this._data = [];
+    this._direction = "row";
     this._duration = 600;
     this._height = 200;
     this._id = accessor("id");
@@ -15065,7 +15263,7 @@ var Legend = (function (BaseClass$$1) {
       hitArea: function (dd) {
         var d = this$1._lineData[this$1._data.indexOf(dd)],
               h = max([d.height, d.shapeHeight]);
-        return {width: d.width + d.shapeWidth + (d.width ? this$1._padding : 0), height: h, x: -d.shapeWidth / 2, y: -h / 2};
+        return {width: d.width + d.shapeWidth, height: h, x: -d.shapeWidth / 2, y: -h / 2};
       },
       labelBounds: function (dd, i, s) {
         var d = this$1._lineData[dd.i],
@@ -15078,10 +15276,11 @@ var Legend = (function (BaseClass$$1) {
       x: function (d, i) {
         var s = this$1._shapeConfig.width;
         var y = this$1._lineData[i].y;
-        var pad = this$1._align === "left" ? 0 : this$1._align === "center"
+        var pad = this$1._align === "left" || this$1._align === "right" && this$1._direction === "column" ? 0 : this$1._align === "center"
                   ? (this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }))) / 2
                   : this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }));
-        return this$1._rowWidth(this$1._lineData.slice(0, i).filter(function (l) { return y === l.y; })) + this$1._padding +
+        var prevWords = this$1._lineData.slice(0, i).filter(function (l) { return y === l.y; });
+        return this$1._rowWidth(prevWords) + this$1._padding * (prevWords.length ? 2 : 0) +
                this$1._outerBounds.x + s(d, i) / 2 + pad;
       },
       y: function (d, i) {
@@ -15117,7 +15316,10 @@ var Legend = (function (BaseClass$$1) {
   Legend.prototype._rowWidth = function _rowWidth (row) {
     var this$1 = this;
 
-    return sum(row.map(function (d) { return d.shapeWidth + d.width + this$1._padding * (d.width ? 2 : 1); })) - this._padding;
+    return sum(row.map(function (d, i) {
+      var p = this$1._padding * (i === row.length - 1 ? 0 : d.width ? 2 : 1);
+      return d.shapeWidth + d.width + p;
+    }));
   };
 
   /**
@@ -15168,7 +15370,7 @@ var Legend = (function (BaseClass$$1) {
         .width(w)
         .height(h)
         (this$1._label(d, i));
-      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s;
+      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
       res.height = Math.ceil(res.lines.length * (lh + 1));
       res.og = {height: res.height, width: res.width};
       res.data = d;
@@ -15185,9 +15387,9 @@ var Legend = (function (BaseClass$$1) {
 
     var spaceNeeded;
     var availableWidth = this._width - this._padding * 2;
-    spaceNeeded = sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding * 2 + d.width; })) - this._padding;
+    spaceNeeded = this._rowWidth(this._lineData);
 
-    if (spaceNeeded > availableWidth) {
+    if (this._direction === "column" || spaceNeeded > availableWidth) {
       var lines = 1, newRows = [];
 
       var maxLines = max(this._lineData.map(function (d) { return d.words.length; }));
@@ -15246,27 +15448,31 @@ var Legend = (function (BaseClass$$1) {
             newRows = [];
             break;
           }
-          if (rowWidth + w < availableWidth) {
-            rowWidth += w;
-          }
-          else if (w > availableWidth) {
+          if (w > availableWidth) {
             newRows = [];
             this$1._wrapLines();
             break;
           }
-          else {
+          else if (rowWidth + w < availableWidth) {
+            rowWidth += w;
+          }
+          else if (this$1._direction !== "column") {
             rowWidth = w;
             row++;
           }
           if (!newRows[row - 1]) { newRows[row - 1] = []; }
           newRows[row - 1].push(d);
+          if (this$1._direction === "column") {
+            rowWidth = 0;
+            row++;
+          }
         }
       };
 
       this._wrapRows();
 
       if (!newRows.length || sum(newRows, this._rowHeight.bind(this)) + this._padding > availableHeight) {
-        spaceNeeded = sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding * 1; })) - this._padding;
+        spaceNeeded = sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding; })) - this._padding;
         for (var i = 0; i < this._lineData.length; i++) {
           this$1._lineData[i].width = 0;
           this$1._lineData[i].height = 0;
@@ -15282,7 +15488,7 @@ var Legend = (function (BaseClass$$1) {
             }
           });
         });
-        spaceNeeded = max(newRows, function (l) { return sum(l, function (d) { return d.shapeWidth + this$1._padding * (d.width ? 2 : 1) + d.width; }); }) - this._padding;
+        spaceNeeded = max(newRows, this._rowWidth.bind(this));
       }
     }
 
@@ -15409,6 +15615,16 @@ var Legend = (function (BaseClass$$1) {
   */
   Legend.prototype.data = function data (_) {
     return arguments.length ? (this._data = _, this) : this._data;
+  };
+
+  /**
+      @memberof Legend
+      @desc Sets the flow of the items inside the legend. If no value is passed, the current flow will be returned.
+      @param {String} [*value* = "row"]
+      @chainable
+  */
+  Legend.prototype.direction = function direction (_) {
+    return arguments.length ? (this._direction = _, this) : this._direction;
   };
 
   /**
@@ -16940,6 +17156,87 @@ var drawBack = function() {
 };
 
 /**
+    @function _drawLegend
+    @desc Renders the legend if this._legend is not falsy.
+    @param {Array} dara The filtered data array to be displayed.
+    @private
+*/
+var drawControls = function() {
+  var this$1 = this;
+
+
+  var condition = this._controls && this._controls.length;
+  var that = this;
+  var transform = {
+    height: this._height - this._margin.top - this._margin.bottom,
+    width: this._width - this._margin.left - this._margin.right,
+    x: this._margin.left,
+    y: this._margin.top
+  };
+
+  var foreign = elem("foreignObject.d3plus-viz-controls", {
+    condition: condition,
+    enter: Object.assign({opacity: 0}, transform),
+    exit: Object.assign({opacity: 0}, transform),
+    parent: this._select,
+    transition: this._transition,
+    update: Object.assign({opacity: 1}, transform)
+  });
+
+  var container = foreign.selectAll("div.d3plus-viz-controls-container")
+    .data([null]);
+
+  container = container.enter().append("xhtml:div")
+      .attr("class", "d3plus-viz-controls-container")
+      .style("margin-top", ((transform.height) + "px"))
+    .merge(container);
+
+  if (condition) {
+
+    var loop = function ( i ) {
+
+      var control = this$1._controls[i];
+
+      var on = {};
+      if (control.on) {
+        var loop$1 = function ( event ) {
+          if ({}.hasOwnProperty.call(control.on, event)) {
+            on[event] = function() {
+              control.on[event].bind(that)(this.value);
+            };
+          }
+        };
+
+        for (var event in control.on) loop$1( event );
+
+      }
+
+      var id = control.label || i;
+      if (!this$1._controlCache[id]) { this$1._controlCache[id] = new Select().container(container.node()); }
+      this$1._controlCache[id]
+        .config(control)
+        .config({on: on})
+        .config(this$1._controlConfig)
+        .render();
+
+    };
+
+    for (var i = 0; i < this._controls.length; i++) loop( i );
+
+    var bounds = container.node().getBoundingClientRect();
+
+    container
+        .style("text-align", "center")
+      .transition(this._transition)
+        .style("margin-top", ((transform.height - bounds.height) + "px"));
+
+    this._margin.bottom += bounds.height;
+
+  }
+
+};
+
+/**
     @function _colorNest
     @desc Returns an Array of data objects based on a given color accessor and groupBy levels.
     @param {Array} raw The raw data Array to be grouped by color.
@@ -16996,6 +17293,10 @@ var drawLegend = function(data) {
   if ( data === void 0 ) data = [];
 
 
+  var position = this._legendPosition;
+  var wide = ["top", "bottom"].includes(position);
+  var transform = {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")};
+
   this._legendData = [];
   if (data.length) {
 
@@ -17007,8 +17308,10 @@ var drawLegend = function(data) {
 
   var legendGroup = elem("g.d3plus-viz-legend", {
     condition: this._legend,
+    enter: transform,
     parent: this._select,
-    transition: this._transition
+    transition: this._transition,
+    update: transform
   }).node();
 
   if (this._legend) {
@@ -17017,13 +17320,15 @@ var drawLegend = function(data) {
 
     this._legendClass
       .id(legend.id)
+      .align(wide ? "center" : position)
+      .direction(wide ? "row" : "column")
       .duration(this._duration)
       .data(legend.data.length > 1 ? legend.data : [])
-      .height(this._height - this._margin.bottom)
+      .height(this._height - this._margin.bottom - this._margin.top)
       .label(this._label || legend.id)
       .select(legendGroup)
-      .verticalAlign("bottom")
-      .width(this._width)
+      .verticalAlign(!wide ? "middle" : position)
+      .width(this._width - this._margin.left - this._margin.right)
       .shapeConfig(this._shapeConfig)
       .shapeConfig({on: Object.keys(this._on)
         .filter(function (e) { return !e.includes(".") || e.includes(".legend"); })
@@ -17035,7 +17340,10 @@ var drawLegend = function(data) {
       .render();
 
     var legendBounds = this._legendClass.outerBounds();
-    if (legendBounds.height) { this._margin.bottom += legendBounds.height + this._legendClass.padding() * 2; }
+    if (legendBounds.height) {
+      if (wide) { this._margin[position] += legendBounds.height + this._legendClass.padding() * 2; }
+      else { this._margin[position] += legendBounds.width + this._legendClass.padding() * 2; }
+    }
 
   }
 
@@ -17442,6 +17750,11 @@ var Viz = (function (BaseClass$$1) {
       fontSize: 10,
       resize: false
     };
+    var controlTest = new Select();
+    this._controlCache = {};
+    this._controlConfig = {
+      selectStyle: Object.assign({margin: "5px"}, controlTest.selectStyle())
+    };
     this._data = [];
     this._detectResize = true;
     this._detectVisible = true;
@@ -17455,6 +17768,7 @@ var Viz = (function (BaseClass$$1) {
       }
     };
     this._legendClass = new Legend();
+    this._legendPosition = "bottom";
     this._locale = "en-US";
     this._on = {
       "click": click.bind(this),
@@ -17610,21 +17924,26 @@ var Viz = (function (BaseClass$$1) {
 
     }
 
+    drawTitle.bind(this)(flatData);
+    drawControls.bind(this)(flatData);
     drawTimeline.bind(this)(flatData);
     drawLegend.bind(this)(flatData);
     drawBack.bind(this)();
-    drawTitle.bind(this)(flatData);
     drawTotal.bind(this)(flatData);
 
     this._shapes = [];
 
     // Draws a rectangle showing the available space for a visualization.
     // const tester = this._select.selectAll(".tester").data([0]);
-    // tester.enter().append("rect").attr("fill", "#ccc").merge(tester)
-    //   .attr("width", this._width - this._margin.left - this._margin.right)
-    //   .attr("height", this._height - this._margin.top - this._margin.bottom)
-    //   .attr("x", this._margin.left)
-    //   .attr("y", this._margin.top);
+    // console.log(this._margin);
+    // tester.enter().append("rect")
+    //     .attr("class", "tester")
+    //     .attr("fill", "#ccc")
+    //   .merge(tester)
+    //     .attr("width", this._width - this._margin.left - this._margin.right)
+    //     .attr("height", this._height - this._margin.top - this._margin.bottom)
+    //     .attr("x", this._margin.left)
+    //     .attr("y", this._margin.top);
 
   };
 
@@ -17790,6 +18109,26 @@ var Viz = (function (BaseClass$$1) {
   */
   Viz.prototype.backConfig = function backConfig (_) {
     return arguments.length ? (this._backConfig = assign(this._backConfig, _), this) : this._backConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc Defines a list of controls to be rendered at the bottom of the visualization.
+      @param {Array} [*value*]
+      @chainable
+  */
+  Viz.prototype.controls = function controls (_) {
+    return arguments.length ? (this._controls = _, this) : this._controls;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the config method for the controls and returns the current class instance. If *value* is not specified, returns the current control configuration.
+      @param {Object} [*value*]
+      @chainable
+  */
+  Viz.prototype.controlConfig = function controlConfig (_) {
+    return arguments.length ? (this._controlConfig = assign(this._controlConfig, _), this) : this._controlConfig;
   };
 
   /**
@@ -17973,6 +18312,16 @@ function value(d) {
   */
   Viz.prototype.legendConfig = function legendConfig (_) {
     return arguments.length ? (this._legendConfig = _, this) : this._legendConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc Defines which side of the visualization to anchor the legend. Acceptable values are `"top"`, `"bottom"`, `"left"`, and `"right"`. If no value is passed, the current legend position will be returned.
+      @param {String} [*value* = "bottom"]
+      @chainable
+  */
+  Viz.prototype.legendPosition = function legendPosition (_) {
+    return arguments.length ? (this._legendPosition = _, this) : this._legendPosition;
   };
 
   /**
@@ -18398,26 +18747,28 @@ var Plot = (function (Viz$$1) {
     var xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
           yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
 
-    if (xTime || yTime) {
-      data.forEach(function (d) {
-        if (xTime) { d.x = date$2(d.x); }
-        if (yTime) { d.y = date$2(d.y); }
-      });
+    var discreteTime = this._discrete === "x" && xTime || this._discrete === "y" && yTime;
+
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      if (xTime) { d.x = date$2(d.x); }
+      if (yTime) { d.y = date$2(d.y); }
+      d.discrete = d.shape === "Bar" ? ((d[this$1._discrete]) + "_" + (d.group)) : ("" + (d[this$1._discrete]));
     }
 
     var discreteKeys, domains, stackData, stackKeys;
     if (this._stacked) {
 
+      discreteKeys = Array.from(new Set(data.map(function (d) { return d.discrete; })))
+        .sort(function (a, b) { return discreteTime ? Number(new Date(a)) - Number(new Date(b)) : a - b; });
+
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
 
       stackData = nest()
-        .key(function (d) { return ((d[this$1._discrete]) + "_" + (d.group)); })
+        .key(function (d) { return d.discrete; })
         .entries(data)
-        .sort(function (a, b) { return a.key - b.key; });
-
-      discreteKeys = stackData.map(function (d) { return d.key; });
-
-      stackData = stackData.map(function (d) { return d.values; });
+        .sort(function (a, b) { return a.values[0][this$1._discrete] - b.values[0][this$1._discrete]; })
+        .map(function (d) { return d.values; });
 
       stackData.forEach(function (g) {
         var ids = Array.from(new Set(g.map(function (d) { return d.id; })));
@@ -18426,10 +18777,12 @@ var Plot = (function (Viz$$1) {
             if (!ids.includes(k)) {
               var d = data.filter(function (d) { return d.id === k; })[0];
               if (d.shape === "Area") {
+                var group = stackGroup(d.data, d.i);
                 var fillerPoint = {
                   __d3plus__: true,
                   data: d.data,
-                  group: stackGroup(d.data, d.i),
+                  discrete: d.shape === "Bar" ? ((g[0][this$1._discrete]) + "_" + group) : ("" + (g[0][this$1._discrete])),
+                  group: group,
                   id: k,
                   shape: d.shape
                 };
@@ -18647,12 +19000,12 @@ var Plot = (function (Viz$$1) {
       var scale = opp === "x" ? x : y;
       positions[("" + opp)] = positions[(opp + "0")] = function (d) {
         var dataIndex = stackKeys.indexOf(d.id),
-              discreteIndex = discreteKeys.indexOf(((d[this$1._discrete]) + "_" + (d.group)));
+              discreteIndex = discreteKeys.indexOf(d.discrete);
         return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][0]) : scale(0);
       };
       positions[(opp + "1")] = function (d) {
         var dataIndex = stackKeys.indexOf(d.id),
-              discreteIndex = discreteKeys.indexOf(((d[this$1._discrete]) + "_" + (d.group)));
+              discreteIndex = discreteKeys.indexOf(d.discrete);
         return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][1]) : scale(0);
       };
     }

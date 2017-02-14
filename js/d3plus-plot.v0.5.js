@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.7
+  d3plus-plot v0.5.8
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -265,26 +265,28 @@ var Plot = (function (Viz$$1) {
     var xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
           yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
 
-    if (xTime || yTime) {
-      data.forEach(function (d) {
-        if (xTime) { d.x = d3plusAxis.date(d.x); }
-        if (yTime) { d.y = d3plusAxis.date(d.y); }
-      });
+    var discreteTime = this._discrete === "x" && xTime || this._discrete === "y" && yTime;
+
+    for (var i = 0; i < data.length; i++) {
+      var d = data[i];
+      if (xTime) { d.x = d3plusAxis.date(d.x); }
+      if (yTime) { d.y = d3plusAxis.date(d.y); }
+      d.discrete = d.shape === "Bar" ? ((d[this$1._discrete]) + "_" + (d.group)) : ("" + (d[this$1._discrete]));
     }
 
     var discreteKeys, domains, stackData, stackKeys;
     if (this._stacked) {
 
+      discreteKeys = Array.from(new Set(data.map(function (d) { return d.discrete; })))
+        .sort(function (a, b) { return discreteTime ? Number(new Date(a)) - Number(new Date(b)) : a - b; });
+
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
 
       stackData = d3Collection.nest()
-        .key(function (d) { return ((d[this$1._discrete]) + "_" + (d.group)); })
+        .key(function (d) { return d.discrete; })
         .entries(data)
-        .sort(function (a, b) { return a.key - b.key; });
-
-      discreteKeys = stackData.map(function (d) { return d.key; });
-
-      stackData = stackData.map(function (d) { return d.values; });
+        .sort(function (a, b) { return a.values[0][this$1._discrete] - b.values[0][this$1._discrete]; })
+        .map(function (d) { return d.values; });
 
       stackData.forEach(function (g) {
         var ids = Array.from(new Set(g.map(function (d) { return d.id; })));
@@ -293,10 +295,12 @@ var Plot = (function (Viz$$1) {
             if (!ids.includes(k)) {
               var d = data.filter(function (d) { return d.id === k; })[0];
               if (d.shape === "Area") {
+                var group = stackGroup(d.data, d.i);
                 var fillerPoint = {
                   __d3plus__: true,
                   data: d.data,
-                  group: stackGroup(d.data, d.i),
+                  discrete: d.shape === "Bar" ? ((g[0][this$1._discrete]) + "_" + group) : ("" + (g[0][this$1._discrete])),
+                  group: group,
                   id: k,
                   shape: d.shape
                 };
@@ -514,12 +518,12 @@ var Plot = (function (Viz$$1) {
       var scale = opp === "x" ? x : y;
       positions[("" + opp)] = positions[(opp + "0")] = function (d) {
         var dataIndex = stackKeys.indexOf(d.id),
-              discreteIndex = discreteKeys.indexOf(((d[this$1._discrete]) + "_" + (d.group)));
+              discreteIndex = discreteKeys.indexOf(d.discrete);
         return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][0]) : scale(0);
       };
       positions[(opp + "1")] = function (d) {
         var dataIndex = stackKeys.indexOf(d.id),
-              discreteIndex = discreteKeys.indexOf(((d[this$1._discrete]) + "_" + (d.group)));
+              discreteIndex = discreteKeys.indexOf(d.discrete);
         return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][1]) : scale(0);
       };
     }
