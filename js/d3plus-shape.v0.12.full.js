@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.12.5
+  d3plus-shape v0.12.6
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -11973,6 +11973,7 @@ var Area = (function (Shape$$1) {
     this._defined = function () { return true; };
     this._labelBounds = function (d, i, aes) {
       var r = largestRect(aes.points);
+      if (!r) { return null; }
       return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2 - this$1._x(d, i), y: r.cy - r.height / 2 - this$1._y(d, i)};
     };
     this._name = "Area";
