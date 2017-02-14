@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.12.4
+  d3plus-shape v0.12.5
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -605,7 +605,6 @@ var Shape = (function (BaseClass$$1) {
 
     return new d3plusText.TextBox()
       .data(labelData)
-      .delay(this._duration / 2)
       .duration(this._duration)
       .fontColor(function (d) { return d.fC; })
       .fontFamily(function (d) { return d.fF; })
@@ -1591,6 +1590,10 @@ var largestRect = function(poly, options) {
   if (!origins.length) {
     // get the centroid of the polygon
     var centroid = d3Polygon.polygonCentroid(poly);
+    if (isNaN(centroid[0])) {
+      if (options.verbose) { console.error("cannot find centroid", poly); }
+      return null;
+    }
     if (d3Polygon.polygonContains(poly, centroid)) { origins.push(centroid); }
     // get few more points inside the polygon
     while (origins.length < options.nTries) {
@@ -1604,18 +1607,19 @@ var largestRect = function(poly, options) {
   var maxArea = 0;
   var maxRect = null;
 
-  angles.forEach(function (angle) {
+  for (var ai = 0; ai < angles.length; ai++) {
+    var angle = angles[ai];
     var angleRad = -angle * Math.PI / 180;
     if (options.events) { events.push({type: "angle", angle: angle}); }
-    origins.forEach(function (origOrigin, i) {
-
+    for (var i = 0; i < origins.length; i++) {
+      var origOrigin = origins[i];
       // generate improved origins
-      var ref = polygonRayCast(poly, origOrigin, angleRad);
-      var p1W = ref[0];
-      var p2W = ref[1];
-      var ref$1 = polygonRayCast(poly, origOrigin, angleRad + Math.PI / 2);
-      var p1H = ref$1[0];
-      var p2H = ref$1[1];
+      var ref$3 = polygonRayCast(poly, origOrigin, angleRad);
+      var p1W = ref$3[0];
+      var p2W = ref$3[1];
+      var ref$4 = polygonRayCast(poly, origOrigin, angleRad + Math.PI / 2);
+      var p1H = ref$4[0];
+      var p2H = ref$4[1];
       var modifOrigins = [];
       if (p1W && p2W) { modifOrigins.push([(p1W[0] + p2W[0]) / 2, (p1W[1] + p2W[1]) / 2]); } // average along with width axis
       if (p1H && p2H) { modifOrigins.push([(p1H[0] + p2H[0]) / 2, (p1H[1] + p2H[1]) / 2]); } // average along with height axis
@@ -1628,16 +1632,16 @@ var largestRect = function(poly, options) {
 
         if (options.events) { events.push({type: "origin", cx: origin[0], cy: origin[1]}); }
 
-        var ref$2 = polygonRayCast(poly, origin, angleRad);
-        var p1W$1 = ref$2[0];
-        var p2W$1 = ref$2[1];
+        var ref$5 = polygonRayCast(poly, origin, angleRad);
+        var p1W$1 = ref$5[0];
+        var p2W$1 = ref$5[1];
         if (p1W$1 === null || p2W$1 === null) { continue; }
         var minSqDistW = Math.min(pointDistanceSquared(origin, p1W$1), pointDistanceSquared(origin, p2W$1));
         var maxWidth = 2 * Math.sqrt(minSqDistW);
 
-        var ref$3 = polygonRayCast(poly, origin, angleRad + Math.PI / 2);
-        var p1H$1 = ref$3[0];
-        var p2H$1 = ref$3[1];
+        var ref$6 = polygonRayCast(poly, origin, angleRad + Math.PI / 2);
+        var p1H$1 = ref$6[0];
+        var p2H$1 = ref$6[1];
         if (p1H$1 === null || p2H$1 === null) { continue; }
         var minSqDistH = Math.min(pointDistanceSquared(origin, p1H$1), pointDistanceSquared(origin, p2H$1));
         var maxHeight = 2 * Math.sqrt(minSqDistH);
@@ -1693,9 +1697,9 @@ var largestRect = function(poly, options) {
 
       }
 
-    });
+    }
 
-  });
+  }
 
   return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
 
