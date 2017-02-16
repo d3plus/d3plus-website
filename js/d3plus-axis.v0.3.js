@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.23
+  d3plus-axis v0.3.24
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -23,11 +23,30 @@ var date = function(d) {
   else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) { return new Date(d); }
 
   var s = "" + d;
-  // detects if only passing a year value
-  if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
-    var date = new Date((s + "/01/01"));
-    date.setFullYear(d);
+  var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
+        strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s);
+
+  // tests for XX/XX/XXXX format
+  if (dayFormat) {
+    var year = dayFormat[1];
+    if (year.indexOf("-") === 0) { s = s.replace(year, year.substr(1)); }
+    var date = new Date(s);
+    date.setFullYear(year);
     return date;
+  }
+  // tests for full Date object string format
+  else if (strFormat) {
+    var year$1 = strFormat[1];
+    if (year$1.indexOf("-") === 0) { s = s.replace(year$1, year$1.substr(1)); }
+    var date$1 = new Date(s);
+    date$1.setFullYear(year$1);
+    return date$1;
+  }
+  // detects if only passing a year value
+  else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
+    var date$2 = new Date((s + "/01/01"));
+    date$2.setFullYear(d);
+    return date$2;
   }
   // parses string to Date object
   else { return new Date(s); }
