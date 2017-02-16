@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.6.4
+  d3plus-viz v0.6.5
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -8805,7 +8805,7 @@ var wrap = function() {
     for (var i = 0; i < words.length; i++) {
       var word = words[i];
       var wordWidth = sizes[words.indexOf(word)];
-      word = sentence.match(("^" + (textProg + word) + " *"), "g")[0].slice(textProg.length);
+      word += sentence.slice(textProg.length + word.length).match("^ *", "g")[0];
       if (widthProg + wordWidth > width) {
         if (!i && !overflow) {
           truncated = true;
@@ -9785,14 +9785,9 @@ var Shape = (function (BaseClass$$1) {
             if (labels.constructor !== Array) { labels = [labels]; }
 
             var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
-                  : this$1._x1 ? 0 : this$1._x(d.data, d.i)
-                  : this$1._x1 ? 0 : this$1._x(d, i),
-                y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                  : this$1._y1 ? 0 : this$1._y(d.data, d.i)
-                  : this$1._y1 ? 0 : this$1._y(d, i);
-
-            if (aes.x) { x += aes.x; }
-            if (aes.y) { y += aes.y; }
+                    : this$1._x(d.data, d.i) : this$1._x(d, i),
+                  y = d.__d3plusShape__ ? d.translate ? d.translate[1]
+                    : this$1._y(d.data, d.i) : this$1._y(d, i);
 
             if (d.__d3plusShape__) {
               d = d.data;
@@ -9844,7 +9839,6 @@ var Shape = (function (BaseClass$$1) {
 
     return new TextBox()
       .data(labelData)
-      .delay(this._duration / 2)
       .duration(this._duration)
       .fontColor(function (d) { return d.fC; })
       .fontFamily(function (d) { return d.fF; })
@@ -13123,6 +13117,10 @@ var largestRect = function(poly, options) {
   if (!origins.length) {
     // get the centroid of the polygon
     var centroid = polygonCentroid(poly);
+    if (isNaN(centroid[0])) {
+      if (options.verbose) { console.error("cannot find centroid", poly); }
+      return null;
+    }
     if (polygonContains(poly, centroid)) { origins.push(centroid); }
     // get few more points inside the polygon
     while (origins.length < options.nTries) {
@@ -13136,18 +13134,19 @@ var largestRect = function(poly, options) {
   var maxArea = 0;
   var maxRect = null;
 
-  angles.forEach(function (angle) {
+  for (var ai = 0; ai < angles.length; ai++) {
+    var angle = angles[ai];
     var angleRad = -angle * Math.PI / 180;
     if (options.events) { events.push({type: "angle", angle: angle}); }
-    origins.forEach(function (origOrigin, i) {
-
+    for (var i = 0; i < origins.length; i++) {
+      var origOrigin = origins[i];
       // generate improved origins
-      var ref = polygonRayCast(poly, origOrigin, angleRad);
-      var p1W = ref[0];
-      var p2W = ref[1];
-      var ref$1 = polygonRayCast(poly, origOrigin, angleRad + Math.PI / 2);
-      var p1H = ref$1[0];
-      var p2H = ref$1[1];
+      var ref$3 = polygonRayCast(poly, origOrigin, angleRad);
+      var p1W = ref$3[0];
+      var p2W = ref$3[1];
+      var ref$4 = polygonRayCast(poly, origOrigin, angleRad + Math.PI / 2);
+      var p1H = ref$4[0];
+      var p2H = ref$4[1];
       var modifOrigins = [];
       if (p1W && p2W) { modifOrigins.push([(p1W[0] + p2W[0]) / 2, (p1W[1] + p2W[1]) / 2]); } // average along with width axis
       if (p1H && p2H) { modifOrigins.push([(p1H[0] + p2H[0]) / 2, (p1H[1] + p2H[1]) / 2]); } // average along with height axis
@@ -13160,16 +13159,16 @@ var largestRect = function(poly, options) {
 
         if (options.events) { events.push({type: "origin", cx: origin[0], cy: origin[1]}); }
 
-        var ref$2 = polygonRayCast(poly, origin, angleRad);
-        var p1W$1 = ref$2[0];
-        var p2W$1 = ref$2[1];
+        var ref$5 = polygonRayCast(poly, origin, angleRad);
+        var p1W$1 = ref$5[0];
+        var p2W$1 = ref$5[1];
         if (p1W$1 === null || p2W$1 === null) { continue; }
         var minSqDistW = Math.min(pointDistanceSquared(origin, p1W$1), pointDistanceSquared(origin, p2W$1));
         var maxWidth = 2 * Math.sqrt(minSqDistW);
 
-        var ref$3 = polygonRayCast(poly, origin, angleRad + Math.PI / 2);
-        var p1H$1 = ref$3[0];
-        var p2H$1 = ref$3[1];
+        var ref$6 = polygonRayCast(poly, origin, angleRad + Math.PI / 2);
+        var p1H$1 = ref$6[0];
+        var p2H$1 = ref$6[1];
         if (p1H$1 === null || p2H$1 === null) { continue; }
         var minSqDistH = Math.min(pointDistanceSquared(origin, p1H$1), pointDistanceSquared(origin, p2H$1));
         var maxHeight = 2 * Math.sqrt(minSqDistH);
@@ -13225,9 +13224,9 @@ var largestRect = function(poly, options) {
 
       }
 
-    });
+    }
 
-  });
+  }
 
   return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
 
@@ -13240,6 +13239,8 @@ var largestRect = function(poly, options) {
 */
 var Area = (function (Shape$$1) {
   function Area() {
+    var this$1 = this;
+
 
     Shape$$1.call(this);
 
@@ -13247,7 +13248,8 @@ var Area = (function (Shape$$1) {
     this._defined = function () { return true; };
     this._labelBounds = function (d, i, aes) {
       var r = largestRect(aes.points);
-      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2};
+      if (!r) { return null; }
+      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2 - this$1._x(d, i), y: r.cy - r.height / 2 - this$1._y(d, i)};
     };
     this._name = "Area";
     this.textAnchor("middle");
@@ -13480,12 +13482,19 @@ var Area = (function (Shape$$1) {
 */
 var Bar = (function (Shape$$1) {
   function Bar() {
+    var this$1 = this;
+
 
     Shape$$1.call(this, "rect");
 
     this._name = "Bar";
     this._height = constant$4(10);
-    this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
+    this._labelBounds = function (d, i, s) { return ({
+      width: s.width,
+      height: s.height,
+      x: this$1._x1 !== null ? this$1._getX(d, i) : -s.width / 2,
+      y: this$1._x1 === null ? this$1._getY(d, i) : -s.height / 2
+    }); };
     this._width = constant$4(10);
     this._x = accessor("x");
     this._x0 = accessor("x");
@@ -13543,12 +13552,7 @@ var Bar = (function (Shape$$1) {
       @private
   */
   Bar.prototype._aes = function _aes (d, i) {
-    return {
-      height: this._getHeight(d, i),
-      width: this._getWidth(d, i),
-      x: this._x1 !== null ? this._getX(d, i) + this._getWidth(d, i) / 2 : this._getX(d, i),
-      y: this._x1 === null ? this._getY(d, i) + this._getHeight(d, i) / 2 : this._getY(d, i)
-    };
+    return {height: this._getHeight(d, i), width: this._getWidth(d, i)};
   };
 
   /**
@@ -13599,7 +13603,7 @@ var Bar = (function (Shape$$1) {
       @private
   */
   Bar.prototype._getX = function _getX (d, i) {
-    var w = this._x1 === null ? this._width(d, i) : this._x1(d, i) - this._x(d, i);
+    var w = this._x1 === null ? this._x(d, i) : this._x1(d, i) - this._x(d, i);
     if (w < 0) { return w; }
     else { return 0; }
   };
@@ -13612,7 +13616,7 @@ var Bar = (function (Shape$$1) {
       @private
   */
   Bar.prototype._getY = function _getY (d, i) {
-    var h = this._x1 !== null ? this._height(d, i) : this._y1(d, i) - this._y(d, i);
+    var h = this._x1 !== null ? this._y(d, i) : this._y1(d, i) - this._y(d, i);
     if (h < 0) { return h; }
     else { return 0; }
   };
@@ -14258,11 +14262,30 @@ var date$2 = function(d) {
   else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) { return new Date(d); }
 
   var s = "" + d;
-  // detects if only passing a year value
-  if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
-    var date = new Date((s + "/01/01"));
-    date.setFullYear(d);
+  var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
+        strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s);
+
+  // tests for XX/XX/XXXX format
+  if (dayFormat) {
+    var year = dayFormat[1];
+    if (year.indexOf("-") === 0) { s = s.replace(year, year.substr(1)); }
+    var date = new Date(s);
+    date.setFullYear(year);
     return date;
+  }
+  // tests for full Date object string format
+  else if (strFormat) {
+    var year$1 = strFormat[1];
+    if (year$1.indexOf("-") === 0) { s = s.replace(year$1, year$1.substr(1)); }
+    var date$1 = new Date(s);
+    date$1.setFullYear(year$1);
+    return date$1;
+  }
+  // detects if only passing a year value
+  else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
+    var date$2 = new Date((s + "/01/01"));
+    date$2.setFullYear(d);
+    return date$2;
   }
   // parses string to Date object
   else { return new Date(s); }
@@ -21374,7 +21397,7 @@ var Viz = (function (BaseClass$$1) {
       .map(function (g) { return g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
       .filter(function (g) { return g !== void 0 && g.constructor !== Array; }); };
     this._drawLabel = this._label || function(d, i) {
-      var l = that._ids(d, i).filter(function (d) { return d && d.constructor !== Array; });
+      var l = that._ids(d, i).slice(0, this._depth + 1).filter(function (d) { return d && d.constructor !== Array; });
       return l[l.length - 1];
     };
 
