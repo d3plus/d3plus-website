@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.6.5
+  d3plus-viz v0.6.6
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -21092,7 +21092,7 @@ var mouseenter = function(d, i) {
 
   this.hover(function (h, x) {
     var ids = this$1._ids(h, x);
-    return filterId[filterId.length - 1] === ids[filterId.length - 1];
+    return filterId[this$1._depth] === ids[this$1._depth];
   });
 
 };
@@ -21149,7 +21149,7 @@ var clickLegend = function(d, i) {
 
       this.active(function (h, x) {
         var ids = this$1._ids(h, x);
-        return filterId[filterId.length - 1] === ids[filterId.length - 1];
+        return filterId[this$1._depth] === ids[this$1._depth];
       });
     }
 
@@ -21181,7 +21181,7 @@ var clickShape = function(d, i) {
 
       this.active(function (h, x) {
         var ids = this$1._ids(h, x);
-        return filterId[filterId.length - 1] === ids[filterId.length - 1];
+        return filterId[this$1._depth] === ids[this$1._depth];
       });
     }
 
@@ -21397,7 +21397,7 @@ var Viz = (function (BaseClass$$1) {
       .map(function (g) { return g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
       .filter(function (g) { return g !== void 0 && g.constructor !== Array; }); };
     this._drawLabel = this._label || function(d, i) {
-      var l = that._ids(d, i).slice(0, this._depth + 1).filter(function (d) { return d && d.constructor !== Array; });
+      var l = that._ids(d, i).slice(0, that._depth + 1).filter(function (d) { return d && d.constructor !== Array; });
       return l[l.length - 1];
     };
 
