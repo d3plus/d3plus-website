@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.6.6
+  d3plus-viz v0.6.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -21092,7 +21092,7 @@ var mouseenter = function(d, i) {
 
   this.hover(function (h, x) {
     var ids = this$1._ids(h, x);
-    return filterId[this$1._depth] === ids[this$1._depth];
+    return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
   });
 
 };
@@ -21149,7 +21149,7 @@ var clickLegend = function(d, i) {
 
       this.active(function (h, x) {
         var ids = this$1._ids(h, x);
-        return filterId[this$1._depth] === ids[this$1._depth];
+        return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
       });
     }
 
@@ -21181,7 +21181,7 @@ var clickShape = function(d, i) {
 
       this.active(function (h, x) {
         var ids = this$1._ids(h, x);
-        return filterId[this$1._depth] === ids[this$1._depth];
+        return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
       });
     }
 
