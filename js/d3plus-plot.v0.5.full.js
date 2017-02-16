@@ -13738,11 +13738,30 @@ var date$2 = function(d) {
   else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) { return new Date(d); }
 
   var s = "" + d;
-  // detects if only passing a year value
-  if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
-    var date = new Date((s + "/01/01"));
-    date.setFullYear(d);
+  var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
+        strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s);
+
+  // tests for XX/XX/XXXX format
+  if (dayFormat) {
+    var year = dayFormat[1];
+    if (year.indexOf("-") === 0) { s = s.replace(year, year.substr(1)); }
+    var date = new Date(s);
+    date.setFullYear(year);
     return date;
+  }
+  // tests for full Date object string format
+  else if (strFormat) {
+    var year$1 = strFormat[1];
+    if (year$1.indexOf("-") === 0) { s = s.replace(year$1, year$1.substr(1)); }
+    var date$1 = new Date(s);
+    date$1.setFullYear(year$1);
+    return date$1;
+  }
+  // detects if only passing a year value
+  else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
+    var date$2 = new Date((s + "/01/01"));
+    date$2.setFullYear(d);
+    return date$2;
   }
   // parses string to Date object
   else { return new Date(s); }
@@ -17585,7 +17604,7 @@ var mouseenter = function(d, i) {
 
   this.hover(function (h, x) {
     var ids = this$1._ids(h, x);
-    return filterId[filterId.length - 1] === ids[filterId.length - 1];
+    return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
   });
 
 };
@@ -17642,7 +17661,7 @@ var clickLegend = function(d, i) {
 
       this.active(function (h, x) {
         var ids = this$1._ids(h, x);
-        return filterId[filterId.length - 1] === ids[filterId.length - 1];
+        return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
       });
     }
 
@@ -17674,7 +17693,7 @@ var clickShape = function(d, i) {
 
       this.active(function (h, x) {
         var ids = this$1._ids(h, x);
-        return filterId[filterId.length - 1] === ids[filterId.length - 1];
+        return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
       });
     }
 
@@ -17890,7 +17909,7 @@ var Viz = (function (BaseClass$$1) {
       .map(function (g) { return g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
       .filter(function (g) { return g !== void 0 && g.constructor !== Array; }); };
     this._drawLabel = this._label || function(d, i) {
-      var l = that._ids(d, i).filter(function (d) { return d && d.constructor !== Array; });
+      var l = that._ids(d, i).slice(0, that._depth + 1).filter(function (d) { return d && d.constructor !== Array; });
       return l[l.length - 1];
     };
 
@@ -18731,7 +18750,7 @@ var Plot = (function (Viz$$1) {
       data: d,
       group: stackGroup(d, i),
       i: i,
-      id: this$1._ids(d, i).join("_"),
+      id: this$1._ids(d, i).slice(0, this$1._drawDepth + 1).join("_"),
       shape: this$1._shape(d, i),
       x: this$1._x(d, i),
       y: this$1._y(d, i)
@@ -18747,8 +18766,6 @@ var Plot = (function (Viz$$1) {
     var xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
           yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
 
-    var discreteTime = this._discrete === "x" && xTime || this._discrete === "y" && yTime;
-
     for (var i = 0; i < data.length; i++) {
       var d = data[i];
       if (xTime) { d.x = date$2(d.x); }
@@ -18759,8 +18776,11 @@ var Plot = (function (Viz$$1) {
     var discreteKeys, domains, stackData, stackKeys;
     if (this._stacked) {
 
-      discreteKeys = Array.from(new Set(data.map(function (d) { return d.discrete; })))
-        .sort(function (a, b) { return discreteTime ? Number(new Date(a)) - Number(new Date(b)) : a - b; });
+      discreteKeys = Array.from(new Set(data.sort(function (a, b) {
+        var a1 = a[this$1._discrete], b1 = b[this$1._discrete];
+        if (a1 - b1 !== 0) { return a1 - b1; }
+        return a.group - b.group;
+      }).map(function (d) { return d.discrete; })));
 
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
 

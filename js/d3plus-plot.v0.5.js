@@ -249,7 +249,7 @@ var Plot = (function (Viz$$1) {
       data: d,
       group: stackGroup(d, i),
       i: i,
-      id: this$1._ids(d, i).join("_"),
+      id: this$1._ids(d, i).slice(0, this$1._drawDepth + 1).join("_"),
       shape: this$1._shape(d, i),
       x: this$1._x(d, i),
       y: this$1._y(d, i)
@@ -265,8 +265,6 @@ var Plot = (function (Viz$$1) {
     var xTime = this._time && data[0].x === this._time(data[0].data, data[0].i),
           yTime = this._time && data[0].y === this._time(data[0].data, data[0].i);
 
-    var discreteTime = this._discrete === "x" && xTime || this._discrete === "y" && yTime;
-
     for (var i = 0; i < data.length; i++) {
       var d = data[i];
       if (xTime) { d.x = d3plusAxis.date(d.x); }
@@ -277,8 +275,11 @@ var Plot = (function (Viz$$1) {
     var discreteKeys, domains, stackData, stackKeys;
     if (this._stacked) {
 
-      discreteKeys = Array.from(new Set(data.map(function (d) { return d.discrete; })))
-        .sort(function (a, b) { return discreteTime ? Number(new Date(a)) - Number(new Date(b)) : a - b; });
+      discreteKeys = Array.from(new Set(data.sort(function (a, b) {
+        var a1 = a[this$1._discrete], b1 = b[this$1._discrete];
+        if (a1 - b1 !== 0) { return a1 - b1; }
+        return a.group - b.group;
+      }).map(function (d) { return d.discrete; })));
 
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
 
