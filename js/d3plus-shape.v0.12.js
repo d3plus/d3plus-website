@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.12.6
+  d3plus-shape v0.12.7
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -286,6 +286,7 @@ var Shape = (function (BaseClass$$1) {
     this._fontFamily = d3plusCommon.constant("Verdana");
     this._fontResize = d3plusCommon.constant(false);
     this._fontSize = d3plusCommon.constant(12);
+    this._fontWeight = d3plusCommon.constant(400);
 
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
@@ -564,6 +565,7 @@ var Shape = (function (BaseClass$$1) {
                   fF = this$1._fontFamily(d, i),
                   fR = this$1._fontResize(d, i),
                   fS = this$1._fontSize(d, i),
+                  fW = this$1._fontWeight(d, i),
                   lH = this$1._lineHeight(d, i),
                   padding = this$1._labelPadding(d, i),
                   r = this$1._labelRotate(d, i),
@@ -582,6 +584,7 @@ var Shape = (function (BaseClass$$1) {
                 fF: fF.constructor === Array ? fF[l] : fF,
                 fR: fR.constructor === Array ? fR[l] : fR,
                 fS: fS.constructor === Array ? fS[l] : fS,
+                fW: fW.constructor === Array ? fW[l] : fW,
                 height: b.height - p * 2,
                 i: i,
                 id: ((this$1._id(d, i)) + "_" + l),
@@ -610,6 +613,7 @@ var Shape = (function (BaseClass$$1) {
       .fontFamily(function (d) { return d.fF; })
       .fontResize(function (d) { return d.fR; })
       .fontSize(function (d) { return d.fS; })
+      .fontWeight(function (d) { return d.fW; })
       .lineHeight(function (d) { return d.lH; })
       .pointerEvents("none")
       .rotate(function (d) { return d.data.r; })
@@ -870,6 +874,18 @@ var Shape = (function (BaseClass$$1) {
     return arguments.length
          ? (this._fontSize = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
          : this._fontSize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-weight accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-weight accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = 400]
+      @chainable
+  */
+  Shape.prototype.fontWeight = function fontWeight (_) {
+    return arguments.length
+         ? (this._fontWeight = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+         : this._fontWeight;
   };
 
   /**

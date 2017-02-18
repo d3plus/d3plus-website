@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.12.6
+  d3plus-shape v0.12.7
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -3051,7 +3051,8 @@ var elem = function(selector$$1, p) {
         id = (/#([^\.]+)/g).exec(selector$$1),
         tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
 
-  var elem = p.parent.selectAll(selector$$1).data(p.condition ? [null] : []);
+  var elem = p.parent.selectAll(selector$$1.includes(":") ? selector$$1.split(":")[1] : selector$$1)
+    .data(p.condition ? [null] : []);
 
   var enter = elem.enter().append(tag).call(attrize, p.enter);
 
@@ -3513,8 +3514,8 @@ function convertAPIOptions(options) {
   options.parseMissingKeyHandler = options.parseMissingKey;
   options.appendNamespaceToMissingKey = true;
 
-  options.nsSeparator = options.nsseparator;
-  options.keySeparator = options.keyseparator;
+  options.nsSeparator = options.nsseparator || ':';
+  options.keySeparator = options.keyseparator || '.';
 
   if (options.shortcutFunction === 'sprintf') {
     options.overloadTranslationOptionHandler = function (args) {
@@ -3661,12 +3662,13 @@ var Translator = function (_EventEmitter) {
   Translator.prototype.extractFromKey = function extractFromKey(key, options) {
     var nsSeparator = options.nsSeparator || this.options.nsSeparator;
     if (nsSeparator === undefined) { nsSeparator = ':'; }
+    var keySeparator = options.keySeparator || this.options.keySeparator || '.';
 
     var namespaces = options.ns || this.options.defaultNS;
     if (nsSeparator && key.indexOf(nsSeparator) > -1) {
       var parts = key.split(nsSeparator);
-      namespaces = parts[0];
-      key = parts[1];
+      if (nsSeparator !== keySeparator || nsSeparator === keySeparator && this.options.ns.indexOf(parts[0]) > -1) { namespaces = parts.shift(); }
+      key = parts.join(keySeparator);
     }
     if (typeof namespaces === 'string') { namespaces = [namespaces]; }
 
@@ -3729,12 +3731,16 @@ var Translator = function (_EventEmitter) {
         return this.options.returnedObjectHandler ? this.options.returnedObjectHandler(key, res, options) : 'key \'' + key + ' (' + this.language + ')\' returned an object instead of string.';
       }
 
-      var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
+      // if we got a separator we loop over children - else we just return object as is
+      // as having it set to false means no hierarchy so no lookup for nested values
+      if (options.keySeparator || this.options.keySeparator) {
+        var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
 
-      for (var m in res) {
-        copy$$1[m] = this$1.translate('' + key + keySeparator + m, _extends$3({ joinArrays: false, ns: namespaces }, options));
+        for (var m in res) {
+          copy$$1[m] = this$1.translate('' + key + keySeparator + m, _extends$3({ joinArrays: false, ns: namespaces }, options));
+        }
+        res = copy$$1;
       }
-      res = copy$$1;
     }
     // array special treatment
     else if (joinArrays && resType === '[object Array]') {
@@ -7530,7 +7536,7 @@ var wrap = function() {
     for (var i = 0; i < words.length; i++) {
       var word = words[i];
       var wordWidth = sizes[words.indexOf(word)];
-      word = sentence.match(("^" + (textProg + word) + " *"), "g")[0].slice(textProg.length);
+      word += sentence.slice(textProg.length + word.length).match("^ *", "g")[0];
       if (widthProg + wordWidth > width) {
         if (!i && !overflow) {
           truncated = true;
@@ -8245,6 +8251,7 @@ var Shape = (function (BaseClass$$1) {
     this._fontFamily = constant$2("Verdana");
     this._fontResize = constant$2(false);
     this._fontSize = constant$2(12);
+    this._fontWeight = constant$2(400);
 
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
@@ -8523,6 +8530,7 @@ var Shape = (function (BaseClass$$1) {
                   fF = this$1._fontFamily(d, i),
                   fR = this$1._fontResize(d, i),
                   fS = this$1._fontSize(d, i),
+                  fW = this$1._fontWeight(d, i),
                   lH = this$1._lineHeight(d, i),
                   padding = this$1._labelPadding(d, i),
                   r = this$1._labelRotate(d, i),
@@ -8541,6 +8549,7 @@ var Shape = (function (BaseClass$$1) {
                 fF: fF.constructor === Array ? fF[l] : fF,
                 fR: fR.constructor === Array ? fR[l] : fR,
                 fS: fS.constructor === Array ? fS[l] : fS,
+                fW: fW.constructor === Array ? fW[l] : fW,
                 height: b.height - p * 2,
                 i: i,
                 id: ((this$1._id(d, i)) + "_" + l),
@@ -8569,6 +8578,7 @@ var Shape = (function (BaseClass$$1) {
       .fontFamily(function (d) { return d.fF; })
       .fontResize(function (d) { return d.fR; })
       .fontSize(function (d) { return d.fS; })
+      .fontWeight(function (d) { return d.fW; })
       .lineHeight(function (d) { return d.lH; })
       .pointerEvents("none")
       .rotate(function (d) { return d.data.r; })
@@ -8829,6 +8839,18 @@ var Shape = (function (BaseClass$$1) {
     return arguments.length
          ? (this._fontSize = typeof _ === "function" ? _ : constant$2(_), this)
          : this._fontSize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-weight accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-weight accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = 400]
+      @chainable
+  */
+  Shape.prototype.fontWeight = function fontWeight (_) {
+    return arguments.length
+         ? (this._fontWeight = typeof _ === "function" ? _ : constant$2(_), this)
+         : this._fontWeight;
   };
 
   /**
