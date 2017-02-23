@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.2.0
+  d3plus-react v0.2.1
   React components for d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -32,8 +32,9 @@ var Viz = (function (Component$$1) {
 
     var ref = this.props;
     var type = ref.type;
+    var Constructor = typeof type === "string" ? typeLookup[type] : type;
 
-    var viz = new (typeof type === "string" && typeLookup[type] ? typeLookup[type] : type)()
+    var viz = new Constructor()
       .select(this.refs.container);
 
     this.setState({viz: viz});
