@@ -1,14 +1,14 @@
 /*
-  d3plus-react v0.2.1
+  d3plus-react v0.2.2
   React components for d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('d3plus-viz'), require('d3plus-geomap'), require('d3plus-hierarchy'), require('d3plus-network'), require('d3plus-priestley')) :
-	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'd3plus-viz', 'd3plus-geomap', 'd3plus-hierarchy', 'd3plus-network', 'd3plus-priestley'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3plusPlot,global.React,global.d3plusViz,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
-}(this, (function (exports,d3plusPlot,React,d3plusViz,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('d3plus-geomap'), require('d3plus-hierarchy'), require('d3plus-network'), require('d3plus-priestley')) :
+	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'd3plus-geomap', 'd3plus-hierarchy', 'd3plus-network', 'd3plus-priestley'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3plusPlot,global.React,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
+}(this, (function (exports,d3plusPlot,React,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
 
 var React__default = 'default' in React ? React['default'] : React;
 
@@ -51,11 +51,14 @@ var Viz = (function (Component$$1) {
     var config = ref.config;
     var dataFormat = ref.dataFormat;
 
-    var viz = this.state.viz
-      .config(this.context.d3plus || {})
-      .config(Object.assign({}, config, {data: []}));
+    var viz = this.state.viz.config(this.context.d3plus || {});
 
-    if (config.data) { viz.data(config.data, dataFormat); }
+    if (dataFormat && config.data) {
+      viz
+        .config(Object.assign({}, config, {data: []}))
+        .data(config.data, dataFormat);
+    }
+    else { viz.config(config); }
 
     viz.render();
 
@@ -82,7 +85,7 @@ Viz.contextTypes = {
     @param {Object} [config = {}] An object containing method/value pairs to be passed to the visualization's .config( ) method.
     @param {Function} [dataFormat = d3plus.dataFold] A custom formatting function to be used when formatting data from an AJAX request. The function will be passed the raw data returned from the request, and is expected to return an array of values used for the data method.
 */
-Viz.defaultProps = {config: {}, dataFormat: d3plusViz.dataFold, viz: d3plusHierarchy.Treemap};
+Viz.defaultProps = {type: d3plusHierarchy.Treemap};
 
 /**
     @class AreaPlot
