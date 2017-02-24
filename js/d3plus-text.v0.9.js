@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.15
+  d3plus-text v0.9.16
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -187,7 +187,7 @@ var laoRange = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
 
 var noSpaceRange = burmeseRange + chineseRange + laoRange;
 
-var splitWords = new RegExp(("(\\" + (splitChars.join("|\\")) + ")*[^\\s|\\" + (splitChars.join("|\\")) + "]+(\\" + (splitChars.join("|\\")) + ")*"), "g");
+var splitWords = new RegExp(("(\\" + (splitChars.join("|\\")) + ")*[^\\s|\\" + (splitChars.join("|\\")) + "]*(\\" + (splitChars.join("|\\")) + ")*"), "g");
 var japaneseChars = new RegExp(("[" + japaneseRange + "]"));
 var noSpaceLanguage = new RegExp(("[" + noSpaceRange + "]"));
 var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSpaceRange + "](\\" + (suffixChars.join("|\\")) + "|\\" + (combiningMarks.join("|\\")) + ")*|[a-z0-9]+"), "gi");
@@ -198,7 +198,7 @@ var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSp
     @param {String} sentence
 */
 var textSplit = function(sentence) {
-  if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords); }
+  if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
   return d3Array.merge(stringify(sentence).match(splitWords).map(function (d) {
     if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
     return [d];
@@ -251,8 +251,8 @@ var wrap = function() {
     for (var i = 0; i < words.length; i++) {
       var word = words[i];
       var wordWidth = sizes[words.indexOf(word)];
-      word += sentence.slice(textProg.length + word.length).match("^ *", "g")[0];
-      if (widthProg + wordWidth > width) {
+      word += sentence.slice(textProg.length + word.length).match("^( |\n)*", "g")[0];
+      if (textProg.slice(-1) === "\n" || widthProg + wordWidth > width) {
         if (!i && !overflow) {
           truncated = true;
           break;
