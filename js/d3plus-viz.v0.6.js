@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.6.9
+  d3plus-viz v0.6.10
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -162,7 +162,16 @@ var drawControls = function() {
       if (!this$1._controlCache[id]) {
         var type = control.type && formTypes[control.type] ? control.type : "Select";
         this$1._controlCache[id] = new formTypes[type]().container(container.node());
+        if (control.checked) {
+          this$1._controlCache[id].checked(control.checked);
+          delete control.checked;
+        }
+        if (control.selected) {
+          this$1._controlCache[id].selected(control.selected);
+          delete control.selected;
+        }
       }
+
       this$1._controlCache[id]
         .config(control)
         .config({on: on})
