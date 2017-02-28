@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.6.8
+  d3plus-viz v0.6.9
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -100,6 +100,8 @@ var drawBack = function() {
 
 };
 
+var formTypes = {Radio: d3plusForm.Radio, Select: d3plusForm.Select};
+
 /**
     @function _drawLegend
     @desc Renders the legend if this._legend is not falsy.
@@ -157,7 +159,10 @@ var drawControls = function() {
       }
 
       var id = control.label || i;
-      if (!this$1._controlCache[id]) { this$1._controlCache[id] = new d3plusForm.Select().container(container.node()); }
+      if (!this$1._controlCache[id]) {
+        var type = control.type && formTypes[control.type] ? control.type : "Select";
+        this$1._controlCache[id] = new formTypes[type]().container(container.node());
+      }
       this$1._controlCache[id]
         .config(control)
         .config({on: on})
@@ -185,34 +190,31 @@ var drawControls = function() {
     @function _colorNest
     @desc Returns an Array of data objects based on a given color accessor and groupBy levels.
     @param {Array} raw The raw data Array to be grouped by color.
-    @param {Function} fill The color accessor for each data object.
-    @param {Array} [groupBy = []] An optional array of grouping accessors. Will autodetect if a certain group by level is assigning the colors, and will return the appropriate accessor.
     @private
 */
-var colorNest = function(raw, fill, groupBy) {
-  if ( groupBy === void 0 ) groupBy = [];
+var colorNest = function(raw) {
+  var this$1 = this;
 
 
-  if (groupBy && !(groupBy instanceof Array)) { groupBy = [groupBy]; }
-
+  var fill = function (d, i) { return ((this$1._shapeConfig.fill(d, i)) + "_" + (this$1._shapeConfig.opacity(d, i))); };
   var colors = d3Collection.nest().key(fill).entries(raw);
   if (colors.length < 2) { return {data: [], id: fill}; }
   var data, id;
 
-  if (groupBy.length) {
+  if (this._groupBy.length) {
     var numColors = colors.length;
     var loop = function ( i ) {
-      var ids = colors.map(function (c) { return Array.from(new Set(c.values.map(function (d) { return groupBy[i](d); }))); }),
+      id = function (d) { return this$1._ids(d).slice(0, i + 1).join("_"); };
+      var ids = colors.map(function (c) { return Array.from(new Set(c.values.map(id))); }),
             total = d3Array.sum(ids, function (d) { return d.length; }),
             uniques = new Set(d3Array.merge(ids)).size;
-      if (total === numColors && uniques === numColors || i === groupBy.length - 1) {
-        id = groupBy[i];
+      if (total === numColors && uniques === numColors || i === this$1._groupBy.length - 1) {
         data = d3Collection.nest().key(id).entries(raw).map(function (d) { return d3plusCommon.merge(d.values); });
         return 'break';
       }
     };
 
-    for (var i = 0; i < groupBy.length; i++) {
+    for (var i = 0; i < this._groupBy.length; i++) {
       var returned = loop( i );
 
       if ( returned === 'break' ) break;
@@ -261,7 +263,7 @@ var drawLegend = function(data) {
 
   if (this._legend) {
 
-    var legend = colorNest(this._legendData, this._shapeConfig.fill, this._groupBy);
+    var legend = colorNest.bind(this)(this._legendData);
 
     this._legendClass
       .id(legend.id)
@@ -530,7 +532,8 @@ var mouseenter = function(d, i) {
 
   this.hover(function (h, x) {
     var ids = this$1._ids(h, x);
-    return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
+    var index = d3Array.min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
+    return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
   });
 
 };
@@ -587,7 +590,8 @@ var clickLegend = function(d, i) {
 
       this.active(function (h, x) {
         var ids = this$1._ids(h, x);
-        return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
+        var index = d3Array.min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
+        return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
       });
     }
 
@@ -619,7 +623,8 @@ var clickShape = function(d, i) {
 
       this.active(function (h, x) {
         var ids = this$1._ids(h, x);
-        return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
+        var index = d3Array.min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
+        return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
       });
     }
 
@@ -833,7 +838,7 @@ var Viz = (function (BaseClass$$1) {
     this._id = this._groupBy[this._drawDepth];
     this._ids = function (d, i) { return this$1._groupBy
       .map(function (g) { return g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
-      .filter(function (g) { return g !== void 0 && g.constructor !== Array; }); };
+      .filter(function (g) { return g !== void 0 && g !== null && g.constructor !== Array; }); };
     this._drawLabel = this._label || function(d, i) {
       var l = that._ids(d, i).slice(0, that._drawDepth + 1).filter(function (d) { return d && d.constructor !== Array; });
       return l[l.length - 1];
