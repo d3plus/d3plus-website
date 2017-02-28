@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.9
+  d3plus-plot v0.5.10
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -17259,34 +17259,31 @@ var drawControls = function() {
     @function _colorNest
     @desc Returns an Array of data objects based on a given color accessor and groupBy levels.
     @param {Array} raw The raw data Array to be grouped by color.
-    @param {Function} fill The color accessor for each data object.
-    @param {Array} [groupBy = []] An optional array of grouping accessors. Will autodetect if a certain group by level is assigning the colors, and will return the appropriate accessor.
     @private
 */
-var colorNest = function(raw, fill, groupBy) {
-  if ( groupBy === void 0 ) groupBy = [];
+var colorNest = function(raw) {
+  var this$1 = this;
 
 
-  if (groupBy && !(groupBy instanceof Array)) { groupBy = [groupBy]; }
-
+  var fill = function (d, i) { return ((this$1._shapeConfig.fill(d, i)) + "_" + (this$1._shapeConfig.opacity(d, i))); };
   var colors = nest().key(fill).entries(raw);
   if (colors.length < 2) { return {data: [], id: fill}; }
   var data, id;
 
-  if (groupBy.length) {
+  if (this._groupBy.length) {
     var numColors = colors.length;
     var loop = function ( i ) {
-      var ids = colors.map(function (c) { return Array.from(new Set(c.values.map(function (d) { return groupBy[i](d); }))); }),
+      id = function (d) { return this$1._ids(d).slice(0, i + 1).join("_"); };
+      var ids = colors.map(function (c) { return Array.from(new Set(c.values.map(id))); }),
             total = sum(ids, function (d) { return d.length; }),
             uniques = new Set(merge(ids)).size;
-      if (total === numColors && uniques === numColors || i === groupBy.length - 1) {
-        id = groupBy[i];
+      if (total === numColors && uniques === numColors || i === this$1._groupBy.length - 1) {
         data = nest().key(id).entries(raw).map(function (d) { return objectMerge(d.values); });
         return 'break';
       }
     };
 
-    for (var i = 0; i < groupBy.length; i++) {
+    for (var i = 0; i < this._groupBy.length; i++) {
       var returned = loop( i );
 
       if ( returned === 'break' ) break;
@@ -17335,7 +17332,7 @@ var drawLegend = function(data) {
 
   if (this._legend) {
 
-    var legend = colorNest(this._legendData, this._shapeConfig.fill, this._groupBy);
+    var legend = colorNest.bind(this)(this._legendData);
 
     this._legendClass
       .id(legend.id)
@@ -17567,7 +17564,7 @@ var inViewport = function(elem, buffer) {
 var click = function(d, i) {
 
   this._select.style("cursor", "auto");
-  
+
   if (this._drawDepth < this._groupBy.length - 1) {
 
     var filterGroup = this._groupBy[this._drawDepth],
@@ -17604,7 +17601,8 @@ var mouseenter = function(d, i) {
 
   this.hover(function (h, x) {
     var ids = this$1._ids(h, x);
-    return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
+    var index = min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
+    return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
   });
 
 };
@@ -17661,7 +17659,8 @@ var clickLegend = function(d, i) {
 
       this.active(function (h, x) {
         var ids = this$1._ids(h, x);
-        return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
+        var index = min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
+        return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
       });
     }
 
@@ -17693,7 +17692,8 @@ var clickShape = function(d, i) {
 
       this.active(function (h, x) {
         var ids = this$1._ids(h, x);
-        return filterId[this$1._drawDepth] === ids[this$1._drawDepth];
+        var index = min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
+        return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
       });
     }
 
@@ -18670,12 +18670,14 @@ var Plot = (function (Viz$$1) {
 
 
     Viz$$1.call(this);
+    this._barPadding = 5;
     this._buffer = {
       Bar: BarBuffer,
       Circle: CircleBuffer,
       Line: LineBuffer,
       Rect: RectBuffer
     };
+    this._groupPadding = 20;
     this._shape = constant("Circle");
     this._shapeConfig = assign(this._shapeConfig, {
       Area: {
@@ -18701,7 +18703,7 @@ var Plot = (function (Viz$$1) {
       }
     });
     this._stackOffset = none$1;
-    this._stackOrder = none$2;
+    this._stackOrder = descending$2;
     this._x = accessor("x");
     this._xAxis = new AxisBottom().align("end");
     this._x2Axis = new AxisTop().align("start");
@@ -18776,18 +18778,18 @@ var Plot = (function (Viz$$1) {
     var discreteKeys, domains, stackData, stackKeys;
     if (this._stacked) {
 
-      discreteKeys = Array.from(new Set(data.sort(function (a, b) {
+      data = data.sort(function (a, b) {
         var a1 = a[this$1._discrete], b1 = b[this$1._discrete];
         if (a1 - b1 !== 0) { return a1 - b1; }
         return a.group - b.group;
-      }).map(function (d) { return d.discrete; })));
+      });
 
+      discreteKeys = Array.from(new Set(data.map(function (d) { return d.discrete; })));
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
 
       stackData = nest()
         .key(function (d) { return d.discrete; })
         .entries(data)
-        .sort(function (a, b) { return a.values[0][this$1._discrete] - b.values[0][this$1._discrete]; })
         .map(function (d) { return d.values; });
 
       stackData.forEach(function (g) {
@@ -19045,12 +19047,12 @@ var Plot = (function (Viz$$1) {
         var range$$1 = scale.range();
         if (vals.length > 1) { space = scale(vals[1]) - scale(vals[0]); }
         else { space = range$$1[range$$1.length - 1] - range$$1[0]; }
-        space -= this$1._barPadding;
+        space -= this$1._groupPadding;
 
         var barSize = space;
 
         var groups = nest()
-          .key(function (d) { return d.y; })
+          .key(function (d) { return d[this$1._discrete]; })
           .key(function (d) { return d.group; })
           .entries(d.values);
 
@@ -19062,7 +19064,7 @@ var Plot = (function (Viz$$1) {
         }
         else {
 
-          barSize /= uniqueIds.length;
+          barSize = (barSize - this$1._barPadding * uniqueIds.length - 1) / uniqueIds.length;
 
           var offset = space / 2 - barSize / 2;
 
@@ -19109,6 +19111,15 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
+      @desc Sets the pixel space between each bar in a group of bars.
+      @param {Number} [*value* = 5]
+  */
+  Plot.prototype.barPadding = function barPadding (_) {
+    return arguments.length ? (this._barPadding = _, this) : this._barPadding;
+  };
+
+  /**
+      @memberof Plot
       @desc If *value* is specified, sets the baseline for the x/y plot and returns the current class instance. If *value* is not specified, returns the current baseline.
       @param {Number} [*value*]
   */
@@ -19127,6 +19138,15 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
+      @desc Sets the pixel space between groups of bars.
+      @param {Number} [*value* = 20]
+  */
+  Plot.prototype.groupPadding = function groupPadding (_) {
+    return arguments.length ? (this._groupPadding = _, this) : this._groupPadding;
+  };
+
+  /**
+      @memberof Plot
       @desc If *value* is specified, toggles shape stacking and returns the current class instance. If *value* is not specified, returns the current stack value.
       @param {Boolean} [*value* = false]
   */
@@ -19137,7 +19157,7 @@ var Plot = (function (Viz$$1) {
   /**
       @memberof Plot
       @desc If *value* is specified, sets the stack offset and returns the current class instance. If *value* is not specified, returns the current stack offset function.
-      @param {Function|String} [*value* = "none"]
+      @param {Function|String} [*value* = "descending"]
   */
   Plot.prototype.stackOffset = function stackOffset (_) {
     return arguments.length ? (this._stackOffset = typeof _ === "function" ? _ : paths[("stackOffset" + (_.charAt(0).toUpperCase() + _.slice(1)))], this) : this._stackOffset;
@@ -19283,7 +19303,6 @@ var BarChart = (function (Plot$$1) {
   function BarChart() {
 
     Plot$$1.call(this);
-    this._barPadding = 20;
     this._baseline = 0;
     this._discrete = "x";
     this._shape = constant("Bar");
@@ -19294,15 +19313,6 @@ var BarChart = (function (Plot$$1) {
   if ( Plot$$1 ) BarChart.__proto__ = Plot$$1;
   BarChart.prototype = Object.create( Plot$$1 && Plot$$1.prototype );
   BarChart.prototype.constructor = BarChart;
-
-  /**
-      @memberof BarChart
-      @desc Sets the pixel space between groups of bars.
-      @param {Number} [*value* = 20]
-  */
-  BarChart.prototype.barPadding = function barPadding (_) {
-    return arguments.length ? (this._barPadding = _, this) : this._barPadding;
-  };
 
   return BarChart;
 }(Plot));

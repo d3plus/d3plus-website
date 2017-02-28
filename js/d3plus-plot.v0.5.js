@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.9
+  d3plus-plot v0.5.10
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -169,12 +169,14 @@ var Plot = (function (Viz$$1) {
 
 
     Viz$$1.call(this);
+    this._barPadding = 5;
     this._buffer = {
       Bar: BarBuffer,
       Circle: CircleBuffer,
       Line: LineBuffer,
       Rect: RectBuffer
     };
+    this._groupPadding = 20;
     this._shape = d3plusCommon.constant("Circle");
     this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       Area: {
@@ -200,7 +202,7 @@ var Plot = (function (Viz$$1) {
       }
     });
     this._stackOffset = d3Shape.stackOffsetNone;
-    this._stackOrder = d3Shape.stackOrderNone;
+    this._stackOrder = d3Shape.stackOrderDescending;
     this._x = d3plusCommon.accessor("x");
     this._xAxis = new d3plusAxis.AxisBottom().align("end");
     this._x2Axis = new d3plusAxis.AxisTop().align("start");
@@ -275,18 +277,18 @@ var Plot = (function (Viz$$1) {
     var discreteKeys, domains, stackData, stackKeys;
     if (this._stacked) {
 
-      discreteKeys = Array.from(new Set(data.sort(function (a, b) {
+      data = data.sort(function (a, b) {
         var a1 = a[this$1._discrete], b1 = b[this$1._discrete];
         if (a1 - b1 !== 0) { return a1 - b1; }
         return a.group - b.group;
-      }).map(function (d) { return d.discrete; })));
+      });
 
+      discreteKeys = Array.from(new Set(data.map(function (d) { return d.discrete; })));
       stackKeys = Array.from(new Set(data.map(function (d) { return d.id; })));
 
       stackData = d3Collection.nest()
         .key(function (d) { return d.discrete; })
         .entries(data)
-        .sort(function (a, b) { return a.values[0][this$1._discrete] - b.values[0][this$1._discrete]; })
         .map(function (d) { return d.values; });
 
       stackData.forEach(function (g) {
@@ -544,12 +546,12 @@ var Plot = (function (Viz$$1) {
         var range$$1 = scale.range();
         if (vals.length > 1) { space = scale(vals[1]) - scale(vals[0]); }
         else { space = range$$1[range$$1.length - 1] - range$$1[0]; }
-        space -= this$1._barPadding;
+        space -= this$1._groupPadding;
 
         var barSize = space;
 
         var groups = d3Collection.nest()
-          .key(function (d) { return d.y; })
+          .key(function (d) { return d[this$1._discrete]; })
           .key(function (d) { return d.group; })
           .entries(d.values);
 
@@ -561,7 +563,7 @@ var Plot = (function (Viz$$1) {
         }
         else {
 
-          barSize /= uniqueIds.length;
+          barSize = (barSize - this$1._barPadding * uniqueIds.length - 1) / uniqueIds.length;
 
           var offset = space / 2 - barSize / 2;
 
@@ -608,6 +610,15 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
+      @desc Sets the pixel space between each bar in a group of bars.
+      @param {Number} [*value* = 5]
+  */
+  Plot.prototype.barPadding = function barPadding (_) {
+    return arguments.length ? (this._barPadding = _, this) : this._barPadding;
+  };
+
+  /**
+      @memberof Plot
       @desc If *value* is specified, sets the baseline for the x/y plot and returns the current class instance. If *value* is not specified, returns the current baseline.
       @param {Number} [*value*]
   */
@@ -626,6 +637,15 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
+      @desc Sets the pixel space between groups of bars.
+      @param {Number} [*value* = 20]
+  */
+  Plot.prototype.groupPadding = function groupPadding (_) {
+    return arguments.length ? (this._groupPadding = _, this) : this._groupPadding;
+  };
+
+  /**
+      @memberof Plot
       @desc If *value* is specified, toggles shape stacking and returns the current class instance. If *value* is not specified, returns the current stack value.
       @param {Boolean} [*value* = false]
   */
@@ -636,7 +656,7 @@ var Plot = (function (Viz$$1) {
   /**
       @memberof Plot
       @desc If *value* is specified, sets the stack offset and returns the current class instance. If *value* is not specified, returns the current stack offset function.
-      @param {Function|String} [*value* = "none"]
+      @param {Function|String} [*value* = "descending"]
   */
   Plot.prototype.stackOffset = function stackOffset (_) {
     return arguments.length ? (this._stackOffset = typeof _ === "function" ? _ : d3Shape[("stackOffset" + (_.charAt(0).toUpperCase() + _.slice(1)))], this) : this._stackOffset;
@@ -782,7 +802,6 @@ var BarChart = (function (Plot$$1) {
   function BarChart() {
 
     Plot$$1.call(this);
-    this._barPadding = 20;
     this._baseline = 0;
     this._discrete = "x";
     this._shape = d3plusCommon.constant("Bar");
@@ -793,15 +812,6 @@ var BarChart = (function (Plot$$1) {
   if ( Plot$$1 ) BarChart.__proto__ = Plot$$1;
   BarChart.prototype = Object.create( Plot$$1 && Plot$$1.prototype );
   BarChart.prototype.constructor = BarChart;
-
-  /**
-      @memberof BarChart
-      @desc Sets the pixel space between groups of bars.
-      @param {Number} [*value* = 20]
-  */
-  BarChart.prototype.barPadding = function barPadding (_) {
-    return arguments.length ? (this._barPadding = _, this) : this._barPadding;
-  };
 
   return BarChart;
 }(Plot));
