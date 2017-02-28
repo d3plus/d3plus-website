@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.10
+  d3plus-plot v0.5.11
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -210,6 +210,7 @@ var Plot = (function (Viz$$1) {
     this._xConfig = {
       title: "X Axis"
     };
+    this._x2Config = {};
     this._y = d3plusCommon.accessor("y");
     this._yAxis = new d3plusAxis.AxisLeft().align("start");
     this._y2Axis = new d3plusAxis.AxisRight().align("end");
@@ -223,6 +224,7 @@ var Plot = (function (Viz$$1) {
       },
       title: "Y Axis"
     };
+    this._y2Config = {};
 
   }
 
@@ -390,11 +392,11 @@ var Plot = (function (Viz$$1) {
           xTicks = this._discrete === "x" && !xTime ? domains.x : undefined,
           yTicks = this._discrete === "y" && !yTime ? domains.y : undefined;
 
-    var yC = Object.assign({
+    var yC = {
       barConfig: {"stroke-width": !this._discrete || this._discrete === "y" ? 1 : 0},
       gridConfig: {"stroke-width": !this._discrete || this._discrete === "x" ? 1 : 0},
       shapeConfig: {stroke: this._discrete ? "transparent" : this._yTest.barConfig().stroke}
-    }, this._yConfig);
+    };
 
     this._yTest
       .domain(yDomain)
@@ -404,16 +406,17 @@ var Plot = (function (Viz$$1) {
       .ticks(yTicks)
       .width(width)
       .config(yC)
+      .config(this._yConfig)
       .render();
 
     var yBounds = this._yTest.outerBounds();
     var xOffset = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
 
-    var xC = Object.assign({
+    var xC = {
       barConfig: {"stroke-width": !this._discrete || this._discrete === "x" ? 1 : 0},
       gridConfig: {"stroke-width": !this._discrete || this._discrete === "y" ? 1 : 0},
       shapeConfig: {stroke: this._discrete ? "transparent" : this._xTest.barConfig().stroke}
-    }, this._xConfig);
+    };
 
     this._xTest
       .domain(xDomain)
@@ -424,6 +427,7 @@ var Plot = (function (Viz$$1) {
       .ticks(xTicks)
       .width(width)
       .config(xC)
+      .config(this._xConfig)
       .render();
 
     var xGroup = d3plusCommon.elem("g.d3plus-plot-x-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
@@ -437,6 +441,7 @@ var Plot = (function (Viz$$1) {
       .ticks(xTicks)
       .width(width)
       .config(xC)
+      .config(this._xConfig)
       .render();
 
     x = this._xAxis._d3Scale;
@@ -455,6 +460,7 @@ var Plot = (function (Viz$$1) {
       .title(false)
       .tickSize(0)
       .barConfig({"stroke-width": this._discrete ? 0 : this._xAxis.barConfig()["stroke-width"]})
+      .config(this._x2Config)
       .render();
 
     var yGroup = d3plusCommon.elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
@@ -468,6 +474,7 @@ var Plot = (function (Viz$$1) {
       .ticks(yTicks)
       .width(x.range()[x.range().length - 1] + this._xAxis.padding())
       .config(yC)
+      .config(this._yConfig)
       .render();
 
     this._y2Axis
@@ -484,6 +491,7 @@ var Plot = (function (Viz$$1) {
       .title(false)
       .tickSize(0)
       .barConfig({"stroke-width": this._discrete ? 0 : this._yAxis.barConfig()["stroke-width"]})
+      .config(this._y2Config)
       .render();
 
     y = this._yAxis._d3Scale;
@@ -704,6 +712,15 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
+      @desc If *value* is specified, sets the config method for the secondary x-axis and returns the current class instance. If *value* is not specified, returns the current secondary x-axis configuration.
+      @param {Object} [*value*]
+  */
+  Plot.prototype.x2Config = function x2Config (_) {
+    return arguments.length ? (this._x2Config = d3plusCommon.assign(this._x2Config, _), this) : this._x2Config;
+  };
+
+  /**
+      @memberof Plot
       @desc If *value* is specified, sets the x domain to the specified array and returns the current class instance. If *value* is not specified, returns the current x domain. Additionally, if either value of the array is undefined, it will be calculated from the data.
       @param {Array} [*value*]
   */
@@ -747,6 +764,15 @@ var Plot = (function (Viz$$1) {
       return this;
     }
     return this._yConfig;
+  };
+
+  /**
+      @memberof Plot
+      @desc If *value* is specified, sets the config method for the secondary y-axis and returns the current class instance. If *value* is not specified, returns the current secondary y-axis configuration.
+      @param {Object} [*value*]
+  */
+  Plot.prototype.y2Config = function y2Config (_) {
+    return arguments.length ? (this._y2Config = d3plusCommon.assign(this._y2Config, _), this) : this._y2Config;
   };
 
   /**
