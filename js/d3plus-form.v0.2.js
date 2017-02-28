@@ -1,5 +1,5 @@
 /*
-  d3plus-form v0.2.0
+  d3plus-form v0.2.1
   Javascript rendered input forms.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -92,7 +92,9 @@ var Radio = (function (BaseClass$$1) {
         .html(function (d, i) { return this$1._text(d, i); })
         .each(function(d, i) {
           var checked = that._checked === void 0 ? !i : ("" + (that._value(d, i))) === ("" + (that._checked));
-          d3Selection.select(this).style("cursor", checked ? "default" : "pointer");
+          d3Selection.select(this)
+            .classed("active", checked)
+            .style("cursor", checked ? "default" : "pointer");
           var input = d3Selection.select(this.nextSibling)
             .property("checked", checked)
             .call(d3plusCommon.stylize, that._radioStyle)
@@ -101,7 +103,7 @@ var Radio = (function (BaseClass$$1) {
               that.checked(this.value);
               radios.each(function(d, i) {
                 var checked = ("" + (that._value(d, i))) === ("" + (that._checked));
-                d3Selection.select(this).style("cursor", checked ? "default" : "pointer");
+                d3Selection.select(this).classed("active", checked).style("cursor", checked ? "default" : "pointer");
                 d3Selection.select(this.nextSibling).style("cursor", checked ? "default" : "pointer");
               });
             });
