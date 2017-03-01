@@ -1,5 +1,5 @@
 /*
-  d3plus-form v0.2.1
+  d3plus-form v0.2.2
   Javascript rendered input forms.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -78,12 +78,12 @@ var Radio = (function (BaseClass$$1) {
 
     radios = radios.enter().append("label")
         .attr("class", "d3plus-Label")
-        .attr("for", function (d, i) { return this$1._value(d, i); })
+        .attr("for", function (d, i) { return ((this$1._uuid) + "-" + (this$1._value(d, i))); })
         .each(function(d, i) {
           var input = document.createElement("input");
           input.setAttribute("type", "radio");
           input.setAttribute("name", ("d3plus-Radio-" + (that._uuid)));
-          input.setAttribute("id", that._value(d, i));
+          input.setAttribute("id", ((that._uuid) + "-" + (that._value(d, i))));
           input.setAttribute("value", that._value(d, i));
           this.parentNode.insertBefore(input, this.nextSibling);
         })
