@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.0
+  d3plus-legend v0.8.1
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -341,28 +341,30 @@ var ColorScale = (function (BaseClass$$1) {
         .map(this._value)
         .filter(function (d) { return d !== null && typeof d === "number"; });
 
-      if (data.length < colors.length) {
-        var step = (data.length - 1) / (colors.length - 1);
+      if (data.length <= colors.length) {
+
         var ts = d3Scale.scaleLinear()
-          .domain(d3Array.range(0, data.length + step, step))
+          .domain(d3Array.range(0, data.length - 1))
           .interpolate(d3Interpolate.interpolateHsl)
           .range(colors);
 
-        colors = data.map(function (d, i) { return ts(i); });
+        colors = data.slice(0, data.length - 1).map(function (d, i) { return ts(i); });
       }
 
       var jenks = ckmeans(data, colors.length + 1);
+
       ticks = d3Array.merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
       this._colorScale = d3Scale.scaleThreshold()
         .domain(ticks)
         .range(["black"].concat(colors).concat(colors[colors.length - 1]));
+
       ticks = ticks.slice(0, ticks.length - 1);
 
     }
     else {
 
-      var step$1 = (domain[1] - domain[0]) / colors.length;
-      var buckets = d3Array.range(domain[0], domain[1] + step$1, step$1);
+      var step = (domain[1] - domain[0]) / colors.length;
+      var buckets = d3Array.range(domain[0], domain[1] + step, step);
 
       if (this._scale === "buckets") { ticks = buckets; }
 
