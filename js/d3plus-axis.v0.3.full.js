@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.24
+  d3plus-axis v0.3.25
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -48,6 +48,10 @@ function ascendingComparator(f) {
 
 var ascendingBisect = bisector(ascending);
 var bisectRight = ascendingBisect.right;
+
+function pair(a, b) {
+  return [a, b];
+}
 
 var number = function(x) {
   return x === null ? NaN : +x;
@@ -1568,6 +1572,14 @@ var formatGroup = function(grouping, thousands) {
   };
 };
 
+var formatNumerals = function(numerals) {
+  return function(value) {
+    return value.replace(/[0-9]/g, function(i) {
+      return numerals[+i];
+    });
+  };
+};
+
 var formatDefault = function(x, p) {
   x = x.toPrecision(p);
 
@@ -1628,9 +1640,11 @@ var formatTypes = {
 // [[fill]align][sign][symbol][0][width][,][.precision][type]
 var re = /^(?:(.)?([<>=^]))?([+\-\( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?([a-z%])?$/i;
 
-var formatSpecifier = function(specifier) {
+function formatSpecifier(specifier) {
   return new FormatSpecifier(specifier);
-};
+}
+
+formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
 
 function FormatSpecifier(specifier) {
   if (!(match = re.exec(specifier))) { throw new Error("invalid format: " + specifier); }
@@ -1678,16 +1692,17 @@ FormatSpecifier.prototype.toString = function() {
       + this.type;
 };
 
-var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
-
-function identity$3(x) {
+var identity$3 = function(x) {
   return x;
-}
+};
+
+var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 var formatLocale = function(locale) {
   var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$3,
       currency = locale.currency,
-      decimal = locale.decimal;
+      decimal = locale.decimal,
+      numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$3;
 
   function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
@@ -1732,27 +1747,12 @@ var formatLocale = function(locale) {
       } else {
         value = +value;
 
-        // Convert negative to positive, and compute the prefix.
-        // Note that -0 is not less than 0, but 1 / -0 is!
-        var valueNegative = (value < 0 || 1 / value < 0) && (value *= -1, true);
-
         // Perform the initial formatting.
-        value = formatType(value, precision);
+        var valueNegative = value < 0;
+        value = formatType(Math.abs(value), precision);
 
-        // If the original value was negative, it may be rounded to zero during
-        // formatting; treat this as (positive) zero.
-        if (valueNegative) {
-          i = -1, n = value.length;
-          valueNegative = false;
-          while (++i < n) {
-            if (c = value.charCodeAt(i), (48 < c && c < 58)
-                || (type === "x" && 96 < c && c < 103)
-                || (type === "X" && 64 < c && c < 71)) {
-              valueNegative = true;
-              break;
-            }
-          }
-        }
+        // If a negative value rounds to zero during formatting, treat as positive.
+        if (valueNegative && +value === 0) { valueNegative = false; }
 
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
@@ -1784,11 +1784,13 @@ var formatLocale = function(locale) {
 
       // Reconstruct the final output based on the desired alignment.
       switch (align) {
-        case "<": return valuePrefix + value + valueSuffix + padding;
-        case "=": return valuePrefix + padding + value + valueSuffix;
-        case "^": return padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
+        case "<": value = valuePrefix + value + valueSuffix + padding; break;
+        case "=": value = valuePrefix + padding + value + valueSuffix; break;
+        case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
+        default: value = padding + valuePrefix + value + valueSuffix; break;
       }
-      return padding + valuePrefix + value + valueSuffix;
+
+      return numerals(value);
     }
 
     format.toString = function() {
@@ -4400,7 +4402,7 @@ function sleep(time) {
     if (time < Infinity) { timeout = setTimeout(wake, delay); }
     if (interval) { interval = clearInterval(interval); }
   } else {
-    if (!interval) { interval = setInterval(poke, pokeDelay); }
+    if (!interval) { clockLast = clockNow, interval = setInterval(poke, pokeDelay); }
     frame = 1, setFrame(wake);
   }
 }
@@ -4752,7 +4754,7 @@ var transition_attr = function(name, value) {
   return this.attrTween(name, typeof value === "function"
       ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
       : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
-      : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value));
+      : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value + ""));
 };
 
 function attrTweenNS(fullname, value) {
@@ -5023,7 +5025,7 @@ var transition_style = function(name, value, priority) {
           .on("end.style." + name, styleRemoveEnd(name))
       : this.styleTween(name, typeof value === "function"
           ? styleFunction$1(name, i, tweenValue(this, "style." + name, value))
-          : styleConstant$1(name, i, value), priority);
+          : styleConstant$1(name, i, value + ""), priority);
 };
 
 function styleTween(name, value, priority) {
@@ -8170,13 +8172,13 @@ var suffixChars = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
 ].concat(splitChars);
 
 var burmeseRange = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-var japaneseRange = "぀-ゟ\n                       ゠-ヿ\n                       ＀-＋\n                       －-｝\n                       ｟-ﾟ\n                       㐀-䶿";
+var japaneseRange = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff0b\uff0d-\uff5d\uff5f-\uff9f\u3400-\u4dbf";
 var chineseRange = "\u3400-\u9FBF";
 var laoRange = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
 
 var noSpaceRange = burmeseRange + chineseRange + laoRange;
 
-var splitWords = new RegExp(("(\\" + (splitChars.join("|\\")) + ")*[^\\s|\\" + (splitChars.join("|\\")) + "]+(\\" + (splitChars.join("|\\")) + ")*"), "g");
+var splitWords = new RegExp(("(\\" + (splitChars.join("|\\")) + ")*[^\\s|\\" + (splitChars.join("|\\")) + "]*(\\" + (splitChars.join("|\\")) + ")*"), "g");
 var japaneseChars = new RegExp(("[" + japaneseRange + "]"));
 var noSpaceLanguage = new RegExp(("[" + noSpaceRange + "]"));
 var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSpaceRange + "](\\" + (suffixChars.join("|\\")) + "|\\" + (combiningMarks.join("|\\")) + ")*|[a-z0-9]+"), "gi");
@@ -8187,7 +8189,7 @@ var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSp
     @param {String} sentence
 */
 var textSplit = function(sentence) {
-  if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords); }
+  if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
   return merge(stringify(sentence).match(splitWords).map(function (d) {
     if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
     return [d];
@@ -8240,8 +8242,8 @@ var wrap = function() {
     for (var i = 0; i < words.length; i++) {
       var word = words[i];
       var wordWidth = sizes[words.indexOf(word)];
-      word += sentence.slice(textProg.length + word.length).match("^ *", "g")[0];
-      if (widthProg + wordWidth > width) {
+      word += sentence.slice(textProg.length + word.length).match("^( |\n)*", "g")[0];
+      if (textProg.slice(-1) === "\n" || widthProg + wordWidth > width) {
         if (!i && !overflow) {
           truncated = true;
           break;
@@ -8955,6 +8957,7 @@ var Shape = (function (BaseClass$$1) {
     this._fontFamily = constant$4("Verdana");
     this._fontResize = constant$4(false);
     this._fontSize = constant$4(12);
+    this._fontWeight = constant$4(400);
 
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
@@ -9233,6 +9236,7 @@ var Shape = (function (BaseClass$$1) {
                   fF = this$1._fontFamily(d, i),
                   fR = this$1._fontResize(d, i),
                   fS = this$1._fontSize(d, i),
+                  fW = this$1._fontWeight(d, i),
                   lH = this$1._lineHeight(d, i),
                   padding = this$1._labelPadding(d, i),
                   r = this$1._labelRotate(d, i),
@@ -9251,6 +9255,7 @@ var Shape = (function (BaseClass$$1) {
                 fF: fF.constructor === Array ? fF[l] : fF,
                 fR: fR.constructor === Array ? fR[l] : fR,
                 fS: fS.constructor === Array ? fS[l] : fS,
+                fW: fW.constructor === Array ? fW[l] : fW,
                 height: b.height - p * 2,
                 i: i,
                 id: ((this$1._id(d, i)) + "_" + l),
@@ -9279,6 +9284,7 @@ var Shape = (function (BaseClass$$1) {
       .fontFamily(function (d) { return d.fF; })
       .fontResize(function (d) { return d.fR; })
       .fontSize(function (d) { return d.fS; })
+      .fontWeight(function (d) { return d.fW; })
       .lineHeight(function (d) { return d.lH; })
       .pointerEvents("none")
       .rotate(function (d) { return d.data.r; })
@@ -9539,6 +9545,18 @@ var Shape = (function (BaseClass$$1) {
     return arguments.length
          ? (this._fontSize = typeof _ === "function" ? _ : constant$4(_), this)
          : this._fontSize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-weight accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-weight accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = 400]
+      @chainable
+  */
+  Shape.prototype.fontWeight = function fontWeight (_) {
+    return arguments.length
+         ? (this._fontWeight = typeof _ === "function" ? _ : constant$4(_), this)
+         : this._fontWeight;
   };
 
   /**
@@ -10226,14 +10244,16 @@ Path.prototype = path.prototype = {
     // Is this arc empty? We’re done.
     if (!r) { return; }
 
+    // Does the angle go the wrong way? Flip the direction.
+    if (da < 0) { da = da % tau$1 + tau$1; }
+
     // Is this a complete circle? Draw two arcs to complete the circle.
     if (da > tauEpsilon) {
       this._ += "A" + r + "," + r + ",0,1," + cw + "," + (x - dx) + "," + (y - dy) + "A" + r + "," + r + ",0,1," + cw + "," + (this._x1 = x0) + "," + (this._y1 = y0);
     }
 
-    // Otherwise, draw an arc!
-    else {
-      if (da < 0) { da = da % tau$1 + tau$1; }
+    // Is this arc non-empty? Draw an arc!
+    else if (da > epsilon) {
       this._ += "A" + r + "," + r + ",0," + (+(da >= pi$1)) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
     }
   },
@@ -10251,10 +10271,26 @@ var constant$5 = function(x) {
   };
 };
 
+var abs = Math.abs;
+var atan2 = Math.atan2;
+var cos = Math.cos;
+var max$1 = Math.max;
+var min$1 = Math.min;
+var sin = Math.sin;
+var sqrt$1 = Math.sqrt;
+
 var epsilon$1 = 1e-12;
 var pi$2 = Math.PI;
 var halfPi$1 = pi$2 / 2;
 var tau$2 = 2 * pi$2;
+
+function acos(x) {
+  return x > 1 ? 0 : x < -1 ? pi$2 : Math.acos(x);
+}
+
+function asin(x) {
+  return x >= 1 ? halfPi$1 : x <= -1 ? -halfPi$1 : Math.asin(x);
+}
 
 function arcInnerRadius(d) {
   return d.innerRadius;
@@ -10276,10 +10312,6 @@ function arcPadAngle(d) {
   return d && d.padAngle; // Note: optional!
 }
 
-function asin(x) {
-  return x >= 1 ? halfPi$1 : x <= -1 ? -halfPi$1 : Math.asin(x);
-}
-
 function intersect(x0, y0, x1, y1, x2, y2, x3, y3) {
   var x10 = x1 - x0, y10 = y1 - y0,
       x32 = x3 - x2, y32 = y3 - y2,
@@ -10292,7 +10324,7 @@ function intersect(x0, y0, x1, y1, x2, y2, x3, y3) {
 function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
   var x01 = x0 - x1,
       y01 = y0 - y1,
-      lo = (cw ? rc : -rc) / Math.sqrt(x01 * x01 + y01 * y01),
+      lo = (cw ? rc : -rc) / sqrt$1(x01 * x01 + y01 * y01),
       ox = lo * y01,
       oy = -lo * x01,
       x11 = x0 + ox,
@@ -10306,7 +10338,7 @@ function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
       d2 = dx * dx + dy * dy,
       r = r1 - rc,
       D = x11 * y10 - x10 * y11,
-      d = (dy < 0 ? -1 : 1) * Math.sqrt(Math.max(0, r * r * d2 - D * D)),
+      d = (dy < 0 ? -1 : 1) * sqrt$1(max$1(0, r * r * d2 - D * D)),
       cx0 = (D * dy - dx * d) / d2,
       cy0 = (-D * dx - dy * d) / d2,
       cx1 = (D * dy + dx * d) / d2,
@@ -10347,7 +10379,7 @@ var arc = function() {
         r1 = +outerRadius.apply(this, arguments),
         a0 = startAngle.apply(this, arguments) - halfPi$1,
         a1 = endAngle.apply(this, arguments) - halfPi$1,
-        da = Math.abs(a1 - a0),
+        da = abs(a1 - a0),
         cw = a1 > a0;
 
     if (!context) { context = buffer = path(); }
@@ -10360,10 +10392,10 @@ var arc = function() {
 
     // Or is it a circle or annulus?
     else if (da > tau$2 - epsilon$1) {
-      context.moveTo(r1 * Math.cos(a0), r1 * Math.sin(a0));
+      context.moveTo(r1 * cos(a0), r1 * sin(a0));
       context.arc(0, 0, r1, a0, a1, !cw);
       if (r0 > epsilon$1) {
-        context.moveTo(r0 * Math.cos(a1), r0 * Math.sin(a1));
+        context.moveTo(r0 * cos(a1), r0 * sin(a1));
         context.arc(0, 0, r0, a1, a0, cw);
       }
     }
@@ -10377,8 +10409,8 @@ var arc = function() {
           da0 = da,
           da1 = da,
           ap = padAngle.apply(this, arguments) / 2,
-          rp = (ap > epsilon$1) && (padRadius ? +padRadius.apply(this, arguments) : Math.sqrt(r0 * r0 + r1 * r1)),
-          rc = Math.min(Math.abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
+          rp = (ap > epsilon$1) && (padRadius ? +padRadius.apply(this, arguments) : sqrt$1(r0 * r0 + r1 * r1)),
+          rc = min$1(abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
           rc0 = rc,
           rc1 = rc,
           t0,
@@ -10386,25 +10418,25 @@ var arc = function() {
 
       // Apply padding? Note that since r1 ≥ r0, da1 ≥ da0.
       if (rp > epsilon$1) {
-        var p0 = asin(rp / r0 * Math.sin(ap)),
-            p1 = asin(rp / r1 * Math.sin(ap));
+        var p0 = asin(rp / r0 * sin(ap)),
+            p1 = asin(rp / r1 * sin(ap));
         if ((da0 -= p0 * 2) > epsilon$1) { p0 *= (cw ? 1 : -1), a00 += p0, a10 -= p0; }
         else { da0 = 0, a00 = a10 = (a0 + a1) / 2; }
         if ((da1 -= p1 * 2) > epsilon$1) { p1 *= (cw ? 1 : -1), a01 += p1, a11 -= p1; }
         else { da1 = 0, a01 = a11 = (a0 + a1) / 2; }
       }
 
-      var x01 = r1 * Math.cos(a01),
-          y01 = r1 * Math.sin(a01),
-          x10 = r0 * Math.cos(a10),
-          y10 = r0 * Math.sin(a10);
+      var x01 = r1 * cos(a01),
+          y01 = r1 * sin(a01),
+          x10 = r0 * cos(a10),
+          y10 = r0 * sin(a10);
 
       // Apply rounded corners?
       if (rc > epsilon$1) {
-        var x11 = r1 * Math.cos(a11),
-            y11 = r1 * Math.sin(a11),
-            x00 = r0 * Math.cos(a00),
-            y00 = r0 * Math.sin(a00);
+        var x11 = r1 * cos(a11),
+            y11 = r1 * sin(a11),
+            x00 = r0 * cos(a00),
+            y00 = r0 * sin(a00);
 
         // Restrict the corner radius according to the sector angle.
         if (da < pi$2) {
@@ -10413,10 +10445,10 @@ var arc = function() {
               ay = y01 - oc[1],
               bx = x11 - oc[0],
               by = y11 - oc[1],
-              kc = 1 / Math.sin(Math.acos((ax * bx + ay * by) / (Math.sqrt(ax * ax + ay * ay) * Math.sqrt(bx * bx + by * by))) / 2),
-              lc = Math.sqrt(oc[0] * oc[0] + oc[1] * oc[1]);
-          rc0 = Math.min(rc, (r0 - lc) / (kc - 1));
-          rc1 = Math.min(rc, (r1 - lc) / (kc + 1));
+              kc = 1 / sin(acos((ax * bx + ay * by) / (sqrt$1(ax * ax + ay * ay) * sqrt$1(bx * bx + by * by))) / 2),
+              lc = sqrt$1(oc[0] * oc[0] + oc[1] * oc[1]);
+          rc0 = min$1(rc, (r0 - lc) / (kc - 1));
+          rc1 = min$1(rc, (r1 - lc) / (kc + 1));
         }
       }
 
@@ -10431,13 +10463,13 @@ var arc = function() {
         context.moveTo(t0.cx + t0.x01, t0.cy + t0.y01);
 
         // Have the corners merged?
-        if (rc1 < rc) { context.arc(t0.cx, t0.cy, rc1, Math.atan2(t0.y01, t0.x01), Math.atan2(t1.y01, t1.x01), !cw); }
+        if (rc1 < rc) { context.arc(t0.cx, t0.cy, rc1, atan2(t0.y01, t0.x01), atan2(t1.y01, t1.x01), !cw); }
 
         // Otherwise, draw the two corners and the ring.
         else {
-          context.arc(t0.cx, t0.cy, rc1, Math.atan2(t0.y01, t0.x01), Math.atan2(t0.y11, t0.x11), !cw);
-          context.arc(0, 0, r1, Math.atan2(t0.cy + t0.y11, t0.cx + t0.x11), Math.atan2(t1.cy + t1.y11, t1.cx + t1.x11), !cw);
-          context.arc(t1.cx, t1.cy, rc1, Math.atan2(t1.y11, t1.x11), Math.atan2(t1.y01, t1.x01), !cw);
+          context.arc(t0.cx, t0.cy, rc1, atan2(t0.y01, t0.x01), atan2(t0.y11, t0.x11), !cw);
+          context.arc(0, 0, r1, atan2(t0.cy + t0.y11, t0.cx + t0.x11), atan2(t1.cy + t1.y11, t1.cx + t1.x11), !cw);
+          context.arc(t1.cx, t1.cy, rc1, atan2(t1.y11, t1.x11), atan2(t1.y01, t1.x01), !cw);
         }
       }
 
@@ -10456,13 +10488,13 @@ var arc = function() {
         context.lineTo(t0.cx + t0.x01, t0.cy + t0.y01);
 
         // Have the corners merged?
-        if (rc0 < rc) { context.arc(t0.cx, t0.cy, rc0, Math.atan2(t0.y01, t0.x01), Math.atan2(t1.y01, t1.x01), !cw); }
+        if (rc0 < rc) { context.arc(t0.cx, t0.cy, rc0, atan2(t0.y01, t0.x01), atan2(t1.y01, t1.x01), !cw); }
 
         // Otherwise, draw the two corners and the ring.
         else {
-          context.arc(t0.cx, t0.cy, rc0, Math.atan2(t0.y01, t0.x01), Math.atan2(t0.y11, t0.x11), !cw);
-          context.arc(0, 0, r0, Math.atan2(t0.cy + t0.y11, t0.cx + t0.x11), Math.atan2(t1.cy + t1.y11, t1.cx + t1.x11), cw);
-          context.arc(t1.cx, t1.cy, rc0, Math.atan2(t1.y11, t1.x11), Math.atan2(t1.y01, t1.x01), !cw);
+          context.arc(t0.cx, t0.cy, rc0, atan2(t0.y01, t0.x01), atan2(t0.y11, t0.x11), !cw);
+          context.arc(0, 0, r0, atan2(t0.cy + t0.y11, t0.cx + t0.x11), atan2(t1.cy + t1.y11, t1.cx + t1.x11), cw);
+          context.arc(t1.cx, t1.cy, rc0, atan2(t1.y11, t1.x11), atan2(t1.y01, t1.x01), !cw);
         }
       }
 
@@ -10478,7 +10510,7 @@ var arc = function() {
   arc.centroid = function() {
     var r = (+innerRadius.apply(this, arguments) + +outerRadius.apply(this, arguments)) / 2,
         a = (+startAngle.apply(this, arguments) + +endAngle.apply(this, arguments)) / 2 - pi$2 / 2;
-    return [Math.cos(a) * r, Math.sin(a) * r];
+    return [cos(a) * r, sin(a) * r];
   };
 
   arc.innerRadius = function(_) {
@@ -10880,7 +10912,7 @@ var circle = {
   }
 };
 
-var cross = {
+var cross$1 = {
   draw: function(context, size) {
     var r = Math.sqrt(size / 5) / 2;
     context.moveTo(-3 * r, -r);
@@ -10986,7 +11018,7 @@ var wye = {
 
 var symbols = [
   circle,
-  cross,
+  cross$1,
   diamond,
   square,
   star,
@@ -12025,7 +12057,7 @@ var paths = Object.freeze({
 	symbol: symbol,
 	symbols: symbols,
 	symbolCircle: circle,
-	symbolCross: cross,
+	symbolCross: cross$1,
 	symbolDiamond: diamond,
 	symbolSquare: square,
 	symbolStar: star,
@@ -12102,7 +12134,7 @@ var polygonCentroid = function(polygon) {
 // the 3D cross product in a quadrant I Cartesian coordinate system (+x is
 // right, +y is up). Returns a positive value if ABC is counter-clockwise,
 // negative if clockwise, and zero if the points are collinear.
-var cross$1 = function(a, b, c) {
+var cross$2 = function(a, b, c) {
   return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
 };
 
@@ -12119,7 +12151,7 @@ function computeUpperHullIndexes(points) {
       size = 2;
 
   for (var i = 2; i < n; ++i) {
-    while (size > 1 && cross$1(points[indexes[size - 2]], points[indexes[size - 1]], points[i]) <= 0) { --size; }
+    while (size > 1 && cross$2(points[indexes[size - 2]], points[indexes[size - 1]], points[i]) <= 0) { --size; }
     indexes[size++] = i;
   }
 
@@ -13851,6 +13883,320 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
+      @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
+      @param {Function} [*callback* = undefined]
+      @chainable
+  */
+  Axis.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    if (this._select === void 0) {
+      this.select(select("body").append("svg")
+        .attr("width", ((this._width) + "px"))
+        .attr("height", ((this._height) + "px"))
+        .node());
+    }
+
+    if (this._lineHeight === void 0) {
+      this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
+    }
+
+    var ref = this._position;
+    var width = ref.width;
+    var height = ref.height;
+    var x = ref.x;
+    var y = ref.y;
+    var horizontal = ref.horizontal;
+    var opposite = ref.opposite;
+    var clipId = "d3plus-Axis-clip-" + (this._uuid),
+          flip = ["top", "left"].includes(this._orient),
+          p = this._padding,
+          parent = this._select,
+          t = transition().duration(this._duration);
+
+    var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
+    if (range$$1[0] === void 0) { range$$1[0] = p; }
+    if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
+    this._size = range$$1[1] - range$$1[0];
+    if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
+      range$$1 = range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
+    }
+
+    this._margin = {top: 0, right: 0, bottom: 0, left: 0};
+
+    if (this._title) {
+      var lH = this._titleConfig.lineHeight ? this._titleConfig.lineHeight : this._titleConfig.fontSize * 1.1,
+            titleWrap = wrap()
+              .fontFamily(this._titleConfig.fontFamily)
+              .fontSize(this._titleConfig.fontSize)
+              .lineHeight(lH)
+              .width(this._size)
+              .height(this[("_" + height)] - this._tickSize - p)
+              (this._title);
+      this._margin[this._orient] = titleWrap.lines.length * lH + p;
+    }
+
+    this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
+      .domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
+
+    if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
+    else { this._d3Scale.range(range$$1); }
+
+    if (this._d3Scale.round) { this._d3Scale.round(true); }
+    if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
+    if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
+
+    var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
+
+    var ticks$$1 = this._ticks
+              ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
+              : this._d3Scale.ticks
+              ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+              : this._domain;
+
+    var labels = this._labels
+               ? this._scale === "time" ? this._labels.map(date$2) : this._labels
+               : this._d3Scale.ticks
+               ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+               : ticks$$1;
+
+
+    ticks$$1 = ticks$$1.slice();
+    labels = labels.slice();
+
+    var tickFormat = this._tickFormat ? this._tickFormat : this._d3Scale.tickFormat
+                     ? this._d3Scale.tickFormat(labels.length - 1)
+                     : function (d) { return d; };
+
+    if (this._scale === "time") {
+      ticks$$1 = ticks$$1.map(Number);
+      labels = labels.map(Number);
+    }
+
+    ticks$$1 = ticks$$1.sort(function (a, b) { return this$1._d3Scale(a) - this$1._d3Scale(b); });
+    labels = labels.sort(function (a, b) { return this$1._d3Scale(a) - this$1._d3Scale(b); });
+
+    var tickSize = this._shape === "Circle" ? this._shapeConfig.r
+                   : this._shape === "Rect" ? this._shapeConfig[width]
+                   : this._shapeConfig.strokeWidth;
+
+    var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
+
+    var pixels = [];
+    this._availableTicks = ticks$$1;
+    ticks$$1.forEach(function (d, i) {
+      var s = tickGet({id: d, tick: true}, i);
+      if (this$1._shape === "Circle") { s *= 2; }
+      var t = this$1._d3Scale(d);
+      if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
+      else { pixels.push(false); }
+    });
+    ticks$$1 = ticks$$1.filter(function (d, i) { return pixels[i] !== false; });
+
+    this._visibleTicks = ticks$$1;
+
+    var hBuff = this._shape === "Circle"
+              ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
+              : this._shape === "Rect"
+              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
+              : this._tickSize,
+        wBuff = tickGet({tick: true});
+
+    if (typeof hBuff === "function") { hBuff = max(ticks$$1.map(hBuff)); }
+    if (this._shape === "Rect") { hBuff /= 2; }
+    if (typeof wBuff === "function") { wBuff = max(ticks$$1.map(wBuff)); }
+    if (this._shape !== "Circle") { wBuff /= 2; }
+
+    if (this._scale === "band") {
+      this._space = this._d3Scale.bandwidth();
+    }
+    else if (labels.length > 1) {
+      this._space = 0;
+      for (var i = 0; i < labels.length - 1; i++) {
+        var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
+        if (s > this$1._space) { this$1._space = s; }
+      }
+    }
+    else { this._space = this._size; }
+
+    // Measures size of ticks
+    var textData = labels.map(function (d, i) {
+
+      var f = this$1._shapeConfig.fontFamily(d, i),
+            s = this$1._shapeConfig.fontSize(d, i);
+
+      var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
+
+      var res = wrap()
+        .fontFamily(f)
+        .fontSize(s)
+        .lineHeight(lh)
+        .width(horizontal ? this$1._space : this$1._width - hBuff - p)
+        .height(horizontal ? this$1._height - hBuff - p : this$1._space)
+        (tickFormat(d));
+
+      res.lines = res.lines.filter(function (d) { return d !== ""; });
+      res.d = d;
+      res.fS = s;
+      res.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": f, "font-size": s}); }))) + s / 4;
+      res.height = Math.ceil(res.lines.length * (lh + 1));
+      res.offset = 0;
+      if (res.width % 2) { res.width++; }
+
+      return res;
+
+    });
+
+    textData.forEach(function (d, i) {
+      if (i) {
+        var prev = textData[i - 1];
+        if (!prev.offset && this$1._d3Scale(d.d) - d[width] / 2 < this$1._d3Scale(prev.d) + prev[width] / 2) {
+          d.offset = prev[height] + this$1._padding;
+          d[height] += d.offset;
+        }
+      }
+    });
+
+    // Calculates new range, based on any text that may be overflowing.
+    var rangeOuter = range$$1.slice();
+    var lastI = range$$1.length - 1;
+    if (this._scale !== "band" && textData.length) {
+
+      var first = textData[0],
+            last = textData[textData.length - 1];
+
+      var firstB = min([this._d3Scale(first.d) - first[width] / 2, range$$1[0] - wBuff]);
+      if (firstB < range$$1[0]) {
+        var d = range$$1[0] - firstB;
+        if (this._range === void 0 || this._range[0] === void 0) {
+          this._size -= d;
+          range$$1[0] += d;
+        }
+        else if (this._range) {
+          rangeOuter[0] -= d;
+        }
+      }
+
+      var lastB = max([this._d3Scale(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
+      if (lastB > range$$1[lastI]) {
+        var d$1 = lastB - range$$1[lastI];
+        if (this._range === void 0 || this._range[lastI] === void 0) {
+          this._size -= d$1;
+          range$$1[lastI] -= d$1;
+        }
+        else if (this._range) {
+          rangeOuter[lastI] += d$1;
+        }
+      }
+
+      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
+      else { this._d3Scale.range(range$$1); }
+
+    }
+
+    var tBuff = this._shape === "Line" ? 0 : hBuff;
+    this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    var obj;
+    this._margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
+    this._margin[this._orient] += hBuff;
+    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
+    this._outerBounds[y] = this._align === "start" ? this._padding
+                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
+                         : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
+
+    var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
+    this._group = group;
+
+    var grid = elem("g.grid", {parent: group}).selectAll("line")
+      .data((this._gridSize !== 0 ? this._grid || ticks$$1 : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
+
+    grid.exit().transition(t)
+      .attr("opacity", 0)
+      .call(this._gridPosition.bind(this))
+      .remove();
+
+    grid.enter().append("line")
+        .attr("opacity", 0)
+        .attr("clip-path", ("url(#" + clipId + ")"))
+        .call(this._gridPosition.bind(this), true)
+      .merge(grid).transition(t)
+        .attr("opacity", 1)
+        .call(this._gridPosition.bind(this));
+
+    var labelHeight = max(textData, function (t) { return t.height; }) || 0,
+          labelWidth = horizontal ? this._space * 1.1 : (this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p) * 1.1;
+    var tickData = ticks$$1
+      .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks$$1.includes(d); }))
+      .map(function (d, i) {
+        var offset = this$1._margin[opposite],
+              position = flip ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
+              size = (hBuff + textData[i].offset) * (flip ? -1 : 1);
+        return ( obj = {
+          id: d,
+          labelBounds: {
+            x: horizontal ? -labelWidth / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
+            y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -labelHeight / 2,
+            width: labelWidth,
+            height: labelHeight
+          },
+          size: ticks$$1.includes(d) ? size : 0,
+          text: labels.includes(d) ? tickFormat(d) : false,
+          tick: ticks$$1.includes(d)
+        }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
+        var obj;
+      });
+
+    if (this._shape === "Line") {
+      tickData = tickData.concat(tickData.map(function (d) {
+        var dupe = Object.assign({}, d);
+        dupe[y] += d.size;
+        return dupe;
+      }));
+    }
+
+    new shapes[this._shape]()
+      .data(tickData)
+      .duration(this._duration)
+      .select(elem("g.ticks", {parent: group}).node())
+      .config(this._shapeConfig)
+      .render();
+
+    var bar = group.selectAll("line.bar").data([null]);
+
+    bar.enter().append("line")
+        .attr("class", "bar")
+        .attr("opacity", 0)
+        .call(this._barPosition.bind(this))
+      .merge(bar).transition(t)
+        .attr("opacity", 1)
+        .call(this._barPosition.bind(this));
+
+    new TextBox()
+      .data(this._title ? [{text: this._title}] : [])
+      .duration(this._duration)
+      .height(this._outerBounds.height)
+      .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
+      .select(elem("g.d3plus-Axis-title", {parent: group}).node())
+      .text(function (d) { return d.text; })
+      .textAnchor("middle")
+      .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
+      .width(this._outerBounds[width])
+      .x(horizontal ? this._outerBounds.x : this._orient === "left" ? this._outerBounds.x + this._margin[this._orient] / 2 - this._outerBounds[width] / 2 : this._outerBounds.x + this._outerBounds.width - this._margin[this._orient] / 2 - this._outerBounds[width] / 2)
+      .y(horizontal ? this._outerBounds.y : this._outerBounds.y - this._margin[this._orient] / 2 + this._outerBounds[width] / 2)
+      .config(this._titleConfig)
+      .render();
+
+    this._lastScale = this._d3Scale;
+
+    if (callback) { setTimeout(callback, this._duration + 100); }
+
+    return this;
+
+  };
+
+  /**
+      @memberof Axis
       @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
       @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
       @chainable
@@ -14014,302 +14360,6 @@ var Axis = (function (BaseClass$$1) {
   */
   Axis.prototype.range = function range$$1 (_) {
     return arguments.length ? (this._range = _, this) : this._range;
-  };
-
-  /**
-      @memberof Axis
-      @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
-      @param {Function} [*callback* = undefined]
-      @chainable
-  */
-  Axis.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    if (this._select === void 0) {
-      this.select(select("body").append("svg")
-        .attr("width", ((this._width) + "px"))
-        .attr("height", ((this._height) + "px"))
-        .node());
-    }
-
-    if (this._lineHeight === void 0) {
-      this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
-    }
-
-    var ref = this._position;
-    var width = ref.width;
-    var height = ref.height;
-    var x = ref.x;
-    var y = ref.y;
-    var horizontal = ref.horizontal;
-    var opposite = ref.opposite;
-    var clipId = "d3plus-Axis-clip-" + (this._uuid),
-          p = this._padding,
-          parent = this._select,
-          t = transition().duration(this._duration);
-
-    var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
-    if (range$$1[0] === void 0) { range$$1[0] = p; }
-    if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
-    this._size = range$$1[1] - range$$1[0];
-    if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
-      range$$1 = range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
-    }
-
-    this._margin = {top: 0, right: 0, bottom: 0, left: 0};
-
-    if (this._title) {
-      var lH = this._titleConfig.lineHeight ? this._titleConfig.lineHeight : this._titleConfig.fontSize * 1.1,
-            titleWrap = wrap()
-              .fontFamily(this._titleConfig.fontFamily)
-              .fontSize(this._titleConfig.fontSize)
-              .lineHeight(lH)
-              .width(this._size)
-              .height(this[("_" + height)] - this._tickSize - p)
-              (this._title);
-      this._margin[this._orient] = titleWrap.lines.length * lH + p;
-    }
-
-    this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-      .domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
-
-    if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
-    else { this._d3Scale.range(range$$1); }
-
-    if (this._d3Scale.round) { this._d3Scale.round(true); }
-    if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
-    if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
-
-    var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
-
-    var ticks$$1 = this._ticks
-              ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
-              : this._d3Scale.ticks
-              ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
-              : this._domain;
-
-    var labels = this._labels
-               ? this._scale === "time" ? this._labels.map(date$2) : this._labels
-               : this._d3Scale.ticks
-               ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
-               : ticks$$1;
-
-    var tickFormat = this._tickFormat ? this._tickFormat : this._d3Scale.tickFormat
-                     ? this._d3Scale.tickFormat(labels.length - 1)
-                     : function (d) { return d; };
-
-    if (this._scale === "time") {
-      ticks$$1 = ticks$$1.map(Number);
-      labels = labels.map(Number);
-    }
-
-    var tickSize = this._shape === "Circle" ? this._shapeConfig.r
-                   : this._shape === "Rect" ? this._shapeConfig[width]
-                   : this._shapeConfig.strokeWidth;
-
-    var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
-
-    var pixels = [];
-    this._availableTicks = ticks$$1;
-    ticks$$1.forEach(function (d, i) {
-      var s = tickGet({id: d, tick: true}, i);
-      if (this$1._shape === "Circle") { s *= 2; }
-      var t = this$1._d3Scale(d);
-      if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
-      else { pixels.push(false); }
-    });
-    ticks$$1 = ticks$$1.filter(function (d, i) { return pixels[i] !== false; });
-
-    this._visibleTicks = ticks$$1;
-
-    var hBuff = this._shape === "Circle"
-              ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
-              : this._shape === "Rect"
-              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
-              : this._tickSize,
-        wBuff = tickGet({tick: true});
-
-    if (typeof hBuff === "function") { hBuff = max(ticks$$1.map(hBuff)); }
-    if (this._shape === "Rect") { hBuff /= 2; }
-    if (typeof wBuff === "function") { wBuff = max(ticks$$1.map(wBuff)); }
-    if (this._shape !== "Circle") { wBuff /= 2; }
-
-    if (this._scale === "band") {
-      this._space = this._d3Scale.bandwidth();
-    }
-    else if (labels.length > 1) {
-      this._space = 0;
-      for (var i = 0; i < labels.length - 1; i++) {
-        var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
-        if (s > this$1._space) { this$1._space = s; }
-      }
-    }
-    else { this._space = this._size; }
-
-    // Measures size of ticks
-    var textData = labels.map(function (d, i) {
-
-      var f = this$1._shapeConfig.fontFamily(d, i),
-            s = this$1._shapeConfig.fontSize(d, i);
-
-      var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
-
-      var res = wrap()
-        .fontFamily(f)
-        .fontSize(s)
-        .lineHeight(lh)
-        .width(horizontal ? this$1._space : this$1._width - hBuff - p)
-        .height(horizontal ? this$1._height - hBuff - p : this$1._space)
-        (tickFormat(d));
-
-      res.lines = res.lines.filter(function (d) { return d !== ""; });
-      res.d = d;
-      res.fS = s;
-      res.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": f, "font-size": s}); }))) + s / 4;
-      res.height = Math.ceil(res.lines.length * (lh + 1));
-      if (res.width % 2) { res.width++; }
-
-      return res;
-
-    });
-
-    // Calculates new range, based on any text that may be overflowing.
-    var rangeOuter = range$$1.slice();
-    var lastI = range$$1.length - 1;
-    if (this._scale !== "band" && textData.length) {
-
-      var first = textData[0],
-            last = textData[textData.length - 1];
-
-      var firstB = min([this._d3Scale(first.d) - first[width] / 2, range$$1[0] - wBuff]);
-      if (firstB < range$$1[0]) {
-        var d = range$$1[0] - firstB;
-        if (this._range === void 0 || this._range[0] === void 0) {
-          this._size -= d;
-          range$$1[0] += d;
-        }
-        else if (this._range) {
-          rangeOuter[0] -= d;
-        }
-      }
-
-      var lastB = max([this._d3Scale(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
-      if (lastB > range$$1[lastI]) {
-        var d$1 = lastB - range$$1[lastI];
-        if (this._range === void 0 || this._range[lastI] === void 0) {
-          this._size -= d$1;
-          range$$1[lastI] -= d$1;
-        }
-        else if (this._range) {
-          rangeOuter[lastI] += d$1;
-        }
-      }
-
-      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
-      else { this._d3Scale.range(range$$1); }
-
-    }
-
-    var tBuff = this._shape === "Line" ? 0 : hBuff;
-    this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
-    var obj;
-    this._margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
-    this._margin[this._orient] += hBuff;
-    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
-    this._outerBounds[y] = this._align === "start" ? this._padding
-                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
-                         : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
-
-    var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
-    this._group = group;
-
-    var grid = elem("g.grid", {parent: group}).selectAll("line")
-      .data((this._gridSize !== 0 ? this._grid || ticks$$1 : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
-
-    grid.exit().transition(t)
-      .attr("opacity", 0)
-      .call(this._gridPosition.bind(this))
-      .remove();
-
-    grid.enter().append("line")
-        .attr("opacity", 0)
-        .attr("clip-path", ("url(#" + clipId + ")"))
-        .call(this._gridPosition.bind(this), true)
-      .merge(grid).transition(t)
-        .attr("opacity", 1)
-        .call(this._gridPosition.bind(this));
-
-    var labelHeight = max(textData, function (t) { return t.height; }) || 0,
-          labelWidth = horizontal ? this._space * 1.1 : (this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p) * 1.1;
-    var tickData = ticks$$1
-      .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks$$1.includes(d); }))
-      .map(function (d) {
-        var offset = this$1._margin[opposite],
-              position = ["top", "left"].includes(this$1._orient) ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
-              size = ["top", "left"].includes(this$1._orient) ? -hBuff : hBuff,
-              sizeOffset = this$1._shape === "Line" ? size / 2 : size;
-        return ( obj = {
-          id: d,
-          labelBounds: {
-            x: horizontal ? -labelWidth / 2 : this$1._orient === "left" ? -labelWidth - p + sizeOffset : sizeOffset + p,
-            y: horizontal ? this$1._orient === "bottom" ? sizeOffset + p : sizeOffset - p - labelHeight : -labelHeight / 2,
-            width: labelWidth,
-            height: labelHeight
-          },
-          size: ticks$$1.includes(d) ? size : 0,
-          text: labels.includes(d) ? tickFormat(d) : false,
-          tick: ticks$$1.includes(d)
-        }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
-        var obj;
-      });
-
-    if (this._shape === "Line") {
-      tickData = tickData.concat(tickData.map(function (d) {
-        var dupe = Object.assign({}, d);
-        dupe[y] += d.size;
-        return dupe;
-      }));
-    }
-
-    new shapes[this._shape]()
-      .data(tickData)
-      .duration(this._duration)
-      .select(elem("g.ticks", {parent: group}).node())
-      .config(this._shapeConfig)
-      .render();
-
-    var bar = group.selectAll("line.bar").data([null]);
-
-    bar.enter().append("line")
-        .attr("class", "bar")
-        .attr("opacity", 0)
-        .call(this._barPosition.bind(this))
-      .merge(bar).transition(t)
-        .attr("opacity", 1)
-        .call(this._barPosition.bind(this));
-
-    new TextBox()
-      .data(this._title ? [{text: this._title}] : [])
-      .duration(this._duration)
-      .height(this._outerBounds.height)
-      .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
-      .select(elem("g.d3plus-Axis-title", {parent: group}).node())
-      .text(function (d) { return d.text; })
-      .textAnchor("middle")
-      .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
-      .width(this._outerBounds[width])
-      .x(horizontal ? this._outerBounds.x : this._orient === "left" ? this._outerBounds.x + this._margin[this._orient] / 2 - this._outerBounds[width] / 2 : this._outerBounds.x + this._outerBounds.width - this._margin[this._orient] / 2 - this._outerBounds[width] / 2)
-      .y(horizontal ? this._outerBounds.y : this._outerBounds.y - this._margin[this._orient] / 2 + this._outerBounds[width] / 2)
-      .config(this._titleConfig)
-      .render();
-
-    this._lastScale = this._d3Scale;
-
-    if (callback) { setTimeout(callback, this._duration + 100); }
-
-    return this;
-
   };
 
   /**

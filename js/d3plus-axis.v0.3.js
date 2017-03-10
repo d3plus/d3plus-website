@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.24
+  d3plus-axis v0.3.25
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -177,6 +177,320 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
+      @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
+      @param {Function} [*callback* = undefined]
+      @chainable
+  */
+  Axis.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    if (this._select === void 0) {
+      this.select(d3Selection.select("body").append("svg")
+        .attr("width", ((this._width) + "px"))
+        .attr("height", ((this._height) + "px"))
+        .node());
+    }
+
+    if (this._lineHeight === void 0) {
+      this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
+    }
+
+    var ref = this._position;
+    var width = ref.width;
+    var height = ref.height;
+    var x = ref.x;
+    var y = ref.y;
+    var horizontal = ref.horizontal;
+    var opposite = ref.opposite;
+    var clipId = "d3plus-Axis-clip-" + (this._uuid),
+          flip = ["top", "left"].includes(this._orient),
+          p = this._padding,
+          parent = this._select,
+          t = d3Transition.transition().duration(this._duration);
+
+    var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
+    if (range$$1[0] === void 0) { range$$1[0] = p; }
+    if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
+    this._size = range$$1[1] - range$$1[0];
+    if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
+      range$$1 = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
+    }
+
+    this._margin = {top: 0, right: 0, bottom: 0, left: 0};
+
+    if (this._title) {
+      var lH = this._titleConfig.lineHeight ? this._titleConfig.lineHeight : this._titleConfig.fontSize * 1.1,
+            titleWrap = d3plusText.textWrap()
+              .fontFamily(this._titleConfig.fontFamily)
+              .fontSize(this._titleConfig.fontSize)
+              .lineHeight(lH)
+              .width(this._size)
+              .height(this[("_" + height)] - this._tickSize - p)
+              (this._title);
+      this._margin[this._orient] = titleWrap.lines.length * lH + p;
+    }
+
+    this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
+      .domain(this._scale === "time" ? this._domain.map(date) : this._domain);
+
+    if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
+    else { this._d3Scale.range(range$$1); }
+
+    if (this._d3Scale.round) { this._d3Scale.round(true); }
+    if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
+    if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
+
+    var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
+
+    var ticks = this._ticks
+              ? this._scale === "time" ? this._ticks.map(date) : this._ticks
+              : this._d3Scale.ticks
+              ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+              : this._domain;
+
+    var labels = this._labels
+               ? this._scale === "time" ? this._labels.map(date) : this._labels
+               : this._d3Scale.ticks
+               ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+               : ticks;
+
+
+    ticks = ticks.slice();
+    labels = labels.slice();
+
+    var tickFormat = this._tickFormat ? this._tickFormat : this._d3Scale.tickFormat
+                     ? this._d3Scale.tickFormat(labels.length - 1)
+                     : function (d) { return d; };
+
+    if (this._scale === "time") {
+      ticks = ticks.map(Number);
+      labels = labels.map(Number);
+    }
+
+    ticks = ticks.sort(function (a, b) { return this$1._d3Scale(a) - this$1._d3Scale(b); });
+    labels = labels.sort(function (a, b) { return this$1._d3Scale(a) - this$1._d3Scale(b); });
+
+    var tickSize = this._shape === "Circle" ? this._shapeConfig.r
+                   : this._shape === "Rect" ? this._shapeConfig[width]
+                   : this._shapeConfig.strokeWidth;
+
+    var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
+
+    var pixels = [];
+    this._availableTicks = ticks;
+    ticks.forEach(function (d, i) {
+      var s = tickGet({id: d, tick: true}, i);
+      if (this$1._shape === "Circle") { s *= 2; }
+      var t = this$1._d3Scale(d);
+      if (!pixels.length || Math.abs(d3plusCommon.closest(t, pixels) - t) > s * 2) { pixels.push(t); }
+      else { pixels.push(false); }
+    });
+    ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
+
+    this._visibleTicks = ticks;
+
+    var hBuff = this._shape === "Circle"
+              ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
+              : this._shape === "Rect"
+              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
+              : this._tickSize,
+        wBuff = tickGet({tick: true});
+
+    if (typeof hBuff === "function") { hBuff = d3Array.max(ticks.map(hBuff)); }
+    if (this._shape === "Rect") { hBuff /= 2; }
+    if (typeof wBuff === "function") { wBuff = d3Array.max(ticks.map(wBuff)); }
+    if (this._shape !== "Circle") { wBuff /= 2; }
+
+    if (this._scale === "band") {
+      this._space = this._d3Scale.bandwidth();
+    }
+    else if (labels.length > 1) {
+      this._space = 0;
+      for (var i = 0; i < labels.length - 1; i++) {
+        var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
+        if (s > this$1._space) { this$1._space = s; }
+      }
+    }
+    else { this._space = this._size; }
+
+    // Measures size of ticks
+    var textData = labels.map(function (d, i) {
+
+      var f = this$1._shapeConfig.fontFamily(d, i),
+            s = this$1._shapeConfig.fontSize(d, i);
+
+      var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
+
+      var res = d3plusText.textWrap()
+        .fontFamily(f)
+        .fontSize(s)
+        .lineHeight(lh)
+        .width(horizontal ? this$1._space : this$1._width - hBuff - p)
+        .height(horizontal ? this$1._height - hBuff - p : this$1._space)
+        (tickFormat(d));
+
+      res.lines = res.lines.filter(function (d) { return d !== ""; });
+      res.d = d;
+      res.fS = s;
+      res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); }))) + s / 4;
+      res.height = Math.ceil(res.lines.length * (lh + 1));
+      res.offset = 0;
+      if (res.width % 2) { res.width++; }
+
+      return res;
+
+    });
+
+    textData.forEach(function (d, i) {
+      if (i) {
+        var prev = textData[i - 1];
+        if (!prev.offset && this$1._d3Scale(d.d) - d[width] / 2 < this$1._d3Scale(prev.d) + prev[width] / 2) {
+          d.offset = prev[height] + this$1._padding;
+          d[height] += d.offset;
+        }
+      }
+    });
+
+    // Calculates new range, based on any text that may be overflowing.
+    var rangeOuter = range$$1.slice();
+    var lastI = range$$1.length - 1;
+    if (this._scale !== "band" && textData.length) {
+
+      var first = textData[0],
+            last = textData[textData.length - 1];
+
+      var firstB = d3Array.min([this._d3Scale(first.d) - first[width] / 2, range$$1[0] - wBuff]);
+      if (firstB < range$$1[0]) {
+        var d = range$$1[0] - firstB;
+        if (this._range === void 0 || this._range[0] === void 0) {
+          this._size -= d;
+          range$$1[0] += d;
+        }
+        else if (this._range) {
+          rangeOuter[0] -= d;
+        }
+      }
+
+      var lastB = d3Array.max([this._d3Scale(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
+      if (lastB > range$$1[lastI]) {
+        var d$1 = lastB - range$$1[lastI];
+        if (this._range === void 0 || this._range[lastI] === void 0) {
+          this._size -= d$1;
+          range$$1[lastI] -= d$1;
+        }
+        else if (this._range) {
+          rangeOuter[lastI] += d$1;
+        }
+      }
+
+      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
+      else { this._d3Scale.range(range$$1); }
+
+    }
+
+    var tBuff = this._shape === "Line" ? 0 : hBuff;
+    this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    var obj;
+    this._margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
+    this._margin[this._orient] += hBuff;
+    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
+    this._outerBounds[y] = this._align === "start" ? this._padding
+                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
+                         : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
+
+    var group = d3plusCommon.elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
+    this._group = group;
+
+    var grid = d3plusCommon.elem("g.grid", {parent: group}).selectAll("line")
+      .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
+
+    grid.exit().transition(t)
+      .attr("opacity", 0)
+      .call(this._gridPosition.bind(this))
+      .remove();
+
+    grid.enter().append("line")
+        .attr("opacity", 0)
+        .attr("clip-path", ("url(#" + clipId + ")"))
+        .call(this._gridPosition.bind(this), true)
+      .merge(grid).transition(t)
+        .attr("opacity", 1)
+        .call(this._gridPosition.bind(this));
+
+    var labelHeight = d3Array.max(textData, function (t) { return t.height; }) || 0,
+          labelWidth = horizontal ? this._space * 1.1 : (this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p) * 1.1;
+    var tickData = ticks
+      .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); }))
+      .map(function (d, i) {
+        var offset = this$1._margin[opposite],
+              position = flip ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
+              size = (hBuff + textData[i].offset) * (flip ? -1 : 1);
+        return ( obj = {
+          id: d,
+          labelBounds: {
+            x: horizontal ? -labelWidth / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
+            y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -labelHeight / 2,
+            width: labelWidth,
+            height: labelHeight
+          },
+          size: ticks.includes(d) ? size : 0,
+          text: labels.includes(d) ? tickFormat(d) : false,
+          tick: ticks.includes(d)
+        }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
+        var obj;
+      });
+
+    if (this._shape === "Line") {
+      tickData = tickData.concat(tickData.map(function (d) {
+        var dupe = Object.assign({}, d);
+        dupe[y] += d.size;
+        return dupe;
+      }));
+    }
+
+    new shapes[this._shape]()
+      .data(tickData)
+      .duration(this._duration)
+      .select(d3plusCommon.elem("g.ticks", {parent: group}).node())
+      .config(this._shapeConfig)
+      .render();
+
+    var bar = group.selectAll("line.bar").data([null]);
+
+    bar.enter().append("line")
+        .attr("class", "bar")
+        .attr("opacity", 0)
+        .call(this._barPosition.bind(this))
+      .merge(bar).transition(t)
+        .attr("opacity", 1)
+        .call(this._barPosition.bind(this));
+
+    new d3plusText.TextBox()
+      .data(this._title ? [{text: this._title}] : [])
+      .duration(this._duration)
+      .height(this._outerBounds.height)
+      .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
+      .select(d3plusCommon.elem("g.d3plus-Axis-title", {parent: group}).node())
+      .text(function (d) { return d.text; })
+      .textAnchor("middle")
+      .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
+      .width(this._outerBounds[width])
+      .x(horizontal ? this._outerBounds.x : this._orient === "left" ? this._outerBounds.x + this._margin[this._orient] / 2 - this._outerBounds[width] / 2 : this._outerBounds.x + this._outerBounds.width - this._margin[this._orient] / 2 - this._outerBounds[width] / 2)
+      .y(horizontal ? this._outerBounds.y : this._outerBounds.y - this._margin[this._orient] / 2 + this._outerBounds[width] / 2)
+      .config(this._titleConfig)
+      .render();
+
+    this._lastScale = this._d3Scale;
+
+    if (callback) { setTimeout(callback, this._duration + 100); }
+
+    return this;
+
+  };
+
+  /**
+      @memberof Axis
       @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
       @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
       @chainable
@@ -340,302 +654,6 @@ var Axis = (function (BaseClass$$1) {
   */
   Axis.prototype.range = function range$$1 (_) {
     return arguments.length ? (this._range = _, this) : this._range;
-  };
-
-  /**
-      @memberof Axis
-      @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
-      @param {Function} [*callback* = undefined]
-      @chainable
-  */
-  Axis.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    if (this._select === void 0) {
-      this.select(d3Selection.select("body").append("svg")
-        .attr("width", ((this._width) + "px"))
-        .attr("height", ((this._height) + "px"))
-        .node());
-    }
-
-    if (this._lineHeight === void 0) {
-      this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
-    }
-
-    var ref = this._position;
-    var width = ref.width;
-    var height = ref.height;
-    var x = ref.x;
-    var y = ref.y;
-    var horizontal = ref.horizontal;
-    var opposite = ref.opposite;
-    var clipId = "d3plus-Axis-clip-" + (this._uuid),
-          p = this._padding,
-          parent = this._select,
-          t = d3Transition.transition().duration(this._duration);
-
-    var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
-    if (range$$1[0] === void 0) { range$$1[0] = p; }
-    if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
-    this._size = range$$1[1] - range$$1[0];
-    if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
-      range$$1 = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
-    }
-
-    this._margin = {top: 0, right: 0, bottom: 0, left: 0};
-
-    if (this._title) {
-      var lH = this._titleConfig.lineHeight ? this._titleConfig.lineHeight : this._titleConfig.fontSize * 1.1,
-            titleWrap = d3plusText.textWrap()
-              .fontFamily(this._titleConfig.fontFamily)
-              .fontSize(this._titleConfig.fontSize)
-              .lineHeight(lH)
-              .width(this._size)
-              .height(this[("_" + height)] - this._tickSize - p)
-              (this._title);
-      this._margin[this._orient] = titleWrap.lines.length * lH + p;
-    }
-
-    this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-      .domain(this._scale === "time" ? this._domain.map(date) : this._domain);
-
-    if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
-    else { this._d3Scale.range(range$$1); }
-
-    if (this._d3Scale.round) { this._d3Scale.round(true); }
-    if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
-    if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
-
-    var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
-
-    var ticks = this._ticks
-              ? this._scale === "time" ? this._ticks.map(date) : this._ticks
-              : this._d3Scale.ticks
-              ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
-              : this._domain;
-
-    var labels = this._labels
-               ? this._scale === "time" ? this._labels.map(date) : this._labels
-               : this._d3Scale.ticks
-               ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
-               : ticks;
-
-    var tickFormat = this._tickFormat ? this._tickFormat : this._d3Scale.tickFormat
-                     ? this._d3Scale.tickFormat(labels.length - 1)
-                     : function (d) { return d; };
-
-    if (this._scale === "time") {
-      ticks = ticks.map(Number);
-      labels = labels.map(Number);
-    }
-
-    var tickSize = this._shape === "Circle" ? this._shapeConfig.r
-                   : this._shape === "Rect" ? this._shapeConfig[width]
-                   : this._shapeConfig.strokeWidth;
-
-    var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
-
-    var pixels = [];
-    this._availableTicks = ticks;
-    ticks.forEach(function (d, i) {
-      var s = tickGet({id: d, tick: true}, i);
-      if (this$1._shape === "Circle") { s *= 2; }
-      var t = this$1._d3Scale(d);
-      if (!pixels.length || Math.abs(d3plusCommon.closest(t, pixels) - t) > s * 2) { pixels.push(t); }
-      else { pixels.push(false); }
-    });
-    ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
-
-    this._visibleTicks = ticks;
-
-    var hBuff = this._shape === "Circle"
-              ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
-              : this._shape === "Rect"
-              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
-              : this._tickSize,
-        wBuff = tickGet({tick: true});
-
-    if (typeof hBuff === "function") { hBuff = d3Array.max(ticks.map(hBuff)); }
-    if (this._shape === "Rect") { hBuff /= 2; }
-    if (typeof wBuff === "function") { wBuff = d3Array.max(ticks.map(wBuff)); }
-    if (this._shape !== "Circle") { wBuff /= 2; }
-
-    if (this._scale === "band") {
-      this._space = this._d3Scale.bandwidth();
-    }
-    else if (labels.length > 1) {
-      this._space = 0;
-      for (var i = 0; i < labels.length - 1; i++) {
-        var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
-        if (s > this$1._space) { this$1._space = s; }
-      }
-    }
-    else { this._space = this._size; }
-
-    // Measures size of ticks
-    var textData = labels.map(function (d, i) {
-
-      var f = this$1._shapeConfig.fontFamily(d, i),
-            s = this$1._shapeConfig.fontSize(d, i);
-
-      var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
-
-      var res = d3plusText.textWrap()
-        .fontFamily(f)
-        .fontSize(s)
-        .lineHeight(lh)
-        .width(horizontal ? this$1._space : this$1._width - hBuff - p)
-        .height(horizontal ? this$1._height - hBuff - p : this$1._space)
-        (tickFormat(d));
-
-      res.lines = res.lines.filter(function (d) { return d !== ""; });
-      res.d = d;
-      res.fS = s;
-      res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); }))) + s / 4;
-      res.height = Math.ceil(res.lines.length * (lh + 1));
-      if (res.width % 2) { res.width++; }
-
-      return res;
-
-    });
-
-    // Calculates new range, based on any text that may be overflowing.
-    var rangeOuter = range$$1.slice();
-    var lastI = range$$1.length - 1;
-    if (this._scale !== "band" && textData.length) {
-
-      var first = textData[0],
-            last = textData[textData.length - 1];
-
-      var firstB = d3Array.min([this._d3Scale(first.d) - first[width] / 2, range$$1[0] - wBuff]);
-      if (firstB < range$$1[0]) {
-        var d = range$$1[0] - firstB;
-        if (this._range === void 0 || this._range[0] === void 0) {
-          this._size -= d;
-          range$$1[0] += d;
-        }
-        else if (this._range) {
-          rangeOuter[0] -= d;
-        }
-      }
-
-      var lastB = d3Array.max([this._d3Scale(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
-      if (lastB > range$$1[lastI]) {
-        var d$1 = lastB - range$$1[lastI];
-        if (this._range === void 0 || this._range[lastI] === void 0) {
-          this._size -= d$1;
-          range$$1[lastI] -= d$1;
-        }
-        else if (this._range) {
-          rangeOuter[lastI] += d$1;
-        }
-      }
-
-      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
-      else { this._d3Scale.range(range$$1); }
-
-    }
-
-    var tBuff = this._shape === "Line" ? 0 : hBuff;
-    this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
-    var obj;
-    this._margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
-    this._margin[this._orient] += hBuff;
-    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
-    this._outerBounds[y] = this._align === "start" ? this._padding
-                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
-                         : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
-
-    var group = d3plusCommon.elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
-    this._group = group;
-
-    var grid = d3plusCommon.elem("g.grid", {parent: group}).selectAll("line")
-      .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
-
-    grid.exit().transition(t)
-      .attr("opacity", 0)
-      .call(this._gridPosition.bind(this))
-      .remove();
-
-    grid.enter().append("line")
-        .attr("opacity", 0)
-        .attr("clip-path", ("url(#" + clipId + ")"))
-        .call(this._gridPosition.bind(this), true)
-      .merge(grid).transition(t)
-        .attr("opacity", 1)
-        .call(this._gridPosition.bind(this));
-
-    var labelHeight = d3Array.max(textData, function (t) { return t.height; }) || 0,
-          labelWidth = horizontal ? this._space * 1.1 : (this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p) * 1.1;
-    var tickData = ticks
-      .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); }))
-      .map(function (d) {
-        var offset = this$1._margin[opposite],
-              position = ["top", "left"].includes(this$1._orient) ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
-              size = ["top", "left"].includes(this$1._orient) ? -hBuff : hBuff,
-              sizeOffset = this$1._shape === "Line" ? size / 2 : size;
-        return ( obj = {
-          id: d,
-          labelBounds: {
-            x: horizontal ? -labelWidth / 2 : this$1._orient === "left" ? -labelWidth - p + sizeOffset : sizeOffset + p,
-            y: horizontal ? this$1._orient === "bottom" ? sizeOffset + p : sizeOffset - p - labelHeight : -labelHeight / 2,
-            width: labelWidth,
-            height: labelHeight
-          },
-          size: ticks.includes(d) ? size : 0,
-          text: labels.includes(d) ? tickFormat(d) : false,
-          tick: ticks.includes(d)
-        }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
-        var obj;
-      });
-
-    if (this._shape === "Line") {
-      tickData = tickData.concat(tickData.map(function (d) {
-        var dupe = Object.assign({}, d);
-        dupe[y] += d.size;
-        return dupe;
-      }));
-    }
-
-    new shapes[this._shape]()
-      .data(tickData)
-      .duration(this._duration)
-      .select(d3plusCommon.elem("g.ticks", {parent: group}).node())
-      .config(this._shapeConfig)
-      .render();
-
-    var bar = group.selectAll("line.bar").data([null]);
-
-    bar.enter().append("line")
-        .attr("class", "bar")
-        .attr("opacity", 0)
-        .call(this._barPosition.bind(this))
-      .merge(bar).transition(t)
-        .attr("opacity", 1)
-        .call(this._barPosition.bind(this));
-
-    new d3plusText.TextBox()
-      .data(this._title ? [{text: this._title}] : [])
-      .duration(this._duration)
-      .height(this._outerBounds.height)
-      .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
-      .select(d3plusCommon.elem("g.d3plus-Axis-title", {parent: group}).node())
-      .text(function (d) { return d.text; })
-      .textAnchor("middle")
-      .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
-      .width(this._outerBounds[width])
-      .x(horizontal ? this._outerBounds.x : this._orient === "left" ? this._outerBounds.x + this._margin[this._orient] / 2 - this._outerBounds[width] / 2 : this._outerBounds.x + this._outerBounds.width - this._margin[this._orient] / 2 - this._outerBounds[width] / 2)
-      .y(horizontal ? this._outerBounds.y : this._outerBounds.y - this._margin[this._orient] / 2 + this._outerBounds[width] / 2)
-      .config(this._titleConfig)
-      .render();
-
-    this._lastScale = this._d3Scale;
-
-    if (callback) { setTimeout(callback, this._duration + 100); }
-
-    return this;
-
   };
 
   /**
