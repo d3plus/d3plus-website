@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.25
+  d3plus-axis v0.3.26
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -14128,10 +14128,12 @@ var Axis = (function (BaseClass$$1) {
           labelWidth = horizontal ? this._space * 1.1 : (this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p) * 1.1;
     var tickData = ticks$$1
       .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks$$1.includes(d); }))
-      .map(function (d, i) {
+      .map(function (d) {
+        var data = textData.filter(function (td) { return td.d === d; });
+        var labelOffset = data.length ? data[0].offset : 0;
         var offset = this$1._margin[opposite],
               position = flip ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
-              size = (hBuff + textData[i].offset) * (flip ? -1 : 1);
+              size = (hBuff + labelOffset) * (flip ? -1 : 1);
         return ( obj = {
           id: d,
           labelBounds: {
