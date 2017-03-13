@@ -1,13 +1,13 @@
 /*
-  d3plus-priestley v0.1.15
+  d3plus-priestley v0.1.16
   A reusable Priestley timeline built on D3.
-  Copyright (c) 2016 D3plus - https://d3plus.org
+  Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3plus-axis'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
-  typeof define === 'function' && define.amd ? define('d3plus-priestley', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3plus-axis', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.d3Scale,global.d3plusAxis,global.d3plusCommon,global.d3plusShape,global.d3plusViz));
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3plus-axis'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
+	typeof define === 'function' && define.amd ? define('d3plus-priestley', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3plus-axis', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Collection,global.d3Scale,global.d3plusAxis,global.d3plusCommon,global.d3plusShape,global.d3plusViz));
 }(this, (function (exports,d3Array,d3Collection,d3Scale,d3plusAxis,d3plusCommon,d3plusShape,d3plusViz) { 'use strict';
 
 /**
