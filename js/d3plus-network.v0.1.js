@@ -1,13 +1,13 @@
 /*
-  d3plus-network v0.1.4
+  d3plus-network v0.1.5
   Javascript network visualizations built upon d3 modules.
-  Copyright (c) 2016 D3plus - https://d3plus.org
+  Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-brush'), require('d3-collection'), require('d3-selection'), require('d3-scale'), require('d3-zoom'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
-  typeof define === 'function' && define.amd ? define('d3plus-network', ['exports', 'd3-array', 'd3-brush', 'd3-collection', 'd3-selection', 'd3-scale', 'd3-zoom', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-  (factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Brush,global.d3Collection,global.d3Selection,global.scales,global.d3Zoom,global.d3plusCommon,global.shapes,global.d3plusViz));
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-brush'), require('d3-collection'), require('d3-selection'), require('d3-scale'), require('d3-zoom'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
+	typeof define === 'function' && define.amd ? define('d3plus-network', ['exports', 'd3-array', 'd3-brush', 'd3-collection', 'd3-selection', 'd3-scale', 'd3-zoom', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Brush,global.d3Collection,global.d3Selection,global.scales,global.d3Zoom,global.d3plusCommon,global.shapes,global.d3plusViz));
 }(this, (function (exports,d3Array,d3Brush,d3Collection,d3Selection,scales,d3Zoom,d3plusCommon,shapes,d3plusViz) { 'use strict';
 
 /**
@@ -67,11 +67,9 @@ var Network = (function (Viz$$1) {
             if (l.y + l.r > yDomain[1]) { yDomain[1] = l.y + l.r; }
           });
 
-          var filterId = this$1._ids(d, i);
-
           this$1.active(function (h, x) {
             if (h.source && h.target) { return h.source.id === node.id || h.target.id === node.id; }
-            else { return filterIds.includes(this$1._ids(h, x)[filterId.length - 1]); }
+            else { return filterIds.includes(this$1._ids(h, x)[this$1._drawDepth]); }
           });
 
           this$1._focus = d.id;
@@ -347,11 +345,11 @@ var Network = (function (Viz$$1) {
         __d3plus__: true,
         data: d || n,
         i: i, id: id,
-        fx: d !== void 0 && this$1._x(d) !== void 0 ? this$1._x(d) : this$1._x(n),
-        fy: d !== void 0 && this$1._y(d) !== void 0 ? this$1._y(d) : this$1._y(n),
+        fx: d !== undefined && this$1._x(d) !== undefined ? this$1._x(d) : this$1._x(n),
+        fy: d !== undefined && this$1._y(d) !== undefined ? this$1._y(d) : this$1._y(n),
         node: n,
-        r: this$1._size ? d !== void 0 && this$1._size(d) !== void 0 ? this$1._size(d) : this$1._size(n) : 1,
-        shape: d !== void 0 && this$1._shape(d) !== void 0 ? this$1._shape(d) : this$1._shape(n)
+        r: this$1._size ? d !== undefined && this$1._size(d) !== undefined ? this$1._size(d) : this$1._size(n) : this$1._sizeMin,
+        shape: d !== undefined && this$1._shape(d) !== undefined ? this$1._shape(d) : this$1._shape(n)
       };
 
     });
@@ -383,7 +381,7 @@ var Network = (function (Viz$$1) {
     var rMax = this._sizeMax || d3Array.min(
           d3Array.merge(nodes
             .map(function (n1) { return nodes
-              .map(function (n2) { return n1 === n2 ? null : shapes.pointDistance(n1, n2); }); }
+              .map(function (n2) { return n1 === n2 ? null : shapes.pointDistance([n1.x, n1.y], [n2.x, n2.y]); }); }
             )
           )
         ) / 2;
@@ -660,7 +658,7 @@ var Network = (function (Viz$$1) {
       @param {Boolean} [*value* = true]
       @chainable
   */
-  Network.prototype.zoom = function zoom$1 (_) {
+  Network.prototype.zoom = function zoom$$1 (_) {
     return arguments.length ? (this._zoom = _, this) : this._zoom;
   };
 
