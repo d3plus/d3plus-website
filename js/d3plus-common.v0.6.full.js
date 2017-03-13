@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.14
+  d3plus-common v0.6.15
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -1255,7 +1255,7 @@ function sleep(time) {
     if (time < Infinity) { timeout = setTimeout(wake, delay); }
     if (interval) { interval = clearInterval(interval); }
   } else {
-    if (!interval) { interval = setInterval(poke, pokeDelay); }
+    if (!interval) { clockLast = clockNow, interval = setInterval(poke, pokeDelay); }
     frame = 1, setFrame(wake);
   }
 }
@@ -2388,7 +2388,7 @@ var transition_attr = function(name, value) {
   return this.attrTween(name, typeof value === "function"
       ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
       : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
-      : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value));
+      : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value + ""));
 };
 
 function attrTweenNS(fullname, value) {
@@ -2659,7 +2659,7 @@ var transition_style = function(name, value, priority) {
           .on("end.style." + name, styleRemoveEnd(name))
       : this.styleTween(name, typeof value === "function"
           ? styleFunction$1(name, i, tweenValue(this, "style." + name, value))
-          : styleConstant$1(name, i, value), priority);
+          : styleConstant$1(name, i, value + ""), priority);
 };
 
 function styleTween(name, value, priority) {
@@ -3425,8 +3425,8 @@ function convertAPIOptions(options) {
   options.parseMissingKeyHandler = options.parseMissingKey;
   options.appendNamespaceToMissingKey = true;
 
-  options.nsSeparator = options.nsseparator;
-  options.keySeparator = options.keyseparator;
+  options.nsSeparator = options.nsseparator || ':';
+  options.keySeparator = options.keyseparator || '.';
 
   if (options.shortcutFunction === 'sprintf') {
     options.overloadTranslationOptionHandler = function (args) {
@@ -3529,7 +3529,7 @@ var _extends$3 = Object.assign || function (target) {
 var arguments$1 = arguments;
  for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _defaults$2(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
 
@@ -3573,12 +3573,13 @@ var Translator = function (_EventEmitter) {
   Translator.prototype.extractFromKey = function extractFromKey(key, options) {
     var nsSeparator = options.nsSeparator || this.options.nsSeparator;
     if (nsSeparator === undefined) { nsSeparator = ':'; }
+    var keySeparator = options.keySeparator || this.options.keySeparator || '.';
 
     var namespaces = options.ns || this.options.defaultNS;
     if (nsSeparator && key.indexOf(nsSeparator) > -1) {
       var parts = key.split(nsSeparator);
-      namespaces = parts[0];
-      key = parts[1];
+      if (nsSeparator !== keySeparator || nsSeparator === keySeparator && this.options.ns.indexOf(parts[0]) > -1) { namespaces = parts.shift(); }
+      key = parts.join(keySeparator);
     }
     if (typeof namespaces === 'string') { namespaces = [namespaces]; }
 
@@ -3593,7 +3594,7 @@ var Translator = function (_EventEmitter) {
 
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-    if ((typeof options === 'undefined' ? 'undefined' : _typeof$1(options)) !== 'object') {
+    if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') {
       options = this.options.overloadTranslationOptionHandler(arguments);
     } else if (this.options.compatibilityAPI === 'v1') {
       options = convertTOptions(options);
@@ -3641,12 +3642,16 @@ var Translator = function (_EventEmitter) {
         return this.options.returnedObjectHandler ? this.options.returnedObjectHandler(key, res, options) : 'key \'' + key + ' (' + this.language + ')\' returned an object instead of string.';
       }
 
-      var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
+      // if we got a separator we loop over children - else we just return object as is
+      // as having it set to false means no hierarchy so no lookup for nested values
+      if (options.keySeparator || this.options.keySeparator) {
+        var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
 
-      for (var m in res) {
-        copy$$1[m] = this$1.translate('' + key + keySeparator + m, _extends$3({ joinArrays: false, ns: namespaces }, options));
+        for (var m in res) {
+          copy$$1[m] = this$1.translate('' + key + keySeparator + m, _extends$3({ joinArrays: false, ns: namespaces }, options));
+        }
+        res = copy$$1;
       }
-      res = copy$$1;
     }
     // array special treatment
     else if (joinArrays && resType === '[object Array]') {
@@ -3831,16 +3836,8 @@ var LanguageUtil = function () {
     this.logger = baseLogger.create('languageUtils');
   }
 
-  LanguageUtil.prototype.getLanguagePartFromCode = function getLanguagePartFromCode(code) {
-    if (code.indexOf('-') < 0) { return code; }
-
-    var specialCases = ['NB-NO', 'NN-NO', 'nb-NO', 'nn-NO', 'nb-no', 'nn-no'];
-    var p = code.split('-');
-    return this.formatLanguageCode(specialCases.indexOf(code) > -1 ? p[1].toLowerCase() : p[0]);
-  };
-
   LanguageUtil.prototype.getScriptPartFromCode = function getScriptPartFromCode(code) {
-    if (code.indexOf('-') < 0) { return null; }
+    if (!code || code.indexOf('-') < 0) { return null; }
 
     var p = code.split('-');
     if (p.length === 2) { return null; }
@@ -3849,11 +3846,10 @@ var LanguageUtil = function () {
   };
 
   LanguageUtil.prototype.getLanguagePartFromCode = function getLanguagePartFromCode(code) {
-    if (code.indexOf('-') < 0) { return code; }
+    if (!code || code.indexOf('-') < 0) { return code; }
 
-    var specialCases = ['NB-NO', 'NN-NO', 'nb-NO', 'nn-NO', 'nb-no', 'nn-no'];
     var p = code.split('-');
-    return this.formatLanguageCode(specialCases.indexOf(code) > -1 ? p[1].toLowerCase() : p[0]);
+    return this.formatLanguageCode(p[0]);
   };
 
   LanguageUtil.prototype.formatLanguageCode = function formatLanguageCode(code) {
@@ -3900,6 +3896,8 @@ var LanguageUtil = function () {
     if (typeof fallbacks === 'string') { fallbacks = [fallbacks]; }
     if (Object.prototype.toString.apply(fallbacks) === '[object Array]') { return fallbacks; }
 
+    if (!code) { return fallbacks.default || []; }
+
     // asume we have an object defining fallbacks
     var found = fallbacks[code];
     if (!found) { found = fallbacks[this.getScriptPartFromCode(code)]; }
@@ -3943,8 +3941,6 @@ var LanguageUtil = function () {
 
   return LanguageUtil;
 }();
-
-var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _classCallCheck$6(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -4067,58 +4063,40 @@ var PluralResolver = function () {
     var rule = this.getRule(code);
 
     if (rule) {
-      var _ret = function () {
-        if (rule.numbers.length === 1) { return {
-            v: ''
-          }; } // only singular
+      if (rule.numbers.length === 1) { return ''; } // only singular
 
-        var idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
-        var suffix = rule.numbers[idx];
+      var idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
+      var suffix = rule.numbers[idx];
 
-        // special treatment for lngs only having singular and plural
-        if (rule.numbers.length === 2 && rule.numbers[0] === 1) {
-          if (suffix === 2) {
-            suffix = 'plural';
-          } else if (suffix === 1) {
-            suffix = '';
-          }
+      // special treatment for lngs only having singular and plural
+      if (rule.numbers.length === 2 && rule.numbers[0] === 1) {
+        if (suffix === 2) {
+          suffix = 'plural';
+        } else if (suffix === 1) {
+          suffix = '';
         }
+      }
 
-        var returnSuffix = function returnSuffix() {
-          return _this.options.prepend && suffix.toString() ? _this.options.prepend + suffix.toString() : suffix.toString();
-        };
+      var returnSuffix = function returnSuffix() {
+        return _this.options.prepend && suffix.toString() ? _this.options.prepend + suffix.toString() : suffix.toString();
+      };
 
-        // COMPATIBILITY JSON
-        // v1
-        if (_this.options.compatibilityJSON === 'v1') {
-          if (suffix === 1) { return {
-              v: ''
-            }; }
-          if (typeof suffix === 'number') { return {
-              v: '_plural_' + suffix.toString()
-            }; }
-          return {
-            v: returnSuffix()
-          };
+      // COMPATIBILITY JSON
+      // v1
+      if (this.options.compatibilityJSON === 'v1') {
+        if (suffix === 1) { return ''; }
+        if (typeof suffix === 'number') { return '_plural_' + suffix.toString(); }
+        return returnSuffix();
+      }
+      // v2
+      else if (this.options.compatibilityJSON === 'v2' || rule.numbers.length === 2 && rule.numbers[0] === 1) {
+          return returnSuffix();
         }
-        // v2
-        else if (_this.options.compatibilityJSON === 'v2' || rule.numbers.length === 2 && rule.numbers[0] === 1) {
-            return {
-              v: returnSuffix()
-            };
+        // v3 - gettext index
+        else if (rule.numbers.length === 2 && rule.numbers[0] === 1) {
+            return returnSuffix();
           }
-          // v3 - gettext index
-          else if (rule.numbers.length === 2 && rule.numbers[0] === 1) {
-              return {
-                v: returnSuffix()
-              };
-            }
-        return {
-          v: _this.options.prepend && idx.toString() ? _this.options.prepend + idx.toString() : idx.toString()
-        };
-      }();
-
-      if ((typeof _ret === 'undefined' ? 'undefined' : _typeof$2(_ret)) === "object") { return _ret.v; }
+      return this.options.prepend && idx.toString() ? this.options.prepend + idx.toString() : idx.toString();
     } else {
       this.logger.warn('no plural rule found for: ' + code);
       return '';
@@ -4127,6 +4105,10 @@ var PluralResolver = function () {
 
   return PluralResolver;
 }();
+
+var _extends$4 = Object.assign || function (target) {
+var arguments$1 = arguments;
+ for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _classCallCheck$7(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -4160,7 +4142,8 @@ var Interpolator = function () {
 
     this.prefix = iOpts.prefix ? regexEscape(iOpts.prefix) : iOpts.prefixEscaped || '{{';
     this.suffix = iOpts.suffix ? regexEscape(iOpts.suffix) : iOpts.suffixEscaped || '}}';
-    this.formatSeparator = iOpts.formatSeparator ? regexEscape(iOpts.formatSeparator) : iOpts.formatSeparator || ',';
+
+    this.formatSeparator = iOpts.formatSeparator ? iOpts.formatSeparator : iOpts.formatSeparator || ',';
 
     this.unescapePrefix = iOpts.unescapeSuffix ? '' : iOpts.unescapePrefix || '-';
     this.unescapeSuffix = this.unescapePrefix ? '' : iOpts.unescapeSuffix || '';
@@ -4242,7 +4225,7 @@ var Interpolator = function () {
     var match = void 0,
         value = void 0;
 
-    var clonedOptions = JSON.parse(JSON.stringify(options));
+    var clonedOptions = _extends$4({}, options);
     clonedOptions.applyPostProcessor = false; // avoid post processing on nested lookup
 
     function handleHasOptions(key) {
@@ -4282,7 +4265,7 @@ var Interpolator = function () {
   return Interpolator;
 }();
 
-var _extends$4 = Object.assign || function (target) {
+var _extends$5 = Object.assign || function (target) {
 var arguments$1 = arguments;
  for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -4442,7 +4425,7 @@ var Connector = function (_EventEmitter) {
       this.logger.warn('No backend was added via i18next.use. Will not load resources.');
       return callback && callback();
     }
-    var options = _extends$4({}, this.backend.options, this.options.backend);
+    var options = _extends$5({}, this.backend.options, this.options.backend);
 
     if (typeof languages === 'string') { languages = this.services.languageUtils.toResolveHierarchy(languages); }
     if (typeof namespaces === 'string') { namespaces = [namespaces]; }
@@ -4479,29 +4462,27 @@ var Connector = function (_EventEmitter) {
 
     // load one by one
     else {
-        (function () {
-          var readOne = function readOne(name) {
-            var _this6 = this;
+        var readOne = function readOne(name) {
+          var _this6 = this;
 
-            var _name$split5 = name.split('|'),
-                _name$split6 = _slicedToArray(_name$split5, 2),
-                lng = _name$split6[0],
-                ns = _name$split6[1];
+          var _name$split5 = name.split('|'),
+              _name$split6 = _slicedToArray(_name$split5, 2),
+              lng = _name$split6[0],
+              ns = _name$split6[1];
 
-            this.read(lng, ns, 'read', null, null, function (err, data) {
-              if (err) { _this6.logger.warn('loading namespace ' + ns + ' for language ' + lng + ' failed', err); }
-              if (!err && data) { _this6.logger.log('loaded namespace ' + ns + ' for language ' + lng, data); }
+          this.read(lng, ns, 'read', null, null, function (err, data) {
+            if (err) { _this6.logger.warn('loading namespace ' + ns + ' for language ' + lng + ' failed', err); }
+            if (!err && data) { _this6.logger.log('loaded namespace ' + ns + ' for language ' + lng, data); }
 
-              _this6.loaded(name, err, data);
-            });
-          };
-
-          
-
-          toLoad.toLoad.forEach(function (name) {
-            readOne.call(_this5, name);
+            _this6.loaded(name, err, data);
           });
-        })();
+        };
+
+        
+
+        toLoad.toLoad.forEach(function (name) {
+          readOne.call(_this5, name);
+        });
       }
   };
 
@@ -4511,7 +4492,7 @@ var Connector = function (_EventEmitter) {
     if (!this.backend) {
       this.logger.warn('No backend was added via i18next.use. Will not load resources.');
     }
-    var options = _extends$4({}, this.backend.options, this.options.backend);
+    var options = _extends$5({}, this.backend.options, this.options.backend);
 
     if (typeof languages === 'string') { languages = this.services.languageUtils.toResolveHierarchy(languages); }
     if (typeof namespaces === 'string') { namespaces = [namespaces]; }
@@ -4539,31 +4520,29 @@ var Connector = function (_EventEmitter) {
 
     // load one by one
     else {
-        (function () {
-          var readOne = function readOne(name) {
-            var _this8 = this;
+        var readOne = function readOne(name) {
+          var _this8 = this;
 
-            var _name$split7 = name.split('|'),
-                _name$split8 = _slicedToArray(_name$split7, 2),
-                lng = _name$split8[0],
-                ns = _name$split8[1];
+          var _name$split7 = name.split('|'),
+              _name$split8 = _slicedToArray(_name$split7, 2),
+              lng = _name$split8[0],
+              ns = _name$split8[1];
 
-            this.read(lng, ns, 'read', null, null, function (err, data) {
-              if (err) { _this8.logger.warn('reloading namespace ' + ns + ' for language ' + lng + ' failed', err); }
-              if (!err && data) { _this8.logger.log('reloaded namespace ' + ns + ' for language ' + lng, data); }
+          this.read(lng, ns, 'read', null, null, function (err, data) {
+            if (err) { _this8.logger.warn('reloading namespace ' + ns + ' for language ' + lng + ' failed', err); }
+            if (!err && data) { _this8.logger.log('reloaded namespace ' + ns + ' for language ' + lng, data); }
 
-              _this8.loaded(name, err, data);
-            });
-          };
-
-          
-
-          languages.forEach(function (l) {
-            namespaces.forEach(function (n) {
-              readOne.call(_this7, l + '|' + n);
-            });
+            _this8.loaded(name, err, data);
           });
-        })();
+        };
+
+        
+
+        languages.forEach(function (l) {
+          namespaces.forEach(function (n) {
+            readOne.call(_this7, l + '|' + n);
+          });
+        });
       }
   };
 
@@ -4578,7 +4557,7 @@ var Connector = function (_EventEmitter) {
   return Connector;
 }(EventEmitter);
 
-var _extends$5 = Object.assign || function (target) {
+var _extends$6 = Object.assign || function (target) {
 var arguments$1 = arguments;
  for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -4614,7 +4593,7 @@ var Connector$1 = function (_EventEmitter) {
     var _this2 = this;
 
     if (!this.cache) { return callback && callback(); }
-    var options = _extends$5({}, this.cache.options, this.options.cache);
+    var options = _extends$6({}, this.cache.options, this.options.cache);
 
     if (typeof languages === 'string') { languages = this.services.languageUtils.toResolveHierarchy(languages); }
     if (typeof namespaces === 'string') { namespaces = [namespaces]; }
@@ -4716,8 +4695,6 @@ function transformOptions(options) {
   return options;
 }
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _extends = Object.assign || function (target) {
 var arguments$1 = arguments;
  for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -4746,7 +4723,7 @@ var I18n = function (_EventEmitter) {
     _this.options = transformOptions(options);
     _this.services = {};
     _this.logger = baseLogger;
-    _this.modules = {};
+    _this.modules = { external: [] };
 
     if (callback && !_this.isInitialized && !options.isClone) { _this.init(options, callback); }
     return _this;
@@ -4841,6 +4818,10 @@ var I18n = function (_EventEmitter) {
 
         _this2.emit.apply(_this2, [event].concat(args));
       });
+
+      this.modules.external.forEach(function (m) {
+        if (m.init) { m.init(_this2); }
+      });
     }
 
     // append api
@@ -4879,34 +4860,29 @@ var I18n = function (_EventEmitter) {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : noop$1;
 
     if (!this.options.resources) {
-      var _ret = function () {
-        if (_this3.language && _this3.language.toLowerCase() === 'cimode') { return {
-            v: callback()
-          }; } // avoid loading resources for cimode
+      if (this.language && this.language.toLowerCase() === 'cimode') { return callback(); } // avoid loading resources for cimode
 
-        var toLoad = [];
+      var toLoad = [];
 
-        var append = function append(lng) {
-          var lngs = _this3.services.languageUtils.toResolveHierarchy(lng);
-          lngs.forEach(function (l) {
-            if (toLoad.indexOf(l) < 0) { toLoad.push(l); }
-          });
-        };
-
-        append(_this3.language);
-
-        if (_this3.options.preload) {
-          _this3.options.preload.forEach(function (l) {
-            append(l);
-          });
-        }
-
-        _this3.services.cacheConnector.load(toLoad, _this3.options.ns, function () {
-          _this3.services.backendConnector.load(toLoad, _this3.options.ns, callback);
+      var append = function append(lng) {
+        if (!lng) { return; }
+        var lngs = _this3.services.languageUtils.toResolveHierarchy(lng);
+        lngs.forEach(function (l) {
+          if (toLoad.indexOf(l) < 0) { toLoad.push(l); }
         });
-      }();
+      };
 
-      if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") { return _ret.v; }
+      append(this.language);
+
+      if (this.options.preload) {
+        this.options.preload.forEach(function (l) {
+          append(l);
+        });
+      }
+
+      this.services.cacheConnector.load(toLoad, this.options.ns, function () {
+        _this3.services.backendConnector.load(toLoad, _this3.options.ns, callback);
+      });
     } else {
       callback(null);
     }
@@ -4927,7 +4903,7 @@ var I18n = function (_EventEmitter) {
       this.modules.cache = module;
     }
 
-    if (module.type === 'logger' || module.log && module.warn && module.warn) {
+    if (module.type === 'logger' || module.log && module.warn && module.error) {
       this.modules.logger = module;
     }
 
@@ -4937,6 +4913,10 @@ var I18n = function (_EventEmitter) {
 
     if (module.type === 'postProcessor') {
       postProcessor.addPostProcessor(module);
+    }
+
+    if (module.type === '3rdParty') {
+      this.modules.external.push(module);
     }
 
     return this;
@@ -5081,6 +5061,22 @@ var I18n = function (_EventEmitter) {
 
 var i18next$1 = new I18n();
 
+var changeLanguage = i18next$1.changeLanguage.bind(i18next$1);
+var cloneInstance = i18next$1.cloneInstance.bind(i18next$1);
+var createInstance = i18next$1.createInstance.bind(i18next$1);
+var dir = i18next$1.dir.bind(i18next$1);
+var exists = i18next$1.exists.bind(i18next$1);
+var getFixedT = i18next$1.getFixedT.bind(i18next$1);
+var init$1 = i18next$1.init.bind(i18next$1);
+var loadLanguages = i18next$1.loadLanguages.bind(i18next$1);
+var loadNamespaces = i18next$1.loadNamespaces.bind(i18next$1);
+var loadResources = i18next$1.loadResources.bind(i18next$1);
+var off = i18next$1.off.bind(i18next$1);
+var on = i18next$1.on.bind(i18next$1);
+var setDefaultNamespace = i18next$1.setDefaultNamespace.bind(i18next$1);
+var t = i18next$1.t.bind(i18next$1);
+var use = i18next$1.use.bind(i18next$1);
+
 var Back = "Back";
 var Total = "Total";
 var array$1 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
@@ -5146,6 +5142,10 @@ function ascendingComparator(f) {
 
 var ascendingBisect = bisector(ascending$1);
 var bisectRight = ascendingBisect.right;
+
+function pair(a, b) {
+  return [a, b];
+}
 
 var number = function(x) {
   return x === null ? NaN : +x;
