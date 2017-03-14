@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.7.0
+  d3plus-viz v0.7.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -138,6 +138,7 @@ var drawColorScale = function(data) {
       .height(this._height - this._margin.bottom - this._margin.top)
       .orient(position)
       .select(scaleGroup)
+      .value(this._colorScale)
       .width(this._width - this._margin.left - this._margin.right)
       .config(this._colorScaleConfig)
       .render();
