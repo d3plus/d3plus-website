@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.7.1
+  d3plus-viz v0.7.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -17983,7 +17983,10 @@ var drawColorScale = function(data) {
   if ( data === void 0 ) data = [];
 
 
-  var transform = {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")};
+  var transform = {
+    opacity: this._colorScalePosition ? 1 : 0,
+    transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")
+  };
 
   var scaleGroup = elem("g.d3plus-viz-colorScale", {
     condition: this._colorScale,
@@ -18000,7 +18003,7 @@ var drawColorScale = function(data) {
       return c !== undefined && c !== null;
     });
 
-    var position = this._colorScalePosition;
+    var position = this._colorScalePosition || "bottom";
     var wide = ["top", "bottom"].includes(position);
 
     this._colorScaleClass
@@ -18016,7 +18019,7 @@ var drawColorScale = function(data) {
       .render();
 
     var scaleBounds = this._colorScaleClass.outerBounds();
-    if (scaleBounds.height) {
+    if (this._colorScalePosition && scaleBounds.height) {
       if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
       else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
     }
@@ -18121,48 +18124,6 @@ var drawControls = function() {
 };
 
 /**
-    @function _colorNest
-    @desc Returns an Array of data objects based on a given color accessor and groupBy levels.
-    @param {Array} raw The raw data Array to be grouped by color.
-    @private
-*/
-var colorNest = function(raw) {
-  var this$1 = this;
-
-
-  var fill = function (d, i) { return ((this$1._shapeConfig.fill(d, i)) + "_" + (this$1._shapeConfig.opacity(d, i))); };
-  var colors = nest().key(fill).entries(raw);
-  var data, id;
-
-  if (this._groupBy.length) {
-    var numColors = colors.length;
-    var loop = function ( i ) {
-      id = function (d) { return this$1._ids(d).slice(0, i + 1).join("_"); };
-      var ids = colors.map(function (c) { return Array.from(new Set(c.values.map(id))); }),
-            total = sum(ids, function (d) { return d.length; }),
-            uniques = new Set(merge(ids)).size;
-      if (total === numColors && uniques === numColors || i === this$1._groupBy.length - 1) {
-        data = nest().key(id).entries(raw).map(function (d) { return objectMerge(d.values); });
-        return 'break';
-      }
-    };
-
-    for (var i = 0; i < this._groupBy.length; i++) {
-      var returned = loop( i );
-
-      if ( returned === 'break' ) break;
-    }
-  }
-  else {
-    id = fill;
-    data = colors.map(function (d) { return objectMerge(d.values); });
-  }
-
-  return {data: data, id: id};
-
-};
-
-/**
     @function _drawLegend
     @desc Renders the legend if this._legend is not falsy.
     @param {Array} data The filtered data array to be displayed.
@@ -18185,29 +18146,27 @@ var drawLegend = function(data) {
 
   if (this._legend) {
 
-    var legendData = [];
-    if (data.length) {
-
-      var dataNest = nest();
-      for (var i = 0; i <= this._drawDepth; i++) { dataNest.key(this$1._groupBy[i]); }
-      dataNest
-        .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
-        .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
-
-    }
-
     var position = this._legendPosition;
     var wide = ["top", "bottom"].includes(position);
-    var legend = colorNest.bind(this)(legendData);
+
+    var legendData = [];
+    var fill = function (d, i) { return ((this$1._shapeConfig.fill(d, i)) + "_" + (this$1._shapeConfig.opacity(d, i))); };
+    nest()
+      .key(fill)
+      .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
+      .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
 
     this._legendClass
-      .id(legend.id)
+      .id(fill)
       .align(wide ? "center" : position)
       .direction(wide ? "row" : "column")
       .duration(this._duration)
-      .data(legend.data.length > 1 || this._colorScale ? legend.data : [])
+      .data(legendData.length > 1 || this._colorScale ? legendData : [])
       .height(this._height - this._margin.bottom - this._margin.top)
-      .label(this._label || legend.id)
+      .label(function (d, i) {
+        var l = this$1._drawLabel(d, i);
+        return l instanceof Array ? l.join(", ") : l;
+      })
       .select(legendGroup)
       .verticalAlign(!wide ? "middle" : position)
       .width(this._width - this._margin.left - this._margin.right)
@@ -18713,7 +18672,10 @@ var Viz = (function (BaseClass$$1) {
     this._tooltipClass = new Tooltip();
     this._tooltipConfig = {
       duration: 50,
-      pointerEvents: "none"
+      pointerEvents: "none",
+      titleStyle: {
+        "max-width": "200px"
+      }
     };
 
     this._totalClass = new TextBox();
@@ -18787,7 +18749,7 @@ var Viz = (function (BaseClass$$1) {
       .map(function (g) { return g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
       .filter(function (g) { return g !== void 0 && g !== null && g.constructor !== Array; }); };
     this._drawLabel = this._label || function(d, i) {
-      var l = that._ids(d, i).slice(0, that._drawDepth + 1).filter(function (d) { return d && d.constructor !== Array; });
+      var l = that._ids(d, i).slice(0, that._drawDepth + 1).filter(function (d) { return d !== undefined && d !== null && d.constructor !== Array; });
       return l[l.length - 1];
     };
 
@@ -19041,8 +19003,8 @@ var Viz = (function (BaseClass$$1) {
 
   /**
       @memberof Viz
-      @desc Defines which side of the visualization to anchor the color scale. Acceptable values are `"top"`, `"bottom"`, `"left"`, and `"right"`. If no value is passed, the current legend position will be returned.
-      @param {String} [*value* = "bottom"]
+      @desc Defines which side of the visualization to anchor the color scale. Acceptable values are `"top"`, `"bottom"`, `"left"`, `"right"` and `false`. A `false` value will cause the color scale to not be displayed, but will still color shapes based on the scale. If no value is passed, the current legend position will be returned.
+      @param {String|Boolean} [*value* = "bottom"]
       @chainable
   */
   Viz.prototype.colorScalePosition = function colorScalePosition (_) {
