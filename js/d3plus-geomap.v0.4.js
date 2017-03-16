@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.0
+  d3plus-geomap v0.4.1
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -321,6 +321,7 @@ var Geomap = (function (Viz$$1) {
     var topoData = coordData.features.reduce(function (arr, feature$$1) {
       var id = this$1._topojsonId(feature$$1);
       arr.push({
+        __d3plus__: true,
         data: pathData[id],
         feature: feature$$1,
         id: id

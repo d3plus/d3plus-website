@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.0
+  d3plus-geomap v0.4.1
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -17403,10 +17403,12 @@ var Axis = (function (BaseClass$$1) {
           labelWidth = horizontal ? this._space * 1.1 : (this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p) * 1.1;
     var tickData = ticks$$1
       .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks$$1.includes(d); }))
-      .map(function (d, i) {
+      .map(function (d) {
+        var data = textData.filter(function (td) { return td.d === d; });
+        var labelOffset = data.length ? data[0].offset : 0;
         var offset = this$1._margin[opposite],
               position = flip ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
-              size = (hBuff + textData[i].offset) * (flip ? -1 : 1);
+              size = (hBuff + labelOffset) * (flip ? -1 : 1);
         return ( obj = {
           id: d,
           labelBounds: {
@@ -20635,7 +20637,10 @@ var drawColorScale = function(data) {
   if ( data === void 0 ) data = [];
 
 
-  var transform = {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")};
+  var transform = {
+    opacity: this._colorScalePosition ? 1 : 0,
+    transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")
+  };
 
   var scaleGroup = elem("g.d3plus-viz-colorScale", {
     condition: this._colorScale,
@@ -20652,7 +20657,7 @@ var drawColorScale = function(data) {
       return c !== undefined && c !== null;
     });
 
-    var position = this._colorScalePosition;
+    var position = this._colorScalePosition || "bottom";
     var wide = ["top", "bottom"].includes(position);
 
     this._colorScaleClass
@@ -20662,12 +20667,13 @@ var drawColorScale = function(data) {
       .height(this._height - this._margin.bottom - this._margin.top)
       .orient(position)
       .select(scaleGroup)
+      .value(this._colorScale)
       .width(this._width - this._margin.left - this._margin.right)
       .config(this._colorScaleConfig)
       .render();
 
     var scaleBounds = this._colorScaleClass.outerBounds();
-    if (scaleBounds.height) {
+    if (this._colorScalePosition && scaleBounds.height) {
       if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
       else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
     }
@@ -20772,48 +20778,6 @@ var drawControls = function() {
 };
 
 /**
-    @function _colorNest
-    @desc Returns an Array of data objects based on a given color accessor and groupBy levels.
-    @param {Array} raw The raw data Array to be grouped by color.
-    @private
-*/
-var colorNest = function(raw) {
-  var this$1 = this;
-
-
-  var fill = function (d, i) { return ((this$1._shapeConfig.fill(d, i)) + "_" + (this$1._shapeConfig.opacity(d, i))); };
-  var colors = nest().key(fill).entries(raw);
-  var data, id;
-
-  if (this._groupBy.length) {
-    var numColors = colors.length;
-    var loop = function ( i ) {
-      id = function (d) { return this$1._ids(d).slice(0, i + 1).join("_"); };
-      var ids = colors.map(function (c) { return Array.from(new Set(c.values.map(id))); }),
-            total = sum(ids, function (d) { return d.length; }),
-            uniques = new Set(merge(ids)).size;
-      if (total === numColors && uniques === numColors || i === this$1._groupBy.length - 1) {
-        data = nest().key(id).entries(raw).map(function (d) { return objectMerge(d.values); });
-        return 'break';
-      }
-    };
-
-    for (var i = 0; i < this._groupBy.length; i++) {
-      var returned = loop( i );
-
-      if ( returned === 'break' ) break;
-    }
-  }
-  else {
-    id = fill;
-    data = colors.map(function (d) { return objectMerge(d.values); });
-  }
-
-  return {data: data, id: id};
-
-};
-
-/**
     @function _drawLegend
     @desc Renders the legend if this._legend is not falsy.
     @param {Array} data The filtered data array to be displayed.
@@ -20836,29 +20800,27 @@ var drawLegend = function(data) {
 
   if (this._legend) {
 
-    var legendData = [];
-    if (data.length) {
-
-      var dataNest = nest();
-      for (var i = 0; i <= this._drawDepth; i++) { dataNest.key(this$1._groupBy[i]); }
-      dataNest
-        .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
-        .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
-
-    }
-
     var position = this._legendPosition;
     var wide = ["top", "bottom"].includes(position);
-    var legend = colorNest.bind(this)(legendData);
+
+    var legendData = [];
+    var fill = function (d, i) { return ((this$1._shapeConfig.fill(d, i)) + "_" + (this$1._shapeConfig.opacity(d, i))); };
+    nest()
+      .key(fill)
+      .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
+      .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
 
     this._legendClass
-      .id(legend.id)
+      .id(fill)
       .align(wide ? "center" : position)
       .direction(wide ? "row" : "column")
       .duration(this._duration)
-      .data(legend.data.length > 1 || this._colorScale ? legend.data : [])
+      .data(legendData.length > 1 || this._colorScale ? legendData : [])
       .height(this._height - this._margin.bottom - this._margin.top)
-      .label(this._label || legend.id)
+      .label(function (d, i) {
+        var l = this$1._drawLabel(d, i);
+        return l instanceof Array ? l.join(", ") : l;
+      })
       .select(legendGroup)
       .verticalAlign(!wide ? "middle" : position)
       .width(this._width - this._margin.left - this._margin.right)
@@ -21364,7 +21326,10 @@ var Viz = (function (BaseClass$$1) {
     this._tooltipClass = new Tooltip();
     this._tooltipConfig = {
       duration: 50,
-      pointerEvents: "none"
+      pointerEvents: "none",
+      titleStyle: {
+        "max-width": "200px"
+      }
     };
 
     this._totalClass = new TextBox();
@@ -21437,7 +21402,13 @@ var Viz = (function (BaseClass$$1) {
     this._ids = function (d, i) { return this$1._groupBy
       .map(function (g) { return g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
       .filter(function (g) { return g !== void 0 && g !== null && g.constructor !== Array; }); };
-    this._drawLabel = this._label || function(d, i) {
+
+    this._drawLabel = function (d, i) {
+      if (d.__d3plus__) {
+        d = d.data;
+        i = d.i;
+      }
+      if (this$1._label) { return this$1._label(d, i); }
       var l = that._ids(d, i).slice(0, that._drawDepth + 1).filter(function (d) { return d && d.constructor !== Array; });
       return l[l.length - 1];
     };
@@ -21472,13 +21443,13 @@ var Viz = (function (BaseClass$$1) {
 
     }
 
-    drawTitle.bind(this)(flatData);
-    drawControls.bind(this)(flatData);
-    drawTimeline.bind(this)(flatData);
-    drawLegend.bind(this)(flatData);
-    drawColorScale.bind(this)(flatData);
+    drawTitle.bind(this)(this._filteredData);
+    drawControls.bind(this)(this._filteredData);
+    drawTimeline.bind(this)(this._filteredData);
+    drawLegend.bind(this)(this._filteredData);
+    drawColorScale.bind(this)(this._filteredData);
     drawBack.bind(this)();
-    drawTotal.bind(this)(flatData);
+    drawTotal.bind(this)(this._filteredData);
 
     this._shapes = [];
 
@@ -21692,8 +21663,8 @@ var Viz = (function (BaseClass$$1) {
 
   /**
       @memberof Viz
-      @desc Defines which side of the visualization to anchor the color scale. Acceptable values are `"top"`, `"bottom"`, `"left"`, and `"right"`. If no value is passed, the current legend position will be returned.
-      @param {String} [*value* = "bottom"]
+      @desc Defines which side of the visualization to anchor the color scale. Acceptable values are `"top"`, `"bottom"`, `"left"`, `"right"` and `false`. A `false` value will cause the color scale to not be displayed, but will still color shapes based on the scale. If no value is passed, the current legend position will be returned.
+      @param {String|Boolean} [*value* = "bottom"]
       @chainable
   */
   Viz.prototype.colorScalePosition = function colorScalePosition (_) {
@@ -22392,6 +22363,7 @@ var Geomap = (function (Viz$$1) {
     var topoData = coordData.features.reduce(function (arr, feature$$1) {
       var id = this$1._topojsonId(feature$$1);
       arr.push({
+        __d3plus__: true,
         data: pathData[id],
         feature: feature$$1,
         id: id
