@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.7.2
+  d3plus-viz v0.7.3
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -18748,8 +18748,14 @@ var Viz = (function (BaseClass$$1) {
     this._ids = function (d, i) { return this$1._groupBy
       .map(function (g) { return g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
       .filter(function (g) { return g !== void 0 && g !== null && g.constructor !== Array; }); };
-    this._drawLabel = this._label || function(d, i) {
-      var l = that._ids(d, i).slice(0, that._drawDepth + 1).filter(function (d) { return d !== undefined && d !== null && d.constructor !== Array; });
+
+    this._drawLabel = function (d, i) {
+      if (d.__d3plus__) {
+        d = d.data;
+        i = d.i;
+      }
+      if (this$1._label) { return this$1._label(d, i); }
+      var l = that._ids(d, i).slice(0, that._drawDepth + 1).filter(function (d) { return d && d.constructor !== Array; });
       return l[l.length - 1];
     };
 
@@ -18783,13 +18789,13 @@ var Viz = (function (BaseClass$$1) {
 
     }
 
-    drawTitle.bind(this)(flatData);
-    drawControls.bind(this)(flatData);
-    drawTimeline.bind(this)(flatData);
-    drawLegend.bind(this)(flatData);
-    drawColorScale.bind(this)(flatData);
+    drawTitle.bind(this)(this._filteredData);
+    drawControls.bind(this)(this._filteredData);
+    drawTimeline.bind(this)(this._filteredData);
+    drawLegend.bind(this)(this._filteredData);
+    drawColorScale.bind(this)(this._filteredData);
     drawBack.bind(this)();
-    drawTotal.bind(this)(flatData);
+    drawTotal.bind(this)(this._filteredData);
 
     this._shapes = [];
 
