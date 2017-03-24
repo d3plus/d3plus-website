@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.26
+  d3plus-axis v0.3.27
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -351,6 +351,13 @@ var Axis = (function (BaseClass$$1) {
         }
       }
     });
+
+    var maxOffset = d3Array.max(textData, function (d) { return d.offset; });
+    if (maxOffset) {
+      textData.forEach(function (d) {
+        if (d.offset) { d.offset = maxOffset; }
+      });
+    }
 
     // Calculates new range, based on any text that may be overflowing.
     var rangeOuter = range$$1.slice();
