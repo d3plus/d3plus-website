@@ -1,14 +1,14 @@
 /*
-  d3plus-viz v0.7.3
+  d3plus-viz v0.7.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-form'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
-	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-form', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Request,global.d3Array,global.d3Color,global.d3Collection,global.d3Queue,global.d3Selection,global.d3Transition,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusForm,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
-}(this, (function (exports,d3Request,d3Array,d3Color,d3Collection,d3Queue,d3Selection,d3Transition,d3plusAxis,d3plusColor,d3plusCommon,d3plusForm,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-form'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip'), require('d3plus-export')) :
+	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-form', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip', 'd3plus-export'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3Request,global.d3Array,global.d3Color,global.d3Collection,global.d3Queue,global.d3Selection,global.d3Transition,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusForm,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip,global.d3plusExport));
+}(this, (function (exports,d3Request,d3Array,d3Color,d3Collection,d3Queue,d3Selection,d3Transition,d3plusAxis,d3plusColor,d3plusCommon,d3plusForm,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip,d3plusExport) { 'use strict';
 
 /**
   @function dataFold
@@ -156,7 +156,7 @@ var drawColorScale = function(data) {
 
 };
 
-var formTypes = {Radio: d3plusForm.Radio, Select: d3plusForm.Select};
+var formTypes = {Button: d3plusForm.Button, Radio: d3plusForm.Radio, Select: d3plusForm.Select};
 
 /**
     @function _drawLegend
@@ -168,86 +168,115 @@ var drawControls = function() {
   var this$1 = this;
 
 
-  var condition = this._controls && this._controls.length;
   var that = this;
-  var transform = {
-    height: this._height - this._margin.top - this._margin.bottom,
-    width: this._width - this._margin.left - this._margin.right,
-    x: this._margin.left,
-    y: this._margin.top
-  };
 
-  var foreign = d3plusCommon.elem("foreignObject.d3plus-viz-controls", {
-    condition: condition,
-    enter: Object.assign({opacity: 0}, transform),
-    exit: Object.assign({opacity: 0}, transform),
-    parent: this._select,
-    transition: this._transition,
-    update: Object.assign({opacity: 1}, transform)
-  });
+  var areas = ["left", "right", "top", "bottom"];
+  var loop = function ( a ) {
+    var area = areas[a];
+    var controls = (this$1._controls || []).filter(function (c) { return !c.position && area === "bottom" || c.position === area; });
 
-  var container = foreign.selectAll("div.d3plus-viz-controls-container")
-    .data([null]);
-
-  container = container.enter().append("xhtml:div")
-      .attr("class", "d3plus-viz-controls-container")
-      .style("margin-top", ((transform.height) + "px"))
-    .merge(container);
-
-  if (condition) {
-
-    var loop = function ( i ) {
-
-      var control = this$1._controls[i];
-
-      var on = {};
-      if (control.on) {
-        var loop$1 = function ( event ) {
-          if ({}.hasOwnProperty.call(control.on, event)) {
-            on[event] = function() {
-              control.on[event].bind(that)(this.value);
-            };
+    if (this$1._downloadButton && this$1._downloadPosition === area) {
+      controls.push({
+        data: [{text: "Download", value: 1}],
+        label: "downloadButton",
+        on: {
+          click: function () {
+            d3plusExport.saveElement(this$1._select.node(), Object.assign({
+              title: this$1._title || undefined
+            }, this$1._downloadConfig));
           }
-        };
+        },
+        type: "Button"
+      });
+    }
 
-        for (var event in control.on) loop$1( event );
-
-      }
-
-      var id = control.label || i;
-      if (!this$1._controlCache[id]) {
-        var type = control.type && formTypes[control.type] ? control.type : "Select";
-        this$1._controlCache[id] = new formTypes[type]().container(container.node());
-        if (control.checked) {
-          this$1._controlCache[id].checked(control.checked);
-          delete control.checked;
-        }
-        if (control.selected) {
-          this$1._controlCache[id].selected(control.selected);
-          delete control.selected;
-        }
-      }
-
-      this$1._controlCache[id]
-        .config(control)
-        .config({on: on})
-        .config(this$1._controlConfig)
-        .render();
-
+    var transform = {
+      height: this$1._height - this$1._margin.top - this$1._margin.bottom,
+      width: this$1._width - this$1._margin.left - this$1._margin.right,
+      x: this$1._margin.left,
+      y: this$1._margin.top
     };
 
-    for (var i = 0; i < this._controls.length; i++) loop( i );
+    var foreign = d3plusCommon.elem(("foreignObject.d3plus-viz-controls-" + area), {
+      condition: controls.length,
+      enter: Object.assign({opacity: 0}, transform),
+      exit: Object.assign({opacity: 0}, transform),
+      parent: this$1._select,
+      transition: this$1._transition,
+      update: Object.assign({opacity: 1}, transform)
+    });
 
-    var bounds = container.node().getBoundingClientRect();
+    var container = foreign.selectAll("div.d3plus-viz-controls-container")
+      .data([null]);
 
-    container
-        .style("text-align", "center")
-      .transition(this._transition)
-        .style("margin-top", ((transform.height - bounds.height) + "px"));
+    container = container.enter().append("xhtml:div")
+        .attr("class", "d3plus-viz-controls-container")
+        .style("margin-top", area === "bottom" ? ((transform.height) + "px") : 0)
+        .style("margin-left", area === "right" ? ((transform.width) + "px") : 0)
+      .merge(container);
 
-    this._margin.bottom += bounds.height;
+    if (controls.length) {
 
-  }
+      var loop$1 = function ( i ) {
+
+        var control = controls[i];
+
+        var on = {};
+        if (control.on) {
+          var loop$2 = function ( event ) {
+            if ({}.hasOwnProperty.call(control.on, event)) {
+              on[event] = function() {
+                control.on[event].bind(that)(this.value);
+              };
+            }
+          };
+
+          for (var event in control.on) loop$2( event );
+
+        }
+
+        var id = control.label || (area + "-" + i);
+        if (!this$1._controlCache[id]) {
+          var type = control.type && formTypes[control.type] ? control.type : "Select";
+          this$1._controlCache[id] = new formTypes[type]().container(container.node());
+          if (control.checked) {
+            this$1._controlCache[id].checked(control.checked);
+            delete control.checked;
+          }
+          if (control.selected) {
+            this$1._controlCache[id].selected(control.selected);
+            delete control.selected;
+          }
+        }
+
+        this$1._controlCache[id]
+          .config(control)
+          .config({on: on})
+          .config(this$1._controlConfig)
+          .render();
+
+      };
+
+      for (var i = 0; i < controls.length; i++) loop$1( i );
+
+      container
+          .style("display", ["top", "bottom"].includes(area) ? "block" : "inline-block")
+          .style("text-align", ["top", "bottom"].includes(area) ? "center" : area);
+
+      var bounds = container.node().getBoundingClientRect();
+
+      container
+        .transition(this$1._transition)
+          .style("margin-top", area === "bottom" ? ((transform.height - bounds.height) + "px") : 0)
+          .style("margin-left", area === "right" ? ((transform.width - bounds.width) + "px") : 0);
+
+      this$1._margin[area] += ["top", "bottom"].includes(area) ? bounds.height : bounds.width;
+
+    }
+
+  };
+
+  for (var a = 0; a < areas.length; a++) loop( a );
 
 };
 
@@ -734,6 +763,9 @@ var Viz = (function (BaseClass$$1) {
     this._data = [];
     this._detectResize = true;
     this._detectVisible = true;
+    this._downloadButton = false;
+    this._downloadConfig = {type: "png"};
+    this._downloadPosition = "top";
     this._duration = 600;
     this._history = [];
     this._groupBy = [d3plusCommon.accessor("id")];
@@ -1222,6 +1254,36 @@ If no value is specified, the method will return the current *Boolean* value.
   */
   Viz.prototype.discrete = function discrete (_) {
     return arguments.length ? (this._discrete = _, this) : this._discrete;
+  };
+
+  /**
+      @memberof Viz
+      @desc Shows a button that allows for downloading the current visualization.
+      @param {Boolean} [*value* = false]
+      @chainable
+  */
+  Viz.prototype.downloadButton = function downloadButton (_) {
+    return arguments.length ? (this._downloadButton = _, this) : this._downloadButton;
+  };
+
+  /**
+      @memberof Viz
+      @desc Sets specific options of the saveElement function used when downloading the visualization.
+      @param {Object} [*value* = {type: "png"}]
+      @chainable
+  */
+  Viz.prototype.downloadConfig = function downloadConfig (_) {
+    return arguments.length ? (this._downloadConfig = _, this) : this._downloadConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc Defines which control group to add the download button into.
+      @param {String} [*value* = "top"]
+      @chainable
+  */
+  Viz.prototype.downloadPosition = function downloadPosition (_) {
+    return arguments.length ? (this._downloadPosition = _, this) : this._downloadPosition;
   };
 
   /**
