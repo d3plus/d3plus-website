@@ -1,5 +1,5 @@
 /*
-  d3plus-form v0.2.2
+  d3plus-form v0.2.3
   Javascript rendered input forms.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -9,6 +9,125 @@
 	typeof define === 'function' && define.amd ? define('d3plus-form', ['exports', 'd3-selection', 'd3plus-common'], factory) :
 	(factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3plusCommon));
 }(this, (function (exports,d3Selection,d3plusCommon) { 'use strict';
+
+/**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
+/**
+    @class Button
+    @extends external:BaseClass
+    @desc Creates a set of HTML radio input elements.
+*/
+var Button = (function (BaseClass$$1) {
+  function Button() {
+
+    BaseClass$$1.call(this);
+
+    this._buttonStyle = {
+      margin: "0 5px"
+    };
+    this._data = [];
+    this._text = d3plusCommon.accessor("text");
+    this._value = d3plusCommon.accessor("value");
+
+  }
+
+  if ( BaseClass$$1 ) Button.__proto__ = BaseClass$$1;
+  Button.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  Button.prototype.constructor = Button;
+
+  /**
+      @memberof Button
+      @desc Renders the element to the page.
+      @chainable
+  */
+  Button.prototype.render = function render () {
+    var this$1 = this;
+
+
+    if (this._container === void 0) { this.container(d3Selection.select("body").append("div").node()); }
+
+    var container = this._container.selectAll(("div#d3plus-Form-" + (this._uuid))).data([0]);
+    var svg = this._container.node().tagName.toLowerCase() === "foreignobject";
+
+    container = container.enter().append(svg ? "xhtml:div" : "div")
+        .attr("id", ("d3plus-Form-" + (this._uuid)))
+        .attr("class", "d3plus-Form d3plus-Form-Button")
+      .merge(container);
+
+    var button = container.selectAll("button")
+      .data(this._data, function (d, i) { return this$1._value(d, i); });
+
+    button.exit().remove();
+
+    button = button.enter().append("button")
+        .attr("class", "d3plus-Button")
+        .attr("type", "button")
+      .merge(button)
+        .call(d3plusCommon.stylize, this._buttonStyle)
+        .html(function (d, i) { return this$1._text(d, i); });
+
+    for (var event in this$1._on) {
+      if ({}.hasOwnProperty.call(this$1._on, event)) { button.on(event, this$1._on[event]); }
+    }
+
+    return this;
+
+  };
+
+  /**
+      @memberof Button
+      @desc Sets the css styles for the <input type="radio"> elements.
+      @param {Object} [*value*]
+      @chainable
+  */
+  Button.prototype.buttonStyle = function buttonStyle (_) {
+    return arguments.length ? (this._buttonStyle = _, this) : this._buttonStyle;
+  };
+
+  /**
+      @memberof Button
+      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element, which is `undefined` by default.
+      @param {String|HTMLElement} [*selector*]
+      @chainable
+  */
+  Button.prototype.container = function container (_) {
+    return arguments.length ? (this._container = d3Selection.select(_), this) : this._container;
+  };
+
+  /**
+      @memberof Radio
+      @desc Defines the array of values to be created as <button> tags. If no value is passed, the current array is returned.
+      @param {Array} [*value* = []]
+      @chainable
+  */
+  Button.prototype.data = function data (_) {
+    return arguments.length ? (this._data = _, this) : this._data;
+  };
+
+  /**
+      @memberof Button
+      @desc Sets the inner text for each <button> element.
+      @param {Function|String} [*value* = function(d) { return d.text; }]
+      @chainable
+  */
+  Button.prototype.text = function text (_) {
+    return arguments.length ? (this._text = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._text;
+  };
+
+  /**
+      @memberof Button
+      @desc Sets the value for each <button> element.
+      @param {Function} [*value* = function(d) { return d.value; }]
+      @chainable
+  */
+  Button.prototype.value = function value (_) {
+    return arguments.length ? (this._value = _, this) : this._value;
+  };
+
+  return Button;
+}(d3plusCommon.BaseClass));
 
 /**
     @external BaseClass
@@ -418,6 +537,7 @@ var Select = (function (BaseClass$$1) {
   return Select;
 }(d3plusCommon.BaseClass));
 
+exports.Button = Button;
 exports.Radio = Radio;
 exports.Select = Select;
 
