@@ -1,17 +1,18 @@
 /*
-  d3plus-export v0.1.0
+  d3plus-export v0.1.1
   Export methods for transforming and downloading SVG.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('canvas-toBlob'), require('canvg-browser'), require('d3-selection'), require('file-saver'), require('jspdf')) :
-	typeof define === 'function' && define.amd ? define('d3plus-export', ['exports', 'canvas-toBlob', 'canvg-browser', 'd3-selection', 'file-saver', 'jspdf'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),null,global.canvg,global.d3Selection,global.fileSaver,global.JsPDF));
-}(this, (function (exports,canvasToBlob,canvg,d3Selection,fileSaver,JsPDF) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('canvas-toBlob'), require('canvg-browser'), require('d3-selection'), require('file-saver')) :
+	typeof define === 'function' && define.amd ? define('d3plus-export', ['exports', 'canvas-toBlob', 'canvg-browser', 'd3-selection', 'file-saver'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),null,global.canvg,global.d3Selection,global.fileSaver));
+}(this, (function (exports,canvasToBlob,canvg,d3Selection,fileSaver) { 'use strict';
 
 canvg = 'default' in canvg ? canvg['default'] : canvg;
-JsPDF = 'default' in JsPDF ? JsPDF['default'] : JsPDF;
+
+// import {default as JsPDF} from "jspdf";
 
 var defaultOptions = {
   callback: function () {},
@@ -314,46 +315,46 @@ var saveElement = function(elem, options) {
 
     }
 
-    if (options.type === "pdf") {
-
-      var outputHeight = 11,
-            outputUnit = "in",
-            outputWidth = 8.5;
-
-      var aspect = canvas.width / canvas.height,
-            orientation = aspect > 1 ? "landscape" : "portrait";
-
-      var pdf = new JsPDF(orientation, outputUnit, [outputWidth, outputHeight]);
-
-      var h = orientation === "landscape" ? outputWidth : outputHeight,
-          left,
-          top,
-          w = orientation === "landscape" ? outputHeight : outputWidth;
-
-      var margin = 0.5;
-
-      if (aspect < w / h) {
-        h -= margin * 2;
-        var tempWidth = h * aspect;
-        top = margin;
-        left = (w - tempWidth) / 2;
-        w = tempWidth;
-      }
-      else {
-        w -= margin * 2;
-        var tempHeight = w / aspect;
-        left = margin;
-        top = (h - tempHeight) / 2;
-        h = tempHeight;
-      }
-
-      pdf.addImage(canvas, "canvas", left, top, w, h);
-      pdf.save(options.filename);
-
-    }
-    else if (["jpg", "png"].includes(options.type)) {
+    if (["jpg", "png"].includes(options.type)) {
       canvas.toBlob(function (blob) { return fileSaver.saveAs(blob, options.filename); });
     }
+    // else if (options.type === "pdf") {
+    //
+    //   const outputHeight = 11,
+    //         outputUnit = "in",
+    //         outputWidth = 8.5;
+    //
+    //   const aspect = canvas.width / canvas.height,
+    //         orientation = aspect > 1 ? "landscape" : "portrait";
+    //
+    //   const pdf = new JsPDF(orientation, outputUnit, [outputWidth, outputHeight]);
+    //
+    //   let h = orientation === "landscape" ? outputWidth : outputHeight,
+    //       left,
+    //       top,
+    //       w = orientation === "landscape" ? outputHeight : outputWidth;
+    //
+    //   const margin = 0.5;
+    //
+    //   if (aspect < w / h) {
+    //     h -= margin * 2;
+    //     const tempWidth = h * aspect;
+    //     top = margin;
+    //     left = (w - tempWidth) / 2;
+    //     w = tempWidth;
+    //   }
+    //   else {
+    //     w -= margin * 2;
+    //     const tempHeight = w / aspect;
+    //     left = margin;
+    //     top = (h - tempHeight) / 2;
+    //     h = tempHeight;
+    //   }
+    //
+    //   pdf.addImage(canvas, "canvas", left, top, w, h);
+    //   pdf.save(options.filename);
+    //
+    // }
 
     options.callback(canvas);
 
