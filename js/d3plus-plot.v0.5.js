@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.12
+  d3plus-plot v0.5.13
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -347,7 +347,7 @@ var Plot = (function (Viz$$1) {
       xScale = "Time";
     }
     else if (this._discrete === "x") {
-      xDomain = Array.from(new Set(data.map(function (d) { return d.x; }))).sort();
+      xDomain = Array.from(new Set(data.sort(function (a, b) { return this$1._xSort ? this$1._xSort(a.data, b.data) : a.x - b.x; }).map(function (d) { return d.x; })));
       xScale = "Ordinal";
     }
 
@@ -362,7 +362,7 @@ var Plot = (function (Viz$$1) {
       yScale = "Time";
     }
     else if (this._discrete === "y") {
-      yDomain = Array.from(new Set(data.map(function (d) { return d.y; }))).sort();
+      yDomain = Array.from(new Set(data.sort(function (a, b) { return this$1._ySort ? this$1._ySort(a.data, b.data) : a.y - b.y; }).map(function (d) { return d.y; })));
       yScale = "Ordinal";
     }
 
@@ -730,6 +730,15 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
+      @desc Defines a custom sorting comparitor function to be used for discrete x axes.
+      @param {Function} [*value*]
+  */
+  Plot.prototype.xSort = function xSort (_) {
+    return arguments.length ? (this._xSort = _, this) : this._xSort;
+  };
+
+  /**
+      @memberof Plot
       @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
       @param {Function|Number} [*value*]
   */
@@ -782,6 +791,15 @@ var Plot = (function (Viz$$1) {
   */
   Plot.prototype.yDomain = function yDomain (_) {
     return arguments.length ? (this._yDomain = _, this) : this._yDomain;
+  };
+
+  /**
+      @memberof Plot
+      @desc Defines a custom sorting comparitor function to be used for discrete y axes.
+      @param {Function} [*value*]
+  */
+  Plot.prototype.ySort = function ySort (_) {
+    return arguments.length ? (this._ySort = _, this) : this._ySort;
   };
 
   return Plot;
