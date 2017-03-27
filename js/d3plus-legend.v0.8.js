@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.2
+  d3plus-legend v0.8.3
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -278,7 +278,6 @@ var ColorScale = (function (BaseClass$$1) {
     this._axisTest = new d3plusAxis.Axis();
     this._align = "middle";
     this._color = "#0C8040";
-    this._colorSize = 10;
     this._data = [];
     this._duration = 600;
     this._height = 200;
@@ -291,6 +290,7 @@ var ColorScale = (function (BaseClass$$1) {
       strokeWidth: 1
     };
     this._scale = "linear";
+    this._size = 10;
     this._value = d3plusCommon.accessor("value");
     this._width = 400;
 
@@ -391,14 +391,14 @@ var ColorScale = (function (BaseClass$$1) {
     var axisBounds = this._axisTest.outerBounds();
 
     this._outerBounds[width] = this[("_" + width)] - this._padding * 2;
-    this._outerBounds[height] = axisBounds[height] + this._colorSize;
+    this._outerBounds[height] = axisBounds[height] + this._size;
 
     this._outerBounds[x] = this._padding;
     this._outerBounds[y] = this._padding;
     if (this._align === "middle") { this._outerBounds[y] = (this[("_" + height)] - this._outerBounds[height]) / 2; }
     else if (this._align === "end") { this._outerBounds[y] = this[("_" + height)] - this._padding - this._outerBounds[height]; }
 
-    var groupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._colorSize : 0) - (axisConfig.padding || this._axisClass.padding());
+    var groupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
     this._axisClass
       .select(d3plusCommon.elem("g.d3plus-ColorScale-axis", {
         parent: this._group,
@@ -436,7 +436,7 @@ var ColorScale = (function (BaseClass$$1) {
       .select(d3plusCommon.elem("g.d3plus-ColorScale-Rect", {parent: this._group}).node())
       .config(( obj = {
         fill: ticks ? function (d) { return this$1._colorScale(d); } : ("url(#gradient-" + (this._uuid) + ")")
-      }, obj[x] = ticks ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._colorSize / 2, obj[width] = ticks ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._colorSize, obj ))
+      }, obj[x] = ticks ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2, obj[width] = ticks ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._size, obj ))
       .config(this._rectConfig)
       .render();
     var obj;
@@ -539,6 +539,16 @@ var ColorScale = (function (BaseClass$$1) {
 
   /**
       @memberof ColorScale
+      @desc Provides access to the config method of the Rect class used to create the different rectangle color buckets.
+      @param {Object} [*value*]
+      @chainable
+  */
+  ColorScale.prototype.rectConfig = function rectConfig (_) {
+    return arguments.length ? (this._rectConfig = Object.assign(this._rectConfig, _), this) : this._rectConfig;
+  };
+
+  /**
+      @memberof ColorScale
       @desc If *value* is specified, sets the scale of the ColorScale and returns the current class instance. If *value* is not specified, returns the current scale value.
       @param {String} [*value* = "linear"] Can either be "linear", "jenks", or "buckets".
       @chainable
@@ -555,6 +565,16 @@ var ColorScale = (function (BaseClass$$1) {
   */
   ColorScale.prototype.select = function select$1 (_) {
     return arguments.length ? (this._select = d3Selection.select(_), this) : this._select;
+  };
+
+  /**
+      @memberof ColorScale
+      @desc The height of horizontal color scales, and width when positioned vertical.
+      @param {Number} [*value* = 10]
+      @chainable
+  */
+  ColorScale.prototype.size = function size (_) {
+    return arguments.length ? (this._size = _, this) : this._size;
   };
 
   /**
