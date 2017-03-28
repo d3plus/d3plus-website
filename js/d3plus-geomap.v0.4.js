@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.1
+  d3plus-geomap v0.4.2
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -392,7 +392,17 @@ var Geomap = (function (Viz$$1) {
 
       }, []);
 
-      var p = this._padding;
+      var pad = this._padding;
+      if (typeof pad === "string") {
+        pad = pad.match(/([-\d\.]+)/g).map(Number);
+        if (pad.length === 3) { pad.push(pad[1]); }
+        if (pad.length === 2) { pad = pad.concat(pad); }
+        if (pad.length === 1) { pad = Array(4).fill(pad); }
+      }
+      else {
+        pad = Array(4).fill(pad);
+      }
+
       if (!extentBounds.features.length && pointData.length) {
 
         var bounds = [[undefined, undefined], [undefined, undefined]];
@@ -416,17 +426,19 @@ var Geomap = (function (Viz$$1) {
             }
           }]
         };
-        p = d3Array.max(pointData, function (d, i) { return r(this$1._pointSize(d, i)) + p; });
+        var maxSize = d3Array.max(pointData, function (d, i) { return r(this$1._pointSize(d, i)); });
+        pad = pad.map(function (p) { return p + maxSize; });
 
       }
 
       this._projection = this._projection
         .fitExtent(
-          extentBounds.features.length ? [[p, p], [width - p * 2, height - p * 2]] : [[0, 0], [width, height]],
+          extentBounds.features.length ? [[pad[3], pad[0]], [width - pad[1] * 2, height - pad[2] * 2]] : [[0, 0], [width, height]],
           extentBounds.features.length ? extentBounds : {type: "Sphere"}
         );
 
       this._zoomBehavior
+        .extent([[0, 0], [width, height]])
         .scaleExtent([1, 16])
         .translateExtent([[0, 0], [width, height]])
         .on("zoom", this._zoomed.bind(this));
@@ -516,8 +528,7 @@ var Geomap = (function (Viz$$1) {
       .d(function (d) { return path(d.feature); })
       .select(pathGroup.node())
       .x(0).y(0)
-      .config(this._shapeConfig)
-      .config(this._shapeConfig.Path)
+      .config(this._shapeConfigPrep("Path"))
       .render());
 
     var pointGroup = this._zoomGroup.selectAll("g.d3plus-geomap-pins").data([0]);
@@ -526,8 +537,7 @@ var Geomap = (function (Viz$$1) {
       .merge(pointGroup);
 
     var circles = new d3plusShape.Circle()
-      .config(this._shapeConfig)
-      .config(this._shapeConfig.Circle || {})
+    .config(this._shapeConfigPrep("Circle"))
       .data(pointData)
       .r(function (d, i) { return r(this$1._pointSize(d, i)); })
       .select(pointGroup.node())
@@ -636,8 +646,8 @@ If *data* is not specified, this method returns the current Topojson *Object*, w
 
   /**
       @memberof Geomap
-      @desc If *value* is specified, sets the topojson outer padding and returns the current class instance. If *value* is not specified, returns the current topojson outer padding.
-      @param {Number} [*value* = 20]
+      @desc Defines the outer padding between the edge of the visualization and the shapes drawn. The value can either be a single number to be used on all sides, or a CSS string pattern (ie. `"20px 0 10px"`).
+      @param {Number|String} [*value* = 20]
       @chainable
   */
   Geomap.prototype.padding = function padding (_) {

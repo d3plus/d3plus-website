@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.1
+  d3plus-geomap v0.4.2
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -5416,7 +5416,7 @@ var matcher$1 = matcher;
 
 var filterEvents = {};
 
-var event = null;
+var event$1 = null;
 
 if (typeof document !== "undefined") {
   var element$1 = document.documentElement;
@@ -5437,12 +5437,12 @@ function filterContextListener(listener, index, group) {
 
 function contextListener(listener, index, group) {
   return function(event1) {
-    var event0 = event; // Events can be reentrant (e.g., focus).
-    event = event1;
+    var event0 = event$1; // Events can be reentrant (e.g., focus).
+    event$1 = event1;
     try {
       listener.call(this, this.__data__, index, group);
     } finally {
-      event = event0;
+      event$1 = event0;
     }
   };
 }
@@ -5518,18 +5518,18 @@ var selection_on = function(typename, value, capture) {
 };
 
 function customEvent(event1, listener, that, args) {
-  var event0 = event;
-  event1.sourceEvent = event;
-  event = event1;
+  var event0 = event$1;
+  event1.sourceEvent = event$1;
+  event$1 = event1;
   try {
     return listener.apply(that, args);
   } finally {
-    event = event0;
+    event$1 = event0;
   }
 }
 
 var sourceEvent = function() {
-  var current = event, source;
+  var current = event$1, source;
   while (source = current.sourceEvent) { current = source; }
   return current;
 };
@@ -6427,8 +6427,8 @@ function set$2(type, name, callback) {
 }
 
 var noevent = function() {
-  event.preventDefault();
-  event.stopImmediatePropagation();
+  event$1.preventDefault();
+  event$1.stopImmediatePropagation();
 };
 
 var dragDisable = function(view) {
@@ -7525,17 +7525,17 @@ function transform$1(node) {
 }
 
 function nopropagation$1() {
-  event.stopImmediatePropagation();
+  event$1.stopImmediatePropagation();
 }
 
 var noevent$1 = function() {
-  event.preventDefault();
-  event.stopImmediatePropagation();
+  event$1.preventDefault();
+  event$1.stopImmediatePropagation();
 };
 
 // Ignore right-click, since that should open the context menu.
 function defaultFilter() {
-  return !event.button;
+  return !event$1.button;
 }
 
 function defaultExtent() {
@@ -7725,7 +7725,7 @@ var zoom = function() {
     if (!filter.apply(this, arguments)) { return; }
     var g = gesture(this, arguments),
         t = this.__zoom,
-        k = Math.max(k0, Math.min(k1, t.k * Math.pow(2, -event.deltaY * (event.deltaMode ? 120 : 1) / 500))),
+        k = Math.max(k0, Math.min(k1, t.k * Math.pow(2, -event$1.deltaY * (event$1.deltaMode ? 120 : 1) / 500))),
         p = mouse(this);
 
     // If the mouse is in the same location as before, reuse it.
@@ -7760,10 +7760,10 @@ var zoom = function() {
   function mousedowned() {
     if (touchending || !filter.apply(this, arguments)) { return; }
     var g = gesture(this, arguments),
-        v = select(event.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
+        v = select(event$1.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
         p = mouse(this);
 
-    dragDisable(event.view);
+    dragDisable(event$1.view);
     nopropagation$1();
     g.mouse = [p, this.__zoom.invert(p)];
     interrupt(this);
@@ -7777,7 +7777,7 @@ var zoom = function() {
 
     function mouseupped() {
       v.on("mousemove.zoom mouseup.zoom", null);
-      yesdrag(event.view, g.moved);
+      yesdrag(event$1.view, g.moved);
       noevent$1();
       g.end();
     }
@@ -7788,7 +7788,7 @@ var zoom = function() {
     var t0 = this.__zoom,
         p0 = mouse(this),
         p1 = t0.invert(p0),
-        k1 = t0.k * (event.shiftKey ? 0.5 : 2),
+        k1 = t0.k * (event$1.shiftKey ? 0.5 : 2),
         t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, arguments));
 
     noevent$1();
@@ -7801,7 +7801,7 @@ var zoom = function() {
 
     if (!filter.apply(this, arguments)) { return; }
     var g = gesture(this, arguments),
-        touches$$1 = event.changedTouches,
+        touches$$1 = event$1.changedTouches,
         started,
         n = touches$$1.length, i, t, p;
 
@@ -7835,7 +7835,7 @@ var zoom = function() {
     var this$1 = this;
 
     var g = gesture(this, arguments),
-        touches$$1 = event.changedTouches,
+        touches$$1 = event$1.changedTouches,
         n = touches$$1.length, i, t, p, l;
 
     noevent$1();
@@ -7862,7 +7862,7 @@ var zoom = function() {
 
   function touchended() {
     var g = gesture(this, arguments),
-        touches$$1 = event.changedTouches,
+        touches$$1 = event$1.changedTouches,
         n = touches$$1.length, i, t;
 
     nopropagation$1();
@@ -7874,7 +7874,8 @@ var zoom = function() {
       else if (g.touch1 && g.touch1[2] === t.identifier) { delete g.touch1; }
     }
     if (g.touch1 && !g.touch0) { g.touch0 = g.touch1, delete g.touch1; }
-    if (!g.touch0) { g.end(); }
+    if (g.touch0) { g.touch0[1] = this.__zoom.invert(g.touch0[0]); }
+    else { g.end(); }
   }
 
   zoom.filter = function(_) {
@@ -10458,6 +10459,2374 @@ var stylize = function(e, s) {
 };
 
 /**
+    @function accessor
+    @desc Wraps an object key in a simple accessor function.
+    @param {String} key The key to be returned from each Object passed to the function.
+    @param {*} [def] A default value to be returned if the key is not present.
+    @example <caption>this</caption>
+accessor("id");
+    @example <caption>returns this</caption>
+function(d) {
+  return d["id"];
+}
+*/
+var accessor$1 = function(key, def) {
+  if (def === void 0) { return function (d) { return d[key]; }; }
+  return function (d) { return d[key] === void 0 ? def : d[key]; };
+};
+
+/**
+    @function isObject
+    @desc Detects if a variable is a javascript Object.
+    @param {*} item
+*/
+var isObject$1 = function(item) {
+  return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
+};
+
+/**
+    @function assign
+    @desc A deeply recursive version of `Object.assign`.
+    @param {...Object} objects
+    @example <caption>this</caption>
+assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
+    @example <caption>returns this</caption>
+{id: "bar", group: "A", value: 20}
+*/
+function assign$2() {
+  var objects = [], len = arguments.length;
+  while ( len-- ) objects[ len ] = arguments[ len ];
+
+
+  var target = objects[0];
+  var loop = function ( i ) {
+
+    var source = objects[i];
+
+    Object.keys(source).forEach(function (prop) {
+
+      var value = source[prop];
+
+      if (isObject$1(value)) {
+
+        if (target.hasOwnProperty(prop) && isObject$1(target[prop])) { target[prop] = assign$2(target[prop], value); }
+        else { target[prop] = value; }
+
+      }
+      else if (Array.isArray(value)) {
+
+        if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
+
+          var targetArray = target[prop];
+
+          value.forEach(function (sourceItem, itemIndex) {
+
+            if (itemIndex < targetArray.length) {
+              var targetItem = targetArray[itemIndex];
+
+              if (Object.is(targetItem, sourceItem)) { return; }
+
+              if (isObject$1(targetItem) && isObject$1(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
+                targetArray[itemIndex] = assign$2(targetItem, sourceItem);
+              }
+              else { targetArray[itemIndex] = sourceItem; }
+
+            }
+            else { targetArray.push(sourceItem); }
+
+          });
+        }
+        else { target[prop] = value; }
+
+      }
+      else { target[prop] = value; }
+
+    });
+  };
+
+  for (var i = 1; i < objects.length; i++) loop( i );
+
+  return target;
+
+}
+
+/**
+    @function attrize
+    @desc Applies each key/value in an object as an attr.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} attrs An object of key/value attr pairs.
+*/
+var attrize$1 = function(e, a) {
+  if ( a === void 0 ) a = {};
+
+  for (var k in a) { if ({}.hasOwnProperty.call(a, k)) { e.attr(k, a[k]); } }
+};
+
+/**
+    @function s
+    @desc Returns 4 random characters, used for constructing unique identifiers.
+    @private
+*/
+function s$1() {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+
+/**
+    @class BaseClass
+    @desc An abstract class that contains some global methods and functionality.
+*/
+var BaseClass$2 = function BaseClass() {
+  this._on = {};
+  this._uuid = "" + (s$1()) + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + (s$1()) + (s$1());
+};
+
+/**
+    @memberof BaseClass
+    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
+    @param {Object} [*value*]
+    @chainable
+*/
+BaseClass$2.prototype.config = function config (_) {
+    var this$1 = this;
+
+  if (arguments.length) {
+    for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
+    return this;
+  }
+  else {
+    var config = {};
+    for (var k$1 in this$1.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
+    return config;
+  }
+};
+
+/**
+    @memberof BaseClass
+    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
+    @param {String} [*typenames*]
+    @param {Function} [*listener*]
+    @chainable
+    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
+new Plot
+.on("click.Shape", function(d) {
+  console.log("data for shape clicked:", d);
+})
+.on("click.Legend", function(d) {
+  console.log("data for legend clicked:", d);
+})
+*/
+BaseClass$2.prototype.on = function on (_, f) {
+  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
+};
+
+/**
+    @function closest
+    @desc Finds the closest numeric value in an array.
+    @param {Number} n The number value to use when searching the array.
+    @param {Array} arr The array of values to test against.
+*/
+
+/**
+    @function constant
+    @desc Wraps non-function variables in a simple return function.
+    @param {Array|Number|Object|String} value The value to be returned from the function.
+    @example <caption>this</caption>
+constant(42);
+    @example <caption>returns this</caption>
+function() {
+  return 42;
+}
+*/
+var constant$8 = function(value) {
+  return function constant() {
+    return value;
+  };
+};
+
+/**
+    @function elem
+    @desc Manages the enter/update/exit pattern for a single DOM element.
+    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
+    @param {Object} params Additional parameters.
+    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
+    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
+    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
+    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
+    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
+    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
+*/
+var elem$1 = function(selector$$1, p) {
+
+  // overrides default params
+  p = Object.assign({}, {
+    condition: true,
+    enter: {},
+    exit: {},
+    parent: select("body"),
+    transition: transition().duration(0),
+    update: {}
+  }, p);
+
+  var className = (/\.([^#]+)/g).exec(selector$$1),
+        id = (/#([^\.]+)/g).exec(selector$$1),
+        tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
+
+  var elem = p.parent.selectAll(selector$$1.includes(":") ? selector$$1.split(":")[1] : selector$$1)
+    .data(p.condition ? [null] : []);
+
+  var enter = elem.enter().append(tag).call(attrize$1, p.enter);
+
+  if (id) { enter.attr("id", id[1]); }
+  if (className) { enter.attr("class", className[1]); }
+
+  elem.exit().transition(p.transition).call(attrize$1, p.exit).remove();
+
+  var update = enter.merge(elem);
+  update.transition(p.transition).call(attrize$1, p.update);
+
+  return update;
+
+};
+
+var _extends$7 = Object.assign || function (target) {
+var arguments$1 = arguments;
+ for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _classCallCheck$11(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var consoleLogger$1 = {
+  type: 'logger',
+
+  log: function log(args) {
+    this._output('log', args);
+  },
+  warn: function warn(args) {
+    this._output('warn', args);
+  },
+  error: function error(args) {
+    this._output('error', args);
+  },
+  _output: function _output(type, args) {
+    if (console && console[type]) { console[type].apply(console, Array.prototype.slice.call(args)); }
+  }
+};
+
+var Logger$1 = function () {
+  function Logger(concreteLogger) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    _classCallCheck$11(this, Logger);
+
+    this.init(concreteLogger, options);
+  }
+
+  Logger.prototype.init = function init(concreteLogger) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    this.prefix = options.prefix || 'i18next:';
+    this.logger = concreteLogger || consoleLogger$1;
+    this.options = options;
+    this.debug = options.debug === false ? false : true;
+  };
+
+  Logger.prototype.setDebug = function setDebug(bool) {
+    this.debug = bool;
+  };
+
+  Logger.prototype.log = function log() {
+    this.forward(arguments, 'log', '', true);
+  };
+
+  Logger.prototype.warn = function warn() {
+    this.forward(arguments, 'warn', '', true);
+  };
+
+  Logger.prototype.error = function error() {
+    this.forward(arguments, 'error', '');
+  };
+
+  Logger.prototype.deprecate = function deprecate() {
+    this.forward(arguments, 'warn', 'WARNING DEPRECATED: ', true);
+  };
+
+  Logger.prototype.forward = function forward(args, lvl, prefix, debugOnly) {
+    if (debugOnly && !this.debug) { return; }
+    if (typeof args[0] === 'string') { args[0] = prefix + this.prefix + ' ' + args[0]; }
+    this.logger[lvl](args);
+  };
+
+  Logger.prototype.create = function create(moduleName) {
+    var sub = new Logger(this.logger, _extends$7({ prefix: this.prefix + ':' + moduleName + ':' }, this.options));
+
+    return sub;
+  };
+
+  // createInstance(options = {}) {
+  //   return new Logger(options, callback);
+  // }
+
+  return Logger;
+}();
+
+
+
+var baseLogger$1 = new Logger$1();
+
+function _classCallCheck$12(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var EventEmitter$2 = function () {
+	function EventEmitter() {
+		_classCallCheck$12(this, EventEmitter);
+
+		this.observers = {};
+	}
+
+	EventEmitter.prototype.on = function on(events, listener) {
+		var _this = this;
+
+		events.split(' ').forEach(function (event) {
+			_this.observers[event] = _this.observers[event] || [];
+			_this.observers[event].push(listener);
+		});
+	};
+
+	EventEmitter.prototype.off = function off(event, listener) {
+		var _this2 = this;
+
+		if (!this.observers[event]) {
+			return;
+		}
+
+		this.observers[event].forEach(function () {
+			if (!listener) {
+				delete _this2.observers[event];
+			} else {
+				var index = _this2.observers[event].indexOf(listener);
+				if (index > -1) {
+					_this2.observers[event].splice(index, 1);
+				}
+			}
+		});
+	};
+
+	EventEmitter.prototype.emit = function emit(event) {
+		var arguments$1 = arguments;
+
+		for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+			args[_key - 1] = arguments$1[_key];
+		}
+
+		if (this.observers[event]) {
+			var cloned = [].concat(this.observers[event]);
+			cloned.forEach(function (observer) {
+				observer.apply(undefined, args);
+			});
+		}
+
+		if (this.observers['*']) {
+			var _cloned = [].concat(this.observers['*']);
+			_cloned.forEach(function (observer) {
+				var _ref;
+
+				observer.apply(observer, (_ref = [event]).concat.apply(_ref, args));
+			});
+		}
+	};
+
+	return EventEmitter;
+}();
+
+function makeString$1(object) {
+  if (object == null) { return ''; }
+  return '' + object;
+}
+
+function copy$2(a, s, t) {
+  a.forEach(function (m) {
+    if (s[m]) { t[m] = s[m]; }
+  });
+}
+
+function getLastOfPath$1(object, path, Empty) {
+  function cleanKey(key) {
+    return key && key.indexOf('###') > -1 ? key.replace(/###/g, '.') : key;
+  }
+
+  var stack = typeof path !== 'string' ? [].concat(path) : path.split('.');
+  while (stack.length > 1) {
+    if (!object) { return {}; }
+
+    var key = cleanKey(stack.shift());
+    if (!object[key] && Empty) { object[key] = new Empty(); }
+    object = object[key];
+  }
+
+  if (!object) { return {}; }
+  return {
+    obj: object,
+    k: cleanKey(stack.shift())
+  };
+}
+
+function setPath$1(object, path, newValue) {
+  var _getLastOfPath = getLastOfPath$1(object, path, Object),
+      obj = _getLastOfPath.obj,
+      k = _getLastOfPath.k;
+
+  obj[k] = newValue;
+}
+
+function pushPath$1(object, path, newValue, concat) {
+  var _getLastOfPath2 = getLastOfPath$1(object, path, Object),
+      obj = _getLastOfPath2.obj,
+      k = _getLastOfPath2.k;
+
+  obj[k] = obj[k] || [];
+  if (concat) { obj[k] = obj[k].concat(newValue); }
+  if (!concat) { obj[k].push(newValue); }
+}
+
+function getPath$1(object, path) {
+  var _getLastOfPath3 = getLastOfPath$1(object, path),
+      obj = _getLastOfPath3.obj,
+      k = _getLastOfPath3.k;
+
+  if (!obj) { return undefined; }
+  return obj[k];
+}
+
+function deepExtend$1(target, source, overwrite) {
+  for (var prop in source) {
+    if (prop in target) {
+      // If we reached a leaf string in target or source then replace with source or skip depending on the 'overwrite' switch
+      if (typeof target[prop] === 'string' || target[prop] instanceof String || typeof source[prop] === 'string' || source[prop] instanceof String) {
+        if (overwrite) { target[prop] = source[prop]; }
+      } else {
+        deepExtend$1(target[prop], source[prop], overwrite);
+      }
+    } else {
+      target[prop] = source[prop];
+    }
+  }return target;
+}
+
+function regexEscape$1(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+}
+
+/* eslint-disable */
+var _entityMap$1 = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': '&quot;',
+  "'": '&#39;',
+  "/": '&#x2F;'
+};
+/* eslint-enable */
+
+function escape$1(data) {
+  if (typeof data === 'string') {
+    return data.replace(/[&<>"'\/]/g, function (s) {
+      return _entityMap$1[s];
+    });
+  } else {
+    return data;
+  }
+}
+
+var _extends$8 = Object.assign || function (target) {
+var arguments$1 = arguments;
+ for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _defaults$6(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+function _classCallCheck$13(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn$6(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits$6(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults$6(subClass, superClass); } }
+
+var ResourceStore$2 = function (_EventEmitter) {
+  _inherits$6(ResourceStore, _EventEmitter);
+
+  function ResourceStore() {
+    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { ns: ['translation'], defaultNS: 'translation' };
+
+    _classCallCheck$13(this, ResourceStore);
+
+    var _this = _possibleConstructorReturn$6(this, _EventEmitter.call(this));
+
+    _this.data = data;
+    _this.options = options;
+    return _this;
+  }
+
+  ResourceStore.prototype.addNamespaces = function addNamespaces(ns) {
+    if (this.options.ns.indexOf(ns) < 0) {
+      this.options.ns.push(ns);
+    }
+  };
+
+  ResourceStore.prototype.removeNamespaces = function removeNamespaces(ns) {
+    var index = this.options.ns.indexOf(ns);
+    if (index > -1) {
+      this.options.ns.splice(index, 1);
+    }
+  };
+
+  ResourceStore.prototype.getResource = function getResource(lng, ns, key) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+    var keySeparator = options.keySeparator || this.options.keySeparator;
+    if (keySeparator === undefined) { keySeparator = '.'; }
+
+    var path = [lng, ns];
+    if (key && typeof key !== 'string') { path = path.concat(key); }
+    if (key && typeof key === 'string') { path = path.concat(keySeparator ? key.split(keySeparator) : key); }
+
+    if (lng.indexOf('.') > -1) {
+      path = lng.split('.');
+    }
+
+    return getPath$1(this.data, path);
+  };
+
+  ResourceStore.prototype.addResource = function addResource(lng, ns, key, value) {
+    var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : { silent: false };
+
+    var keySeparator = this.options.keySeparator;
+    if (keySeparator === undefined) { keySeparator = '.'; }
+
+    var path = [lng, ns];
+    if (key) { path = path.concat(keySeparator ? key.split(keySeparator) : key); }
+
+    if (lng.indexOf('.') > -1) {
+      path = lng.split('.');
+      value = ns;
+      ns = path[1];
+    }
+
+    this.addNamespaces(ns);
+
+    setPath$1(this.data, path, value);
+
+    if (!options.silent) { this.emit('added', lng, ns, key, value); }
+  };
+
+  ResourceStore.prototype.addResources = function addResources(lng, ns, resources) {
+    var this$1 = this;
+
+    for (var m in resources) {
+      if (typeof resources[m] === 'string') { this$1.addResource(lng, ns, m, resources[m], { silent: true }); }
+    }
+    this.emit('added', lng, ns, resources);
+  };
+
+  ResourceStore.prototype.addResourceBundle = function addResourceBundle(lng, ns, resources, deep, overwrite) {
+    var path = [lng, ns];
+    if (lng.indexOf('.') > -1) {
+      path = lng.split('.');
+      deep = resources;
+      resources = ns;
+      ns = path[1];
+    }
+
+    this.addNamespaces(ns);
+
+    var pack = getPath$1(this.data, path) || {};
+
+    if (deep) {
+      deepExtend$1(pack, resources, overwrite);
+    } else {
+      pack = _extends$8({}, pack, resources);
+    }
+
+    setPath$1(this.data, path, pack);
+
+    this.emit('added', lng, ns, resources);
+  };
+
+  ResourceStore.prototype.removeResourceBundle = function removeResourceBundle(lng, ns) {
+    if (this.hasResourceBundle(lng, ns)) {
+      delete this.data[lng][ns];
+    }
+    this.removeNamespaces(ns);
+
+    this.emit('removed', lng, ns);
+  };
+
+  ResourceStore.prototype.hasResourceBundle = function hasResourceBundle(lng, ns) {
+    return this.getResource(lng, ns) !== undefined;
+  };
+
+  ResourceStore.prototype.getResourceBundle = function getResourceBundle(lng, ns) {
+    if (!ns) { ns = this.options.defaultNS; }
+
+    // TODO: COMPATIBILITY remove extend in v2.1.0
+    if (this.options.compatibilityAPI === 'v1') { return _extends$8({}, this.getResource(lng, ns)); }
+
+    return this.getResource(lng, ns);
+  };
+
+  ResourceStore.prototype.toJSON = function toJSON() {
+    return this.data;
+  };
+
+  return ResourceStore;
+}(EventEmitter$2);
+
+var postProcessor$1 = {
+
+  processors: {},
+
+  addPostProcessor: function addPostProcessor(module) {
+    this.processors[module.name] = module;
+  },
+  handle: function handle(processors, value, key, options, translator) {
+    var _this = this;
+
+    processors.forEach(function (processor) {
+      if (_this.processors[processor]) { value = _this.processors[processor].process(value, key, options, translator); }
+    });
+
+    return value;
+  }
+};
+
+function convertInterpolation$1(options) {
+
+  options.interpolation = {
+    unescapeSuffix: 'HTML'
+  };
+
+  options.interpolation.prefix = options.interpolationPrefix || '__';
+  options.interpolation.suffix = options.interpolationSuffix || '__';
+  options.interpolation.escapeValue = options.escapeInterpolation || false;
+
+  options.interpolation.nestingPrefix = options.reusePrefix || '$t(';
+  options.interpolation.nestingSuffix = options.reuseSuffix || ')';
+
+  return options;
+}
+
+function convertAPIOptions$1(options) {
+  if (options.resStore) { options.resources = options.resStore; }
+
+  if (options.ns && options.ns.defaultNs) {
+    options.defaultNS = options.ns.defaultNs;
+    options.ns = options.ns.namespaces;
+  } else {
+    options.defaultNS = options.ns || 'translation';
+  }
+
+  if (options.fallbackToDefaultNS && options.defaultNS) { options.fallbackNS = options.defaultNS; }
+
+  options.saveMissing = options.sendMissing;
+  options.saveMissingTo = options.sendMissingTo || 'current';
+  options.returnNull = options.fallbackOnNull ? false : true;
+  options.returnEmptyString = options.fallbackOnEmpty ? false : true;
+  options.returnObjects = options.returnObjectTrees;
+  options.joinArrays = '\n';
+
+  options.returnedObjectHandler = options.objectTreeKeyHandler;
+  options.parseMissingKeyHandler = options.parseMissingKey;
+  options.appendNamespaceToMissingKey = true;
+
+  options.nsSeparator = options.nsseparator || ':';
+  options.keySeparator = options.keyseparator || '.';
+
+  if (options.shortcutFunction === 'sprintf') {
+    options.overloadTranslationOptionHandler = function (args) {
+      var values = [];
+
+      for (var i = 1; i < args.length; i++) {
+        values.push(args[i]);
+      }
+
+      return {
+        postProcess: 'sprintf',
+        sprintf: values
+      };
+    };
+  }
+
+  options.whitelist = options.lngWhitelist;
+  options.preload = options.preload;
+  if (options.load === 'current') { options.load = 'currentOnly'; }
+  if (options.load === 'unspecific') { options.load = 'languageOnly'; }
+
+  // backend
+  options.backend = options.backend || {};
+  options.backend.loadPath = options.resGetPath || 'locales/__lng__/__ns__.json';
+  options.backend.addPath = options.resPostPath || 'locales/add/__lng__/__ns__';
+  options.backend.allowMultiLoading = options.dynamicLoad;
+
+  // cache
+  options.cache = options.cache || {};
+  options.cache.prefix = 'res_';
+  options.cache.expirationTime = 7 * 24 * 60 * 60 * 1000;
+  options.cache.enabled = options.useLocalStorage ? true : false;
+
+  options = convertInterpolation$1(options);
+  if (options.defaultVariables) { options.interpolation.defaultVariables = options.defaultVariables; }
+
+  // TODO: deprecation
+  // if (options.getAsync === false) throw deprecation error
+
+  return options;
+}
+
+function convertJSONOptions$1(options) {
+  options = convertInterpolation$1(options);
+  options.joinArrays = '\n';
+
+  return options;
+}
+
+function convertTOptions$1(options) {
+  if (options.interpolationPrefix || options.interpolationSuffix || options.escapeInterpolation) {
+    options = convertInterpolation$1(options);
+  }
+
+  options.nsSeparator = options.nsseparator;
+  options.keySeparator = options.keyseparator;
+
+  options.returnObjects = options.returnObjectTrees;
+
+  return options;
+}
+
+function appendBackwardsAPI$1(i18n) {
+  i18n.lng = function () {
+    baseLogger$1.deprecate('i18next.lng() can be replaced by i18next.language for detected language or i18next.languages for languages ordered by translation lookup.');
+    return i18n.services.languageUtils.toResolveHierarchy(i18n.language)[0];
+  };
+
+  i18n.preload = function (lngs, cb) {
+    baseLogger$1.deprecate('i18next.preload() can be replaced with i18next.loadLanguages()');
+    i18n.loadLanguages(lngs, cb);
+  };
+
+  i18n.setLng = function (lng, options, callback) {
+    baseLogger$1.deprecate('i18next.setLng() can be replaced with i18next.changeLanguage() or i18next.getFixedT() to get a translation function with fixed language or namespace.');
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
+    if (!options) { options = {}; }
+
+    if (options.fixLng === true) {
+      if (callback) { return callback(null, i18n.getFixedT(lng)); }
+    }
+
+    i18n.changeLanguage(lng, callback);
+  };
+
+  i18n.addPostProcessor = function (name, fc) {
+    baseLogger$1.deprecate('i18next.addPostProcessor() can be replaced by i18next.use({ type: \'postProcessor\', name: \'name\', process: fc })');
+    i18n.use({
+      type: 'postProcessor',
+      name: name,
+      process: fc
+    });
+  };
+}
+
+var _extends$9 = Object.assign || function (target) {
+var arguments$1 = arguments;
+ for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _typeof$3 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+function _defaults$7(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+function _classCallCheck$14(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn$7(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits$7(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults$7(subClass, superClass); } }
+
+var Translator$2 = function (_EventEmitter) {
+  _inherits$7(Translator, _EventEmitter);
+
+  function Translator(services) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    _classCallCheck$14(this, Translator);
+
+    var _this = _possibleConstructorReturn$7(this, _EventEmitter.call(this));
+
+    copy$2(['resourceStore', 'languageUtils', 'pluralResolver', 'interpolator', 'backendConnector'], services, _this);
+
+    _this.options = options;
+    _this.logger = baseLogger$1.create('translator');
+    return _this;
+  }
+
+  Translator.prototype.changeLanguage = function changeLanguage(lng) {
+    if (lng) { this.language = lng; }
+  };
+
+  Translator.prototype.exists = function exists(key) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { interpolation: {} };
+
+    if (this.options.compatibilityAPI === 'v1') {
+      options = convertTOptions$1(options);
+    }
+
+    return this.resolve(key, options) !== undefined;
+  };
+
+  Translator.prototype.extractFromKey = function extractFromKey(key, options) {
+    var nsSeparator = options.nsSeparator || this.options.nsSeparator;
+    if (nsSeparator === undefined) { nsSeparator = ':'; }
+    var keySeparator = options.keySeparator || this.options.keySeparator || '.';
+
+    var namespaces = options.ns || this.options.defaultNS;
+    if (nsSeparator && key.indexOf(nsSeparator) > -1) {
+      var parts = key.split(nsSeparator);
+      if (nsSeparator !== keySeparator || nsSeparator === keySeparator && this.options.ns.indexOf(parts[0]) > -1) { namespaces = parts.shift(); }
+      key = parts.join(keySeparator);
+    }
+    if (typeof namespaces === 'string') { namespaces = [namespaces]; }
+
+    return {
+      key: key,
+      namespaces: namespaces
+    };
+  };
+
+  Translator.prototype.translate = function translate(keys) {
+    var this$1 = this;
+
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    if ((typeof options === 'undefined' ? 'undefined' : _typeof$3(options)) !== 'object') {
+      options = this.options.overloadTranslationOptionHandler(arguments);
+    } else if (this.options.compatibilityAPI === 'v1') {
+      options = convertTOptions$1(options);
+    }
+
+    // non valid keys handling
+    if (keys === undefined || keys === null || keys === '') { return ''; }
+    if (typeof keys === 'number') { keys = String(keys); }
+    if (typeof keys === 'string') { keys = [keys]; }
+
+    // separators
+    var keySeparator = options.keySeparator || this.options.keySeparator || '.';
+
+    // get namespace(s)
+
+    var _extractFromKey = this.extractFromKey(keys[keys.length - 1], options),
+        key = _extractFromKey.key,
+        namespaces = _extractFromKey.namespaces;
+
+    var namespace = namespaces[namespaces.length - 1];
+
+    // return key on CIMode
+    var lng = options.lng || this.language;
+    var appendNamespaceToCIMode = options.appendNamespaceToCIMode || this.options.appendNamespaceToCIMode;
+    if (lng && lng.toLowerCase() === 'cimode') {
+      if (appendNamespaceToCIMode) {
+        var nsSeparator = options.nsSeparator || this.options.nsSeparator;
+        return namespace + nsSeparator + key;
+      }
+
+      return key;
+    }
+
+    // resolve from store
+    var res = this.resolve(keys, options);
+
+    var resType = Object.prototype.toString.apply(res);
+    var noObject = ['[object Number]', '[object Function]', '[object RegExp]'];
+    var joinArrays = options.joinArrays !== undefined ? options.joinArrays : this.options.joinArrays;
+
+    // object
+    if (res && typeof res !== 'string' && noObject.indexOf(resType) < 0 && !(joinArrays && resType === '[object Array]')) {
+      if (!options.returnObjects && !this.options.returnObjects) {
+        this.logger.warn('accessing an object - but returnObjects options is not enabled!');
+        return this.options.returnedObjectHandler ? this.options.returnedObjectHandler(key, res, options) : 'key \'' + key + ' (' + this.language + ')\' returned an object instead of string.';
+      }
+
+      // if we got a separator we loop over children - else we just return object as is
+      // as having it set to false means no hierarchy so no lookup for nested values
+      if (options.keySeparator || this.options.keySeparator) {
+        var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
+
+        for (var m in res) {
+          copy$$1[m] = this$1.translate('' + key + keySeparator + m, _extends$9({}, options, { joinArrays: false, ns: namespaces }));
+        }
+        res = copy$$1;
+      }
+    }
+    // array special treatment
+    else if (joinArrays && resType === '[object Array]') {
+        res = res.join(joinArrays);
+        if (res) { res = this.extendTranslation(res, key, options); }
+      }
+      // string, empty or null
+      else {
+          var usedDefault = false,
+              usedKey = false;
+
+          // fallback value
+          if (!this.isValidLookup(res) && options.defaultValue !== undefined) {
+            usedDefault = true;
+            res = options.defaultValue;
+          }
+          if (!this.isValidLookup(res)) {
+            usedKey = true;
+            res = key;
+          }
+
+          // save missing
+          if (usedKey || usedDefault) {
+            this.logger.log('missingKey', lng, namespace, key, res);
+
+            var lngs = [];
+            var fallbackLngs = this.languageUtils.getFallbackCodes(this.options.fallbackLng, options.lng || this.language);
+            if (this.options.saveMissingTo === 'fallback' && fallbackLngs && fallbackLngs[0]) {
+              for (var i = 0; i < fallbackLngs.length; i++) {
+                lngs.push(fallbackLngs[i]);
+              }
+            } else if (this.options.saveMissingTo === 'all') {
+              lngs = this.languageUtils.toResolveHierarchy(options.lng || this.language);
+            } else {
+              //(this.options.saveMissingTo === 'current' || (this.options.saveMissingTo === 'fallback' && this.options.fallbackLng[0] === false) ) {
+              lngs.push(options.lng || this.language);
+            }
+
+            if (this.options.saveMissing) {
+              if (this.options.missingKeyHandler) {
+                this.options.missingKeyHandler(lngs, namespace, key, res);
+              } else if (this.backendConnector && this.backendConnector.saveMissing) {
+                this.backendConnector.saveMissing(lngs, namespace, key, res);
+              }
+            }
+
+            this.emit('missingKey', lngs, namespace, key, res);
+          }
+
+          // extend
+          res = this.extendTranslation(res, key, options);
+
+          // append namespace if still key
+          if (usedKey && res === key && this.options.appendNamespaceToMissingKey) { res = namespace + ':' + key; }
+
+          // parseMissingKeyHandler
+          if (usedKey && this.options.parseMissingKeyHandler) { res = this.options.parseMissingKeyHandler(res); }
+        }
+
+    // return
+    return res;
+  };
+
+  Translator.prototype.extendTranslation = function extendTranslation(res, key, options) {
+    var _this2 = this;
+
+    if (options.interpolation) { this.interpolator.init(_extends$9({}, options, { interpolation: _extends$9({}, this.options.interpolation, options.interpolation) })); }
+
+    // interpolate
+    var data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
+    if (this.options.interpolation.defaultVariables) { data = _extends$9({}, this.options.interpolation.defaultVariables, data); }
+    res = this.interpolator.interpolate(res, data, this.language);
+
+    // nesting
+    res = this.interpolator.nest(res, function () {
+      var arguments$1 = arguments;
+
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments$1[_key];
+      }
+
+      return _this2.translate.apply(_this2, args);
+    }, options);
+
+    if (options.interpolation) { this.interpolator.reset(); }
+
+    // post process
+    var postProcess = options.postProcess || this.options.postProcess;
+    var postProcessorNames = typeof postProcess === 'string' ? [postProcess] : postProcess;
+
+    if (res !== undefined && postProcessorNames && postProcessorNames.length && options.applyPostProcessor !== false) {
+      res = postProcessor$1.handle(postProcessorNames, res, key, options, this);
+    }
+
+    return res;
+  };
+
+  Translator.prototype.resolve = function resolve(keys) {
+    var _this3 = this;
+
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    var found = void 0;
+
+    if (typeof keys === 'string') { keys = [keys]; }
+
+    // forEach possible key
+    keys.forEach(function (k) {
+      if (_this3.isValidLookup(found)) { return; }
+
+      var _extractFromKey2 = _this3.extractFromKey(k, options),
+          key = _extractFromKey2.key,
+          namespaces = _extractFromKey2.namespaces;
+
+      if (_this3.options.fallbackNS) { namespaces = namespaces.concat(_this3.options.fallbackNS); }
+
+      var needsPluralHandling = options.count !== undefined && typeof options.count !== 'string';
+      var needsContextHandling = options.context !== undefined && typeof options.context === 'string' && options.context !== '';
+
+      var codes = options.lngs ? options.lngs : _this3.languageUtils.toResolveHierarchy(options.lng || _this3.language);
+
+      namespaces.forEach(function (ns) {
+        if (_this3.isValidLookup(found)) { return; }
+
+        codes.forEach(function (code) {
+          if (_this3.isValidLookup(found)) { return; }
+
+          var finalKey = key;
+          var finalKeys = [finalKey];
+
+          var pluralSuffix = void 0;
+          if (needsPluralHandling) { pluralSuffix = _this3.pluralResolver.getSuffix(code, options.count); }
+
+          // fallback for plural if context not found
+          if (needsPluralHandling && needsContextHandling) { finalKeys.push(finalKey + pluralSuffix); }
+
+          // get key for context if needed
+          if (needsContextHandling) { finalKeys.push(finalKey += '' + _this3.options.contextSeparator + options.context); }
+
+          // get key for plural if needed
+          if (needsPluralHandling) { finalKeys.push(finalKey += pluralSuffix); }
+
+          // iterate over finalKeys starting with most specific pluralkey (-> contextkey only) -> singularkey only
+          var possibleKey = void 0;
+          while (possibleKey = finalKeys.pop()) {
+            if (_this3.isValidLookup(found)) { continue; }
+            found = _this3.getResource(code, ns, possibleKey, options);
+          }
+        });
+      });
+    });
+
+    return found;
+  };
+
+  Translator.prototype.isValidLookup = function isValidLookup(res) {
+    return res !== undefined && !(!this.options.returnNull && res === null) && !(!this.options.returnEmptyString && res === '');
+  };
+
+  Translator.prototype.getResource = function getResource(code, ns, key) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+    return this.resourceStore.getResource(code, ns, key, options);
+  };
+
+  return Translator;
+}(EventEmitter$2);
+
+function _classCallCheck$15(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function capitalize$1(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+var LanguageUtil$1 = function () {
+  function LanguageUtil(options) {
+    _classCallCheck$15(this, LanguageUtil);
+
+    this.options = options;
+
+    this.whitelist = this.options.whitelist || false;
+    this.logger = baseLogger$1.create('languageUtils');
+  }
+
+  LanguageUtil.prototype.getScriptPartFromCode = function getScriptPartFromCode(code) {
+    if (!code || code.indexOf('-') < 0) { return null; }
+
+    var p = code.split('-');
+    if (p.length === 2) { return null; }
+    p.pop();
+    return this.formatLanguageCode(p.join('-'));
+  };
+
+  LanguageUtil.prototype.getLanguagePartFromCode = function getLanguagePartFromCode(code) {
+    if (!code || code.indexOf('-') < 0) { return code; }
+
+    var p = code.split('-');
+    return this.formatLanguageCode(p[0]);
+  };
+
+  LanguageUtil.prototype.formatLanguageCode = function formatLanguageCode(code) {
+    // http://www.iana.org/assignments/language-tags/language-tags.xhtml
+    if (typeof code === 'string' && code.indexOf('-') > -1) {
+      var specialCases = ['hans', 'hant', 'latn', 'cyrl', 'cans', 'mong', 'arab'];
+      var p = code.split('-');
+
+      if (this.options.lowerCaseLng) {
+        p = p.map(function (part) {
+          return part.toLowerCase();
+        });
+      } else if (p.length === 2) {
+        p[0] = p[0].toLowerCase();
+        p[1] = p[1].toUpperCase();
+
+        if (specialCases.indexOf(p[1].toLowerCase()) > -1) { p[1] = capitalize$1(p[1].toLowerCase()); }
+      } else if (p.length === 3) {
+        p[0] = p[0].toLowerCase();
+
+        // if lenght 2 guess it's a country
+        if (p[1].length === 2) { p[1] = p[1].toUpperCase(); }
+        if (p[0] !== 'sgn' && p[2].length === 2) { p[2] = p[2].toUpperCase(); }
+
+        if (specialCases.indexOf(p[1].toLowerCase()) > -1) { p[1] = capitalize$1(p[1].toLowerCase()); }
+        if (specialCases.indexOf(p[2].toLowerCase()) > -1) { p[2] = capitalize$1(p[2].toLowerCase()); }
+      }
+
+      return p.join('-');
+    } else {
+      return this.options.cleanCode || this.options.lowerCaseLng ? code.toLowerCase() : code;
+    }
+  };
+
+  LanguageUtil.prototype.isWhitelisted = function isWhitelisted(code, exactMatch) {
+    if (this.options.load === 'languageOnly' || this.options.nonExplicitWhitelist && !exactMatch) {
+      code = this.getLanguagePartFromCode(code);
+    }
+    return !this.whitelist || !this.whitelist.length || this.whitelist.indexOf(code) > -1 ? true : false;
+  };
+
+  LanguageUtil.prototype.getFallbackCodes = function getFallbackCodes(fallbacks, code) {
+    if (!fallbacks) { return []; }
+    if (typeof fallbacks === 'string') { fallbacks = [fallbacks]; }
+    if (Object.prototype.toString.apply(fallbacks) === '[object Array]') { return fallbacks; }
+
+    if (!code) { return fallbacks.default || []; }
+
+    // asume we have an object defining fallbacks
+    var found = fallbacks[code];
+    if (!found) { found = fallbacks[this.getScriptPartFromCode(code)]; }
+    if (!found) { found = fallbacks[this.formatLanguageCode(code)]; }
+    if (!found) { found = fallbacks.default; }
+
+    return found || [];
+  };
+
+  LanguageUtil.prototype.toResolveHierarchy = function toResolveHierarchy(code, fallbackCode) {
+    var _this = this;
+
+    var fallbackCodes = this.getFallbackCodes(fallbackCode || this.options.fallbackLng || [], code);
+
+    var codes = [];
+    var addCode = function addCode(code) {
+      var exactMatch = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+      if (!code) { return; }
+      if (_this.isWhitelisted(code, exactMatch)) {
+        codes.push(code);
+      } else {
+        _this.logger.warn('rejecting non-whitelisted language code: ' + code);
+      }
+    };
+
+    if (typeof code === 'string' && code.indexOf('-') > -1) {
+      if (this.options.load !== 'languageOnly') { addCode(this.formatLanguageCode(code), true); }
+      if (this.options.load !== 'languageOnly' && this.options.load !== 'currentOnly') { addCode(this.getScriptPartFromCode(code), true); }
+      if (this.options.load !== 'currentOnly') { addCode(this.getLanguagePartFromCode(code)); }
+    } else if (typeof code === 'string') {
+      addCode(this.formatLanguageCode(code));
+    }
+
+    fallbackCodes.forEach(function (fc) {
+      if (codes.indexOf(fc) < 0) { addCode(_this.formatLanguageCode(fc)); }
+    });
+
+    return codes;
+  };
+
+  return LanguageUtil;
+}();
+
+function _classCallCheck$16(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// definition http://translate.sourceforge.net/wiki/l10n/pluralforms
+/* eslint-disable */
+var sets$1 = [{ lngs: ['ach', 'ak', 'am', 'arn', 'br', 'fil', 'gun', 'ln', 'mfe', 'mg', 'mi', 'oc', 'tg', 'ti', 'tr', 'uz', 'wa'], nr: [1, 2], fc: 1 }, { lngs: ['af', 'an', 'ast', 'az', 'bg', 'bn', 'ca', 'da', 'de', 'dev', 'el', 'en', 'eo', 'es', 'es_ar', 'et', 'eu', 'fi', 'fo', 'fur', 'fy', 'gl', 'gu', 'ha', 'he', 'hi', 'hu', 'hy', 'ia', 'it', 'kn', 'ku', 'lb', 'mai', 'ml', 'mn', 'mr', 'nah', 'nap', 'nb', 'ne', 'nl', 'nn', 'no', 'nso', 'pa', 'pap', 'pms', 'ps', 'pt', 'pt_br', 'rm', 'sco', 'se', 'si', 'so', 'son', 'sq', 'sv', 'sw', 'ta', 'te', 'tk', 'ur', 'yo'], nr: [1, 2], fc: 2 }, { lngs: ['ay', 'bo', 'cgg', 'fa', 'id', 'ja', 'jbo', 'ka', 'kk', 'km', 'ko', 'ky', 'lo', 'ms', 'sah', 'su', 'th', 'tt', 'ug', 'vi', 'wo', 'zh'], nr: [1], fc: 3 }, { lngs: ['be', 'bs', 'dz', 'hr', 'ru', 'sr', 'uk'], nr: [1, 2, 5], fc: 4 }, { lngs: ['ar'], nr: [0, 1, 2, 3, 11, 100], fc: 5 }, { lngs: ['cs', 'sk'], nr: [1, 2, 5], fc: 6 }, { lngs: ['csb', 'pl'], nr: [1, 2, 5], fc: 7 }, { lngs: ['cy'], nr: [1, 2, 3, 8], fc: 8 }, { lngs: ['fr'], nr: [1, 2], fc: 9 }, { lngs: ['ga'], nr: [1, 2, 3, 7, 11], fc: 10 }, { lngs: ['gd'], nr: [1, 2, 3, 20], fc: 11 }, { lngs: ['is'], nr: [1, 2], fc: 12 }, { lngs: ['jv'], nr: [0, 1], fc: 13 }, { lngs: ['kw'], nr: [1, 2, 3, 4], fc: 14 }, { lngs: ['lt'], nr: [1, 2, 10], fc: 15 }, { lngs: ['lv'], nr: [1, 2, 0], fc: 16 }, { lngs: ['mk'], nr: [1, 2], fc: 17 }, { lngs: ['mnk'], nr: [0, 1, 2], fc: 18 }, { lngs: ['mt'], nr: [1, 2, 11, 20], fc: 19 }, { lngs: ['or'], nr: [2, 1], fc: 2 }, { lngs: ['ro'], nr: [1, 2, 20], fc: 20 }, { lngs: ['sl'], nr: [5, 1, 2, 3], fc: 21 }];
+
+var _rulesPluralsTypes$1 = {
+  1: function _(n) {
+    return Number(n > 1);
+  },
+  2: function _(n) {
+    return Number(n != 1);
+  },
+  3: function _(n) {
+    return 0;
+  },
+  4: function _(n) {
+    return Number(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2);
+  },
+  5: function _(n) {
+    return Number(n === 0 ? 0 : n == 1 ? 1 : n == 2 ? 2 : n % 100 >= 3 && n % 100 <= 10 ? 3 : n % 100 >= 11 ? 4 : 5);
+  },
+  6: function _(n) {
+    return Number(n == 1 ? 0 : n >= 2 && n <= 4 ? 1 : 2);
+  },
+  7: function _(n) {
+    return Number(n == 1 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2);
+  },
+  8: function _(n) {
+    return Number(n == 1 ? 0 : n == 2 ? 1 : n != 8 && n != 11 ? 2 : 3);
+  },
+  9: function _(n) {
+    return Number(n >= 2);
+  },
+  10: function _(n) {
+    return Number(n == 1 ? 0 : n == 2 ? 1 : n < 7 ? 2 : n < 11 ? 3 : 4);
+  },
+  11: function _(n) {
+    return Number(n == 1 || n == 11 ? 0 : n == 2 || n == 12 ? 1 : n > 2 && n < 20 ? 2 : 3);
+  },
+  12: function _(n) {
+    return Number(n % 10 != 1 || n % 100 == 11);
+  },
+  13: function _(n) {
+    return Number(n !== 0);
+  },
+  14: function _(n) {
+    return Number(n == 1 ? 0 : n == 2 ? 1 : n == 3 ? 2 : 3);
+  },
+  15: function _(n) {
+    return Number(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2);
+  },
+  16: function _(n) {
+    return Number(n % 10 == 1 && n % 100 != 11 ? 0 : n !== 0 ? 1 : 2);
+  },
+  17: function _(n) {
+    return Number(n == 1 || n % 10 == 1 ? 0 : 1);
+  },
+  18: function _(n) {
+    return Number(n == 0 ? 0 : n == 1 ? 1 : 2);
+  },
+  19: function _(n) {
+    return Number(n == 1 ? 0 : n === 0 || n % 100 > 1 && n % 100 < 11 ? 1 : n % 100 > 10 && n % 100 < 20 ? 2 : 3);
+  },
+  20: function _(n) {
+    return Number(n == 1 ? 0 : n === 0 || n % 100 > 0 && n % 100 < 20 ? 1 : 2);
+  },
+  21: function _(n) {
+    return Number(n % 100 == 1 ? 1 : n % 100 == 2 ? 2 : n % 100 == 3 || n % 100 == 4 ? 3 : 0);
+  }
+};
+/* eslint-enable */
+
+function createRules$1() {
+  var l,
+      rules = {};
+  sets$1.forEach(function (set) {
+    set.lngs.forEach(function (l) {
+      return rules[l] = {
+        numbers: set.nr,
+        plurals: _rulesPluralsTypes$1[set.fc]
+      };
+    });
+  });
+  return rules;
+}
+
+var PluralResolver$2 = function () {
+  function PluralResolver(languageUtils) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    _classCallCheck$16(this, PluralResolver);
+
+    this.languageUtils = languageUtils;
+    this.options = options;
+
+    this.logger = baseLogger$1.create('pluralResolver');
+
+    this.rules = createRules$1();
+  }
+
+  PluralResolver.prototype.addRule = function addRule(lng, obj) {
+    this.rules[lng] = obj;
+  };
+
+  PluralResolver.prototype.getRule = function getRule(code) {
+    return this.rules[this.languageUtils.getLanguagePartFromCode(code)];
+  };
+
+  PluralResolver.prototype.needsPlural = function needsPlural(code) {
+    var rule = this.getRule(code);
+
+    return rule && rule.numbers.length <= 1 ? false : true;
+  };
+
+  PluralResolver.prototype.getSuffix = function getSuffix(code, count) {
+    var _this = this;
+
+    var rule = this.getRule(code);
+
+    if (rule) {
+      if (rule.numbers.length === 1) { return ''; } // only singular
+
+      var idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
+      var suffix = rule.numbers[idx];
+
+      // special treatment for lngs only having singular and plural
+      if (rule.numbers.length === 2 && rule.numbers[0] === 1) {
+        if (suffix === 2) {
+          suffix = 'plural';
+        } else if (suffix === 1) {
+          suffix = '';
+        }
+      }
+
+      var returnSuffix = function returnSuffix() {
+        return _this.options.prepend && suffix.toString() ? _this.options.prepend + suffix.toString() : suffix.toString();
+      };
+
+      // COMPATIBILITY JSON
+      // v1
+      if (this.options.compatibilityJSON === 'v1') {
+        if (suffix === 1) { return ''; }
+        if (typeof suffix === 'number') { return '_plural_' + suffix.toString(); }
+        return returnSuffix();
+      }
+      // v2
+      else if (this.options.compatibilityJSON === 'v2' || rule.numbers.length === 2 && rule.numbers[0] === 1) {
+          return returnSuffix();
+        }
+        // v3 - gettext index
+        else if (rule.numbers.length === 2 && rule.numbers[0] === 1) {
+            return returnSuffix();
+          }
+      return this.options.prepend && idx.toString() ? this.options.prepend + idx.toString() : idx.toString();
+    } else {
+      this.logger.warn('no plural rule found for: ' + code);
+      return '';
+    }
+  };
+
+  return PluralResolver;
+}();
+
+var _extends$10 = Object.assign || function (target) {
+var arguments$1 = arguments;
+ for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _classCallCheck$17(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Interpolator$2 = function () {
+  function Interpolator() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    _classCallCheck$17(this, Interpolator);
+
+    this.logger = baseLogger$1.create('interpolator');
+
+    this.init(options, true);
+  }
+
+  Interpolator.prototype.init = function init() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var reset = arguments[1];
+
+    if (reset) {
+      this.options = options;
+      this.format = options.interpolation && options.interpolation.format || function (value) {
+        return value;
+      };
+      this.escape = options.interpolation && options.interpolation.escape || escape$1;
+    }
+    if (!options.interpolation) { options.interpolation = { escapeValue: true }; }
+
+    var iOpts = options.interpolation;
+
+    this.escapeValue = iOpts.escapeValue !== undefined ? iOpts.escapeValue : true;
+
+    this.prefix = iOpts.prefix ? regexEscape$1(iOpts.prefix) : iOpts.prefixEscaped || '{{';
+    this.suffix = iOpts.suffix ? regexEscape$1(iOpts.suffix) : iOpts.suffixEscaped || '}}';
+
+    this.formatSeparator = iOpts.formatSeparator ? iOpts.formatSeparator : iOpts.formatSeparator || ',';
+
+    this.unescapePrefix = iOpts.unescapeSuffix ? '' : iOpts.unescapePrefix || '-';
+    this.unescapeSuffix = this.unescapePrefix ? '' : iOpts.unescapeSuffix || '';
+
+    this.nestingPrefix = iOpts.nestingPrefix ? regexEscape$1(iOpts.nestingPrefix) : iOpts.nestingPrefixEscaped || regexEscape$1('$t(');
+    this.nestingSuffix = iOpts.nestingSuffix ? regexEscape$1(iOpts.nestingSuffix) : iOpts.nestingSuffixEscaped || regexEscape$1(')');
+
+    // the regexp
+    this.resetRegExp();
+  };
+
+  Interpolator.prototype.reset = function reset() {
+    if (this.options) { this.init(this.options); }
+  };
+
+  Interpolator.prototype.resetRegExp = function resetRegExp() {
+    // the regexp
+    var regexpStr = this.prefix + '(.+?)' + this.suffix;
+    this.regexp = new RegExp(regexpStr, 'g');
+
+    var regexpUnescapeStr = this.prefix + this.unescapePrefix + '(.+?)' + this.unescapeSuffix + this.suffix;
+    this.regexpUnescape = new RegExp(regexpUnescapeStr, 'g');
+
+    var nestingRegexpStr = this.nestingPrefix + '(.+?)' + this.nestingSuffix;
+    this.nestingRegexp = new RegExp(nestingRegexpStr, 'g');
+  };
+
+  Interpolator.prototype.interpolate = function interpolate(str, data, lng) {
+    var this$1 = this;
+
+    var _this = this;
+
+    var match = void 0,
+        value = void 0;
+
+    function regexSafe(val) {
+      return val.replace(/\$/g, '$$$$');
+    }
+
+    var handleFormat = function handleFormat(key) {
+      if (key.indexOf(_this.formatSeparator) < 0) { return getPath$1(data, key); }
+
+      var p = key.split(_this.formatSeparator);
+      var k = p.shift().trim();
+      var f = p.join(_this.formatSeparator).trim();
+
+      return _this.format(getPath$1(data, k), f, lng);
+    };
+
+    this.resetRegExp();
+
+    // unescape if has unescapePrefix/Suffix
+    while (match = this.regexpUnescape.exec(str)) {
+      var _value = handleFormat(match[1].trim());
+      str = str.replace(match[0], _value);
+      this$1.regexpUnescape.lastIndex = 0;
+    }
+
+    // regular escape on demand
+    while (match = this.regexp.exec(str)) {
+      value = handleFormat(match[1].trim());
+      if (typeof value !== 'string') { value = makeString$1(value); }
+      if (!value) {
+        this$1.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
+        value = '';
+      }
+      value = this$1.escapeValue ? regexSafe(this$1.escape(value)) : regexSafe(value);
+      str = str.replace(match[0], value);
+      this$1.regexp.lastIndex = 0;
+    }
+    return str;
+  };
+
+  Interpolator.prototype.nest = function nest(str, fc) {
+    var this$1 = this;
+
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    var match = void 0,
+        value = void 0;
+
+    var clonedOptions = _extends$10({}, options);
+    clonedOptions.applyPostProcessor = false; // avoid post processing on nested lookup
+
+    function handleHasOptions(key) {
+      if (key.indexOf(',') < 0) { return key; }
+
+      var p = key.split(',');
+      key = p.shift();
+      var optionsString = p.join(',');
+      optionsString = this.interpolate(optionsString, clonedOptions);
+      optionsString = optionsString.replace(/'/g, '"');
+
+      try {
+        clonedOptions = JSON.parse(optionsString);
+      } catch (e) {
+        this.logger.error('failed parsing options string in nesting for key ' + key, e);
+      }
+
+      return key;
+    }
+
+    // regular escape on demand
+    while (match = this.nestingRegexp.exec(str)) {
+      value = fc(handleHasOptions.call(this$1, match[1].trim()), clonedOptions);
+      if (typeof value !== 'string') { value = makeString$1(value); }
+      if (!value) {
+        this$1.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
+        value = '';
+      }
+      // Nested keys should not be escaped by default #854
+      // value = this.escapeValue ? regexSafe(utils.escape(value)) : regexSafe(value);
+      str = str.replace(match[0], value);
+      this$1.regexp.lastIndex = 0;
+    }
+    return str;
+  };
+
+  return Interpolator;
+}();
+
+var _extends$11 = Object.assign || function (target) {
+var arguments$1 = arguments;
+ for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _slicedToArray$1 = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) { break; } } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) { _i["return"](); } } finally { if (_d) { throw _e; } } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+function _defaults$8(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+function _classCallCheck$18(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn$8(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits$8(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults$8(subClass, superClass); } }
+
+function remove$2(arr, what) {
+  var found = arr.indexOf(what);
+
+  while (found !== -1) {
+    arr.splice(found, 1);
+    found = arr.indexOf(what);
+  }
+}
+
+var Connector$2 = function (_EventEmitter) {
+  _inherits$8(Connector, _EventEmitter);
+
+  function Connector(backend, store, services) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+    _classCallCheck$18(this, Connector);
+
+    var _this = _possibleConstructorReturn$8(this, _EventEmitter.call(this));
+
+    _this.backend = backend;
+    _this.store = store;
+    _this.services = services;
+    _this.options = options;
+    _this.logger = baseLogger$1.create('backendConnector');
+
+    _this.state = {};
+    _this.queue = [];
+
+    _this.backend && _this.backend.init && _this.backend.init(services, options.backend, options);
+    return _this;
+  }
+
+  Connector.prototype.queueLoad = function queueLoad(languages, namespaces, callback) {
+    var _this2 = this;
+
+    // find what needs to be loaded
+    var toLoad = [],
+        pending = [],
+        toLoadLanguages = [],
+        toLoadNamespaces = [];
+
+    languages.forEach(function (lng) {
+      var hasAllNamespaces = true;
+
+      namespaces.forEach(function (ns) {
+        var name = lng + '|' + ns;
+
+        if (_this2.store.hasResourceBundle(lng, ns)) {
+          _this2.state[name] = 2; // loaded
+        } else if (_this2.state[name] < 0) {
+          // nothing to do for err
+        } else if (_this2.state[name] === 1) {
+          if (pending.indexOf(name) < 0) { pending.push(name); }
+        } else {
+          _this2.state[name] = 1; // pending
+
+          hasAllNamespaces = false;
+
+          if (pending.indexOf(name) < 0) { pending.push(name); }
+          if (toLoad.indexOf(name) < 0) { toLoad.push(name); }
+          if (toLoadNamespaces.indexOf(ns) < 0) { toLoadNamespaces.push(ns); }
+        }
+      });
+
+      if (!hasAllNamespaces) { toLoadLanguages.push(lng); }
+    });
+
+    if (toLoad.length || pending.length) {
+      this.queue.push({
+        pending: pending,
+        loaded: {},
+        errors: [],
+        callback: callback
+      });
+    }
+
+    return {
+      toLoad: toLoad,
+      pending: pending,
+      toLoadLanguages: toLoadLanguages,
+      toLoadNamespaces: toLoadNamespaces
+    };
+  };
+
+  Connector.prototype.loaded = function loaded(name, err, data) {
+    var _this3 = this;
+
+    var _name$split = name.split('|'),
+        _name$split2 = _slicedToArray$1(_name$split, 2),
+        lng = _name$split2[0],
+        ns = _name$split2[1];
+
+    if (err) { this.emit('failedLoading', lng, ns, err); }
+
+    if (data) {
+      this.store.addResourceBundle(lng, ns, data);
+    }
+
+    // set loaded
+    this.state[name] = err ? -1 : 2;
+    // callback if ready
+    this.queue.forEach(function (q) {
+      pushPath$1(q.loaded, [lng], ns);
+      remove$2(q.pending, name);
+
+      if (err) { q.errors.push(err); }
+
+      if (q.pending.length === 0 && !q.done) {
+        _this3.emit('loaded', q.loaded);
+        q.errors.length ? q.callback(q.errors) : q.callback();
+        q.done = true;
+      }
+    });
+
+    // remove done load requests
+    this.queue = this.queue.filter(function (q) {
+      return !q.done;
+    });
+  };
+
+  Connector.prototype.read = function read(lng, ns, fcName, tried, wait, callback) {
+    var _this4 = this;
+
+    if (!tried) { tried = 0; }
+    if (!wait) { wait = 250; }
+
+    if (!lng.length) { return callback(null, {}); } // noting to load
+
+    this.backend[fcName](lng, ns, function (err, data) {
+      if (err && data /* = retryFlag */ && tried < 5) {
+        setTimeout(function () {
+          _this4.read.call(_this4, lng, ns, fcName, ++tried, wait * 2, callback);
+        }, wait);
+        return;
+      }
+      callback(err, data);
+    });
+  };
+
+  Connector.prototype.load = function load(languages, namespaces, callback) {
+    var _this5 = this;
+
+    if (!this.backend) {
+      this.logger.warn('No backend was added via i18next.use. Will not load resources.');
+      return callback && callback();
+    }
+    var options = _extends$11({}, this.backend.options, this.options.backend);
+
+    if (typeof languages === 'string') { languages = this.services.languageUtils.toResolveHierarchy(languages); }
+    if (typeof namespaces === 'string') { namespaces = [namespaces]; }
+
+    var toLoad = this.queueLoad(languages, namespaces, callback);
+    if (!toLoad.toLoad.length) {
+      if (!toLoad.pending.length) { callback(); } // nothing to load and no pendings...callback now
+      return; // pendings will trigger callback
+    }
+
+    // load with multi-load
+    if (options.allowMultiLoading && this.backend.readMulti) {
+      this.read(toLoad.toLoadLanguages, toLoad.toLoadNamespaces, 'readMulti', null, null, function (err, data) {
+        if (err) { _this5.logger.warn('loading namespaces ' + toLoad.toLoadNamespaces.join(', ') + ' for languages ' + toLoad.toLoadLanguages.join(', ') + ' via multiloading failed', err); }
+        if (!err && data) { _this5.logger.log('loaded namespaces ' + toLoad.toLoadNamespaces.join(', ') + ' for languages ' + toLoad.toLoadLanguages.join(', ') + ' via multiloading', data); }
+
+        toLoad.toLoad.forEach(function (name) {
+          var _name$split3 = name.split('|'),
+              _name$split4 = _slicedToArray$1(_name$split3, 2),
+              l = _name$split4[0],
+              n = _name$split4[1];
+
+          var bundle = getPath$1(data, [l, n]);
+          if (bundle) {
+            _this5.loaded(name, err, bundle);
+          } else {
+            var _err = 'loading namespace ' + n + ' for language ' + l + ' via multiloading failed';
+            _this5.loaded(name, _err);
+            _this5.logger.error(_err);
+          }
+        });
+      });
+    }
+
+    // load one by one
+    else {
+        var readOne = function readOne(name) {
+          var _this6 = this;
+
+          var _name$split5 = name.split('|'),
+              _name$split6 = _slicedToArray$1(_name$split5, 2),
+              lng = _name$split6[0],
+              ns = _name$split6[1];
+
+          this.read(lng, ns, 'read', null, null, function (err, data) {
+            if (err) { _this6.logger.warn('loading namespace ' + ns + ' for language ' + lng + ' failed', err); }
+            if (!err && data) { _this6.logger.log('loaded namespace ' + ns + ' for language ' + lng, data); }
+
+            _this6.loaded(name, err, data);
+          });
+        };
+
+        
+
+        toLoad.toLoad.forEach(function (name) {
+          readOne.call(_this5, name);
+        });
+      }
+  };
+
+  Connector.prototype.reload = function reload(languages, namespaces) {
+    var _this7 = this;
+
+    if (!this.backend) {
+      this.logger.warn('No backend was added via i18next.use. Will not load resources.');
+    }
+    var options = _extends$11({}, this.backend.options, this.options.backend);
+
+    if (typeof languages === 'string') { languages = this.services.languageUtils.toResolveHierarchy(languages); }
+    if (typeof namespaces === 'string') { namespaces = [namespaces]; }
+
+    // load with multi-load
+    if (options.allowMultiLoading && this.backend.readMulti) {
+      this.read(languages, namespaces, 'readMulti', null, null, function (err, data) {
+        if (err) { _this7.logger.warn('reloading namespaces ' + namespaces.join(', ') + ' for languages ' + languages.join(', ') + ' via multiloading failed', err); }
+        if (!err && data) { _this7.logger.log('reloaded namespaces ' + namespaces.join(', ') + ' for languages ' + languages.join(', ') + ' via multiloading', data); }
+
+        languages.forEach(function (l) {
+          namespaces.forEach(function (n) {
+            var bundle = getPath$1(data, [l, n]);
+            if (bundle) {
+              _this7.loaded(l + '|' + n, err, bundle);
+            } else {
+              var _err2 = 'reloading namespace ' + n + ' for language ' + l + ' via multiloading failed';
+              _this7.loaded(l + '|' + n, _err2);
+              _this7.logger.error(_err2);
+            }
+          });
+        });
+      });
+    }
+
+    // load one by one
+    else {
+        var readOne = function readOne(name) {
+          var _this8 = this;
+
+          var _name$split7 = name.split('|'),
+              _name$split8 = _slicedToArray$1(_name$split7, 2),
+              lng = _name$split8[0],
+              ns = _name$split8[1];
+
+          this.read(lng, ns, 'read', null, null, function (err, data) {
+            if (err) { _this8.logger.warn('reloading namespace ' + ns + ' for language ' + lng + ' failed', err); }
+            if (!err && data) { _this8.logger.log('reloaded namespace ' + ns + ' for language ' + lng, data); }
+
+            _this8.loaded(name, err, data);
+          });
+        };
+
+        
+
+        languages.forEach(function (l) {
+          namespaces.forEach(function (n) {
+            readOne.call(_this7, l + '|' + n);
+          });
+        });
+      }
+  };
+
+  Connector.prototype.saveMissing = function saveMissing(languages, namespace, key, fallbackValue) {
+    if (this.backend && this.backend.create) { this.backend.create(languages, namespace, key, fallbackValue); }
+
+    // write to store to avoid resending
+    if (!languages || !languages[0]) { return; }
+    this.store.addResource(languages[0], namespace, key, fallbackValue);
+  };
+
+  return Connector;
+}(EventEmitter$2);
+
+var _extends$12 = Object.assign || function (target) {
+var arguments$1 = arguments;
+ for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _defaults$9(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+function _classCallCheck$19(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn$9(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits$9(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults$9(subClass, superClass); } }
+
+var Connector$3 = function (_EventEmitter) {
+  _inherits$9(Connector, _EventEmitter);
+
+  function Connector(cache, store, services) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+    _classCallCheck$19(this, Connector);
+
+    var _this = _possibleConstructorReturn$9(this, _EventEmitter.call(this));
+
+    _this.cache = cache;
+    _this.store = store;
+    _this.services = services;
+    _this.options = options;
+    _this.logger = baseLogger$1.create('cacheConnector');
+
+    _this.cache && _this.cache.init && _this.cache.init(services, options.cache, options);
+    return _this;
+  }
+
+  Connector.prototype.load = function load(languages, namespaces, callback) {
+    var _this2 = this;
+
+    if (!this.cache) { return callback && callback(); }
+    var options = _extends$12({}, this.cache.options, this.options.cache);
+
+    if (typeof languages === 'string') { languages = this.services.languageUtils.toResolveHierarchy(languages); }
+    if (typeof namespaces === 'string') { namespaces = [namespaces]; }
+
+    if (options.enabled) {
+      this.cache.load(languages, function (err, data) {
+        if (err) { _this2.logger.error('loading languages ' + languages.join(', ') + ' from cache failed', err); }
+        if (data) {
+          for (var l in data) {
+            for (var n in data[l]) {
+              if (n === 'i18nStamp') { continue; }
+              var bundle = data[l][n];
+              if (bundle) { _this2.store.addResourceBundle(l, n, bundle); }
+            }
+          }
+        }
+        if (callback) { callback(); }
+      });
+    } else {
+      if (callback) { callback(); }
+    }
+  };
+
+  Connector.prototype.save = function save() {
+    if (this.cache && this.options.cache && this.options.cache.enabled) { this.cache.save(this.store.data); }
+  };
+
+  return Connector;
+}(EventEmitter$2);
+
+function get$3() {
+  return {
+    debug: false,
+    initImmediate: true,
+
+    ns: ['translation'],
+    defaultNS: ['translation'],
+    fallbackLng: ['dev'],
+    fallbackNS: false, // string or array of namespaces
+
+    whitelist: false, // array with whitelisted languages
+    nonExplicitWhitelist: false,
+    load: 'all', // | currentOnly | languageOnly
+    preload: false, // array with preload languages
+
+    keySeparator: '.',
+    nsSeparator: ':',
+    pluralSeparator: '_',
+    contextSeparator: '_',
+
+    saveMissing: false, // enable to send missing values
+    saveMissingTo: 'fallback', // 'current' || 'all'
+    missingKeyHandler: false, // function(lng, ns, key, fallbackValue) -> override if prefer on handling
+
+    postProcess: false, // string or array of postProcessor names
+    returnNull: true, // allows null value as valid translation
+    returnEmptyString: true, // allows empty string value as valid translation
+    returnObjects: false,
+    joinArrays: false, // or string to join array
+    returnedObjectHandler: function returnedObjectHandler() {}, // function(key, value, options) triggered if key returns object but returnObjects is set to false
+    parseMissingKeyHandler: false, // function(key) parsed a key that was not found in t() before returning
+    appendNamespaceToMissingKey: false,
+    appendNamespaceToCIMode: false,
+    overloadTranslationOptionHandler: function overloadTranslationOptionHandler(args) {
+      return { defaultValue: args[1] };
+    },
+
+    interpolation: {
+      escapeValue: true,
+      format: function format(value, _format, lng) {
+        return value;
+      },
+      prefix: '{{',
+      suffix: '}}',
+      formatSeparator: ',',
+      // prefixEscaped: '{{',
+      // suffixEscaped: '}}',
+      // unescapeSuffix: '',
+      unescapePrefix: '-',
+
+      nestingPrefix: '$t(',
+      nestingSuffix: ')',
+      // nestingPrefixEscaped: '$t(',
+      // nestingSuffixEscaped: ')',
+      defaultVariables: undefined // object that can have values to interpolate on - extends passed in interpolation data
+    }
+  };
+}
+
+function transformOptions$1(options) {
+  // create namespace object if namespace is passed in as string
+  if (typeof options.ns === 'string') { options.ns = [options.ns]; }
+  if (typeof options.fallbackLng === 'string') { options.fallbackLng = [options.fallbackLng]; }
+  if (typeof options.fallbackNS === 'string') { options.fallbackNS = [options.fallbackNS]; }
+
+  // extend whitelist with cimode
+  if (options.whitelist && options.whitelist.indexOf('cimode') < 0) { options.whitelist.push('cimode'); }
+
+  return options;
+}
+
+var _extends$6 = Object.assign || function (target) {
+var arguments$1 = arguments;
+ for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _defaults$5(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
+
+function _classCallCheck$10(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn$5(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits$5(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults$5(subClass, superClass); } }
+
+function noop$3() {}
+
+var I18n$1 = function (_EventEmitter) {
+  _inherits$5(I18n, _EventEmitter);
+
+  function I18n() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var callback = arguments[1];
+
+    _classCallCheck$10(this, I18n);
+
+    var _this = _possibleConstructorReturn$5(this, _EventEmitter.call(this));
+
+    _this.options = transformOptions$1(options);
+    _this.services = {};
+    _this.logger = baseLogger$1;
+    _this.modules = { external: [] };
+
+    if (callback && !_this.isInitialized && !options.isClone) { _this.init(options, callback); }
+    return _this;
+  }
+
+  I18n.prototype.init = function init(options, callback) {
+    var _this2 = this;
+
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
+    if (!options) { options = {}; }
+
+    if (options.compatibilityAPI === 'v1') {
+      this.options = _extends$6({}, get$3(), transformOptions$1(convertAPIOptions$1(options)), {});
+    } else if (options.compatibilityJSON === 'v1') {
+      this.options = _extends$6({}, get$3(), transformOptions$1(convertJSONOptions$1(options)), {});
+    } else {
+      this.options = _extends$6({}, get$3(), this.options, transformOptions$1(options));
+    }
+    if (!callback) { callback = noop$3; }
+
+    function createClassOnDemand(ClassOrObject) {
+      if (!ClassOrObject) { return; }
+      if (typeof ClassOrObject === 'function') { return new ClassOrObject(); }
+      return ClassOrObject;
+    }
+
+    // init services
+    if (!this.options.isClone) {
+      if (this.modules.logger) {
+        baseLogger$1.init(createClassOnDemand(this.modules.logger), this.options);
+      } else {
+        baseLogger$1.init(null, this.options);
+      }
+
+      var lu = new LanguageUtil$1(this.options);
+      this.store = new ResourceStore$2(this.options.resources, this.options);
+
+      var s = this.services;
+      s.logger = baseLogger$1;
+      s.resourceStore = this.store;
+      s.resourceStore.on('added removed', function (lng, ns) {
+        s.cacheConnector.save();
+      });
+      s.languageUtils = lu;
+      s.pluralResolver = new PluralResolver$2(lu, { prepend: this.options.pluralSeparator, compatibilityJSON: this.options.compatibilityJSON });
+      s.interpolator = new Interpolator$2(this.options);
+
+      s.backendConnector = new Connector$2(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
+      // pipe events from backendConnector
+      s.backendConnector.on('*', function (event) {
+        var arguments$1 = arguments;
+
+        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+          args[_key - 1] = arguments$1[_key];
+        }
+
+        _this2.emit.apply(_this2, [event].concat(args));
+      });
+
+      s.backendConnector.on('loaded', function (loaded) {
+        s.cacheConnector.save();
+      });
+
+      s.cacheConnector = new Connector$3(createClassOnDemand(this.modules.cache), s.resourceStore, s, this.options);
+      // pipe events from backendConnector
+      s.cacheConnector.on('*', function (event) {
+        var arguments$1 = arguments;
+
+        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+          args[_key2 - 1] = arguments$1[_key2];
+        }
+
+        _this2.emit.apply(_this2, [event].concat(args));
+      });
+
+      if (this.modules.languageDetector) {
+        s.languageDetector = createClassOnDemand(this.modules.languageDetector);
+        s.languageDetector.init(s, this.options.detection, this.options);
+      }
+
+      this.translator = new Translator$2(this.services, this.options);
+      // pipe events from translator
+      this.translator.on('*', function (event) {
+        var arguments$1 = arguments;
+
+        for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+          args[_key3 - 1] = arguments$1[_key3];
+        }
+
+        _this2.emit.apply(_this2, [event].concat(args));
+      });
+
+      this.modules.external.forEach(function (m) {
+        if (m.init) { m.init(_this2); }
+      });
+    }
+
+    // append api
+    var storeApi = ['getResource', 'addResource', 'addResources', 'addResourceBundle', 'removeResourceBundle', 'hasResourceBundle', 'getResourceBundle'];
+    storeApi.forEach(function (fcName) {
+      _this2[fcName] = function () {
+        return this.store[fcName].apply(this.store, arguments);
+      };
+    });
+
+    // TODO: COMPATIBILITY remove this
+    if (this.options.compatibilityAPI === 'v1') { appendBackwardsAPI$1(this); }
+
+    var load = function load() {
+      _this2.changeLanguage(_this2.options.lng, function (err, t) {
+        _this2.isInitialized = true;
+        _this2.logger.log('initialized', _this2.options);
+        _this2.emit('initialized', _this2.options);
+
+        callback(err, t);
+      });
+    };
+
+    if (this.options.resources || !this.options.initImmediate) {
+      load();
+    } else {
+      setTimeout(load, 0);
+    }
+
+    return this;
+  };
+
+  I18n.prototype.loadResources = function loadResources() {
+    var _this3 = this;
+
+    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : noop$3;
+
+    if (!this.options.resources) {
+      if (this.language && this.language.toLowerCase() === 'cimode') { return callback(); } // avoid loading resources for cimode
+
+      var toLoad = [];
+
+      var append = function append(lng) {
+        if (!lng) { return; }
+        var lngs = _this3.services.languageUtils.toResolveHierarchy(lng);
+        lngs.forEach(function (l) {
+          if (toLoad.indexOf(l) < 0) { toLoad.push(l); }
+        });
+      };
+
+      append(this.language);
+
+      if (this.options.preload) {
+        this.options.preload.forEach(function (l) {
+          append(l);
+        });
+      }
+
+      this.services.cacheConnector.load(toLoad, this.options.ns, function () {
+        _this3.services.backendConnector.load(toLoad, _this3.options.ns, callback);
+      });
+    } else {
+      callback(null);
+    }
+  };
+
+  I18n.prototype.reloadResources = function reloadResources(lngs, ns) {
+    if (!lngs) { lngs = this.languages; }
+    if (!ns) { ns = this.options.ns; }
+    this.services.backendConnector.reload(lngs, ns);
+  };
+
+  I18n.prototype.use = function use(module) {
+    if (module.type === 'backend') {
+      this.modules.backend = module;
+    }
+
+    if (module.type === 'cache') {
+      this.modules.cache = module;
+    }
+
+    if (module.type === 'logger' || module.log && module.warn && module.error) {
+      this.modules.logger = module;
+    }
+
+    if (module.type === 'languageDetector') {
+      this.modules.languageDetector = module;
+    }
+
+    if (module.type === 'postProcessor') {
+      postProcessor$1.addPostProcessor(module);
+    }
+
+    if (module.type === '3rdParty') {
+      this.modules.external.push(module);
+    }
+
+    return this;
+  };
+
+  I18n.prototype.changeLanguage = function changeLanguage(lng, callback) {
+    var _this4 = this;
+
+    var done = function done(err) {
+      if (lng) {
+        _this4.emit('languageChanged', lng);
+        _this4.logger.log('languageChanged', lng);
+      }
+
+      if (callback) { callback(err, function () {
+        var arguments$1 = arguments;
+
+        for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+          args[_key4] = arguments$1[_key4];
+        }
+
+        return _this4.t.apply(_this4, args);
+      }); }
+    };
+
+    if (!lng && this.services.languageDetector) { lng = this.services.languageDetector.detect(); }
+
+    if (lng) {
+      this.language = lng;
+      this.languages = this.services.languageUtils.toResolveHierarchy(lng);
+
+      this.translator.changeLanguage(lng);
+
+      if (this.services.languageDetector) { this.services.languageDetector.cacheUserLanguage(lng); }
+    }
+
+    this.loadResources(function (err) {
+      done(err);
+    });
+  };
+
+  I18n.prototype.getFixedT = function getFixedT(lng, ns) {
+    var _this5 = this;
+
+    var fixedT = function fixedT(key) {
+      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      var options = _extends$6({}, opts);
+      options.lng = options.lng || fixedT.lng;
+      options.ns = options.ns || fixedT.ns;
+      return _this5.t(key, options);
+    };
+    fixedT.lng = lng;
+    fixedT.ns = ns;
+    return fixedT;
+  };
+
+  I18n.prototype.t = function t() {
+    return this.translator && this.translator.translate.apply(this.translator, arguments);
+  };
+
+  I18n.prototype.exists = function exists() {
+    return this.translator && this.translator.exists.apply(this.translator, arguments);
+  };
+
+  I18n.prototype.setDefaultNamespace = function setDefaultNamespace(ns) {
+    this.options.defaultNS = ns;
+  };
+
+  I18n.prototype.loadNamespaces = function loadNamespaces(ns, callback) {
+    var _this6 = this;
+
+    if (!this.options.ns) { return callback && callback(); }
+    if (typeof ns === 'string') { ns = [ns]; }
+
+    ns.forEach(function (n) {
+      if (_this6.options.ns.indexOf(n) < 0) { _this6.options.ns.push(n); }
+    });
+
+    this.loadResources(callback);
+  };
+
+  I18n.prototype.loadLanguages = function loadLanguages(lngs, callback) {
+    if (typeof lngs === 'string') { lngs = [lngs]; }
+    var preloaded = this.options.preload || [];
+
+    var newLngs = lngs.filter(function (lng) {
+      return preloaded.indexOf(lng) < 0;
+    });
+    // Exit early if all given languages are already preloaded
+    if (!newLngs.length) { return callback(); }
+
+    this.options.preload = preloaded.concat(newLngs);
+    this.loadResources(callback);
+  };
+
+  I18n.prototype.dir = function dir(lng) {
+    if (!lng) { lng = this.language; }
+    if (!lng) { return 'rtl'; }
+
+    var rtlLngs = ['ar', 'shu', 'sqr', 'ssh', 'xaa', 'yhd', 'yud', 'aao', 'abh', 'abv', 'acm', 'acq', 'acw', 'acx', 'acy', 'adf', 'ads', 'aeb', 'aec', 'afb', 'ajp', 'apc', 'apd', 'arb', 'arq', 'ars', 'ary', 'arz', 'auz', 'avl', 'ayh', 'ayl', 'ayn', 'ayp', 'bbz', 'pga', 'he', 'iw', 'ps', 'pbt', 'pbu', 'pst', 'prp', 'prd', 'ur', 'ydd', 'yds', 'yih', 'ji', 'yi', 'hbo', 'men', 'xmn', 'fa', 'jpr', 'peo', 'pes', 'prs', 'dv', 'sam'];
+
+    return rtlLngs.indexOf(this.services.languageUtils.getLanguagePartFromCode(lng)) >= 0 ? 'rtl' : 'ltr';
+  };
+
+  I18n.prototype.createInstance = function createInstance() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var callback = arguments[1];
+
+    return new I18n(options, callback);
+  };
+
+  I18n.prototype.cloneInstance = function cloneInstance() {
+    var _this7 = this;
+
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$3;
+
+    var mergedOptions = _extends$6({}, options, this.options, { isClone: true });
+    var clone = new I18n(mergedOptions, callback);
+    var membersToCopy = ['store', 'services', 'language'];
+    membersToCopy.forEach(function (m) {
+      clone[m] = _this7[m];
+    });
+    clone.translator = new Translator$2(clone.services, clone.options);
+    clone.translator.on('*', function (event) {
+      var arguments$1 = arguments;
+
+      for (var _len5 = arguments.length, args = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
+        args[_key5 - 1] = arguments$1[_key5];
+      }
+
+      clone.emit.apply(clone, [event].concat(args));
+    });
+    clone.init(mergedOptions, callback);
+
+    return clone;
+  };
+
+  return I18n;
+}(EventEmitter$2);
+
+var i18next$3 = new I18n$1();
+
+var changeLanguage = i18next$3.changeLanguage.bind(i18next$3);
+var cloneInstance = i18next$3.cloneInstance.bind(i18next$3);
+var createInstance = i18next$3.createInstance.bind(i18next$3);
+var dir = i18next$3.dir.bind(i18next$3);
+var exists = i18next$3.exists.bind(i18next$3);
+var getFixedT = i18next$3.getFixedT.bind(i18next$3);
+var init$1 = i18next$3.init.bind(i18next$3);
+var loadLanguages = i18next$3.loadLanguages.bind(i18next$3);
+var loadNamespaces = i18next$3.loadNamespaces.bind(i18next$3);
+var loadResources = i18next$3.loadResources.bind(i18next$3);
+var off = i18next$3.off.bind(i18next$3);
+var on = i18next$3.on.bind(i18next$3);
+var setDefaultNamespace = i18next$3.setDefaultNamespace.bind(i18next$3);
+var t = i18next$3.t.bind(i18next$3);
+var use = i18next$3.use.bind(i18next$3);
+
+var Back$2 = "Back";
+var Total$2 = "Total";
+var array$5 = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
+var enUS$1 = {
+	Back: Back$2,
+	Total: Total$2,
+	array: array$5
+};
+
+var Back$3 = "Atrás";
+var Total$3 = "Total";
+var array$6 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
+var esES$1 = {
+	Back: Back$3,
+	Total: Total$3,
+	array: array$6
+};
+
+i18next$3.init({
+  fallbackLng: "en-US",
+  initImmediate: false,
+  resources: {
+    "en-US": {translation: enUS$1},
+    "es-ES": {translation: esES$1}
+  }
+});
+
+/**
+    @function prefix
+    @desc Returns the appropriate CSS vendor prefix, given the current browser.
+*/
+
+/**
+    @function stylize
+    @desc Applies each key/value in an object as a style.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} styles An object of key/value style pairs.
+*/
+
+/**
     @class Image
     @desc Creates SVG images based on an array of data.
     @example <caption>a sample row of data</caption>
@@ -10471,16 +12840,16 @@ image().data([data])();
 @example <caption>which also allows a post-draw callback function</caption>
 image().data([data])(function() { alert("draw complete!"); })
 */
-var Image = function Image() {
+var Image$1 = function Image() {
   this._duration = 600;
-  this._height = accessor("height");
-  this._id = accessor("id");
-  this._pointerEvents = constant$7("auto");
+  this._height = accessor$1("height");
+  this._id = accessor$1("id");
+  this._pointerEvents = constant$8("auto");
   this._select;
-  this._url = accessor("url");
-  this._width = accessor("width");
-  this._x = accessor("x", 0);
-  this._y = accessor("y", 0);
+  this._url = accessor$1("url");
+  this._width = accessor$1("width");
+  this._x = accessor$1("x", 0);
+  this._y = accessor$1("y", 0);
 };
 
 /**
@@ -10489,7 +12858,7 @@ var Image = function Image() {
     @param {Function} [*callback*]
     @chainable
 */
-Image.prototype.render = function render (callback) {
+Image$1.prototype.render = function render (callback) {
     var this$1 = this;
 
 
@@ -10522,7 +12891,7 @@ Image.prototype.render = function render (callback) {
         var image = select(this), link = that._url(d, i);
         var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
         if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
-          var img = new Image();
+          var img = new Image$1();
           img.src = link;
           img.crossOrigin = "Anonymous";
           img.onload = function() {
@@ -10555,7 +12924,7 @@ Image.prototype.render = function render (callback) {
     @param {Array} [*data* = []]
     @chainable
 */
-Image.prototype.data = function data (_) {
+Image$1.prototype.data = function data (_) {
   return arguments.length ? (this._data = _, this) : this._data;
 };
 
@@ -10565,7 +12934,7 @@ Image.prototype.data = function data (_) {
     @param {Number} [*ms* = 600]
     @chainable
 */
-Image.prototype.duration = function duration (_) {
+Image$1.prototype.duration = function duration (_) {
   return arguments.length ? (this._duration = _, this) : this._duration;
 };
 
@@ -10579,8 +12948,8 @@ function(d) {
 return d.height;
 }
 */
-Image.prototype.height = function height (_) {
-  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$7(_), this) : this._height;
+Image$1.prototype.height = function height (_) {
+  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$8(_), this) : this._height;
 };
 
 /**
@@ -10593,7 +12962,7 @@ function(d) {
 return d.id;
 }
 */
-Image.prototype.id = function id (_) {
+Image$1.prototype.id = function id (_) {
   return arguments.length ? (this._id = _, this) : this._id;
 };
 
@@ -10603,8 +12972,8 @@ Image.prototype.id = function id (_) {
     @param {Function|String} [*value* = "auto"]
     @chainable
 */
-Image.prototype.pointerEvents = function pointerEvents (_) {
-  return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$7(_), this) : this._pointerEvents;
+Image$1.prototype.pointerEvents = function pointerEvents (_) {
+  return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$8(_), this) : this._pointerEvents;
 };
 
 /**
@@ -10613,7 +12982,7 @@ Image.prototype.pointerEvents = function pointerEvents (_) {
     @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
     @chainable
 */
-Image.prototype.select = function select$1 (_) {
+Image$1.prototype.select = function select$1 (_) {
   return arguments.length ? (this._select = select(_), this) : this._select;
 };
 
@@ -10627,7 +12996,7 @@ function(d) {
 return d.url;
 }
 */
-Image.prototype.url = function url (_) {
+Image$1.prototype.url = function url (_) {
   return arguments.length ? (this._url = _, this) : this._url;
 };
 
@@ -10641,8 +13010,8 @@ function(d) {
 return d.width;
 }
 */
-Image.prototype.width = function width (_) {
-  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$7(_), this) : this._width;
+Image$1.prototype.width = function width (_) {
+  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$8(_), this) : this._width;
 };
 
 /**
@@ -10655,8 +13024,8 @@ function(d) {
 return d.x || 0;
 }
 */
-Image.prototype.x = function x (_) {
-  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$7(_), this) : this._x;
+Image$1.prototype.x = function x (_) {
+  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$8(_), this) : this._x;
 };
 
 /**
@@ -10669,8 +13038,8 @@ function(d) {
 return d.y || 0;
 }
 */
-Image.prototype.y = function y (_) {
-  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$7(_), this) : this._y;
+Image$1.prototype.y = function y (_) {
+  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$8(_), this) : this._y;
 };
 
 /**
@@ -11699,35 +14068,38 @@ var Shape = (function (BaseClass$$1) {
         return s ? s * 2 : 1;
       }
     };
-    this._backgroundImage = constant$7(false);
+    this._backgroundImage = constant$8(false);
     this._data = [];
     this._duration = 600;
-    this._fill = constant$7("black");
-
-    this._fontColor = function (d, i) { return colorContrast(this$1._fill(d, i)); };
-    this._fontFamily = constant$7("Verdana");
-    this._fontResize = constant$7(false);
-    this._fontSize = constant$7(12);
-    this._fontWeight = constant$7(400);
+    this._fill = constant$8("black");
+    this._fillOpacity = constant$8(1);
 
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
-    this._label = constant$7(false);
-    this._labelRotate = constant$7(0);
-    this._labelPadding = constant$7(5);
+    this._label = constant$8(false);
+    this._labelConfig = {
+      fontColor: function (d, i) { return colorContrast(this$1._fill(d, i)); },
+      fontSize: 12
+    };
+    this._labelPadding = constant$8(5);
     this._name = "Shape";
-    this._opacity = constant$7(1);
-    this._scale = constant$7(1);
-    this._shapeRendering = constant$7("geometricPrecision");
+    this._opacity = constant$8(1);
+    this._rx = constant$8(0);
+    this._ry = constant$8(0);
+    this._scale = constant$8(1);
+    this._shapeRendering = constant$8("geometricPrecision");
     this._stroke = function (d, i) { return color(this$1._fill(d, i)).darker(1); };
-    this._strokeWidth = constant$7(0);
+    this._strokeDasharray = constant$8("1");
+    this._strokeLinecap = constant$8("butt");
+    this._strokeOpacity = constant$8(1);
+    this._strokeWidth = constant$8(0);
     this._tagName = tagName;
-    this._textAnchor = constant$7("start");
-    this._vectorEffect = constant$7("non-scaling-stroke");
-    this._verticalAlign = constant$7("top");
+    this._textAnchor = constant$8("start");
+    this._vectorEffect = constant$8("non-scaling-stroke");
+    this._verticalAlign = constant$8("top");
 
-    this._x = accessor("x", 0);
-    this._y = accessor("y", 0);
+    this._x = accessor$1("x", 0);
+    this._y = accessor$1("y", 0);
 
   }
 
@@ -11808,7 +14180,7 @@ var Shape = (function (BaseClass$$1) {
       }
     }
 
-    elem$$1.transition().duration(0).call(attrize, activeStyle);
+    elem$$1.transition().duration(0).call(attrize$1, activeStyle);
 
   };
 
@@ -11839,7 +14211,13 @@ var Shape = (function (BaseClass$$1) {
 
     elem$$1
       .attr("fill", styleLogic.bind(this._fill))
+      .attr("fill-opacity", styleLogic.bind(this._fillOpacity))
+      .attr("rx", styleLogic.bind(this._rx))
+      .attr("ry", styleLogic.bind(this._ry))
       .attr("stroke", styleLogic.bind(this._stroke))
+      .attr("stroke-dasharray", styleLogic.bind(this._strokeDasharray))
+      .attr("stroke-linecap", styleLogic.bind(this._strokeLinecap))
+      .attr("stroke-opacity", styleLogic.bind(this._strokeOpacity))
       .attr("stroke-width", styleLogic.bind(this._strokeWidth))
       .attr("vector-effect", styleLogic.bind(this._vectorEffect));
   };
@@ -11933,11 +14311,11 @@ var Shape = (function (BaseClass$$1) {
 
       });
 
-    return new Image()
+    return new Image$1()
       .data(imageData)
       .duration(this._duration)
       .pointerEvents("none")
-      .select(elem(("g.d3plus-" + (this._name) + "-image"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
+      .select(elem$1(("g.d3plus-" + (this._name) + "-image"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
       .render();
 
   };
@@ -11964,10 +14342,9 @@ var Shape = (function (BaseClass$$1) {
 
         var labels = this$1._label(d, i);
 
-        if (this$1._labelBounds && labels !== false && labels !== void 0) {
+        if (this$1._labelBounds && labels !== false && labels !== undefined) {
 
-          var aes = this$1._aes(datum, i),
-                bounds = this$1._labelBounds(d, i, aes);
+          var bounds = this$1._labelBounds(d, i, this$1._aes(datum, i));
 
           if (bounds) {
 
@@ -11983,42 +14360,25 @@ var Shape = (function (BaseClass$$1) {
               i = d.i;
             }
 
-            var fC = this$1._fontColor(d, i),
-                  fF = this$1._fontFamily(d, i),
-                  fR = this$1._fontResize(d, i),
-                  fS = this$1._fontSize(d, i),
-                  fW = this$1._fontWeight(d, i),
-                  lH = this$1._lineHeight(d, i),
-                  padding = this$1._labelPadding(d, i),
-                  r = this$1._labelRotate(d, i),
-                  tA = this$1._textAnchor(d, i),
-                  vA = this$1._verticalAlign(d, i);
+            var padding = this$1._labelPadding(d, i);
 
             for (var l = 0; l < labels.length; l++) {
 
               var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
                     p = padding.constructor === Array ? padding[l] : padding;
 
-              labelData.push(Object.assign(b, {
-                __d3plusShape__: true,
+              labelData.push({
+                __d3plus__: true,
                 data: d,
-                fC: fC.constructor === Array ? fC[l] : fC,
-                fF: fF.constructor === Array ? fF[l] : fF,
-                fR: fR.constructor === Array ? fR[l] : fR,
-                fS: fS.constructor === Array ? fS[l] : fS,
-                fW: fW.constructor === Array ? fW[l] : fW,
                 height: b.height - p * 2,
-                i: i,
+                l: l,
                 id: ((this$1._id(d, i)) + "_" + l),
-                lH: lH.constructor === Array ? lH[l] : lH,
-                r: bounds.angle !== void 0 ? bounds.angle : r.constructor === Array ? r[l] : r,
-                tA: tA.constructor === Array ? tA[l] : tA,
+                r: bounds.angle !== undefined ? bounds.angle : 0,
                 text: labels[l],
-                vA: vA.constructor === Array ? vA[l] : vA,
                 width: b.width - p * 2,
                 x: x + b.x + p,
                 y: y + b.y + p
-              }));
+              });
 
             }
 
@@ -12031,17 +14391,10 @@ var Shape = (function (BaseClass$$1) {
     return new TextBox()
       .data(labelData)
       .duration(this._duration)
-      .fontColor(function (d) { return d.fC; })
-      .fontFamily(function (d) { return d.fF; })
-      .fontResize(function (d) { return d.fR; })
-      .fontSize(function (d) { return d.fS; })
-      .fontWeight(function (d) { return d.fW; })
-      .lineHeight(function (d) { return d.lH; })
       .pointerEvents("none")
       .rotate(function (d) { return d.data.r; })
-      .textAnchor(function (d) { return d.tA; })
-      .verticalAlign(function (d) { return d.vA; })
-      .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
+      .select(elem$1(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
+      .config(this._labelConfig)
       .render();
 
   };
@@ -12083,8 +14436,8 @@ var Shape = (function (BaseClass$$1) {
     });
 
     // Makes the update state of the group selection accessible.
-    this._group = elem(("g.d3plus-" + (this._name) + "-group"), {parent: this._select});
-    var update = this._update = elem(("g.d3plus-" + (this._name) + "-shape"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}})
+    this._group = elem$1(("g.d3plus-" + (this._name) + "-group"), {parent: this._select});
+    var update = this._update = elem$1(("g.d3plus-" + (this._name) + "-shape"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}})
       .selectAll((".d3plus-" + (this._name)))
         .data(data, key);
 
@@ -12115,8 +14468,8 @@ var Shape = (function (BaseClass$$1) {
     this._renderImage();
     this._renderLabels();
 
-    this._hoverGroup = elem(("g.d3plus-" + (this._name) + "-hover"), {parent: this._group});
-    this._activeGroup = elem(("g.d3plus-" + (this._name) + "-active"), {parent: this._group});
+    this._hoverGroup = elem$1(("g.d3plus-" + (this._name) + "-hover"), {parent: this._group});
+    this._activeGroup = elem$1(("g.d3plus-" + (this._name) + "-active"), {parent: this._group});
 
     var that = this;
 
@@ -12134,7 +14487,7 @@ var Shape = (function (BaseClass$$1) {
     var hitUpdates = hitAreas.merge(hitEnter)
       .each(function(d) {
         var h = that._hitArea(d, that._data.indexOf(d), that._aes(d, that._data.indexOf(d)));
-        return h ? select(this).call(attrize, h) : select(this).remove();
+        return h ? select(this).call(attrize$1, h) : select(this).remove();
       });
 
     hitAreas.exit().remove();
@@ -12210,7 +14563,7 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.backgroundImage = function backgroundImage (_) {
     return arguments.length
-         ? (this._backgroundImage = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._backgroundImage = typeof _ === "function" ? _ : constant$8(_), this)
          : this._backgroundImage;
   };
 
@@ -12246,68 +14599,20 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fill = function fill (_) {
     return arguments.length
-         ? (this._fill = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._fill = typeof _ === "function" ? _ : constant$8(_), this)
          : this._fill;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|String|Array} [*value*]
+      @desc Defines the "fill-opacity" attribute for the shapes.
+      @param {Function|Number} [*value* = 1]
       @chainable
   */
-  Shape.prototype.fontColor = function fontColor (_) {
+  Shape.prototype.fillOpacity = function fillOpacity (_) {
     return arguments.length
-         ? (this._fontColor = typeof _ === "function" ? _ : constant$7(_), this)
-         : this._fontColor;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|String|Array} [*value* = "Verdana"]
-      @chainable
-  */
-  Shape.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length
-         ? (this._fontFamily = typeof _ === "function" ? _ : constant$7(_), this)
-         : this._fontFamily;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|Boolean|Array} [*value*]
-      @chainable
-  */
-  Shape.prototype.fontResize = function fontResize (_) {
-    return arguments.length
-         ? (this._fontResize = typeof _ === "function" ? _ : constant$7(_), this)
-         : this._fontResize;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|String|Array} [*value* = 12]
-      @chainable
-  */
-  Shape.prototype.fontSize = function fontSize (_) {
-    return arguments.length
-         ? (this._fontSize = typeof _ === "function" ? _ : constant$7(_), this)
-         : this._fontSize;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the font-weight accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-weight accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|String|Array} [*value* = 400]
-      @chainable
-  */
-  Shape.prototype.fontWeight = function fontWeight (_) {
-    return arguments.length
-         ? (this._fontWeight = typeof _ === "function" ? _ : constant$7(_), this)
-         : this._fontWeight;
+         ? (this._fillOpacity = typeof _ === "function" ? _ : constant$8(_), this)
+         : this._fillOpacity;
   };
 
   /**
@@ -12375,7 +14680,7 @@ function(d, i, shape) {
   */
   Shape.prototype.hitArea = function hitArea (_) {
     return arguments.length
-         ? (this._hitArea = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._hitArea = typeof _ === "function" ? _ : constant$8(_), this)
          : this._hitArea;
   };
 
@@ -12399,7 +14704,7 @@ function(d, i, shape) {
   */
   Shape.prototype.label = function label (_) {
     return arguments.length
-         ? (this._label = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._label = typeof _ === "function" ? _ : constant$8(_), this)
          : this._label;
   };
 
@@ -12420,20 +14725,18 @@ function(d, i, shape) {
   */
   Shape.prototype.labelBounds = function labelBounds (_) {
     return arguments.length
-         ? (this._labelBounds = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._labelBounds = typeof _ === "function" ? _ : constant$8(_), this)
          : this._labelBounds;
   };
 
   /**
       @memberof Shape
-      @desc Specifies the rotation angle, in degrees, of a shape's label. If *value* is not specified, returns the current label rotation. If an array is passed or returned from the function, each value will be used consecutively with each label.
-      @param {Function|Number|Array} [angle = 0]
+      @desc A pass-through to the config method of the TextBox class used to create a shape's labels.
+      @param {Object} [*value*]
       @chainable
   */
-  Shape.prototype.labelRotate = function labelRotate (_) {
-    return arguments.length
-         ? (this._labelRotate = typeof _ === "function" ? _ : constant$7(_), this)
-         : this._labelRotate;
+  Shape.prototype.labelConfig = function labelConfig (_) {
+    return arguments.length ? (this._labelConfig = assign$2(this._labelConfig, _), this) : this._labelConfig;
   };
 
   /**
@@ -12444,7 +14747,7 @@ function(d, i, shape) {
   */
   Shape.prototype.labelPadding = function labelPadding (_) {
     return arguments.length
-         ? (this._labelPadding = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._labelPadding = typeof _ === "function" ? _ : constant$8(_), this)
          : this._labelPadding;
   };
 
@@ -12456,7 +14759,7 @@ function(d, i, shape) {
   */
   Shape.prototype.lineHeight = function lineHeight (_) {
     return arguments.length
-         ? (this._lineHeight = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._lineHeight = typeof _ === "function" ? _ : constant$8(_), this)
          : this._lineHeight;
   };
 
@@ -12468,8 +14771,28 @@ function(d, i, shape) {
   */
   Shape.prototype.opacity = function opacity (_) {
     return arguments.length
-         ? (this._opacity = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._opacity = typeof _ === "function" ? _ : constant$8(_), this)
          : this._opacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc Defines the "rx" attribute for the shapes.
+      @param {Function|Number} [*value* = 0]
+      @chainable
+  */
+  Shape.prototype.rx = function rx (_) {
+    return arguments.length ? (this._rx = typeof _ === "function" ? _ : constant$8(_), this) : this._rx;
+  };
+
+  /**
+      @memberof Shape
+      @desc Defines the "rx" attribute for the shapes.
+      @param {Function|Number} [*value* = 0]
+      @chainable
+  */
+  Shape.prototype.ry = function ry (_) {
+    return arguments.length ? (this._ry = typeof _ === "function" ? _ : constant$8(_), this) : this._ry;
   };
 
   /**
@@ -12480,7 +14803,7 @@ function(d, i, shape) {
   */
   Shape.prototype.scale = function scale (_) {
     return arguments.length
-         ? (this._scale = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._scale = typeof _ === "function" ? _ : constant$8(_), this)
          : this._scale;
   };
 
@@ -12508,7 +14831,7 @@ function(d) {
   */
   Shape.prototype.shapeRendering = function shapeRendering (_) {
     return arguments.length
-         ? (this._shapeRendering = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._shapeRendering = typeof _ === "function" ? _ : constant$8(_), this)
          : this._shapeRendering;
   };
 
@@ -12532,8 +14855,44 @@ function(d) {
   */
   Shape.prototype.stroke = function stroke (_) {
     return arguments.length
-         ? (this._stroke = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._stroke = typeof _ === "function" ? _ : constant$8(_), this)
          : this._stroke;
+  };
+
+  /**
+      @memberof Shape
+      @desc Defines the "stroke-dasharray" attribute for the shapes.
+      @param {Function|String} [*value* = "1"]
+      @chainable
+  */
+  Shape.prototype.strokeDasharray = function strokeDasharray (_) {
+    return arguments.length
+         ? (this._strokeDasharray = typeof _ === "function" ? _ : constant$8(_), this)
+         : this._strokeDasharray;
+  };
+
+  /**
+      @memberof Shape
+      @desc Defines the "stroke-linecap" attribute for the shapes. Accepted values are `"butt"`, `"round"`, and `"square"`.
+      @param {Function|String} [*value* = "butt"]
+      @chainable
+  */
+  Shape.prototype.strokeLinecap = function strokeLinecap (_) {
+    return arguments.length
+         ? (this._strokeLinecap = typeof _ === "function" ? _ : constant$8(_), this)
+         : this._strokeLinecap;
+  };
+
+  /**
+      @memberof Shape
+      @desc Defines the "stroke-opacity" attribute for the shapes.
+      @param {Function|Number} [*value* = 1]
+      @chainable
+  */
+  Shape.prototype.strokeOpacity = function strokeOpacity (_) {
+    return arguments.length
+         ? (this._strokeOpacity = typeof _ === "function" ? _ : constant$8(_), this)
+         : this._strokeOpacity;
   };
 
   /**
@@ -12544,7 +14903,7 @@ function(d) {
   */
   Shape.prototype.strokeWidth = function strokeWidth (_) {
     return arguments.length
-         ? (this._strokeWidth = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._strokeWidth = typeof _ === "function" ? _ : constant$8(_), this)
          : this._strokeWidth;
   };
 
@@ -12556,7 +14915,7 @@ function(d) {
   */
   Shape.prototype.textAnchor = function textAnchor (_) {
     return arguments.length
-         ? (this._textAnchor = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._textAnchor = typeof _ === "function" ? _ : constant$8(_), this)
          : this._textAnchor;
   };
 
@@ -12568,7 +14927,7 @@ function(d) {
   */
   Shape.prototype.vectorEffect = function vectorEffect (_) {
     return arguments.length
-         ? (this._vectorEffect = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._vectorEffect = typeof _ === "function" ? _ : constant$8(_), this)
          : this._vectorEffect;
   };
 
@@ -12580,7 +14939,7 @@ function(d) {
   */
   Shape.prototype.verticalAlign = function verticalAlign (_) {
     return arguments.length
-         ? (this._verticalAlign = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._verticalAlign = typeof _ === "function" ? _ : constant$8(_), this)
          : this._verticalAlign;
   };
 
@@ -12596,7 +14955,7 @@ function(d) {
   */
   Shape.prototype.x = function x (_) {
     return arguments.length
-         ? (this._x = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._x = typeof _ === "function" ? _ : constant$8(_), this)
          : this._x;
   };
 
@@ -12612,12 +14971,12 @@ function(d) {
   */
   Shape.prototype.y = function y (_) {
     return arguments.length
-         ? (this._y = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._y = typeof _ === "function" ? _ : constant$8(_), this)
          : this._y;
   };
 
   return Shape;
-}(BaseClass));
+}(BaseClass$2));
 
 /**
  * List of params for each command type in a path `d` attribute
@@ -13016,7 +15375,7 @@ Path.prototype = path.prototype = {
   }
 };
 
-var constant$8 = function(x) {
+var constant$9 = function(x) {
   return function constant() {
     return x;
   };
@@ -13116,7 +15475,7 @@ function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
 var arc = function() {
   var innerRadius = arcInnerRadius,
       outerRadius = arcOuterRadius,
-      cornerRadius = constant$8(0),
+      cornerRadius = constant$9(0),
       padRadius = null,
       startAngle = arcStartAngle,
       endAngle = arcEndAngle,
@@ -13265,31 +15624,31 @@ var arc = function() {
   };
 
   arc.innerRadius = function(_) {
-    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$8(+_), arc) : innerRadius;
+    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$9(+_), arc) : innerRadius;
   };
 
   arc.outerRadius = function(_) {
-    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$8(+_), arc) : outerRadius;
+    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$9(+_), arc) : outerRadius;
   };
 
   arc.cornerRadius = function(_) {
-    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$8(+_), arc) : cornerRadius;
+    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$9(+_), arc) : cornerRadius;
   };
 
   arc.padRadius = function(_) {
-    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$8(+_), arc) : padRadius;
+    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$9(+_), arc) : padRadius;
   };
 
   arc.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$8(+_), arc) : startAngle;
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$9(+_), arc) : startAngle;
   };
 
   arc.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$8(+_), arc) : endAngle;
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$9(+_), arc) : endAngle;
   };
 
   arc.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$8(+_), arc) : padAngle;
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$9(+_), arc) : padAngle;
   };
 
   arc.context = function(_) {
@@ -13342,7 +15701,7 @@ function y(p) {
 var line = function() {
   var x$$1 = x,
       y$$1 = y,
-      defined = constant$8(true),
+      defined = constant$9(true),
       context = null,
       curve = curveLinear,
       output = null;
@@ -13368,15 +15727,15 @@ var line = function() {
   }
 
   line.x = function(_) {
-    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$8(+_), line) : x$$1;
+    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$9(+_), line) : x$$1;
   };
 
   line.y = function(_) {
-    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$8(+_), line) : y$$1;
+    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$9(+_), line) : y$$1;
   };
 
   line.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$8(!!_), line) : defined;
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$9(!!_), line) : defined;
   };
 
   line.curve = function(_) {
@@ -13393,9 +15752,9 @@ var line = function() {
 var area$1 = function() {
   var x0 = x,
       x1 = null,
-      y0 = constant$8(0),
+      y0 = constant$9(0),
       y1 = y,
-      defined = constant$8(true),
+      defined = constant$9(true),
       context = null,
       curve = curveLinear,
       output = null;
@@ -13443,27 +15802,27 @@ var area$1 = function() {
   }
 
   area.x = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$8(+_), x1 = null, area) : x0;
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$9(+_), x1 = null, area) : x0;
   };
 
   area.x0 = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$8(+_), area) : x0;
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$9(+_), area) : x0;
   };
 
   area.x1 = function(_) {
-    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$8(+_), area) : x1;
+    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$9(+_), area) : x1;
   };
 
   area.y = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$8(+_), y1 = null, area) : y0;
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$9(+_), y1 = null, area) : y0;
   };
 
   area.y0 = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$8(+_), area) : y0;
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$9(+_), area) : y0;
   };
 
   area.y1 = function(_) {
-    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$8(+_), area) : y1;
+    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$9(+_), area) : y1;
   };
 
   area.lineX0 =
@@ -13480,7 +15839,7 @@ var area$1 = function() {
   };
 
   area.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$8(!!_), area) : defined;
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$9(!!_), area) : defined;
   };
 
   area.curve = function(_) {
@@ -13506,9 +15865,9 @@ var pie = function() {
   var value = identity$8,
       sortValues = descending$1,
       sort = null,
-      startAngle = constant$8(0),
-      endAngle = constant$8(tau$3),
-      padAngle = constant$8(0);
+      startAngle = constant$9(0),
+      endAngle = constant$9(tau$3),
+      padAngle = constant$9(0);
 
   function pie(data) {
     var i,
@@ -13551,7 +15910,7 @@ var pie = function() {
   }
 
   pie.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$8(+_), pie) : value;
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$9(+_), pie) : value;
   };
 
   pie.sortValues = function(_) {
@@ -13563,15 +15922,15 @@ var pie = function() {
   };
 
   pie.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$8(+_), pie) : startAngle;
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$9(+_), pie) : startAngle;
   };
 
   pie.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$8(+_), pie) : endAngle;
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$9(+_), pie) : endAngle;
   };
 
   pie.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$8(+_), pie) : padAngle;
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$9(+_), pie) : padAngle;
   };
 
   return pie;
@@ -13741,7 +16100,7 @@ var triangle = {
 };
 
 var c = -0.5;
-var s$1 = Math.sqrt(3) / 2;
+var s$2 = Math.sqrt(3) / 2;
 var k = 1 / Math.sqrt(12);
 var a$1 = (k / 2 + 1) * 3;
 
@@ -13757,12 +16116,12 @@ var wye = {
     context.moveTo(x0, y0);
     context.lineTo(x1, y1);
     context.lineTo(x2, y2);
-    context.lineTo(c * x0 - s$1 * y0, s$1 * x0 + c * y0);
-    context.lineTo(c * x1 - s$1 * y1, s$1 * x1 + c * y1);
-    context.lineTo(c * x2 - s$1 * y2, s$1 * x2 + c * y2);
-    context.lineTo(c * x0 + s$1 * y0, c * y0 - s$1 * x0);
-    context.lineTo(c * x1 + s$1 * y1, c * y1 - s$1 * x1);
-    context.lineTo(c * x2 + s$1 * y2, c * y2 - s$1 * x2);
+    context.lineTo(c * x0 - s$2 * y0, s$2 * x0 + c * y0);
+    context.lineTo(c * x1 - s$2 * y1, s$2 * x1 + c * y1);
+    context.lineTo(c * x2 - s$2 * y2, s$2 * x2 + c * y2);
+    context.lineTo(c * x0 + s$2 * y0, c * y0 - s$2 * x0);
+    context.lineTo(c * x1 + s$2 * y1, c * y1 - s$2 * x1);
+    context.lineTo(c * x2 + s$2 * y2, c * y2 - s$2 * x2);
     context.closePath();
   }
 };
@@ -13778,8 +16137,8 @@ var symbols = [
 ];
 
 var symbol = function() {
-  var type = constant$8(circle$2),
-      size = constant$8(64),
+  var type = constant$9(circle$2),
+      size = constant$9(64),
       context = null;
 
   function symbol() {
@@ -13790,11 +16149,11 @@ var symbol = function() {
   }
 
   symbol.type = function(_) {
-    return arguments.length ? (type = typeof _ === "function" ? _ : constant$8(_), symbol) : type;
+    return arguments.length ? (type = typeof _ === "function" ? _ : constant$9(_), symbol) : type;
   };
 
   symbol.size = function(_) {
-    return arguments.length ? (size = typeof _ === "function" ? _ : constant$8(+_), symbol) : size;
+    return arguments.length ? (size = typeof _ === "function" ? _ : constant$9(+_), symbol) : size;
   };
 
   symbol.context = function(_) {
@@ -13804,7 +16163,7 @@ var symbol = function() {
   return symbol;
 };
 
-var noop$3 = function() {};
+var noop$4 = function() {};
 
 function point$2(that, x, y) {
   that._context.bezierCurveTo(
@@ -13863,8 +16222,8 @@ function BasisClosed(context) {
 }
 
 BasisClosed.prototype = {
-  areaStart: noop$3,
-  areaEnd: noop$3,
+  areaStart: noop$4,
+  areaEnd: noop$4,
   lineStart: function() {
     this._x0 = this._x1 = this._x2 = this._x3 = this._x4 =
     this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = NaN;
@@ -14071,8 +16430,8 @@ function CardinalClosed(context, tension) {
 }
 
 CardinalClosed.prototype = {
-  areaStart: noop$3,
-  areaEnd: noop$3,
+  areaStart: noop$4,
+  areaEnd: noop$4,
   lineStart: function() {
     this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
     this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
@@ -14264,8 +16623,8 @@ function CatmullRomClosed(context, alpha) {
 }
 
 CatmullRomClosed.prototype = {
-  areaStart: noop$3,
-  areaEnd: noop$3,
+  areaStart: noop$4,
+  areaEnd: noop$4,
   lineStart: function() {
     this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
     this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
@@ -14394,8 +16753,8 @@ function LinearClosed(context) {
 }
 
 LinearClosed.prototype = {
-  areaStart: noop$3,
-  areaEnd: noop$3,
+  areaStart: noop$4,
+  areaEnd: noop$4,
   lineStart: function() {
     this._point = 0;
   },
@@ -14663,7 +17022,7 @@ function stackValue(d, key) {
 }
 
 var stack = function() {
-  var keys = constant$8([]),
+  var keys = constant$9([]),
       order = none$2,
       offset = none$1,
       value = stackValue;
@@ -14693,15 +17052,15 @@ var stack = function() {
   }
 
   stack.keys = function(_) {
-    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$8(slice$2.call(_)), stack) : keys;
+    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$9(slice$2.call(_)), stack) : keys;
   };
 
   stack.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$8(+_), stack) : value;
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$9(+_), stack) : value;
   };
 
   stack.order = function(_) {
-    return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$8(slice$2.call(_)), stack) : order;
+    return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$9(slice$2.call(_)), stack) : order;
   };
 
   stack.offset = function(_) {
@@ -15451,480 +17810,6 @@ var largestRect = function(poly, options) {
 };
 
 /**
-    @class Area
-    @extends Shape
-    @desc Creates SVG areas based on an array of data.
-*/
-var Area = (function (Shape$$1) {
-  function Area() {
-    var this$1 = this;
-
-
-    Shape$$1.call(this);
-
-    this._curve = "linear";
-    this._defined = function () { return true; };
-    this._labelBounds = function (d, i, aes) {
-      var r = largestRect(aes.points);
-      if (!r) { return null; }
-      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2 - this$1._x(d, i), y: r.cy - r.height / 2 - this$1._y(d, i)};
-    };
-    this._name = "Area";
-    this.textAnchor("middle");
-    this.verticalAlign("middle");
-    this._x = accessor("x");
-    this._x0 = accessor("x");
-    this._x1 = null;
-    this._y = constant$7(0);
-    this._y0 = constant$7(0);
-    this._y1 = accessor("y");
-
-  }
-
-  if ( Shape$$1 ) Area.__proto__ = Shape$$1;
-  Area.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
-  Area.prototype.constructor = Area;
-
-  /**
-      @memberof Area
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Area.prototype._aes = function _aes (d) {
-    var this$1 = this;
-
-    var values$$1 = d.values.slice().sort(function (a, b) { return this$1._y1 ? this$1._x(a) - this$1._x(b) : this$1._y(a) - this$1._y(b); });
-    var points1 = values$$1.map(function (v, z) { return [this$1._x0(v, z), this$1._y0(v, z)]; });
-    var points2 = values$$1.reverse().map(function (v, z) { return this$1._y1 ? [this$1._x(v, z), this$1._y1(v, z)] : [this$1._x1(v, z), this$1._y(v, z)]; });
-    var points = points1.concat(points2);
-    if (points1[0][1] > points2[0][1]) { points = points.reverse(); }
-    points.push(points[0]);
-    return {points: points};
-  };
-
-  /**
-      @memberof Area
-      @desc Filters/manipulates the data array before binding each point to an SVG group.
-      @param {Array} [*data* = the data array to be filtered]
-      @private
-  */
-  Area.prototype._dataFilter = function _dataFilter (data) {
-    var this$1 = this;
-
-
-    var areas = nest().key(this._id).entries(data).map(function (d) {
-
-      d.data = objectMerge(d.values);
-      d.i = data.indexOf(d.values[0]);
-
-      var x = extent(d.values.map(this$1._x)
-        .concat(d.values.map(this$1._x0))
-        .concat(this$1._x1 ? d.values.map(this$1._x1) : [])
-      );
-      d.xR = x;
-      d.width = x[1] - x[0];
-      d.x = x[0] + d.width / 2;
-
-      var y = extent(d.values.map(this$1._y)
-        .concat(d.values.map(this$1._y0))
-        .concat(this$1._y1 ? d.values.map(this$1._y1) : [])
-      );
-      d.yR = y;
-      d.height = y[1] - y[0];
-      d.y = y[0] + d.height / 2;
-
-      d.nested = true;
-      d.translate = [d.x, d.y];
-      d.__d3plusShape__ = true;
-
-      return d;
-    });
-
-    areas.key = function (d) { return d.key; };
-    return areas;
-
-  };
-
-  /**
-      @memberof Area
-      @desc Draws the area polygons.
-      @param {Function} [*callback*]
-      @chainable
-  */
-  Area.prototype.render = function render (callback) {
-
-    Shape$$1.prototype.render.call(this, callback);
-
-    var path = this._path = area$1()
-      .defined(this._defined)
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .x(this._x).x0(this._x0).x1(this._x1)
-      .y(this._y).y0(this._y0).y1(this._y1);
-
-    var exitPath = area$1()
-      .defined(function (d) { return d; })
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .x(this._x).x0(this._x0).x1(this._x1)
-      .y(this._y).y0(this._y0).y1(this._y1);
-
-    this._enter.append("path")
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attr("d", function (d) { return path(d.values); })
-      .call(this._applyStyle.bind(this));
-
-    this._update.select("path").transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attrTween("d", function(d) {
-        return interpolatePath(select(this).attr("d"), path(d.values));
-      })
-      .call(this._applyStyle.bind(this));
-
-    this._exit.select("path").transition(this._transition)
-      .attrTween("d", function(d) {
-        return interpolatePath(select(this).attr("d"), exitPath(d.values));
-      });
-
-    return this;
-
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
-      @param {String} [*value* = "linear"]
-      @chainable
-  */
-  Area.prototype.curve = function curve (_) {
-    return arguments.length
-         ? (this._curve = _, this)
-         : this._curve;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
-      @param {Function} [*value*]
-      @chainable
-  */
-  Area.prototype.defined = function defined (_) {
-    return arguments.length
-         ? (this._defined = _, this)
-         : this._defined;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-      @param {Function|Number} [*value*]
-      @chainable
-  */
-  Area.prototype.x = function x (_) {
-    if (!arguments.length) { return this._x; }
-    this._x = typeof _ === "function" ? _ : constant$7(_);
-    this._x0 = this._x;
-    return this;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
-      @param {Function|Number} [*value*]
-      @chainable
-  */
-  Area.prototype.x0 = function x0 (_) {
-    if (!arguments.length) { return this._x0; }
-    this._x0 = typeof _ === "function" ? _ : constant$7(_);
-    this._x = this._x0;
-    return this;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
-      @param {Function|Number|null} [*value*]
-      @chainable
-  */
-  Area.prototype.x1 = function x1 (_) {
-    return arguments.length
-         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
-         : this._x1;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-      @param {Function|Number} [*value*]
-      @chainable
-  */
-  Area.prototype.y = function y (_) {
-    if (!arguments.length) { return this._y; }
-    this._y = typeof _ === "function" ? _ : constant$7(_);
-    this._y0 = this._y;
-    return this;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
-      @param {Function|Number} [*value*]
-      @chainable
-  */
-  Area.prototype.y0 = function y0 (_) {
-    if (!arguments.length) { return this._y0; }
-    this._y0 = typeof _ === "function" ? _ : constant$7(_);
-    this._y = this._y0;
-    return this;
-  };
-
-  /**
-      @memberof Area
-      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
-      @param {Function|Number|null} [*value*]
-      @chainable
-  */
-  Area.prototype.y1 = function y1 (_) {
-    return arguments.length
-         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
-         : this._y1;
-  };
-
-  return Area;
-}(Shape));
-
-/**
-    @class Bar
-    @extends Shape
-    @desc Creates SVG areas based on an array of data.
-*/
-var Bar = (function (Shape$$1) {
-  function Bar() {
-    var this$1 = this;
-
-
-    Shape$$1.call(this, "rect");
-
-    this._name = "Bar";
-    this._height = constant$7(10);
-    this._labelBounds = function (d, i, s) { return ({
-      width: s.width,
-      height: s.height,
-      x: this$1._x1 !== null ? this$1._getX(d, i) : -s.width / 2,
-      y: this$1._x1 === null ? this$1._getY(d, i) : -s.height / 2
-    }); };
-    this._width = constant$7(10);
-    this._x = accessor("x");
-    this._x0 = accessor("x");
-    this._x1 = null;
-    this._y = constant$7(0);
-    this._y0 = constant$7(0);
-    this._y1 = accessor("y");
-
-  }
-
-  if ( Shape$$1 ) Bar.__proto__ = Shape$$1;
-  Bar.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
-  Bar.prototype.constructor = Bar;
-
-  /**
-      @memberof Bar
-      @desc Draws the bars.
-      @param {Function} [*callback*]
-      @chainable
-  */
-  Bar.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    Shape$$1.prototype.render.call(this, callback);
-
-    this._enter
-        .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
-        .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
-        .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
-        .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; })
-        .call(this._applyStyle.bind(this))
-      .transition(this._transition)
-        .call(this._applyPosition.bind(this));
-
-    this._update.transition(this._transition)
-      .call(this._applyStyle.bind(this))
-      .call(this._applyPosition.bind(this));
-
-    this._exit.transition(this._transition)
-      .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
-      .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
-      .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
-      .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; });
-
-    return this;
-
-  };
-
-  /**
-      @memberof Bar
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Bar.prototype._aes = function _aes (d, i) {
-    return {height: this._getHeight(d, i), width: this._getWidth(d, i)};
-  };
-
-  /**
-      @memberof Bar
-      @desc Provides the default positioning to the <rect> elements.
-      @param {D3Selection} *elem*
-      @private
-  */
-  Bar.prototype._applyPosition = function _applyPosition (elem$$1) {
-    var this$1 = this;
-
-    elem$$1
-      .attr("width", function (d, i) { return this$1._getWidth(d, i); })
-      .attr("height", function (d, i) { return this$1._getHeight(d, i); })
-      .attr("x", function (d, i) { return this$1._x1 !== null ? this$1._getX(d, i) : -this$1._getWidth(d, i) / 2; })
-      .attr("y", function (d, i) { return this$1._x1 === null ? this$1._getY(d, i) : -this$1._getHeight(d, i) / 2; });
-  };
-
-  /**
-      @memberof Bar
-      @desc Calculates the height of the <rect> by assessing the x and y properties.
-      @param {Object} *d*
-      @param {Number} *i*
-      @private
-  */
-  Bar.prototype._getHeight = function _getHeight (d, i) {
-    if (this._x1 !== null) { return this._height(d, i); }
-    return Math.abs(this._y1(d, i) - this._y(d, i));
-  };
-
-  /**
-      @memberof Bar
-      @desc Calculates the width of the <rect> by assessing the x and y properties.
-      @param {Object} *d*
-      @param {Number} *i*
-      @private
-  */
-  Bar.prototype._getWidth = function _getWidth (d, i) {
-    if (this._x1 === null) { return this._width(d, i); }
-    return Math.abs(this._x1(d, i) - this._x(d, i));
-  };
-
-  /**
-      @memberof Bar
-      @desc Calculates the x of the <rect> by assessing the x and width properties.
-      @param {Object} *d*
-      @param {Number} *i*
-      @private
-  */
-  Bar.prototype._getX = function _getX (d, i) {
-    var w = this._x1 === null ? this._x(d, i) : this._x1(d, i) - this._x(d, i);
-    if (w < 0) { return w; }
-    else { return 0; }
-  };
-
-  /**
-      @memberof Bar
-      @desc Calculates the y of the <rect> by assessing the y and height properties.
-      @param {Object} *d*
-      @param {Number} *i*
-      @private
-  */
-  Bar.prototype._getY = function _getY (d, i) {
-    var h = this._x1 !== null ? this._y(d, i) : this._y1(d, i) - this._y(d, i);
-    if (h < 0) { return h; }
-    else { return 0; }
-  };
-
-  /**
-      @memberof Bar
-      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
-      @param {Function|Number} [*value*]
-      @chainable
-      @example
-function(d) {
-  return d.height;
-}
-  */
-  Bar.prototype.height = function height (_) {
-    return arguments.length
-         ? (this._height = typeof _ === "function" ? _ : constant$7(_), this)
-         : this._height;
-  };
-
-  /**
-      @memberof Bar
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
-      @param {Function|Number} [*value*]
-      @chainable
-      @example
-function(d) {
-  return d.width;
-}
-  */
-  Bar.prototype.width = function width (_) {
-    return arguments.length
-         ? (this._width = typeof _ === "function" ? _ : constant$7(_), this)
-         : this._width;
-  };
-
-  /**
-      @memberof Bar
-      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
-      @param {Function|Number} [*value*]
-      @chainable
-  */
-  Bar.prototype.x0 = function x0 (_) {
-    if (!arguments.length) { return this._x0; }
-    this._x0 = typeof _ === "function" ? _ : constant$7(_);
-    this._x = this._x0;
-    return this;
-  };
-
-  /**
-      @memberof Bar
-      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
-      @param {Function|Number|null} [*value*]
-      @chainable
-  */
-  Bar.prototype.x1 = function x1 (_) {
-    return arguments.length
-         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
-         : this._x1;
-  };
-
-  /**
-      @memberof Bar
-      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
-      @param {Function|Number} [*value*]
-      @chainable
-  */
-  Bar.prototype.y0 = function y0 (_) {
-    if (!arguments.length) { return this._y0; }
-    this._y0 = typeof _ === "function" ? _ : constant$7(_);
-    this._y = this._y0;
-    return this;
-  };
-
-  /**
-      @memberof Bar
-      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
-      @param {Function|Number|null} [*value*]
-      @chainable
-  */
-  Bar.prototype.y1 = function y1 (_) {
-    return arguments.length
-         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
-         : this._y1;
-  };
-
-  return Bar;
-}(Shape));
-
-/**
     @class Circle
     @extends Shape
     @desc Creates SVG circles based on an array of data.
@@ -15933,7 +17818,7 @@ var Circle = (function (Shape$$1) {
   function Circle() {
     Shape$$1.call(this, "circle");
     this._name = "Circle";
-    this._r = accessor("r");
+    this._r = accessor$1("r");
   }
 
   if ( Shape$$1 ) Circle.__proto__ = Shape$$1;
@@ -16003,143 +17888,10 @@ function(d) {
 }
   */
   Circle.prototype.r = function r (_) {
-    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$7(_), this) : this._r;
+    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$8(_), this) : this._r;
   };
 
   return Circle;
-}(Shape));
-
-/**
-    @class Line
-    @extends Shape
-    @desc Creates SVG lines based on an array of data.
-*/
-var Line = (function (Shape$$1) {
-  function Line() {
-
-    Shape$$1.call(this);
-
-    this._curve = "linear";
-    this._defined = function (d) { return d; };
-    this._fill = constant$7("none");
-    this._name = "Line";
-    this._path = line();
-    this._stroke = constant$7("black");
-    this._strokeWidth = constant$7(1);
-
-  }
-
-  if ( Shape$$1 ) Line.__proto__ = Shape$$1;
-  Line.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
-  Line.prototype.constructor = Line;
-
-  /**
-      @memberof Line
-      @desc Filters/manipulates the data array before binding each point to an SVG group.
-      @param {Array} [*data* = the data array to be filtered]
-      @private
-  */
-  Line.prototype._dataFilter = function _dataFilter (data) {
-    var this$1 = this;
-
-
-    var lines = nest().key(this._id).entries(data).map(function (d) {
-
-      d.data = objectMerge(d.values);
-      d.i = data.indexOf(d.values[0]);
-
-      var x = extent(d.values, this$1._x);
-      d.xR = x;
-      d.width = x[1] - x[0];
-      d.x = x[0] + d.width / 2;
-
-      var y = extent(d.values, this$1._y);
-      d.yR = y;
-      d.height = y[1] - y[0];
-      d.y = y[0] + d.height / 2;
-
-      d.nested = true;
-      d.translate = [d.x, d.y];
-      d.__d3plusShape__ = true;
-
-      return d;
-    });
-
-    lines.key = function (d) { return d.key; };
-    return lines;
-
-  };
-
-  /**
-      @memberof Line
-      @desc Draws the lines.
-      @param {Function} [*callback*]
-      @chainable
-  */
-  Line.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    Shape$$1.prototype.render.call(this, callback);
-
-    var that = this;
-
-    this._path
-      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
-      .defined(this._defined)
-      .x(this._x)
-      .y(this._y);
-
-    this._enter.append("path")
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attr("d", function (d) { return this$1._path(d.values); })
-      .call(this._applyStyle.bind(this));
-
-    this._update.select("path").transition(this._transition)
-      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
-      .attrTween("d", function(d) {
-        return interpolatePath(select(this).attr("d"), that._path(d.values));
-      })
-      .call(this._applyStyle.bind(this));
-
-    return this;
-
-  };
-
-  /**
-      @memberof Line
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Line.prototype._aes = function _aes (d, i) {
-    var this$1 = this;
-
-    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
-  };
-
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
-      @param {String} [*value* = "linear"]
-      @chainable
-  */
-  Line.prototype.curve = function curve (_) {
-    return arguments.length ? (this._curve = _, this) : this._curve;
-  };
-
-  /**
-      @memberof Line
-      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
-      @param {Function} [*value*]
-      @chainable
-  */
-  Line.prototype.defined = function defined (_) {
-    return arguments.length ? (this._defined = _, this) : this._defined;
-  };
-
-  return Line;
 }(Shape));
 
 var pi$5 = Math.PI;
@@ -16259,14 +18011,16 @@ var Path$1 = (function (Shape$$1) {
     var this$1 = this;
 
     Shape$$1.call(this, "path");
-    this._d = accessor("path");
+    this._d = accessor$1("path");
     this._labelBounds = function (d, i, aes) {
-      var r = largestRect(aes.points, {angle: this$1._labelRotate(d, i)});
+      var r = largestRect(aes.points, {angle: this$1._labelConfig.rotate ? this$1._labelConfig.rotate(d, i) : 0});
       return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2};
     };
     this._name = "Path";
-    this.textAnchor("middle");
-    this.verticalAlign("middle");
+    this._labelConfig = Object.assign(this._labelConfig, {
+      textAnchor: "middle",
+      verticalAlign: "middle"
+    });
   }
 
   if ( Shape$$1 ) Path.__proto__ = Shape$$1;
@@ -16325,147 +18079,12 @@ function(d) {
   */
   Path.prototype.d = function d (_) {
     return arguments.length
-         ? (this._d = typeof _ === "function" ? _ : constant$7(_), this)
+         ? (this._d = typeof _ === "function" ? _ : constant$8(_), this)
          : this._d;
   };
 
   return Path;
 }(Shape));
-
-/**
-    @class Rect
-    @extends Shape
-    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
-*/
-var Rect = (function (Shape$$1) {
-  function Rect() {
-    Shape$$1.call(this, "rect");
-    this._height = accessor("height");
-    this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
-    this._name = "Rect";
-    this._width = accessor("width");
-  }
-
-  if ( Shape$$1 ) Rect.__proto__ = Shape$$1;
-  Rect.prototype = Object.create( Shape$$1 && Shape$$1.prototype );
-  Rect.prototype.constructor = Rect;
-
-  /**
-      @memberof Rect
-      @desc Draws the rectangles.
-      @param {Function} [*callback*]
-      @chainable
-  */
-  Rect.prototype.render = function render (callback) {
-
-    Shape$$1.prototype.render.call(this, callback);
-
-    this._enter
-        .attr("width", 0).attr("height", 0)
-        .attr("x", 0).attr("y", 0)
-        .call(this._applyStyle.bind(this))
-      .transition(this._transition)
-        .call(this._applyPosition.bind(this));
-
-    this._update.transition(this._transition)
-      .call(this._applyStyle.bind(this))
-      .call(this._applyPosition.bind(this));
-
-    this._exit.transition(this._transition)
-      .attr("width", 0).attr("height", 0)
-      .attr("x", 0).attr("y", 0);
-
-    return this;
-
-  };
-
-  /**
-      @memberof Rect
-      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
-      @param {Object} *data point*
-      @param {Number} *index*
-      @private
-  */
-  Rect.prototype._aes = function _aes (d, i) {
-    return {width: this._width(d, i), height: this._height(d, i)};
-  };
-
-  /**
-      @memberof Rect
-      @desc Provides the default positioning to the <rect> elements.
-      @param {D3Selection} *elem*
-      @private
-  */
-  Rect.prototype._applyPosition = function _applyPosition (elem$$1) {
-    var this$1 = this;
-
-    elem$$1
-      .attr("width", function (d, i) { return this$1._width(d, i); })
-      .attr("height", function (d, i) { return this$1._height(d, i); })
-      .attr("x", function (d, i) { return -this$1._width(d, i) / 2; })
-      .attr("y", function (d, i) { return -this$1._height(d, i) / 2; });
-  };
-
-  /**
-      @memberof Rect
-      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
-      @param {Function|Number} [*value*]
-      @chainable
-      @example
-function(d) {
-  return d.height;
-}
-  */
-  Rect.prototype.height = function height (_) {
-    return arguments.length
-         ? (this._height = typeof _ === "function" ? _ : constant$7(_), this)
-         : this._height;
-  };
-
-  /**
-      @memberof Rect
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
-      @param {Function|Number} [*value*]
-      @chainable
-      @example
-function(d) {
-  return d.width;
-}
-  */
-  Rect.prototype.width = function width (_) {
-    return arguments.length
-         ? (this._width = typeof _ === "function" ? _ : constant$7(_), this)
-         : this._width;
-  };
-
-  return Rect;
-}(Shape));
-
-
-
-var shapes = Object.freeze({
-	Image: Image,
-	Shape: Shape,
-	Area: Area,
-	Bar: Bar,
-	Circle: Circle,
-	Line: Line,
-	Path: Path$1,
-	Rect: Rect,
-	largestRect: largestRect,
-	lineIntersection: lineIntersection,
-	path2polygon: path2polygon,
-	pointDistance: pointDistance,
-	pointDistanceSquared: pointDistanceSquared,
-	pointRotate: pointRotate,
-	polygonInside: polygonInside,
-	polygonRayCast: polygonRayCast,
-	polygonRotate: polygonRotate,
-	segmentBoxContains: segmentBoxContains,
-	segmentsIntersect: segmentsIntersect,
-	shapeEdgePoint: shapeEdgePoint,
-	simplify: simplify
-});
 
 /**
   @function dataFold
@@ -16865,6 +18484,7 @@ var load = function(path, formatter, key, callback) {
       data = err ? [] : formatter ? formatter(data) : data;
       if (data && !(data instanceof Array) && data.data && data.headers) { data = fold(data); }
       if (key && ("_" + key) in this$1) { this$1[("_" + key)] = data; }
+      if (this$1._cache) { this$1._lrucache.set(path, data); }
       if (callback) { callback(err, data); }
 
     });
@@ -16990,6 +18610,2894 @@ function maybeNotify(q) {
 function queue(concurrency) {
   return new Queue(arguments.length ? +concurrency : Infinity);
 }
+
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+
+
+
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var index$1 = createCommonjsModule(function (module) {
+// **Github:** https://github.com/zensh/lrucache
+//
+// **License:** MIT
+
+/* global module, define */
+(function (root, factory) {
+  'use strict';
+
+  {
+    module.exports = factory();
+  }
+}(typeof window === 'object' ? window : commonjsGlobal, function () {
+  'use strict';
+
+  var undef = void 0;
+
+  function LRUCache (capacity) {
+    if (!(this instanceof LRUCache)) { return new LRUCache(capacity) }
+    this._LRUCacheState = new CacheState(capacity);
+  }
+
+  var proto = LRUCache.prototype;
+
+  proto.get = function (key) {
+    var state = this._LRUCacheState;
+    var lruEntry = state.hash[key];
+    if (!lruEntry) { return }
+    refresh(state.linkedList, lruEntry);
+    return state.data[key]
+  };
+
+  proto.set = function (key, value) {
+    var state = this._LRUCacheState;
+    var lruEntry = state.hash[key];
+    if (value === undef) { return this }
+    if (!lruEntry) {
+      state.hash[key] = new LRUEntry(key);
+      state.linkedList.length += 1;
+      lruEntry = state.hash[key];
+    }
+    refresh(state.linkedList, lruEntry);
+    state.data[key] = value;
+    if (state.linkedList.length > state.capacity) { this.remove(state.linkedList.end.key); }
+    return this
+  };
+
+  proto.update = function (key, parseFn) {
+    if (this.has(key)) { this.set(key, parseFn(this.get(key))); }
+    return this
+  };
+
+  proto.remove = function (key) {
+    var state = this._LRUCacheState;
+    var lruEntry = state.hash[key];
+    if (!lruEntry) { return this }
+    if (lruEntry === state.linkedList.head) { state.linkedList.head = lruEntry.p; }
+    if (lruEntry === state.linkedList.end) { state.linkedList.end = lruEntry.n; }
+
+    link(lruEntry.n, lruEntry.p);
+    delete state.hash[key];
+    delete state.data[key];
+    state.linkedList.length -= 1;
+    return this
+  };
+
+  proto.removeAll = function () {
+    this._LRUCacheState = new CacheState(this._LRUCacheState.capacity);
+    return this
+  };
+
+  proto.info = function () {
+    var state = this._LRUCacheState;
+    return {
+      capacity: state.capacity,
+      length: state.linkedList.length
+    }
+  };
+
+  proto.keys = function () {
+    var keys = [];
+    var lruEntry = this._LRUCacheState.linkedList.head;
+    while (lruEntry) {
+      keys.push(lruEntry.key);
+      lruEntry = lruEntry.p;
+    }
+    return keys
+  };
+
+  proto.has = function (key) {
+    return !!this._LRUCacheState.hash[key]
+  };
+
+  proto.staleKey = function () {
+    return this._LRUCacheState.linkedList.end && this._LRUCacheState.linkedList.end.key
+  };
+
+  proto.popStale = function () {
+    var staleKey = this.staleKey();
+    if (!staleKey) { return null }
+    var stale = [staleKey, this._LRUCacheState.data[staleKey]];
+    this.remove(staleKey);
+    return stale
+  };
+
+  function CacheState (capacity) {
+    this.capacity = capacity > 0 ? +capacity : Number.MAX_VALUE;
+    this.data = Object.create ? Object.create(null) : {};
+    this.hash = Object.create ? Object.create(null) : {};
+    this.linkedList = new LinkedList();
+  }
+
+  function LinkedList () {
+    this.length = 0;
+    this.head = null;
+    this.end = null;
+  }
+
+  function LRUEntry (key) {
+    this.key = key;
+    this.p = null;
+    this.n = null;
+  }
+
+  // 更新链表，把get或put方法操作的key提到链表head，即表示最新
+  function refresh (linkedList, entry) {
+    if (entry === linkedList.head) { return }
+    if (!linkedList.end) {
+      linkedList.end = entry;
+    } else if (linkedList.end === entry) {
+      linkedList.end = entry.n;
+    }
+
+    link(entry.n, entry.p);
+    link(entry, linkedList.head);
+    linkedList.head = entry;
+    linkedList.head.n = null;
+  }
+
+  // 对两个链表对象建立链接，形成一条链
+  function link (nextEntry, prevEntry) {
+    if (nextEntry === prevEntry) { return }
+    if (nextEntry) { nextEntry.p = prevEntry; }
+    if (prevEntry) { prevEntry.n = nextEntry; }
+  }
+
+  return LRUCache
+}));
+});
+
+/**
+    @class Image
+    @desc Creates SVG images based on an array of data.
+    @example <caption>a sample row of data</caption>
+var data = {"url": "file.png", "width": "100", "height": "50"};
+@example <caption>passed to the generator</caption>
+new Image().data([data]).render();
+@example <caption>creates the following</caption>
+<image class="d3plus-Image" opacity="1" href="file.png" width="100" height="50" x="0" y="0"></image>
+@example <caption>this is shorthand for the following</caption>
+image().data([data])();
+@example <caption>which also allows a post-draw callback function</caption>
+image().data([data])(function() { alert("draw complete!"); })
+*/
+var Image$3 = function Image() {
+  this._duration = 600;
+  this._height = accessor("height");
+  this._id = accessor("id");
+  this._pointerEvents = constant$7("auto");
+  this._select;
+  this._url = accessor("url");
+  this._width = accessor("width");
+  this._x = accessor("x", 0);
+  this._y = accessor("y", 0);
+};
+
+/**
+    @memberof Image
+    @desc Renders the current Image to the page. If a *callback* is specified, it will be called once the images are done drawing.
+    @param {Function} [*callback*]
+    @chainable
+*/
+Image$3.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+  if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node()); }
+
+  var images = this._select.selectAll(".d3plus-Image").data(this._data, this._id);
+
+  var enter = images.enter().append("image")
+    .attr("class", "d3plus-Image")
+    .attr("opacity", 0)
+    .attr("width", 0)
+    .attr("height", 0)
+    .attr("x", function (d, i) { return this$1._x(d, i) + this$1._width(d, i) / 2; })
+    .attr("y", function (d, i) { return this$1._y(d, i) + this$1._height(d, i) / 2; });
+
+  var t = transition().duration(this._duration),
+        that = this,
+        update = enter.merge(images);
+
+  update
+      .attr("xlink:href", this._url)
+      .style("pointer-events", this._pointerEvents)
+    .transition(t)
+      .attr("opacity", 1)
+      .attr("width", function (d, i) { return this$1._width(d, i); })
+      .attr("height", function (d, i) { return this$1._height(d, i); })
+      .attr("x", function (d, i) { return this$1._x(d, i); })
+      .attr("y", function (d, i) { return this$1._y(d, i); })
+      .each(function(d, i) {
+        var image = select(this), link = that._url(d, i);
+        var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
+        if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
+          var img = new Image$3();
+          img.src = link;
+          img.crossOrigin = "Anonymous";
+          img.onload = function() {
+            var canvas = document.createElement("canvas");
+            canvas.width = this.width;
+            canvas.height = this.height;
+            var context = canvas.getContext("2d");
+            context.drawImage(this, 0, 0);
+            image.attr("xlink:href", canvas.toDataURL("image/png"));
+          };
+        }
+      });
+
+  images.exit().transition(t)
+    .attr("width", function (d, i) { return this$1._width(d, i); })
+    .attr("height", function (d, i) { return this$1._height(d, i); })
+    .attr("x", function (d, i) { return this$1._x(d, i); })
+    .attr("y", function (d, i) { return this$1._y(d, i); })
+    .attr("opacity", 0).remove();
+
+  if (callback) { setTimeout(callback, this._duration + 100); }
+
+  return this;
+
+};
+
+/**
+    @memberof Image
+    @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. An <image> tag will be drawn for each object in the array.
+    @param {Array} [*data* = []]
+    @chainable
+*/
+Image$3.prototype.data = function data (_) {
+  return arguments.length ? (this._data = _, this) : this._data;
+};
+
+/**
+    @memberof Image
+    @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
+    @param {Number} [*ms* = 600]
+    @chainable
+*/
+Image$3.prototype.duration = function duration (_) {
+  return arguments.length ? (this._duration = _, this) : this._duration;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+    @param {Function|Number} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.height;
+}
+*/
+Image$3.prototype.height = function height (_) {
+  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$7(_), this) : this._height;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor. This is useful if you want to duplicate the same image.
+    @param {Function} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.id;
+}
+*/
+Image$3.prototype.id = function id (_) {
+  return arguments.length ? (this._id = _, this) : this._id;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current pointer-events accessor.
+    @param {Function|String} [*value* = "auto"]
+    @chainable
+*/
+Image$3.prototype.pointerEvents = function pointerEvents (_) {
+  return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$7(_), this) : this._pointerEvents;
+};
+
+/**
+    @memberof Image
+    @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+    @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+    @chainable
+*/
+Image$3.prototype.select = function select$1 (_) {
+  return arguments.length ? (this._select = select(_), this) : this._select;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the URL accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current URL accessor.
+    @param {Function} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.url;
+}
+*/
+Image$3.prototype.url = function url (_) {
+  return arguments.length ? (this._url = _, this) : this._url;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+    @param {Function|Number} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.width;
+}
+*/
+Image$3.prototype.width = function width (_) {
+  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$7(_), this) : this._width;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+    @param {Function|Number} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.x || 0;
+}
+*/
+Image$3.prototype.x = function x (_) {
+  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$7(_), this) : this._x;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+    @param {Function|Number} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.y || 0;
+}
+*/
+Image$3.prototype.y = function y (_) {
+  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$7(_), this) : this._y;
+};
+
+/**
+    @function pointDistanceSquared
+    @desc Returns the squared euclidean distance between two points.
+    @param {Array} p1 The first point, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The second point, which should always be an `[x, y]` formatted Array.
+    @returns {Number}
+*/
+var pointDistanceSquared$1 = function (p1, p2) {
+
+  var dx = p2[0] - p1[0],
+        dy = p2[1] - p1[1];
+
+  return dx * dx + dy * dy;
+
+};
+
+/**
+    @function pointDistance
+    @desc Calculates the pixel distance between two points.
+    @param {Array} p1 The first point, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The second point, which should always be an `[x, y]` formatted Array.
+    @returns {Number}
+*/
+var pointDistance$1 = function (p1, p2) { return Math.sqrt(pointDistanceSquared$1(p1, p2)); };
+
+/**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
+
+/**
+    @class Shape
+    @extends external:BaseClass
+    @desc An abstracted class for generating shapes.
+*/
+var Shape$2 = (function (BaseClass$$1) {
+  function Shape(tagName) {
+    var this$1 = this;
+    if ( tagName === void 0 ) tagName = "g";
+
+
+    BaseClass$$1.call(this);
+
+    this._activeOpacity = 0.75;
+    this._activeStyle = {
+      "stroke": function (d, i) { return color(this$1._stroke(d, i)).darker(2); },
+      "stroke-width": function (d, i) {
+        var s = this$1._strokeWidth(d, i);
+        return s ? s * 2 : 1;
+      }
+    };
+    this._backgroundImage = constant$7(false);
+    this._data = [];
+    this._duration = 600;
+    this._fill = constant$7("black");
+
+    this._fontColor = function (d, i) { return colorContrast(this$1._fill(d, i)); };
+    this._fontFamily = constant$7("Verdana");
+    this._fontResize = constant$7(false);
+    this._fontSize = constant$7(12);
+    this._fontWeight = constant$7(400);
+
+    this._hoverOpacity = 0.5;
+    this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
+    this._label = constant$7(false);
+    this._labelRotate = constant$7(0);
+    this._labelPadding = constant$7(5);
+    this._name = "Shape";
+    this._opacity = constant$7(1);
+    this._scale = constant$7(1);
+    this._shapeRendering = constant$7("geometricPrecision");
+    this._stroke = function (d, i) { return color(this$1._fill(d, i)).darker(1); };
+    this._strokeWidth = constant$7(0);
+    this._tagName = tagName;
+    this._textAnchor = constant$7("start");
+    this._vectorEffect = constant$7("non-scaling-stroke");
+    this._verticalAlign = constant$7("top");
+
+    this._x = accessor("x", 0);
+    this._y = accessor("y", 0);
+
+  }
+
+  if ( BaseClass$$1 ) Shape.__proto__ = BaseClass$$1;
+  Shape.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  Shape.prototype.constructor = Shape;
+
+  /**
+      @memberof Shape
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Shape.prototype._aes = function _aes () {
+    return {};
+  };
+
+  /**
+      @memberof Shape
+      @desc Adds event listeners to each shape group or hit area.
+      @param {D3Selection} *update* The update cycle of the data binding.
+      @private
+  */
+  Shape.prototype._applyEvents = function _applyEvents (handler) {
+    var this$1 = this;
+
+
+    var events = Object.keys(this._on);
+    var loop = function ( e ) {
+      handler.on(events[e], function (d, i) {
+        if (!this$1._on[events[e]]) { return; }
+        if (d.i !== void 0) { i = d.i; }
+        if (d.nested && d.values) {
+          var cursor = mouse(this$1._select.node()),
+                values = d.values.map(function (d) { return pointDistance$1(cursor, [this$1._x(d, i), this$1._y(d, i)]); });
+          d = d.values[values.indexOf(min(values))];
+        }
+        this$1._on[events[e]].bind(this$1)(d, i);
+      });
+    };
+
+    for (var e = 0; e < events.length; e++) loop( e );
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Provides the default styling to the active shape elements.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._applyActive = function _applyActive (elem$$1) {
+    var this$1 = this;
+
+
+    var that = this;
+
+    if (elem$$1.size() && elem$$1.node().tagName === "g") { elem$$1 = elem$$1.selectAll("*"); }
+
+    /**
+        @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
+        @param {Object} *d* data point
+        @param {Number} *i* index
+        @private
+    */
+    function styleLogic(d, i) {
+      return typeof this !== "function" ? this
+           : d.nested && d.key && d.values
+           ? this(d.values[0], that._data.indexOf(d.values[0]))
+           : this(d, i);
+    }
+
+    var activeStyle = {};
+    for (var key in this$1._activeStyle) {
+      if ({}.hasOwnProperty.call(this$1._activeStyle, key)) {
+        activeStyle[key] = styleLogic.bind(this$1._activeStyle[key]);
+      }
+    }
+
+    elem$$1.transition().duration(0).call(attrize, activeStyle);
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Provides the default styling to the shape elements.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._applyStyle = function _applyStyle (elem$$1) {
+
+    var that = this;
+
+    if (elem$$1.size() && elem$$1.node().tagName === "g") { elem$$1 = elem$$1.selectAll("*"); }
+
+    /**
+        @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
+        @param {Object} *d* data point
+        @param {Number} *i* index
+        @private
+    */
+    function styleLogic(d, i) {
+      return typeof this !== "function" ? this
+           : d.nested && d.key && d.values
+           ? this(d.values[0], that._data.indexOf(d.values[0]))
+           : this(d, i);
+    }
+
+    elem$$1
+      .attr("fill", styleLogic.bind(this._fill))
+      .attr("stroke", styleLogic.bind(this._stroke))
+      .attr("stroke-width", styleLogic.bind(this._strokeWidth))
+      .attr("vector-effect", styleLogic.bind(this._vectorEffect));
+  };
+
+  /**
+      @memberof Shape
+      @desc Calculates the transform for the group elements.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._applyTransform = function _applyTransform (elem$$1) {
+    var this$1 = this;
+
+
+    elem$$1
+      .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plusShape__
+                  ? d.translate ? d.translate
+                  : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
+                  : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plusShape__ ? d.scale || this$1._scale(d.data, d.i)
+              : this$1._scale(d, i)) + ")"); });
+  };
+
+  /**
+      @memberof Shape
+      @desc Checks for nested data and uses the appropriate variables for accessor functions.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._nestWrapper = function _nestWrapper (method) {
+    return function (d, i) { return method(d.__d3plusShape__ ? d.data : d, d.__d3plusShape__ ? d.i : i); };
+  };
+
+  /**
+      @memberof Shape
+      @desc Adds background image to each shape group.
+      @private
+  */
+  Shape.prototype._renderImage = function _renderImage () {
+    var this$1 = this;
+
+
+    var imageData = [];
+
+    this._update.merge(this._enter).data()
+      .forEach(function (datum, i) {
+
+        var aes = this$1._aes(datum, i);
+
+        if (aes.r || aes.width && aes.height) {
+
+          var d = datum;
+          if (datum.nested && datum.key && datum.values) {
+            d = datum.values[0];
+            i = this$1._data.indexOf(d);
+          }
+
+          var height = aes.r ? aes.r * 2 : aes.height,
+                url = this$1._backgroundImage(d, i),
+                width = aes.r ? aes.r * 2 : aes.width;
+
+          if (url) {
+
+            var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
+                  : this$1._x(d.data, d.i) : this$1._x(d, i),
+                y = d.__d3plusShape__ ? d.translate ? d.translate[1]
+                  : this$1._y(d.data, d.i) : this$1._y(d, i);
+
+            if (aes.x) { x += aes.x; }
+            if (aes.y) { y += aes.y; }
+
+            if (d.__d3plusShape__) {
+              d = d.data;
+              i = d.i;
+            }
+
+            imageData.push({
+              __d3plus__: true,
+              data: d,
+              height: height,
+              i: i,
+              id: this$1._id(d, i),
+              url: url,
+              width: width,
+              x: x + -width / 2,
+              y: y + -height / 2
+            });
+
+          }
+
+        }
+
+      });
+
+    return new Image$3()
+      .data(imageData)
+      .duration(this._duration)
+      .pointerEvents("none")
+      .select(elem(("g.d3plus-" + (this._name) + "-image"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
+      .render();
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Adds labels to each shape group.
+      @private
+  */
+  Shape.prototype._renderLabels = function _renderLabels () {
+    var this$1 = this;
+
+
+    var labelData = [];
+
+    this._update.merge(this._enter).data()
+      .forEach(function (datum, i) {
+
+        var d = datum;
+        if (datum.nested && datum.key && datum.values) {
+          d = datum.values[0];
+          i = this$1._data.indexOf(d);
+        }
+
+        var labels = this$1._label(d, i);
+
+        if (this$1._labelBounds && labels !== false && labels !== void 0) {
+
+          var aes = this$1._aes(datum, i),
+                bounds = this$1._labelBounds(d, i, aes);
+
+          if (bounds) {
+
+            if (labels.constructor !== Array) { labels = [labels]; }
+
+            var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
+                    : this$1._x(d.data, d.i) : this$1._x(d, i),
+                  y = d.__d3plusShape__ ? d.translate ? d.translate[1]
+                    : this$1._y(d.data, d.i) : this$1._y(d, i);
+
+            if (d.__d3plusShape__) {
+              d = d.data;
+              i = d.i;
+            }
+
+            var fC = this$1._fontColor(d, i),
+                  fF = this$1._fontFamily(d, i),
+                  fR = this$1._fontResize(d, i),
+                  fS = this$1._fontSize(d, i),
+                  fW = this$1._fontWeight(d, i),
+                  lH = this$1._lineHeight(d, i),
+                  padding = this$1._labelPadding(d, i),
+                  r = this$1._labelRotate(d, i),
+                  tA = this$1._textAnchor(d, i),
+                  vA = this$1._verticalAlign(d, i);
+
+            for (var l = 0; l < labels.length; l++) {
+
+              var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
+                    p = padding.constructor === Array ? padding[l] : padding;
+
+              labelData.push(Object.assign(b, {
+                __d3plusShape__: true,
+                data: d,
+                fC: fC.constructor === Array ? fC[l] : fC,
+                fF: fF.constructor === Array ? fF[l] : fF,
+                fR: fR.constructor === Array ? fR[l] : fR,
+                fS: fS.constructor === Array ? fS[l] : fS,
+                fW: fW.constructor === Array ? fW[l] : fW,
+                height: b.height - p * 2,
+                i: i,
+                id: ((this$1._id(d, i)) + "_" + l),
+                lH: lH.constructor === Array ? lH[l] : lH,
+                r: bounds.angle !== void 0 ? bounds.angle : r.constructor === Array ? r[l] : r,
+                tA: tA.constructor === Array ? tA[l] : tA,
+                text: labels[l],
+                vA: vA.constructor === Array ? vA[l] : vA,
+                width: b.width - p * 2,
+                x: x + b.x + p,
+                y: y + b.y + p
+              }));
+
+            }
+
+          }
+
+        }
+
+      });
+
+    return new TextBox()
+      .data(labelData)
+      .duration(this._duration)
+      .fontColor(function (d) { return d.fC; })
+      .fontFamily(function (d) { return d.fF; })
+      .fontResize(function (d) { return d.fR; })
+      .fontSize(function (d) { return d.fS; })
+      .fontWeight(function (d) { return d.fW; })
+      .lineHeight(function (d) { return d.lH; })
+      .pointerEvents("none")
+      .rotate(function (d) { return d.data.r; })
+      .textAnchor(function (d) { return d.tA; })
+      .verticalAlign(function (d) { return d.vA; })
+      .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
+      .render();
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Renders the current Shape to the page. If a *callback* is specified, it will be called once the shapes are done drawing.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Shape.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    if (this._select === void 0) {
+      this.select(select("body").append("svg")
+        .style("width", ((window.innerWidth) + "px"))
+        .style("height", ((window.innerHeight) + "px"))
+        .style("display", "block").node());
+    }
+
+    if (this._lineHeight === void 0) {
+      this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
+    }
+
+    this._transition = transition().duration(this._duration);
+
+    var data = this._data, key = this._id;
+    if (this._dataFilter) {
+      data = this._dataFilter(data);
+      if (data.key) { key = data.key; }
+    }
+
+    if (this._sort) { data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ ? a.data : a, b.__d3plusShape__ ? b.data : b); }); }
+
+    selectAll(("g.d3plus-" + (this._name) + "-hover > *, g.d3plus-" + (this._name) + "-active > *")).each(function(d) {
+      if (d && d.parentNode) { d.parentNode.appendChild(this); }
+      else { this.parentNode.removeChild(this); }
+    });
+
+    // Makes the update state of the group selection accessible.
+    this._group = elem(("g.d3plus-" + (this._name) + "-group"), {parent: this._select});
+    var update = this._update = elem(("g.d3plus-" + (this._name) + "-shape"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}})
+      .selectAll((".d3plus-" + (this._name)))
+        .data(data, key);
+
+    // Orders and transforms the updating Shapes.
+    update.order().transition(this._transition)
+      .call(this._applyTransform.bind(this));
+
+    // Makes the enter state of the group selection accessible.
+    var enter = this._enter = update.enter().append(this._tagName)
+        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-" + (this$1._name) + " d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
+      .call(this._applyTransform.bind(this))
+        .attr("opacity", this._nestWrapper(this._opacity));
+
+    var enterUpdate = enter.merge(update);
+
+    enterUpdate
+        .attr("shape-rendering", this._nestWrapper(this._shapeRendering))
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._nestWrapper(this._opacity))
+      .transition()
+        .attr("pointer-events", "all");
+
+    // Makes the exit state of the group selection accessible.
+    var exit = this._exit = update.exit();
+    exit.transition().delay(this._duration).remove();
+
+    this._renderImage();
+    this._renderLabels();
+
+    this._hoverGroup = elem(("g.d3plus-" + (this._name) + "-hover"), {parent: this._group});
+    this._activeGroup = elem(("g.d3plus-" + (this._name) + "-active"), {parent: this._group});
+
+    var that = this;
+
+    var hitAreas = this._group.selectAll(".d3plus-HitArea")
+      .data(this._hitArea ? data : [], key);
+
+    hitAreas.order().transition(this._transition)
+      .call(this._applyTransform.bind(this));
+
+    var hitEnter = hitAreas.enter().append("rect")
+        .attr("class", function (d, i) { return ("d3plus-HitArea d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
+        .attr("fill", "transparent")
+      .call(this._applyTransform.bind(this));
+
+    var hitUpdates = hitAreas.merge(hitEnter)
+      .each(function(d) {
+        var h = that._hitArea(d, that._data.indexOf(d), that._aes(d, that._data.indexOf(d)));
+        return h ? select(this).call(attrize, h) : select(this).remove();
+      });
+
+    hitAreas.exit().remove();
+
+    this._applyEvents(this._hitArea ? hitUpdates : enterUpdate);
+    this.active(this._active);
+
+    if (callback) { setTimeout(callback, this._duration + 100); }
+
+    return this;
+
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Shape.prototype.active = function active$$1 (_) {
+
+    if (!arguments.length || _ === void 0) { return this._active; }
+    this._active = _;
+
+    var that = this;
+
+    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (this.tagName === "text") { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          i = d.i;
+          d = d.data;
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
+        if (group !== this.parentNode) {
+          group.appendChild(this);
+          if (this.className.baseVal.includes("d3plus-Shape")) {
+            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
+            else { select(this).call(that._applyActive.bind(that)); }
+          }
+        }
+
+      });
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the active opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current active opacity.
+      @param {Number} [*value* = 0.75]
+      @chainable
+  */
+  Shape.prototype.activeOpacity = function activeOpacity (_) {
+    return arguments.length ? (this._activeOpacity = _, this) : this._activeOpacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
+      @param {Function|String} [*value* = false]
+      @chainable
+  */
+  Shape.prototype.backgroundImage = function backgroundImage (_) {
+    return arguments.length
+         ? (this._backgroundImage = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._backgroundImage;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape will be drawn for each object in the array.
+      @param {Array} [*data* = []]
+      @chainable
+  */
+  Shape.prototype.data = function data (_) {
+    return arguments.length
+         ? (this._data = _, this)
+         : this._data;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
+      @param {Number} [*ms* = 600]
+      @chainable
+  */
+  Shape.prototype.duration = function duration (_) {
+    return arguments.length
+         ? (this._duration = _, this)
+         : this._duration;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current fill accessor.
+      @param {Function|String} [*value* = "black"]
+      @chainable
+  */
+  Shape.prototype.fill = function fill (_) {
+    return arguments.length
+         ? (this._fill = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fill;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value*]
+      @chainable
+  */
+  Shape.prototype.fontColor = function fontColor (_) {
+    return arguments.length
+         ? (this._fontColor = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fontColor;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = "Verdana"]
+      @chainable
+  */
+  Shape.prototype.fontFamily = function fontFamily (_) {
+    return arguments.length
+         ? (this._fontFamily = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fontFamily;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|Boolean|Array} [*value*]
+      @chainable
+  */
+  Shape.prototype.fontResize = function fontResize (_) {
+    return arguments.length
+         ? (this._fontResize = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fontResize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = 12]
+      @chainable
+  */
+  Shape.prototype.fontSize = function fontSize (_) {
+    return arguments.length
+         ? (this._fontSize = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fontSize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-weight accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-weight accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = 400]
+      @chainable
+  */
+  Shape.prototype.fontWeight = function fontWeight (_) {
+    return arguments.length
+         ? (this._fontWeight = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fontWeight;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Shape.prototype.hover = function hover (_) {
+
+    if (!arguments.length || _ === void 0) { return this._hover; }
+    this._hover = _;
+
+    var that = this;
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
+      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (this.tagName === "text") { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          i = d.i;
+          d = d.data;
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
+        if (group !== this.parentNode) { group.appendChild(this); }
+
+      });
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+    return this;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the hover opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current hover opacity.
+      @param {Number} [*value* = 0.5]
+      @chainable
+  */
+  Shape.prototype.hoverOpacity = function hoverOpacity (_) {
+    return arguments.length ? (this._hoverOpacity = _, this) : this._hoverOpacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
+      @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
+      @chainable
+      @example
+function(d, i, shape) {
+  return {
+    "width": shape.width,
+    "height": shape.height,
+    "x": -shape.width / 2,
+    "y": -shape.height / 2
+  };
+}
+  */
+  Shape.prototype.hitArea = function hitArea (_) {
+    return arguments.length
+         ? (this._hitArea = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._hitArea;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Shape.prototype.id = function id (_) {
+    return arguments.length
+         ? (this._id = _, this)
+         : this._id;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
+      @param {Function|String|Array} [*value*]
+      @chainable
+  */
+  Shape.prototype.label = function label (_) {
+    return arguments.length
+         ? (this._label = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._label;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *bounds* is specified, sets the label bounds to the specified function and returns the current class instance. If *bounds* is not specified, returns the current inner bounds accessor.
+      @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`. If an array is returned from the function, each value will be used in conjunction with each label.
+      @chainable
+      @example
+function(d, i, shape) {
+  return {
+    "width": shape.width,
+    "height": shape.height,
+    "x": -shape.width / 2,
+    "y": -shape.height / 2
+  };
+}
+  */
+  Shape.prototype.labelBounds = function labelBounds (_) {
+    return arguments.length
+         ? (this._labelBounds = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._labelBounds;
+  };
+
+  /**
+      @memberof Shape
+      @desc Specifies the rotation angle, in degrees, of a shape's label. If *value* is not specified, returns the current label rotation. If an array is passed or returned from the function, each value will be used consecutively with each label.
+      @param {Function|Number|Array} [angle = 0]
+      @chainable
+  */
+  Shape.prototype.labelRotate = function labelRotate (_) {
+    return arguments.length
+         ? (this._labelRotate = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._labelRotate;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|Number|Array} [*value* = 10]
+      @chainable
+  */
+  Shape.prototype.labelPadding = function labelPadding (_) {
+    return arguments.length
+         ? (this._labelPadding = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._labelPadding;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value*]
+      @chainable
+  */
+  Shape.prototype.lineHeight = function lineHeight (_) {
+    return arguments.length
+         ? (this._lineHeight = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._lineHeight;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current opacity accessor.
+      @param {Number} [*value* = 1]
+      @chainable
+  */
+  Shape.prototype.opacity = function opacity (_) {
+    return arguments.length
+         ? (this._opacity = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._opacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current scale accessor.
+      @param {Function|Number} [*value* = 1]
+      @chainable
+  */
+  Shape.prototype.scale = function scale (_) {
+    return arguments.length
+         ? (this._scale = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._scale;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+      @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+      @chainable
+  */
+  Shape.prototype.select = function select$1 (_) {
+    return arguments.length
+         ? (this._select = select(_), this)
+         : this._select;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the shape-rendering accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current shape-rendering accessor.
+      @param {Function|String} [*value* = "geometricPrecision"]
+      @chainable
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Shape.prototype.shapeRendering = function shapeRendering (_) {
+    return arguments.length
+         ? (this._shapeRendering = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._shapeRendering;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the sort comparator to the specified function and returns the current class instance. If *value* is not specified, returns the current sort comparator.
+      @param {false|Function} [*value* = []]
+      @chainable
+  */
+  Shape.prototype.sort = function sort (_) {
+    return arguments.length
+         ? (this._sort = _, this)
+         : this._sort;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke accessor.
+      @param {Function|String} [*value* = "black"]
+      @chainable
+  */
+  Shape.prototype.stroke = function stroke (_) {
+    return arguments.length
+         ? (this._stroke = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._stroke;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke-width accessor.
+      @param {Function|Number} [*value* = 0]
+      @chainable
+  */
+  Shape.prototype.strokeWidth = function strokeWidth (_) {
+    return arguments.length
+         ? (this._strokeWidth = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._strokeWidth;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = "start"]
+      @chainable
+  */
+  Shape.prototype.textAnchor = function textAnchor (_) {
+    return arguments.length
+         ? (this._textAnchor = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._textAnchor;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the vector-effect accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vector-effect accessor.
+      @param {Function|String} [*value* = "non-scaling-stroke"]
+      @chainable
+  */
+  Shape.prototype.vectorEffect = function vectorEffect (_) {
+    return arguments.length
+         ? (this._vectorEffect = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._vectorEffect;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = "start"]
+      @chainable
+  */
+  Shape.prototype.verticalAlign = function verticalAlign (_) {
+    return arguments.length
+         ? (this._verticalAlign = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._verticalAlign;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Shape.prototype.x = function x (_) {
+    return arguments.length
+         ? (this._x = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._x;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Shape.prototype.y = function y (_) {
+    return arguments.length
+         ? (this._y = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._y;
+  };
+
+  return Shape;
+}(BaseClass));
+
+/**
+    @function lineIntersection
+    @desc Finds the intersection point (if there is one) of the lines p1q1 and p2q2.
+    @param {Array} p1 The first point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q1 The second point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The first point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var lineIntersection$1 = function(p1, q1, p2, q2) {
+
+  // allow for some margins due to numerical errors
+  var eps = 1e-9;
+
+  // find the intersection point between the two infinite lines
+  var dx1 = p1[0] - q1[0],
+        dx2 = p2[0] - q2[0],
+        dy1 = p1[1] - q1[1],
+        dy2 = p2[1] - q2[1];
+
+  var denom = dx1 * dy2 - dy1 * dx2;
+
+  if (Math.abs(denom) < eps) { return null; }
+
+  var cross1 = p1[0] * q1[1] - p1[1] * q1[0],
+        cross2 = p2[0] * q2[1] - p2[1] * q2[0];
+
+  var px = (cross1 * dx2 - cross2 * dx1) / denom,
+        py = (cross1 * dy2 - cross2 * dy1) / denom;
+
+  return [px, py];
+
+};
+
+/**
+    @function segmentBoxContains
+    @desc Checks whether a point is inside the bounding box of a line segment.
+    @param {Array} s1 The first point of the line segment to be used for the bounding box, which should always be an `[x, y]` formatted Array.
+    @param {Array} s2 The second point of the line segment to be used for the bounding box, which should always be an `[x, y]` formatted Array.
+    @param {Array} p The point to be checked, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var segmentBoxContains$1 = function(s1, s2, p) {
+
+  var eps = 1e-9;
+  var px = p[0];
+  var py = p[1];
+
+  return !(px < Math.min(s1[0], s2[0]) - eps || px > Math.max(s1[0], s2[0]) + eps ||
+           py < Math.min(s1[1], s2[1]) - eps || py > Math.max(s1[1], s2[1]) + eps);
+
+};
+
+/**
+    @function segmentsIntersect
+    @desc Checks whether the line segments p1q1 && p2q2 intersect.
+    @param {Array} p1 The first point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q1 The second point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The first point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var segmentsIntersect$1 = function(p1, q1, p2, q2) {
+
+  var p = lineIntersection$1(p1, q1, p2, q2);
+  if (!p) { return false; }
+  return segmentBoxContains$1(p1, q1, p) && segmentBoxContains$1(p2, q2, p);
+
+};
+
+/**
+    @function polygonInside
+    @desc Checks if one polygon is inside another polygon.
+    @param {Array} polyA An Array of `[x, y]` points to be used as the inner polygon, checking if it is inside polyA.
+    @param {Array} polyB An Array of `[x, y]` points to be used as the containing polygon.
+    @returns {Boolean}
+*/
+var polygonInside$1 = function(polyA, polyB) {
+
+  var iA = -1;
+  var nA = polyA.length;
+  var nB = polyB.length;
+  var bA = polyA[nA - 1];
+
+  while (++iA < nA) {
+
+    var aA = bA;
+    bA = polyA[iA];
+
+    var iB = -1;
+    var bB = polyB[nB - 1];
+    while (++iB < nB) {
+      var aB = bB;
+      bB = polyB[iB];
+      if (segmentsIntersect$1(aA, bA, aB, bB)) { return false; }
+    }
+  }
+
+  return polygonContains$1(polyB, polyA[0]);
+
+};
+
+/**
+    @function polygonRayCast
+    @desc Gives the two closest intersection points between a ray cast from a point inside a polygon. The two points should lie on opposite sides of the origin.
+    @param {Array} poly The polygon to test against, which should be an `[x, y]` formatted Array.
+    @param {Array} origin The origin point of the ray to be cast, which should be an `[x, y]` formatted Array.
+    @param {Number} [alpha = 0] The angle in radians of the ray.
+    @returns {Array} An array containing two values, the closest point on the left and the closest point on the right. If either point cannot be found, that value will be `null`.
+*/
+var polygonRayCast$1 = function(poly, origin, alpha) {
+  if ( alpha === void 0 ) alpha = 0;
+
+
+  var eps = 1e-9;
+  origin = [origin[0] + eps * Math.cos(alpha), origin[1] + eps * Math.sin(alpha)];
+  var x0 = origin[0];
+  var y0 = origin[1];
+  var shiftedOrigin = [x0 + Math.cos(alpha), y0 + Math.sin(alpha)];
+
+  var idx = 0;
+  if (Math.abs(shiftedOrigin[0] - x0) < eps) { idx = 1; }
+  var i = -1;
+  var n = poly.length;
+  var b = poly[n - 1];
+  var minSqDistLeft = Number.MAX_VALUE;
+  var minSqDistRight = Number.MAX_VALUE;
+  var closestPointLeft = null;
+  var closestPointRight = null;
+  while (++i < n) {
+    var a = b;
+    b = poly[i];
+    var p = lineIntersection$1(origin, shiftedOrigin, a, b);
+    if (p && segmentBoxContains$1(a, b, p)) {
+      var sqDist = pointDistanceSquared$1(origin, p);
+      if (p[idx] < origin[idx]) {
+        if (sqDist < minSqDistLeft) {
+          minSqDistLeft = sqDist;
+          closestPointLeft = p;
+        }
+      }
+      else if (p[idx] > origin[idx]) {
+        if (sqDist < minSqDistRight) {
+          minSqDistRight = sqDist;
+          closestPointRight = p;
+        }
+      }
+    }
+  }
+
+  return [closestPointLeft, closestPointRight];
+
+};
+
+/**
+    @function pointRotate
+    @desc Rotates a point around a given origin.
+    @param {Array} p The point to be rotated, which should always be an `[x, y]` formatted Array.
+    @param {Number} alpha The angle in radians to rotate.
+    @param {Array} [origin = [0, 0]] The origin point of the rotation, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var pointRotate$1 = function(p, alpha, origin) {
+  if ( origin === void 0 ) origin = [0, 0];
+
+
+  var cosAlpha = Math.cos(alpha),
+        sinAlpha = Math.sin(alpha),
+        xshifted = p[0] - origin[0],
+        yshifted = p[1] - origin[1];
+
+  return [
+    cosAlpha * xshifted - sinAlpha * yshifted + origin[0],
+    sinAlpha * xshifted + cosAlpha * yshifted + origin[1]
+  ];
+
+};
+
+/**
+    @function polygonRotate
+    @desc Rotates a point around a given origin.
+    @param {Array} poly The polygon to be rotated, which should be an Array of `[x, y]` values.
+    @param {Number} alpha The angle in radians to rotate.
+    @param {Array} [origin = [0, 0]] The origin point of the rotation, which should be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var polygonRotate$1 = function (poly, alpha, origin) {
+    if ( origin === void 0 ) origin = [0, 0];
+
+    return poly.map(function (p) { return pointRotate$1(p, alpha, origin); });
+};
+
+// square distance from a point to a segment
+function getSqSegDist$1(p, p1, p2) {
+
+  var x = p1[0],
+      y = p1[1];
+
+  var dx = p2[0] - x,
+      dy = p2[1] - y;
+
+  if (dx !== 0 || dy !== 0) {
+
+    var t = ((p[0] - x) * dx + (p[1] - y) * dy) / (dx * dx + dy * dy);
+
+    if (t > 1) {
+      x = p2[0];
+      y = p2[1];
+
+    }
+    else if (t > 0) {
+      x += dx * t;
+      y += dy * t;
+    }
+
+  }
+
+  dx = p[0] - x;
+  dy = p[1] - y;
+
+  return dx * dx + dy * dy;
+
+}
+// rest of the code doesn't care about point format
+
+// basic distance-based simplification
+function simplifyRadialDist$1(poly, sqTolerance) {
+
+  var point,
+      prevPoint = poly[0];
+
+  var newPoints = [prevPoint];
+
+  for (var i = 1, len = poly.length; i < len; i++) {
+    point = poly[i];
+
+    if (pointDistanceSquared$1(point, prevPoint) > sqTolerance) {
+      newPoints.push(point);
+      prevPoint = point;
+    }
+  }
+
+  if (prevPoint !== point) { newPoints.push(point); }
+
+  return newPoints;
+}
+
+function simplifyDPStep$1(poly, first, last, sqTolerance, simplified) {
+
+  var index, maxSqDist = sqTolerance;
+
+  for (var i = first + 1; i < last; i++) {
+    var sqDist = getSqSegDist$1(poly[i], poly[first], poly[last]);
+
+    if (sqDist > maxSqDist) {
+      index = i;
+      maxSqDist = sqDist;
+    }
+  }
+
+  if (maxSqDist > sqTolerance) {
+    if (index - first > 1) { simplifyDPStep$1(poly, first, index, sqTolerance, simplified); }
+    simplified.push(poly[index]);
+    if (last - index > 1) { simplifyDPStep$1(poly, index, last, sqTolerance, simplified); }
+  }
+}
+
+// simplification using Ramer-Douglas-Peucker algorithm
+function simplifyDouglasPeucker$1(poly, sqTolerance) {
+  var last = poly.length - 1;
+
+  var simplified = [poly[0]];
+  simplifyDPStep$1(poly, 0, last, sqTolerance, simplified);
+  simplified.push(poly[last]);
+
+  return simplified;
+}
+
+/**
+    @function largestRect
+    @desc Simplifies the points of a polygon using both the Ramer-Douglas-Peucker algorithm and basic distance-based simplification. Adapted to an ES6 module from the excellent [Simplify.js](http://mourner.github.io/simplify-js/).
+    @author Vladimir Agafonkin
+    @param {Array} poly An Array of points that represent a polygon.
+    @param {Number} [tolerance = 1] Affects the amount of simplification (in the same metric as the point coordinates).
+    @param {Boolean} [highestQuality = false] Excludes distance-based preprocessing step which leads to highest quality simplification but runs ~10-20 times slower.
+
+*/
+var simplify$1 = function (poly, tolerance, highestQuality) {
+  if ( tolerance === void 0 ) tolerance = 1;
+  if ( highestQuality === void 0 ) highestQuality = false;
+
+
+  if (poly.length <= 2) { return poly; }
+
+  var sqTolerance = tolerance * tolerance;
+
+  poly = highestQuality ? poly : simplifyRadialDist$1(poly, sqTolerance);
+  poly = simplifyDouglasPeucker$1(poly, sqTolerance);
+
+  return poly;
+
+};
+
+// Algorithm constants
+var aspectRatioStep$1 = 0.5; // step size for the aspect ratio
+var angleStep$1 = 5; // step size for angles (in degrees); has linear impact on running time
+
+/**
+    @typedef {Object} LargestRect
+    @desc The returned Object of the largestRect function.
+    @property {Number} width The width of the rectangle
+    @property {Number} height The height of the rectangle
+    @property {Number} cx The x coordinate of the rectangle's center
+    @property {Number} cy The y coordinate of the rectangle's center
+    @property {Number} angle The rotation angle of the rectangle in degrees. The anchor of rotation is the center point.
+    @property {Number} area The area of the largest rectangle.
+    @property {Array} points An array of x/y coordinates for each point in the rectangle, useful for rendering paths.
+*/
+
+/**
+    @function largestRect
+    @author Daniel Smilkov [dsmilkov@gmail.com]
+    @desc An angle of zero means that the longer side of the polygon (the width) will be aligned with the x axis. An angle of 90 and/or -90 means that the longer side of the polygon (the width) will be aligned with the y axis. The value can be a number between -90 and 90 specifying the angle of rotation of the polygon, a string which is parsed to a number, or an array of numbers specifying the possible rotations of the polygon.
+    @param {Array} poly An Array of points that represent a polygon.
+    @param {Object} [options] An Object that allows for overriding various parameters of the algorithm.
+    @param {Number|String|Array} [options.angle = d3.range(-90, 95, 5)] The allowed rotations of the final rectangle.
+    @param {Number|String|Array} [options.aspectRatio] The ratio between the width and height of the rectangle. The value can be a number, a string which is parsed to a number, or an array of numbers specifying the possible aspect ratios of the final rectangle.
+    @param {Number} [options.maxAspectRatio = 15] The maximum aspect ratio (width/height) allowed for the rectangle. This property should only be used if the aspectRatio is not provided.
+    @param {Number} [options.minAspectRatio = 1] The minimum aspect ratio (width/height) allowed for the rectangle. This property should only be used if the aspectRatio is not provided.
+    @param {Number} [options.nTries = 20] The number of randomly drawn points inside the polygon which the algorithm explores as possible center points of the maximal rectangle.
+    @param {Number} [options.minHeight = 0] The minimum height of the rectangle.
+    @param {Number} [options.minWidth = 0] The minimum width of the rectangle.
+    @param {Number} [options.tolerance = 0.02] The simplification tolerance factor, between 0 and 1. A larger tolerance corresponds to more extensive simplification.
+    @param {Array} [options.origin] The center point of the rectangle. If specified, the rectangle will be fixed at that point, otherwise the algorithm optimizes across all possible points. The given value can be either a two dimensional array specifying the x and y coordinate of the origin or an array of two dimensional points specifying multiple possible center points of the rectangle.
+    @return {LargestRect}
+*/
+var largestRect$1 = function(poly, options) {
+  if ( options === void 0 ) options = {};
+
+
+  if (poly.length < 3) {
+    if (options.verbose) { console.error("polygon has to have at least 3 points", poly); }
+    return null;
+  }
+
+  // For visualization debugging purposes
+  var events = [];
+
+  // User's input normalization
+  options = Object.assign({
+    angle: range(-90, 90 + angleStep$1, angleStep$1),
+    maxAspectRatio: 15,
+    minAspectRatio: 1,
+    minHeight: 0,
+    minWidth: 0,
+    nTries: 20,
+    tolerance: 0.02,
+    verbose: false
+  }, options);
+
+  var angles = options.angle instanceof Array ? options.angle
+               : typeof options.angle === "number" ? [options.angle]
+               : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
+               : [];
+
+  var aspectRatios = options.aspectRatio instanceof Array ? options.aspectRatio
+               : typeof options.aspectRatio === "number" ? [options.aspectRatio]
+               : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
+               : [];
+
+  var origins = options.origin && options.origin instanceof Array
+                ? options.origin[0] instanceof Array ? options.origin
+                : [options.origin] : [];
+
+  var area = Math.abs(polygonArea(poly)); // take absolute value of the signed area
+  if (area === 0) {
+    if (options.verbose) { console.error("polygon has 0 area", poly); }
+    return null;
+  }
+  // get the width of the bounding box of the original polygon to determine tolerance
+  var ref = extent(poly, function (d) { return d[0]; });
+  var minx = ref[0];
+  var maxx = ref[1];
+  var ref$1 = extent(poly, function (d) { return d[1]; });
+  var miny = ref$1[0];
+  var maxy = ref$1[1];
+
+  // simplify polygon
+  var tolerance = Math.min(maxx - minx, maxy - miny) * options.tolerance;
+
+  if (tolerance > 0) { poly = simplify$1(poly, tolerance); }
+  if (options.events) { events.push({type: "simplify", poly: poly}); }
+
+  // get the width of the bounding box of the simplified polygon
+  var assign;
+  (assign = extent(poly, function (d) { return d[0]; }), minx = assign[0], maxx = assign[1]);
+  var assign$1;
+  (assign$1 = extent(poly, function (d) { return d[1]; }), miny = assign$1[0], maxy = assign$1[1]);
+  var ref$2 = [maxx - minx, maxy - miny];
+  var boxWidth = ref$2[0];
+  var boxHeight = ref$2[1];
+
+  // discretize the binary search for optimal width to a resolution of this times the polygon width
+  var widthStep = Math.min(boxWidth, boxHeight) / 50;
+
+  // populate possible center points with random points inside the polygon
+  if (!origins.length) {
+    // get the centroid of the polygon
+    var centroid = polygonCentroid(poly);
+    if (isNaN(centroid[0])) {
+      if (options.verbose) { console.error("cannot find centroid", poly); }
+      return null;
+    }
+    if (polygonContains$1(poly, centroid)) { origins.push(centroid); }
+    // get few more points inside the polygon
+    while (origins.length < options.nTries) {
+      var rndX = Math.random() * boxWidth + minx;
+      var rndY = Math.random() * boxHeight + miny;
+      var rndPoint = [rndX, rndY];
+      if (polygonContains$1(poly, rndPoint)) { origins.push(rndPoint); }
+    }
+  }
+  if (options.events) { events.push({type: "origins", points: origins}); }
+  var maxArea = 0;
+  var maxRect = null;
+
+  for (var ai = 0; ai < angles.length; ai++) {
+    var angle = angles[ai];
+    var angleRad = -angle * Math.PI / 180;
+    if (options.events) { events.push({type: "angle", angle: angle}); }
+    for (var i = 0; i < origins.length; i++) {
+      var origOrigin = origins[i];
+      // generate improved origins
+      var ref$3 = polygonRayCast$1(poly, origOrigin, angleRad);
+      var p1W = ref$3[0];
+      var p2W = ref$3[1];
+      var ref$4 = polygonRayCast$1(poly, origOrigin, angleRad + Math.PI / 2);
+      var p1H = ref$4[0];
+      var p2H = ref$4[1];
+      var modifOrigins = [];
+      if (p1W && p2W) { modifOrigins.push([(p1W[0] + p2W[0]) / 2, (p1W[1] + p2W[1]) / 2]); } // average along with width axis
+      if (p1H && p2H) { modifOrigins.push([(p1H[0] + p2H[0]) / 2, (p1H[1] + p2H[1]) / 2]); } // average along with height axis
+
+      if (options.events) { events.push({type: "modifOrigin", idx: i, p1W: p1W, p2W: p2W, p1H: p1H, p2H: p2H, modifOrigins: modifOrigins}); }
+
+      for (var i$1 = 0; i$1 < modifOrigins.length; i$1++) {
+
+        var origin = modifOrigins[i$1];
+
+        if (options.events) { events.push({type: "origin", cx: origin[0], cy: origin[1]}); }
+
+        var ref$5 = polygonRayCast$1(poly, origin, angleRad);
+        var p1W$1 = ref$5[0];
+        var p2W$1 = ref$5[1];
+        if (p1W$1 === null || p2W$1 === null) { continue; }
+        var minSqDistW = Math.min(pointDistanceSquared$1(origin, p1W$1), pointDistanceSquared$1(origin, p2W$1));
+        var maxWidth = 2 * Math.sqrt(minSqDistW);
+
+        var ref$6 = polygonRayCast$1(poly, origin, angleRad + Math.PI / 2);
+        var p1H$1 = ref$6[0];
+        var p2H$1 = ref$6[1];
+        if (p1H$1 === null || p2H$1 === null) { continue; }
+        var minSqDistH = Math.min(pointDistanceSquared$1(origin, p1H$1), pointDistanceSquared$1(origin, p2H$1));
+        var maxHeight = 2 * Math.sqrt(minSqDistH);
+
+        if (maxWidth * maxHeight < maxArea) { continue; }
+
+        var aRatios = aspectRatios;
+        if (!aRatios.length) {
+          var minAspectRatio = Math.max(options.minAspectRatio, options.minWidth / maxHeight, maxArea / (maxHeight * maxHeight));
+          var maxAspectRatio = Math.min(options.maxAspectRatio, maxWidth / options.minHeight, maxWidth * maxWidth / maxArea);
+          aRatios = range(minAspectRatio, maxAspectRatio + aspectRatioStep$1, aspectRatioStep$1);
+        }
+
+        for (var a = 0; a < aRatios.length; a++) {
+
+          var aRatio = aRatios[a];
+
+          // do a binary search to find the max width that works
+          var left = Math.max(options.minWidth, Math.sqrt(maxArea * aRatio));
+          var right = Math.min(maxWidth, maxHeight * aRatio);
+          if (right * maxHeight < maxArea) { continue; }
+
+          if (options.events && right - left >= widthStep) { events.push({type: "aRatio", aRatio: aRatio}); }
+
+          while (right - left >= widthStep) {
+            var width = (left + right) / 2;
+            var height = width / aRatio;
+            var cx = origin[0];
+            var cy = origin[1];
+            var rectPoly = [
+              [cx - width / 2, cy - height / 2],
+              [cx + width / 2, cy - height / 2],
+              [cx + width / 2, cy + height / 2],
+              [cx - width / 2, cy + height / 2]
+            ];
+            rectPoly = polygonRotate$1(rectPoly, angleRad, origin);
+            var insidePoly = polygonInside$1(rectPoly, poly);
+            if (insidePoly) {
+              // we know that the area is already greater than the maxArea found so far
+              maxArea = width * height;
+              rectPoly.push(rectPoly[0]);
+              maxRect = {area: maxArea, cx: cx, cy: cy, width: width, height: height, angle: -angle, points: rectPoly};
+              left = width; // increase the width in the binary search
+            }
+            else {
+              right = width; // decrease the width in the binary search
+            }
+            if (options.events) { events.push({type: "rectangle", areaFraction: width * height / area, cx: cx, cy: cy, width: width, height: height, angle: angle, insidePoly: insidePoly}); }
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }
+
+  return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
+
+};
+
+/**
+    @class Area
+    @extends Shape
+    @desc Creates SVG areas based on an array of data.
+*/
+var Area$2 = (function (Shape) {
+  function Area() {
+    var this$1 = this;
+
+
+    Shape.call(this);
+
+    this._curve = "linear";
+    this._defined = function () { return true; };
+    this._labelBounds = function (d, i, aes) {
+      var r = largestRect$1(aes.points);
+      if (!r) { return null; }
+      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2 - this$1._x(d, i), y: r.cy - r.height / 2 - this$1._y(d, i)};
+    };
+    this._name = "Area";
+    this.textAnchor("middle");
+    this.verticalAlign("middle");
+    this._x = accessor("x");
+    this._x0 = accessor("x");
+    this._x1 = null;
+    this._y = constant$7(0);
+    this._y0 = constant$7(0);
+    this._y1 = accessor("y");
+
+  }
+
+  if ( Shape ) Area.__proto__ = Shape;
+  Area.prototype = Object.create( Shape && Shape.prototype );
+  Area.prototype.constructor = Area;
+
+  /**
+      @memberof Area
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Area.prototype._aes = function _aes (d) {
+    var this$1 = this;
+
+    var values$$1 = d.values.slice().sort(function (a, b) { return this$1._y1 ? this$1._x(a) - this$1._x(b) : this$1._y(a) - this$1._y(b); });
+    var points1 = values$$1.map(function (v, z) { return [this$1._x0(v, z), this$1._y0(v, z)]; });
+    var points2 = values$$1.reverse().map(function (v, z) { return this$1._y1 ? [this$1._x(v, z), this$1._y1(v, z)] : [this$1._x1(v, z), this$1._y(v, z)]; });
+    var points = points1.concat(points2);
+    if (points1[0][1] > points2[0][1]) { points = points.reverse(); }
+    points.push(points[0]);
+    return {points: points};
+  };
+
+  /**
+      @memberof Area
+      @desc Filters/manipulates the data array before binding each point to an SVG group.
+      @param {Array} [*data* = the data array to be filtered]
+      @private
+  */
+  Area.prototype._dataFilter = function _dataFilter (data) {
+    var this$1 = this;
+
+
+    var areas = nest().key(this._id).entries(data).map(function (d) {
+
+      d.data = objectMerge(d.values);
+      d.i = data.indexOf(d.values[0]);
+
+      var x = extent(d.values.map(this$1._x)
+        .concat(d.values.map(this$1._x0))
+        .concat(this$1._x1 ? d.values.map(this$1._x1) : [])
+      );
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+
+      var y = extent(d.values.map(this$1._y)
+        .concat(d.values.map(this$1._y0))
+        .concat(this$1._y1 ? d.values.map(this$1._y1) : [])
+      );
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+
+      d.nested = true;
+      d.translate = [d.x, d.y];
+      d.__d3plusShape__ = true;
+
+      return d;
+    });
+
+    areas.key = function (d) { return d.key; };
+    return areas;
+
+  };
+
+  /**
+      @memberof Area
+      @desc Draws the area polygons.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Area.prototype.render = function render (callback) {
+
+    Shape.prototype.render.call(this, callback);
+
+    var path = this._path = area$1()
+      .defined(this._defined)
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x).x0(this._x0).x1(this._x1)
+      .y(this._y).y0(this._y0).y1(this._y1);
+
+    var exitPath = area$1()
+      .defined(function (d) { return d; })
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x).x0(this._x0).x1(this._x1)
+      .y(this._y).y0(this._y0).y1(this._y1);
+
+    this._enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    this._update.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attrTween("d", function(d) {
+        return interpolatePath(select(this).attr("d"), path(d.values));
+      })
+      .call(this._applyStyle.bind(this));
+
+    this._exit.select("path").transition(this._transition)
+      .attrTween("d", function(d) {
+        return interpolatePath(select(this).attr("d"), exitPath(d.values));
+      });
+
+    return this;
+
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
+      @param {String} [*value* = "linear"]
+      @chainable
+  */
+  Area.prototype.curve = function curve (_) {
+    return arguments.length
+         ? (this._curve = _, this)
+         : this._curve;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Area.prototype.defined = function defined (_) {
+    return arguments.length
+         ? (this._defined = _, this)
+         : this._defined;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.x = function x (_) {
+    if (!arguments.length) { return this._x; }
+    this._x = typeof _ === "function" ? _ : constant$7(_);
+    this._x0 = this._x;
+    return this;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.x0 = function x0 (_) {
+    if (!arguments.length) { return this._x0; }
+    this._x0 = typeof _ === "function" ? _ : constant$7(_);
+    this._x = this._x0;
+    return this;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
+      @param {Function|Number|null} [*value*]
+      @chainable
+  */
+  Area.prototype.x1 = function x1 (_) {
+    return arguments.length
+         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         : this._x1;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.y = function y (_) {
+    if (!arguments.length) { return this._y; }
+    this._y = typeof _ === "function" ? _ : constant$7(_);
+    this._y0 = this._y;
+    return this;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.y0 = function y0 (_) {
+    if (!arguments.length) { return this._y0; }
+    this._y0 = typeof _ === "function" ? _ : constant$7(_);
+    this._y = this._y0;
+    return this;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
+      @param {Function|Number|null} [*value*]
+      @chainable
+  */
+  Area.prototype.y1 = function y1 (_) {
+    return arguments.length
+         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         : this._y1;
+  };
+
+  return Area;
+}(Shape$2));
+
+/**
+    @class Bar
+    @extends Shape
+    @desc Creates SVG areas based on an array of data.
+*/
+var Bar$2 = (function (Shape) {
+  function Bar() {
+    var this$1 = this;
+
+
+    Shape.call(this, "rect");
+
+    this._name = "Bar";
+    this._height = constant$7(10);
+    this._labelBounds = function (d, i, s) { return ({
+      width: s.width,
+      height: s.height,
+      x: this$1._x1 !== null ? this$1._getX(d, i) : -s.width / 2,
+      y: this$1._x1 === null ? this$1._getY(d, i) : -s.height / 2
+    }); };
+    this._width = constant$7(10);
+    this._x = accessor("x");
+    this._x0 = accessor("x");
+    this._x1 = null;
+    this._y = constant$7(0);
+    this._y0 = constant$7(0);
+    this._y1 = accessor("y");
+
+  }
+
+  if ( Shape ) Bar.__proto__ = Shape;
+  Bar.prototype = Object.create( Shape && Shape.prototype );
+  Bar.prototype.constructor = Bar;
+
+  /**
+      @memberof Bar
+      @desc Draws the bars.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Bar.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    this._enter
+        .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
+        .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
+        .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
+        .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; })
+        .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .call(this._applyPosition.bind(this));
+
+    this._update.transition(this._transition)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    this._exit.transition(this._transition)
+      .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
+      .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
+      .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
+      .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; });
+
+    return this;
+
+  };
+
+  /**
+      @memberof Bar
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Bar.prototype._aes = function _aes (d, i) {
+    return {height: this._getHeight(d, i), width: this._getWidth(d, i)};
+  };
+
+  /**
+      @memberof Bar
+      @desc Provides the default positioning to the <rect> elements.
+      @param {D3Selection} *elem*
+      @private
+  */
+  Bar.prototype._applyPosition = function _applyPosition (elem$$1) {
+    var this$1 = this;
+
+    elem$$1
+      .attr("width", function (d, i) { return this$1._getWidth(d, i); })
+      .attr("height", function (d, i) { return this$1._getHeight(d, i); })
+      .attr("x", function (d, i) { return this$1._x1 !== null ? this$1._getX(d, i) : -this$1._getWidth(d, i) / 2; })
+      .attr("y", function (d, i) { return this$1._x1 === null ? this$1._getY(d, i) : -this$1._getHeight(d, i) / 2; });
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the height of the <rect> by assessing the x and y properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getHeight = function _getHeight (d, i) {
+    if (this._x1 !== null) { return this._height(d, i); }
+    return Math.abs(this._y1(d, i) - this._y(d, i));
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the width of the <rect> by assessing the x and y properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getWidth = function _getWidth (d, i) {
+    if (this._x1 === null) { return this._width(d, i); }
+    return Math.abs(this._x1(d, i) - this._x(d, i));
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the x of the <rect> by assessing the x and width properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getX = function _getX (d, i) {
+    var w = this._x1 === null ? this._x(d, i) : this._x1(d, i) - this._x(d, i);
+    if (w < 0) { return w; }
+    else { return 0; }
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the y of the <rect> by assessing the y and height properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getY = function _getY (d, i) {
+    var h = this._x1 !== null ? this._y(d, i) : this._y1(d, i) - this._y(d, i);
+    if (h < 0) { return h; }
+    else { return 0; }
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.height;
+}
+  */
+  Bar.prototype.height = function height (_) {
+    return arguments.length
+         ? (this._height = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._height;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.width;
+}
+  */
+  Bar.prototype.width = function width (_) {
+    return arguments.length
+         ? (this._width = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._width;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Bar.prototype.x0 = function x0 (_) {
+    if (!arguments.length) { return this._x0; }
+    this._x0 = typeof _ === "function" ? _ : constant$7(_);
+    this._x = this._x0;
+    return this;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
+      @param {Function|Number|null} [*value*]
+      @chainable
+  */
+  Bar.prototype.x1 = function x1 (_) {
+    return arguments.length
+         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         : this._x1;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Bar.prototype.y0 = function y0 (_) {
+    if (!arguments.length) { return this._y0; }
+    this._y0 = typeof _ === "function" ? _ : constant$7(_);
+    this._y = this._y0;
+    return this;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
+      @param {Function|Number|null} [*value*]
+      @chainable
+  */
+  Bar.prototype.y1 = function y1 (_) {
+    return arguments.length
+         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         : this._y1;
+  };
+
+  return Bar;
+}(Shape$2));
+
+/**
+    @class Circle
+    @extends Shape
+    @desc Creates SVG circles based on an array of data.
+*/
+var Circle$2 = (function (Shape) {
+  function Circle() {
+    Shape.call(this, "circle");
+    this._name = "Circle";
+    this._r = accessor("r");
+  }
+
+  if ( Shape ) Circle.__proto__ = Shape;
+  Circle.prototype = Object.create( Shape && Shape.prototype );
+  Circle.prototype.constructor = Circle;
+
+  /**
+      @memberof Circle
+      @desc Provides the default positioning to the <rect> elements.
+      @private
+  */
+  Circle.prototype._applyPosition = function _applyPosition (elem$$1) {
+    var this$1 = this;
+
+    elem$$1
+      .attr("r", function (d, i) { return this$1._r(d, i); })
+      .attr("x", function (d, i) { return -this$1._r(d, i) / 2; })
+      .attr("y", function (d, i) { return -this$1._r(d, i) / 2; });
+  };
+
+  /**
+      @memberof Circle
+      @desc Draws the circles.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Circle.prototype.render = function render (callback) {
+
+    Shape.prototype.render.call(this, callback);
+
+    this._enter
+        .attr("r", 0).attr("x", 0).attr("y", 0)
+        .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .call(this._applyPosition.bind(this));
+
+    this._update.transition(this._transition)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    this._exit.transition(this._transition)
+      .attr("r", 0).attr("x", 0).attr("y", 0);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Circle
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Circle.prototype._aes = function _aes (d, i) {
+    return {r: this._r(d, i)};
+  };
+
+  /**
+      @memberof Circle
+      @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current radius accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.r;
+}
+  */
+  Circle.prototype.r = function r (_) {
+    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$7(_), this) : this._r;
+  };
+
+  return Circle;
+}(Shape$2));
+
+/**
+    @class Line
+    @extends Shape
+    @desc Creates SVG lines based on an array of data.
+*/
+var Line$2 = (function (Shape) {
+  function Line() {
+
+    Shape.call(this);
+
+    this._curve = "linear";
+    this._defined = function (d) { return d; };
+    this._fill = constant$7("none");
+    this._name = "Line";
+    this._path = line();
+    this._stroke = constant$7("black");
+    this._strokeWidth = constant$7(1);
+
+  }
+
+  if ( Shape ) Line.__proto__ = Shape;
+  Line.prototype = Object.create( Shape && Shape.prototype );
+  Line.prototype.constructor = Line;
+
+  /**
+      @memberof Line
+      @desc Filters/manipulates the data array before binding each point to an SVG group.
+      @param {Array} [*data* = the data array to be filtered]
+      @private
+  */
+  Line.prototype._dataFilter = function _dataFilter (data) {
+    var this$1 = this;
+
+
+    var lines = nest().key(this._id).entries(data).map(function (d) {
+
+      d.data = objectMerge(d.values);
+      d.i = data.indexOf(d.values[0]);
+
+      var x = extent(d.values, this$1._x);
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+
+      var y = extent(d.values, this$1._y);
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+
+      d.nested = true;
+      d.translate = [d.x, d.y];
+      d.__d3plusShape__ = true;
+
+      return d;
+    });
+
+    lines.key = function (d) { return d.key; };
+    return lines;
+
+  };
+
+  /**
+      @memberof Line
+      @desc Draws the lines.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Line.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    var that = this;
+
+    this._path
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .defined(this._defined)
+      .x(this._x)
+      .y(this._y);
+
+    this._enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return this$1._path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    this._update.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attrTween("d", function(d) {
+        return interpolatePath(select(this).attr("d"), that._path(d.values));
+      })
+      .call(this._applyStyle.bind(this));
+
+    return this;
+
+  };
+
+  /**
+      @memberof Line
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Line.prototype._aes = function _aes (d, i) {
+    var this$1 = this;
+
+    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
+      @param {String} [*value* = "linear"]
+      @chainable
+  */
+  Line.prototype.curve = function curve (_) {
+    return arguments.length ? (this._curve = _, this) : this._curve;
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Line.prototype.defined = function defined (_) {
+    return arguments.length ? (this._defined = _, this) : this._defined;
+  };
+
+  return Line;
+}(Shape$2));
+
+var pi$7 = Math.PI;
+
+/**
+    @function shapeEdgePoint
+    @desc Calculates the x/y position of a point at the edge of a shape, from the center of the shape, given a specified pixel distance and radian angle.
+    @param {Number} angle The angle, in radians, of the offset point.
+    @param {Number} distance The pixel distance away from the origin.
+    @returns {String} [shape = "circle"] The type of shape, which can be either "circle" or "square".
+*/
+var shapeEdgePoint$1 = function (angle, distance, shape) {
+  if ( shape === void 0 ) shape = "circle";
+
+
+  if (angle < 0) { angle = pi$7 * 2 + angle; }
+
+  if (shape === "square") {
+
+    var diagonal = 45 * (pi$7 / 180);
+    var x = 0, y = 0;
+
+    if (angle < pi$7 / 2) {
+      var tan = Math.tan(angle);
+      x += angle < diagonal ? distance : distance / tan;
+      y += angle < diagonal ? tan * distance : distance;
+    }
+    else if (angle <= pi$7) {
+      var tan$1 = Math.tan(pi$7 - angle);
+      x -= angle < pi$7 - diagonal ? distance / tan$1 : distance;
+      y += angle < pi$7 - diagonal ? distance : tan$1 * distance;
+    }
+    else if (angle < diagonal + pi$7) {
+      x -= distance;
+      y -= Math.tan(angle - pi$7) * distance;
+    }
+    else if (angle < 3 * pi$7 / 2) {
+      x -= distance / Math.tan(angle - pi$7);
+      y -= distance;
+    }
+    else if (angle < 2 * pi$7 - diagonal) {
+      x += distance / Math.tan(2 * pi$7 - angle);
+      y -= distance;
+    }
+    else {
+      x += distance;
+      y -= Math.tan(2 * pi$7 - angle) * distance;
+    }
+
+    return [x, y];
+
+  }
+  else if (shape === "circle") {
+    return [distance * Math.cos(angle), distance * Math.sin(angle)];
+  }
+  else { return null; }
+
+};
+
+var pi$6 = Math.PI;
+
+/**
+    @function path2polygon
+    @desc Transforms a path string into an Array of points.
+    @param {String} path An SVG string path, commonly the "d" property of a <path> element.
+    @param {Number} [segmentLength = 20] The lenght of line segments when converting curves line segments. Higher values lower computation time, but will result in curves that are more rigid.
+    @returns {Array}
+*/
+var path2polygon$1 = function (path, segmentLength) {
+  if ( segmentLength === void 0 ) segmentLength = 20;
+
+
+  var poly = [],
+        regex = /([MLA])([^MLAZ]+)/ig;
+
+  var match = regex.exec(path);
+  while (match !== null) {
+
+    if (["M", "L"].includes(match[1])) { poly.push(match[2].split(",").map(Number)); }
+    else if (match[1] === "A") {
+
+      var points = match[2].split(",").map(Number);
+
+      var last = points.slice(points.length - 2, points.length),
+            prev = poly[poly.length - 1],
+            radius = points[0],
+            width = pointDistance$1(prev, last);
+
+      var angle = Math.acos((radius * radius + radius * radius - width * width) / (2 * radius * radius));
+      if (points[2]) { angle = pi$6 * 2 - angle; }
+
+      var step = angle / (angle / (pi$6 * 2) * (radius * pi$6 * 2) / segmentLength);
+      var start = Math.atan2(-prev[1], -prev[0]) - pi$6;
+      var i = step;
+      while (i < angle) {
+        poly.push(shapeEdgePoint$1(start + i, radius));
+        i += step;
+      }
+      poly.push(last);
+
+    }
+    match = regex.exec(path);
+
+  }
+
+  return poly;
+
+};
+
+/**
+    @class Path
+    @extends Shape
+    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+*/
+var Path$3 = (function (Shape) {
+  function Path() {
+    var this$1 = this;
+
+    Shape.call(this, "path");
+    this._d = accessor("path");
+    this._labelBounds = function (d, i, aes) {
+      var r = largestRect$1(aes.points, {angle: this$1._labelRotate(d, i)});
+      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2};
+    };
+    this._name = "Path";
+    this.textAnchor("middle");
+    this.verticalAlign("middle");
+  }
+
+  if ( Shape ) Path.__proto__ = Shape;
+  Path.prototype = Object.create( Shape && Shape.prototype );
+  Path.prototype.constructor = Path;
+
+  /**
+      @memberof Path
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Path.prototype._aes = function _aes (d, i) {
+    return {points: path2polygon$1(this._d(d, i))};
+  };
+
+  /**
+      @memberof Path
+      @desc Draws the paths.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Path.prototype.render = function render (callback) {
+
+    Shape.prototype.render.call(this, callback);
+
+    this._enter
+        .attr("opacity", 0)
+        .attr("d", this._d)
+      .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .attr("opacity", 1);
+
+    this._update.transition(this._transition)
+      .call(this._applyStyle.bind(this))
+        .attr("opacity", 1)
+        .attr("d", this._d);
+
+    this._exit.transition(this._transition)
+      .attr("opacity", 0);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Path
+      @desc If *value* is specified, sets the "d" attribute accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current "d" attribute accessor.
+      @param {Function|String} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.path;
+}
+  */
+  Path.prototype.d = function d (_) {
+    return arguments.length
+         ? (this._d = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._d;
+  };
+
+  return Path;
+}(Shape$2));
+
+/**
+    @class Rect
+    @extends Shape
+    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+*/
+var Rect$2 = (function (Shape) {
+  function Rect() {
+    Shape.call(this, "rect");
+    this._height = accessor("height");
+    this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
+    this._name = "Rect";
+    this._width = accessor("width");
+  }
+
+  if ( Shape ) Rect.__proto__ = Shape;
+  Rect.prototype = Object.create( Shape && Shape.prototype );
+  Rect.prototype.constructor = Rect;
+
+  /**
+      @memberof Rect
+      @desc Draws the rectangles.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Rect.prototype.render = function render (callback) {
+
+    Shape.prototype.render.call(this, callback);
+
+    this._enter
+        .attr("width", 0).attr("height", 0)
+        .attr("x", 0).attr("y", 0)
+        .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .call(this._applyPosition.bind(this));
+
+    this._update.transition(this._transition)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    this._exit.transition(this._transition)
+      .attr("width", 0).attr("height", 0)
+      .attr("x", 0).attr("y", 0);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Rect
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Rect.prototype._aes = function _aes (d, i) {
+    return {width: this._width(d, i), height: this._height(d, i)};
+  };
+
+  /**
+      @memberof Rect
+      @desc Provides the default positioning to the <rect> elements.
+      @param {D3Selection} *elem*
+      @private
+  */
+  Rect.prototype._applyPosition = function _applyPosition (elem$$1) {
+    var this$1 = this;
+
+    elem$$1
+      .attr("width", function (d, i) { return this$1._width(d, i); })
+      .attr("height", function (d, i) { return this$1._height(d, i); })
+      .attr("x", function (d, i) { return -this$1._width(d, i) / 2; })
+      .attr("y", function (d, i) { return -this$1._height(d, i) / 2; });
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.height;
+}
+  */
+  Rect.prototype.height = function height (_) {
+    return arguments.length
+         ? (this._height = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._height;
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.width;
+}
+  */
+  Rect.prototype.width = function width (_) {
+    return arguments.length
+         ? (this._width = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._width;
+  };
+
+  return Rect;
+}(Shape$2));
+
+
+
+var shapes = Object.freeze({
+	Image: Image$3,
+	Shape: Shape$2,
+	Area: Area$2,
+	Bar: Bar$2,
+	Circle: Circle$2,
+	Line: Line$2,
+	Path: Path$3,
+	Rect: Rect$2,
+	largestRect: largestRect$1,
+	lineIntersection: lineIntersection$1,
+	path2polygon: path2polygon$1,
+	pointDistance: pointDistance$1,
+	pointDistanceSquared: pointDistanceSquared$1,
+	pointRotate: pointRotate$1,
+	polygonInside: polygonInside$1,
+	polygonRayCast: polygonRayCast$1,
+	polygonRotate: polygonRotate$1,
+	segmentBoxContains: segmentBoxContains$1,
+	segmentsIntersect: segmentsIntersect$1,
+	shapeEdgePoint: shapeEdgePoint$1,
+	simplify: simplify$1
+});
 
 /**
     @function date
@@ -17332,6 +21840,13 @@ var Axis = (function (BaseClass$$1) {
         }
       }
     });
+
+    var maxOffset = max(textData, function (d) { return d.offset; });
+    if (maxOffset) {
+      textData.forEach(function (d) {
+        if (d.offset) { d.offset = maxOffset; }
+      });
+    }
 
     // Calculates new range, based on any text that may be overflowing.
     var rangeOuter = range$$1.slice();
@@ -17740,6 +22255,125 @@ var Axis = (function (BaseClass$$1) {
   };
 
   return Axis;
+}(BaseClass));
+
+/**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
+/**
+    @class Button
+    @extends external:BaseClass
+    @desc Creates a set of HTML radio input elements.
+*/
+var Button = (function (BaseClass$$1) {
+  function Button() {
+
+    BaseClass$$1.call(this);
+
+    this._buttonStyle = {
+      margin: "0 5px"
+    };
+    this._data = [];
+    this._text = accessor("text");
+    this._value = accessor("value");
+
+  }
+
+  if ( BaseClass$$1 ) Button.__proto__ = BaseClass$$1;
+  Button.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  Button.prototype.constructor = Button;
+
+  /**
+      @memberof Button
+      @desc Renders the element to the page.
+      @chainable
+  */
+  Button.prototype.render = function render () {
+    var this$1 = this;
+
+
+    if (this._container === void 0) { this.container(select("body").append("div").node()); }
+
+    var container = this._container.selectAll(("div#d3plus-Form-" + (this._uuid))).data([0]);
+    var svg = this._container.node().tagName.toLowerCase() === "foreignobject";
+
+    container = container.enter().append(svg ? "xhtml:div" : "div")
+        .attr("id", ("d3plus-Form-" + (this._uuid)))
+        .attr("class", "d3plus-Form d3plus-Form-Button")
+      .merge(container);
+
+    var button = container.selectAll("button")
+      .data(this._data, function (d, i) { return this$1._value(d, i); });
+
+    button.exit().remove();
+
+    button = button.enter().append("button")
+        .attr("class", "d3plus-Button")
+        .attr("type", "button")
+      .merge(button)
+        .call(stylize, this._buttonStyle)
+        .html(function (d, i) { return this$1._text(d, i); });
+
+    for (var event$$1 in this$1._on) {
+      if ({}.hasOwnProperty.call(this$1._on, event$$1)) { button.on(event$$1, this$1._on[event$$1]); }
+    }
+
+    return this;
+
+  };
+
+  /**
+      @memberof Button
+      @desc Sets the css styles for the <input type="radio"> elements.
+      @param {Object} [*value*]
+      @chainable
+  */
+  Button.prototype.buttonStyle = function buttonStyle (_) {
+    return arguments.length ? (this._buttonStyle = _, this) : this._buttonStyle;
+  };
+
+  /**
+      @memberof Button
+      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element, which is `undefined` by default.
+      @param {String|HTMLElement} [*selector*]
+      @chainable
+  */
+  Button.prototype.container = function container (_) {
+    return arguments.length ? (this._container = select(_), this) : this._container;
+  };
+
+  /**
+      @memberof Radio
+      @desc Defines the array of values to be created as <button> tags. If no value is passed, the current array is returned.
+      @param {Array} [*value* = []]
+      @chainable
+  */
+  Button.prototype.data = function data (_) {
+    return arguments.length ? (this._data = _, this) : this._data;
+  };
+
+  /**
+      @memberof Button
+      @desc Sets the inner text for each <button> element.
+      @param {Function|String} [*value* = function(d) { return d.text; }]
+      @chainable
+  */
+  Button.prototype.text = function text (_) {
+    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$7(_), this) : this._text;
+  };
+
+  /**
+      @memberof Button
+      @desc Sets the value for each <button> element.
+      @param {Function} [*value* = function(d) { return d.value; }]
+      @chainable
+  */
+  Button.prototype.value = function value (_) {
+    return arguments.length ? (this._value = _, this) : this._value;
+  };
+
+  return Button;
 }(BaseClass));
 
 /**
@@ -18397,6 +23031,2734 @@ var ckmeans = function(data, nClusters) {
 };
 
 /**
+    @class Image
+    @desc Creates SVG images based on an array of data.
+    @example <caption>a sample row of data</caption>
+var data = {"url": "file.png", "width": "100", "height": "50"};
+@example <caption>passed to the generator</caption>
+new Image().data([data]).render();
+@example <caption>creates the following</caption>
+<image class="d3plus-Image" opacity="1" href="file.png" width="100" height="50" x="0" y="0"></image>
+@example <caption>this is shorthand for the following</caption>
+image().data([data])();
+@example <caption>which also allows a post-draw callback function</caption>
+image().data([data])(function() { alert("draw complete!"); })
+*/
+var Image$5 = function Image() {
+  this._duration = 600;
+  this._height = accessor("height");
+  this._id = accessor("id");
+  this._pointerEvents = constant$7("auto");
+  this._select;
+  this._url = accessor("url");
+  this._width = accessor("width");
+  this._x = accessor("x", 0);
+  this._y = accessor("y", 0);
+};
+
+/**
+    @memberof Image
+    @desc Renders the current Image to the page. If a *callback* is specified, it will be called once the images are done drawing.
+    @param {Function} [*callback*]
+    @chainable
+*/
+Image$5.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+  if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).style("display", "block").node()); }
+
+  var images = this._select.selectAll(".d3plus-Image").data(this._data, this._id);
+
+  var enter = images.enter().append("image")
+    .attr("class", "d3plus-Image")
+    .attr("opacity", 0)
+    .attr("width", 0)
+    .attr("height", 0)
+    .attr("x", function (d, i) { return this$1._x(d, i) + this$1._width(d, i) / 2; })
+    .attr("y", function (d, i) { return this$1._y(d, i) + this$1._height(d, i) / 2; });
+
+  var t = transition().duration(this._duration),
+        that = this,
+        update = enter.merge(images);
+
+  update
+      .attr("xlink:href", this._url)
+      .style("pointer-events", this._pointerEvents)
+    .transition(t)
+      .attr("opacity", 1)
+      .attr("width", function (d, i) { return this$1._width(d, i); })
+      .attr("height", function (d, i) { return this$1._height(d, i); })
+      .attr("x", function (d, i) { return this$1._x(d, i); })
+      .attr("y", function (d, i) { return this$1._y(d, i); })
+      .each(function(d, i) {
+        var image = select(this), link = that._url(d, i);
+        var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
+        if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
+          var img = new Image$5();
+          img.src = link;
+          img.crossOrigin = "Anonymous";
+          img.onload = function() {
+            var canvas = document.createElement("canvas");
+            canvas.width = this.width;
+            canvas.height = this.height;
+            var context = canvas.getContext("2d");
+            context.drawImage(this, 0, 0);
+            image.attr("xlink:href", canvas.toDataURL("image/png"));
+          };
+        }
+      });
+
+  images.exit().transition(t)
+    .attr("width", function (d, i) { return this$1._width(d, i); })
+    .attr("height", function (d, i) { return this$1._height(d, i); })
+    .attr("x", function (d, i) { return this$1._x(d, i); })
+    .attr("y", function (d, i) { return this$1._y(d, i); })
+    .attr("opacity", 0).remove();
+
+  if (callback) { setTimeout(callback, this._duration + 100); }
+
+  return this;
+
+};
+
+/**
+    @memberof Image
+    @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. An <image> tag will be drawn for each object in the array.
+    @param {Array} [*data* = []]
+    @chainable
+*/
+Image$5.prototype.data = function data (_) {
+  return arguments.length ? (this._data = _, this) : this._data;
+};
+
+/**
+    @memberof Image
+    @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
+    @param {Number} [*ms* = 600]
+    @chainable
+*/
+Image$5.prototype.duration = function duration (_) {
+  return arguments.length ? (this._duration = _, this) : this._duration;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+    @param {Function|Number} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.height;
+}
+*/
+Image$5.prototype.height = function height (_) {
+  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$7(_), this) : this._height;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor. This is useful if you want to duplicate the same image.
+    @param {Function} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.id;
+}
+*/
+Image$5.prototype.id = function id (_) {
+  return arguments.length ? (this._id = _, this) : this._id;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current pointer-events accessor.
+    @param {Function|String} [*value* = "auto"]
+    @chainable
+*/
+Image$5.prototype.pointerEvents = function pointerEvents (_) {
+  return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$7(_), this) : this._pointerEvents;
+};
+
+/**
+    @memberof Image
+    @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+    @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+    @chainable
+*/
+Image$5.prototype.select = function select$1 (_) {
+  return arguments.length ? (this._select = select(_), this) : this._select;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the URL accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current URL accessor.
+    @param {Function} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.url;
+}
+*/
+Image$5.prototype.url = function url (_) {
+  return arguments.length ? (this._url = _, this) : this._url;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+    @param {Function|Number} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.width;
+}
+*/
+Image$5.prototype.width = function width (_) {
+  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$7(_), this) : this._width;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+    @param {Function|Number} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.x || 0;
+}
+*/
+Image$5.prototype.x = function x (_) {
+  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$7(_), this) : this._x;
+};
+
+/**
+    @memberof Image
+    @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+    @param {Function|Number} [*value*]
+    @chainable
+    @example
+function(d) {
+return d.y || 0;
+}
+*/
+Image$5.prototype.y = function y (_) {
+  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$7(_), this) : this._y;
+};
+
+/**
+    @function pointDistanceSquared
+    @desc Returns the squared euclidean distance between two points.
+    @param {Array} p1 The first point, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The second point, which should always be an `[x, y]` formatted Array.
+    @returns {Number}
+*/
+var pointDistanceSquared$2 = function (p1, p2) {
+
+  var dx = p2[0] - p1[0],
+        dy = p2[1] - p1[1];
+
+  return dx * dx + dy * dy;
+
+};
+
+/**
+    @function pointDistance
+    @desc Calculates the pixel distance between two points.
+    @param {Array} p1 The first point, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The second point, which should always be an `[x, y]` formatted Array.
+    @returns {Number}
+*/
+var pointDistance$2 = function (p1, p2) { return Math.sqrt(pointDistanceSquared$2(p1, p2)); };
+
+/**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
+
+/**
+    @class Shape
+    @extends external:BaseClass
+    @desc An abstracted class for generating shapes.
+*/
+var Shape$4 = (function (BaseClass$$1) {
+  function Shape(tagName) {
+    var this$1 = this;
+    if ( tagName === void 0 ) tagName = "g";
+
+
+    BaseClass$$1.call(this);
+
+    this._activeOpacity = 0.75;
+    this._activeStyle = {
+      "stroke": function (d, i) { return color(this$1._stroke(d, i)).darker(2); },
+      "stroke-width": function (d, i) {
+        var s = this$1._strokeWidth(d, i);
+        return s ? s * 2 : 1;
+      }
+    };
+    this._backgroundImage = constant$7(false);
+    this._data = [];
+    this._duration = 600;
+    this._fill = constant$7("black");
+
+    this._fontColor = function (d, i) { return colorContrast(this$1._fill(d, i)); };
+    this._fontFamily = constant$7("Verdana");
+    this._fontResize = constant$7(false);
+    this._fontSize = constant$7(12);
+    this._fontWeight = constant$7(400);
+
+    this._hoverOpacity = 0.5;
+    this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
+    this._label = constant$7(false);
+    this._labelRotate = constant$7(0);
+    this._labelPadding = constant$7(5);
+    this._name = "Shape";
+    this._opacity = constant$7(1);
+    this._scale = constant$7(1);
+    this._shapeRendering = constant$7("geometricPrecision");
+    this._stroke = function (d, i) { return color(this$1._fill(d, i)).darker(1); };
+    this._strokeWidth = constant$7(0);
+    this._tagName = tagName;
+    this._textAnchor = constant$7("start");
+    this._vectorEffect = constant$7("non-scaling-stroke");
+    this._verticalAlign = constant$7("top");
+
+    this._x = accessor("x", 0);
+    this._y = accessor("y", 0);
+
+  }
+
+  if ( BaseClass$$1 ) Shape.__proto__ = BaseClass$$1;
+  Shape.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  Shape.prototype.constructor = Shape;
+
+  /**
+      @memberof Shape
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Shape.prototype._aes = function _aes () {
+    return {};
+  };
+
+  /**
+      @memberof Shape
+      @desc Adds event listeners to each shape group or hit area.
+      @param {D3Selection} *update* The update cycle of the data binding.
+      @private
+  */
+  Shape.prototype._applyEvents = function _applyEvents (handler) {
+    var this$1 = this;
+
+
+    var events = Object.keys(this._on);
+    var loop = function ( e ) {
+      handler.on(events[e], function (d, i) {
+        if (!this$1._on[events[e]]) { return; }
+        if (d.i !== void 0) { i = d.i; }
+        if (d.nested && d.values) {
+          var cursor = mouse(this$1._select.node()),
+                values = d.values.map(function (d) { return pointDistance$2(cursor, [this$1._x(d, i), this$1._y(d, i)]); });
+          d = d.values[values.indexOf(min(values))];
+        }
+        this$1._on[events[e]].bind(this$1)(d, i);
+      });
+    };
+
+    for (var e = 0; e < events.length; e++) loop( e );
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Provides the default styling to the active shape elements.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._applyActive = function _applyActive (elem$$1) {
+    var this$1 = this;
+
+
+    var that = this;
+
+    if (elem$$1.size() && elem$$1.node().tagName === "g") { elem$$1 = elem$$1.selectAll("*"); }
+
+    /**
+        @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
+        @param {Object} *d* data point
+        @param {Number} *i* index
+        @private
+    */
+    function styleLogic(d, i) {
+      return typeof this !== "function" ? this
+           : d.nested && d.key && d.values
+           ? this(d.values[0], that._data.indexOf(d.values[0]))
+           : this(d, i);
+    }
+
+    var activeStyle = {};
+    for (var key in this$1._activeStyle) {
+      if ({}.hasOwnProperty.call(this$1._activeStyle, key)) {
+        activeStyle[key] = styleLogic.bind(this$1._activeStyle[key]);
+      }
+    }
+
+    elem$$1.transition().duration(0).call(attrize, activeStyle);
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Provides the default styling to the shape elements.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._applyStyle = function _applyStyle (elem$$1) {
+
+    var that = this;
+
+    if (elem$$1.size() && elem$$1.node().tagName === "g") { elem$$1 = elem$$1.selectAll("*"); }
+
+    /**
+        @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
+        @param {Object} *d* data point
+        @param {Number} *i* index
+        @private
+    */
+    function styleLogic(d, i) {
+      return typeof this !== "function" ? this
+           : d.nested && d.key && d.values
+           ? this(d.values[0], that._data.indexOf(d.values[0]))
+           : this(d, i);
+    }
+
+    elem$$1
+      .attr("fill", styleLogic.bind(this._fill))
+      .attr("stroke", styleLogic.bind(this._stroke))
+      .attr("stroke-width", styleLogic.bind(this._strokeWidth))
+      .attr("vector-effect", styleLogic.bind(this._vectorEffect));
+  };
+
+  /**
+      @memberof Shape
+      @desc Calculates the transform for the group elements.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._applyTransform = function _applyTransform (elem$$1) {
+    var this$1 = this;
+
+
+    elem$$1
+      .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plusShape__
+                  ? d.translate ? d.translate
+                  : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
+                  : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plusShape__ ? d.scale || this$1._scale(d.data, d.i)
+              : this$1._scale(d, i)) + ")"); });
+  };
+
+  /**
+      @memberof Shape
+      @desc Checks for nested data and uses the appropriate variables for accessor functions.
+      @param {HTMLElement} *elem*
+      @private
+  */
+  Shape.prototype._nestWrapper = function _nestWrapper (method) {
+    return function (d, i) { return method(d.__d3plusShape__ ? d.data : d, d.__d3plusShape__ ? d.i : i); };
+  };
+
+  /**
+      @memberof Shape
+      @desc Adds background image to each shape group.
+      @private
+  */
+  Shape.prototype._renderImage = function _renderImage () {
+    var this$1 = this;
+
+
+    var imageData = [];
+
+    this._update.merge(this._enter).data()
+      .forEach(function (datum, i) {
+
+        var aes = this$1._aes(datum, i);
+
+        if (aes.r || aes.width && aes.height) {
+
+          var d = datum;
+          if (datum.nested && datum.key && datum.values) {
+            d = datum.values[0];
+            i = this$1._data.indexOf(d);
+          }
+
+          var height = aes.r ? aes.r * 2 : aes.height,
+                url = this$1._backgroundImage(d, i),
+                width = aes.r ? aes.r * 2 : aes.width;
+
+          if (url) {
+
+            var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
+                  : this$1._x(d.data, d.i) : this$1._x(d, i),
+                y = d.__d3plusShape__ ? d.translate ? d.translate[1]
+                  : this$1._y(d.data, d.i) : this$1._y(d, i);
+
+            if (aes.x) { x += aes.x; }
+            if (aes.y) { y += aes.y; }
+
+            if (d.__d3plusShape__) {
+              d = d.data;
+              i = d.i;
+            }
+
+            imageData.push({
+              __d3plus__: true,
+              data: d,
+              height: height,
+              i: i,
+              id: this$1._id(d, i),
+              url: url,
+              width: width,
+              x: x + -width / 2,
+              y: y + -height / 2
+            });
+
+          }
+
+        }
+
+      });
+
+    return new Image$5()
+      .data(imageData)
+      .duration(this._duration)
+      .pointerEvents("none")
+      .select(elem(("g.d3plus-" + (this._name) + "-image"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
+      .render();
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Adds labels to each shape group.
+      @private
+  */
+  Shape.prototype._renderLabels = function _renderLabels () {
+    var this$1 = this;
+
+
+    var labelData = [];
+
+    this._update.merge(this._enter).data()
+      .forEach(function (datum, i) {
+
+        var d = datum;
+        if (datum.nested && datum.key && datum.values) {
+          d = datum.values[0];
+          i = this$1._data.indexOf(d);
+        }
+
+        var labels = this$1._label(d, i);
+
+        if (this$1._labelBounds && labels !== false && labels !== void 0) {
+
+          var aes = this$1._aes(datum, i),
+                bounds = this$1._labelBounds(d, i, aes);
+
+          if (bounds) {
+
+            if (labels.constructor !== Array) { labels = [labels]; }
+
+            var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
+                    : this$1._x(d.data, d.i) : this$1._x(d, i),
+                  y = d.__d3plusShape__ ? d.translate ? d.translate[1]
+                    : this$1._y(d.data, d.i) : this$1._y(d, i);
+
+            if (d.__d3plusShape__) {
+              d = d.data;
+              i = d.i;
+            }
+
+            var fC = this$1._fontColor(d, i),
+                  fF = this$1._fontFamily(d, i),
+                  fR = this$1._fontResize(d, i),
+                  fS = this$1._fontSize(d, i),
+                  fW = this$1._fontWeight(d, i),
+                  lH = this$1._lineHeight(d, i),
+                  padding = this$1._labelPadding(d, i),
+                  r = this$1._labelRotate(d, i),
+                  tA = this$1._textAnchor(d, i),
+                  vA = this$1._verticalAlign(d, i);
+
+            for (var l = 0; l < labels.length; l++) {
+
+              var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
+                    p = padding.constructor === Array ? padding[l] : padding;
+
+              labelData.push(Object.assign(b, {
+                __d3plusShape__: true,
+                data: d,
+                fC: fC.constructor === Array ? fC[l] : fC,
+                fF: fF.constructor === Array ? fF[l] : fF,
+                fR: fR.constructor === Array ? fR[l] : fR,
+                fS: fS.constructor === Array ? fS[l] : fS,
+                fW: fW.constructor === Array ? fW[l] : fW,
+                height: b.height - p * 2,
+                i: i,
+                id: ((this$1._id(d, i)) + "_" + l),
+                lH: lH.constructor === Array ? lH[l] : lH,
+                r: bounds.angle !== void 0 ? bounds.angle : r.constructor === Array ? r[l] : r,
+                tA: tA.constructor === Array ? tA[l] : tA,
+                text: labels[l],
+                vA: vA.constructor === Array ? vA[l] : vA,
+                width: b.width - p * 2,
+                x: x + b.x + p,
+                y: y + b.y + p
+              }));
+
+            }
+
+          }
+
+        }
+
+      });
+
+    return new TextBox()
+      .data(labelData)
+      .duration(this._duration)
+      .fontColor(function (d) { return d.fC; })
+      .fontFamily(function (d) { return d.fF; })
+      .fontResize(function (d) { return d.fR; })
+      .fontSize(function (d) { return d.fS; })
+      .fontWeight(function (d) { return d.fW; })
+      .lineHeight(function (d) { return d.lH; })
+      .pointerEvents("none")
+      .rotate(function (d) { return d.data.r; })
+      .textAnchor(function (d) { return d.tA; })
+      .verticalAlign(function (d) { return d.vA; })
+      .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
+      .render();
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Renders the current Shape to the page. If a *callback* is specified, it will be called once the shapes are done drawing.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Shape.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    if (this._select === void 0) {
+      this.select(select("body").append("svg")
+        .style("width", ((window.innerWidth) + "px"))
+        .style("height", ((window.innerHeight) + "px"))
+        .style("display", "block").node());
+    }
+
+    if (this._lineHeight === void 0) {
+      this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
+    }
+
+    this._transition = transition().duration(this._duration);
+
+    var data = this._data, key = this._id;
+    if (this._dataFilter) {
+      data = this._dataFilter(data);
+      if (data.key) { key = data.key; }
+    }
+
+    if (this._sort) { data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ ? a.data : a, b.__d3plusShape__ ? b.data : b); }); }
+
+    selectAll(("g.d3plus-" + (this._name) + "-hover > *, g.d3plus-" + (this._name) + "-active > *")).each(function(d) {
+      if (d && d.parentNode) { d.parentNode.appendChild(this); }
+      else { this.parentNode.removeChild(this); }
+    });
+
+    // Makes the update state of the group selection accessible.
+    this._group = elem(("g.d3plus-" + (this._name) + "-group"), {parent: this._select});
+    var update = this._update = elem(("g.d3plus-" + (this._name) + "-shape"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}})
+      .selectAll((".d3plus-" + (this._name)))
+        .data(data, key);
+
+    // Orders and transforms the updating Shapes.
+    update.order().transition(this._transition)
+      .call(this._applyTransform.bind(this));
+
+    // Makes the enter state of the group selection accessible.
+    var enter = this._enter = update.enter().append(this._tagName)
+        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-" + (this$1._name) + " d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
+      .call(this._applyTransform.bind(this))
+        .attr("opacity", this._nestWrapper(this._opacity));
+
+    var enterUpdate = enter.merge(update);
+
+    enterUpdate
+        .attr("shape-rendering", this._nestWrapper(this._shapeRendering))
+        .attr("pointer-events", "none")
+      .transition(this._transition)
+        .attr("opacity", this._nestWrapper(this._opacity))
+      .transition()
+        .attr("pointer-events", "all");
+
+    // Makes the exit state of the group selection accessible.
+    var exit = this._exit = update.exit();
+    exit.transition().delay(this._duration).remove();
+
+    this._renderImage();
+    this._renderLabels();
+
+    this._hoverGroup = elem(("g.d3plus-" + (this._name) + "-hover"), {parent: this._group});
+    this._activeGroup = elem(("g.d3plus-" + (this._name) + "-active"), {parent: this._group});
+
+    var that = this;
+
+    var hitAreas = this._group.selectAll(".d3plus-HitArea")
+      .data(this._hitArea ? data : [], key);
+
+    hitAreas.order().transition(this._transition)
+      .call(this._applyTransform.bind(this));
+
+    var hitEnter = hitAreas.enter().append("rect")
+        .attr("class", function (d, i) { return ("d3plus-HitArea d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
+        .attr("fill", "transparent")
+      .call(this._applyTransform.bind(this));
+
+    var hitUpdates = hitAreas.merge(hitEnter)
+      .each(function(d) {
+        var h = that._hitArea(d, that._data.indexOf(d), that._aes(d, that._data.indexOf(d)));
+        return h ? select(this).call(attrize, h) : select(this).remove();
+      });
+
+    hitAreas.exit().remove();
+
+    this._applyEvents(this._hitArea ? hitUpdates : enterUpdate);
+    this.active(this._active);
+
+    if (callback) { setTimeout(callback, this._duration + 100); }
+
+    return this;
+
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Shape.prototype.active = function active$$1 (_) {
+
+    if (!arguments.length || _ === void 0) { return this._active; }
+    this._active = _;
+
+    var that = this;
+
+    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (this.tagName === "text") { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          i = d.i;
+          d = d.data;
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
+        if (group !== this.parentNode) {
+          group.appendChild(this);
+          if (this.className.baseVal.includes("d3plus-Shape")) {
+            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
+            else { select(this).call(that._applyActive.bind(that)); }
+          }
+        }
+
+      });
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the active opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current active opacity.
+      @param {Number} [*value* = 0.75]
+      @chainable
+  */
+  Shape.prototype.activeOpacity = function activeOpacity (_) {
+    return arguments.length ? (this._activeOpacity = _, this) : this._activeOpacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
+      @param {Function|String} [*value* = false]
+      @chainable
+  */
+  Shape.prototype.backgroundImage = function backgroundImage (_) {
+    return arguments.length
+         ? (this._backgroundImage = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._backgroundImage;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape will be drawn for each object in the array.
+      @param {Array} [*data* = []]
+      @chainable
+  */
+  Shape.prototype.data = function data (_) {
+    return arguments.length
+         ? (this._data = _, this)
+         : this._data;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
+      @param {Number} [*ms* = 600]
+      @chainable
+  */
+  Shape.prototype.duration = function duration (_) {
+    return arguments.length
+         ? (this._duration = _, this)
+         : this._duration;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current fill accessor.
+      @param {Function|String} [*value* = "black"]
+      @chainable
+  */
+  Shape.prototype.fill = function fill (_) {
+    return arguments.length
+         ? (this._fill = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fill;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value*]
+      @chainable
+  */
+  Shape.prototype.fontColor = function fontColor (_) {
+    return arguments.length
+         ? (this._fontColor = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fontColor;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = "Verdana"]
+      @chainable
+  */
+  Shape.prototype.fontFamily = function fontFamily (_) {
+    return arguments.length
+         ? (this._fontFamily = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fontFamily;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|Boolean|Array} [*value*]
+      @chainable
+  */
+  Shape.prototype.fontResize = function fontResize (_) {
+    return arguments.length
+         ? (this._fontResize = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fontResize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = 12]
+      @chainable
+  */
+  Shape.prototype.fontSize = function fontSize (_) {
+    return arguments.length
+         ? (this._fontSize = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fontSize;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the font-weight accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-weight accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = 400]
+      @chainable
+  */
+  Shape.prototype.fontWeight = function fontWeight (_) {
+    return arguments.length
+         ? (this._fontWeight = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._fontWeight;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Shape.prototype.hover = function hover (_) {
+
+    if (!arguments.length || _ === void 0) { return this._hover; }
+    this._hover = _;
+
+    var that = this;
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
+      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (this.tagName === "text") { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          i = d.i;
+          d = d.data;
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
+        if (group !== this.parentNode) { group.appendChild(this); }
+
+      });
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+    return this;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the hover opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current hover opacity.
+      @param {Number} [*value* = 0.5]
+      @chainable
+  */
+  Shape.prototype.hoverOpacity = function hoverOpacity (_) {
+    return arguments.length ? (this._hoverOpacity = _, this) : this._hoverOpacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *bounds* is specified, sets the mouse hit area to the specified function and returns the current class instance. If *bounds* is not specified, returns the current mouse hit area accessor.
+      @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`.
+      @chainable
+      @example
+function(d, i, shape) {
+  return {
+    "width": shape.width,
+    "height": shape.height,
+    "x": -shape.width / 2,
+    "y": -shape.height / 2
+  };
+}
+  */
+  Shape.prototype.hitArea = function hitArea (_) {
+    return arguments.length
+         ? (this._hitArea = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._hitArea;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Shape.prototype.id = function id (_) {
+    return arguments.length
+         ? (this._id = _, this)
+         : this._id;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
+      @param {Function|String|Array} [*value*]
+      @chainable
+  */
+  Shape.prototype.label = function label (_) {
+    return arguments.length
+         ? (this._label = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._label;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *bounds* is specified, sets the label bounds to the specified function and returns the current class instance. If *bounds* is not specified, returns the current inner bounds accessor.
+      @param {Function} [*bounds*] The given function is passed the data point, index, and internally defined properties of the shape and should return an object containing the following values: `width`, `height`, `x`, `y`. If an array is returned from the function, each value will be used in conjunction with each label.
+      @chainable
+      @example
+function(d, i, shape) {
+  return {
+    "width": shape.width,
+    "height": shape.height,
+    "x": -shape.width / 2,
+    "y": -shape.height / 2
+  };
+}
+  */
+  Shape.prototype.labelBounds = function labelBounds (_) {
+    return arguments.length
+         ? (this._labelBounds = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._labelBounds;
+  };
+
+  /**
+      @memberof Shape
+      @desc Specifies the rotation angle, in degrees, of a shape's label. If *value* is not specified, returns the current label rotation. If an array is passed or returned from the function, each value will be used consecutively with each label.
+      @param {Function|Number|Array} [angle = 0]
+      @chainable
+  */
+  Shape.prototype.labelRotate = function labelRotate (_) {
+    return arguments.length
+         ? (this._labelRotate = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._labelRotate;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|Number|Array} [*value* = 10]
+      @chainable
+  */
+  Shape.prototype.labelPadding = function labelPadding (_) {
+    return arguments.length
+         ? (this._labelPadding = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._labelPadding;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value*]
+      @chainable
+  */
+  Shape.prototype.lineHeight = function lineHeight (_) {
+    return arguments.length
+         ? (this._lineHeight = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._lineHeight;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current opacity accessor.
+      @param {Number} [*value* = 1]
+      @chainable
+  */
+  Shape.prototype.opacity = function opacity (_) {
+    return arguments.length
+         ? (this._opacity = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._opacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current scale accessor.
+      @param {Function|Number} [*value* = 1]
+      @chainable
+  */
+  Shape.prototype.scale = function scale (_) {
+    return arguments.length
+         ? (this._scale = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._scale;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+      @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+      @chainable
+  */
+  Shape.prototype.select = function select$1 (_) {
+    return arguments.length
+         ? (this._select = select(_), this)
+         : this._select;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the shape-rendering accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current shape-rendering accessor.
+      @param {Function|String} [*value* = "geometricPrecision"]
+      @chainable
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Shape.prototype.shapeRendering = function shapeRendering (_) {
+    return arguments.length
+         ? (this._shapeRendering = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._shapeRendering;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the sort comparator to the specified function and returns the current class instance. If *value* is not specified, returns the current sort comparator.
+      @param {false|Function} [*value* = []]
+      @chainable
+  */
+  Shape.prototype.sort = function sort (_) {
+    return arguments.length
+         ? (this._sort = _, this)
+         : this._sort;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke accessor.
+      @param {Function|String} [*value* = "black"]
+      @chainable
+  */
+  Shape.prototype.stroke = function stroke (_) {
+    return arguments.length
+         ? (this._stroke = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._stroke;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke-width accessor.
+      @param {Function|Number} [*value* = 0]
+      @chainable
+  */
+  Shape.prototype.strokeWidth = function strokeWidth (_) {
+    return arguments.length
+         ? (this._strokeWidth = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._strokeWidth;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = "start"]
+      @chainable
+  */
+  Shape.prototype.textAnchor = function textAnchor (_) {
+    return arguments.length
+         ? (this._textAnchor = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._textAnchor;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the vector-effect accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vector-effect accessor.
+      @param {Function|String} [*value* = "non-scaling-stroke"]
+      @chainable
+  */
+  Shape.prototype.vectorEffect = function vectorEffect (_) {
+    return arguments.length
+         ? (this._vectorEffect = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._vectorEffect;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @param {Function|String|Array} [*value* = "start"]
+      @chainable
+  */
+  Shape.prototype.verticalAlign = function verticalAlign (_) {
+    return arguments.length
+         ? (this._verticalAlign = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._verticalAlign;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.x;
+}
+  */
+  Shape.prototype.x = function x (_) {
+    return arguments.length
+         ? (this._x = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._x;
+  };
+
+  /**
+      @memberof Shape
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.y;
+}
+  */
+  Shape.prototype.y = function y (_) {
+    return arguments.length
+         ? (this._y = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._y;
+  };
+
+  return Shape;
+}(BaseClass));
+
+/**
+    @function lineIntersection
+    @desc Finds the intersection point (if there is one) of the lines p1q1 and p2q2.
+    @param {Array} p1 The first point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q1 The second point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The first point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var lineIntersection$2 = function(p1, q1, p2, q2) {
+
+  // allow for some margins due to numerical errors
+  var eps = 1e-9;
+
+  // find the intersection point between the two infinite lines
+  var dx1 = p1[0] - q1[0],
+        dx2 = p2[0] - q2[0],
+        dy1 = p1[1] - q1[1],
+        dy2 = p2[1] - q2[1];
+
+  var denom = dx1 * dy2 - dy1 * dx2;
+
+  if (Math.abs(denom) < eps) { return null; }
+
+  var cross1 = p1[0] * q1[1] - p1[1] * q1[0],
+        cross2 = p2[0] * q2[1] - p2[1] * q2[0];
+
+  var px = (cross1 * dx2 - cross2 * dx1) / denom,
+        py = (cross1 * dy2 - cross2 * dy1) / denom;
+
+  return [px, py];
+
+};
+
+/**
+    @function segmentBoxContains
+    @desc Checks whether a point is inside the bounding box of a line segment.
+    @param {Array} s1 The first point of the line segment to be used for the bounding box, which should always be an `[x, y]` formatted Array.
+    @param {Array} s2 The second point of the line segment to be used for the bounding box, which should always be an `[x, y]` formatted Array.
+    @param {Array} p The point to be checked, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var segmentBoxContains$2 = function(s1, s2, p) {
+
+  var eps = 1e-9;
+  var px = p[0];
+  var py = p[1];
+
+  return !(px < Math.min(s1[0], s2[0]) - eps || px > Math.max(s1[0], s2[0]) + eps ||
+           py < Math.min(s1[1], s2[1]) - eps || py > Math.max(s1[1], s2[1]) + eps);
+
+};
+
+/**
+    @function segmentsIntersect
+    @desc Checks whether the line segments p1q1 && p2q2 intersect.
+    @param {Array} p1 The first point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q1 The second point of the first line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} p2 The first point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var segmentsIntersect$2 = function(p1, q1, p2, q2) {
+
+  var p = lineIntersection$2(p1, q1, p2, q2);
+  if (!p) { return false; }
+  return segmentBoxContains$2(p1, q1, p) && segmentBoxContains$2(p2, q2, p);
+
+};
+
+/**
+    @function polygonInside
+    @desc Checks if one polygon is inside another polygon.
+    @param {Array} polyA An Array of `[x, y]` points to be used as the inner polygon, checking if it is inside polyA.
+    @param {Array} polyB An Array of `[x, y]` points to be used as the containing polygon.
+    @returns {Boolean}
+*/
+var polygonInside$2 = function(polyA, polyB) {
+
+  var iA = -1;
+  var nA = polyA.length;
+  var nB = polyB.length;
+  var bA = polyA[nA - 1];
+
+  while (++iA < nA) {
+
+    var aA = bA;
+    bA = polyA[iA];
+
+    var iB = -1;
+    var bB = polyB[nB - 1];
+    while (++iB < nB) {
+      var aB = bB;
+      bB = polyB[iB];
+      if (segmentsIntersect$2(aA, bA, aB, bB)) { return false; }
+    }
+  }
+
+  return polygonContains$1(polyB, polyA[0]);
+
+};
+
+/**
+    @function polygonRayCast
+    @desc Gives the two closest intersection points between a ray cast from a point inside a polygon. The two points should lie on opposite sides of the origin.
+    @param {Array} poly The polygon to test against, which should be an `[x, y]` formatted Array.
+    @param {Array} origin The origin point of the ray to be cast, which should be an `[x, y]` formatted Array.
+    @param {Number} [alpha = 0] The angle in radians of the ray.
+    @returns {Array} An array containing two values, the closest point on the left and the closest point on the right. If either point cannot be found, that value will be `null`.
+*/
+var polygonRayCast$2 = function(poly, origin, alpha) {
+  if ( alpha === void 0 ) alpha = 0;
+
+
+  var eps = 1e-9;
+  origin = [origin[0] + eps * Math.cos(alpha), origin[1] + eps * Math.sin(alpha)];
+  var x0 = origin[0];
+  var y0 = origin[1];
+  var shiftedOrigin = [x0 + Math.cos(alpha), y0 + Math.sin(alpha)];
+
+  var idx = 0;
+  if (Math.abs(shiftedOrigin[0] - x0) < eps) { idx = 1; }
+  var i = -1;
+  var n = poly.length;
+  var b = poly[n - 1];
+  var minSqDistLeft = Number.MAX_VALUE;
+  var minSqDistRight = Number.MAX_VALUE;
+  var closestPointLeft = null;
+  var closestPointRight = null;
+  while (++i < n) {
+    var a = b;
+    b = poly[i];
+    var p = lineIntersection$2(origin, shiftedOrigin, a, b);
+    if (p && segmentBoxContains$2(a, b, p)) {
+      var sqDist = pointDistanceSquared$2(origin, p);
+      if (p[idx] < origin[idx]) {
+        if (sqDist < minSqDistLeft) {
+          minSqDistLeft = sqDist;
+          closestPointLeft = p;
+        }
+      }
+      else if (p[idx] > origin[idx]) {
+        if (sqDist < minSqDistRight) {
+          minSqDistRight = sqDist;
+          closestPointRight = p;
+        }
+      }
+    }
+  }
+
+  return [closestPointLeft, closestPointRight];
+
+};
+
+/**
+    @function pointRotate
+    @desc Rotates a point around a given origin.
+    @param {Array} p The point to be rotated, which should always be an `[x, y]` formatted Array.
+    @param {Number} alpha The angle in radians to rotate.
+    @param {Array} [origin = [0, 0]] The origin point of the rotation, which should always be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var pointRotate$2 = function(p, alpha, origin) {
+  if ( origin === void 0 ) origin = [0, 0];
+
+
+  var cosAlpha = Math.cos(alpha),
+        sinAlpha = Math.sin(alpha),
+        xshifted = p[0] - origin[0],
+        yshifted = p[1] - origin[1];
+
+  return [
+    cosAlpha * xshifted - sinAlpha * yshifted + origin[0],
+    sinAlpha * xshifted + cosAlpha * yshifted + origin[1]
+  ];
+
+};
+
+/**
+    @function polygonRotate
+    @desc Rotates a point around a given origin.
+    @param {Array} poly The polygon to be rotated, which should be an Array of `[x, y]` values.
+    @param {Number} alpha The angle in radians to rotate.
+    @param {Array} [origin = [0, 0]] The origin point of the rotation, which should be an `[x, y]` formatted Array.
+    @returns {Boolean}
+*/
+var polygonRotate$2 = function (poly, alpha, origin) {
+    if ( origin === void 0 ) origin = [0, 0];
+
+    return poly.map(function (p) { return pointRotate$2(p, alpha, origin); });
+};
+
+// square distance from a point to a segment
+function getSqSegDist$2(p, p1, p2) {
+
+  var x = p1[0],
+      y = p1[1];
+
+  var dx = p2[0] - x,
+      dy = p2[1] - y;
+
+  if (dx !== 0 || dy !== 0) {
+
+    var t = ((p[0] - x) * dx + (p[1] - y) * dy) / (dx * dx + dy * dy);
+
+    if (t > 1) {
+      x = p2[0];
+      y = p2[1];
+
+    }
+    else if (t > 0) {
+      x += dx * t;
+      y += dy * t;
+    }
+
+  }
+
+  dx = p[0] - x;
+  dy = p[1] - y;
+
+  return dx * dx + dy * dy;
+
+}
+// rest of the code doesn't care about point format
+
+// basic distance-based simplification
+function simplifyRadialDist$2(poly, sqTolerance) {
+
+  var point,
+      prevPoint = poly[0];
+
+  var newPoints = [prevPoint];
+
+  for (var i = 1, len = poly.length; i < len; i++) {
+    point = poly[i];
+
+    if (pointDistanceSquared$2(point, prevPoint) > sqTolerance) {
+      newPoints.push(point);
+      prevPoint = point;
+    }
+  }
+
+  if (prevPoint !== point) { newPoints.push(point); }
+
+  return newPoints;
+}
+
+function simplifyDPStep$2(poly, first, last, sqTolerance, simplified) {
+
+  var index, maxSqDist = sqTolerance;
+
+  for (var i = first + 1; i < last; i++) {
+    var sqDist = getSqSegDist$2(poly[i], poly[first], poly[last]);
+
+    if (sqDist > maxSqDist) {
+      index = i;
+      maxSqDist = sqDist;
+    }
+  }
+
+  if (maxSqDist > sqTolerance) {
+    if (index - first > 1) { simplifyDPStep$2(poly, first, index, sqTolerance, simplified); }
+    simplified.push(poly[index]);
+    if (last - index > 1) { simplifyDPStep$2(poly, index, last, sqTolerance, simplified); }
+  }
+}
+
+// simplification using Ramer-Douglas-Peucker algorithm
+function simplifyDouglasPeucker$2(poly, sqTolerance) {
+  var last = poly.length - 1;
+
+  var simplified = [poly[0]];
+  simplifyDPStep$2(poly, 0, last, sqTolerance, simplified);
+  simplified.push(poly[last]);
+
+  return simplified;
+}
+
+/**
+    @function largestRect
+    @desc Simplifies the points of a polygon using both the Ramer-Douglas-Peucker algorithm and basic distance-based simplification. Adapted to an ES6 module from the excellent [Simplify.js](http://mourner.github.io/simplify-js/).
+    @author Vladimir Agafonkin
+    @param {Array} poly An Array of points that represent a polygon.
+    @param {Number} [tolerance = 1] Affects the amount of simplification (in the same metric as the point coordinates).
+    @param {Boolean} [highestQuality = false] Excludes distance-based preprocessing step which leads to highest quality simplification but runs ~10-20 times slower.
+
+*/
+var simplify$2 = function (poly, tolerance, highestQuality) {
+  if ( tolerance === void 0 ) tolerance = 1;
+  if ( highestQuality === void 0 ) highestQuality = false;
+
+
+  if (poly.length <= 2) { return poly; }
+
+  var sqTolerance = tolerance * tolerance;
+
+  poly = highestQuality ? poly : simplifyRadialDist$2(poly, sqTolerance);
+  poly = simplifyDouglasPeucker$2(poly, sqTolerance);
+
+  return poly;
+
+};
+
+// Algorithm constants
+var aspectRatioStep$2 = 0.5; // step size for the aspect ratio
+var angleStep$2 = 5; // step size for angles (in degrees); has linear impact on running time
+
+/**
+    @typedef {Object} LargestRect
+    @desc The returned Object of the largestRect function.
+    @property {Number} width The width of the rectangle
+    @property {Number} height The height of the rectangle
+    @property {Number} cx The x coordinate of the rectangle's center
+    @property {Number} cy The y coordinate of the rectangle's center
+    @property {Number} angle The rotation angle of the rectangle in degrees. The anchor of rotation is the center point.
+    @property {Number} area The area of the largest rectangle.
+    @property {Array} points An array of x/y coordinates for each point in the rectangle, useful for rendering paths.
+*/
+
+/**
+    @function largestRect
+    @author Daniel Smilkov [dsmilkov@gmail.com]
+    @desc An angle of zero means that the longer side of the polygon (the width) will be aligned with the x axis. An angle of 90 and/or -90 means that the longer side of the polygon (the width) will be aligned with the y axis. The value can be a number between -90 and 90 specifying the angle of rotation of the polygon, a string which is parsed to a number, or an array of numbers specifying the possible rotations of the polygon.
+    @param {Array} poly An Array of points that represent a polygon.
+    @param {Object} [options] An Object that allows for overriding various parameters of the algorithm.
+    @param {Number|String|Array} [options.angle = d3.range(-90, 95, 5)] The allowed rotations of the final rectangle.
+    @param {Number|String|Array} [options.aspectRatio] The ratio between the width and height of the rectangle. The value can be a number, a string which is parsed to a number, or an array of numbers specifying the possible aspect ratios of the final rectangle.
+    @param {Number} [options.maxAspectRatio = 15] The maximum aspect ratio (width/height) allowed for the rectangle. This property should only be used if the aspectRatio is not provided.
+    @param {Number} [options.minAspectRatio = 1] The minimum aspect ratio (width/height) allowed for the rectangle. This property should only be used if the aspectRatio is not provided.
+    @param {Number} [options.nTries = 20] The number of randomly drawn points inside the polygon which the algorithm explores as possible center points of the maximal rectangle.
+    @param {Number} [options.minHeight = 0] The minimum height of the rectangle.
+    @param {Number} [options.minWidth = 0] The minimum width of the rectangle.
+    @param {Number} [options.tolerance = 0.02] The simplification tolerance factor, between 0 and 1. A larger tolerance corresponds to more extensive simplification.
+    @param {Array} [options.origin] The center point of the rectangle. If specified, the rectangle will be fixed at that point, otherwise the algorithm optimizes across all possible points. The given value can be either a two dimensional array specifying the x and y coordinate of the origin or an array of two dimensional points specifying multiple possible center points of the rectangle.
+    @return {LargestRect}
+*/
+var largestRect$2 = function(poly, options) {
+  if ( options === void 0 ) options = {};
+
+
+  if (poly.length < 3) {
+    if (options.verbose) { console.error("polygon has to have at least 3 points", poly); }
+    return null;
+  }
+
+  // For visualization debugging purposes
+  var events = [];
+
+  // User's input normalization
+  options = Object.assign({
+    angle: range(-90, 90 + angleStep$2, angleStep$2),
+    maxAspectRatio: 15,
+    minAspectRatio: 1,
+    minHeight: 0,
+    minWidth: 0,
+    nTries: 20,
+    tolerance: 0.02,
+    verbose: false
+  }, options);
+
+  var angles = options.angle instanceof Array ? options.angle
+               : typeof options.angle === "number" ? [options.angle]
+               : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
+               : [];
+
+  var aspectRatios = options.aspectRatio instanceof Array ? options.aspectRatio
+               : typeof options.aspectRatio === "number" ? [options.aspectRatio]
+               : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
+               : [];
+
+  var origins = options.origin && options.origin instanceof Array
+                ? options.origin[0] instanceof Array ? options.origin
+                : [options.origin] : [];
+
+  var area = Math.abs(polygonArea(poly)); // take absolute value of the signed area
+  if (area === 0) {
+    if (options.verbose) { console.error("polygon has 0 area", poly); }
+    return null;
+  }
+  // get the width of the bounding box of the original polygon to determine tolerance
+  var ref = extent(poly, function (d) { return d[0]; });
+  var minx = ref[0];
+  var maxx = ref[1];
+  var ref$1 = extent(poly, function (d) { return d[1]; });
+  var miny = ref$1[0];
+  var maxy = ref$1[1];
+
+  // simplify polygon
+  var tolerance = Math.min(maxx - minx, maxy - miny) * options.tolerance;
+
+  if (tolerance > 0) { poly = simplify$2(poly, tolerance); }
+  if (options.events) { events.push({type: "simplify", poly: poly}); }
+
+  // get the width of the bounding box of the simplified polygon
+  var assign;
+  (assign = extent(poly, function (d) { return d[0]; }), minx = assign[0], maxx = assign[1]);
+  var assign$1;
+  (assign$1 = extent(poly, function (d) { return d[1]; }), miny = assign$1[0], maxy = assign$1[1]);
+  var ref$2 = [maxx - minx, maxy - miny];
+  var boxWidth = ref$2[0];
+  var boxHeight = ref$2[1];
+
+  // discretize the binary search for optimal width to a resolution of this times the polygon width
+  var widthStep = Math.min(boxWidth, boxHeight) / 50;
+
+  // populate possible center points with random points inside the polygon
+  if (!origins.length) {
+    // get the centroid of the polygon
+    var centroid = polygonCentroid(poly);
+    if (isNaN(centroid[0])) {
+      if (options.verbose) { console.error("cannot find centroid", poly); }
+      return null;
+    }
+    if (polygonContains$1(poly, centroid)) { origins.push(centroid); }
+    // get few more points inside the polygon
+    while (origins.length < options.nTries) {
+      var rndX = Math.random() * boxWidth + minx;
+      var rndY = Math.random() * boxHeight + miny;
+      var rndPoint = [rndX, rndY];
+      if (polygonContains$1(poly, rndPoint)) { origins.push(rndPoint); }
+    }
+  }
+  if (options.events) { events.push({type: "origins", points: origins}); }
+  var maxArea = 0;
+  var maxRect = null;
+
+  for (var ai = 0; ai < angles.length; ai++) {
+    var angle = angles[ai];
+    var angleRad = -angle * Math.PI / 180;
+    if (options.events) { events.push({type: "angle", angle: angle}); }
+    for (var i = 0; i < origins.length; i++) {
+      var origOrigin = origins[i];
+      // generate improved origins
+      var ref$3 = polygonRayCast$2(poly, origOrigin, angleRad);
+      var p1W = ref$3[0];
+      var p2W = ref$3[1];
+      var ref$4 = polygonRayCast$2(poly, origOrigin, angleRad + Math.PI / 2);
+      var p1H = ref$4[0];
+      var p2H = ref$4[1];
+      var modifOrigins = [];
+      if (p1W && p2W) { modifOrigins.push([(p1W[0] + p2W[0]) / 2, (p1W[1] + p2W[1]) / 2]); } // average along with width axis
+      if (p1H && p2H) { modifOrigins.push([(p1H[0] + p2H[0]) / 2, (p1H[1] + p2H[1]) / 2]); } // average along with height axis
+
+      if (options.events) { events.push({type: "modifOrigin", idx: i, p1W: p1W, p2W: p2W, p1H: p1H, p2H: p2H, modifOrigins: modifOrigins}); }
+
+      for (var i$1 = 0; i$1 < modifOrigins.length; i$1++) {
+
+        var origin = modifOrigins[i$1];
+
+        if (options.events) { events.push({type: "origin", cx: origin[0], cy: origin[1]}); }
+
+        var ref$5 = polygonRayCast$2(poly, origin, angleRad);
+        var p1W$1 = ref$5[0];
+        var p2W$1 = ref$5[1];
+        if (p1W$1 === null || p2W$1 === null) { continue; }
+        var minSqDistW = Math.min(pointDistanceSquared$2(origin, p1W$1), pointDistanceSquared$2(origin, p2W$1));
+        var maxWidth = 2 * Math.sqrt(minSqDistW);
+
+        var ref$6 = polygonRayCast$2(poly, origin, angleRad + Math.PI / 2);
+        var p1H$1 = ref$6[0];
+        var p2H$1 = ref$6[1];
+        if (p1H$1 === null || p2H$1 === null) { continue; }
+        var minSqDistH = Math.min(pointDistanceSquared$2(origin, p1H$1), pointDistanceSquared$2(origin, p2H$1));
+        var maxHeight = 2 * Math.sqrt(minSqDistH);
+
+        if (maxWidth * maxHeight < maxArea) { continue; }
+
+        var aRatios = aspectRatios;
+        if (!aRatios.length) {
+          var minAspectRatio = Math.max(options.minAspectRatio, options.minWidth / maxHeight, maxArea / (maxHeight * maxHeight));
+          var maxAspectRatio = Math.min(options.maxAspectRatio, maxWidth / options.minHeight, maxWidth * maxWidth / maxArea);
+          aRatios = range(minAspectRatio, maxAspectRatio + aspectRatioStep$2, aspectRatioStep$2);
+        }
+
+        for (var a = 0; a < aRatios.length; a++) {
+
+          var aRatio = aRatios[a];
+
+          // do a binary search to find the max width that works
+          var left = Math.max(options.minWidth, Math.sqrt(maxArea * aRatio));
+          var right = Math.min(maxWidth, maxHeight * aRatio);
+          if (right * maxHeight < maxArea) { continue; }
+
+          if (options.events && right - left >= widthStep) { events.push({type: "aRatio", aRatio: aRatio}); }
+
+          while (right - left >= widthStep) {
+            var width = (left + right) / 2;
+            var height = width / aRatio;
+            var cx = origin[0];
+            var cy = origin[1];
+            var rectPoly = [
+              [cx - width / 2, cy - height / 2],
+              [cx + width / 2, cy - height / 2],
+              [cx + width / 2, cy + height / 2],
+              [cx - width / 2, cy + height / 2]
+            ];
+            rectPoly = polygonRotate$2(rectPoly, angleRad, origin);
+            var insidePoly = polygonInside$2(rectPoly, poly);
+            if (insidePoly) {
+              // we know that the area is already greater than the maxArea found so far
+              maxArea = width * height;
+              rectPoly.push(rectPoly[0]);
+              maxRect = {area: maxArea, cx: cx, cy: cy, width: width, height: height, angle: -angle, points: rectPoly};
+              left = width; // increase the width in the binary search
+            }
+            else {
+              right = width; // decrease the width in the binary search
+            }
+            if (options.events) { events.push({type: "rectangle", areaFraction: width * height / area, cx: cx, cy: cy, width: width, height: height, angle: angle, insidePoly: insidePoly}); }
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }
+
+  return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
+
+};
+
+/**
+    @class Area
+    @extends Shape
+    @desc Creates SVG areas based on an array of data.
+*/
+var Area$4 = (function (Shape) {
+  function Area() {
+    var this$1 = this;
+
+
+    Shape.call(this);
+
+    this._curve = "linear";
+    this._defined = function () { return true; };
+    this._labelBounds = function (d, i, aes) {
+      var r = largestRect$2(aes.points);
+      if (!r) { return null; }
+      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2 - this$1._x(d, i), y: r.cy - r.height / 2 - this$1._y(d, i)};
+    };
+    this._name = "Area";
+    this.textAnchor("middle");
+    this.verticalAlign("middle");
+    this._x = accessor("x");
+    this._x0 = accessor("x");
+    this._x1 = null;
+    this._y = constant$7(0);
+    this._y0 = constant$7(0);
+    this._y1 = accessor("y");
+
+  }
+
+  if ( Shape ) Area.__proto__ = Shape;
+  Area.prototype = Object.create( Shape && Shape.prototype );
+  Area.prototype.constructor = Area;
+
+  /**
+      @memberof Area
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Area.prototype._aes = function _aes (d) {
+    var this$1 = this;
+
+    var values$$1 = d.values.slice().sort(function (a, b) { return this$1._y1 ? this$1._x(a) - this$1._x(b) : this$1._y(a) - this$1._y(b); });
+    var points1 = values$$1.map(function (v, z) { return [this$1._x0(v, z), this$1._y0(v, z)]; });
+    var points2 = values$$1.reverse().map(function (v, z) { return this$1._y1 ? [this$1._x(v, z), this$1._y1(v, z)] : [this$1._x1(v, z), this$1._y(v, z)]; });
+    var points = points1.concat(points2);
+    if (points1[0][1] > points2[0][1]) { points = points.reverse(); }
+    points.push(points[0]);
+    return {points: points};
+  };
+
+  /**
+      @memberof Area
+      @desc Filters/manipulates the data array before binding each point to an SVG group.
+      @param {Array} [*data* = the data array to be filtered]
+      @private
+  */
+  Area.prototype._dataFilter = function _dataFilter (data) {
+    var this$1 = this;
+
+
+    var areas = nest().key(this._id).entries(data).map(function (d) {
+
+      d.data = objectMerge(d.values);
+      d.i = data.indexOf(d.values[0]);
+
+      var x = extent(d.values.map(this$1._x)
+        .concat(d.values.map(this$1._x0))
+        .concat(this$1._x1 ? d.values.map(this$1._x1) : [])
+      );
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+
+      var y = extent(d.values.map(this$1._y)
+        .concat(d.values.map(this$1._y0))
+        .concat(this$1._y1 ? d.values.map(this$1._y1) : [])
+      );
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+
+      d.nested = true;
+      d.translate = [d.x, d.y];
+      d.__d3plusShape__ = true;
+
+      return d;
+    });
+
+    areas.key = function (d) { return d.key; };
+    return areas;
+
+  };
+
+  /**
+      @memberof Area
+      @desc Draws the area polygons.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Area.prototype.render = function render (callback) {
+
+    Shape.prototype.render.call(this, callback);
+
+    var path = this._path = area$1()
+      .defined(this._defined)
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x).x0(this._x0).x1(this._x1)
+      .y(this._y).y0(this._y0).y1(this._y1);
+
+    var exitPath = area$1()
+      .defined(function (d) { return d; })
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .x(this._x).x0(this._x0).x1(this._x1)
+      .y(this._y).y0(this._y0).y1(this._y1);
+
+    this._enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    this._update.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attrTween("d", function(d) {
+        return interpolatePath(select(this).attr("d"), path(d.values));
+      })
+      .call(this._applyStyle.bind(this));
+
+    this._exit.select("path").transition(this._transition)
+      .attrTween("d", function(d) {
+        return interpolatePath(select(this).attr("d"), exitPath(d.values));
+      });
+
+    return this;
+
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the area curve to the specified string and returns the current class instance. If *value* is not specified, returns the current area curve.
+      @param {String} [*value* = "linear"]
+      @chainable
+  */
+  Area.prototype.curve = function curve (_) {
+    return arguments.length
+         ? (this._curve = _, this)
+         : this._curve;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Area.prototype.defined = function defined (_) {
+    return arguments.length
+         ? (this._defined = _, this)
+         : this._defined;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.x = function x (_) {
+    if (!arguments.length) { return this._x; }
+    this._x = typeof _ === "function" ? _ : constant$7(_);
+    this._x0 = this._x;
+    return this;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.x0 = function x0 (_) {
+    if (!arguments.length) { return this._x0; }
+    this._x0 = typeof _ === "function" ? _ : constant$7(_);
+    this._x = this._x0;
+    return this;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
+      @param {Function|Number|null} [*value*]
+      @chainable
+  */
+  Area.prototype.x1 = function x1 (_) {
+    return arguments.length
+         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         : this._x1;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.y = function y (_) {
+    if (!arguments.length) { return this._y; }
+    this._y = typeof _ === "function" ? _ : constant$7(_);
+    this._y0 = this._y;
+    return this;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Area.prototype.y0 = function y0 (_) {
+    if (!arguments.length) { return this._y0; }
+    this._y0 = typeof _ === "function" ? _ : constant$7(_);
+    this._y = this._y0;
+    return this;
+  };
+
+  /**
+      @memberof Area
+      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
+      @param {Function|Number|null} [*value*]
+      @chainable
+  */
+  Area.prototype.y1 = function y1 (_) {
+    return arguments.length
+         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         : this._y1;
+  };
+
+  return Area;
+}(Shape$4));
+
+/**
+    @class Bar
+    @extends Shape
+    @desc Creates SVG areas based on an array of data.
+*/
+var Bar$4 = (function (Shape) {
+  function Bar() {
+    var this$1 = this;
+
+
+    Shape.call(this, "rect");
+
+    this._name = "Bar";
+    this._height = constant$7(10);
+    this._labelBounds = function (d, i, s) { return ({
+      width: s.width,
+      height: s.height,
+      x: this$1._x1 !== null ? this$1._getX(d, i) : -s.width / 2,
+      y: this$1._x1 === null ? this$1._getY(d, i) : -s.height / 2
+    }); };
+    this._width = constant$7(10);
+    this._x = accessor("x");
+    this._x0 = accessor("x");
+    this._x1 = null;
+    this._y = constant$7(0);
+    this._y0 = constant$7(0);
+    this._y1 = accessor("y");
+
+  }
+
+  if ( Shape ) Bar.__proto__ = Shape;
+  Bar.prototype = Object.create( Shape && Shape.prototype );
+  Bar.prototype.constructor = Bar;
+
+  /**
+      @memberof Bar
+      @desc Draws the bars.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Bar.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    this._enter
+        .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
+        .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
+        .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
+        .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; })
+        .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .call(this._applyPosition.bind(this));
+
+    this._update.transition(this._transition)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    this._exit.transition(this._transition)
+      .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
+      .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
+      .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
+      .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; });
+
+    return this;
+
+  };
+
+  /**
+      @memberof Bar
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Bar.prototype._aes = function _aes (d, i) {
+    return {height: this._getHeight(d, i), width: this._getWidth(d, i)};
+  };
+
+  /**
+      @memberof Bar
+      @desc Provides the default positioning to the <rect> elements.
+      @param {D3Selection} *elem*
+      @private
+  */
+  Bar.prototype._applyPosition = function _applyPosition (elem$$1) {
+    var this$1 = this;
+
+    elem$$1
+      .attr("width", function (d, i) { return this$1._getWidth(d, i); })
+      .attr("height", function (d, i) { return this$1._getHeight(d, i); })
+      .attr("x", function (d, i) { return this$1._x1 !== null ? this$1._getX(d, i) : -this$1._getWidth(d, i) / 2; })
+      .attr("y", function (d, i) { return this$1._x1 === null ? this$1._getY(d, i) : -this$1._getHeight(d, i) / 2; });
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the height of the <rect> by assessing the x and y properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getHeight = function _getHeight (d, i) {
+    if (this._x1 !== null) { return this._height(d, i); }
+    return Math.abs(this._y1(d, i) - this._y(d, i));
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the width of the <rect> by assessing the x and y properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getWidth = function _getWidth (d, i) {
+    if (this._x1 === null) { return this._width(d, i); }
+    return Math.abs(this._x1(d, i) - this._x(d, i));
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the x of the <rect> by assessing the x and width properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getX = function _getX (d, i) {
+    var w = this._x1 === null ? this._x(d, i) : this._x1(d, i) - this._x(d, i);
+    if (w < 0) { return w; }
+    else { return 0; }
+  };
+
+  /**
+      @memberof Bar
+      @desc Calculates the y of the <rect> by assessing the y and height properties.
+      @param {Object} *d*
+      @param {Number} *i*
+      @private
+  */
+  Bar.prototype._getY = function _getY (d, i) {
+    var h = this._x1 !== null ? this._y(d, i) : this._y1(d, i) - this._y(d, i);
+    if (h < 0) { return h; }
+    else { return 0; }
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.height;
+}
+  */
+  Bar.prototype.height = function height (_) {
+    return arguments.length
+         ? (this._height = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._height;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.width;
+}
+  */
+  Bar.prototype.width = function width (_) {
+    return arguments.length
+         ? (this._width = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._width;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Bar.prototype.x0 = function x0 (_) {
+    if (!arguments.length) { return this._x0; }
+    this._x0 = typeof _ === "function" ? _ : constant$7(_);
+    this._x = this._x0;
+    return this;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
+      @param {Function|Number|null} [*value*]
+      @chainable
+  */
+  Bar.prototype.x1 = function x1 (_) {
+    return arguments.length
+         ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         : this._x1;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+  */
+  Bar.prototype.y0 = function y0 (_) {
+    if (!arguments.length) { return this._y0; }
+    this._y0 = typeof _ === "function" ? _ : constant$7(_);
+    this._y = this._y0;
+    return this;
+  };
+
+  /**
+      @memberof Bar
+      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
+      @param {Function|Number|null} [*value*]
+      @chainable
+  */
+  Bar.prototype.y1 = function y1 (_) {
+    return arguments.length
+         ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this)
+         : this._y1;
+  };
+
+  return Bar;
+}(Shape$4));
+
+/**
+    @class Circle
+    @extends Shape
+    @desc Creates SVG circles based on an array of data.
+*/
+var Circle$4 = (function (Shape) {
+  function Circle() {
+    Shape.call(this, "circle");
+    this._name = "Circle";
+    this._r = accessor("r");
+  }
+
+  if ( Shape ) Circle.__proto__ = Shape;
+  Circle.prototype = Object.create( Shape && Shape.prototype );
+  Circle.prototype.constructor = Circle;
+
+  /**
+      @memberof Circle
+      @desc Provides the default positioning to the <rect> elements.
+      @private
+  */
+  Circle.prototype._applyPosition = function _applyPosition (elem$$1) {
+    var this$1 = this;
+
+    elem$$1
+      .attr("r", function (d, i) { return this$1._r(d, i); })
+      .attr("x", function (d, i) { return -this$1._r(d, i) / 2; })
+      .attr("y", function (d, i) { return -this$1._r(d, i) / 2; });
+  };
+
+  /**
+      @memberof Circle
+      @desc Draws the circles.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Circle.prototype.render = function render (callback) {
+
+    Shape.prototype.render.call(this, callback);
+
+    this._enter
+        .attr("r", 0).attr("x", 0).attr("y", 0)
+        .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .call(this._applyPosition.bind(this));
+
+    this._update.transition(this._transition)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    this._exit.transition(this._transition)
+      .attr("r", 0).attr("x", 0).attr("y", 0);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Circle
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Circle.prototype._aes = function _aes (d, i) {
+    return {r: this._r(d, i)};
+  };
+
+  /**
+      @memberof Circle
+      @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current radius accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.r;
+}
+  */
+  Circle.prototype.r = function r (_) {
+    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$7(_), this) : this._r;
+  };
+
+  return Circle;
+}(Shape$4));
+
+/**
+    @class Line
+    @extends Shape
+    @desc Creates SVG lines based on an array of data.
+*/
+var Line$4 = (function (Shape) {
+  function Line() {
+
+    Shape.call(this);
+
+    this._curve = "linear";
+    this._defined = function (d) { return d; };
+    this._fill = constant$7("none");
+    this._name = "Line";
+    this._path = line();
+    this._stroke = constant$7("black");
+    this._strokeWidth = constant$7(1);
+
+  }
+
+  if ( Shape ) Line.__proto__ = Shape;
+  Line.prototype = Object.create( Shape && Shape.prototype );
+  Line.prototype.constructor = Line;
+
+  /**
+      @memberof Line
+      @desc Filters/manipulates the data array before binding each point to an SVG group.
+      @param {Array} [*data* = the data array to be filtered]
+      @private
+  */
+  Line.prototype._dataFilter = function _dataFilter (data) {
+    var this$1 = this;
+
+
+    var lines = nest().key(this._id).entries(data).map(function (d) {
+
+      d.data = objectMerge(d.values);
+      d.i = data.indexOf(d.values[0]);
+
+      var x = extent(d.values, this$1._x);
+      d.xR = x;
+      d.width = x[1] - x[0];
+      d.x = x[0] + d.width / 2;
+
+      var y = extent(d.values, this$1._y);
+      d.yR = y;
+      d.height = y[1] - y[0];
+      d.y = y[0] + d.height / 2;
+
+      d.nested = true;
+      d.translate = [d.x, d.y];
+      d.__d3plusShape__ = true;
+
+      return d;
+    });
+
+    lines.key = function (d) { return d.key; };
+    return lines;
+
+  };
+
+  /**
+      @memberof Line
+      @desc Draws the lines.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Line.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    Shape.prototype.render.call(this, callback);
+
+    var that = this;
+
+    this._path
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .defined(this._defined)
+      .x(this._x)
+      .y(this._y);
+
+    this._enter.append("path")
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attr("d", function (d) { return this$1._path(d.values); })
+      .call(this._applyStyle.bind(this));
+
+    this._update.select("path").transition(this._transition)
+      .attr("transform", function (d) { return ("translate(" + (-d.xR[0] - d.width / 2) + ", " + (-d.yR[0] - d.height / 2) + ")"); })
+      .attrTween("d", function(d) {
+        return interpolatePath(select(this).attr("d"), that._path(d.values));
+      })
+      .call(this._applyStyle.bind(this));
+
+    return this;
+
+  };
+
+  /**
+      @memberof Line
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Line.prototype._aes = function _aes (d, i) {
+    var this$1 = this;
+
+    return {points: d.values.map(function (p) { return [this$1._x(p, i), this$1._y(p, i)]; })};
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
+      @param {String} [*value* = "linear"]
+      @chainable
+  */
+  Line.prototype.curve = function curve (_) {
+    return arguments.length ? (this._curve = _, this) : this._curve;
+  };
+
+  /**
+      @memberof Line
+      @desc If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
+      @param {Function} [*value*]
+      @chainable
+  */
+  Line.prototype.defined = function defined (_) {
+    return arguments.length ? (this._defined = _, this) : this._defined;
+  };
+
+  return Line;
+}(Shape$4));
+
+var pi$9 = Math.PI;
+
+/**
+    @function shapeEdgePoint
+    @desc Calculates the x/y position of a point at the edge of a shape, from the center of the shape, given a specified pixel distance and radian angle.
+    @param {Number} angle The angle, in radians, of the offset point.
+    @param {Number} distance The pixel distance away from the origin.
+    @returns {String} [shape = "circle"] The type of shape, which can be either "circle" or "square".
+*/
+var shapeEdgePoint$2 = function (angle, distance, shape) {
+  if ( shape === void 0 ) shape = "circle";
+
+
+  if (angle < 0) { angle = pi$9 * 2 + angle; }
+
+  if (shape === "square") {
+
+    var diagonal = 45 * (pi$9 / 180);
+    var x = 0, y = 0;
+
+    if (angle < pi$9 / 2) {
+      var tan = Math.tan(angle);
+      x += angle < diagonal ? distance : distance / tan;
+      y += angle < diagonal ? tan * distance : distance;
+    }
+    else if (angle <= pi$9) {
+      var tan$1 = Math.tan(pi$9 - angle);
+      x -= angle < pi$9 - diagonal ? distance / tan$1 : distance;
+      y += angle < pi$9 - diagonal ? distance : tan$1 * distance;
+    }
+    else if (angle < diagonal + pi$9) {
+      x -= distance;
+      y -= Math.tan(angle - pi$9) * distance;
+    }
+    else if (angle < 3 * pi$9 / 2) {
+      x -= distance / Math.tan(angle - pi$9);
+      y -= distance;
+    }
+    else if (angle < 2 * pi$9 - diagonal) {
+      x += distance / Math.tan(2 * pi$9 - angle);
+      y -= distance;
+    }
+    else {
+      x += distance;
+      y -= Math.tan(2 * pi$9 - angle) * distance;
+    }
+
+    return [x, y];
+
+  }
+  else if (shape === "circle") {
+    return [distance * Math.cos(angle), distance * Math.sin(angle)];
+  }
+  else { return null; }
+
+};
+
+var pi$8 = Math.PI;
+
+/**
+    @function path2polygon
+    @desc Transforms a path string into an Array of points.
+    @param {String} path An SVG string path, commonly the "d" property of a <path> element.
+    @param {Number} [segmentLength = 20] The lenght of line segments when converting curves line segments. Higher values lower computation time, but will result in curves that are more rigid.
+    @returns {Array}
+*/
+var path2polygon$2 = function (path, segmentLength) {
+  if ( segmentLength === void 0 ) segmentLength = 20;
+
+
+  var poly = [],
+        regex = /([MLA])([^MLAZ]+)/ig;
+
+  var match = regex.exec(path);
+  while (match !== null) {
+
+    if (["M", "L"].includes(match[1])) { poly.push(match[2].split(",").map(Number)); }
+    else if (match[1] === "A") {
+
+      var points = match[2].split(",").map(Number);
+
+      var last = points.slice(points.length - 2, points.length),
+            prev = poly[poly.length - 1],
+            radius = points[0],
+            width = pointDistance$2(prev, last);
+
+      var angle = Math.acos((radius * radius + radius * radius - width * width) / (2 * radius * radius));
+      if (points[2]) { angle = pi$8 * 2 - angle; }
+
+      var step = angle / (angle / (pi$8 * 2) * (radius * pi$8 * 2) / segmentLength);
+      var start = Math.atan2(-prev[1], -prev[0]) - pi$8;
+      var i = step;
+      while (i < angle) {
+        poly.push(shapeEdgePoint$2(start + i, radius));
+        i += step;
+      }
+      poly.push(last);
+
+    }
+    match = regex.exec(path);
+
+  }
+
+  return poly;
+
+};
+
+/**
+    @class Path
+    @extends Shape
+    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+*/
+var Path$5 = (function (Shape) {
+  function Path() {
+    var this$1 = this;
+
+    Shape.call(this, "path");
+    this._d = accessor("path");
+    this._labelBounds = function (d, i, aes) {
+      var r = largestRect$2(aes.points, {angle: this$1._labelRotate(d, i)});
+      return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2};
+    };
+    this._name = "Path";
+    this.textAnchor("middle");
+    this.verticalAlign("middle");
+  }
+
+  if ( Shape ) Path.__proto__ = Shape;
+  Path.prototype = Object.create( Shape && Shape.prototype );
+  Path.prototype.constructor = Path;
+
+  /**
+      @memberof Path
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Path.prototype._aes = function _aes (d, i) {
+    return {points: path2polygon$2(this._d(d, i))};
+  };
+
+  /**
+      @memberof Path
+      @desc Draws the paths.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Path.prototype.render = function render (callback) {
+
+    Shape.prototype.render.call(this, callback);
+
+    this._enter
+        .attr("opacity", 0)
+        .attr("d", this._d)
+      .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .attr("opacity", 1);
+
+    this._update.transition(this._transition)
+      .call(this._applyStyle.bind(this))
+        .attr("opacity", 1)
+        .attr("d", this._d);
+
+    this._exit.transition(this._transition)
+      .attr("opacity", 0);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Path
+      @desc If *value* is specified, sets the "d" attribute accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current "d" attribute accessor.
+      @param {Function|String} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.path;
+}
+  */
+  Path.prototype.d = function d (_) {
+    return arguments.length
+         ? (this._d = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._d;
+  };
+
+  return Path;
+}(Shape$4));
+
+/**
+    @class Rect
+    @extends Shape
+    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+*/
+var Rect$4 = (function (Shape) {
+  function Rect() {
+    Shape.call(this, "rect");
+    this._height = accessor("height");
+    this._labelBounds = function (d, i, s) { return ({width: s.width, height: s.height, x: -s.width / 2, y: -s.height / 2}); };
+    this._name = "Rect";
+    this._width = accessor("width");
+  }
+
+  if ( Shape ) Rect.__proto__ = Shape;
+  Rect.prototype = Object.create( Shape && Shape.prototype );
+  Rect.prototype.constructor = Rect;
+
+  /**
+      @memberof Rect
+      @desc Draws the rectangles.
+      @param {Function} [*callback*]
+      @chainable
+  */
+  Rect.prototype.render = function render (callback) {
+
+    Shape.prototype.render.call(this, callback);
+
+    this._enter
+        .attr("width", 0).attr("height", 0)
+        .attr("x", 0).attr("y", 0)
+        .call(this._applyStyle.bind(this))
+      .transition(this._transition)
+        .call(this._applyPosition.bind(this));
+
+    this._update.transition(this._transition)
+      .call(this._applyStyle.bind(this))
+      .call(this._applyPosition.bind(this));
+
+    this._exit.transition(this._transition)
+      .attr("width", 0).attr("height", 0)
+      .attr("x", 0).attr("y", 0);
+
+    return this;
+
+  };
+
+  /**
+      @memberof Rect
+      @desc Given a specific data point and index, returns the aesthetic properties of the shape.
+      @param {Object} *data point*
+      @param {Number} *index*
+      @private
+  */
+  Rect.prototype._aes = function _aes (d, i) {
+    return {width: this._width(d, i), height: this._height(d, i)};
+  };
+
+  /**
+      @memberof Rect
+      @desc Provides the default positioning to the <rect> elements.
+      @param {D3Selection} *elem*
+      @private
+  */
+  Rect.prototype._applyPosition = function _applyPosition (elem$$1) {
+    var this$1 = this;
+
+    elem$$1
+      .attr("width", function (d, i) { return this$1._width(d, i); })
+      .attr("height", function (d, i) { return this$1._height(d, i); })
+      .attr("x", function (d, i) { return -this$1._width(d, i) / 2; })
+      .attr("y", function (d, i) { return -this$1._height(d, i) / 2; });
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.height;
+}
+  */
+  Rect.prototype.height = function height (_) {
+    return arguments.length
+         ? (this._height = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._height;
+  };
+
+  /**
+      @memberof Rect
+      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+      @param {Function|Number} [*value*]
+      @chainable
+      @example
+function(d) {
+  return d.width;
+}
+  */
+  Rect.prototype.width = function width (_) {
+    return arguments.length
+         ? (this._width = typeof _ === "function" ? _ : constant$7(_), this)
+         : this._width;
+  };
+
+  return Rect;
+}(Shape$4));
+
+
+
+var shapes$1 = Object.freeze({
+	Image: Image$5,
+	Shape: Shape$4,
+	Area: Area$4,
+	Bar: Bar$4,
+	Circle: Circle$4,
+	Line: Line$4,
+	Path: Path$5,
+	Rect: Rect$4,
+	largestRect: largestRect$2,
+	lineIntersection: lineIntersection$2,
+	path2polygon: path2polygon$2,
+	pointDistance: pointDistance$2,
+	pointDistanceSquared: pointDistanceSquared$2,
+	pointRotate: pointRotate$2,
+	polygonInside: polygonInside$2,
+	polygonRayCast: polygonRayCast$2,
+	polygonRotate: polygonRotate$2,
+	segmentBoxContains: segmentBoxContains$2,
+	segmentsIntersect: segmentsIntersect$2,
+	shapeEdgePoint: shapeEdgePoint$2,
+	simplify: simplify$2
+});
+
+/**
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
@@ -18418,19 +25780,19 @@ var ColorScale = (function (BaseClass$$1) {
     this._axisTest = new Axis();
     this._align = "middle";
     this._color = "#0C8040";
-    this._colorSize = 10;
     this._data = [];
     this._duration = 600;
     this._height = 200;
     this._orient = "bottom";
     this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
     this._padding = 5;
-    this._rectClass = new Rect();
+    this._rectClass = new Rect$4();
     this._rectConfig = {
       stroke: "#000",
       strokeWidth: 1
     };
     this._scale = "linear";
+    this._size = 10;
     this._value = accessor("value");
     this._width = 400;
 
@@ -18491,20 +25853,18 @@ var ColorScale = (function (BaseClass$$1) {
         colors = data.slice(0, data.length - 1).map(function (d, i) { return ts(i); });
       }
 
-      var jenks = ckmeans(data, colors.length + 1);
+      var jenks = ckmeans(data, colors.length);
 
       ticks$$1 = merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
       this._colorScale = threshold$1()
         .domain(ticks$$1)
         .range(["black"].concat(colors).concat(colors[colors.length - 1]));
 
-      ticks$$1 = ticks$$1.slice(0, ticks$$1.length - 1);
-
     }
     else {
 
       var step = (domain[1] - domain[0]) / colors.length;
-      var buckets = range(domain[0], domain[1] + step, step);
+      var buckets = range(domain[0], domain[1] + step / 2, step);
 
       if (this._scale === "buckets") { ticks$$1 = buckets; }
 
@@ -18533,14 +25893,14 @@ var ColorScale = (function (BaseClass$$1) {
     var axisBounds = this._axisTest.outerBounds();
 
     this._outerBounds[width] = this[("_" + width)] - this._padding * 2;
-    this._outerBounds[height] = axisBounds[height] + this._colorSize;
+    this._outerBounds[height] = axisBounds[height] + this._size;
 
     this._outerBounds[x] = this._padding;
     this._outerBounds[y] = this._padding;
     if (this._align === "middle") { this._outerBounds[y] = (this[("_" + height)] - this._outerBounds[height]) / 2; }
     else if (this._align === "end") { this._outerBounds[y] = this[("_" + height)] - this._padding - this._outerBounds[height]; }
 
-    var groupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._colorSize : 0) - (axisConfig.padding || this._axisClass.padding());
+    var groupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
     this._axisClass
       .select(elem("g.d3plus-ColorScale-axis", {
         parent: this._group,
@@ -18578,7 +25938,7 @@ var ColorScale = (function (BaseClass$$1) {
       .select(elem("g.d3plus-ColorScale-Rect", {parent: this._group}).node())
       .config(( obj = {
         fill: ticks$$1 ? function (d) { return this$1._colorScale(d); } : ("url(#gradient-" + (this._uuid) + ")")
-      }, obj[x] = ticks$$1 ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._colorSize / 2, obj[width] = ticks$$1 ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._colorSize, obj ))
+      }, obj[x] = ticks$$1 ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2, obj[width] = ticks$$1 ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._size, obj ))
       .config(this._rectConfig)
       .render();
     var obj;
@@ -18681,6 +26041,16 @@ var ColorScale = (function (BaseClass$$1) {
 
   /**
       @memberof ColorScale
+      @desc Provides access to the config method of the Rect class used to create the different rectangle color buckets.
+      @param {Object} [*value*]
+      @chainable
+  */
+  ColorScale.prototype.rectConfig = function rectConfig (_) {
+    return arguments.length ? (this._rectConfig = Object.assign(this._rectConfig, _), this) : this._rectConfig;
+  };
+
+  /**
+      @memberof ColorScale
       @desc If *value* is specified, sets the scale of the ColorScale and returns the current class instance. If *value* is not specified, returns the current scale value.
       @param {String} [*value* = "linear"] Can either be "linear", "jenks", or "buckets".
       @chainable
@@ -18697,6 +26067,16 @@ var ColorScale = (function (BaseClass$$1) {
   */
   ColorScale.prototype.select = function select$1 (_) {
     return arguments.length ? (this._select = select(_), this) : this._select;
+  };
+
+  /**
+      @memberof ColorScale
+      @desc The height of horizontal color scales, and width when positioned vertical.
+      @param {Number} [*value* = 10]
+      @chainable
+  */
+  ColorScale.prototype.size = function size (_) {
+    return arguments.length ? (this._size = _, this) : this._size;
   };
 
   /**
@@ -18758,7 +26138,7 @@ var Legend = (function (BaseClass$$1) {
       duration: this._duration,
       fill: accessor("color"),
       fontColor: constant$7("#444"),
-      fontFamily: new Rect().fontFamily(),
+      fontFamily: new Rect$4().fontFamily(),
       fontResize: false,
       fontSize: constant$7(10),
       height: constant$7(10),
@@ -19071,7 +26451,7 @@ var Legend = (function (BaseClass$$1) {
     this._shapes = [];
     ["Circle", "Rect"].forEach(function (Shape$$1) {
 
-      this$1._shapes.push(new shapes[Shape$$1]()
+      this$1._shapes.push(new shapes$1[Shape$$1]()
         .data(data.filter(function (d) { return d.shape === Shape$$1; }))
         .duration(this$1._duration)
         .labelPadding(0)
@@ -19277,7 +26657,7 @@ function value(d) {
   return Legend;
 }(BaseClass));
 
-var constant$9 = function(x) {
+var constant$10 = function(x) {
   return function() {
     return x;
   };
@@ -19290,12 +26670,12 @@ var BrushEvent = function(target, type, selection) {
 };
 
 function nopropagation$2() {
-  event.stopImmediatePropagation();
+  event$1.stopImmediatePropagation();
 }
 
 var noevent$2 = function() {
-  event.preventDefault();
-  event.stopImmediatePropagation();
+  event$1.preventDefault();
+  event$1.stopImmediatePropagation();
 };
 
 var MODE_DRAG = {name: "drag"};
@@ -19387,7 +26767,7 @@ function type$1(t) {
 
 // Ignore right-click, since that should open the context menu.
 function defaultFilter$2() {
-  return !event.button;
+  return !event$1.button;
 }
 
 function defaultExtent$1() {
@@ -19570,13 +26950,13 @@ function brush$1(dim) {
   };
 
   function started() {
-    if (event.touches) { if (event.changedTouches.length < event.touches.length) { return noevent$2(); } }
+    if (event$1.touches) { if (event$1.changedTouches.length < event$1.touches.length) { return noevent$2(); } }
     else if (touchending) { return; }
     if (!filter.apply(this, arguments)) { return; }
 
     var that = this,
-        type = event.target.__data__.type,
-        mode = (event.metaKey ? type = "overlay" : type) === "selection" ? MODE_DRAG : (event.altKey ? MODE_CENTER : MODE_HANDLE),
+        type = event$1.target.__data__.type,
+        mode = (event$1.metaKey ? type = "overlay" : type) === "selection" ? MODE_DRAG : (event$1.altKey ? MODE_CENTER : MODE_HANDLE),
         signX = dim === Y ? null : signsX[type],
         signY = dim === X ? null : signsY[type],
         state = local$1(that),
@@ -19589,7 +26969,7 @@ function brush$1(dim) {
         dx,
         dy,
         moving,
-        shifting = signX && signY && event.shiftKey,
+        shifting = signX && signY && event$1.shiftKey,
         lockX,
         lockY,
         point0 = mouse(that),
@@ -19619,18 +26999,18 @@ function brush$1(dim) {
     var overlay = group.selectAll(".overlay")
         .attr("cursor", cursors[type]);
 
-    if (event.touches) {
+    if (event$1.touches) {
       group
           .on("touchmove.brush", moved, true)
           .on("touchend.brush touchcancel.brush", ended, true);
     } else {
-      var view = select(event.view)
+      var view = select(event$1.view)
           .on("keydown.brush", keydowned, true)
           .on("keyup.brush", keyupped, true)
           .on("mousemove.brush", moved, true)
           .on("mouseup.brush", ended, true);
 
-      dragDisable(event.view);
+      dragDisable(event$1.view);
     }
 
     nopropagation$2();
@@ -19707,13 +27087,13 @@ function brush$1(dim) {
 
     function ended() {
       nopropagation$2();
-      if (event.touches) {
-        if (event.touches.length) { return; }
+      if (event$1.touches) {
+        if (event$1.touches.length) { return; }
         if (touchending) { clearTimeout(touchending); }
         touchending = setTimeout(function() { touchending = null; }, 500); // Ghost clicks are delayed!
         group.on("touchmove.brush touchend.brush touchcancel.brush", null);
       } else {
-        yesdrag(event.view, moving);
+        yesdrag(event$1.view, moving);
         view.on("keydown.brush keyup.brush mousemove.brush mouseup.brush", null);
       }
       group.attr("pointer-events", "all");
@@ -19724,7 +27104,7 @@ function brush$1(dim) {
     }
 
     function keydowned() {
-      switch (event.keyCode) {
+      switch (event$1.keyCode) {
         case 16: { // SHIFT
           shifting = signX && signY;
           break;
@@ -19754,7 +27134,7 @@ function brush$1(dim) {
     }
 
     function keyupped() {
-      switch (event.keyCode) {
+      switch (event$1.keyCode) {
         case 16: { // SHIFT
           if (shifting) {
             lockX = lockY = shifting = false;
@@ -19773,7 +27153,7 @@ function brush$1(dim) {
         }
         case 32: { // SPACE
           if (mode === MODE_SPACE) {
-            if (event.altKey) {
+            if (event$1.altKey) {
               if (signX) { e0 = e1 - dx * signX, w0 = w1 + dx * signX; }
               if (signY) { s0 = s1 - dy * signY, n0 = n1 + dy * signY; }
               mode = MODE_CENTER;
@@ -19801,11 +27181,11 @@ function brush$1(dim) {
   }
 
   brush.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$9([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$10([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
   };
 
   brush.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$9(!!_), brush) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$10(!!_), brush) : filter;
   };
 
   brush.handleSize = function(_) {
@@ -19837,7 +27217,7 @@ var Timeline = (function (Axis$$1) {
     Axis$$1.call(this);
 
     this._brushing = true;
-    this._brushFilter = function () { return !event.button && event.detail < 2; };
+    this._brushFilter = function () { return !event$1.button && event$1.detail < 2; };
     this._domain = [2001, 2010];
     this._gridSize = 0;
     this._handleConfig = {
@@ -19872,10 +27252,10 @@ var Timeline = (function (Axis$$1) {
   */
   Timeline.prototype._brushBrush = function _brushBrush () {
 
-    if (event.sourceEvent && event.sourceEvent.offsetX && event.selection !== null && (!this._brushing || this._snapping)) {
+    if (event$1.sourceEvent && event$1.sourceEvent.offsetX && event$1.selection !== null && (!this._brushing || this._snapping)) {
 
-      var domain = (this._brushing ? event.selection
-                   : [event.selection[0], event.selection[0]])
+      var domain = (this._brushing ? event$1.selection
+                   : [event$1.selection[0], event$1.selection[0]])
                    .map(this._d3Scale.invert)
                    .map(Number);
 
@@ -19910,10 +27290,10 @@ var Timeline = (function (Axis$$1) {
   */
   Timeline.prototype._brushEnd = function _brushEnd () {
 
-    if (!event.sourceEvent) { return; } // Only transition after input.
+    if (!event$1.sourceEvent) { return; } // Only transition after input.
 
-    var domain = (event.selection && this._brushing ? event.selection
-                 : [event.sourceEvent.offsetX, event.sourceEvent.offsetX])
+    var domain = (event$1.selection && this._brushing ? event$1.selection
+                 : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX])
                  .map(this._d3Scale.invert)
                  .map(Number);
 
@@ -19949,10 +27329,10 @@ var Timeline = (function (Axis$$1) {
   */
   Timeline.prototype._brushStart = function _brushStart () {
 
-    if (event.sourceEvent !== null && (!this._brushing || this._snapping)) {
+    if (event$1.sourceEvent !== null && (!this._brushing || this._snapping)) {
 
-      var domain = (event.selection && this._brushing ? event.selection
-                   : [event.sourceEvent.offsetX, event.sourceEvent.offsetX])
+      var domain = (event$1.selection && this._brushing ? event$1.selection
+                   : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX])
                    .map(this._d3Scale.invert)
                    .map(Number);
 
@@ -20643,7 +28023,7 @@ var drawColorScale = function(data) {
   };
 
   var scaleGroup = elem("g.d3plus-viz-colorScale", {
-    condition: this._colorScale,
+    condition: this._colorScale && !this._colorScaleConfig.select,
     enter: transform,
     parent: this._select,
     transition: this._transition,
@@ -20673,7 +28053,7 @@ var drawColorScale = function(data) {
       .render();
 
     var scaleBounds = this._colorScaleClass.outerBounds();
-    if (this._colorScalePosition && scaleBounds.height) {
+    if (this._colorScalePosition && !this._colorScaleConfig.select && scaleBounds.height) {
       if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
       else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
     }
@@ -20682,7 +28062,6586 @@ var drawColorScale = function(data) {
 
 };
 
-var formTypes = {Radio: Radio, Select: Select};
+/* canvas-toBlob.js
+ * A canvas.toBlob() implementation.
+ * 2016-05-26
+ * 
+ * By Eli Grey, http://eligrey.com and Devin Samarin, https://github.com/eboyjr
+ * License: MIT
+ *   See https://github.com/eligrey/canvas-toBlob.js/blob/master/LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, regexp: true, confusion: true, es5: true, vars: true, white: true,
+  plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/canvas-toBlob.js/blob/master/canvas-toBlob.js */
+
+(function(view) {
+"use strict";
+var
+	  Uint8Array = view.Uint8Array
+	, HTMLCanvasElement = view.HTMLCanvasElement
+	, canvas_proto = HTMLCanvasElement && HTMLCanvasElement.prototype
+	, is_base64_regex = /\s*;\s*base64\s*(?:;|$)/i
+	, to_data_url = "toDataURL"
+	, base64_ranks
+	, decode_base64 = function(base64) {
+		var
+			  len = base64.length
+			, buffer = new Uint8Array(len / 4 * 3 | 0)
+			, i = 0
+			, outptr = 0
+			, last = [0, 0]
+			, state = 0
+			, save = 0
+			, rank
+			, code
+			, undef;
+		while (len--) {
+			code = base64.charCodeAt(i++);
+			rank = base64_ranks[code-43];
+			if (rank !== 255 && rank !== undef) {
+				last[1] = last[0];
+				last[0] = code;
+				save = (save << 6) | rank;
+				state++;
+				if (state === 4) {
+					buffer[outptr++] = save >>> 16;
+					if (last[1] !== 61 /* padding character */) {
+						buffer[outptr++] = save >>> 8;
+					}
+					if (last[0] !== 61 /* padding character */) {
+						buffer[outptr++] = save;
+					}
+					state = 0;
+				}
+			}
+		}
+		// 2/3 chance there's going to be some null bytes at the end, but that
+		// doesn't really matter with most image formats.
+		// If it somehow matters for you, truncate the buffer up outptr.
+		return buffer;
+	};
+if (Uint8Array) {
+	base64_ranks = new Uint8Array([
+		  62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1
+		, -1, -1,  0, -1, -1, -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9
+		, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25
+		, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35
+		, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
+	]);
+}
+if (HTMLCanvasElement && (!canvas_proto.toBlob || !canvas_proto.toBlobHD)) {
+	if (!canvas_proto.toBlob)
+	{ canvas_proto.toBlob = function(callback, type /*, ...args*/) {
+		  if (!type) {
+			type = "image/png";
+		} if (this.mozGetAsFile) {
+			callback(this.mozGetAsFile("canvas", type));
+			return;
+		} if (this.msToBlob && /^\s*image\/png\s*(?:$|;)/i.test(type)) {
+			callback(this.msToBlob());
+			return;
+		}
+
+		var
+			  args = Array.prototype.slice.call(arguments, 1)
+			, dataURI = this[to_data_url].apply(this, args)
+			, header_end = dataURI.indexOf(",")
+			, data = dataURI.substring(header_end + 1)
+			, is_base64 = is_base64_regex.test(dataURI.substring(0, header_end))
+			, blob;
+		if (Blob.fake) {
+			// no reason to decode a data: URI that's just going to become a data URI again
+			blob = new Blob;
+			if (is_base64) {
+				blob.encoding = "base64";
+			} else {
+				blob.encoding = "URI";
+			}
+			blob.data = data;
+			blob.size = data.length;
+		} else if (Uint8Array) {
+			if (is_base64) {
+				blob = new Blob([decode_base64(data)], {type: type});
+			} else {
+				blob = new Blob([decodeURIComponent(data)], {type: type});
+			}
+		}
+		callback(blob);
+	}; }
+
+	if (!canvas_proto.toBlobHD && canvas_proto.toDataURLHD) {
+		canvas_proto.toBlobHD = function() {
+			to_data_url = "toDataURLHD";
+			var blob = this.toBlob();
+			to_data_url = "toDataURL";
+			return blob;
+		};
+	} else {
+		canvas_proto.toBlobHD = canvas_proto.toBlob;
+	}
+}
+}(typeof self !== "undefined" && self || typeof window !== "undefined" && window || commonjsGlobal.content || commonjsGlobal));
+
+/*
+	Based on rgbcolor.js by Stoyan Stefanov <sstoo@gmail.com>
+	http://www.phpied.com/rgb-color-parser-in-javascript/
+*/
+
+var index$3 = function(color_string) {
+    var this$1 = this;
+
+    this.ok = false;
+    this.alpha = 1.0;
+
+    // strip any leading #
+    if (color_string.charAt(0) == '#') { // remove # if any
+        color_string = color_string.substr(1,6);
+    }
+
+    color_string = color_string.replace(/ /g,'');
+    color_string = color_string.toLowerCase();
+
+    // before getting into regexps, try simple matches
+    // and overwrite the input
+    var simple_colors = {
+        aliceblue: 'f0f8ff',
+        antiquewhite: 'faebd7',
+        aqua: '00ffff',
+        aquamarine: '7fffd4',
+        azure: 'f0ffff',
+        beige: 'f5f5dc',
+        bisque: 'ffe4c4',
+        black: '000000',
+        blanchedalmond: 'ffebcd',
+        blue: '0000ff',
+        blueviolet: '8a2be2',
+        brown: 'a52a2a',
+        burlywood: 'deb887',
+        cadetblue: '5f9ea0',
+        chartreuse: '7fff00',
+        chocolate: 'd2691e',
+        coral: 'ff7f50',
+        cornflowerblue: '6495ed',
+        cornsilk: 'fff8dc',
+        crimson: 'dc143c',
+        cyan: '00ffff',
+        darkblue: '00008b',
+        darkcyan: '008b8b',
+        darkgoldenrod: 'b8860b',
+        darkgray: 'a9a9a9',
+        darkgreen: '006400',
+        darkkhaki: 'bdb76b',
+        darkmagenta: '8b008b',
+        darkolivegreen: '556b2f',
+        darkorange: 'ff8c00',
+        darkorchid: '9932cc',
+        darkred: '8b0000',
+        darksalmon: 'e9967a',
+        darkseagreen: '8fbc8f',
+        darkslateblue: '483d8b',
+        darkslategray: '2f4f4f',
+        darkturquoise: '00ced1',
+        darkviolet: '9400d3',
+        deeppink: 'ff1493',
+        deepskyblue: '00bfff',
+        dimgray: '696969',
+        dodgerblue: '1e90ff',
+        feldspar: 'd19275',
+        firebrick: 'b22222',
+        floralwhite: 'fffaf0',
+        forestgreen: '228b22',
+        fuchsia: 'ff00ff',
+        gainsboro: 'dcdcdc',
+        ghostwhite: 'f8f8ff',
+        gold: 'ffd700',
+        goldenrod: 'daa520',
+        gray: '808080',
+        green: '008000',
+        greenyellow: 'adff2f',
+        honeydew: 'f0fff0',
+        hotpink: 'ff69b4',
+        indianred : 'cd5c5c',
+        indigo : '4b0082',
+        ivory: 'fffff0',
+        khaki: 'f0e68c',
+        lavender: 'e6e6fa',
+        lavenderblush: 'fff0f5',
+        lawngreen: '7cfc00',
+        lemonchiffon: 'fffacd',
+        lightblue: 'add8e6',
+        lightcoral: 'f08080',
+        lightcyan: 'e0ffff',
+        lightgoldenrodyellow: 'fafad2',
+        lightgrey: 'd3d3d3',
+        lightgreen: '90ee90',
+        lightpink: 'ffb6c1',
+        lightsalmon: 'ffa07a',
+        lightseagreen: '20b2aa',
+        lightskyblue: '87cefa',
+        lightslateblue: '8470ff',
+        lightslategray: '778899',
+        lightsteelblue: 'b0c4de',
+        lightyellow: 'ffffe0',
+        lime: '00ff00',
+        limegreen: '32cd32',
+        linen: 'faf0e6',
+        magenta: 'ff00ff',
+        maroon: '800000',
+        mediumaquamarine: '66cdaa',
+        mediumblue: '0000cd',
+        mediumorchid: 'ba55d3',
+        mediumpurple: '9370d8',
+        mediumseagreen: '3cb371',
+        mediumslateblue: '7b68ee',
+        mediumspringgreen: '00fa9a',
+        mediumturquoise: '48d1cc',
+        mediumvioletred: 'c71585',
+        midnightblue: '191970',
+        mintcream: 'f5fffa',
+        mistyrose: 'ffe4e1',
+        moccasin: 'ffe4b5',
+        navajowhite: 'ffdead',
+        navy: '000080',
+        oldlace: 'fdf5e6',
+        olive: '808000',
+        olivedrab: '6b8e23',
+        orange: 'ffa500',
+        orangered: 'ff4500',
+        orchid: 'da70d6',
+        palegoldenrod: 'eee8aa',
+        palegreen: '98fb98',
+        paleturquoise: 'afeeee',
+        palevioletred: 'd87093',
+        papayawhip: 'ffefd5',
+        peachpuff: 'ffdab9',
+        peru: 'cd853f',
+        pink: 'ffc0cb',
+        plum: 'dda0dd',
+        powderblue: 'b0e0e6',
+        purple: '800080',
+        red: 'ff0000',
+        rosybrown: 'bc8f8f',
+        royalblue: '4169e1',
+        saddlebrown: '8b4513',
+        salmon: 'fa8072',
+        sandybrown: 'f4a460',
+        seagreen: '2e8b57',
+        seashell: 'fff5ee',
+        sienna: 'a0522d',
+        silver: 'c0c0c0',
+        skyblue: '87ceeb',
+        slateblue: '6a5acd',
+        slategray: '708090',
+        snow: 'fffafa',
+        springgreen: '00ff7f',
+        steelblue: '4682b4',
+        tan: 'd2b48c',
+        teal: '008080',
+        thistle: 'd8bfd8',
+        tomato: 'ff6347',
+        turquoise: '40e0d0',
+        violet: 'ee82ee',
+        violetred: 'd02090',
+        wheat: 'f5deb3',
+        white: 'ffffff',
+        whitesmoke: 'f5f5f5',
+        yellow: 'ffff00',
+        yellowgreen: '9acd32'
+    };
+    color_string = simple_colors[color_string] || color_string;
+    // emd of simple type-in colors
+
+    // array of color definition objects
+    var color_defs = [
+        {
+            re: /^rgba\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3}),\s*((?:\d?\.)?\d)\)$/,
+            example: ['rgba(123, 234, 45, 0.8)', 'rgba(255,234,245,1.0)'],
+            process: function (bits){
+                return [
+                    parseInt(bits[1]),
+                    parseInt(bits[2]),
+                    parseInt(bits[3]),
+                    parseFloat(bits[4])
+                ];
+            }
+        },
+        {
+            re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
+            example: ['rgb(123, 234, 45)', 'rgb(255,234,245)'],
+            process: function (bits){
+                return [
+                    parseInt(bits[1]),
+                    parseInt(bits[2]),
+                    parseInt(bits[3])
+                ];
+            }
+        },
+        {
+            re: /^(\w{2})(\w{2})(\w{2})$/,
+            example: ['#00ff00', '336699'],
+            process: function (bits){
+                return [
+                    parseInt(bits[1], 16),
+                    parseInt(bits[2], 16),
+                    parseInt(bits[3], 16)
+                ];
+            }
+        },
+        {
+            re: /^(\w{1})(\w{1})(\w{1})$/,
+            example: ['#fb0', 'f0f'],
+            process: function (bits){
+                return [
+                    parseInt(bits[1] + bits[1], 16),
+                    parseInt(bits[2] + bits[2], 16),
+                    parseInt(bits[3] + bits[3], 16)
+                ];
+            }
+        }
+    ];
+
+    // search through the definitions to find a match
+    for (var i = 0; i < color_defs.length; i++) {
+        var re = color_defs[i].re;
+        var processor = color_defs[i].process;
+        var bits = re.exec(color_string);
+        if (bits) {
+            var channels = processor(bits);
+            this$1.r = channels[0];
+            this$1.g = channels[1];
+            this$1.b = channels[2];
+            if (channels.length > 3) {
+                this$1.alpha = channels[3];
+            }
+            this$1.ok = true;
+        }
+
+    }
+
+    // validate/cleanup values
+    this.r = (this.r < 0 || isNaN(this.r)) ? 0 : ((this.r > 255) ? 255 : this.r);
+    this.g = (this.g < 0 || isNaN(this.g)) ? 0 : ((this.g > 255) ? 255 : this.g);
+    this.b = (this.b < 0 || isNaN(this.b)) ? 0 : ((this.b > 255) ? 255 : this.b);
+    this.alpha = (this.alpha < 0) ? 0 : ((this.alpha > 1.0 || isNaN(this.alpha)) ? 1.0 : this.alpha);
+
+    // some getters
+    this.toRGB = function () {
+        return 'rgb(' + this.r + ', ' + this.g + ', ' + this.b + ')';
+    };
+    this.toRGBA = function () {
+        return 'rgba(' + this.r + ', ' + this.g + ', ' + this.b + ', ' + this.alpha + ')';
+    };
+    this.toHex = function () {
+        var r = this.r.toString(16);
+        var g = this.g.toString(16);
+        var b = this.b.toString(16);
+        if (r.length == 1) { r = '0' + r; }
+        if (g.length == 1) { g = '0' + g; }
+        if (b.length == 1) { b = '0' + b; }
+        return '#' + r + g + b;
+    };
+
+    // help
+    this.getHelpXML = function () {
+
+        var examples = new Array();
+        // add regexps
+        for (var i = 0; i < color_defs.length; i++) {
+            var example = color_defs[i].example;
+            for (var j = 0; j < example.length; j++) {
+                examples[examples.length] = example[j];
+            }
+        }
+        // add type-in colors
+        for (var sc in simple_colors) {
+            examples[examples.length] = sc;
+        }
+
+        var xml = document.createElement('ul');
+        xml.setAttribute('id', 'rgbcolor-examples');
+        for (var i = 0; i < examples.length; i++) {
+            try {
+                var list_item = document.createElement('li');
+                var list_color = new RGBColor(examples[i]);
+                var example_div = document.createElement('div');
+                example_div.style.cssText =
+                        'margin: 3px; '
+                        + 'border: 1px solid black; '
+                        + 'background:' + list_color.toHex() + '; '
+                        + 'color:' + list_color.toHex()
+                ;
+                example_div.appendChild(document.createTextNode('test'));
+                var list_item_value = document.createTextNode(
+                    ' ' + examples[i] + ' -> ' + list_color.toRGB() + ' -> ' + list_color.toHex()
+                );
+                list_item.appendChild(example_div);
+                list_item.appendChild(list_item_value);
+                xml.appendChild(list_item);
+
+            } catch(e){}
+        }
+        return xml;
+
+    };
+
+};
+
+/*
+
+StackBlur - a fast almost Gaussian Blur For Canvas
+
+Version: 	0.5
+Author:		Mario Klingemann
+Contact: 	mario@quasimondo.com
+Website:	http://www.quasimondo.com/StackBlurForCanvas
+Twitter:	@quasimondo
+
+In case you find this class useful - especially in commercial projects -
+I am not totally unhappy for a small donation to my PayPal account
+mario@quasimondo.de
+
+Or support me on flattr: 
+https://flattr.com/thing/72791/StackBlur-a-fast-almost-Gaussian-Blur-Effect-for-CanvasJavascript
+
+Copyright (c) 2010 Mario Klingemann
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+var mul_table = [
+        512,512,456,512,328,456,335,512,405,328,271,456,388,335,292,512,
+        454,405,364,328,298,271,496,456,420,388,360,335,312,292,273,512,
+        482,454,428,405,383,364,345,328,312,298,284,271,259,496,475,456,
+        437,420,404,388,374,360,347,335,323,312,302,292,282,273,265,512,
+        497,482,468,454,441,428,417,405,394,383,373,364,354,345,337,328,
+        320,312,305,298,291,284,278,271,265,259,507,496,485,475,465,456,
+        446,437,428,420,412,404,396,388,381,374,367,360,354,347,341,335,
+        329,323,318,312,307,302,297,292,287,282,278,273,269,265,261,512,
+        505,497,489,482,475,468,461,454,447,441,435,428,422,417,411,405,
+        399,394,389,383,378,373,368,364,359,354,350,345,341,337,332,328,
+        324,320,316,312,309,305,301,298,294,291,287,284,281,278,274,271,
+        268,265,262,259,257,507,501,496,491,485,480,475,470,465,460,456,
+        451,446,442,437,433,428,424,420,416,412,408,404,400,396,392,388,
+        385,381,377,374,370,367,363,360,357,354,350,347,344,341,338,335,
+        332,329,326,323,320,318,315,312,310,307,304,302,299,297,294,292,
+        289,287,285,282,280,278,275,273,271,269,267,265,263,261,259];
+        
+   
+var shg_table = [
+	     9, 11, 12, 13, 13, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 
+		17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 
+		19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20,
+		20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21,
+		21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21,
+		21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 
+		22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22,
+		22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 
+		23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+		23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+		23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 
+		23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 
+		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+		24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24 ];
+
+function blur( pixels, width, height, radius )
+{
+	if ( isNaN(radius) || radius < 1 ) { return; }
+	radius |= 0;
+
+	var x, y, i, p, yp, yi, yw, r_sum, g_sum, b_sum, a_sum, 
+	r_out_sum, g_out_sum, b_out_sum, a_out_sum,
+	r_in_sum, g_in_sum, b_in_sum, a_in_sum, 
+	pr, pg, pb, pa, rbs;
+			
+	var div = radius + radius + 1;
+	var w4 = width << 2;
+	var widthMinus1  = width - 1;
+	var heightMinus1 = height - 1;
+	var radiusPlus1  = radius + 1;
+	var sumFactor = radiusPlus1 * ( radiusPlus1 + 1 ) / 2;
+	
+	var stackStart = new BlurStack();
+	var stack = stackStart;
+	for ( i = 1; i < div; i++ )
+	{
+		stack = stack.next = new BlurStack();
+		if ( i == radiusPlus1 ) { var stackEnd = stack; }
+	}
+	stack.next = stackStart;
+	var stackIn = null;
+	var stackOut = null;
+	
+	yw = yi = 0;
+	
+	var mul_sum = mul_table[radius];
+	var shg_sum = shg_table[radius];
+	
+	for ( y = 0; y < height; y++ )
+	{
+		r_in_sum = g_in_sum = b_in_sum = a_in_sum = r_sum = g_sum = b_sum = a_sum = 0;
+		
+		r_out_sum = radiusPlus1 * ( pr = pixels[yi] );
+		g_out_sum = radiusPlus1 * ( pg = pixels[yi+1] );
+		b_out_sum = radiusPlus1 * ( pb = pixels[yi+2] );
+		a_out_sum = radiusPlus1 * ( pa = pixels[yi+3] );
+		
+		r_sum += sumFactor * pr;
+		g_sum += sumFactor * pg;
+		b_sum += sumFactor * pb;
+		a_sum += sumFactor * pa;
+		
+		stack = stackStart;
+		
+		for( i = 0; i < radiusPlus1; i++ )
+		{
+			stack.r = pr;
+			stack.g = pg;
+			stack.b = pb;
+			stack.a = pa;
+			stack = stack.next;
+		}
+		
+		for( i = 1; i < radiusPlus1; i++ )
+		{
+			p = yi + (( widthMinus1 < i ? widthMinus1 : i ) << 2 );
+			r_sum += ( stack.r = ( pr = pixels[p])) * ( rbs = radiusPlus1 - i );
+			g_sum += ( stack.g = ( pg = pixels[p+1])) * rbs;
+			b_sum += ( stack.b = ( pb = pixels[p+2])) * rbs;
+			a_sum += ( stack.a = ( pa = pixels[p+3])) * rbs;
+			
+			r_in_sum += pr;
+			g_in_sum += pg;
+			b_in_sum += pb;
+			a_in_sum += pa;
+			
+			stack = stack.next;
+		}
+		
+		
+		stackIn = stackStart;
+		stackOut = stackEnd;
+		for ( x = 0; x < width; x++ )
+		{
+			pixels[yi+3] = pa = (a_sum * mul_sum) >> shg_sum;
+			if ( pa != 0 )
+			{
+				pa = 255 / pa;
+				pixels[yi]   = ((r_sum * mul_sum) >> shg_sum) * pa;
+				pixels[yi+1] = ((g_sum * mul_sum) >> shg_sum) * pa;
+				pixels[yi+2] = ((b_sum * mul_sum) >> shg_sum) * pa;
+			} else {
+				pixels[yi] = pixels[yi+1] = pixels[yi+2] = 0;
+			}
+			
+			r_sum -= r_out_sum;
+			g_sum -= g_out_sum;
+			b_sum -= b_out_sum;
+			a_sum -= a_out_sum;
+			
+			r_out_sum -= stackIn.r;
+			g_out_sum -= stackIn.g;
+			b_out_sum -= stackIn.b;
+			a_out_sum -= stackIn.a;
+			
+			p =  ( yw + ( ( p = x + radius + 1 ) < widthMinus1 ? p : widthMinus1 ) ) << 2;
+			
+			r_in_sum += ( stackIn.r = pixels[p]);
+			g_in_sum += ( stackIn.g = pixels[p+1]);
+			b_in_sum += ( stackIn.b = pixels[p+2]);
+			a_in_sum += ( stackIn.a = pixels[p+3]);
+			
+			r_sum += r_in_sum;
+			g_sum += g_in_sum;
+			b_sum += b_in_sum;
+			a_sum += a_in_sum;
+			
+			stackIn = stackIn.next;
+			
+			r_out_sum += ( pr = stackOut.r );
+			g_out_sum += ( pg = stackOut.g );
+			b_out_sum += ( pb = stackOut.b );
+			a_out_sum += ( pa = stackOut.a );
+			
+			r_in_sum -= pr;
+			g_in_sum -= pg;
+			b_in_sum -= pb;
+			a_in_sum -= pa;
+			
+			stackOut = stackOut.next;
+
+			yi += 4;
+		}
+		yw += width;
+	}
+
+	
+	for ( x = 0; x < width; x++ )
+	{
+		g_in_sum = b_in_sum = a_in_sum = r_in_sum = g_sum = b_sum = a_sum = r_sum = 0;
+		
+		yi = x << 2;
+		r_out_sum = radiusPlus1 * ( pr = pixels[yi]);
+		g_out_sum = radiusPlus1 * ( pg = pixels[yi+1]);
+		b_out_sum = radiusPlus1 * ( pb = pixels[yi+2]);
+		a_out_sum = radiusPlus1 * ( pa = pixels[yi+3]);
+		
+		r_sum += sumFactor * pr;
+		g_sum += sumFactor * pg;
+		b_sum += sumFactor * pb;
+		a_sum += sumFactor * pa;
+		
+		stack = stackStart;
+		
+		for( i = 0; i < radiusPlus1; i++ )
+		{
+			stack.r = pr;
+			stack.g = pg;
+			stack.b = pb;
+			stack.a = pa;
+			stack = stack.next;
+		}
+		
+		yp = width;
+		
+		for( i = 1; i <= radius; i++ )
+		{
+			yi = ( yp + x ) << 2;
+			
+			r_sum += ( stack.r = ( pr = pixels[yi])) * ( rbs = radiusPlus1 - i );
+			g_sum += ( stack.g = ( pg = pixels[yi+1])) * rbs;
+			b_sum += ( stack.b = ( pb = pixels[yi+2])) * rbs;
+			a_sum += ( stack.a = ( pa = pixels[yi+3])) * rbs;
+		   
+			r_in_sum += pr;
+			g_in_sum += pg;
+			b_in_sum += pb;
+			a_in_sum += pa;
+			
+			stack = stack.next;
+		
+			if( i < heightMinus1 )
+			{
+				yp += width;
+			}
+		}
+		
+		yi = x;
+		stackIn = stackStart;
+		stackOut = stackEnd;
+		for ( y = 0; y < height; y++ )
+		{
+			p = yi << 2;
+			pixels[p+3] = pa = (a_sum * mul_sum) >> shg_sum;
+			if ( pa > 0 )
+			{
+				pa = 255 / pa;
+				pixels[p]   = ((r_sum * mul_sum) >> shg_sum ) * pa;
+				pixels[p+1] = ((g_sum * mul_sum) >> shg_sum ) * pa;
+				pixels[p+2] = ((b_sum * mul_sum) >> shg_sum ) * pa;
+			} else {
+				pixels[p] = pixels[p+1] = pixels[p+2] = 0;
+			}
+			
+			r_sum -= r_out_sum;
+			g_sum -= g_out_sum;
+			b_sum -= b_out_sum;
+			a_sum -= a_out_sum;
+		   
+			r_out_sum -= stackIn.r;
+			g_out_sum -= stackIn.g;
+			b_out_sum -= stackIn.b;
+			a_out_sum -= stackIn.a;
+			
+			p = ( x + (( ( p = y + radiusPlus1) < heightMinus1 ? p : heightMinus1 ) * width )) << 2;
+			
+			r_sum += ( r_in_sum += ( stackIn.r = pixels[p]));
+			g_sum += ( g_in_sum += ( stackIn.g = pixels[p+1]));
+			b_sum += ( b_in_sum += ( stackIn.b = pixels[p+2]));
+			a_sum += ( a_in_sum += ( stackIn.a = pixels[p+3]));
+		   
+			stackIn = stackIn.next;
+			
+			r_out_sum += ( pr = stackOut.r );
+			g_out_sum += ( pg = stackOut.g );
+			b_out_sum += ( pb = stackOut.b );
+			a_out_sum += ( pa = stackOut.a );
+			
+			r_in_sum -= pr;
+			g_in_sum -= pg;
+			b_in_sum -= pb;
+			a_in_sum -= pa;
+			
+			stackOut = stackOut.next;
+			
+			yi += width;
+		}
+	}
+}
+
+function BlurStack()
+{
+	this.r = 0;
+	this.g = 0;
+	this.b = 0;
+	this.a = 0;
+	this.next = null;
+}
+
+var index$5 = blur;
+
+//[4]   	NameStartChar	   ::=   	":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+//[4a]   	NameChar	   ::=   	NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
+//[5]   	Name	   ::=   	NameStartChar (NameChar)*
+var nameStartChar = /[A-Z_a-z\xC0-\xD6\xD8-\xF6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]/;//\u10000-\uEFFFF
+var nameChar = new RegExp("[\\-\\.0-9"+nameStartChar.source.slice(1,-1)+"\\u00B7\\u0300-\\u036F\\u203F-\\u2040]");
+var tagNamePattern = new RegExp('^'+nameStartChar.source+nameChar.source+'*(?:\:'+nameStartChar.source+nameChar.source+'*)?$');
+//var tagNamePattern = /^[a-zA-Z_][\w\-\.]*(?:\:[a-zA-Z_][\w\-\.]*)?$/
+//var handlers = 'resolveEntity,getExternalSubset,characters,endDocument,endElement,endPrefixMapping,ignorableWhitespace,processingInstruction,setDocumentLocator,skippedEntity,startDocument,startElement,startPrefixMapping,notationDecl,unparsedEntityDecl,error,fatalError,warning,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,comment,endCDATA,endDTD,endEntity,startCDATA,startDTD,startEntity'.split(',')
+
+//S_TAG,	S_ATTR,	S_EQ,	S_ATTR_NOQUOT_VALUE
+//S_ATTR_SPACE,	S_ATTR_END,	S_TAG_SPACE, S_TAG_CLOSE
+var S_TAG = 0;//tag name offerring
+var S_ATTR = 1;//attr name offerring 
+var S_ATTR_SPACE=2;//attr name end and space offer
+var S_EQ = 3;//=space?
+var S_ATTR_NOQUOT_VALUE = 4;//attr value(no quot value only)
+var S_ATTR_END = 5;//attr value end and no space(quot end)
+var S_TAG_SPACE = 6;//(attr value end || tag end ) && (space offer)
+var S_TAG_CLOSE = 7;//closed el<el />
+
+function XMLReader(){
+	
+}
+
+XMLReader.prototype = {
+	parse:function(source,defaultNSMap,entityMap){
+		var domBuilder = this.domBuilder;
+		domBuilder.startDocument();
+		_copy(defaultNSMap ,defaultNSMap = {});
+		parse(source,defaultNSMap,entityMap,
+				domBuilder,this.errorHandler);
+		domBuilder.endDocument();
+	}
+};
+function parse(source,defaultNSMapCopy,entityMap,domBuilder,errorHandler){
+	function fixedFromCharCode(code) {
+		// String.prototype.fromCharCode does not supports
+		// > 2 bytes unicode chars directly
+		if (code > 0xffff) {
+			code -= 0x10000;
+			var surrogate1 = 0xd800 + (code >> 10)
+				, surrogate2 = 0xdc00 + (code & 0x3ff);
+
+			return String.fromCharCode(surrogate1, surrogate2);
+		} else {
+			return String.fromCharCode(code);
+		}
+	}
+	function entityReplacer(a){
+		var k = a.slice(1,-1);
+		if(k in entityMap){
+			return entityMap[k]; 
+		}else if(k.charAt(0) === '#'){
+			return fixedFromCharCode(parseInt(k.substr(1).replace('x','0x')))
+		}else{
+			errorHandler.error('entity not found:'+a);
+			return a;
+		}
+	}
+	function appendText(end){//has some bugs
+		if(end>start){
+			var xt = source.substring(start,end).replace(/&#?\w+;/g,entityReplacer);
+			locator&&position(start);
+			domBuilder.characters(xt,0,end-start);
+			start = end;
+		}
+	}
+	function position(p,m){
+		while(p>=lineEnd && (m = linePattern.exec(source))){
+			lineStart = m.index;
+			lineEnd = lineStart + m[0].length;
+			locator.lineNumber++;
+			//console.log('line++:',locator,startPos,endPos)
+		}
+		locator.columnNumber = p-lineStart+1;
+	}
+	var lineStart = 0;
+	var lineEnd = 0;
+	var linePattern = /.*(?:\r\n?|\n)|.*$/g;
+	var locator = domBuilder.locator;
+	
+	var parseStack = [{currentNSMap:defaultNSMapCopy}];
+	var closeMap = {};
+	var start = 0;
+	while(true){
+		try{
+			var tagStart = source.indexOf('<',start);
+			if(tagStart<0){
+				if(!source.substr(start).match(/^\s*$/)){
+					var doc = domBuilder.doc;
+	    			var text = doc.createTextNode(source.substr(start));
+	    			doc.appendChild(text);
+	    			domBuilder.currentElement = text;
+				}
+				return;
+			}
+			if(tagStart>start){
+				appendText(tagStart);
+			}
+			switch(source.charAt(tagStart+1)){
+			case '/':
+				var end = source.indexOf('>',tagStart+3);
+				var tagName = source.substring(tagStart+2,end);
+				var config = parseStack.pop();
+				if(end<0){
+					
+	        		tagName = source.substring(tagStart+2).replace(/[\s<].*/,'');
+	        		//console.error('#@@@@@@'+tagName)
+	        		errorHandler.error("end tag name: "+tagName+' is not complete:'+config.tagName);
+	        		end = tagStart+1+tagName.length;
+	        	}else if(tagName.match(/\s</)){
+	        		tagName = tagName.replace(/[\s<].*/,'');
+	        		errorHandler.error("end tag name: "+tagName+' maybe not complete');
+	        		end = tagStart+1+tagName.length;
+				}
+				//console.error(parseStack.length,parseStack)
+				//console.error(config);
+				var localNSMap = config.localNSMap;
+				var endMatch = config.tagName == tagName;
+				var endIgnoreCaseMach = endMatch || config.tagName&&config.tagName.toLowerCase() == tagName.toLowerCase();
+		        if(endIgnoreCaseMach){
+		        	domBuilder.endElement(config.uri,config.localName,tagName);
+					if(localNSMap){
+						for(var prefix in localNSMap){
+							domBuilder.endPrefixMapping(prefix) ;
+						}
+					}
+					if(!endMatch){
+		            	errorHandler.fatalError("end tag name: "+tagName+' is not match the current start tagName:'+config.tagName );
+					}
+		        }else{
+		        	parseStack.push(config);
+		        }
+				
+				end++;
+				break;
+				// end elment
+			case '?':// <?...?>
+				locator&&position(tagStart);
+				end = parseInstruction(source,tagStart,domBuilder);
+				break;
+			case '!':// <!doctype,<![CDATA,<!--
+				locator&&position(tagStart);
+				end = parseDCC(source,tagStart,domBuilder,errorHandler);
+				break;
+			default:
+				locator&&position(tagStart);
+				var el = new ElementAttributes();
+				var currentNSMap = parseStack[parseStack.length-1].currentNSMap;
+				//elStartEnd
+				var end = parseElementStartPart(source,tagStart,el,currentNSMap,entityReplacer,errorHandler);
+				var len = el.length;
+				
+				
+				if(!el.closed && fixSelfClosed(source,end,el.tagName,closeMap)){
+					el.closed = true;
+					if(!entityMap.nbsp){
+						errorHandler.warning('unclosed xml attribute');
+					}
+				}
+				if(locator && len){
+					var locator2 = copyLocator(locator,{});
+					//try{//attribute position fixed
+					for(var i = 0;i<len;i++){
+						var a = el[i];
+						position(a.offset);
+						a.locator = copyLocator(locator,{});
+					}
+					//}catch(e){console.error('@@@@@'+e)}
+					domBuilder.locator = locator2;
+					if(appendElement(el,domBuilder,currentNSMap)){
+						parseStack.push(el);
+					}
+					domBuilder.locator = locator;
+				}else{
+					if(appendElement(el,domBuilder,currentNSMap)){
+						parseStack.push(el);
+					}
+				}
+				
+				
+				
+				if(el.uri === 'http://www.w3.org/1999/xhtml' && !el.closed){
+					end = parseHtmlSpecialContent(source,end,el.tagName,entityReplacer,domBuilder);
+				}else{
+					end++;
+				}
+			}
+		}catch(e){
+			errorHandler.error('element parse error: '+e);
+			//errorHandler.error('element parse error: '+e);
+			end = -1;
+			//throw e;
+		}
+		if(end>start){
+			start = end;
+		}else{
+			//TODO: 这里有可能sax回退，有位置错误风险
+			appendText(Math.max(tagStart,start)+1);
+		}
+	}
+}
+function copyLocator(f,t){
+	t.lineNumber = f.lineNumber;
+	t.columnNumber = f.columnNumber;
+	return t;
+}
+
+/**
+ * @see #appendElement(source,elStartEnd,el,selfClosed,entityReplacer,domBuilder,parseStack);
+ * @return end of the elementStartPart(end of elementEndPart for selfClosed el)
+ */
+function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,errorHandler){
+	var attrName;
+	var value;
+	var p = ++start;
+	var s = S_TAG;//status
+	while(true){
+		var c = source.charAt(p);
+		switch(c){
+		case '=':
+			if(s === S_ATTR){//attrName
+				attrName = source.slice(start,p);
+				s = S_EQ;
+			}else if(s === S_ATTR_SPACE){
+				s = S_EQ;
+			}else{
+				//fatalError: equal must after attrName or space after attrName
+				throw new Error('attribute equal must after attrName');
+			}
+			break;
+		case '\'':
+		case '"':
+			if(s === S_EQ || s === S_ATTR //|| s == S_ATTR_SPACE
+				){//equal
+				if(s === S_ATTR){
+					errorHandler.warning('attribute value must after "="');
+					attrName = source.slice(start,p);
+				}
+				start = p+1;
+				p = source.indexOf(c,start);
+				if(p>0){
+					value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
+					el.add(attrName,value,start-1);
+					s = S_ATTR_END;
+				}else{
+					//fatalError: no end quot match
+					throw new Error('attribute value no end \''+c+'\' match');
+				}
+			}else if(s == S_ATTR_NOQUOT_VALUE){
+				value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
+				//console.log(attrName,value,start,p)
+				el.add(attrName,value,start);
+				//console.dir(el)
+				errorHandler.warning('attribute "'+attrName+'" missed start quot('+c+')!!');
+				start = p+1;
+				s = S_ATTR_END;
+			}else{
+				//fatalError: no equal before
+				throw new Error('attribute value must after "="');
+			}
+			break;
+		case '/':
+			switch(s){
+			case S_TAG:
+				el.setTagName(source.slice(start,p));
+			case S_ATTR_END:
+			case S_TAG_SPACE:
+			case S_TAG_CLOSE:
+				s =S_TAG_CLOSE;
+				el.closed = true;
+			case S_ATTR_NOQUOT_VALUE:
+			case S_ATTR:
+			case S_ATTR_SPACE:
+				break;
+			//case S_EQ:
+			default:
+				throw new Error("attribute invalid close char('/')")
+			}
+			break;
+		case ''://end document
+			//throw new Error('unexpected end of input')
+			errorHandler.error('unexpected end of input');
+			if(s == S_TAG){
+				el.setTagName(source.slice(start,p));
+			}
+			return p;
+		case '>':
+			switch(s){
+			case S_TAG:
+				el.setTagName(source.slice(start,p));
+			case S_ATTR_END:
+			case S_TAG_SPACE:
+			case S_TAG_CLOSE:
+				break;//normal
+			case S_ATTR_NOQUOT_VALUE://Compatible state
+			case S_ATTR:
+				value = source.slice(start,p);
+				if(value.slice(-1) === '/'){
+					el.closed  = true;
+					value = value.slice(0,-1);
+				}
+			case S_ATTR_SPACE:
+				if(s === S_ATTR_SPACE){
+					value = attrName;
+				}
+				if(s == S_ATTR_NOQUOT_VALUE){
+					errorHandler.warning('attribute "'+value+'" missed quot(")!!');
+					el.add(attrName,value.replace(/&#?\w+;/g,entityReplacer),start);
+				}else{
+					if(currentNSMap[''] !== 'http://www.w3.org/1999/xhtml' || !value.match(/^(?:disabled|checked|selected)$/i)){
+						errorHandler.warning('attribute "'+value+'" missed value!! "'+value+'" instead!!');
+					}
+					el.add(value,value,start);
+				}
+				break;
+			case S_EQ:
+				throw new Error('attribute value missed!!');
+			}
+//			console.log(tagName,tagNamePattern,tagNamePattern.test(tagName))
+			return p;
+		/*xml space '\x20' | #x9 | #xD | #xA; */
+		case '\u0080':
+			c = ' ';
+		default:
+			if(c<= ' '){//space
+				switch(s){
+				case S_TAG:
+					el.setTagName(source.slice(start,p));//tagName
+					s = S_TAG_SPACE;
+					break;
+				case S_ATTR:
+					attrName = source.slice(start,p);
+					s = S_ATTR_SPACE;
+					break;
+				case S_ATTR_NOQUOT_VALUE:
+					var value = source.slice(start,p).replace(/&#?\w+;/g,entityReplacer);
+					errorHandler.warning('attribute "'+value+'" missed quot(")!!');
+					el.add(attrName,value,start);
+				case S_ATTR_END:
+					s = S_TAG_SPACE;
+					break;
+				//case S_TAG_SPACE:
+				//case S_EQ:
+				//case S_ATTR_SPACE:
+				//	void();break;
+				//case S_TAG_CLOSE:
+					//ignore warning
+				}
+			}else{//not space
+//S_TAG,	S_ATTR,	S_EQ,	S_ATTR_NOQUOT_VALUE
+//S_ATTR_SPACE,	S_ATTR_END,	S_TAG_SPACE, S_TAG_CLOSE
+				switch(s){
+				//case S_TAG:void();break;
+				//case S_ATTR:void();break;
+				//case S_ATTR_NOQUOT_VALUE:void();break;
+				case S_ATTR_SPACE:
+					var tagName =  el.tagName;
+					if(currentNSMap[''] !== 'http://www.w3.org/1999/xhtml' || !attrName.match(/^(?:disabled|checked|selected)$/i)){
+						errorHandler.warning('attribute "'+attrName+'" missed value!! "'+attrName+'" instead2!!');
+					}
+					el.add(attrName,attrName,start);
+					start = p;
+					s = S_ATTR;
+					break;
+				case S_ATTR_END:
+					errorHandler.warning('attribute space is required"'+attrName+'"!!');
+				case S_TAG_SPACE:
+					s = S_ATTR;
+					start = p;
+					break;
+				case S_EQ:
+					s = S_ATTR_NOQUOT_VALUE;
+					start = p;
+					break;
+				case S_TAG_CLOSE:
+					throw new Error("elements closed character '/' and '>' must be connected to");
+				}
+			}
+		}//end outer switch
+		//console.log('p++',p)
+		p++;
+	}
+}
+/**
+ * @return true if has new namespace define
+ */
+function appendElement(el,domBuilder,currentNSMap){
+	var tagName = el.tagName;
+	var localNSMap = null;
+	//var currentNSMap = parseStack[parseStack.length-1].currentNSMap;
+	var i = el.length;
+	while(i--){
+		var a = el[i];
+		var qName = a.qName;
+		var value = a.value;
+		var nsp = qName.indexOf(':');
+		if(nsp>0){
+			var prefix = a.prefix = qName.slice(0,nsp);
+			var localName = qName.slice(nsp+1);
+			var nsPrefix = prefix === 'xmlns' && localName;
+		}else{
+			localName = qName;
+			prefix = null;
+			nsPrefix = qName === 'xmlns' && '';
+		}
+		//can not set prefix,because prefix !== ''
+		a.localName = localName ;
+		//prefix == null for no ns prefix attribute 
+		if(nsPrefix !== false){//hack!!
+			if(localNSMap == null){
+				localNSMap = {};
+				//console.log(currentNSMap,0)
+				_copy(currentNSMap,currentNSMap={});
+				//console.log(currentNSMap,1)
+			}
+			currentNSMap[nsPrefix] = localNSMap[nsPrefix] = value;
+			a.uri = 'http://www.w3.org/2000/xmlns/';
+			domBuilder.startPrefixMapping(nsPrefix, value); 
+		}
+	}
+	var i = el.length;
+	while(i--){
+		a = el[i];
+		var prefix = a.prefix;
+		if(prefix){//no prefix attribute has no namespace
+			if(prefix === 'xml'){
+				a.uri = 'http://www.w3.org/XML/1998/namespace';
+			}if(prefix !== 'xmlns'){
+				a.uri = currentNSMap[prefix || ''];
+				
+				//{console.log('###'+a.qName,domBuilder.locator.systemId+'',currentNSMap,a.uri)}
+			}
+		}
+	}
+	var nsp = tagName.indexOf(':');
+	if(nsp>0){
+		prefix = el.prefix = tagName.slice(0,nsp);
+		localName = el.localName = tagName.slice(nsp+1);
+	}else{
+		prefix = null;//important!!
+		localName = el.localName = tagName;
+	}
+	//no prefix element has default namespace
+	var ns = el.uri = currentNSMap[prefix || ''];
+	domBuilder.startElement(ns,localName,tagName,el);
+	//endPrefixMapping and startPrefixMapping have not any help for dom builder
+	//localNSMap = null
+	if(el.closed){
+		domBuilder.endElement(ns,localName,tagName);
+		if(localNSMap){
+			for(prefix in localNSMap){
+				domBuilder.endPrefixMapping(prefix); 
+			}
+		}
+	}else{
+		el.currentNSMap = currentNSMap;
+		el.localNSMap = localNSMap;
+		//parseStack.push(el);
+		return true;
+	}
+}
+function parseHtmlSpecialContent(source,elStartEnd,tagName,entityReplacer,domBuilder){
+	if(/^(?:script|textarea)$/i.test(tagName)){
+		var elEndStart =  source.indexOf('</'+tagName+'>',elStartEnd);
+		var text = source.substring(elStartEnd+1,elEndStart);
+		if(/[&<]/.test(text)){
+			if(/^script$/i.test(tagName)){
+				//if(!/\]\]>/.test(text)){
+					//lexHandler.startCDATA();
+					domBuilder.characters(text,0,text.length);
+					//lexHandler.endCDATA();
+					return elEndStart;
+				//}
+			}//}else{//text area
+				text = text.replace(/&#?\w+;/g,entityReplacer);
+				domBuilder.characters(text,0,text.length);
+				return elEndStart;
+			//}
+			
+		}
+	}
+	return elStartEnd+1;
+}
+function fixSelfClosed(source,elStartEnd,tagName,closeMap){
+	//if(tagName in closeMap){
+	var pos = closeMap[tagName];
+	if(pos == null){
+		//console.log(tagName)
+		pos =  source.lastIndexOf('</'+tagName+'>');
+		if(pos<elStartEnd){//忘记闭合
+			pos = source.lastIndexOf('</'+tagName);
+		}
+		closeMap[tagName] =pos;
+	}
+	return pos<elStartEnd;
+	//} 
+}
+function _copy(source,target){
+	for(var n in source){target[n] = source[n];}
+}
+function parseDCC(source,start,domBuilder,errorHandler){//sure start with '<!'
+	var next= source.charAt(start+2);
+	switch(next){
+	case '-':
+		if(source.charAt(start + 3) === '-'){
+			var end = source.indexOf('-->',start+4);
+			//append comment source.substring(4,end)//<!--
+			if(end>start){
+				domBuilder.comment(source,start+4,end-start-4);
+				return end+3;
+			}else{
+				errorHandler.error("Unclosed comment");
+				return -1;
+			}
+		}else{
+			//error
+			return -1;
+		}
+	default:
+		if(source.substr(start+3,6) == 'CDATA['){
+			var end = source.indexOf(']]>',start+9);
+			domBuilder.startCDATA();
+			domBuilder.characters(source,start+9,end-start-9);
+			domBuilder.endCDATA(); 
+			return end+3;
+		}
+		//<!DOCTYPE
+		//startDTD(java.lang.String name, java.lang.String publicId, java.lang.String systemId) 
+		var matchs = split(source,start);
+		var len = matchs.length;
+		if(len>1 && /!doctype/i.test(matchs[0][0])){
+			var name = matchs[1][0];
+			var pubid = len>3 && /^public$/i.test(matchs[2][0]) && matchs[3][0];
+			var sysid = len>4 && matchs[4][0];
+			var lastMatch = matchs[len-1];
+			domBuilder.startDTD(name,pubid && pubid.replace(/^(['"])(.*?)\1$/,'$2'),
+					sysid && sysid.replace(/^(['"])(.*?)\1$/,'$2'));
+			domBuilder.endDTD();
+			
+			return lastMatch.index+lastMatch[0].length
+		}
+	}
+	return -1;
+}
+
+
+
+function parseInstruction(source,start,domBuilder){
+	var end = source.indexOf('?>',start);
+	if(end){
+		var match = source.substring(start,end).match(/^<\?(\S*)\s*([\s\S]*?)\s*$/);
+		if(match){
+			var len = match[0].length;
+			domBuilder.processingInstruction(match[1], match[2]) ;
+			return end+2;
+		}else{//error
+			return -1;
+		}
+	}
+	return -1;
+}
+
+/**
+ * @param source
+ */
+function ElementAttributes(source){
+	
+}
+ElementAttributes.prototype = {
+	setTagName:function(tagName){
+		if(!tagNamePattern.test(tagName)){
+			throw new Error('invalid tagName:'+tagName)
+		}
+		this.tagName = tagName;
+	},
+	add:function(qName,value,offset){
+		if(!tagNamePattern.test(qName)){
+			throw new Error('invalid attribute:'+qName)
+		}
+		this[this.length++] = {qName:qName,value:value,offset:offset};
+	},
+	length:0,
+	getLocalName:function(i){return this[i].localName},
+	getLocator:function(i){return this[i].locator},
+	getQName:function(i){return this[i].qName},
+	getURI:function(i){return this[i].uri},
+	getValue:function(i){return this[i].value}
+//	,getIndex:function(uri, localName)){
+//		if(localName){
+//			
+//		}else{
+//			var qName = uri
+//		}
+//	},
+//	getValue:function(){return this.getValue(this.getIndex.apply(this,arguments))},
+//	getType:function(uri,localName){}
+//	getType:function(i){},
+};
+
+
+
+
+function _set_proto_(thiz,parent){
+	thiz.__proto__ = parent;
+	return thiz;
+}
+if(!(_set_proto_({},_set_proto_.prototype) instanceof _set_proto_)){
+	_set_proto_ = function(thiz,parent){
+		function p(){}
+		p.prototype = parent;
+		p = new p();
+		for(parent in thiz){
+			p[parent] = thiz[parent];
+		}
+		return p;
+	};
+}
+
+function split(source,start){
+	var match;
+	var buf = [];
+	var reg = /'[^']+'|"[^"]+"|[^\s<>\/=]+=?|(\/?\s*>|<)/g;
+	reg.lastIndex = start;
+	reg.exec(source);//skip <
+	while(match = reg.exec(source)){
+		buf.push(match);
+		if(match[1]){ return buf; }
+	}
+}
+
+var XMLReader_1 = XMLReader;
+
+var sax = {
+	XMLReader: XMLReader_1
+};
+
+/*
+ * DOM Level 2
+ * Object DOMException
+ * @see http://www.w3.org/TR/REC-DOM-Level-1/ecma-script-language-binding.html
+ * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
+ */
+
+function copy$3(src,dest){
+	for(var p in src){
+		dest[p] = src[p];
+	}
+}
+/**
+^\w+\.prototype\.([_\w]+)\s*=\s*((?:.*\{\s*?[\r\n][\s\S]*?^})|\S.*?(?=[;\r\n]));?
+^\w+\.prototype\.([_\w]+)\s*=\s*(\S.*?(?=[;\r\n]));?
+ */
+function _extends$13(Class,Super){
+	var pt = Class.prototype;
+	if(Object.create){
+		var ppt = Object.create(Super.prototype);
+		pt.__proto__ = ppt;
+	}
+	if(!(pt instanceof Super)){
+		function t(){}
+		t.prototype = Super.prototype;
+		t = new t();
+		copy$3(pt,t);
+		Class.prototype = pt = t;
+	}
+	if(pt.constructor != Class){
+		if(typeof Class != 'function'){
+			console.error("unknow Class:"+Class);
+		}
+		pt.constructor = Class;
+	}
+}
+var htmlns = 'http://www.w3.org/1999/xhtml';
+// Node Types
+var NodeType = {};
+var ELEMENT_NODE                = NodeType.ELEMENT_NODE                = 1;
+var ATTRIBUTE_NODE              = NodeType.ATTRIBUTE_NODE              = 2;
+var TEXT_NODE                   = NodeType.TEXT_NODE                   = 3;
+var CDATA_SECTION_NODE          = NodeType.CDATA_SECTION_NODE          = 4;
+var ENTITY_REFERENCE_NODE       = NodeType.ENTITY_REFERENCE_NODE       = 5;
+var ENTITY_NODE                 = NodeType.ENTITY_NODE                 = 6;
+var PROCESSING_INSTRUCTION_NODE = NodeType.PROCESSING_INSTRUCTION_NODE = 7;
+var COMMENT_NODE                = NodeType.COMMENT_NODE                = 8;
+var DOCUMENT_NODE               = NodeType.DOCUMENT_NODE               = 9;
+var DOCUMENT_TYPE_NODE          = NodeType.DOCUMENT_TYPE_NODE          = 10;
+var DOCUMENT_FRAGMENT_NODE      = NodeType.DOCUMENT_FRAGMENT_NODE      = 11;
+var NOTATION_NODE               = NodeType.NOTATION_NODE               = 12;
+
+// ExceptionCode
+var ExceptionCode = {};
+var ExceptionMessage = {};
+var INDEX_SIZE_ERR              = ExceptionCode.INDEX_SIZE_ERR              = ((ExceptionMessage[1]="Index size error"),1);
+var DOMSTRING_SIZE_ERR          = ExceptionCode.DOMSTRING_SIZE_ERR          = ((ExceptionMessage[2]="DOMString size error"),2);
+var HIERARCHY_REQUEST_ERR       = ExceptionCode.HIERARCHY_REQUEST_ERR       = ((ExceptionMessage[3]="Hierarchy request error"),3);
+var WRONG_DOCUMENT_ERR          = ExceptionCode.WRONG_DOCUMENT_ERR          = ((ExceptionMessage[4]="Wrong document"),4);
+var INVALID_CHARACTER_ERR       = ExceptionCode.INVALID_CHARACTER_ERR       = ((ExceptionMessage[5]="Invalid character"),5);
+var NO_DATA_ALLOWED_ERR         = ExceptionCode.NO_DATA_ALLOWED_ERR         = ((ExceptionMessage[6]="No data allowed"),6);
+var NO_MODIFICATION_ALLOWED_ERR = ExceptionCode.NO_MODIFICATION_ALLOWED_ERR = ((ExceptionMessage[7]="No modification allowed"),7);
+var NOT_FOUND_ERR               = ExceptionCode.NOT_FOUND_ERR               = ((ExceptionMessage[8]="Not found"),8);
+var NOT_SUPPORTED_ERR           = ExceptionCode.NOT_SUPPORTED_ERR           = ((ExceptionMessage[9]="Not supported"),9);
+var INUSE_ATTRIBUTE_ERR         = ExceptionCode.INUSE_ATTRIBUTE_ERR         = ((ExceptionMessage[10]="Attribute in use"),10);
+//level2
+var INVALID_STATE_ERR        	= ExceptionCode.INVALID_STATE_ERR        	= ((ExceptionMessage[11]="Invalid state"),11);
+var SYNTAX_ERR               	= ExceptionCode.SYNTAX_ERR               	= ((ExceptionMessage[12]="Syntax error"),12);
+var INVALID_MODIFICATION_ERR 	= ExceptionCode.INVALID_MODIFICATION_ERR 	= ((ExceptionMessage[13]="Invalid modification"),13);
+var NAMESPACE_ERR            	= ExceptionCode.NAMESPACE_ERR           	= ((ExceptionMessage[14]="Invalid namespace"),14);
+var INVALID_ACCESS_ERR       	= ExceptionCode.INVALID_ACCESS_ERR      	= ((ExceptionMessage[15]="Invalid access"),15);
+
+
+function DOMException(code, message) {
+	if(message instanceof Error){
+		var error = message;
+	}else{
+		error = this;
+		Error.call(this, ExceptionMessage[code]);
+		this.message = ExceptionMessage[code];
+		if(Error.captureStackTrace) { Error.captureStackTrace(this, DOMException); }
+	}
+	error.code = code;
+	if(message) { this.message = this.message + ": " + message; }
+	return error;
+}
+DOMException.prototype = Error.prototype;
+copy$3(ExceptionCode,DOMException);
+/**
+ * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-536297177
+ * The NodeList interface provides the abstraction of an ordered collection of nodes, without defining or constraining how this collection is implemented. NodeList objects in the DOM are live.
+ * The items in the NodeList are accessible via an integral index, starting from 0.
+ */
+function NodeList() {
+}
+NodeList.prototype = {
+	/**
+	 * The number of nodes in the list. The range of valid child node indices is 0 to length-1 inclusive.
+	 * @standard level1
+	 */
+	length:0, 
+	/**
+	 * Returns the indexth item in the collection. If index is greater than or equal to the number of nodes in the list, this returns null.
+	 * @standard level1
+	 * @param index  unsigned long 
+	 *   Index into the collection.
+	 * @return Node
+	 * 	The node at the indexth position in the NodeList, or null if that is not a valid index. 
+	 */
+	item: function(index) {
+		return this[index] || null;
+	},
+	toString:function(isHTML,nodeFilter){
+		var this$1 = this;
+
+		for(var buf = [], i = 0;i<this.length;i++){
+			serializeToString(this$1[i],buf,isHTML,nodeFilter);
+		}
+		return buf.join('');
+	}
+};
+function LiveNodeList(node,refresh){
+	this._node = node;
+	this._refresh = refresh;
+	_updateLiveList(this);
+}
+function _updateLiveList(list){
+	var inc = list._node._inc || list._node.ownerDocument._inc;
+	if(list._inc != inc){
+		var ls = list._refresh(list._node);
+		//console.log(ls.length)
+		__set__(list,'length',ls.length);
+		copy$3(ls,list);
+		list._inc = inc;
+	}
+}
+LiveNodeList.prototype.item = function(i){
+	_updateLiveList(this);
+	return this[i];
+};
+
+_extends$13(LiveNodeList,NodeList);
+/**
+ * 
+ * Objects implementing the NamedNodeMap interface are used to represent collections of nodes that can be accessed by name. Note that NamedNodeMap does not inherit from NodeList; NamedNodeMaps are not maintained in any particular order. Objects contained in an object implementing NamedNodeMap may also be accessed by an ordinal index, but this is simply to allow convenient enumeration of the contents of a NamedNodeMap, and does not imply that the DOM specifies an order to these Nodes.
+ * NamedNodeMap objects in the DOM are live.
+ * used for attributes or DocumentType entities 
+ */
+function NamedNodeMap() {
+}
+
+function _findNodeIndex(list,node){
+	var i = list.length;
+	while(i--){
+		if(list[i] === node){return i}
+	}
+}
+
+function _addNamedNode(el,list,newAttr,oldAttr){
+	if(oldAttr){
+		list[_findNodeIndex(list,oldAttr)] = newAttr;
+	}else{
+		list[list.length++] = newAttr;
+	}
+	if(el){
+		newAttr.ownerElement = el;
+		var doc = el.ownerDocument;
+		if(doc){
+			oldAttr && _onRemoveAttribute(doc,el,oldAttr);
+			_onAddAttribute(doc,el,newAttr);
+		}
+	}
+}
+function _removeNamedNode(el,list,attr){
+	//console.log('remove attr:'+attr)
+	var i = _findNodeIndex(list,attr);
+	if(i>=0){
+		var lastIndex = list.length-1;
+		while(i<lastIndex){
+			list[i] = list[++i];
+		}
+		list.length = lastIndex;
+		if(el){
+			var doc = el.ownerDocument;
+			if(doc){
+				_onRemoveAttribute(doc,el,attr);
+				attr.ownerElement = null;
+			}
+		}
+	}else{
+		throw DOMException(NOT_FOUND_ERR,new Error(el.tagName+'@'+attr))
+	}
+}
+NamedNodeMap.prototype = {
+	length:0,
+	item:NodeList.prototype.item,
+	getNamedItem: function(key) {
+		var this$1 = this;
+
+//		if(key.indexOf(':')>0 || key == 'xmlns'){
+//			return null;
+//		}
+		//console.log()
+		var i = this.length;
+		while(i--){
+			var attr = this$1[i];
+			//console.log(attr.nodeName,key)
+			if(attr.nodeName == key){
+				return attr;
+			}
+		}
+	},
+	setNamedItem: function(attr) {
+		var el = attr.ownerElement;
+		if(el && el!=this._ownerElement){
+			throw new DOMException(INUSE_ATTRIBUTE_ERR);
+		}
+		var oldAttr = this.getNamedItem(attr.nodeName);
+		_addNamedNode(this._ownerElement,this,attr,oldAttr);
+		return oldAttr;
+	},
+	/* returns Node */
+	setNamedItemNS: function(attr) {// raises: WRONG_DOCUMENT_ERR,NO_MODIFICATION_ALLOWED_ERR,INUSE_ATTRIBUTE_ERR
+		var el = attr.ownerElement, oldAttr;
+		if(el && el!=this._ownerElement){
+			throw new DOMException(INUSE_ATTRIBUTE_ERR);
+		}
+		oldAttr = this.getNamedItemNS(attr.namespaceURI,attr.localName);
+		_addNamedNode(this._ownerElement,this,attr,oldAttr);
+		return oldAttr;
+	},
+
+	/* returns Node */
+	removeNamedItem: function(key) {
+		var attr = this.getNamedItem(key);
+		_removeNamedNode(this._ownerElement,this,attr);
+		return attr;
+		
+		
+	},// raises: NOT_FOUND_ERR,NO_MODIFICATION_ALLOWED_ERR
+	
+	//for level2
+	removeNamedItemNS:function(namespaceURI,localName){
+		var attr = this.getNamedItemNS(namespaceURI,localName);
+		_removeNamedNode(this._ownerElement,this,attr);
+		return attr;
+	},
+	getNamedItemNS: function(namespaceURI, localName) {
+		var this$1 = this;
+
+		var i = this.length;
+		while(i--){
+			var node = this$1[i];
+			if(node.localName == localName && node.namespaceURI == namespaceURI){
+				return node;
+			}
+		}
+		return null;
+	}
+};
+/**
+ * @see http://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-102161490
+ */
+function DOMImplementation(/* Object */ features) {
+	var this$1 = this;
+
+	this._features = {};
+	if (features) {
+		for (var feature in features) {
+			 this$1._features = features[feature];
+		}
+	}
+}
+
+DOMImplementation.prototype = {
+	hasFeature: function(/* string */ feature, /* string */ version) {
+		var versions = this._features[feature.toLowerCase()];
+		if (versions && (!version || version in versions)) {
+			return true;
+		} else {
+			return false;
+		}
+	},
+	// Introduced in DOM Level 2:
+	createDocument:function(namespaceURI,  qualifiedName, doctype){// raises:INVALID_CHARACTER_ERR,NAMESPACE_ERR,WRONG_DOCUMENT_ERR
+		var doc = new Document();
+		doc.implementation = this;
+		doc.childNodes = new NodeList();
+		doc.doctype = doctype;
+		if(doctype){
+			doc.appendChild(doctype);
+		}
+		if(qualifiedName){
+			var root = doc.createElementNS(namespaceURI,qualifiedName);
+			doc.appendChild(root);
+		}
+		return doc;
+	},
+	// Introduced in DOM Level 2:
+	createDocumentType:function(qualifiedName, publicId, systemId){// raises:INVALID_CHARACTER_ERR,NAMESPACE_ERR
+		var node = new DocumentType();
+		node.name = qualifiedName;
+		node.nodeName = qualifiedName;
+		node.publicId = publicId;
+		node.systemId = systemId;
+		// Introduced in DOM Level 2:
+		//readonly attribute DOMString        internalSubset;
+		
+		//TODO:..
+		//  readonly attribute NamedNodeMap     entities;
+		//  readonly attribute NamedNodeMap     notations;
+		return node;
+	}
+};
+
+
+/**
+ * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-1950641247
+ */
+
+function Node() {
+}
+
+Node.prototype = {
+	firstChild : null,
+	lastChild : null,
+	previousSibling : null,
+	nextSibling : null,
+	attributes : null,
+	parentNode : null,
+	childNodes : null,
+	ownerDocument : null,
+	nodeValue : null,
+	namespaceURI : null,
+	prefix : null,
+	localName : null,
+	// Modified in DOM Level 2:
+	insertBefore:function(newChild, refChild){//raises 
+		return _insertBefore(this,newChild,refChild);
+	},
+	replaceChild:function(newChild, oldChild){//raises 
+		this.insertBefore(newChild,oldChild);
+		if(oldChild){
+			this.removeChild(oldChild);
+		}
+	},
+	removeChild:function(oldChild){
+		return _removeChild(this,oldChild);
+	},
+	appendChild:function(newChild){
+		return this.insertBefore(newChild,null);
+	},
+	hasChildNodes:function(){
+		return this.firstChild != null;
+	},
+	cloneNode:function(deep){
+		return cloneNode(this.ownerDocument||this,this,deep);
+	},
+	// Modified in DOM Level 2:
+	normalize:function(){
+		var this$1 = this;
+
+		var child = this.firstChild;
+		while(child){
+			var next = child.nextSibling;
+			if(next && next.nodeType == TEXT_NODE && child.nodeType == TEXT_NODE){
+				this$1.removeChild(next);
+				child.appendData(next.data);
+			}else{
+				child.normalize();
+				child = next;
+			}
+		}
+	},
+  	// Introduced in DOM Level 2:
+	isSupported:function(feature, version){
+		return this.ownerDocument.implementation.hasFeature(feature,version);
+	},
+    // Introduced in DOM Level 2:
+    hasAttributes:function(){
+    	return this.attributes.length>0;
+    },
+    lookupPrefix:function(namespaceURI){
+    	var el = this;
+    	while(el){
+    		var map = el._nsMap;
+    		//console.dir(map)
+    		if(map){
+    			for(var n in map){
+    				if(map[n] == namespaceURI){
+    					return n;
+    				}
+    			}
+    		}
+    		el = el.nodeType == ATTRIBUTE_NODE?el.ownerDocument : el.parentNode;
+    	}
+    	return null;
+    },
+    // Introduced in DOM Level 3:
+    lookupNamespaceURI:function(prefix){
+    	var el = this;
+    	while(el){
+    		var map = el._nsMap;
+    		//console.dir(map)
+    		if(map){
+    			if(prefix in map){
+    				return map[prefix] ;
+    			}
+    		}
+    		el = el.nodeType == ATTRIBUTE_NODE?el.ownerDocument : el.parentNode;
+    	}
+    	return null;
+    },
+    // Introduced in DOM Level 3:
+    isDefaultNamespace:function(namespaceURI){
+    	var prefix = this.lookupPrefix(namespaceURI);
+    	return prefix == null;
+    }
+};
+
+
+function _xmlEncoder(c){
+	return c == '<' && '&lt;' ||
+         c == '>' && '&gt;' ||
+         c == '&' && '&amp;' ||
+         c == '"' && '&quot;' ||
+         '&#'+c.charCodeAt()+';'
+}
+
+
+copy$3(NodeType,Node);
+copy$3(NodeType,Node.prototype);
+
+/**
+ * @param callback return true for continue,false for break
+ * @return boolean true: break visit;
+ */
+function _visitNode(node,callback){
+	if(callback(node)){
+		return true;
+	}
+	if(node = node.firstChild){
+		do{
+			if(_visitNode(node,callback)){return true}
+        }while(node=node.nextSibling)
+    }
+}
+
+
+
+function Document(){
+}
+function _onAddAttribute(doc,el,newAttr){
+	doc && doc._inc++;
+	var ns = newAttr.namespaceURI;
+	if(ns == 'http://www.w3.org/2000/xmlns/'){
+		//update namespace
+		el._nsMap[newAttr.prefix?newAttr.localName:''] = newAttr.value;
+	}
+}
+function _onRemoveAttribute(doc,el,newAttr,remove){
+	doc && doc._inc++;
+	var ns = newAttr.namespaceURI;
+	if(ns == 'http://www.w3.org/2000/xmlns/'){
+		//update namespace
+		delete el._nsMap[newAttr.prefix?newAttr.localName:''];
+	}
+}
+function _onUpdateChild(doc,el,newChild){
+	if(doc && doc._inc){
+		doc._inc++;
+		//update childNodes
+		var cs = el.childNodes;
+		if(newChild){
+			cs[cs.length++] = newChild;
+		}else{
+			//console.log(1)
+			var child = el.firstChild;
+			var i = 0;
+			while(child){
+				cs[i++] = child;
+				child =child.nextSibling;
+			}
+			cs.length = i;
+		}
+	}
+}
+
+/**
+ * attributes;
+ * children;
+ * 
+ * writeable properties:
+ * nodeValue,Attr:value,CharacterData:data
+ * prefix
+ */
+function _removeChild(parentNode,child){
+	var previous = child.previousSibling;
+	var next = child.nextSibling;
+	if(previous){
+		previous.nextSibling = next;
+	}else{
+		parentNode.firstChild = next;
+	}
+	if(next){
+		next.previousSibling = previous;
+	}else{
+		parentNode.lastChild = previous;
+	}
+	_onUpdateChild(parentNode.ownerDocument,parentNode);
+	return child;
+}
+/**
+ * preformance key(refChild == null)
+ */
+function _insertBefore(parentNode,newChild,nextChild){
+	var cp = newChild.parentNode;
+	if(cp){
+		cp.removeChild(newChild);//remove and update
+	}
+	if(newChild.nodeType === DOCUMENT_FRAGMENT_NODE){
+		var newFirst = newChild.firstChild;
+		if (newFirst == null) {
+			return newChild;
+		}
+		var newLast = newChild.lastChild;
+	}else{
+		newFirst = newLast = newChild;
+	}
+	var pre = nextChild ? nextChild.previousSibling : parentNode.lastChild;
+
+	newFirst.previousSibling = pre;
+	newLast.nextSibling = nextChild;
+	
+	
+	if(pre){
+		pre.nextSibling = newFirst;
+	}else{
+		parentNode.firstChild = newFirst;
+	}
+	if(nextChild == null){
+		parentNode.lastChild = newLast;
+	}else{
+		nextChild.previousSibling = newLast;
+	}
+	do{
+		newFirst.parentNode = parentNode;
+	}while(newFirst !== newLast && (newFirst= newFirst.nextSibling))
+	_onUpdateChild(parentNode.ownerDocument||parentNode,parentNode);
+	//console.log(parentNode.lastChild.nextSibling == null)
+	if (newChild.nodeType == DOCUMENT_FRAGMENT_NODE) {
+		newChild.firstChild = newChild.lastChild = null;
+	}
+	return newChild;
+}
+function _appendSingleChild(parentNode,newChild){
+	var cp = newChild.parentNode;
+	if(cp){
+		var pre = parentNode.lastChild;
+		cp.removeChild(newChild);//remove and update
+		var pre = parentNode.lastChild;
+	}
+	var pre = parentNode.lastChild;
+	newChild.parentNode = parentNode;
+	newChild.previousSibling = pre;
+	newChild.nextSibling = null;
+	if(pre){
+		pre.nextSibling = newChild;
+	}else{
+		parentNode.firstChild = newChild;
+	}
+	parentNode.lastChild = newChild;
+	_onUpdateChild(parentNode.ownerDocument,parentNode,newChild);
+	return newChild;
+	//console.log("__aa",parentNode.lastChild.nextSibling == null)
+}
+Document.prototype = {
+	//implementation : null,
+	nodeName :  '#document',
+	nodeType :  DOCUMENT_NODE,
+	doctype :  null,
+	documentElement :  null,
+	_inc : 1,
+	
+	insertBefore :  function(newChild, refChild){
+		var this$1 = this;
+//raises 
+		if(newChild.nodeType == DOCUMENT_FRAGMENT_NODE){
+			var child = newChild.firstChild;
+			while(child){
+				var next = child.nextSibling;
+				this$1.insertBefore(child,refChild);
+				child = next;
+			}
+			return newChild;
+		}
+		if(this.documentElement == null && newChild.nodeType == ELEMENT_NODE){
+			this.documentElement = newChild;
+		}
+		
+		return _insertBefore(this,newChild,refChild),(newChild.ownerDocument = this),newChild;
+	},
+	removeChild :  function(oldChild){
+		if(this.documentElement == oldChild){
+			this.documentElement = null;
+		}
+		return _removeChild(this,oldChild);
+	},
+	// Introduced in DOM Level 2:
+	importNode : function(importedNode,deep){
+		return importNode(this,importedNode,deep);
+	},
+	// Introduced in DOM Level 2:
+	getElementById :	function(id){
+		var rtv = null;
+		_visitNode(this.documentElement,function(node){
+			if(node.nodeType == ELEMENT_NODE){
+				if(node.getAttribute('id') == id){
+					rtv = node;
+					return true;
+				}
+			}
+		});
+		return rtv;
+	},
+	
+	//document factory method:
+	createElement :	function(tagName){
+		var node = new Element$1();
+		node.ownerDocument = this;
+		node.nodeName = tagName;
+		node.tagName = tagName;
+		node.childNodes = new NodeList();
+		var attrs	= node.attributes = new NamedNodeMap();
+		attrs._ownerElement = node;
+		return node;
+	},
+	createDocumentFragment :	function(){
+		var node = new DocumentFragment();
+		node.ownerDocument = this;
+		node.childNodes = new NodeList();
+		return node;
+	},
+	createTextNode :	function(data){
+		var node = new Text();
+		node.ownerDocument = this;
+		node.appendData(data);
+		return node;
+	},
+	createComment :	function(data){
+		var node = new Comment();
+		node.ownerDocument = this;
+		node.appendData(data);
+		return node;
+	},
+	createCDATASection :	function(data){
+		var node = new CDATASection();
+		node.ownerDocument = this;
+		node.appendData(data);
+		return node;
+	},
+	createProcessingInstruction :	function(target,data){
+		var node = new ProcessingInstruction();
+		node.ownerDocument = this;
+		node.tagName = node.target = target;
+		node.nodeValue= node.data = data;
+		return node;
+	},
+	createAttribute :	function(name){
+		var node = new Attr();
+		node.ownerDocument	= this;
+		node.name = name;
+		node.nodeName	= name;
+		node.localName = name;
+		node.specified = true;
+		return node;
+	},
+	createEntityReference :	function(name){
+		var node = new EntityReference();
+		node.ownerDocument	= this;
+		node.nodeName	= name;
+		return node;
+	},
+	// Introduced in DOM Level 2:
+	createElementNS :	function(namespaceURI,qualifiedName){
+		var node = new Element$1();
+		var pl = qualifiedName.split(':');
+		var attrs	= node.attributes = new NamedNodeMap();
+		node.childNodes = new NodeList();
+		node.ownerDocument = this;
+		node.nodeName = qualifiedName;
+		node.tagName = qualifiedName;
+		node.namespaceURI = namespaceURI;
+		if(pl.length == 2){
+			node.prefix = pl[0];
+			node.localName = pl[1];
+		}else{
+			//el.prefix = null;
+			node.localName = qualifiedName;
+		}
+		attrs._ownerElement = node;
+		return node;
+	},
+	// Introduced in DOM Level 2:
+	createAttributeNS :	function(namespaceURI,qualifiedName){
+		var node = new Attr();
+		var pl = qualifiedName.split(':');
+		node.ownerDocument = this;
+		node.nodeName = qualifiedName;
+		node.name = qualifiedName;
+		node.namespaceURI = namespaceURI;
+		node.specified = true;
+		if(pl.length == 2){
+			node.prefix = pl[0];
+			node.localName = pl[1];
+		}else{
+			//el.prefix = null;
+			node.localName = qualifiedName;
+		}
+		return node;
+	}
+};
+_extends$13(Document,Node);
+
+
+function Element$1() {
+	this._nsMap = {};
+}
+Element$1.prototype = {
+	nodeType : ELEMENT_NODE,
+	hasAttribute : function(name){
+		return this.getAttributeNode(name)!=null;
+	},
+	getAttribute : function(name){
+		var attr = this.getAttributeNode(name);
+		return attr && attr.value || '';
+	},
+	getAttributeNode : function(name){
+		return this.attributes.getNamedItem(name);
+	},
+	setAttribute : function(name, value){
+		var attr = this.ownerDocument.createAttribute(name);
+		attr.value = attr.nodeValue = "" + value;
+		this.setAttributeNode(attr);
+	},
+	removeAttribute : function(name){
+		var attr = this.getAttributeNode(name);
+		attr && this.removeAttributeNode(attr);
+	},
+	
+	//four real opeartion method
+	appendChild:function(newChild){
+		if(newChild.nodeType === DOCUMENT_FRAGMENT_NODE){
+			return this.insertBefore(newChild,null);
+		}else{
+			return _appendSingleChild(this,newChild);
+		}
+	},
+	setAttributeNode : function(newAttr){
+		return this.attributes.setNamedItem(newAttr);
+	},
+	setAttributeNodeNS : function(newAttr){
+		return this.attributes.setNamedItemNS(newAttr);
+	},
+	removeAttributeNode : function(oldAttr){
+		//console.log(this == oldAttr.ownerElement)
+		return this.attributes.removeNamedItem(oldAttr.nodeName);
+	},
+	//get real attribute name,and remove it by removeAttributeNode
+	removeAttributeNS : function(namespaceURI, localName){
+		var old = this.getAttributeNodeNS(namespaceURI, localName);
+		old && this.removeAttributeNode(old);
+	},
+	
+	hasAttributeNS : function(namespaceURI, localName){
+		return this.getAttributeNodeNS(namespaceURI, localName)!=null;
+	},
+	getAttributeNS : function(namespaceURI, localName){
+		var attr = this.getAttributeNodeNS(namespaceURI, localName);
+		return attr && attr.value || '';
+	},
+	setAttributeNS : function(namespaceURI, qualifiedName, value){
+		var attr = this.ownerDocument.createAttributeNS(namespaceURI, qualifiedName);
+		attr.value = attr.nodeValue = "" + value;
+		this.setAttributeNode(attr);
+	},
+	getAttributeNodeNS : function(namespaceURI, localName){
+		return this.attributes.getNamedItemNS(namespaceURI, localName);
+	},
+	
+	getElementsByTagName : function(tagName){
+		return new LiveNodeList(this,function(base){
+			var ls = [];
+			_visitNode(base,function(node){
+				if(node !== base && node.nodeType == ELEMENT_NODE && (tagName === '*' || node.tagName == tagName)){
+					ls.push(node);
+				}
+			});
+			return ls;
+		});
+	},
+	getElementsByTagNameNS : function(namespaceURI, localName){
+		return new LiveNodeList(this,function(base){
+			var ls = [];
+			_visitNode(base,function(node){
+				if(node !== base && node.nodeType === ELEMENT_NODE && (namespaceURI === '*' || node.namespaceURI === namespaceURI) && (localName === '*' || node.localName == localName)){
+					ls.push(node);
+				}
+			});
+			return ls;
+			
+		});
+	}
+};
+Document.prototype.getElementsByTagName = Element$1.prototype.getElementsByTagName;
+Document.prototype.getElementsByTagNameNS = Element$1.prototype.getElementsByTagNameNS;
+
+
+_extends$13(Element$1,Node);
+function Attr() {
+}
+Attr.prototype.nodeType = ATTRIBUTE_NODE;
+_extends$13(Attr,Node);
+
+
+function CharacterData() {
+}
+CharacterData.prototype = {
+	data : '',
+	substringData : function(offset, count) {
+		return this.data.substring(offset, offset+count);
+	},
+	appendData: function(text) {
+		text = this.data+text;
+		this.nodeValue = this.data = text;
+		this.length = text.length;
+	},
+	insertData: function(offset,text) {
+		this.replaceData(offset,0,text);
+	
+	},
+	appendChild:function(newChild){
+		throw new Error(ExceptionMessage[HIERARCHY_REQUEST_ERR])
+	},
+	deleteData: function(offset, count) {
+		this.replaceData(offset,count,"");
+	},
+	replaceData: function(offset, count, text) {
+		var start = this.data.substring(0,offset);
+		var end = this.data.substring(offset+count);
+		text = start + text + end;
+		this.nodeValue = this.data = text;
+		this.length = text.length;
+	}
+};
+_extends$13(CharacterData,Node);
+function Text() {
+}
+Text.prototype = {
+	nodeName : "#text",
+	nodeType : TEXT_NODE,
+	splitText : function(offset) {
+		var text = this.data;
+		var newText = text.substring(offset);
+		text = text.substring(0, offset);
+		this.data = this.nodeValue = text;
+		this.length = text.length;
+		var newNode = this.ownerDocument.createTextNode(newText);
+		if(this.parentNode){
+			this.parentNode.insertBefore(newNode, this.nextSibling);
+		}
+		return newNode;
+	}
+};
+_extends$13(Text,CharacterData);
+function Comment() {
+}
+Comment.prototype = {
+	nodeName : "#comment",
+	nodeType : COMMENT_NODE
+};
+_extends$13(Comment,CharacterData);
+
+function CDATASection() {
+}
+CDATASection.prototype = {
+	nodeName : "#cdata-section",
+	nodeType : CDATA_SECTION_NODE
+};
+_extends$13(CDATASection,CharacterData);
+
+
+function DocumentType() {
+}
+DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
+_extends$13(DocumentType,Node);
+
+function Notation() {
+}
+Notation.prototype.nodeType = NOTATION_NODE;
+_extends$13(Notation,Node);
+
+function Entity() {
+}
+Entity.prototype.nodeType = ENTITY_NODE;
+_extends$13(Entity,Node);
+
+function EntityReference() {
+}
+EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
+_extends$13(EntityReference,Node);
+
+function DocumentFragment() {
+}
+DocumentFragment.prototype.nodeName =	"#document-fragment";
+DocumentFragment.prototype.nodeType =	DOCUMENT_FRAGMENT_NODE;
+_extends$13(DocumentFragment,Node);
+
+
+function ProcessingInstruction() {
+}
+ProcessingInstruction.prototype.nodeType = PROCESSING_INSTRUCTION_NODE;
+_extends$13(ProcessingInstruction,Node);
+function XMLSerializer$1(){}
+XMLSerializer$1.prototype.serializeToString = function(node,isHtml,nodeFilter){
+	return nodeSerializeToString.call(node,isHtml,nodeFilter);
+};
+Node.prototype.toString = nodeSerializeToString;
+function nodeSerializeToString(isHtml,nodeFilter){
+	var buf = [];
+	var refNode = this.nodeType == 9?this.documentElement:this;
+	var prefix = refNode.prefix;
+	var uri = refNode.namespaceURI;
+	
+	if(uri && prefix == null){
+		//console.log(prefix)
+		var prefix = refNode.lookupPrefix(uri);
+		if(prefix == null){
+			//isHTML = true;
+			var visibleNamespaces=[
+			{namespace:uri,prefix:null} ];
+		}
+	}
+	serializeToString(this,buf,isHtml,nodeFilter,visibleNamespaces);
+	//console.log('###',this.nodeType,uri,prefix,buf.join(''))
+	return buf.join('');
+}
+function needNamespaceDefine(node,isHTML, visibleNamespaces) {
+	var prefix = node.prefix||'';
+	var uri = node.namespaceURI;
+	if (!prefix && !uri){
+		return false;
+	}
+	if (prefix === "xml" && uri === "http://www.w3.org/XML/1998/namespace" 
+		|| uri == 'http://www.w3.org/2000/xmlns/'){
+		return false;
+	}
+	
+	var i = visibleNamespaces.length; 
+	//console.log('@@@@',node.tagName,prefix,uri,visibleNamespaces)
+	while (i--) {
+		var ns = visibleNamespaces[i];
+		// get namespace prefix
+		//console.log(node.nodeType,node.tagName,ns.prefix,prefix)
+		if (ns.prefix == prefix){
+			return ns.namespace != uri;
+		}
+	}
+	//console.log(isHTML,uri,prefix=='')
+	//if(isHTML && prefix ==null && uri == 'http://www.w3.org/1999/xhtml'){
+	//	return false;
+	//}
+	//node.flag = '11111'
+	//console.error(3,true,node.flag,node.prefix,node.namespaceURI)
+	return true;
+}
+function serializeToString(node,buf,isHTML,nodeFilter,visibleNamespaces){
+	if(nodeFilter){
+		node = nodeFilter(node);
+		if(node){
+			if(typeof node == 'string'){
+				buf.push(node);
+				return;
+			}
+		}else{
+			return;
+		}
+		//buf.sort.apply(attrs, attributeSorter);
+	}
+	switch(node.nodeType){
+	case ELEMENT_NODE:
+		if (!visibleNamespaces) { visibleNamespaces = []; }
+		var startVisibleNamespaces = visibleNamespaces.length;
+		var attrs = node.attributes;
+		var len = attrs.length;
+		var child = node.firstChild;
+		var nodeName = node.tagName;
+		
+		isHTML =  (htmlns === node.namespaceURI) ||isHTML; 
+		buf.push('<',nodeName);
+		
+		
+		
+		for(var i=0;i<len;i++){
+			// add namespaces for attributes
+			var attr = attrs.item(i);
+			if (attr.prefix == 'xmlns') {
+				visibleNamespaces.push({ prefix: attr.localName, namespace: attr.value });
+			}else if(attr.nodeName == 'xmlns'){
+				visibleNamespaces.push({ prefix: '', namespace: attr.value });
+			}
+		}
+		for(var i=0;i<len;i++){
+			var attr = attrs.item(i);
+			if (needNamespaceDefine(attr,isHTML, visibleNamespaces)) {
+				var prefix = attr.prefix||'';
+				var uri = attr.namespaceURI;
+				var ns = prefix ? ' xmlns:' + prefix : " xmlns";
+				buf.push(ns, '="' , uri , '"');
+				visibleNamespaces.push({ prefix: prefix, namespace:uri });
+			}
+			serializeToString(attr,buf,isHTML,nodeFilter,visibleNamespaces);
+		}
+		// add namespace for current node		
+		if (needNamespaceDefine(node,isHTML, visibleNamespaces)) {
+			var prefix = node.prefix||'';
+			var uri = node.namespaceURI;
+			var ns = prefix ? ' xmlns:' + prefix : " xmlns";
+			buf.push(ns, '="' , uri , '"');
+			visibleNamespaces.push({ prefix: prefix, namespace:uri });
+		}
+		
+		if(child || isHTML && !/^(?:meta|link|img|br|hr|input)$/i.test(nodeName)){
+			buf.push('>');
+			//if is cdata child node
+			if(isHTML && /^script$/i.test(nodeName)){
+				while(child){
+					if(child.data){
+						buf.push(child.data);
+					}else{
+						serializeToString(child,buf,isHTML,nodeFilter,visibleNamespaces);
+					}
+					child = child.nextSibling;
+				}
+			}else
+			{
+				while(child){
+					serializeToString(child,buf,isHTML,nodeFilter,visibleNamespaces);
+					child = child.nextSibling;
+				}
+			}
+			buf.push('</',nodeName,'>');
+		}else{
+			buf.push('/>');
+		}
+		// remove added visible namespaces
+		//visibleNamespaces.length = startVisibleNamespaces;
+		return;
+	case DOCUMENT_NODE:
+	case DOCUMENT_FRAGMENT_NODE:
+		var child = node.firstChild;
+		while(child){
+			serializeToString(child,buf,isHTML,nodeFilter,visibleNamespaces);
+			child = child.nextSibling;
+		}
+		return;
+	case ATTRIBUTE_NODE:
+		return buf.push(' ',node.name,'="',node.value.replace(/[<&"]/g,_xmlEncoder),'"');
+	case TEXT_NODE:
+		return buf.push(node.data.replace(/[<&]/g,_xmlEncoder));
+	case CDATA_SECTION_NODE:
+		return buf.push( '<![CDATA[',node.data,']]>');
+	case COMMENT_NODE:
+		return buf.push( "<!--",node.data,"-->");
+	case DOCUMENT_TYPE_NODE:
+		var pubid = node.publicId;
+		var sysid = node.systemId;
+		buf.push('<!DOCTYPE ',node.name);
+		if(pubid){
+			buf.push(' PUBLIC "',pubid);
+			if (sysid && sysid!='.') {
+				buf.push( '" "',sysid);
+			}
+			buf.push('">');
+		}else if(sysid && sysid!='.'){
+			buf.push(' SYSTEM "',sysid,'">');
+		}else{
+			var sub = node.internalSubset;
+			if(sub){
+				buf.push(" [",sub,"]");
+			}
+			buf.push(">");
+		}
+		return;
+	case PROCESSING_INSTRUCTION_NODE:
+		return buf.push( "<?",node.target," ",node.data,"?>");
+	case ENTITY_REFERENCE_NODE:
+		return buf.push( '&',node.nodeName,';');
+	//case ENTITY_NODE:
+	//case NOTATION_NODE:
+	default:
+		buf.push('??',node.nodeName);
+	}
+}
+function importNode(doc,node,deep){
+	var node2;
+	switch (node.nodeType) {
+	case ELEMENT_NODE:
+		node2 = node.cloneNode(false);
+		node2.ownerDocument = doc;
+		//var attrs = node2.attributes;
+		//var len = attrs.length;
+		//for(var i=0;i<len;i++){
+			//node2.setAttributeNodeNS(importNode(doc,attrs.item(i),deep));
+		//}
+	case DOCUMENT_FRAGMENT_NODE:
+		break;
+	case ATTRIBUTE_NODE:
+		deep = true;
+		break;
+	//case ENTITY_REFERENCE_NODE:
+	//case PROCESSING_INSTRUCTION_NODE:
+	////case TEXT_NODE:
+	//case CDATA_SECTION_NODE:
+	//case COMMENT_NODE:
+	//	deep = false;
+	//	break;
+	//case DOCUMENT_NODE:
+	//case DOCUMENT_TYPE_NODE:
+	//cannot be imported.
+	//case ENTITY_NODE:
+	//case NOTATION_NODE：
+	//can not hit in level3
+	//default:throw e;
+	}
+	if(!node2){
+		node2 = node.cloneNode(false);//false
+	}
+	node2.ownerDocument = doc;
+	node2.parentNode = null;
+	if(deep){
+		var child = node.firstChild;
+		while(child){
+			node2.appendChild(importNode(doc,child,deep));
+			child = child.nextSibling;
+		}
+	}
+	return node2;
+}
+//
+//var _relationMap = {firstChild:1,lastChild:1,previousSibling:1,nextSibling:1,
+//					attributes:1,childNodes:1,parentNode:1,documentElement:1,doctype,};
+function cloneNode(doc,node,deep){
+	var node2 = new node.constructor();
+	for(var n in node){
+		var v = node[n];
+		if(typeof v != 'object' ){
+			if(v != node2[n]){
+				node2[n] = v;
+			}
+		}
+	}
+	if(node.childNodes){
+		node2.childNodes = new NodeList();
+	}
+	node2.ownerDocument = doc;
+	switch (node2.nodeType) {
+	case ELEMENT_NODE:
+		var attrs	= node.attributes;
+		var attrs2	= node2.attributes = new NamedNodeMap();
+		var len = attrs.length;
+		attrs2._ownerElement = node2;
+		for(var i=0;i<len;i++){
+			node2.setAttributeNode(cloneNode(doc,attrs.item(i),true));
+		}
+		break;;
+	case ATTRIBUTE_NODE:
+		deep = true;
+	}
+	if(deep){
+		var child = node.firstChild;
+		while(child){
+			node2.appendChild(cloneNode(doc,child,deep));
+			child = child.nextSibling;
+		}
+	}
+	return node2;
+}
+
+function __set__(object,key,value){
+	object[key] = value;
+}
+//do dynamic
+try{
+	if(Object.defineProperty){
+		Object.defineProperty(LiveNodeList.prototype,'length',{
+			get:function(){
+				_updateLiveList(this);
+				return this.$$length;
+			}
+		});
+		Object.defineProperty(Node.prototype,'textContent',{
+			get:function(){
+				return getTextContent(this);
+			},
+			set:function(data){
+				var this$1 = this;
+
+				switch(this.nodeType){
+				case ELEMENT_NODE:
+				case DOCUMENT_FRAGMENT_NODE:
+					while(this.firstChild){
+						this$1.removeChild(this$1.firstChild);
+					}
+					if(data || String(data)){
+						this.appendChild(this.ownerDocument.createTextNode(data));
+					}
+					break;
+				default:
+					//TODO:
+					this.data = data;
+					this.value = data;
+					this.nodeValue = data;
+				}
+			}
+		});
+		
+		function getTextContent(node){
+			switch(node.nodeType){
+			case ELEMENT_NODE:
+			case DOCUMENT_FRAGMENT_NODE:
+				var buf = [];
+				node = node.firstChild;
+				while(node){
+					if(node.nodeType!==7 && node.nodeType !==8){
+						buf.push(getTextContent(node));
+					}
+					node = node.nextSibling;
+				}
+				return buf.join('');
+			default:
+				return node.nodeValue;
+			}
+		}
+		__set__ = function(object,key,value){
+			//console.log(value)
+			object['$$'+key] = value;
+		};
+	}
+}catch(e){//ie8
+}
+
+//if(typeof require == 'function'){
+	var DOMImplementation_1 = DOMImplementation;
+	var XMLSerializer_1 = XMLSerializer$1;
+//}
+
+var dom = {
+	DOMImplementation: DOMImplementation_1,
+	XMLSerializer: XMLSerializer_1
+};
+
+var domParser = createCommonjsModule(function (module, exports) {
+function DOMParser(options){
+	this.options = options ||{locator:{}};
+	
+}
+DOMParser.prototype.parseFromString = function(source,mimeType){
+	var options = this.options;
+	var sax$$1 =  new XMLReader();
+	var domBuilder = options.domBuilder || new DOMHandler();//contentHandler and LexicalHandler
+	var errorHandler = options.errorHandler;
+	var locator = options.locator;
+	var defaultNSMap = options.xmlns||{};
+	var entityMap = {'lt':'<','gt':'>','amp':'&','quot':'"','apos':"'"};
+	if(locator){
+		domBuilder.setDocumentLocator(locator);
+	}
+	
+	sax$$1.errorHandler = buildErrorHandler(errorHandler,domBuilder,locator);
+	sax$$1.domBuilder = options.domBuilder || domBuilder;
+	if(/\/x?html?$/.test(mimeType)){
+		entityMap.nbsp = '\xa0';
+		entityMap.copy = '\xa9';
+		defaultNSMap['']= 'http://www.w3.org/1999/xhtml';
+	}
+	defaultNSMap.xml = defaultNSMap.xml || 'http://www.w3.org/XML/1998/namespace';
+	if(source){
+		sax$$1.parse(source,defaultNSMap,entityMap);
+	}else{
+		sax$$1.errorHandler.error("invalid doc source");
+	}
+	return domBuilder.doc;
+};
+function buildErrorHandler(errorImpl,domBuilder,locator){
+	if(!errorImpl){
+		if(domBuilder instanceof DOMHandler){
+			return domBuilder;
+		}
+		errorImpl = domBuilder ;
+	}
+	var errorHandler = {};
+	var isCallback = errorImpl instanceof Function;
+	locator = locator||{};
+	function build(key){
+		var fn = errorImpl[key];
+		if(!fn && isCallback){
+			fn = errorImpl.length == 2?function(msg){errorImpl(key,msg);}:errorImpl;
+		}
+		errorHandler[key] = fn && function(msg){
+			fn('[xmldom '+key+']\t'+msg+_locator(locator));
+		}||function(){};
+	}
+	build('warning');
+	build('error');
+	build('fatalError');
+	return errorHandler;
+}
+
+//console.log('#\n\n\n\n\n\n\n####')
+/**
+ * +ContentHandler+ErrorHandler
+ * +LexicalHandler+EntityResolver2
+ * -DeclHandler-DTDHandler 
+ * 
+ * DefaultHandler:EntityResolver, DTDHandler, ContentHandler, ErrorHandler
+ * DefaultHandler2:DefaultHandler,LexicalHandler, DeclHandler, EntityResolver2
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/helpers/DefaultHandler.html
+ */
+function DOMHandler() {
+    this.cdata = false;
+}
+function position(locator,node){
+	node.lineNumber = locator.lineNumber;
+	node.columnNumber = locator.columnNumber;
+}
+/**
+ * @see org.xml.sax.ContentHandler#startDocument
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ContentHandler.html
+ */ 
+DOMHandler.prototype = {
+	startDocument : function() {
+    	this.doc = new DOMImplementation().createDocument(null, null, null);
+    	if (this.locator) {
+        	this.doc.documentURI = this.locator.systemId;
+    	}
+	},
+	startElement:function(namespaceURI, localName, qName, attrs) {
+		var this$1 = this;
+
+		var doc = this.doc;
+	    var el = doc.createElementNS(namespaceURI, qName||localName);
+	    var len = attrs.length;
+	    appendElement(this, el);
+	    this.currentElement = el;
+	    
+		this.locator && position(this.locator,el);
+	    for (var i = 0 ; i < len; i++) {
+	        var namespaceURI = attrs.getURI(i);
+	        var value = attrs.getValue(i);
+	        var qName = attrs.getQName(i);
+			var attr = doc.createAttributeNS(namespaceURI, qName);
+			this$1.locator &&position(attrs.getLocator(i),attr);
+			attr.value = attr.nodeValue = value;
+			el.setAttributeNode(attr);
+	    }
+	},
+	endElement:function(namespaceURI, localName, qName) {
+		var current = this.currentElement;
+		var tagName = current.tagName;
+		this.currentElement = current.parentNode;
+	},
+	startPrefixMapping:function(prefix, uri) {
+	},
+	endPrefixMapping:function(prefix) {
+	},
+	processingInstruction:function(target, data) {
+	    var ins = this.doc.createProcessingInstruction(target, data);
+	    this.locator && position(this.locator,ins);
+	    appendElement(this, ins);
+	},
+	ignorableWhitespace:function(ch, start, length) {
+	},
+	characters:function(chars, start, length) {
+		chars = _toString.apply(this,arguments);
+		//console.log(chars)
+		if(chars){
+			if (this.cdata) {
+				var charNode = this.doc.createCDATASection(chars);
+			} else {
+				var charNode = this.doc.createTextNode(chars);
+			}
+			if(this.currentElement){
+				this.currentElement.appendChild(charNode);
+			}else if(/^\s*$/.test(chars)){
+				this.doc.appendChild(charNode);
+				//process xml
+			}
+			this.locator && position(this.locator,charNode);
+		}
+	},
+	skippedEntity:function(name) {
+	},
+	endDocument:function() {
+		this.doc.normalize();
+	},
+	setDocumentLocator:function (locator) {
+	    if(this.locator = locator){// && !('lineNumber' in locator)){
+	    	locator.lineNumber = 0;
+	    }
+	},
+	//LexicalHandler
+	comment:function(chars, start, length) {
+		chars = _toString.apply(this,arguments);
+	    var comm = this.doc.createComment(chars);
+	    this.locator && position(this.locator,comm);
+	    appendElement(this, comm);
+	},
+	
+	startCDATA:function() {
+	    //used in characters() methods
+	    this.cdata = true;
+	},
+	endCDATA:function() {
+	    this.cdata = false;
+	},
+	
+	startDTD:function(name, publicId, systemId) {
+		var impl = this.doc.implementation;
+	    if (impl && impl.createDocumentType) {
+	        var dt = impl.createDocumentType(name, publicId, systemId);
+	        this.locator && position(this.locator,dt);
+	        appendElement(this, dt);
+	    }
+	},
+	/**
+	 * @see org.xml.sax.ErrorHandler
+	 * @link http://www.saxproject.org/apidoc/org/xml/sax/ErrorHandler.html
+	 */
+	warning:function(error) {
+		console.warn('[xmldom warning]\t'+error,_locator(this.locator));
+	},
+	error:function(error) {
+		console.error('[xmldom error]\t'+error,_locator(this.locator));
+	},
+	fatalError:function(error) {
+		console.error('[xmldom fatalError]\t'+error,_locator(this.locator));
+	    throw error;
+	}
+};
+function _locator(l){
+	if(l){
+		return '\n@'+(l.systemId ||'')+'#[line:'+l.lineNumber+',col:'+l.columnNumber+']'
+	}
+}
+function _toString(chars,start,length){
+	if(typeof chars == 'string'){
+		return chars.substr(start,length)
+	}else{//java sax connect width xmldom on rhino(what about: "? && !(chars instanceof String)")
+		if(chars.length >= start+length || start){
+			return new java.lang.String(chars,start,length)+'';
+		}
+		return chars;
+	}
+}
+
+/*
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ext/LexicalHandler.html
+ * used method of org.xml.sax.ext.LexicalHandler:
+ *  #comment(chars, start, length)
+ *  #startCDATA()
+ *  #endCDATA()
+ *  #startDTD(name, publicId, systemId)
+ *
+ *
+ * IGNORED method of org.xml.sax.ext.LexicalHandler:
+ *  #endDTD()
+ *  #startEntity(name)
+ *  #endEntity(name)
+ *
+ *
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ext/DeclHandler.html
+ * IGNORED method of org.xml.sax.ext.DeclHandler
+ * 	#attributeDecl(eName, aName, type, mode, value)
+ *  #elementDecl(name, model)
+ *  #externalEntityDecl(name, publicId, systemId)
+ *  #internalEntityDecl(name, value)
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/ext/EntityResolver2.html
+ * IGNORED method of org.xml.sax.EntityResolver2
+ *  #resolveEntity(String name,String publicId,String baseURI,String systemId)
+ *  #resolveEntity(publicId, systemId)
+ *  #getExternalSubset(name, baseURI)
+ * @link http://www.saxproject.org/apidoc/org/xml/sax/DTDHandler.html
+ * IGNORED method of org.xml.sax.DTDHandler
+ *  #notationDecl(name, publicId, systemId) {};
+ *  #unparsedEntityDecl(name, publicId, systemId, notationName) {};
+ */
+"endDTD,startEntity,endEntity,attributeDecl,elementDecl,externalEntityDecl,internalEntityDecl,resolveEntity,getExternalSubset,notationDecl,unparsedEntityDecl".replace(/\w+/g,function(key){
+	DOMHandler.prototype[key] = function(){return null};
+});
+
+/* Private static helpers treated below as private instance methods, so don't need to add these to the public API; we might use a Relator to also get rid of non-standard public properties */
+function appendElement (hander,node) {
+    if (!hander.currentElement) {
+        hander.doc.appendChild(node);
+    } else {
+        hander.currentElement.appendChild(node);
+    }
+}//appendChild and setAttributeNS are preformance key
+
+//if(typeof require == 'function'){
+	var XMLReader = sax.XMLReader;
+	var DOMImplementation = exports.DOMImplementation = dom.DOMImplementation;
+	exports.XMLSerializer = dom.XMLSerializer ;
+	exports.DOMParser = DOMParser;
+//}
+});
+
+/*
+ * canvg.js - Javascript SVG parser and renderer on Canvas
+ * MIT Licensed
+ * Gabe Lerner (gabelerner@gmail.com)
+ * http://code.google.com/p/canvg/
+ *
+ * Requires: rgbcolor.js - http://www.phpied.com/rgb-color-parser-in-javascript/
+ */
+
+/*
+canvg(target, s)
+  empty parameters: replace all 'svg' elements on page with 'canvas' elements
+  target: canvas element or the id of a canvas element
+  s: svg string, url to svg file, or xml document
+  opts: optional hash of options
+    ignoreMouse: true => ignore mouse events
+    ignoreAnimation: true => ignore animations
+    ignoreDimensions: true => does not try to resize canvas
+    ignoreClear: true => does not clear canvas
+    offsetX: int => draws at a x offset
+    offsetY: int => draws at a y offset
+    scaleWidth: int => scales horizontally to width
+    scaleHeight: int => scales vertically to height
+    renderCallback: function => will call the function after the first render is completed
+    forceRedraw: function => will call the function on every frame, if it returns true, will redraw
+*/
+function canvg(target, s, opts) {
+
+	// no parameters
+	if (target == null && s == null && opts == null) {
+		var svgTags = document.querySelectorAll('svg');
+		for (var i=0; i<svgTags.length; i++) {
+			var svgTag = svgTags[i];
+			var c = document.createElement('canvas');
+			c.width = svgTag.clientWidth;
+			c.height = svgTag.clientHeight;
+			svgTag.parentNode.insertBefore(c, svgTag);
+			svgTag.parentNode.removeChild(svgTag);
+			var div = document.createElement('div');
+			div.appendChild(svgTag);
+			canvg(c, div.innerHTML);
+		}
+		return;
+	}
+
+	if (typeof target == 'string') {
+		target = document.getElementById(target);
+	}
+
+	// store class on canvas
+	if (target.svg != null) { target.svg.stop(); }
+	var svg = build(opts || {});
+	// on i.e. 8 for flash canvas, we can't assign the property so check for it
+	if (!(target.childNodes.length == 1 && target.childNodes[0].nodeName == 'OBJECT')) { target.svg = svg; }
+
+	var ctx = target.getContext('2d');
+	if (typeof s.documentElement != 'undefined') {
+		// load from xml doc
+		svg.loadXmlDoc(ctx, s);
+	}
+	else if (s.substr(0,1) == '<') {
+		// load from xml string
+		svg.loadXml(ctx, s);
+	}
+	else {
+		// load from url
+		svg.load(ctx, s);
+	}
+}
+
+function getMatchesSelector() {
+  // see https://developer.mozilla.org/en-US/docs/Web/API/Element.matches
+  var matchesSelector;
+  if (typeof Element.prototype.matches != 'undefined') {
+  	matchesSelector = function(node, selector) {
+  		return node.matches(selector);
+  	};
+  } else if (typeof Element.prototype.webkitMatchesSelector != 'undefined') {
+  	matchesSelector = function(node, selector) {
+  		return node.webkitMatchesSelector(selector);
+  	};
+  } else if (typeof Element.prototype.mozMatchesSelector != 'undefined') {
+  	matchesSelector = function(node, selector) {
+  		return node.mozMatchesSelector(selector);
+  	};
+  } else if (typeof Element.prototype.msMatchesSelector != 'undefined') {
+  	matchesSelector = function(node, selector) {
+  		return node.msMatchesSelector(selector);
+  	};
+  } else if (typeof Element.prototype.oMatchesSelector != 'undefined') {
+  	matchesSelector = function(node, selector) {
+  		return node.oMatchesSelector(selector);
+  	};
+  } else {
+  	// requires Sizzle: https://github.com/jquery/sizzle/wiki/Sizzle-Documentation
+  	// or jQuery: http://jquery.com/download/
+  	// or Zepto: http://zeptojs.com/#
+  	// without it, this is a ReferenceError
+
+  	if (typeof jQuery == 'function' || typeof Zepto == 'function') {
+  		matchesSelector = function (node, selector) {
+  			return $(node).is(selector);
+  		};
+  	}
+
+  	if (typeof matchesSelector == 'undefined') {
+  		matchesSelector = Sizzle.matchesSelector;
+  	}
+  }
+
+  return matchesSelector;
+}
+
+function getSelectorSpecificity(selector) {
+	var typeCount = [0, 0, 0];
+
+  // slightly modified version of https://github.com/keeganstreet/specificity/blob/master/specificity.js
+  var attributeRegex = /(\[[^\]]+\])/g;
+  var idRegex = /(#[^\s\+>~\.\[:]+)/g;
+  var classRegex = /(\.[^\s\+>~\.\[:]+)/g;
+  var pseudoElementRegex = /(::[^\s\+>~\.\[:]+|:first-line|:first-letter|:before|:after)/gi;
+  var pseudoClassWithBracketsRegex = /(:[\w-]+\([^\)]*\))/gi;
+  var pseudoClassRegex = /(:[^\s\+>~\.\[:]+)/g;
+  var elementRegex = /([^\s\+>~\.\[:]+)/g;
+
+	var findMatch = function(regex, type) {
+		var matches = selector.match(regex);
+		if (matches == null) {
+			return;
+		}
+		typeCount[type] += matches.length;
+		selector = selector.replace(regex, ' ');
+	};
+
+	selector = selector.replace(/:not\(([^\)]*)\)/g, '     $1 ');
+	selector = selector.replace(/{[^]*/gm, ' ');
+	findMatch(attributeRegex, 1);
+	findMatch(idRegex, 0);
+	findMatch(classRegex, 1);
+	findMatch(pseudoElementRegex, 2);
+	findMatch(pseudoClassWithBracketsRegex, 1);
+	findMatch(pseudoClassRegex, 1);
+	selector = selector.replace(/[\*\s\+>~]/g, ' ');
+	selector = selector.replace(/[#\.]/g, ' ');
+	findMatch(elementRegex, 2);
+	return typeCount.join('');
+}
+
+function build(opts) {
+	var svg = { opts: opts };
+
+  var matchesSelector = getMatchesSelector();
+
+  if (typeof CanvasRenderingContext2D  != 'undefined') {
+    CanvasRenderingContext2D.prototype.drawSvg = function(s, dx, dy, dw, dh, opts) {
+      var cOpts = {
+        ignoreMouse: true,
+        ignoreAnimation: true,
+        ignoreDimensions: true,
+        ignoreClear: true,
+        offsetX: dx,
+        offsetY: dy,
+        scaleWidth: dw,
+        scaleHeight: dh
+      };
+
+      for(var prop in opts) {
+        if(opts.hasOwnProperty(prop)){
+          cOpts[prop] = opts[prop];
+        }
+      }
+      canvg(this.canvas, s, cOpts);
+    };
+  }
+
+	svg.FRAMERATE = 30;
+	svg.MAX_VIRTUAL_PIXELS = 30000;
+
+	svg.log = function(msg) {};
+	if (svg.opts.log == true && typeof console != 'undefined') {
+		svg.log = function(msg) { console.log(msg); };
+	}
+
+	// globals
+	svg.init = function(ctx) {
+		var uniqueId = 0;
+		svg.UniqueId = function () { uniqueId++; return 'canvg' + uniqueId;	};
+		svg.Definitions = {};
+		svg.Styles = {};
+		svg.StylesSpecificity = {};
+		svg.Animations = [];
+		svg.Images = [];
+		svg.ctx = ctx;
+		svg.ViewPort = new (function () {
+			this.viewPorts = [];
+			this.Clear = function() { this.viewPorts = []; };
+			this.SetCurrent = function(width, height) { this.viewPorts.push({ width: width, height: height }); };
+			this.RemoveCurrent = function() { this.viewPorts.pop(); };
+			this.Current = function() { return this.viewPorts[this.viewPorts.length - 1]; };
+			this.width = function() { return this.Current().width; };
+			this.height = function() { return this.Current().height; };
+			this.ComputeSize = function(d) {
+				if (d != null && typeof d == 'number') { return d; }
+				if (d == 'x') { return this.width(); }
+				if (d == 'y') { return this.height(); }
+				return Math.sqrt(Math.pow(this.width(), 2) + Math.pow(this.height(), 2)) / Math.sqrt(2);
+			};
+		});
+	};
+	svg.init();
+
+	// images loaded
+	svg.ImagesLoaded = function() {
+		for (var i=0; i<svg.Images.length; i++) {
+			if (!svg.Images[i].loaded) { return false; }
+		}
+		return true;
+	};
+
+	// trim
+	svg.trim = function(s) { return s.replace(/^\s+|\s+$/g, ''); };
+
+	// compress spaces
+	svg.compressSpaces = function(s) { return s.replace(/[\s\r\t\n]+/gm,' '); };
+
+	// ajax
+	svg.ajax = function(url) {
+		var AJAX;
+		if(window.XMLHttpRequest){AJAX=new XMLHttpRequest();}
+		else{AJAX=new ActiveXObject('Microsoft.XMLHTTP');}
+		if(AJAX){
+		   AJAX.open('GET',url,false);
+		   AJAX.send(null);
+		   return AJAX.responseText;
+		}
+		return null;
+	};
+
+	// parse xml
+	svg.parseXml = function(xml) {
+		if (typeof Windows != 'undefined' && typeof Windows.Data != 'undefined' && typeof Windows.Data.Xml != 'undefined') {
+			var xmlDoc = new Windows.Data.Xml.Dom.XmlDocument();
+			var settings = new Windows.Data.Xml.Dom.XmlLoadSettings();
+			settings.prohibitDtd = false;
+			xmlDoc.loadXml(xml, settings);
+			return xmlDoc;
+		}
+		else if (window.DOMParser)
+		{
+			var parser = new DOMParser();
+			return parser.parseFromString(xml, 'text/xml');
+		}
+		else
+		{
+			xml = xml.replace(/<!DOCTYPE svg[^>]*>/, '');
+			var xmlDoc = new ActiveXObject('Microsoft.XMLDOM');
+			xmlDoc.async = 'false';
+			xmlDoc.loadXML(xml);
+			return xmlDoc;
+		}
+	};
+
+	svg.Property = function(name, value) {
+		this.name = name;
+		this.value = value;
+	};
+		svg.Property.prototype.getValue = function() {
+			return this.value;
+		};
+
+		svg.Property.prototype.hasValue = function() {
+			return (this.value != null && this.value != '');
+		};
+
+		// return the numerical value of the property
+		svg.Property.prototype.numValue = function() {
+			if (!this.hasValue()) { return 0; }
+
+			var n = parseFloat(this.value);
+			if ((this.value + '').match(/%$/)) {
+				n = n / 100.0;
+			}
+			return n;
+		};
+
+		svg.Property.prototype.valueOrDefault = function(def) {
+			if (this.hasValue()) { return this.value; }
+			return def;
+		};
+
+		svg.Property.prototype.numValueOrDefault = function(def) {
+			if (this.hasValue()) { return this.numValue(); }
+			return def;
+		};
+
+		// color extensions
+			// augment the current color value with the opacity
+			svg.Property.prototype.addOpacity = function(opacityProp) {
+				var newValue = this.value;
+				if (opacityProp.value != null && opacityProp.value != '' && typeof this.value == 'string') { // can only add opacity to colors, not patterns
+					var color = new index$3(this.value);
+					if (color.ok) {
+						newValue = 'rgba(' + color.r + ', ' + color.g + ', ' + color.b + ', ' + opacityProp.numValue() + ')';
+					}
+				}
+				return new svg.Property(this.name, newValue);
+			};
+
+		// definition extensions
+			// get the definition from the definitions table
+			svg.Property.prototype.getDefinition = function() {
+				var name = this.value.match(/#([^\)'"]+)/);
+				if (name) { name = name[1]; }
+				if (!name) { name = this.value; }
+				return svg.Definitions[name];
+			};
+
+			svg.Property.prototype.isUrlDefinition = function() {
+				return this.value.indexOf('url(') == 0
+			};
+
+			svg.Property.prototype.getFillStyleDefinition = function(e, opacityProp) {
+				var def = this.getDefinition();
+
+				// gradient
+				if (def != null && def.createGradient) {
+					return def.createGradient(svg.ctx, e, opacityProp);
+				}
+
+				// pattern
+				if (def != null && def.createPattern) {
+					if (def.getHrefAttribute().hasValue()) {
+						var pt = def.attribute('patternTransform');
+						def = def.getHrefAttribute().getDefinition();
+						if (pt.hasValue()) { def.attribute('patternTransform', true).value = pt.value; }
+					}
+					return def.createPattern(svg.ctx, e);
+				}
+
+				return null;
+			};
+
+		// length extensions
+			svg.Property.prototype.getDPI = function(viewPort) {
+				return 96.0; // TODO: compute?
+			};
+
+			svg.Property.prototype.getEM = function(viewPort) {
+				var em = 12;
+
+				var fontSize = new svg.Property('fontSize', svg.Font.Parse(svg.ctx.font).fontSize);
+				if (fontSize.hasValue()) { em = fontSize.toPixels(viewPort); }
+
+				return em;
+			};
+
+			svg.Property.prototype.getUnits = function() {
+				var s = this.value+'';
+				return s.replace(/[0-9\.\-]/g,'');
+			};
+
+			// get the length as pixels
+			svg.Property.prototype.toPixels = function(viewPort, processPercent) {
+				if (!this.hasValue()) { return 0; }
+				var s = this.value+'';
+				if (s.match(/em$/)) { return this.numValue() * this.getEM(viewPort); }
+				if (s.match(/ex$/)) { return this.numValue() * this.getEM(viewPort) / 2.0; }
+				if (s.match(/px$/)) { return this.numValue(); }
+				if (s.match(/pt$/)) { return this.numValue() * this.getDPI(viewPort) * (1.0 / 72.0); }
+				if (s.match(/pc$/)) { return this.numValue() * 15; }
+				if (s.match(/cm$/)) { return this.numValue() * this.getDPI(viewPort) / 2.54; }
+				if (s.match(/mm$/)) { return this.numValue() * this.getDPI(viewPort) / 25.4; }
+				if (s.match(/in$/)) { return this.numValue() * this.getDPI(viewPort); }
+				if (s.match(/%$/)) { return this.numValue() * svg.ViewPort.ComputeSize(viewPort); }
+				var n = this.numValue();
+				if (processPercent && n < 1.0) { return n * svg.ViewPort.ComputeSize(viewPort); }
+				return n;
+			};
+
+		// time extensions
+			// get the time as milliseconds
+			svg.Property.prototype.toMilliseconds = function() {
+				if (!this.hasValue()) { return 0; }
+				var s = this.value+'';
+				if (s.match(/s$/)) { return this.numValue() * 1000; }
+				if (s.match(/ms$/)) { return this.numValue(); }
+				return this.numValue();
+			};
+
+		// angle extensions
+			// get the angle as radians
+			svg.Property.prototype.toRadians = function() {
+				if (!this.hasValue()) { return 0; }
+				var s = this.value+'';
+				if (s.match(/deg$/)) { return this.numValue() * (Math.PI / 180.0); }
+				if (s.match(/grad$/)) { return this.numValue() * (Math.PI / 200.0); }
+				if (s.match(/rad$/)) { return this.numValue(); }
+				return this.numValue() * (Math.PI / 180.0);
+			};
+
+		// text extensions
+			// get the text baseline
+			var textBaselineMapping = {
+				'baseline': 'alphabetic',
+				'before-edge': 'top',
+				'text-before-edge': 'top',
+				'middle': 'middle',
+				'central': 'middle',
+				'after-edge': 'bottom',
+				'text-after-edge': 'bottom',
+				'ideographic': 'ideographic',
+				'alphabetic': 'alphabetic',
+				'hanging': 'hanging',
+				'mathematical': 'alphabetic'
+			};
+			svg.Property.prototype.toTextBaseline = function () {
+				if (!this.hasValue()) { return null; }
+				return textBaselineMapping[this.value];
+			};
+
+	// fonts
+	svg.Font = new (function() {
+		this.Styles = 'normal|italic|oblique|inherit';
+		this.Variants = 'normal|small-caps|inherit';
+		this.Weights = 'normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900|inherit';
+
+		this.CreateFont = function(fontStyle, fontVariant, fontWeight, fontSize, fontFamily, inherit) {
+			var f = inherit != null ? this.Parse(inherit) : this.CreateFont('', '', '', '', '', svg.ctx.font);
+			return {
+				fontFamily: fontFamily || f.fontFamily,
+				fontSize: fontSize || f.fontSize,
+				fontStyle: fontStyle || f.fontStyle,
+				fontWeight: fontWeight || f.fontWeight,
+				fontVariant: fontVariant || f.fontVariant,
+				toString: function () { return [this.fontStyle, this.fontVariant, this.fontWeight, this.fontSize, this.fontFamily].join(' ') }
+			}
+		};
+
+		var that = this;
+		this.Parse = function(s) {
+			var f = {};
+			var d = svg.trim(svg.compressSpaces(s || '')).split(' ');
+			var set = { fontSize: false, fontStyle: false, fontWeight: false, fontVariant: false };
+			var ff = '';
+			for (var i=0; i<d.length; i++) {
+				if (!set.fontStyle && that.Styles.indexOf(d[i]) != -1) { if (d[i] != 'inherit') { f.fontStyle = d[i]; } set.fontStyle = true; }
+				else if (!set.fontVariant && that.Variants.indexOf(d[i]) != -1) { if (d[i] != 'inherit') { f.fontVariant = d[i]; } set.fontStyle = set.fontVariant = true;	}
+				else if (!set.fontWeight && that.Weights.indexOf(d[i]) != -1) {	if (d[i] != 'inherit') { f.fontWeight = d[i]; } set.fontStyle = set.fontVariant = set.fontWeight = true; }
+				else if (!set.fontSize) { if (d[i] != 'inherit') { f.fontSize = d[i].split('/')[0]; } set.fontStyle = set.fontVariant = set.fontWeight = set.fontSize = true; }
+				else { if (d[i] != 'inherit') { ff += d[i]; } }
+			} if (ff != '') { f.fontFamily = ff; }
+			return f;
+		};
+	});
+
+	// points and paths
+	svg.ToNumberArray = function(s) {
+		var a = svg.trim(svg.compressSpaces((s || '').replace(/,/g, ' '))).split(' ');
+		for (var i=0; i<a.length; i++) {
+			a[i] = parseFloat(a[i]);
+		}
+		return a;
+	};
+	svg.Point = function(x, y) {
+		this.x = x;
+		this.y = y;
+	};
+		svg.Point.prototype.angleTo = function(p) {
+			return Math.atan2(p.y - this.y, p.x - this.x);
+		};
+
+		svg.Point.prototype.applyTransform = function(v) {
+			var xp = this.x * v[0] + this.y * v[2] + v[4];
+			var yp = this.x * v[1] + this.y * v[3] + v[5];
+			this.x = xp;
+			this.y = yp;
+		};
+
+	svg.CreatePoint = function(s) {
+		var a = svg.ToNumberArray(s);
+		return new svg.Point(a[0], a[1]);
+	};
+	svg.CreatePath = function(s) {
+		var a = svg.ToNumberArray(s);
+		var path = [];
+		for (var i=0; i<a.length; i+=2) {
+			path.push(new svg.Point(a[i], a[i+1]));
+		}
+		return path;
+	};
+
+	// bounding box
+	svg.BoundingBox = function(x1, y1, x2, y2) { // pass in initial points if you want
+		this.x1 = Number.NaN;
+		this.y1 = Number.NaN;
+		this.x2 = Number.NaN;
+		this.y2 = Number.NaN;
+
+		this.x = function() { return this.x1; };
+		this.y = function() { return this.y1; };
+		this.width = function() { return this.x2 - this.x1; };
+		this.height = function() { return this.y2 - this.y1; };
+
+		this.addPoint = function(x, y) {
+			if (x != null) {
+				if (isNaN(this.x1) || isNaN(this.x2)) {
+					this.x1 = x;
+					this.x2 = x;
+				}
+				if (x < this.x1) { this.x1 = x; }
+				if (x > this.x2) { this.x2 = x; }
+			}
+
+			if (y != null) {
+				if (isNaN(this.y1) || isNaN(this.y2)) {
+					this.y1 = y;
+					this.y2 = y;
+				}
+				if (y < this.y1) { this.y1 = y; }
+				if (y > this.y2) { this.y2 = y; }
+			}
+		};
+		this.addX = function(x) { this.addPoint(x, null); };
+		this.addY = function(y) { this.addPoint(null, y); };
+
+		this.addBoundingBox = function(bb) {
+			this.addPoint(bb.x1, bb.y1);
+			this.addPoint(bb.x2, bb.y2);
+		};
+
+		this.addQuadraticCurve = function(p0x, p0y, p1x, p1y, p2x, p2y) {
+			var cp1x = p0x + 2/3 * (p1x - p0x); // CP1 = QP0 + 2/3 *(QP1-QP0)
+			var cp1y = p0y + 2/3 * (p1y - p0y); // CP1 = QP0 + 2/3 *(QP1-QP0)
+			var cp2x = cp1x + 1/3 * (p2x - p0x); // CP2 = CP1 + 1/3 *(QP2-QP0)
+			var cp2y = cp1y + 1/3 * (p2y - p0y); // CP2 = CP1 + 1/3 *(QP2-QP0)
+			this.addBezierCurve(p0x, p0y, cp1x, cp2x, cp1y,	cp2y, p2x, p2y);
+		};
+
+		this.addBezierCurve = function(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
+			var this$1 = this;
+
+			// from http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
+			var p0 = [p0x, p0y], p1 = [p1x, p1y], p2 = [p2x, p2y], p3 = [p3x, p3y];
+			this.addPoint(p0[0], p0[1]);
+			this.addPoint(p3[0], p3[1]);
+
+			for (var i=0; i<=1; i++) {
+				var f = function(t) {
+					return Math.pow(1-t, 3) * p0[i]
+					+ 3 * Math.pow(1-t, 2) * t * p1[i]
+					+ 3 * (1-t) * Math.pow(t, 2) * p2[i]
+					+ Math.pow(t, 3) * p3[i];
+				};
+
+				var b = 6 * p0[i] - 12 * p1[i] + 6 * p2[i];
+				var a = -3 * p0[i] + 9 * p1[i] - 9 * p2[i] + 3 * p3[i];
+				var c = 3 * p1[i] - 3 * p0[i];
+
+				if (a == 0) {
+					if (b == 0) { continue; }
+					var t = -c / b;
+					if (0 < t && t < 1) {
+						if (i == 0) { this$1.addX(f(t)); }
+						if (i == 1) { this$1.addY(f(t)); }
+					}
+					continue;
+				}
+
+				var b2ac = Math.pow(b, 2) - 4 * c * a;
+				if (b2ac < 0) { continue; }
+				var t1 = (-b + Math.sqrt(b2ac)) / (2 * a);
+				if (0 < t1 && t1 < 1) {
+					if (i == 0) { this$1.addX(f(t1)); }
+					if (i == 1) { this$1.addY(f(t1)); }
+				}
+				var t2 = (-b - Math.sqrt(b2ac)) / (2 * a);
+				if (0 < t2 && t2 < 1) {
+					if (i == 0) { this$1.addX(f(t2)); }
+					if (i == 1) { this$1.addY(f(t2)); }
+				}
+			}
+		};
+
+		this.isPointInBox = function(x, y) {
+			return (this.x1 <= x && x <= this.x2 && this.y1 <= y && y <= this.y2);
+		};
+
+		this.addPoint(x1, y1);
+		this.addPoint(x2, y2);
+	};
+
+	// transforms
+	svg.Transform = function(v) {
+		var this$1 = this;
+
+		var that = this;
+		this.Type = {};
+
+		// translate
+		this.Type.translate = function(s) {
+			this.p = svg.CreatePoint(s);
+			this.apply = function(ctx) {
+				ctx.translate(this.p.x || 0.0, this.p.y || 0.0);
+			};
+			this.unapply = function(ctx) {
+				ctx.translate(-1.0 * this.p.x || 0.0, -1.0 * this.p.y || 0.0);
+			};
+			this.applyToPoint = function(p) {
+				p.applyTransform([1, 0, 0, 1, this.p.x || 0.0, this.p.y || 0.0]);
+			};
+		};
+
+		// rotate
+		this.Type.rotate = function(s) {
+			var a = svg.ToNumberArray(s);
+			this.angle = new svg.Property('angle', a[0]);
+			this.cx = a[1] || 0;
+			this.cy = a[2] || 0;
+			this.apply = function(ctx) {
+				ctx.translate(this.cx, this.cy);
+				ctx.rotate(this.angle.toRadians());
+				ctx.translate(-this.cx, -this.cy);
+			};
+			this.unapply = function(ctx) {
+				ctx.translate(this.cx, this.cy);
+				ctx.rotate(-1.0 * this.angle.toRadians());
+				ctx.translate(-this.cx, -this.cy);
+			};
+			this.applyToPoint = function(p) {
+				var a = this.angle.toRadians();
+				p.applyTransform([1, 0, 0, 1, this.p.x || 0.0, this.p.y || 0.0]);
+				p.applyTransform([Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0]);
+				p.applyTransform([1, 0, 0, 1, -this.p.x || 0.0, -this.p.y || 0.0]);
+			};
+		};
+
+		this.Type.scale = function(s) {
+			this.p = svg.CreatePoint(s);
+			this.apply = function(ctx) {
+				ctx.scale(this.p.x || 1.0, this.p.y || this.p.x || 1.0);
+			};
+			this.unapply = function(ctx) {
+				ctx.scale(1.0 / this.p.x || 1.0, 1.0 / this.p.y || this.p.x || 1.0);
+			};
+			this.applyToPoint = function(p) {
+				p.applyTransform([this.p.x || 0.0, 0, 0, this.p.y || 0.0, 0, 0]);
+			};
+		};
+
+		this.Type.matrix = function(s) {
+			this.m = svg.ToNumberArray(s);
+			this.apply = function(ctx) {
+				ctx.transform(this.m[0], this.m[1], this.m[2], this.m[3], this.m[4], this.m[5]);
+			};
+			this.unapply = function(ctx) {
+				var a = this.m[0];
+				var b = this.m[2];
+				var c = this.m[4];
+				var d = this.m[1];
+				var e = this.m[3];
+				var f = this.m[5];
+				var g = 0.0;
+				var h = 0.0;
+				var i = 1.0;
+				var det = 1 / (a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g));
+				ctx.transform(
+					det*(e*i-f*h),
+					det*(f*g-d*i),
+					det*(c*h-b*i),
+					det*(a*i-c*g),
+					det*(b*f-c*e),
+					det*(c*d-a*f)
+				);
+			};
+			this.applyToPoint = function(p) {
+				p.applyTransform(this.m);
+			};
+		};
+
+		this.Type.SkewBase = function(s) {
+			this.base = that.Type.matrix;
+			this.base(s);
+			this.angle = new svg.Property('angle', s);
+		};
+		this.Type.SkewBase.prototype = new this.Type.matrix;
+
+		this.Type.skewX = function(s) {
+			this.base = that.Type.SkewBase;
+			this.base(s);
+			this.m = [1, 0, Math.tan(this.angle.toRadians()), 1, 0, 0];
+		};
+		this.Type.skewX.prototype = new this.Type.SkewBase;
+
+		this.Type.skewY = function(s) {
+			this.base = that.Type.SkewBase;
+			this.base(s);
+			this.m = [1, Math.tan(this.angle.toRadians()), 0, 1, 0, 0];
+		};
+		this.Type.skewY.prototype = new this.Type.SkewBase;
+
+		this.transforms = [];
+
+		this.apply = function(ctx) {
+			var this$1 = this;
+
+			for (var i=0; i<this.transforms.length; i++) {
+				this$1.transforms[i].apply(ctx);
+			}
+		};
+
+		this.unapply = function(ctx) {
+			var this$1 = this;
+
+			for (var i=this.transforms.length-1; i>=0; i--) {
+				this$1.transforms[i].unapply(ctx);
+			}
+		};
+
+		this.applyToPoint = function(p) {
+			var this$1 = this;
+
+			for (var i=0; i<this.transforms.length; i++) {
+				this$1.transforms[i].applyToPoint(p);
+			}
+		};
+
+		var data = svg.trim(svg.compressSpaces(v)).replace(/\)([a-zA-Z])/g, ') $1').replace(/\)(\s?,\s?)/g,') ').split(/\s(?=[a-z])/);
+		for (var i=0; i<data.length; i++) {
+			var type = svg.trim(data[i].split('(')[0]);
+			var s = data[i].split('(')[1].replace(')','');
+			var transformType = this$1.Type[type];
+			if (typeof transformType != 'undefined') {
+				var transform = new transformType(s);
+				transform.type = type;
+				this$1.transforms.push(transform);
+			}
+		}
+	};
+
+	// aspect ratio
+	svg.AspectRatio = function(ctx, aspectRatio, width, desiredWidth, height, desiredHeight, minX, minY, refX, refY) {
+		// aspect ratio - http://www.w3.org/TR/SVG/coords.html#PreserveAspectRatioAttribute
+		aspectRatio = svg.compressSpaces(aspectRatio);
+		aspectRatio = aspectRatio.replace(/^defer\s/,''); // ignore defer
+		var align = aspectRatio.split(' ')[0] || 'xMidYMid';
+		var meetOrSlice = aspectRatio.split(' ')[1] || 'meet';
+
+		// calculate scale
+		var scaleX = width / desiredWidth;
+		var scaleY = height / desiredHeight;
+		var scaleMin = Math.min(scaleX, scaleY);
+		var scaleMax = Math.max(scaleX, scaleY);
+		if (meetOrSlice == 'meet') { desiredWidth *= scaleMin; desiredHeight *= scaleMin; }
+		if (meetOrSlice == 'slice') { desiredWidth *= scaleMax; desiredHeight *= scaleMax; }
+
+		refX = new svg.Property('refX', refX);
+		refY = new svg.Property('refY', refY);
+		if (refX.hasValue() && refY.hasValue()) {
+			ctx.translate(-scaleMin * refX.toPixels('x'), -scaleMin * refY.toPixels('y'));
+		}
+		else {
+			// align
+			if (align.match(/^xMid/) && ((meetOrSlice == 'meet' && scaleMin == scaleY) || (meetOrSlice == 'slice' && scaleMax == scaleY))) { ctx.translate(width / 2.0 - desiredWidth / 2.0, 0); }
+			if (align.match(/YMid$/) && ((meetOrSlice == 'meet' && scaleMin == scaleX) || (meetOrSlice == 'slice' && scaleMax == scaleX))) { ctx.translate(0, height / 2.0 - desiredHeight / 2.0); }
+			if (align.match(/^xMax/) && ((meetOrSlice == 'meet' && scaleMin == scaleY) || (meetOrSlice == 'slice' && scaleMax == scaleY))) { ctx.translate(width - desiredWidth, 0); }
+			if (align.match(/YMax$/) && ((meetOrSlice == 'meet' && scaleMin == scaleX) || (meetOrSlice == 'slice' && scaleMax == scaleX))) { ctx.translate(0, height - desiredHeight); }
+		}
+
+		// scale
+		if (align == 'none') { ctx.scale(scaleX, scaleY); }
+		else if (meetOrSlice == 'meet') { ctx.scale(scaleMin, scaleMin); }
+		else if (meetOrSlice == 'slice') { ctx.scale(scaleMax, scaleMax); }
+
+		// translate
+		ctx.translate(minX == null ? 0 : -minX, minY == null ? 0 : -minY);
+	};
+
+	// elements
+	svg.Element = {};
+
+	svg.EmptyProperty = new svg.Property('EMPTY', '');
+
+	svg.Element.ElementBase = function(node) {
+		var this$1 = this;
+
+		this.attributes = {};
+		this.styles = {};
+		this.stylesSpecificity = {};
+		this.children = [];
+
+		// get or create attribute
+		this.attribute = function(name, createIfNotExists) {
+			var a = this.attributes[name];
+			if (a != null) { return a; }
+
+			if (createIfNotExists == true) { a = new svg.Property(name, ''); this.attributes[name] = a; }
+			return a || svg.EmptyProperty;
+		};
+
+		this.getHrefAttribute = function() {
+			var this$1 = this;
+
+			for (var a in this$1.attributes) {
+				if (a == 'href' || a.match(/:href$/)) {
+					return this$1.attributes[a];
+				}
+			}
+			return svg.EmptyProperty;
+		};
+
+		// get or create style, crawls up node tree
+		this.style = function(name, createIfNotExists, skipAncestors) {
+			var s = this.styles[name];
+			if (s != null) { return s; }
+
+			var a = this.attribute(name);
+			if (a != null && a.hasValue()) {
+				this.styles[name] = a; // move up to me to cache
+				return a;
+			}
+
+			if (skipAncestors != true) {
+				var p = this.parent;
+				if (p != null) {
+					var ps = p.style(name);
+					if (ps != null && ps.hasValue()) {
+						return ps;
+					}
+				}
+			}
+
+			if (createIfNotExists == true) { s = new svg.Property(name, ''); this.styles[name] = s; }
+			return s || svg.EmptyProperty;
+		};
+
+		// base render
+		this.render = function(ctx) {
+			// don't render display=none
+			if (this.style('display').value == 'none') { return; }
+
+			// don't render visibility=hidden
+			if (this.style('visibility').value == 'hidden') { return; }
+
+			ctx.save();
+			if (this.style('mask').hasValue()) { // mask
+				var mask = this.style('mask').getDefinition();
+				if (mask != null) { mask.apply(ctx, this); }
+			}
+			else if (this.style('filter').hasValue()) { // filter
+				var filter = this.style('filter').getDefinition();
+				if (filter != null) { filter.apply(ctx, this); }
+			}
+			else {
+				this.setContext(ctx);
+				this.renderChildren(ctx);
+				this.clearContext(ctx);
+			}
+			ctx.restore();
+		};
+
+		// base set context
+		this.setContext = function(ctx) {
+			// OVERRIDE ME!
+		};
+
+		// base clear context
+		this.clearContext = function(ctx) {
+			// OVERRIDE ME!
+		};
+
+		// base render children
+		this.renderChildren = function(ctx) {
+			var this$1 = this;
+
+			for (var i=0; i<this.children.length; i++) {
+				this$1.children[i].render(ctx);
+			}
+		};
+
+		this.addChild = function(childNode, create) {
+			var child = childNode;
+			if (create) { child = svg.CreateElement(childNode); }
+			child.parent = this;
+			if (child.type != 'title') { this.children.push(child);	}
+		};
+
+		this.addStylesFromStyleDefinition = function () {
+			var this$1 = this;
+
+			// add styles
+			for (var selector in svg.Styles) {
+				if (selector[0] != '@' && matchesSelector(node, selector)) {
+					var styles = svg.Styles[selector];
+					var specificity = svg.StylesSpecificity[selector];
+					if (styles != null) {
+						for (var name in styles) {
+							var existingSpecificity = this$1.stylesSpecificity[name];
+							if (typeof existingSpecificity == 'undefined') {
+								existingSpecificity = '000';
+							}
+							if (specificity > existingSpecificity) {
+								this$1.styles[name] = styles[name];
+								this$1.stylesSpecificity[name] = specificity;
+							}
+						}
+					}
+				}
+			}
+		};
+
+		if (node != null && node.nodeType == 1) { //ELEMENT_NODE
+			// add attributes
+			for (var i=0; i<node.attributes.length; i++) {
+				var attribute = node.attributes[i];
+				this$1.attributes[attribute.nodeName] = new svg.Property(attribute.nodeName, attribute.value);
+			}
+
+			this.addStylesFromStyleDefinition();
+
+			// add inline styles
+			if (this.attribute('style').hasValue()) {
+				var styles = this.attribute('style').value.split(';');
+				for (var i=0; i<styles.length; i++) {
+					if (svg.trim(styles[i]) != '') {
+						var style = styles[i].split(':');
+						var name = svg.trim(style[0]);
+						var value = svg.trim(style[1]);
+						this$1.styles[name] = new svg.Property(name, value);
+					}
+				}
+			}
+
+			// add id
+			if (this.attribute('id').hasValue()) {
+				if (svg.Definitions[this.attribute('id').value] == null) {
+					svg.Definitions[this.attribute('id').value] = this;
+				}
+			}
+
+			// add children
+			for (var i=0; i<node.childNodes.length; i++) {
+				var childNode = node.childNodes[i];
+				if (childNode.nodeType == 1) { this$1.addChild(childNode, true); } //ELEMENT_NODE
+				if (this$1.captureTextNodes && (childNode.nodeType == 3 || childNode.nodeType == 4)) {
+					var text = childNode.value || childNode.text || childNode.textContent || '';
+					if (svg.compressSpaces(text) != '') {
+						this$1.addChild(new svg.Element.tspan(childNode), false); // TEXT_NODE
+					}
+				}
+			}
+		}
+	};
+
+	svg.Element.RenderedElementBase = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.setContext = function(ctx) {
+			// fill
+			if (this.style('fill').isUrlDefinition()) {
+				var fs = this.style('fill').getFillStyleDefinition(this, this.style('fill-opacity'));
+				if (fs != null) { ctx.fillStyle = fs; }
+			}
+			else if (this.style('fill').hasValue()) {
+				var fillStyle = this.style('fill');
+				if (fillStyle.value == 'currentColor') { fillStyle.value = this.style('color').value; }
+				if (fillStyle.value != 'inherit') { ctx.fillStyle = (fillStyle.value == 'none' ? 'rgba(0,0,0,0)' : fillStyle.value); }
+			}
+			if (this.style('fill-opacity').hasValue()) {
+				var fillStyle = new svg.Property('fill', ctx.fillStyle);
+				fillStyle = fillStyle.addOpacity(this.style('fill-opacity'));
+				ctx.fillStyle = fillStyle.value;
+			}
+
+			// stroke
+			if (this.style('stroke').isUrlDefinition()) {
+				var fs = this.style('stroke').getFillStyleDefinition(this, this.style('stroke-opacity'));
+				if (fs != null) { ctx.strokeStyle = fs; }
+			}
+			else if (this.style('stroke').hasValue()) {
+				var strokeStyle = this.style('stroke');
+				if (strokeStyle.value == 'currentColor') { strokeStyle.value = this.style('color').value; }
+				if (strokeStyle.value != 'inherit') { ctx.strokeStyle = (strokeStyle.value == 'none' ? 'rgba(0,0,0,0)' : strokeStyle.value); }
+			}
+			if (this.style('stroke-opacity').hasValue()) {
+				var strokeStyle = new svg.Property('stroke', ctx.strokeStyle);
+				strokeStyle = strokeStyle.addOpacity(this.style('stroke-opacity'));
+				ctx.strokeStyle = strokeStyle.value;
+			}
+			if (this.style('stroke-width').hasValue()) {
+				var newLineWidth = this.style('stroke-width').toPixels();
+				ctx.lineWidth = newLineWidth == 0 ? 0.001 : newLineWidth; // browsers don't respect 0
+		    }
+			if (this.style('stroke-linecap').hasValue()) { ctx.lineCap = this.style('stroke-linecap').value; }
+			if (this.style('stroke-linejoin').hasValue()) { ctx.lineJoin = this.style('stroke-linejoin').value; }
+			if (this.style('stroke-miterlimit').hasValue()) { ctx.miterLimit = this.style('stroke-miterlimit').value; }
+			if (this.style('stroke-dasharray').hasValue() && this.style('stroke-dasharray').value != 'none') {
+				var gaps = svg.ToNumberArray(this.style('stroke-dasharray').value);
+				if (typeof ctx.setLineDash != 'undefined') { ctx.setLineDash(gaps); }
+				else if (typeof ctx.webkitLineDash != 'undefined') { ctx.webkitLineDash = gaps; }
+				else if (typeof ctx.mozDash != 'undefined' && !(gaps.length==1 && gaps[0]==0)) { ctx.mozDash = gaps; }
+
+				var offset = this.style('stroke-dashoffset').numValueOrDefault(1);
+				if (typeof ctx.lineDashOffset != 'undefined') { ctx.lineDashOffset = offset; }
+				else if (typeof ctx.webkitLineDashOffset != 'undefined') { ctx.webkitLineDashOffset = offset; }
+				else if (typeof ctx.mozDashOffset != 'undefined') { ctx.mozDashOffset = offset; }
+			}
+
+			// font
+			if (typeof ctx.font != 'undefined') {
+				ctx.font = svg.Font.CreateFont(
+					this.style('font-style').value,
+					this.style('font-variant').value,
+					this.style('font-weight').value,
+					this.style('font-size').hasValue() ? this.style('font-size').toPixels() + 'px' : '',
+					this.style('font-family').value).toString();
+			}
+
+			// transform
+			if (this.style('transform', false, true).hasValue()) {
+				var transform = new svg.Transform(this.style('transform', false, true).value);
+				transform.apply(ctx);
+			}
+
+			// clip
+			if (this.style('clip-path', false, true).hasValue()) {
+				var clip = this.style('clip-path', false, true).getDefinition();
+				if (clip != null) { clip.apply(ctx); }
+			}
+
+			// opacity
+			if (this.style('opacity').hasValue()) {
+				ctx.globalAlpha = this.style('opacity').numValue();
+			}
+		};
+	};
+	svg.Element.RenderedElementBase.prototype = new svg.Element.ElementBase;
+
+	svg.Element.PathElementBase = function(node) {
+		this.base = svg.Element.RenderedElementBase;
+		this.base(node);
+
+		this.path = function(ctx) {
+			if (ctx != null) { ctx.beginPath(); }
+			return new svg.BoundingBox();
+		};
+
+		this.renderChildren = function(ctx) {
+			this.path(ctx);
+			svg.Mouse.checkPath(this, ctx);
+			if (ctx.fillStyle != '') {
+				if (this.style('fill-rule').valueOrDefault('inherit') != 'inherit') { ctx.fill(this.style('fill-rule').value); }
+				else { ctx.fill(); }
+			}
+			if (ctx.strokeStyle != '') { ctx.stroke(); }
+
+			var markers = this.getMarkers();
+			if (markers != null) {
+				if (this.style('marker-start').isUrlDefinition()) {
+					var marker = this.style('marker-start').getDefinition();
+					marker.render(ctx, markers[0][0], markers[0][1]);
+				}
+				if (this.style('marker-mid').isUrlDefinition()) {
+					var marker = this.style('marker-mid').getDefinition();
+					for (var i=1;i<markers.length-1;i++) {
+						marker.render(ctx, markers[i][0], markers[i][1]);
+					}
+				}
+				if (this.style('marker-end').isUrlDefinition()) {
+					var marker = this.style('marker-end').getDefinition();
+					marker.render(ctx, markers[markers.length-1][0], markers[markers.length-1][1]);
+				}
+			}
+		};
+
+		this.getBoundingBox = function() {
+			return this.path();
+		};
+
+		this.getMarkers = function() {
+			return null;
+		};
+	};
+	svg.Element.PathElementBase.prototype = new svg.Element.RenderedElementBase;
+
+	// svg element
+	svg.Element.svg = function(node) {
+		this.base = svg.Element.RenderedElementBase;
+		this.base(node);
+
+		this.baseClearContext = this.clearContext;
+		this.clearContext = function(ctx) {
+			this.baseClearContext(ctx);
+			svg.ViewPort.RemoveCurrent();
+		};
+
+		this.baseSetContext = this.setContext;
+		this.setContext = function(ctx) {
+			// initial values and defaults
+			ctx.strokeStyle = 'rgba(0,0,0,0)';
+			ctx.lineCap = 'butt';
+			ctx.lineJoin = 'miter';
+			ctx.miterLimit = 4;
+			if (typeof ctx.font != 'undefined' && typeof window.getComputedStyle != 'undefined') {
+				ctx.font = window.getComputedStyle(ctx.canvas).getPropertyValue('font');
+			}
+
+			this.baseSetContext(ctx);
+
+			// create new view port
+			if (!this.attribute('x').hasValue()) { this.attribute('x', true).value = 0; }
+			if (!this.attribute('y').hasValue()) { this.attribute('y', true).value = 0; }
+			ctx.translate(this.attribute('x').toPixels('x'), this.attribute('y').toPixels('y'));
+
+			var width = svg.ViewPort.width();
+			var height = svg.ViewPort.height();
+
+			if (!this.attribute('width').hasValue()) { this.attribute('width', true).value = '100%'; }
+			if (!this.attribute('height').hasValue()) { this.attribute('height', true).value = '100%'; }
+			if (typeof this.root == 'undefined') {
+				width = this.attribute('width').toPixels('x');
+				height = this.attribute('height').toPixels('y');
+
+				var x = 0;
+				var y = 0;
+				if (this.attribute('refX').hasValue() && this.attribute('refY').hasValue()) {
+					x = -this.attribute('refX').toPixels('x');
+					y = -this.attribute('refY').toPixels('y');
+				}
+
+				if (this.attribute('overflow').valueOrDefault('hidden') != 'visible') {
+					ctx.beginPath();
+					ctx.moveTo(x, y);
+					ctx.lineTo(width, y);
+					ctx.lineTo(width, height);
+					ctx.lineTo(x, height);
+					ctx.closePath();
+					ctx.clip();
+				}
+			}
+			svg.ViewPort.SetCurrent(width, height);
+
+			// viewbox
+			if (this.attribute('viewBox').hasValue()) {
+				var viewBox = svg.ToNumberArray(this.attribute('viewBox').value);
+				var minX = viewBox[0];
+				var minY = viewBox[1];
+				width = viewBox[2];
+				height = viewBox[3];
+
+				svg.AspectRatio(ctx,
+								this.attribute('preserveAspectRatio').value,
+								svg.ViewPort.width(),
+								width,
+								svg.ViewPort.height(),
+								height,
+								minX,
+								minY,
+								this.attribute('refX').value,
+								this.attribute('refY').value);
+
+				svg.ViewPort.RemoveCurrent();
+				svg.ViewPort.SetCurrent(viewBox[2], viewBox[3]);
+			}
+		};
+	};
+	svg.Element.svg.prototype = new svg.Element.RenderedElementBase;
+
+	// rect element
+	svg.Element.rect = function(node) {
+		this.base = svg.Element.PathElementBase;
+		this.base(node);
+
+		this.path = function(ctx) {
+			var x = this.attribute('x').toPixels('x');
+			var y = this.attribute('y').toPixels('y');
+			var width = this.attribute('width').toPixels('x');
+			var height = this.attribute('height').toPixels('y');
+			var rx = this.attribute('rx').toPixels('x');
+			var ry = this.attribute('ry').toPixels('y');
+			if (this.attribute('rx').hasValue() && !this.attribute('ry').hasValue()) { ry = rx; }
+			if (this.attribute('ry').hasValue() && !this.attribute('rx').hasValue()) { rx = ry; }
+			rx = Math.min(rx, width / 2.0);
+			ry = Math.min(ry, height / 2.0);
+			if (ctx != null) {
+				ctx.beginPath();
+				ctx.moveTo(x + rx, y);
+				ctx.lineTo(x + width - rx, y);
+				ctx.quadraticCurveTo(x + width, y, x + width, y + ry);
+				ctx.lineTo(x + width, y + height - ry);
+				ctx.quadraticCurveTo(x + width, y + height, x + width - rx, y + height);
+				ctx.lineTo(x + rx, y + height);
+				ctx.quadraticCurveTo(x, y + height, x, y + height - ry);
+				ctx.lineTo(x, y + ry);
+				ctx.quadraticCurveTo(x, y, x + rx, y);
+				ctx.closePath();
+			}
+
+			return new svg.BoundingBox(x, y, x + width, y + height);
+		};
+	};
+	svg.Element.rect.prototype = new svg.Element.PathElementBase;
+
+	// circle element
+	svg.Element.circle = function(node) {
+		this.base = svg.Element.PathElementBase;
+		this.base(node);
+
+		this.path = function(ctx) {
+			var cx = this.attribute('cx').toPixels('x');
+			var cy = this.attribute('cy').toPixels('y');
+			var r = this.attribute('r').toPixels();
+
+			if (ctx != null) {
+				ctx.beginPath();
+				ctx.arc(cx, cy, r, 0, Math.PI * 2, true);
+				ctx.closePath();
+			}
+
+			return new svg.BoundingBox(cx - r, cy - r, cx + r, cy + r);
+		};
+	};
+	svg.Element.circle.prototype = new svg.Element.PathElementBase;
+
+	// ellipse element
+	svg.Element.ellipse = function(node) {
+		this.base = svg.Element.PathElementBase;
+		this.base(node);
+
+		this.path = function(ctx) {
+			var KAPPA = 4 * ((Math.sqrt(2) - 1) / 3);
+			var rx = this.attribute('rx').toPixels('x');
+			var ry = this.attribute('ry').toPixels('y');
+			var cx = this.attribute('cx').toPixels('x');
+			var cy = this.attribute('cy').toPixels('y');
+
+			if (ctx != null) {
+				ctx.beginPath();
+				ctx.moveTo(cx, cy - ry);
+				ctx.bezierCurveTo(cx + (KAPPA * rx), cy - ry,  cx + rx, cy - (KAPPA * ry), cx + rx, cy);
+				ctx.bezierCurveTo(cx + rx, cy + (KAPPA * ry), cx + (KAPPA * rx), cy + ry, cx, cy + ry);
+				ctx.bezierCurveTo(cx - (KAPPA * rx), cy + ry, cx - rx, cy + (KAPPA * ry), cx - rx, cy);
+				ctx.bezierCurveTo(cx - rx, cy - (KAPPA * ry), cx - (KAPPA * rx), cy - ry, cx, cy - ry);
+				ctx.closePath();
+			}
+
+			return new svg.BoundingBox(cx - rx, cy - ry, cx + rx, cy + ry);
+		};
+	};
+	svg.Element.ellipse.prototype = new svg.Element.PathElementBase;
+
+	// line element
+	svg.Element.line = function(node) {
+		this.base = svg.Element.PathElementBase;
+		this.base(node);
+
+		this.getPoints = function() {
+			return [
+				new svg.Point(this.attribute('x1').toPixels('x'), this.attribute('y1').toPixels('y')),
+				new svg.Point(this.attribute('x2').toPixels('x'), this.attribute('y2').toPixels('y'))];
+		};
+
+		this.path = function(ctx) {
+			var points = this.getPoints();
+
+			if (ctx != null) {
+				ctx.beginPath();
+				ctx.moveTo(points[0].x, points[0].y);
+				ctx.lineTo(points[1].x, points[1].y);
+			}
+
+			return new svg.BoundingBox(points[0].x, points[0].y, points[1].x, points[1].y);
+		};
+
+		this.getMarkers = function() {
+			var points = this.getPoints();
+			var a = points[0].angleTo(points[1]);
+			return [[points[0], a], [points[1], a]];
+		};
+	};
+	svg.Element.line.prototype = new svg.Element.PathElementBase;
+
+	// polyline element
+	svg.Element.polyline = function(node) {
+		this.base = svg.Element.PathElementBase;
+		this.base(node);
+
+		this.points = svg.CreatePath(this.attribute('points').value);
+		this.path = function(ctx) {
+			var this$1 = this;
+
+			var bb = new svg.BoundingBox(this.points[0].x, this.points[0].y);
+			if (ctx != null) {
+				ctx.beginPath();
+				ctx.moveTo(this.points[0].x, this.points[0].y);
+			}
+			for (var i=1; i<this.points.length; i++) {
+				bb.addPoint(this$1.points[i].x, this$1.points[i].y);
+				if (ctx != null) { ctx.lineTo(this$1.points[i].x, this$1.points[i].y); }
+			}
+			return bb;
+		};
+
+		this.getMarkers = function() {
+			var this$1 = this;
+
+			var markers = [];
+			for (var i=0; i<this.points.length - 1; i++) {
+				markers.push([this$1.points[i], this$1.points[i].angleTo(this$1.points[i+1])]);
+			}
+			if (markers.length > 0) {
+				markers.push([this.points[this.points.length-1], markers[markers.length-1][1]]);
+			}
+			return markers;
+		};
+	};
+	svg.Element.polyline.prototype = new svg.Element.PathElementBase;
+
+	// polygon element
+	svg.Element.polygon = function(node) {
+		this.base = svg.Element.polyline;
+		this.base(node);
+
+		this.basePath = this.path;
+		this.path = function(ctx) {
+			var bb = this.basePath(ctx);
+			if (ctx != null) {
+				ctx.lineTo(this.points[0].x, this.points[0].y);
+				ctx.closePath();
+			}
+			return bb;
+		};
+	};
+	svg.Element.polygon.prototype = new svg.Element.polyline;
+
+	// path element
+	svg.Element.path = function(node) {
+		this.base = svg.Element.PathElementBase;
+		this.base(node);
+
+		var d = this.attribute('d').value;
+		// TODO: convert to real lexer based on http://www.w3.org/TR/SVG11/paths.html#PathDataBNF
+		d = d.replace(/,/gm,' '); // get rid of all commas
+		// As the end of a match can also be the start of the next match, we need to run this replace twice.
+		for(var i=0; i<2; i++)
+			{ d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([^\s])/gm,'$1 $2'); } // suffix commands with spaces
+		d = d.replace(/([^\s])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // prefix commands with spaces
+		d = d.replace(/([0-9])([+\-])/gm,'$1 $2'); // separate digits on +- signs
+		// Again, we need to run this twice to find all occurances
+		for(var i=0; i<2; i++)
+			{ d = d.replace(/(\.[0-9]*)(\.)/gm,'$1 $2'); } // separate digits when they start with a comma
+		d = d.replace(/([Aa](\s+[0-9]+){3})\s+([01])\s*([01])/gm,'$1 $3 $4 '); // shorthand elliptical arc path syntax
+		d = svg.compressSpaces(d); // compress multiple spaces
+		d = svg.trim(d);
+		this.PathParser = new (function(d) {
+			this.tokens = d.split(' ');
+
+			this.reset = function() {
+				this.i = -1;
+				this.command = '';
+				this.previousCommand = '';
+				this.start = new svg.Point(0, 0);
+				this.control = new svg.Point(0, 0);
+				this.current = new svg.Point(0, 0);
+				this.points = [];
+				this.angles = [];
+			};
+
+			this.isEnd = function() {
+				return this.i >= this.tokens.length - 1;
+			};
+
+			this.isCommandOrEnd = function() {
+				if (this.isEnd()) { return true; }
+				return this.tokens[this.i + 1].match(/^[A-Za-z]$/) != null;
+			};
+
+			this.isRelativeCommand = function() {
+				switch(this.command)
+				{
+					case 'm':
+					case 'l':
+					case 'h':
+					case 'v':
+					case 'c':
+					case 's':
+					case 'q':
+					case 't':
+					case 'a':
+					case 'z':
+						return true;
+						break;
+				}
+				return false;
+			};
+
+			this.getToken = function() {
+				this.i++;
+				return this.tokens[this.i];
+			};
+
+			this.getScalar = function() {
+				return parseFloat(this.getToken());
+			};
+
+			this.nextCommand = function() {
+				this.previousCommand = this.command;
+				this.command = this.getToken();
+			};
+
+			this.getPoint = function() {
+				var p = new svg.Point(this.getScalar(), this.getScalar());
+				return this.makeAbsolute(p);
+			};
+
+			this.getAsControlPoint = function() {
+				var p = this.getPoint();
+				this.control = p;
+				return p;
+			};
+
+			this.getAsCurrentPoint = function() {
+				var p = this.getPoint();
+				this.current = p;
+				return p;
+			};
+
+			this.getReflectedControlPoint = function() {
+				if (this.previousCommand.toLowerCase() != 'c' &&
+				    this.previousCommand.toLowerCase() != 's' &&
+					this.previousCommand.toLowerCase() != 'q' &&
+					this.previousCommand.toLowerCase() != 't' ){
+					return this.current;
+				}
+
+				// reflect point
+				var p = new svg.Point(2 * this.current.x - this.control.x, 2 * this.current.y - this.control.y);
+				return p;
+			};
+
+			this.makeAbsolute = function(p) {
+				if (this.isRelativeCommand()) {
+					p.x += this.current.x;
+					p.y += this.current.y;
+				}
+				return p;
+			};
+
+			this.addMarker = function(p, from, priorTo) {
+				// if the last angle isn't filled in because we didn't have this point yet ...
+				if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length-1] == null) {
+					this.angles[this.angles.length-1] = this.points[this.points.length-1].angleTo(priorTo);
+				}
+				this.addMarkerAngle(p, from == null ? null : from.angleTo(p));
+			};
+
+			this.addMarkerAngle = function(p, a) {
+				this.points.push(p);
+				this.angles.push(a);
+			};
+
+			this.getMarkerPoints = function() { return this.points; };
+			this.getMarkerAngles = function() {
+				var this$1 = this;
+
+				for (var i=0; i<this.angles.length; i++) {
+					if (this$1.angles[i] == null) {
+						for (var j=i+1; j<this.angles.length; j++) {
+							if (this$1.angles[j] != null) {
+								this$1.angles[i] = this$1.angles[j];
+								break;
+							}
+						}
+					}
+				}
+				return this.angles;
+			};
+		})(d);
+
+		this.path = function(ctx) {
+			var pp = this.PathParser;
+			pp.reset();
+
+			var bb = new svg.BoundingBox();
+			if (ctx != null) { ctx.beginPath(); }
+			while (!pp.isEnd()) {
+				pp.nextCommand();
+				switch (pp.command) {
+				case 'M':
+				case 'm':
+					var p = pp.getAsCurrentPoint();
+					pp.addMarker(p);
+					bb.addPoint(p.x, p.y);
+					if (ctx != null) { ctx.moveTo(p.x, p.y); }
+					pp.start = pp.current;
+					while (!pp.isCommandOrEnd()) {
+						var p = pp.getAsCurrentPoint();
+						pp.addMarker(p, pp.start);
+						bb.addPoint(p.x, p.y);
+						if (ctx != null) { ctx.lineTo(p.x, p.y); }
+					}
+					break;
+				case 'L':
+				case 'l':
+					while (!pp.isCommandOrEnd()) {
+						var c = pp.current;
+						var p = pp.getAsCurrentPoint();
+						pp.addMarker(p, c);
+						bb.addPoint(p.x, p.y);
+						if (ctx != null) { ctx.lineTo(p.x, p.y); }
+					}
+					break;
+				case 'H':
+				case 'h':
+					while (!pp.isCommandOrEnd()) {
+						var newP = new svg.Point((pp.isRelativeCommand() ? pp.current.x : 0) + pp.getScalar(), pp.current.y);
+						pp.addMarker(newP, pp.current);
+						pp.current = newP;
+						bb.addPoint(pp.current.x, pp.current.y);
+						if (ctx != null) { ctx.lineTo(pp.current.x, pp.current.y); }
+					}
+					break;
+				case 'V':
+				case 'v':
+					while (!pp.isCommandOrEnd()) {
+						var newP = new svg.Point(pp.current.x, (pp.isRelativeCommand() ? pp.current.y : 0) + pp.getScalar());
+						pp.addMarker(newP, pp.current);
+						pp.current = newP;
+						bb.addPoint(pp.current.x, pp.current.y);
+						if (ctx != null) { ctx.lineTo(pp.current.x, pp.current.y); }
+					}
+					break;
+				case 'C':
+				case 'c':
+					while (!pp.isCommandOrEnd()) {
+						var curr = pp.current;
+						var p1 = pp.getPoint();
+						var cntrl = pp.getAsControlPoint();
+						var cp = pp.getAsCurrentPoint();
+						pp.addMarker(cp, cntrl, p1);
+						bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+						if (ctx != null) { ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y); }
+					}
+					break;
+				case 'S':
+				case 's':
+					while (!pp.isCommandOrEnd()) {
+						var curr = pp.current;
+						var p1 = pp.getReflectedControlPoint();
+						var cntrl = pp.getAsControlPoint();
+						var cp = pp.getAsCurrentPoint();
+						pp.addMarker(cp, cntrl, p1);
+						bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+						if (ctx != null) { ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y); }
+					}
+					break;
+				case 'Q':
+				case 'q':
+					while (!pp.isCommandOrEnd()) {
+						var curr = pp.current;
+						var cntrl = pp.getAsControlPoint();
+						var cp = pp.getAsCurrentPoint();
+						pp.addMarker(cp, cntrl, cntrl);
+						bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
+						if (ctx != null) { ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y); }
+					}
+					break;
+				case 'T':
+				case 't':
+					while (!pp.isCommandOrEnd()) {
+						var curr = pp.current;
+						var cntrl = pp.getReflectedControlPoint();
+						pp.control = cntrl;
+						var cp = pp.getAsCurrentPoint();
+						pp.addMarker(cp, cntrl, cntrl);
+						bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
+						if (ctx != null) { ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y); }
+					}
+					break;
+				case 'A':
+				case 'a':
+					while (!pp.isCommandOrEnd()) {
+					    var curr = pp.current;
+						var rx = pp.getScalar();
+						var ry = pp.getScalar();
+						var xAxisRotation = pp.getScalar() * (Math.PI / 180.0);
+						var largeArcFlag = pp.getScalar();
+						var sweepFlag = pp.getScalar();
+						var cp = pp.getAsCurrentPoint();
+
+						// Conversion from endpoint to center parameterization
+						// http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+						// x1', y1'
+						var currp = new svg.Point(
+							Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0,
+							-Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0
+						);
+						// adjust radii
+						var l = Math.pow(currp.x,2)/Math.pow(rx,2)+Math.pow(currp.y,2)/Math.pow(ry,2);
+						if (l > 1) {
+							rx *= Math.sqrt(l);
+							ry *= Math.sqrt(l);
+						}
+						// cx', cy'
+						var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt(
+							((Math.pow(rx,2)*Math.pow(ry,2))-(Math.pow(rx,2)*Math.pow(currp.y,2))-(Math.pow(ry,2)*Math.pow(currp.x,2))) /
+							(Math.pow(rx,2)*Math.pow(currp.y,2)+Math.pow(ry,2)*Math.pow(currp.x,2))
+						);
+						if (isNaN(s)) { s = 0; }
+						var cpp = new svg.Point(s * rx * currp.y / ry, s * -ry * currp.x / rx);
+						// cx, cy
+						var centp = new svg.Point(
+							(curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y,
+							(curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y
+						);
+						// vector magnitude
+						var m = function(v) { return Math.sqrt(Math.pow(v[0],2) + Math.pow(v[1],2)); };
+						// ratio between two vectors
+						var r = function(u, v) { return (u[0]*v[0]+u[1]*v[1]) / (m(u)*m(v)) };
+						// angle between two vectors
+						var a = function(u, v) { return (u[0]*v[1] < u[1]*v[0] ? -1 : 1) * Math.acos(r(u,v)); };
+						// initial angle
+						var a1 = a([1,0], [(currp.x-cpp.x)/rx,(currp.y-cpp.y)/ry]);
+						// angle delta
+						var u = [(currp.x-cpp.x)/rx,(currp.y-cpp.y)/ry];
+						var v = [(-currp.x-cpp.x)/rx,(-currp.y-cpp.y)/ry];
+						var ad = a(u, v);
+						if (r(u,v) <= -1) { ad = Math.PI; }
+						if (r(u,v) >= 1) { ad = 0; }
+
+						// for markers
+						var dir = 1 - sweepFlag ? 1.0 : -1.0;
+						var ah = a1 + dir * (ad / 2.0);
+						var halfWay = new svg.Point(
+							centp.x + rx * Math.cos(ah),
+							centp.y + ry * Math.sin(ah)
+						);
+						pp.addMarkerAngle(halfWay, ah - dir * Math.PI / 2);
+						pp.addMarkerAngle(cp, ah - dir * Math.PI);
+
+						bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
+						if (ctx != null) {
+							var r = rx > ry ? rx : ry;
+							var sx = rx > ry ? 1 : rx / ry;
+							var sy = rx > ry ? ry / rx : 1;
+
+							ctx.translate(centp.x, centp.y);
+							ctx.rotate(xAxisRotation);
+							ctx.scale(sx, sy);
+							ctx.arc(0, 0, r, a1, a1 + ad, 1 - sweepFlag);
+							ctx.scale(1/sx, 1/sy);
+							ctx.rotate(-xAxisRotation);
+							ctx.translate(-centp.x, -centp.y);
+						}
+					}
+					break;
+				case 'Z':
+				case 'z':
+					if (ctx != null) { ctx.closePath(); }
+					pp.current = pp.start;
+				}
+			}
+
+			return bb;
+		};
+
+		this.getMarkers = function() {
+			var points = this.PathParser.getMarkerPoints();
+			var angles = this.PathParser.getMarkerAngles();
+
+			var markers = [];
+			for (var i=0; i<points.length; i++) {
+				markers.push([points[i], angles[i]]);
+			}
+			return markers;
+		};
+	};
+	svg.Element.path.prototype = new svg.Element.PathElementBase;
+
+	// pattern element
+	svg.Element.pattern = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.createPattern = function(ctx, element) {
+			var width = this.attribute('width').toPixels('x', true);
+			var height = this.attribute('height').toPixels('y', true);
+
+			// render me using a temporary svg element
+			var tempSvg = new svg.Element.svg();
+			tempSvg.attributes['viewBox'] = new svg.Property('viewBox', this.attribute('viewBox').value);
+			tempSvg.attributes['width'] = new svg.Property('width', width + 'px');
+			tempSvg.attributes['height'] = new svg.Property('height', height + 'px');
+			tempSvg.attributes['transform'] = new svg.Property('transform', this.attribute('patternTransform').value);
+			tempSvg.children = this.children;
+
+			var c = document.createElement('canvas');
+			c.width = width;
+			c.height = height;
+			var cctx = c.getContext('2d');
+			if (this.attribute('x').hasValue() && this.attribute('y').hasValue()) {
+				cctx.translate(this.attribute('x').toPixels('x', true), this.attribute('y').toPixels('y', true));
+			}
+			// render 3x3 grid so when we transform there's no white space on edges
+			for (var x=-1; x<=1; x++) {
+				for (var y=-1; y<=1; y++) {
+					cctx.save();
+					tempSvg.attributes['x'] = new svg.Property('x', x * c.width);
+					tempSvg.attributes['y'] = new svg.Property('y', y * c.height);
+					tempSvg.render(cctx);
+					cctx.restore();
+				}
+			}
+			var pattern = ctx.createPattern(c, 'repeat');
+			return pattern;
+		};
+	};
+	svg.Element.pattern.prototype = new svg.Element.ElementBase;
+
+	// marker element
+	svg.Element.marker = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.baseRender = this.render;
+		this.render = function(ctx, point, angle) {
+			ctx.translate(point.x, point.y);
+			if (this.attribute('orient').valueOrDefault('auto') == 'auto') { ctx.rotate(angle); }
+			if (this.attribute('markerUnits').valueOrDefault('strokeWidth') == 'strokeWidth') { ctx.scale(ctx.lineWidth, ctx.lineWidth); }
+			ctx.save();
+
+			// render me using a temporary svg element
+			var tempSvg = new svg.Element.svg();
+			tempSvg.attributes['viewBox'] = new svg.Property('viewBox', this.attribute('viewBox').value);
+			tempSvg.attributes['refX'] = new svg.Property('refX', this.attribute('refX').value);
+			tempSvg.attributes['refY'] = new svg.Property('refY', this.attribute('refY').value);
+			tempSvg.attributes['width'] = new svg.Property('width', this.attribute('markerWidth').value);
+			tempSvg.attributes['height'] = new svg.Property('height', this.attribute('markerHeight').value);
+			tempSvg.attributes['fill'] = new svg.Property('fill', this.attribute('fill').valueOrDefault('black'));
+			tempSvg.attributes['stroke'] = new svg.Property('stroke', this.attribute('stroke').valueOrDefault('none'));
+			tempSvg.children = this.children;
+			tempSvg.render(ctx);
+
+			ctx.restore();
+			if (this.attribute('markerUnits').valueOrDefault('strokeWidth') == 'strokeWidth') { ctx.scale(1/ctx.lineWidth, 1/ctx.lineWidth); }
+			if (this.attribute('orient').valueOrDefault('auto') == 'auto') { ctx.rotate(-angle); }
+			ctx.translate(-point.x, -point.y);
+		};
+	};
+	svg.Element.marker.prototype = new svg.Element.ElementBase;
+
+	// definitions element
+	svg.Element.defs = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.render = function(ctx) {
+			// NOOP
+		};
+	};
+	svg.Element.defs.prototype = new svg.Element.ElementBase;
+
+	// base for gradients
+	svg.Element.GradientBase = function(node) {
+		var this$1 = this;
+
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.stops = [];
+		for (var i=0; i<this.children.length; i++) {
+			var child = this$1.children[i];
+			if (child.type == 'stop') { this$1.stops.push(child); }
+		}
+
+		this.getGradient = function() {
+			// OVERRIDE ME!
+		};
+
+		this.gradientUnits = function () {
+			return this.attribute('gradientUnits').valueOrDefault('objectBoundingBox');
+		};
+
+		this.attributesToInherit = ['gradientUnits'];
+
+		this.inheritStopContainer = function (stopsContainer) {
+			var this$1 = this;
+
+			for (var i=0; i<this.attributesToInherit.length; i++) {
+				var attributeToInherit = this$1.attributesToInherit[i];
+				if (!this$1.attribute(attributeToInherit).hasValue() && stopsContainer.attribute(attributeToInherit).hasValue()) {
+					this$1.attribute(attributeToInherit, true).value = stopsContainer.attribute(attributeToInherit).value;
+				}
+			}
+		};
+
+		this.createGradient = function(ctx, element, parentOpacityProp) {
+			var stopsContainer = this;
+			if (this.getHrefAttribute().hasValue()) {
+				stopsContainer = this.getHrefAttribute().getDefinition();
+				this.inheritStopContainer(stopsContainer);
+			}
+
+			var addParentOpacity = function (color) {
+				if (parentOpacityProp.hasValue()) {
+					var p = new svg.Property('color', color);
+					return p.addOpacity(parentOpacityProp).value;
+				}
+				return color;
+			};
+
+			var g = this.getGradient(ctx, element);
+			if (g == null) { return addParentOpacity(stopsContainer.stops[stopsContainer.stops.length - 1].color); }
+			for (var i=0; i<stopsContainer.stops.length; i++) {
+				g.addColorStop(stopsContainer.stops[i].offset, addParentOpacity(stopsContainer.stops[i].color));
+			}
+
+			if (this.attribute('gradientTransform').hasValue()) {
+				// render as transformed pattern on temporary canvas
+				var rootView = svg.ViewPort.viewPorts[0];
+
+				var rect = new svg.Element.rect();
+				rect.attributes['x'] = new svg.Property('x', -svg.MAX_VIRTUAL_PIXELS/3.0);
+				rect.attributes['y'] = new svg.Property('y', -svg.MAX_VIRTUAL_PIXELS/3.0);
+				rect.attributes['width'] = new svg.Property('width', svg.MAX_VIRTUAL_PIXELS);
+				rect.attributes['height'] = new svg.Property('height', svg.MAX_VIRTUAL_PIXELS);
+
+				var group = new svg.Element.g();
+				group.attributes['transform'] = new svg.Property('transform', this.attribute('gradientTransform').value);
+				group.children = [ rect ];
+
+				var tempSvg = new svg.Element.svg();
+				tempSvg.attributes['x'] = new svg.Property('x', 0);
+				tempSvg.attributes['y'] = new svg.Property('y', 0);
+				tempSvg.attributes['width'] = new svg.Property('width', rootView.width);
+				tempSvg.attributes['height'] = new svg.Property('height', rootView.height);
+				tempSvg.children = [ group ];
+
+				var c = document.createElement('canvas');
+				c.width = rootView.width;
+				c.height = rootView.height;
+				var tempCtx = c.getContext('2d');
+				tempCtx.fillStyle = g;
+				tempSvg.render(tempCtx);
+				return tempCtx.createPattern(c, 'no-repeat');
+			}
+
+			return g;
+		};
+	};
+	svg.Element.GradientBase.prototype = new svg.Element.ElementBase;
+
+	// linear gradient element
+	svg.Element.linearGradient = function(node) {
+		this.base = svg.Element.GradientBase;
+		this.base(node);
+
+		this.attributesToInherit.push('x1');
+		this.attributesToInherit.push('y1');
+		this.attributesToInherit.push('x2');
+		this.attributesToInherit.push('y2');
+
+		this.getGradient = function(ctx, element) {
+			var bb = this.gradientUnits() == 'objectBoundingBox' ? element.getBoundingBox() : null;
+
+			if (!this.attribute('x1').hasValue()
+			 && !this.attribute('y1').hasValue()
+			 && !this.attribute('x2').hasValue()
+			 && !this.attribute('y2').hasValue()) {
+				this.attribute('x1', true).value = 0;
+				this.attribute('y1', true).value = 0;
+				this.attribute('x2', true).value = 1;
+				this.attribute('y2', true).value = 0;
+			 }
+
+			var x1 = (this.gradientUnits() == 'objectBoundingBox'
+				? bb.x() + bb.width() * this.attribute('x1').numValue()
+				: this.attribute('x1').toPixels('x'));
+			var y1 = (this.gradientUnits() == 'objectBoundingBox'
+				? bb.y() + bb.height() * this.attribute('y1').numValue()
+				: this.attribute('y1').toPixels('y'));
+			var x2 = (this.gradientUnits() == 'objectBoundingBox'
+				? bb.x() + bb.width() * this.attribute('x2').numValue()
+				: this.attribute('x2').toPixels('x'));
+			var y2 = (this.gradientUnits() == 'objectBoundingBox'
+				? bb.y() + bb.height() * this.attribute('y2').numValue()
+				: this.attribute('y2').toPixels('y'));
+
+			if (x1 == x2 && y1 == y2) { return null; }
+			return ctx.createLinearGradient(x1, y1, x2, y2);
+		};
+	};
+	svg.Element.linearGradient.prototype = new svg.Element.GradientBase;
+
+	// radial gradient element
+	svg.Element.radialGradient = function(node) {
+		this.base = svg.Element.GradientBase;
+		this.base(node);
+
+		this.attributesToInherit.push('cx');
+		this.attributesToInherit.push('cy');
+		this.attributesToInherit.push('r');
+		this.attributesToInherit.push('fx');
+		this.attributesToInherit.push('fy');
+
+		this.getGradient = function(ctx, element) {
+			var bb = element.getBoundingBox();
+
+			if (!this.attribute('cx').hasValue()) { this.attribute('cx', true).value = '50%'; }
+			if (!this.attribute('cy').hasValue()) { this.attribute('cy', true).value = '50%'; }
+			if (!this.attribute('r').hasValue()) { this.attribute('r', true).value = '50%'; }
+
+			var cx = (this.gradientUnits() == 'objectBoundingBox'
+				? bb.x() + bb.width() * this.attribute('cx').numValue()
+				: this.attribute('cx').toPixels('x'));
+			var cy = (this.gradientUnits() == 'objectBoundingBox'
+				? bb.y() + bb.height() * this.attribute('cy').numValue()
+				: this.attribute('cy').toPixels('y'));
+
+			var fx = cx;
+			var fy = cy;
+			if (this.attribute('fx').hasValue()) {
+				fx = (this.gradientUnits() == 'objectBoundingBox'
+				? bb.x() + bb.width() * this.attribute('fx').numValue()
+				: this.attribute('fx').toPixels('x'));
+			}
+			if (this.attribute('fy').hasValue()) {
+				fy = (this.gradientUnits() == 'objectBoundingBox'
+				? bb.y() + bb.height() * this.attribute('fy').numValue()
+				: this.attribute('fy').toPixels('y'));
+			}
+
+			var r = (this.gradientUnits() == 'objectBoundingBox'
+				? (bb.width() + bb.height()) / 2.0 * this.attribute('r').numValue()
+				: this.attribute('r').toPixels());
+
+			return ctx.createRadialGradient(fx, fy, 0, cx, cy, r);
+		};
+	};
+	svg.Element.radialGradient.prototype = new svg.Element.GradientBase;
+
+	// gradient stop element
+	svg.Element.stop = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.offset = this.attribute('offset').numValue();
+		if (this.offset < 0) { this.offset = 0; }
+		if (this.offset > 1) { this.offset = 1; }
+
+		var stopColor = this.style('stop-color', true);
+		if (stopColor.value == '') { stopColor.value = '#000'; }
+		if (this.style('stop-opacity').hasValue()) { stopColor = stopColor.addOpacity(this.style('stop-opacity')); }
+		this.color = stopColor.value;
+	};
+	svg.Element.stop.prototype = new svg.Element.ElementBase;
+
+	// animation base element
+	svg.Element.AnimateBase = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		svg.Animations.push(this);
+
+		this.duration = 0.0;
+		this.begin = this.attribute('begin').toMilliseconds();
+		this.maxDuration = this.begin + this.attribute('dur').toMilliseconds();
+
+		this.getProperty = function() {
+			var attributeType = this.attribute('attributeType').value;
+			var attributeName = this.attribute('attributeName').value;
+
+			if (attributeType == 'CSS') {
+				return this.parent.style(attributeName, true);
+			}
+			return this.parent.attribute(attributeName, true);
+		};
+
+		this.initialValue = null;
+		this.initialUnits = '';
+		this.removed = false;
+
+		this.calcValue = function() {
+			// OVERRIDE ME!
+			return '';
+		};
+
+		this.update = function(delta) {
+			// set initial value
+			if (this.initialValue == null) {
+				this.initialValue = this.getProperty().value;
+				this.initialUnits = this.getProperty().getUnits();
+			}
+
+			// if we're past the end time
+			if (this.duration > this.maxDuration) {
+				// loop for indefinitely repeating animations
+				if (this.attribute('repeatCount').value == 'indefinite'
+				 || this.attribute('repeatDur').value == 'indefinite') {
+					this.duration = 0.0;
+				}
+				else if (this.attribute('fill').valueOrDefault('remove') == 'freeze' && !this.frozen) {
+					this.frozen = true;
+					this.parent.animationFrozen = true;
+					this.parent.animationFrozenValue = this.getProperty().value;
+				}
+				else if (this.attribute('fill').valueOrDefault('remove') == 'remove' && !this.removed) {
+					this.removed = true;
+					this.getProperty().value = this.parent.animationFrozen ? this.parent.animationFrozenValue : this.initialValue;
+					return true;
+				}
+				return false;
+			}
+			this.duration = this.duration + delta;
+
+			// if we're past the begin time
+			var updated = false;
+			if (this.begin < this.duration) {
+				var newValue = this.calcValue(); // tween
+
+				if (this.attribute('type').hasValue()) {
+					// for transform, etc.
+					var type = this.attribute('type').value;
+					newValue = type + '(' + newValue + ')';
+				}
+
+				this.getProperty().value = newValue;
+				updated = true;
+			}
+
+			return updated;
+		};
+
+		this.from = this.attribute('from');
+		this.to = this.attribute('to');
+		this.values = this.attribute('values');
+		if (this.values.hasValue()) { this.values.value = this.values.value.split(';'); }
+
+		// fraction of duration we've covered
+		this.progress = function() {
+			var ret = { progress: (this.duration - this.begin) / (this.maxDuration - this.begin) };
+			if (this.values.hasValue()) {
+				var p = ret.progress * (this.values.value.length - 1);
+				var lb = Math.floor(p), ub = Math.ceil(p);
+				ret.from = new svg.Property('from', parseFloat(this.values.value[lb]));
+				ret.to = new svg.Property('to', parseFloat(this.values.value[ub]));
+				ret.progress = (p - lb) / (ub - lb);
+			}
+			else {
+				ret.from = this.from;
+				ret.to = this.to;
+			}
+			return ret;
+		};
+	};
+	svg.Element.AnimateBase.prototype = new svg.Element.ElementBase;
+
+	// animate element
+	svg.Element.animate = function(node) {
+		this.base = svg.Element.AnimateBase;
+		this.base(node);
+
+		this.calcValue = function() {
+			var p = this.progress();
+
+			// tween value linearly
+			var newValue = p.from.numValue() + (p.to.numValue() - p.from.numValue()) * p.progress;
+			return newValue + this.initialUnits;
+		};
+	};
+	svg.Element.animate.prototype = new svg.Element.AnimateBase;
+
+	// animate color element
+	svg.Element.animateColor = function(node) {
+		this.base = svg.Element.AnimateBase;
+		this.base(node);
+
+		this.calcValue = function() {
+			var p = this.progress();
+			var from = new index$3(p.from.value);
+			var to = new index$3(p.to.value);
+
+			if (from.ok && to.ok) {
+				// tween color linearly
+				var r = from.r + (to.r - from.r) * p.progress;
+				var g = from.g + (to.g - from.g) * p.progress;
+				var b = from.b + (to.b - from.b) * p.progress;
+				return 'rgb('+parseInt(r,10)+','+parseInt(g,10)+','+parseInt(b,10)+')';
+			}
+			return this.attribute('from').value;
+		};
+	};
+	svg.Element.animateColor.prototype = new svg.Element.AnimateBase;
+
+	// animate transform element
+	svg.Element.animateTransform = function(node) {
+		this.base = svg.Element.AnimateBase;
+		this.base(node);
+
+		this.calcValue = function() {
+			var p = this.progress();
+
+			// tween value linearly
+			var from = svg.ToNumberArray(p.from.value);
+			var to = svg.ToNumberArray(p.to.value);
+			var newValue = '';
+			for (var i=0; i<from.length; i++) {
+				newValue += from[i] + (to[i] - from[i]) * p.progress + ' ';
+			}
+			return newValue;
+		};
+	};
+	svg.Element.animateTransform.prototype = new svg.Element.animate;
+
+	// font element
+	svg.Element.font = function(node) {
+		var this$1 = this;
+
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.horizAdvX = this.attribute('horiz-adv-x').numValue();
+
+		this.isRTL = false;
+		this.isArabic = false;
+		this.fontFace = null;
+		this.missingGlyph = null;
+		this.glyphs = [];
+		for (var i=0; i<this.children.length; i++) {
+			var child = this$1.children[i];
+			if (child.type == 'font-face') {
+				this$1.fontFace = child;
+				if (child.style('font-family').hasValue()) {
+					svg.Definitions[child.style('font-family').value] = this$1;
+				}
+			}
+			else if (child.type == 'missing-glyph') { this$1.missingGlyph = child; }
+			else if (child.type == 'glyph') {
+				if (child.arabicForm != '') {
+					this$1.isRTL = true;
+					this$1.isArabic = true;
+					if (typeof this$1.glyphs[child.unicode] == 'undefined') { this$1.glyphs[child.unicode] = []; }
+					this$1.glyphs[child.unicode][child.arabicForm] = child;
+				}
+				else {
+					this$1.glyphs[child.unicode] = child;
+				}
+			}
+		}
+	};
+	svg.Element.font.prototype = new svg.Element.ElementBase;
+
+	// font-face element
+	svg.Element.fontface = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.ascent = this.attribute('ascent').value;
+		this.descent = this.attribute('descent').value;
+		this.unitsPerEm = this.attribute('units-per-em').numValue();
+	};
+	svg.Element.fontface.prototype = new svg.Element.ElementBase;
+
+	// missing-glyph element
+	svg.Element.missingglyph = function(node) {
+		this.base = svg.Element.path;
+		this.base(node);
+
+		this.horizAdvX = 0;
+	};
+	svg.Element.missingglyph.prototype = new svg.Element.path;
+
+	// glyph element
+	svg.Element.glyph = function(node) {
+		this.base = svg.Element.path;
+		this.base(node);
+
+		this.horizAdvX = this.attribute('horiz-adv-x').numValue();
+		this.unicode = this.attribute('unicode').value;
+		this.arabicForm = this.attribute('arabic-form').value;
+	};
+	svg.Element.glyph.prototype = new svg.Element.path;
+
+	// text element
+	svg.Element.text = function(node) {
+		this.captureTextNodes = true;
+		this.base = svg.Element.RenderedElementBase;
+		this.base(node);
+
+		this.baseSetContext = this.setContext;
+		this.setContext = function(ctx) {
+			this.baseSetContext(ctx);
+
+			var textBaseline = this.style('dominant-baseline').toTextBaseline();
+			if (textBaseline == null) { textBaseline = this.style('alignment-baseline').toTextBaseline(); }
+			if (textBaseline != null) { ctx.textBaseline = textBaseline; }
+		};
+
+		this.getBoundingBox = function () {
+			var x = this.attribute('x').toPixels('x');
+			var y = this.attribute('y').toPixels('y');
+			var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
+			return new svg.BoundingBox(x, y - fontSize, x + Math.floor(fontSize * 2.0 / 3.0) * this.children[0].getText().length, y);
+		};
+
+		this.renderChildren = function(ctx) {
+			var this$1 = this;
+
+			this.x = this.attribute('x').toPixels('x');
+			this.y = this.attribute('y').toPixels('y');
+			if (this.attribute('dx').hasValue()) { this.x += this.attribute('dx').toPixels('x'); }
+			if (this.attribute('dy').hasValue()) { this.y += this.attribute('dy').toPixels('y'); }
+			this.x += this.getAnchorDelta(ctx, this, 0);
+			for (var i=0; i<this.children.length; i++) {
+				this$1.renderChild(ctx, this$1, this$1, i);
+			}
+		};
+
+		this.getAnchorDelta = function (ctx, parent, startI) {
+			var textAnchor = this.style('text-anchor').valueOrDefault('start');
+			if (textAnchor != 'start') {
+				var width = 0;
+				for (var i=startI; i<parent.children.length; i++) {
+					var child = parent.children[i];
+					if (i > startI && child.attribute('x').hasValue()) { break; } // new group
+					width += child.measureTextRecursive(ctx);
+				}
+				return -1 * (textAnchor == 'end' ? width : width / 2.0);
+			}
+			return 0;
+		};
+
+		this.renderChild = function(ctx, textParent, parent, i) {
+			var child = parent.children[i];
+			if (child.attribute('x').hasValue()) {
+				child.x = child.attribute('x').toPixels('x') + textParent.getAnchorDelta(ctx, parent, i);
+				if (child.attribute('dx').hasValue()) { child.x += child.attribute('dx').toPixels('x'); }
+			}
+			else {
+				if (child.attribute('dx').hasValue()) { textParent.x += child.attribute('dx').toPixels('x'); }
+				child.x = textParent.x;
+			}
+			textParent.x = child.x + child.measureText(ctx);
+
+			if (child.attribute('y').hasValue()) {
+				child.y = child.attribute('y').toPixels('y');
+				if (child.attribute('dy').hasValue()) { child.y += child.attribute('dy').toPixels('y'); }
+			}
+			else {
+				if (child.attribute('dy').hasValue()) { textParent.y += child.attribute('dy').toPixels('y'); }
+				child.y = textParent.y;
+			}
+			textParent.y = child.y;
+
+			child.render(ctx);
+
+			for (var i=0; i<child.children.length; i++) {
+				textParent.renderChild(ctx, textParent, child, i);
+			}
+		};
+	};
+	svg.Element.text.prototype = new svg.Element.RenderedElementBase;
+
+	// text base
+	svg.Element.TextElementBase = function(node) {
+		this.base = svg.Element.RenderedElementBase;
+		this.base(node);
+
+		this.getGlyph = function(font, text, i) {
+			var c = text[i];
+			var glyph = null;
+			if (font.isArabic) {
+				var arabicForm = 'isolated';
+				if ((i==0 || text[i-1]==' ') && i<text.length-2 && text[i+1]!=' ') { arabicForm = 'terminal'; }
+				if (i>0 && text[i-1]!=' ' && i<text.length-2 && text[i+1]!=' ') { arabicForm = 'medial'; }
+				if (i>0 && text[i-1]!=' ' && (i == text.length-1 || text[i+1]==' ')) { arabicForm = 'initial'; }
+				if (typeof font.glyphs[c] != 'undefined') {
+					glyph = font.glyphs[c][arabicForm];
+					if (glyph == null && font.glyphs[c].type == 'glyph') { glyph = font.glyphs[c]; }
+				}
+			}
+			else {
+				glyph = font.glyphs[c];
+			}
+			if (glyph == null) { glyph = font.missingGlyph; }
+			return glyph;
+		};
+
+		this.renderChildren = function(ctx) {
+			var this$1 = this;
+
+			var customFont = this.parent.style('font-family').getDefinition();
+			if (customFont != null) {
+				var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
+				var fontStyle = this.parent.style('font-style').valueOrDefault(svg.Font.Parse(svg.ctx.font).fontStyle);
+				var text = this.getText();
+				if (customFont.isRTL) { text = text.split("").reverse().join(""); }
+
+				var dx = svg.ToNumberArray(this.parent.attribute('dx').value);
+				for (var i=0; i<text.length; i++) {
+					var glyph = this$1.getGlyph(customFont, text, i);
+					var scale = fontSize / customFont.fontFace.unitsPerEm;
+					ctx.translate(this$1.x, this$1.y);
+					ctx.scale(scale, -scale);
+					var lw = ctx.lineWidth;
+					ctx.lineWidth = ctx.lineWidth * customFont.fontFace.unitsPerEm / fontSize;
+					if (fontStyle == 'italic') { ctx.transform(1, 0, .4, 1, 0, 0); }
+					glyph.render(ctx);
+					if (fontStyle == 'italic') { ctx.transform(1, 0, -.4, 1, 0, 0); }
+					ctx.lineWidth = lw;
+					ctx.scale(1/scale, -1/scale);
+					ctx.translate(-this$1.x, -this$1.y);
+
+					this$1.x += fontSize * (glyph.horizAdvX || customFont.horizAdvX) / customFont.fontFace.unitsPerEm;
+					if (typeof dx[i] != 'undefined' && !isNaN(dx[i])) {
+						this$1.x += dx[i];
+					}
+				}
+				return;
+			}
+
+			if (ctx.fillStyle != '') { ctx.fillText(svg.compressSpaces(this.getText()), this.x, this.y); }
+			if (ctx.strokeStyle != '') { ctx.strokeText(svg.compressSpaces(this.getText()), this.x, this.y); }
+		};
+
+		this.getText = function() {
+			// OVERRIDE ME
+		};
+
+		this.measureTextRecursive = function(ctx) {
+			var this$1 = this;
+
+			var width = this.measureText(ctx);
+			for (var i=0; i<this.children.length; i++) {
+				width += this$1.children[i].measureTextRecursive(ctx);
+			}
+			return width;
+		};
+
+		this.measureText = function(ctx) {
+			var this$1 = this;
+
+			var customFont = this.parent.style('font-family').getDefinition();
+			if (customFont != null) {
+				var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
+				var measure = 0;
+				var text = this.getText();
+				if (customFont.isRTL) { text = text.split("").reverse().join(""); }
+				var dx = svg.ToNumberArray(this.parent.attribute('dx').value);
+				for (var i=0; i<text.length; i++) {
+					var glyph = this$1.getGlyph(customFont, text, i);
+					measure += (glyph.horizAdvX || customFont.horizAdvX) * fontSize / customFont.fontFace.unitsPerEm;
+					if (typeof dx[i] != 'undefined' && !isNaN(dx[i])) {
+						measure += dx[i];
+					}
+				}
+				return measure;
+			}
+
+			var textToMeasure = svg.compressSpaces(this.getText());
+			if (!ctx.measureText) { return textToMeasure.length * 10; }
+
+			ctx.save();
+			this.setContext(ctx);
+			var width = ctx.measureText(textToMeasure).width;
+			ctx.restore();
+			return width;
+		};
+	};
+	svg.Element.TextElementBase.prototype = new svg.Element.RenderedElementBase;
+
+	// tspan
+	svg.Element.tspan = function(node) {
+		this.captureTextNodes = true;
+		this.base = svg.Element.TextElementBase;
+		this.base(node);
+
+		this.text = svg.compressSpaces(node.value || node.text || node.textContent || '');
+		this.getText = function() {
+			// if this node has children, then they own the text
+			if (this.children.length > 0) { return ''; }
+			return this.text;
+		};
+	};
+	svg.Element.tspan.prototype = new svg.Element.TextElementBase;
+
+	// tref
+	svg.Element.tref = function(node) {
+		this.base = svg.Element.TextElementBase;
+		this.base(node);
+
+		this.getText = function() {
+			var element = this.getHrefAttribute().getDefinition();
+			if (element != null) { return element.children[0].getText(); }
+		};
+	};
+	svg.Element.tref.prototype = new svg.Element.TextElementBase;
+
+	// a element
+	svg.Element.a = function(node) {
+		var this$1 = this;
+
+		this.base = svg.Element.TextElementBase;
+		this.base(node);
+
+		this.hasText = node.childNodes.length > 0;
+		for (var i=0; i<node.childNodes.length; i++) {
+			if (node.childNodes[i].nodeType != 3) { this$1.hasText = false; }
+		}
+
+		// this might contain text
+		this.text = this.hasText ? node.childNodes[0].value : '';
+		this.getText = function() {
+			return this.text;
+		};
+
+		this.baseRenderChildren = this.renderChildren;
+		this.renderChildren = function(ctx) {
+			if (this.hasText) {
+				// render as text element
+				this.baseRenderChildren(ctx);
+				var fontSize = new svg.Property('fontSize', svg.Font.Parse(svg.ctx.font).fontSize);
+				svg.Mouse.checkBoundingBox(this, new svg.BoundingBox(this.x, this.y - fontSize.toPixels('y'), this.x + this.measureText(ctx), this.y));
+			}
+			else if (this.children.length > 0) {
+				// render as temporary group
+				var g = new svg.Element.g();
+				g.children = this.children;
+				g.parent = this;
+				g.render(ctx);
+			}
+		};
+
+		this.onclick = function() {
+			window.open(this.getHrefAttribute().value);
+		};
+
+		this.onmousemove = function() {
+			svg.ctx.canvas.style.cursor = 'pointer';
+		};
+	};
+	svg.Element.a.prototype = new svg.Element.TextElementBase;
+
+	// image element
+	svg.Element.image = function(node) {
+		this.base = svg.Element.RenderedElementBase;
+		this.base(node);
+
+		var href = this.getHrefAttribute().value;
+		if (href == '') { return; }
+		var isSvg = href.match(/\.svg$/);
+
+		svg.Images.push(this);
+		this.loaded = false;
+		if (!isSvg) {
+			this.img = document.createElement('img');
+			if (svg.opts['useCORS'] == true) { this.img.crossOrigin = 'Anonymous'; }
+			var self = this;
+			this.img.onload = function() { self.loaded = true; };
+			this.img.onerror = function() { svg.log('ERROR: image "' + href + '" not found'); self.loaded = true; };
+			this.img.src = href;
+		}
+		else {
+			this.img = svg.ajax(href);
+			this.loaded = true;
+		}
+
+		this.renderChildren = function(ctx) {
+			var x = this.attribute('x').toPixels('x');
+			var y = this.attribute('y').toPixels('y');
+
+			var width = this.attribute('width').toPixels('x');
+			var height = this.attribute('height').toPixels('y');
+			if (width == 0 || height == 0) { return; }
+
+			ctx.save();
+			if (isSvg) {
+				ctx.drawSvg(this.img, x, y, width, height);
+			}
+			else {
+				ctx.translate(x, y);
+				svg.AspectRatio(ctx,
+								this.attribute('preserveAspectRatio').value,
+								width,
+								this.img.width,
+								height,
+								this.img.height,
+								0,
+								0);
+				ctx.drawImage(this.img, 0, 0);
+			}
+			ctx.restore();
+		};
+
+		this.getBoundingBox = function() {
+			var x = this.attribute('x').toPixels('x');
+			var y = this.attribute('y').toPixels('y');
+			var width = this.attribute('width').toPixels('x');
+			var height = this.attribute('height').toPixels('y');
+			return new svg.BoundingBox(x, y, x + width, y + height);
+		};
+	};
+	svg.Element.image.prototype = new svg.Element.RenderedElementBase;
+
+	// group element
+	svg.Element.g = function(node) {
+		this.base = svg.Element.RenderedElementBase;
+		this.base(node);
+
+		this.getBoundingBox = function() {
+			var this$1 = this;
+
+			var bb = new svg.BoundingBox();
+			for (var i=0; i<this.children.length; i++) {
+				bb.addBoundingBox(this$1.children[i].getBoundingBox());
+			}
+			return bb;
+		};
+	};
+	svg.Element.g.prototype = new svg.Element.RenderedElementBase;
+
+	// symbol element
+	svg.Element.symbol = function(node) {
+		this.base = svg.Element.RenderedElementBase;
+		this.base(node);
+
+		this.render = function(ctx) {
+			// NO RENDER
+		};
+	};
+	svg.Element.symbol.prototype = new svg.Element.RenderedElementBase;
+
+	// style element
+	svg.Element.style = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		// text, or spaces then CDATA
+		var css = '';
+		for (var i=0; i<node.childNodes.length; i++) {
+		  css += node.childNodes[i].data;
+		}
+		css = css.replace(/(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(^[\s]*\/\/.*)/gm, ''); // remove comments
+		css = svg.compressSpaces(css); // replace whitespace
+		var cssDefs = css.split('}');
+		for (var i=0; i<cssDefs.length; i++) {
+			if (svg.trim(cssDefs[i]) != '') {
+				var cssDef = cssDefs[i].split('{');
+				var cssClasses = cssDef[0].split(',');
+				var cssProps = cssDef[1].split(';');
+				for (var j=0; j<cssClasses.length; j++) {
+					var cssClass = svg.trim(cssClasses[j]);
+					if (cssClass != '') {
+						var props = svg.Styles[cssClass] || {};
+						for (var k=0; k<cssProps.length; k++) {
+							var prop = cssProps[k].indexOf(':');
+							var name = cssProps[k].substr(0, prop);
+							var value = cssProps[k].substr(prop + 1, cssProps[k].length - prop);
+							if (name != null && value != null) {
+								props[svg.trim(name)] = new svg.Property(svg.trim(name), svg.trim(value));
+							}
+						}
+						svg.Styles[cssClass] = props;
+						svg.StylesSpecificity[cssClass] = getSelectorSpecificity(cssClass);
+						if (cssClass == '@font-face') {
+							var fontFamily = props['font-family'].value.replace(/"/g,'');
+							var srcs = props['src'].value.split(',');
+							for (var s=0; s<srcs.length; s++) {
+								if (srcs[s].indexOf('format("svg")') > 0) {
+									var urlStart = srcs[s].indexOf('url');
+									var urlEnd = srcs[s].indexOf(')', urlStart);
+									var url = srcs[s].substr(urlStart + 5, urlEnd - urlStart - 6);
+									var doc = svg.parseXml(svg.ajax(url));
+									var fonts = doc.getElementsByTagName('font');
+									for (var f=0; f<fonts.length; f++) {
+										var font = svg.CreateElement(fonts[f]);
+										svg.Definitions[fontFamily] = font;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	};
+	svg.Element.style.prototype = new svg.Element.ElementBase;
+
+	// use element
+	svg.Element.use = function(node) {
+		this.base = svg.Element.RenderedElementBase;
+		this.base(node);
+
+		this.baseSetContext = this.setContext;
+		this.setContext = function(ctx) {
+			this.baseSetContext(ctx);
+			if (this.attribute('x').hasValue()) { ctx.translate(this.attribute('x').toPixels('x'), 0); }
+			if (this.attribute('y').hasValue()) { ctx.translate(0, this.attribute('y').toPixels('y')); }
+		};
+
+		var element = this.getHrefAttribute().getDefinition();
+
+		this.path = function(ctx) {
+			if (element != null) { element.path(ctx); }
+		};
+
+		this.getBoundingBox = function() {
+			if (element != null) { return element.getBoundingBox(); }
+		};
+
+		this.renderChildren = function(ctx) {
+			if (element != null) {
+				var tempSvg = element;
+				if (element.type == 'symbol') {
+					// render me using a temporary svg element in symbol cases (http://www.w3.org/TR/SVG/struct.html#UseElement)
+					tempSvg = new svg.Element.svg();
+					tempSvg.type = 'svg';
+					tempSvg.attributes['viewBox'] = new svg.Property('viewBox', element.attribute('viewBox').value);
+					tempSvg.attributes['preserveAspectRatio'] = new svg.Property('preserveAspectRatio', element.attribute('preserveAspectRatio').value);
+					tempSvg.attributes['overflow'] = new svg.Property('overflow', element.attribute('overflow').value);
+					tempSvg.children = element.children;
+				}
+				if (tempSvg.type == 'svg') {
+					// if symbol or svg, inherit width/height from me
+					if (this.attribute('width').hasValue()) { tempSvg.attributes['width'] = new svg.Property('width', this.attribute('width').value); }
+					if (this.attribute('height').hasValue()) { tempSvg.attributes['height'] = new svg.Property('height', this.attribute('height').value); }
+				}
+				var oldParent = tempSvg.parent;
+				tempSvg.parent = null;
+				tempSvg.render(ctx);
+				tempSvg.parent = oldParent;
+			}
+		};
+	};
+	svg.Element.use.prototype = new svg.Element.RenderedElementBase;
+
+	// mask element
+	svg.Element.mask = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.apply = function(ctx, element) {
+			var this$1 = this;
+
+			// render as temp svg
+			var x = this.attribute('x').toPixels('x');
+			var y = this.attribute('y').toPixels('y');
+			var width = this.attribute('width').toPixels('x');
+			var height = this.attribute('height').toPixels('y');
+
+			if (width == 0 && height == 0) {
+				var bb = new svg.BoundingBox();
+				for (var i=0; i<this.children.length; i++) {
+					bb.addBoundingBox(this$1.children[i].getBoundingBox());
+				}
+				var x = Math.floor(bb.x1);
+				var y = Math.floor(bb.y1);
+				var width = Math.floor(bb.width());
+				var	height = Math.floor(bb.height());
+			}
+
+			// temporarily remove mask to avoid recursion
+			var mask = element.attribute('mask').value;
+			element.attribute('mask').value = '';
+
+				var cMask = document.createElement('canvas');
+				cMask.width = x + width;
+				cMask.height = y + height;
+				var maskCtx = cMask.getContext('2d');
+				this.renderChildren(maskCtx);
+
+				var c = document.createElement('canvas');
+				c.width = x + width;
+				c.height = y + height;
+				var tempCtx = c.getContext('2d');
+				element.render(tempCtx);
+				tempCtx.globalCompositeOperation = 'destination-in';
+				tempCtx.fillStyle = maskCtx.createPattern(cMask, 'no-repeat');
+				tempCtx.fillRect(0, 0, x + width, y + height);
+
+				ctx.fillStyle = tempCtx.createPattern(c, 'no-repeat');
+				ctx.fillRect(0, 0, x + width, y + height);
+
+			// reassign mask
+			element.attribute('mask').value = mask;
+		};
+
+		this.render = function(ctx) {
+			// NO RENDER
+		};
+	};
+	svg.Element.mask.prototype = new svg.Element.ElementBase;
+
+	// clip element
+	svg.Element.clipPath = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.apply = function(ctx) {
+			var this$1 = this;
+
+			var oldBeginPath = CanvasRenderingContext2D.prototype.beginPath;
+			CanvasRenderingContext2D.prototype.beginPath = function () { };
+
+			var oldClosePath = CanvasRenderingContext2D.prototype.closePath;
+			CanvasRenderingContext2D.prototype.closePath = function () { };
+
+			oldBeginPath.call(ctx);
+			for (var i=0; i<this.children.length; i++) {
+				var child = this$1.children[i];
+				if (typeof child.path != 'undefined') {
+					var transform = null;
+					if (child.style('transform', false, true).hasValue()) {
+						transform = new svg.Transform(child.style('transform', false, true).value);
+						transform.apply(ctx);
+					}
+					child.path(ctx);
+					CanvasRenderingContext2D.prototype.closePath = oldClosePath;
+					if (transform) { transform.unapply(ctx); }
+				}
+			}
+			oldClosePath.call(ctx);
+			ctx.clip();
+
+			CanvasRenderingContext2D.prototype.beginPath = oldBeginPath;
+			CanvasRenderingContext2D.prototype.closePath = oldClosePath;
+		};
+
+		this.render = function(ctx) {
+			// NO RENDER
+		};
+	};
+	svg.Element.clipPath.prototype = new svg.Element.ElementBase;
+
+	// filters
+	svg.Element.filter = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.apply = function(ctx, element) {
+			var this$1 = this;
+
+			// render as temp svg
+			var bb = element.getBoundingBox();
+			var x = Math.floor(bb.x1);
+			var y = Math.floor(bb.y1);
+			var width = Math.floor(bb.width());
+			var	height = Math.floor(bb.height());
+
+			// temporarily remove filter to avoid recursion
+			var filter = element.style('filter').value;
+			element.style('filter').value = '';
+
+			var px = 0, py = 0;
+			for (var i=0; i<this.children.length; i++) {
+				var efd = this$1.children[i].extraFilterDistance || 0;
+				px = Math.max(px, efd);
+				py = Math.max(py, efd);
+			}
+
+			var c = document.createElement('canvas');
+			c.width = width + 2*px;
+			c.height = height + 2*py;
+			var tempCtx = c.getContext('2d');
+			tempCtx.translate(-x + px, -y + py);
+			element.render(tempCtx);
+
+			// apply filters
+			for (var i=0; i<this.children.length; i++) {
+				if (typeof this$1.children[i].apply == 'function') {
+					this$1.children[i].apply(tempCtx, 0, 0, width + 2*px, height + 2*py);
+				}
+			}
+
+			// render on me
+			ctx.drawImage(c, 0, 0, width + 2*px, height + 2*py, x - px, y - py, width + 2*px, height + 2*py);
+
+			// reassign filter
+			element.style('filter', true).value = filter;
+		};
+
+		this.render = function(ctx) {
+			// NO RENDER
+		};
+	};
+	svg.Element.filter.prototype = new svg.Element.ElementBase;
+
+	svg.Element.feMorphology = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.apply = function(ctx, x, y, width, height) {
+			// TODO: implement
+		};
+	};
+	svg.Element.feMorphology.prototype = new svg.Element.ElementBase;
+
+	svg.Element.feComposite = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.apply = function(ctx, x, y, width, height) {
+			// TODO: implement
+		};
+	};
+	svg.Element.feComposite.prototype = new svg.Element.ElementBase;
+
+	svg.Element.feColorMatrix = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		var matrix = svg.ToNumberArray(this.attribute('values').value);
+		switch (this.attribute('type').valueOrDefault('matrix')) { // http://www.w3.org/TR/SVG/filters.html#feColorMatrixElement
+			case 'saturate':
+				var s = matrix[0];
+				matrix = [0.213+0.787*s,0.715-0.715*s,0.072-0.072*s,0,0,
+						  0.213-0.213*s,0.715+0.285*s,0.072-0.072*s,0,0,
+						  0.213-0.213*s,0.715-0.715*s,0.072+0.928*s,0,0,
+						  0,0,0,1,0,
+						  0,0,0,0,1];
+				break;
+			case 'hueRotate':
+				var a = matrix[0] * Math.PI / 180.0;
+				var c = function (m1,m2,m3) { return m1 + Math.cos(a)*m2 + Math.sin(a)*m3; };
+				matrix = [c(0.213,0.787,-0.213),c(0.715,-0.715,-0.715),c(0.072,-0.072,0.928),0,0,
+						  c(0.213,-0.213,0.143),c(0.715,0.285,0.140),c(0.072,-0.072,-0.283),0,0,
+						  c(0.213,-0.213,-0.787),c(0.715,-0.715,0.715),c(0.072,0.928,0.072),0,0,
+						  0,0,0,1,0,
+						  0,0,0,0,1];
+				break;
+			case 'luminanceToAlpha':
+				matrix = [0,0,0,0,0,
+						  0,0,0,0,0,
+						  0,0,0,0,0,
+						  0.2125,0.7154,0.0721,0,0,
+						  0,0,0,0,1];
+				break;
+		}
+
+		function imGet(img, x, y, width, height, rgba) {
+			return img[y*width*4 + x*4 + rgba];
+		}
+
+		function imSet(img, x, y, width, height, rgba, val) {
+			img[y*width*4 + x*4 + rgba] = val;
+		}
+
+		function m(i, v) {
+			var mi = matrix[i];
+			return mi * (mi < 0 ? v - 255 : v);
+		}
+
+		this.apply = function(ctx, x, y, width, height) {
+			// assuming x==0 && y==0 for now
+			var srcData = ctx.getImageData(0, 0, width, height);
+			for (var y = 0; y < height; y++) {
+				for (var x = 0; x < width; x++) {
+					var r = imGet(srcData.data, x, y, width, height, 0);
+					var g = imGet(srcData.data, x, y, width, height, 1);
+					var b = imGet(srcData.data, x, y, width, height, 2);
+					var a = imGet(srcData.data, x, y, width, height, 3);
+					imSet(srcData.data, x, y, width, height, 0, m(0,r)+m(1,g)+m(2,b)+m(3,a)+m(4,1));
+					imSet(srcData.data, x, y, width, height, 1, m(5,r)+m(6,g)+m(7,b)+m(8,a)+m(9,1));
+					imSet(srcData.data, x, y, width, height, 2, m(10,r)+m(11,g)+m(12,b)+m(13,a)+m(14,1));
+					imSet(srcData.data, x, y, width, height, 3, m(15,r)+m(16,g)+m(17,b)+m(18,a)+m(19,1));
+				}
+			}
+			ctx.clearRect(0, 0, width, height);
+			ctx.putImageData(srcData, 0, 0);
+		};
+	};
+	svg.Element.feColorMatrix.prototype = new svg.Element.ElementBase;
+
+	svg.Element.feGaussianBlur = function(node) {
+		this.base = svg.Element.ElementBase;
+		this.base(node);
+
+		this.blurRadius = Math.floor(this.attribute('stdDeviation').numValue());
+		this.extraFilterDistance = this.blurRadius;
+
+		this.apply = function(ctx, x, y, width, height) {
+			if (typeof index$5.canvasRGBA == 'undefined') {
+				svg.log('ERROR: StackBlur.js must be included for blur to work');
+				return;
+			}
+
+			// StackBlur requires canvas be on document
+			ctx.canvas.id = svg.UniqueId();
+			ctx.canvas.style.display = 'none';
+			document.body.appendChild(ctx.canvas);
+			index$5.canvasRGBA(ctx.canvas.id, x, y, width, height, this.blurRadius);
+			document.body.removeChild(ctx.canvas);
+		};
+	};
+	svg.Element.feGaussianBlur.prototype = new svg.Element.ElementBase;
+
+	// title element, do nothing
+	svg.Element.title = function(node) {
+	};
+	svg.Element.title.prototype = new svg.Element.ElementBase;
+
+	// desc element, do nothing
+	svg.Element.desc = function(node) {
+	};
+	svg.Element.desc.prototype = new svg.Element.ElementBase;
+
+	svg.Element.MISSING = function(node) {
+		svg.log('ERROR: Element \'' + node.nodeName + '\' not yet implemented.');
+	};
+	svg.Element.MISSING.prototype = new svg.Element.ElementBase;
+
+	// element factory
+	svg.CreateElement = function(node) {
+		var className = node.nodeName.replace(/^[^:]+:/,''); // remove namespace
+		className = className.replace(/\-/g,''); // remove dashes
+		var e = null;
+		if (typeof svg.Element[className] != 'undefined') {
+			e = new svg.Element[className](node);
+		}
+		else {
+			e = new svg.Element.MISSING(node);
+		}
+
+		e.type = node.nodeName;
+		return e;
+	};
+
+	// load from url
+	svg.load = function(ctx, url) {
+		svg.loadXml(ctx, svg.ajax(url));
+	};
+
+	// load from xml
+	svg.loadXml = function(ctx, xml) {
+		svg.loadXmlDoc(ctx, svg.parseXml(xml));
+	};
+
+	svg.loadXmlDoc = function(ctx, dom) {
+		svg.init(ctx);
+
+		var mapXY = function(p) {
+			var e = ctx.canvas;
+			while (e) {
+				p.x -= e.offsetLeft;
+				p.y -= e.offsetTop;
+				e = e.offsetParent;
+			}
+			if (window.scrollX) { p.x += window.scrollX; }
+			if (window.scrollY) { p.y += window.scrollY; }
+			return p;
+		};
+
+		// bind mouse
+		if (svg.opts['ignoreMouse'] != true) {
+			ctx.canvas.onclick = function(e) {
+				var p = mapXY(new svg.Point(e != null ? e.clientX : event.clientX, e != null ? e.clientY : event.clientY));
+				svg.Mouse.onclick(p.x, p.y);
+			};
+			ctx.canvas.onmousemove = function(e) {
+				var p = mapXY(new svg.Point(e != null ? e.clientX : event.clientX, e != null ? e.clientY : event.clientY));
+				svg.Mouse.onmousemove(p.x, p.y);
+			};
+		}
+
+		var e = svg.CreateElement(dom.documentElement);
+		e.root = true;
+		e.addStylesFromStyleDefinition();
+
+		// render loop
+		var isFirstRender = true;
+		var draw = function() {
+			svg.ViewPort.Clear();
+			if (ctx.canvas.parentNode) { svg.ViewPort.SetCurrent(ctx.canvas.parentNode.clientWidth, ctx.canvas.parentNode.clientHeight); }
+
+			if (svg.opts['ignoreDimensions'] != true) {
+				// set canvas size
+				if (e.style('width').hasValue()) {
+					ctx.canvas.width = e.style('width').toPixels('x');
+					ctx.canvas.style.width = ctx.canvas.width + 'px';
+				}
+				if (e.style('height').hasValue()) {
+					ctx.canvas.height = e.style('height').toPixels('y');
+					ctx.canvas.style.height = ctx.canvas.height + 'px';
+				}
+			}
+			var cWidth = ctx.canvas.clientWidth || ctx.canvas.width;
+			var cHeight = ctx.canvas.clientHeight || ctx.canvas.height;
+			if (svg.opts['ignoreDimensions'] == true && e.style('width').hasValue() && e.style('height').hasValue()) {
+				cWidth = e.style('width').toPixels('x');
+				cHeight = e.style('height').toPixels('y');
+			}
+			svg.ViewPort.SetCurrent(cWidth, cHeight);
+
+			if (svg.opts['offsetX'] != null) { e.attribute('x', true).value = svg.opts['offsetX']; }
+			if (svg.opts['offsetY'] != null) { e.attribute('y', true).value = svg.opts['offsetY']; }
+			if (svg.opts['scaleWidth'] != null || svg.opts['scaleHeight'] != null) {
+				var xRatio = null, yRatio = null, viewBox = svg.ToNumberArray(e.attribute('viewBox').value);
+
+				if (svg.opts['scaleWidth'] != null) {
+					if (e.attribute('width').hasValue()) { xRatio = e.attribute('width').toPixels('x') / svg.opts['scaleWidth']; }
+					else if (!isNaN(viewBox[2])) { xRatio = viewBox[2] / svg.opts['scaleWidth']; }
+				}
+
+				if (svg.opts['scaleHeight'] != null) {
+					if (e.attribute('height').hasValue()) { yRatio = e.attribute('height').toPixels('y') / svg.opts['scaleHeight']; }
+					else if (!isNaN(viewBox[3])) { yRatio = viewBox[3] / svg.opts['scaleHeight']; }
+				}
+
+				if (xRatio == null) { xRatio = yRatio; }
+				if (yRatio == null) { yRatio = xRatio; }
+
+				e.attribute('width', true).value = svg.opts['scaleWidth'];
+				e.attribute('height', true).value = svg.opts['scaleHeight'];
+				e.style('transform', true, true).value += ' scale('+(1.0/xRatio)+','+(1.0/yRatio)+')';
+			}
+
+			// clear and render
+			if (svg.opts['ignoreClear'] != true) {
+				ctx.clearRect(0, 0, cWidth, cHeight);
+			}
+			e.render(ctx);
+			if (isFirstRender) {
+				isFirstRender = false;
+				if (typeof svg.opts['renderCallback'] == 'function') { svg.opts['renderCallback'](dom); }
+			}
+		};
+
+		var waitingForImages = true;
+		if (svg.ImagesLoaded()) {
+			waitingForImages = false;
+			draw();
+		}
+		svg.intervalID = setInterval(function() {
+			var needUpdate = false;
+
+			if (waitingForImages && svg.ImagesLoaded()) {
+				waitingForImages = false;
+				needUpdate = true;
+			}
+
+			// need update from mouse events?
+			if (svg.opts['ignoreMouse'] != true) {
+				needUpdate = needUpdate | svg.Mouse.hasEvents();
+			}
+
+			// need update from animations?
+			if (svg.opts['ignoreAnimation'] != true) {
+				for (var i=0; i<svg.Animations.length; i++) {
+					needUpdate = needUpdate | svg.Animations[i].update(1000 / svg.FRAMERATE);
+				}
+			}
+
+			// need update from redraw?
+			if (typeof svg.opts['forceRedraw'] == 'function') {
+				if (svg.opts['forceRedraw']() == true) { needUpdate = true; }
+			}
+
+			// render if needed
+			if (needUpdate) {
+				draw();
+				svg.Mouse.runEvents(); // run and clear our events
+			}
+		}, 1000 / svg.FRAMERATE);
+	};
+
+	svg.stop = function() {
+		if (svg.intervalID) {
+			clearInterval(svg.intervalID);
+		}
+	};
+
+	svg.Mouse = new (function() {
+		this.events = [];
+		this.hasEvents = function() { return this.events.length != 0; };
+
+		this.onclick = function(x, y) {
+			this.events.push({ type: 'onclick', x: x, y: y,
+				run: function(e) { if (e.onclick) { e.onclick(); } }
+			});
+		};
+
+		this.onmousemove = function(x, y) {
+			this.events.push({ type: 'onmousemove', x: x, y: y,
+				run: function(e) { if (e.onmousemove) { e.onmousemove(); } }
+			});
+		};
+
+		this.eventElements = [];
+
+		this.checkPath = function(element, ctx) {
+			var this$1 = this;
+
+			for (var i=0; i<this.events.length; i++) {
+				var e = this$1.events[i];
+				if (ctx.isPointInPath && ctx.isPointInPath(e.x, e.y)) { this$1.eventElements[i] = element; }
+			}
+		};
+
+		this.checkBoundingBox = function(element, bb) {
+			var this$1 = this;
+
+			for (var i=0; i<this.events.length; i++) {
+				var e = this$1.events[i];
+				if (bb.isPointInBox(e.x, e.y)) { this$1.eventElements[i] = element; }
+			}
+		};
+
+		this.runEvents = function() {
+			var this$1 = this;
+
+			svg.ctx.canvas.style.cursor = '';
+
+			for (var i=0; i<this.events.length; i++) {
+				var e = this$1.events[i];
+				var element = this$1.eventElements[i];
+				while (element) {
+					e.run(element);
+					element = element.parent;
+				}
+			}
+
+			// done running, clear
+			this.events = [];
+			this.eventElements = [];
+		};
+	});
+
+	return svg;
+}
+
+var index$2 = canvg;
+
+var FileSaver = createCommonjsModule(function (module) {
+/* FileSaver.js
+ * A saveAs() FileSaver implementation.
+ * 1.3.2
+ * 2016-06-16 18:25:19
+ *
+ * By Eli Grey, http://eligrey.com
+ * License: MIT
+ *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+var saveAs = saveAs || (function(view) {
+	"use strict";
+	// IE <10 is explicitly unsupported
+	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
+		return;
+	}
+	var
+		  doc = view.document
+		  // only get URL when necessary in case Blob.js hasn't overridden it yet
+		, get_URL = function() {
+			return view.URL || view.webkitURL || view;
+		}
+		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
+		, can_use_save_link = "download" in save_link
+		, click = function(node) {
+			var event = new MouseEvent("click");
+			node.dispatchEvent(event);
+		}
+		, is_safari = /constructor/i.test(view.HTMLElement) || view.safari
+		, is_chrome_ios =/CriOS\/[\d]+/.test(navigator.userAgent)
+		, throw_outside = function(ex) {
+			(view.setImmediate || view.setTimeout)(function() {
+				throw ex;
+			}, 0);
+		}
+		, force_saveable_type = "application/octet-stream"
+		// the Blob API is fundamentally broken as there is no "downloadfinished" event to subscribe to
+		, arbitrary_revoke_timeout = 1000 * 40 // in ms
+		, revoke = function(file) {
+			var revoker = function() {
+				if (typeof file === "string") { // file is an object URL
+					get_URL().revokeObjectURL(file);
+				} else { // file is a File
+					file.remove();
+				}
+			};
+			setTimeout(revoker, arbitrary_revoke_timeout);
+		}
+		, dispatch = function(filesaver, event_types, event) {
+			event_types = [].concat(event_types);
+			var i = event_types.length;
+			while (i--) {
+				var listener = filesaver["on" + event_types[i]];
+				if (typeof listener === "function") {
+					try {
+						listener.call(filesaver, event || filesaver);
+					} catch (ex) {
+						throw_outside(ex);
+					}
+				}
+			}
+		}
+		, auto_bom = function(blob) {
+			// prepend BOM for UTF-8 XML and text/* types (including HTML)
+			// note: your browser will automatically convert UTF-16 U+FEFF to EF BB BF
+			if (/^\s*(?:text\/\S*|application\/xml|\S*\/\S*\+xml)\s*;.*charset\s*=\s*utf-8/i.test(blob.type)) {
+				return new Blob([String.fromCharCode(0xFEFF), blob], {type: blob.type});
+			}
+			return blob;
+		}
+		, FileSaver = function(blob, name, no_auto_bom) {
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			// First try a.download, then web filesystem, then object URLs
+			var
+				  filesaver = this
+				, type = blob.type
+				, force = type === force_saveable_type
+				, object_url
+				, dispatch_all = function() {
+					dispatch(filesaver, "writestart progress write writeend".split(" "));
+				}
+				// on any filesys errors revert to saving with object URLs
+				, fs_error = function() {
+					if ((is_chrome_ios || (force && is_safari)) && view.FileReader) {
+						// Safari doesn't allow downloading of blob urls
+						var reader = new FileReader();
+						reader.onloadend = function() {
+							var url = is_chrome_ios ? reader.result : reader.result.replace(/^data:[^;]*;/, 'data:attachment/file;');
+							var popup = view.open(url, '_blank');
+							if(!popup) { view.location.href = url; }
+							url=undefined; // release reference before dispatching
+							filesaver.readyState = filesaver.DONE;
+							dispatch_all();
+						};
+						reader.readAsDataURL(blob);
+						filesaver.readyState = filesaver.INIT;
+						return;
+					}
+					// don't create more object URLs than needed
+					if (!object_url) {
+						object_url = get_URL().createObjectURL(blob);
+					}
+					if (force) {
+						view.location.href = object_url;
+					} else {
+						var opened = view.open(object_url, "_blank");
+						if (!opened) {
+							// Apple does not allow window.open, see https://developer.apple.com/library/safari/documentation/Tools/Conceptual/SafariExtensionGuide/WorkingwithWindowsandTabs/WorkingwithWindowsandTabs.html
+							view.location.href = object_url;
+						}
+					}
+					filesaver.readyState = filesaver.DONE;
+					dispatch_all();
+					revoke(object_url);
+				};
+			filesaver.readyState = filesaver.INIT;
+
+			if (can_use_save_link) {
+				object_url = get_URL().createObjectURL(blob);
+				setTimeout(function() {
+					save_link.href = object_url;
+					save_link.download = name;
+					click(save_link);
+					dispatch_all();
+					revoke(object_url);
+					filesaver.readyState = filesaver.DONE;
+				});
+				return;
+			}
+
+			fs_error();
+		}
+		, FS_proto = FileSaver.prototype
+		, saveAs = function(blob, name, no_auto_bom) {
+			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
+		};
+	// IE 10+ (native saveAs)
+	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
+		return function(blob, name, no_auto_bom) {
+			name = name || blob.name || "download";
+
+			if (!no_auto_bom) {
+				blob = auto_bom(blob);
+			}
+			return navigator.msSaveOrOpenBlob(blob, name);
+		};
+	}
+
+	FS_proto.abort = function(){};
+	FS_proto.readyState = FS_proto.INIT = 0;
+	FS_proto.WRITING = 1;
+	FS_proto.DONE = 2;
+
+	FS_proto.error =
+	FS_proto.onwritestart =
+	FS_proto.onprogress =
+	FS_proto.onwrite =
+	FS_proto.onabort =
+	FS_proto.onerror =
+	FS_proto.onwriteend =
+		null;
+
+	return saveAs;
+}(
+	   typeof self !== "undefined" && self
+	|| typeof window !== "undefined" && window
+	|| commonjsGlobal.content
+));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
+
+if ('object' !== "undefined" && module.exports) {
+  module.exports.saveAs = saveAs;
+} else if ((typeof undefined !== "undefined" && undefined !== null) && (undefined.amd !== null)) {
+  undefined("FileSaver.js", function() {
+    return saveAs;
+  });
+}
+});
+
+var FileSaver_1 = FileSaver.saveAs;
+
+// import {default as JsPDF} from "jspdf";
+
+var defaultOptions = {
+  callback: function () {},
+  filename: "download",
+  padding: 0,
+  scale: 1,
+  type: "png"
+};
+
+var canvgOptions = {
+  ignoreMouse: true,
+  ignoreAnimation: true,
+  ignoreDimensions: true,
+  ignoreClear: true
+};
+
+/**
+    @function savePNG
+    @desc Downloads an HTML Element as a bitmap PNG image.
+    @param {HTMLElement} elem The element to be saved.
+    @param {String} [options] Additional options to specify.
+    @param {Function} [options.callback] Callback function to be passed the canvas element after rendering.
+    @param {String} [options.filename = "download"] Filename for the downloaded file, without the extension.
+    @param {Number} [options.padding = 0] Outer padding for the final file.
+    @param {Number} [options.scale = 1] Scale for the final file.
+*/
+var saveElement = function(elem, options) {
+
+  if (!elem) { return; }
+  options = Object.assign({}, defaultOptions, options);
+  var IE = new RegExp(/(MSIE|Trident\/|Edge\/)/i).test(navigator.userAgent);
+
+  if (options.type === "svg") {
+    var outer = IE ? (new XMLSerializer()).serializeToString(elem) : elem.outerHTML;
+    FileSaver_1(new Blob([outer], {type: "application/svg+xml"}), ((options.filename) + ".svg"));
+    return;
+  }
+
+  var height = parseFloat(select(elem).style("height")),
+        width = parseFloat(select(elem).style("width"));
+
+  var canvas = document.createElement("canvas");
+  canvas.width = (width + options.padding * 2) * options.scale;
+  canvas.height = (height + options.padding * 2) * options.scale;
+
+  var context = canvas.getContext("2d");
+  context.scale(options.scale, options.scale);
+  context.clearRect(0, 0, canvas.width / 2, canvas.height / 2);
+
+  if (options.type === "pdf") {
+    context.beginPath();
+    context.rect(0, 0, canvas.width / 2, canvas.height / 2);
+    context.fillStyle = "white";
+    context.fill();
+  }
+
+  var layers = [];
+
+  function checkChildren(e, trans) {
+    if ( trans === void 0 ) trans = {x: 0, y: 0, scale: 1};
+
+    selectAll(e.childNodes).each(function() {
+      var transform = Object.assign({}, trans);
+
+      // strips translate and scale from transform property
+      if (this.tagName) {
+
+        var property = select(this).attr("transform"),
+              tag$1 = this.tagName.toLowerCase();
+
+        if (tag$1 === "g" && property) {
+          var scale = property.match(/scale\(([^a-z]+)\)/i);
+          if (scale) { transform.scale *= Math.round(parseFloat(scale[1])); }
+          var translate = property.match(/translate\(([^a-z]+)\)/i);
+          if (translate) {
+            var ref = translate[1]
+              .replace(/([^a-z]),*\s([^a-z])/gi, "$1,$2")
+              .split(",")
+              .map(function (d) { return Math.round(parseFloat(d) * transform.scale); });
+            var x = ref[0];
+            var y = ref[1];
+            transform.x += x;
+            transform.y += y;
+          }
+        }
+
+        if (tag$1 === "svg") {
+          var x$1 = select(this).attr("x");
+          x$1 = x$1 ? Math.round(parseFloat(x$1)) * transform.scale : 0;
+          transform.x += x$1;
+          var y$1 = select(this).attr("y");
+          y$1 = y$1 ? Math.round(parseFloat(y$1)) * transform.scale : 0;
+          transform.y += y$1;
+          transform.clip = {
+            height: Math.round(parseFloat(select(this).attr("height") || select(this).style("height"))),
+            width: Math.round(parseFloat(select(this).attr("width") || select(this).style("width"))),
+            x: x$1, y: y$1
+          };
+        }
+        else {
+          var x$2 = select(this).attr("x");
+          if (x$2) { transform.x += parseFloat(x$2) * transform.scale; }
+          var y$2 = select(this).attr("y");
+          if (y$2) { transform.y += parseFloat(y$2) * transform.scale; }
+        }
+
+      }
+
+      var tag = (this.tagName || "").toLowerCase();
+
+      var patterns = tag.length ? select(this).selectAll("*")
+        .filter(function() {
+          var fill = select(this).attr("fill");
+          return fill && fill.indexOf("url") === 0;
+        }).size() : 0;
+
+      if (!tag.length) {
+        var test = (this.wholeText || "").replace(/\s/g, "");
+        if (test.length) {
+
+          var text = this.nodeValue
+            .replace(/^\s*/, "")
+            .replace(/^\n/, "")
+            .replace(/^\s*/, "")
+            .replace(/\n$/, "")
+            .replace(/\s*$/, "")
+            .replace(/\n$/, "");
+
+          layers.push({type: "text", style: this.parentNode, value: text});
+
+        }
+      }
+      else if (tag === "defs") { return; }
+      else if (tag === "g" && this.childNodes.length > 0 && !select(this).selectAll("pattern, image, foreignobject").size() && !patterns) {
+        var opacity = select(this).attr("opacity") || select(this).style("opacity");
+        if (opacity && parseFloat(opacity) > 0) {
+          select(this).selectAll("*").each(function() {
+            if (select(this).attr("stroke-width") === null) { select(this).attr("stroke-width", 0); }
+          });
+          layers.push(Object.assign({}, transform, {type: "svg", value: this}));
+        }
+      }
+      else if (tag === "text") {
+        if (select(this).attr("stroke-width") === null) { select(this).attr("stroke-width", 0); }
+        layers.push(Object.assign({}, transform, {type: "svg", value: this}));
+      }
+      else if (this.childNodes.length > 0) {
+        var opacity$1 = select(this).attr("opacity") || select(this).style("opacity");
+        if (opacity$1 && parseFloat(opacity$1) > 0) { checkChildren(this, transform); }
+      }
+      else if (["image", "img"].includes(tag)) {
+
+        var url = select(this).attr("href") || select(this).attr("xlink:href");
+
+        if (url.length) {
+          var height = parseFloat(select(this).attr("height")) * transform.scale,
+                width = parseFloat(select(this).attr("width")) * transform.scale;
+
+          var data = {
+            clip: transform.clip,
+            height: height,
+            loaded: false,
+            type: "img",
+            width: width,
+            x: transform.x,
+            y: transform.y
+          };
+          layers.push(data);
+
+          var img = new Image();
+          img.crossOrigin = "Anonymous";
+          img.onload = function() {
+
+            var canvas2 = document.createElement("canvas");
+            var ctx2 = canvas2.getContext("2d");
+            canvas2.height = height;
+            canvas2.width = width;
+            ctx2.drawImage(this, 0, 0, width, height);
+            var himg = document.createElement("img");
+            himg.src = canvas2.toDataURL("image/png");
+
+            data.loaded = true;
+            data.value = himg;
+
+          };
+          img.src = url;
+
+        }
+
+      }
+      else {
+
+        if (select(this).attr("stroke-width") === null) { select(this).attr("stroke-width", 0); }
+        layers.push(Object.assign({}, transform, {type: "svg", value: this}));
+        // if (["pattern"].includes(tag)) layers.push(Object.assign({}, transform, {type: "svg", value: this}));
+        // else layers.push({type: "svg", value: this});
+        var fill = select(this).attr("fill");
+        if (fill && fill.indexOf("url") === 0) {
+          var property$1 = select(this).attr("transform");
+
+          if (property$1) {
+            var scale$1 = property$1.match(/scale\(([^a-z]+)\)/i);
+            if (scale$1) { transform.scale *= Math.round(parseFloat(scale$1[1])); }
+            var translate$1 = property$1.match(/translate\(([^a-z]+)\)/i);
+            if (translate$1) {
+              var ref$1 = translate$1[1]
+                .replace(/([^a-z]),*\s([^a-z])/gi, "$1,$2")
+                .split(",")
+                .map(function (d) { return Math.round(parseFloat(d) * transform.scale); });
+              var x$3 = ref$1[0];
+              var y$3 = ref$1[1];
+              transform.x += x$3;
+              transform.y += y$3;
+            }
+          }
+          checkChildren(select(fill.slice(4, -1)).node(), transform);
+        }
+
+      }
+
+    });
+  }
+  checkChildren(elem);
+
+  function checkStatus() {
+
+    var allDone = true;
+    for (var i = 0; i < layers.length; i++) {
+      if (layers[i].loaded === false) {
+        allDone = false;
+        break;
+      }
+    }
+
+    if (allDone) { finish(); }
+    else { setTimeout(checkStatus, 500); }
+
+  }
+
+  // Wait for all images to load
+  checkStatus();
+
+  function finish() {
+
+    for (var i = 0; i < layers.length; i++) {
+
+      var layer = layers[i];
+      var clip = layer.clip;
+
+      switch (layer.type) {
+
+        case "img":
+          context.save();
+          context.beginPath();
+          context.translate(options.padding, options.padding);
+          context.rect(clip ? clip.x : 0, clip ? clip.y : 0, clip ? clip.width : width, clip ? clip.height : height);
+          context.clip();
+          context.drawImage(layer.value, layer.x, layer.y, layer.width, layer.height);
+          context.restore();
+          break;
+
+        case "text":
+
+          var parent = select(layer.style);
+          var title = layer.value
+            .replace(/&/g, "&amp;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+          var fC = parent.style("color"),
+                fS = parent.style("font-size");
+
+          var fF = parent.style("font-family").split(",")[0];
+
+          if (fF.indexOf("'") !== 0) { fF = "'" + fF + "'"; }
+          var text = "<text stroke='none' dy='" + fS + "' fill='" + fC + "' font-family=" + fF + " font-size='" + fS + "'>" + title + "</text>";
+
+          context.save();
+          context.translate(options.padding, options.padding);
+          index$2(canvas, text, canvgOptions);
+          context.restore();
+
+          break;
+
+        case "svg":
+          var outer = IE ? (new XMLSerializer()).serializeToString(layer.value) : layer.value.outerHTML;
+          context.save();
+          context.translate(options.padding, options.padding);
+          context.rect(clip ? clip.x : 0, clip ? clip.y : 0, clip ? clip.width : width, clip ? clip.height : height);
+          context.clip();
+          index$2(canvas, outer, Object.assign({offsetX: layer.x, offsetY: layer.y}, canvgOptions));
+          context.restore();
+          break;
+
+        default:
+          console.warn("uncaught", layer);
+          break;
+
+      }
+
+    }
+
+    if (["jpg", "png"].includes(options.type)) {
+      canvas.toBlob(function (blob) { return FileSaver_1(blob, options.filename); });
+    }
+    // else if (options.type === "pdf") {
+    //
+    //   const outputHeight = 11,
+    //         outputUnit = "in",
+    //         outputWidth = 8.5;
+    //
+    //   const aspect = canvas.width / canvas.height,
+    //         orientation = aspect > 1 ? "landscape" : "portrait";
+    //
+    //   const pdf = new JsPDF(orientation, outputUnit, [outputWidth, outputHeight]);
+    //
+    //   let h = orientation === "landscape" ? outputWidth : outputHeight,
+    //       left,
+    //       top,
+    //       w = orientation === "landscape" ? outputHeight : outputWidth;
+    //
+    //   const margin = 0.5;
+    //
+    //   if (aspect < w / h) {
+    //     h -= margin * 2;
+    //     const tempWidth = h * aspect;
+    //     top = margin;
+    //     left = (w - tempWidth) / 2;
+    //     w = tempWidth;
+    //   }
+    //   else {
+    //     w -= margin * 2;
+    //     const tempHeight = w / aspect;
+    //     left = margin;
+    //     top = (h - tempHeight) / 2;
+    //     h = tempHeight;
+    //   }
+    //
+    //   pdf.addImage(canvas, "canvas", left, top, w, h);
+    //   pdf.save(options.filename);
+    //
+    // }
+
+    options.callback(canvas);
+
+  }
+
+};
+
+var formTypes = {Button: Button, Radio: Radio, Select: Select};
 
 /**
     @function _drawLegend
@@ -20694,86 +34653,115 @@ var drawControls = function() {
   var this$1 = this;
 
 
-  var condition = this._controls && this._controls.length;
   var that = this;
-  var transform = {
-    height: this._height - this._margin.top - this._margin.bottom,
-    width: this._width - this._margin.left - this._margin.right,
-    x: this._margin.left,
-    y: this._margin.top
-  };
 
-  var foreign = elem("foreignObject.d3plus-viz-controls", {
-    condition: condition,
-    enter: Object.assign({opacity: 0}, transform),
-    exit: Object.assign({opacity: 0}, transform),
-    parent: this._select,
-    transition: this._transition,
-    update: Object.assign({opacity: 1}, transform)
-  });
+  var areas = ["left", "right", "top", "bottom"];
+  var loop = function ( a ) {
+    var area = areas[a];
+    var controls = (this$1._controls || []).filter(function (c) { return !c.position && area === "bottom" || c.position === area; });
 
-  var container = foreign.selectAll("div.d3plus-viz-controls-container")
-    .data([null]);
-
-  container = container.enter().append("xhtml:div")
-      .attr("class", "d3plus-viz-controls-container")
-      .style("margin-top", ((transform.height) + "px"))
-    .merge(container);
-
-  if (condition) {
-
-    var loop = function ( i ) {
-
-      var control = this$1._controls[i];
-
-      var on = {};
-      if (control.on) {
-        var loop$1 = function ( event ) {
-          if ({}.hasOwnProperty.call(control.on, event)) {
-            on[event] = function() {
-              control.on[event].bind(that)(this.value);
-            };
+    if (this$1._downloadButton && this$1._downloadPosition === area) {
+      controls.push({
+        data: [{text: "Download", value: 1}],
+        label: "downloadButton",
+        on: {
+          click: function () {
+            saveElement(this$1._select.node(), Object.assign({
+              title: this$1._title || undefined
+            }, this$1._downloadConfig));
           }
-        };
+        },
+        type: "Button"
+      });
+    }
 
-        for (var event in control.on) loop$1( event );
-
-      }
-
-      var id = control.label || i;
-      if (!this$1._controlCache[id]) {
-        var type = control.type && formTypes[control.type] ? control.type : "Select";
-        this$1._controlCache[id] = new formTypes[type]().container(container.node());
-        if (control.checked) {
-          this$1._controlCache[id].checked(control.checked);
-          delete control.checked;
-        }
-        if (control.selected) {
-          this$1._controlCache[id].selected(control.selected);
-          delete control.selected;
-        }
-      }
-
-      this$1._controlCache[id]
-        .config(control)
-        .config({on: on})
-        .config(this$1._controlConfig)
-        .render();
-
+    var transform = {
+      height: this$1._height - this$1._margin.top - this$1._margin.bottom,
+      width: this$1._width - this$1._margin.left - this$1._margin.right,
+      x: this$1._margin.left,
+      y: this$1._margin.top
     };
 
-    for (var i = 0; i < this._controls.length; i++) loop( i );
+    var foreign = elem(("foreignObject.d3plus-viz-controls-" + area), {
+      condition: controls.length,
+      enter: Object.assign({opacity: 0}, transform),
+      exit: Object.assign({opacity: 0}, transform),
+      parent: this$1._select,
+      transition: this$1._transition,
+      update: Object.assign({opacity: 1}, transform)
+    });
 
-    var bounds = container.node().getBoundingClientRect();
+    var container = foreign.selectAll("div.d3plus-viz-controls-container")
+      .data([null]);
 
-    container
-        .style("text-align", "center")
-      .transition(this._transition)
-        .style("margin-top", ((transform.height - bounds.height) + "px"));
+    container = container.enter().append("xhtml:div")
+        .attr("class", "d3plus-viz-controls-container")
+        .style("margin-top", area === "bottom" ? ((transform.height) + "px") : 0)
+        .style("margin-left", area === "right" ? ((transform.width) + "px") : 0)
+      .merge(container);
 
-    this._margin.bottom += bounds.height;
+    if (controls.length) {
 
-  }
+      var loop$1 = function ( i ) {
+
+        var control = controls[i];
+
+        var on = {};
+        if (control.on) {
+          var loop$2 = function ( event ) {
+            if ({}.hasOwnProperty.call(control.on, event)) {
+              on[event] = function() {
+                control.on[event].bind(that)(this.value);
+              };
+            }
+          };
+
+          for (var event in control.on) loop$2( event );
+
+        }
+
+        var id = control.label || (area + "-" + i);
+        if (!this$1._controlCache[id]) {
+          var type = control.type && formTypes[control.type] ? control.type : "Select";
+          this$1._controlCache[id] = new formTypes[type]().container(container.node());
+          if (control.checked) {
+            this$1._controlCache[id].checked(control.checked);
+            delete control.checked;
+          }
+          if (control.selected) {
+            this$1._controlCache[id].selected(control.selected);
+            delete control.selected;
+          }
+        }
+
+        this$1._controlCache[id]
+          .config(control)
+          .config({on: on})
+          .config(this$1._controlConfig)
+          .render();
+
+      };
+
+      for (var i = 0; i < controls.length; i++) loop$1( i );
+
+      container
+          .style("display", ["top", "bottom"].includes(area) ? "block" : "inline-block")
+          .style("text-align", ["top", "bottom"].includes(area) ? "center" : area);
+
+      var bounds = container.node().getBoundingClientRect();
+
+      container
+        .transition(this$1._transition)
+          .style("margin-top", area === "bottom" ? ((transform.height - bounds.height) + "px") : 0)
+          .style("margin-left", area === "right" ? ((transform.width - bounds.width) + "px") : 0);
+
+      this$1._margin[area] += ["top", "bottom"].includes(area) ? bounds.height : bounds.width;
+
+    }
+
+  };
+
+  for (var a = 0; a < areas.length; a++) loop( a );
 
 };
 
@@ -20791,7 +34779,7 @@ var drawLegend = function(data) {
   var transform = {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")};
 
   var legendGroup = elem("g.d3plus-viz-legend", {
-    condition: this._legend,
+    condition: this._legend && !this._legendConfig.select,
     enter: transform,
     parent: this._select,
     transition: this._transition,
@@ -20835,7 +34823,7 @@ var drawLegend = function(data) {
       .render();
 
     var legendBounds = this._legendClass.outerBounds();
-    if (legendBounds.height) {
+    if (!this._legendConfig.select && legendBounds.height) {
       if (wide) { this._margin[position] += legendBounds.height + this._legendClass.padding() * 2; }
       else { this._margin[position] += legendBounds.width + this._legendClass.padding() * 2; }
     }
@@ -21097,7 +35085,7 @@ var tooltip = function(d, i, config) {
   if ( config === void 0 ) config = {};
 
 
-  if (this._tooltip) {
+  if (this._tooltip && d) {
     this._select.style("cursor", "pointer");
     this._tooltipClass.data([d])
       .footer(this._drawDepth < this._groupBy.length - 1
@@ -21248,6 +35236,7 @@ var Viz = (function (BaseClass$$1) {
       fontSize: 10,
       resize: false
     };
+    this._cache = false;
     this._color = function (d, i) { return this$1._groupBy[0](d, i); };
     this._colorScaleClass = new ColorScale();
     this._colorScaleConfig = {};
@@ -21260,6 +35249,9 @@ var Viz = (function (BaseClass$$1) {
     this._data = [];
     this._detectResize = true;
     this._detectVisible = true;
+    this._downloadButton = false;
+    this._downloadConfig = {type: "png"};
+    this._downloadPosition = "top";
     this._duration = 600;
     this._history = [];
     this._groupBy = [accessor("id")];
@@ -21272,6 +35264,7 @@ var Viz = (function (BaseClass$$1) {
     this._legendClass = new Legend();
     this._legendPosition = "bottom";
     this._locale = "en-US";
+    this._lrucache = index$1(5);
     this._on = {
       "click": click.bind(this),
       "click.legend": clickLegend.bind(this),
@@ -21400,8 +35393,8 @@ var Viz = (function (BaseClass$$1) {
     this._drawDepth = this._depth !== void 0 ? this._depth : this._groupBy.length - 1;
     this._id = this._groupBy[this._drawDepth];
     this._ids = function (d, i) { return this$1._groupBy
-      .map(function (g) { return g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
-      .filter(function (g) { return g !== void 0 && g !== null && g.constructor !== Array; }); };
+      .map(function (g) { return !d || d.__d3plus__ && !d.data ? undefined : g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
+      .filter(function (g) { return g !== undefined && g !== null && g.constructor !== Array; }); };
 
     this._drawLabel = function (d, i) {
       if (d.__d3plus__) {
@@ -21560,7 +35553,10 @@ var Viz = (function (BaseClass$$1) {
     else {
 
       var q = queue();
-      this._queue.forEach(function (p) { return q.defer.apply(q, p); });
+      this._queue.forEach(function (p) {
+        var cache = this$1._cache ? this$1._lrucache.get(p[1]) : undefined;
+        if (!cache) { q.defer.apply(q, p); }
+      });
       this._queue = [];
       q.awaitAll(function () {
         this$1._draw(callback);
@@ -21633,6 +35629,16 @@ var Viz = (function (BaseClass$$1) {
 
   /**
       @memberof Viz
+      @desc Enables a lru cache that stores up to 5 previously loaded files/URLs. Helpful when constantly writing over the data array with a URL in the render function of a react component.
+      @param {Boolean} [*value* = false]
+      @chainable
+  */
+  Viz.prototype.cache = function cache (_) {
+    return arguments.length ? (this._cache = _, this) : this._cache;
+  };
+
+  /**
+      @memberof Viz
       @desc Defines the main color to be used for each data point in a visualization. Can be either an accessor function or a string key to reference in each data point. If a color value is returned, it will be used as is. If a string is returned, a unique color will be assigned based on the string.
       @param {Function|String} [*value*]
       @chainable
@@ -21663,7 +35669,7 @@ var Viz = (function (BaseClass$$1) {
 
   /**
       @memberof Viz
-      @desc Defines which side of the visualization to anchor the color scale. Acceptable values are `"top"`, `"bottom"`, `"left"`, `"right"` and `false`. A `false` value will cause the color scale to not be displayed, but will still color shapes based on the scale. If no value is passed, the current legend position will be returned.
+      @desc Defines which side of the visualization to anchor the color scale. Acceptable values are `"top"`, `"bottom"`, `"left"`, `"right"`, and `false`. A `false` value will cause the color scale to not be displayed, but will still color shapes based on the scale.
       @param {String|Boolean} [*value* = "bottom"]
       @chainable
   */
@@ -21748,6 +35754,36 @@ If no value is specified, the method will return the current *Boolean* value.
   */
   Viz.prototype.discrete = function discrete (_) {
     return arguments.length ? (this._discrete = _, this) : this._discrete;
+  };
+
+  /**
+      @memberof Viz
+      @desc Shows a button that allows for downloading the current visualization.
+      @param {Boolean} [*value* = false]
+      @chainable
+  */
+  Viz.prototype.downloadButton = function downloadButton (_) {
+    return arguments.length ? (this._downloadButton = _, this) : this._downloadButton;
+  };
+
+  /**
+      @memberof Viz
+      @desc Sets specific options of the saveElement function used when downloading the visualization.
+      @param {Object} [*value* = {type: "png"}]
+      @chainable
+  */
+  Viz.prototype.downloadConfig = function downloadConfig (_) {
+    return arguments.length ? (this._downloadConfig = _, this) : this._downloadConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc Defines which control group to add the download button into.
+      @param {String} [*value* = "top"]
+      @chainable
+  */
+  Viz.prototype.downloadPosition = function downloadPosition (_) {
+    return arguments.length ? (this._downloadPosition = _, this) : this._downloadPosition;
   };
 
   /**
@@ -21876,7 +35912,7 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc Defines which side of the visualization to anchor the legend. Acceptable values are `"top"`, `"bottom"`, `"left"`, and `"right"`. If no value is passed, the current legend position will be returned.
+      @desc Defines which side of the visualization to anchor the legend. Expected values are `"top"`, `"bottom"`, `"left"`, and `"right"`.
       @param {String} [*value* = "bottom"]
       @chainable
   */
@@ -22171,7 +36207,7 @@ var Geomap = (function (Viz$$1) {
   */
   Geomap.prototype._zoomed = function _zoomed () {
 
-    this._zoomGroup.attr("transform", event.transform);
+    this._zoomGroup.attr("transform", event$1.transform);
     this._renderTiles();
 
     //   if (event && !this._zoomPan) {
@@ -22434,7 +36470,17 @@ var Geomap = (function (Viz$$1) {
 
       }, []);
 
-      var p = this._padding;
+      var pad = this._padding;
+      if (typeof pad === "string") {
+        pad = pad.match(/([-\d\.]+)/g).map(Number);
+        if (pad.length === 3) { pad.push(pad[1]); }
+        if (pad.length === 2) { pad = pad.concat(pad); }
+        if (pad.length === 1) { pad = Array(4).fill(pad); }
+      }
+      else {
+        pad = Array(4).fill(pad);
+      }
+
       if (!extentBounds.features.length && pointData.length) {
 
         var bounds = [[undefined, undefined], [undefined, undefined]];
@@ -22458,17 +36504,19 @@ var Geomap = (function (Viz$$1) {
             }
           }]
         };
-        p = max(pointData, function (d, i) { return r(this$1._pointSize(d, i)) + p; });
+        var maxSize = max(pointData, function (d, i) { return r(this$1._pointSize(d, i)); });
+        pad = pad.map(function (p) { return p + maxSize; });
 
       }
 
       this._projection = this._projection
         .fitExtent(
-          extentBounds.features.length ? [[p, p], [width - p * 2, height - p * 2]] : [[0, 0], [width, height]],
+          extentBounds.features.length ? [[pad[3], pad[0]], [width - pad[1] * 2, height - pad[2] * 2]] : [[0, 0], [width, height]],
           extentBounds.features.length ? extentBounds : {type: "Sphere"}
         );
 
       this._zoomBehavior
+        .extent([[0, 0], [width, height]])
         .scaleExtent([1, 16])
         .translateExtent([[0, 0], [width, height]])
         .on("zoom", this._zoomed.bind(this));
@@ -22558,8 +36606,7 @@ var Geomap = (function (Viz$$1) {
       .d(function (d) { return path(d.feature); })
       .select(pathGroup.node())
       .x(0).y(0)
-      .config(this._shapeConfig)
-      .config(this._shapeConfig.Path)
+      .config(this._shapeConfigPrep("Path"))
       .render());
 
     var pointGroup = this._zoomGroup.selectAll("g.d3plus-geomap-pins").data([0]);
@@ -22568,8 +36615,7 @@ var Geomap = (function (Viz$$1) {
       .merge(pointGroup);
 
     var circles = new Circle()
-      .config(this._shapeConfig)
-      .config(this._shapeConfig.Circle || {})
+    .config(this._shapeConfigPrep("Circle"))
       .data(pointData)
       .r(function (d, i) { return r(this$1._pointSize(d, i)); })
       .select(pointGroup.node())
@@ -22678,8 +36724,8 @@ If *data* is not specified, this method returns the current Topojson *Object*, w
 
   /**
       @memberof Geomap
-      @desc If *value* is specified, sets the topojson outer padding and returns the current class instance. If *value* is not specified, returns the current topojson outer padding.
-      @param {Number} [*value* = 20]
+      @desc Defines the outer padding between the edge of the visualization and the shapes drawn. The value can either be a single number to be used on all sides, or a CSS string pattern (ie. `"20px 0 10px"`).
+      @param {Number|String} [*value* = 20]
       @chainable
   */
   Geomap.prototype.padding = function padding (_) {
