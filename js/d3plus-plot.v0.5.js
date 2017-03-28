@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.13
+  d3plus-plot v0.5.14
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -202,7 +202,7 @@ var Plot = (function (Viz$$1) {
       }
     });
     this._stackOffset = d3Shape.stackOffsetNone;
-    this._stackOrder = d3Shape.stackOrderDescending;
+    this._stackOrder = d3Shape.stackOrderNone;
     this._x = d3plusCommon.accessor("x");
     this._xAxis = new d3plusAxis.AxisBottom().align("end");
     this._x2Axis = new d3plusAxis.AxisTop().align("start");
@@ -279,10 +279,20 @@ var Plot = (function (Viz$$1) {
     var discreteKeys, domains, stackData, stackKeys;
     if (this._stacked) {
 
+      var groupValues = d3Collection.nest()
+        .key(function (d) { return d.group; })
+        .entries(data)
+        .reduce(function (obj, d) {
+          if (!obj[d.key]) { obj[d.key] = 0; }
+          obj[d.key] += d3Array.sum(d.values, function (dd) { return dd[opp]; });
+          return obj;
+        }, {});
+
       data = data.sort(function (a, b) {
         var a1 = a[this$1._discrete], b1 = b[this$1._discrete];
         if (a1 - b1 !== 0) { return a1 - b1; }
-        return a.group - b.group;
+        if (a.group !== b.group) { return groupValues[b.group] - groupValues[a.group]; }
+        return b[opp] - a[opp];
       });
 
       discreteKeys = Array.from(new Set(data.map(function (d) { return d.discrete; })));
