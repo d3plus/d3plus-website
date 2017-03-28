@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.13.0
+  d3plus-shape v0.13.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -298,7 +298,7 @@ var Shape = (function (BaseClass$$1) {
     this._scale = d3plusCommon.constant(1);
     this._shapeRendering = d3plusCommon.constant("geometricPrecision");
     this._stroke = function (d, i) { return d3Color.color(this$1._fill(d, i)).darker(1); };
-    this._strokeDasharray = d3plusCommon.constant("1");
+    this._strokeDasharray = d3plusCommon.constant("0");
     this._strokeLinecap = d3plusCommon.constant("butt");
     this._strokeOpacity = d3plusCommon.constant(1);
     this._strokeWidth = d3plusCommon.constant(0);
