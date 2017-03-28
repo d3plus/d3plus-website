@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.27
+  d3plus-axis v0.3.28
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -91,19 +91,21 @@ var Axis = (function (BaseClass$$1) {
     this._shape = "Line";
     this._shapeConfig = {
       fill: "#000",
-      fontColor: "#000",
-      fontFamily: new d3plusText.TextBox().fontFamily(),
-      fontResize: false,
-      fontSize: d3plusCommon.constant(10),
       height: function (d) { return d.tick ? 8 : 0; },
       label: function (d) { return d.text; },
       labelBounds: function (d) { return d.labelBounds; },
+      labelConfig: {
+        fontColor: "#000",
+        fontFamily: new d3plusText.TextBox().fontFamily(),
+        fontResize: false,
+        fontSize: d3plusCommon.constant(10),
+        textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
+        verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
+      },
       labelPadding: 0,
       r: function (d) { return d.tick ? 4 : 0; },
       stroke: "#000",
       strokeWidth: 1,
-      textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
-      verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; },
       width: function (d) { return d.tick ? 8 : 0; }
     };
     this._tickSize = 5;
@@ -193,7 +195,7 @@ var Axis = (function (BaseClass$$1) {
     }
 
     if (this._lineHeight === void 0) {
-      this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
+      this._lineHeight = function (d, i) { return this$1._shapeConfig.labelConfig.fontSize(d, i) * 1.1; };
     }
 
     var ref = this._position;
@@ -317,8 +319,8 @@ var Axis = (function (BaseClass$$1) {
     // Measures size of ticks
     var textData = labels.map(function (d, i) {
 
-      var f = this$1._shapeConfig.fontFamily(d, i),
-            s = this$1._shapeConfig.fontSize(d, i);
+      var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
+            s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
       var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
 
