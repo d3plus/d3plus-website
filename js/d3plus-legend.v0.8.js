@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.3
+  d3plus-legend v0.8.4
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -635,10 +635,6 @@ var Legend = (function (BaseClass$$1) {
     this._shapeConfig = {
       duration: this._duration,
       fill: d3plusCommon.accessor("color"),
-      fontColor: d3plusCommon.constant("#444"),
-      fontFamily: new shapes.Rect().fontFamily(),
-      fontResize: false,
-      fontSize: d3plusCommon.constant(10),
       height: d3plusCommon.constant(10),
       hitArea: function (dd) {
         var d = this$1._lineData[this$1._data.indexOf(dd)],
@@ -649,6 +645,12 @@ var Legend = (function (BaseClass$$1) {
         var d = this$1._lineData[dd.i],
               w = s.r !== void 0 ? s.r : s.width / 2;
         return {width: d.width, height: d.height, x: w + this$1._padding, y: -d.height / 2};
+      },
+      labelConfig: {
+        fontColor: d3plusCommon.constant("#444"),
+        fontFamily: new d3plusText.TextBox().fontFamily(),
+        fontResize: false,
+        fontSize: d3plusCommon.constant(10)
       },
       opacity: 1,
       r: d3plusCommon.constant(5),
@@ -685,8 +687,8 @@ var Legend = (function (BaseClass$$1) {
   Legend.prototype.constructor = Legend;
 
   Legend.prototype._fetchConfig = function _fetchConfig (key, d, i) {
-    return typeof this._shapeConfig[key] === "function"
-         ? this._shapeConfig[key](d, i) : this._shapeConfig[key];
+    var val = this._shapeConfig[key] || this._shapeConfig.labelConfig[key];
+    return typeof val === "function" ? val(d, i) : val;
   };
 
   Legend.prototype._rowHeight = function _rowHeight (row) {
