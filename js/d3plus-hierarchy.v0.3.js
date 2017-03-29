@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.3.3
+  d3plus-hierarchy v0.3.4
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -22,11 +22,13 @@ var Pie = (function (Viz$$1) {
 
     Viz$$1.call(this);
 
-    this._shapeConfig = d3plusCommon.assign({}, this._shapeConfig, {
+    this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       Path: {
-        fontResize: true,
         id: function (d) { return this$1._ids(d).join("-"); },
         label: function (d) { return this$1._drawLabel(d.data, d.i); },
+        labelConfig: {
+          fontResize: true
+        },
         x: 0,
         y: 0
       }
@@ -240,6 +242,11 @@ var Tree = (function (Viz$$1) {
         var ids = this$1._ids(d, i).slice(0, d.depth);
         return ids[ids.length - 1];
       },
+      labelConfig: {
+        textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
+                       : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
+        verticalAlign: function (d) { return this$1._orient === "vertical" ? d.data.depth === 1 ? "bottom" : "top" : "middle"; }
+      },
       hitArea: function (d, i, s) {
 
         var h = this$1._labelHeight,
@@ -265,16 +272,15 @@ var Tree = (function (Viz$$1) {
         return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
         var obj;
 
-      },
-      textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
-                     : d.children && d.depth !== this$1._groupBy.length ? "end" : "start"; },
-      verticalAlign: function (d) { return this$1._orient === "vertical" ? d.depth === 1 ? "bottom" : "top" : "middle"; }
+      }
     };
 
     this._shape = d3plusCommon.constant("Circle");
-    this._shapeConfig = d3plusCommon.assign({}, this._shapeConfig, {
+    this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       Circle: nodeConfig,
-      fontColor: "#444",
+      labelConfig: {
+        fontColor: "#444"
+      },
       Path: {
         d: function (d) {
 
@@ -448,7 +454,11 @@ var Treemap = (function (Viz$$1) {
 
     this._padding = 1;
     this._shapeConfig = d3plusCommon.assign({}, this._shapeConfig, {
-      fontResize: true,
+      labelConfig: {
+        fontResize: true,
+        textAnchor: function (d) { return d.l ? "middle" : "start"; },
+        verticalAlign: function (d) { return d.l ? "bottom" : "top"; }
+      },
       Rect: {
         height: function (d) { return d.y1 - d.y0; },
         labelBounds: function (d, i, s) {
@@ -460,9 +470,7 @@ var Treemap = (function (Viz$$1) {
           ];
         },
         width: function (d) { return d.x1 - d.x0; }
-      },
-      textAnchor: ["start", "middle"],
-      verticalAlign: ["top", "bottom"]
+      }
     });
     this._sort = function (a, b) { return b.value - a.value; };
     this._sum = d3plusCommon.accessor("value");
