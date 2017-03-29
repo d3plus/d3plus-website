@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.14
+  d3plus-plot v0.5.15
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -180,8 +180,10 @@ var Plot = (function (Viz$$1) {
     this._shape = d3plusCommon.constant("Circle");
     this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       Area: {
-        fontResize: true,
-        label: function (d, i) { return this$1._stacked ? this$1._drawLabel(d, i) : false; }
+        label: function (d, i) { return this$1._stacked ? this$1._drawLabel(d, i) : false; },
+        labelConfig: {
+          fontResize: true
+        }
       },
       Bar: {
         labelConfig: {
