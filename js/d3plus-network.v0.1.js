@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.1.5
+  d3plus-network v0.1.6
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -139,14 +139,16 @@ var Network = (function (Viz$$1) {
     this._sizeScale = "sqrt";
     this._shape = d3plusCommon.constant("Circle");
     this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
+      labelConfig: {
+        textAnchor: "middle",
+        verticalAlign: "middle"
+      },
       Path: {
         fill: "none",
         label: false,
         stroke: "#eee",
         strokeWidth: 1
-      },
-      textAnchor: "middle",
-      verticalAlign: "middle"
+      }
     });
     this._x = d3plusCommon.accessor("x");
     this._y = d3plusCommon.accessor("y");
