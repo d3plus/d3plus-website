@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.8.1
+  d3plus-viz v0.8.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -1074,6 +1074,7 @@ var Viz = (function (BaseClass$$1) {
       this._queue.forEach(function (p) {
         var cache = this$1._cache ? this$1._lrucache.get(p[1]) : undefined;
         if (!cache) { q.defer.apply(q, p); }
+        else { this$1[("_" + (p[3]))] = cache; }
       });
       this._queue = [];
       q.awaitAll(function () {
