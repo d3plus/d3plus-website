@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.15
+  d3plus-plot v0.5.16
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -333,11 +333,14 @@ var Plot = (function (Viz$$1) {
       });
 
       data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
+      var order = this._stackOrder;
+
+      if (order instanceof Array) { stackKeys.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); }); }
 
       stackData = d3Shape.stack()
         .keys(stackKeys)
         .offset(this._stackOffset)
-        .order(this._stackOrder)
+        .order(order instanceof Array ? d3Shape.stackOrderNone : order)
         .value(function (group, key) {
           var d = group.filter(function (g) { return g.id === key; });
           return d.length ? d[0][opp] : 0;
@@ -687,10 +690,10 @@ var Plot = (function (Viz$$1) {
   /**
       @memberof Plot
       @desc If *value* is specified, sets the stack order and returns the current class instance. If *value* is not specified, returns the current stack order function.
-      @param {Function|String} [*value* = "none"]
+      @param {Function|String|Array} [*value* = "none"]
   */
   Plot.prototype.stackOrder = function stackOrder (_) {
-    return arguments.length ? (this._stackOrder = typeof _ === "function" ? _ : d3Shape[("stackOrder" + (_.charAt(0).toUpperCase() + _.slice(1)))], this) : this._stackOrder;
+    return arguments.length ? (this._stackOrder = typeof _ === "string" ? d3Shape[("stackOrder" + (_.charAt(0).toUpperCase() + _.slice(1)))] : _, this) : this._stackOrder;
   };
 
   /**
