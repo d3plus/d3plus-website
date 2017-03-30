@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.28
+  d3plus-axis v0.3.29
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -704,7 +704,7 @@ var Axis = (function (BaseClass$$1) {
       @chainable
   */
   Axis.prototype.shapeConfig = function shapeConfig (_) {
-    return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+    return arguments.length ? (this._shapeConfig = d3plusCommon.assign(this._shapeConfig, _), this) : this._shapeConfig;
   };
 
   /**
