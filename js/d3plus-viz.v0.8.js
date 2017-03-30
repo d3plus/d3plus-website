@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.8.2
+  d3plus-viz v0.8.3
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -604,6 +604,7 @@ var tooltip = function(d, i, config) {
 
 
   if (this._tooltip && d) {
+    if (d.__d3plus__ && d.data) { d = d.data; }
     this._select.style("cursor", "pointer");
     this._tooltipClass.data([d])
       .footer(this._drawDepth < this._groupBy.length - 1
