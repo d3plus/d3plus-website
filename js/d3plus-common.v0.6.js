@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.15
+  d3plus-common v0.6.16
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -128,7 +128,7 @@ function s() {
 
 /**
     @class BaseClass
-    @desc An abstract class that contains some global methods and functionality.
+    @summary An abstract class that contains some global methods and functionality.
 */
 var BaseClass = function BaseClass() {
   this._on = {};
@@ -267,14 +267,20 @@ var esES = {
 	array: array$1
 };
 
+var namespace = "d3plus";
 var locale = i18next.init({
   fallbackLng: "en-US",
+  defaultNS: namespace,
+  fallbackNS: namespace,
   initImmediate: false,
+  ns: namespace,
   resources: {
-    "en-US": {translation: enUS},
-    "es-ES": {translation: esES}
+    "en-US": ( obj = {}, obj[namespace] = enUS, obj ),
+    "es-ES": ( obj$1 = {}, obj$1[namespace] = esES, obj$1 )
   }
 });
+var obj;
+var obj$1;
 
 /**
     @function merge
