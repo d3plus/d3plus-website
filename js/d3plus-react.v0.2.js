@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.2.5
+  d3plus-react v0.2.6
   React components for d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -10,7 +10,7 @@
 	(factory((global.d3plus = global.d3plus || {}),global.d3plusPlot,global.React,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
 }(this, (function (exports,d3plusPlot,React,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
 
-var React__default = 'default' in React ? React['default'] : React;
+React = 'default' in React ? React['default'] : React;
 
 var typeLookup = {AreaPlot: d3plusPlot.AreaPlot, BarChart: d3plusPlot.BarChart, Donut: d3plusHierarchy.Donut, Geomap: d3plusGeomap.Geomap, LinePlot: d3plusPlot.LinePlot, Network: d3plusNetwork.Network, Pie: d3plusHierarchy.Pie, Plot: d3plusPlot.Plot, Priestley: d3plusPriestley.Priestley, StackedArea: d3plusPlot.StackedArea, Tree: d3plusHierarchy.Tree, Treemap: d3plusHierarchy.Treemap};
 
@@ -19,13 +19,13 @@ var typeLookup = {AreaPlot: d3plusPlot.AreaPlot, BarChart: d3plusPlot.BarChart, 
     @extends React.Component
     @desc Creates SVG paths and coordinate points based on an array of data. See [this example](https://d3plus.org/examples/d3plus-geomap/getting-started/) for help getting started using the geomap generator.
 */
-var Viz = (function (Component$$1) {
+var Viz = (function (superclass) {
   function Viz () {
-    Component$$1.apply(this, arguments);
+    superclass.apply(this, arguments);
   }
 
-  if ( Component$$1 ) Viz.__proto__ = Component$$1;
-  Viz.prototype = Object.create( Component$$1 && Component$$1.prototype );
+  if ( superclass ) Viz.__proto__ = superclass;
+  Viz.prototype = Object.create( superclass && superclass.prototype );
   Viz.prototype.constructor = Viz;
 
   Viz.prototype.componentDidMount = function componentDidMount () {
@@ -70,14 +70,14 @@ var Viz = (function (Component$$1) {
       @private
   */
   Viz.prototype.render = function render () {
-    return React__default.createElement('div', {className: "viz", ref: "container"});
+    return React.createElement('div', {className: "viz", ref: "container"});
   };
 
   return Viz;
 }(React.Component));
 
 Viz.contextTypes = {
-  d3plus: React__default.PropTypes.object
+  d3plus: React.PropTypes.object
 };
 
 /**
