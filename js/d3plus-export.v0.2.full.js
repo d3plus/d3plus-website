@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.2.0
+  d3plus-export v0.2.1
   Export methods for transforming and downloading SVG.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -10356,7 +10356,7 @@ var selectAll = function(selector) {
 var defaultOptions = {
   background: false,
   callback: function () {},
-  excludes: [],
+  exclude: [],
   padding: 0,
   scale: 1
 };
