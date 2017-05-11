@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.8.5
+  d3plus-viz v0.8.6
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -569,26 +569,6 @@ var click = function(d, i) {
 };
 
 /**
-    @desc On mouseenter event for all shapes in a Viz.
-    @param {Object} *d* The data object being interacted with.
-    @param {Number} *i* The index of the data object being interacted with.
-    @private
-*/
-var mouseenter = function(d, i) {
-  var this$1 = this;
-
-
-  var filterId = this._ids(d, i);
-
-  this.hover(function (h, x) {
-    var ids = this$1._ids(h, x);
-    var index = d3Array.min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
-    return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
-  });
-
-};
-
-/**
     @desc Tooltip logic for a specified data point.
     @param {Object} *d* The data object being interacted with.
     @param {Number} *i* The index of the data object being interacted with.
@@ -605,11 +585,7 @@ var tooltip = function(d, i, config) {
     this._tooltipClass.data([d])
       .footer(this._drawDepth < this._groupBy.length - 1
             ? d3plusCommon.locale.t("Click to Expand", {lng: this._locale})
-            : this._active && this._active(d, i)
-            ? !this._focus || this._focus === this._id(d, i)
-            ? d3plusCommon.locale.t("Click to Remove Highlight", {lng: this._locale})
-            : d3plusCommon.locale.t("Click to Highlight", {lng: this._locale})
-            : d3plusCommon.locale.t("Click to Highlight", {lng: this._locale}))
+            : "")
       .title(this._drawLabel)
       .translate(d3Selection.mouse(d3Selection.select("html").node()))
       .config(config)
@@ -626,29 +602,8 @@ var tooltip = function(d, i, config) {
     @private
 */
 var clickLegend = function(d, i) {
-  var this$1 = this;
 
-
-  if (this._hover && this._drawDepth >= this._groupBy.length - 1) {
-
-    if (this._active && this._active(d, i)) {
-      this.active(false);
-      mouseenter.bind(this)(d, i);
-    }
-    else {
-
-      var filterId = this._ids(d, i);
-
-      this.active(function (h, x) {
-        var ids = this$1._ids(h, x);
-        var index = d3Array.min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
-        return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
-      });
-    }
-
-    tooltip.bind(this)(d, i, {title: this._legendClass.label()});
-
-  }
+  tooltip.bind(this)(d, i, {title: this._legendClass.label()});
 
 };
 
@@ -659,29 +614,28 @@ var clickLegend = function(d, i) {
     @private
 */
 var clickShape = function(d, i) {
+
+  tooltip.bind(this)(d, i);
+
+};
+
+/**
+    @desc On mouseenter event for all shapes in a Viz.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @private
+*/
+var mouseenter = function(d, i) {
   var this$1 = this;
 
 
-  if (this._hover && this._drawDepth >= this._groupBy.length - 1) {
+  var filterId = this._ids(d, i);
 
-    if (this._active && this._active(d, i)) {
-      this.active(false);
-      mouseenter.bind(this)(d, i);
-    }
-    else {
-
-      var filterId = this._ids(d, i);
-
-      this.active(function (h, x) {
-        var ids = this$1._ids(h, x);
-        var index = d3Array.min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
-        return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
-      });
-    }
-
-    tooltip.bind(this)(d, i);
-
-  }
+  this.hover(function (h, x) {
+    var ids = this$1._ids(h, x);
+    var index = d3Array.min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
+    return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
+  });
 
 };
 
