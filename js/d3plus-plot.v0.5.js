@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.16
+  d3plus-plot v0.5.17
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -427,7 +427,7 @@ var Plot = (function (Viz$$1) {
       .render();
 
     var yBounds = this._yTest.outerBounds();
-    var xOffset = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
+    var yWidth = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
 
     var xC = {
       barConfig: {"stroke-width": !this._discrete || this._discrete === "x" ? 1 : 0},
@@ -438,7 +438,7 @@ var Plot = (function (Viz$$1) {
     this._xTest
       .domain(xDomain)
       .height(height)
-      .range([xOffset, undefined])
+      .range([undefined, undefined])
       .scale(xScale.toLowerCase())
       .select(testGroup.node())
       .ticks(xTicks)
@@ -446,6 +446,8 @@ var Plot = (function (Viz$$1) {
       .config(xC)
       .config(this._xConfig)
       .render();
+
+    var xOffset = d3Array.max([yWidth, this._xTest._d3Scale.range()[0]]);
 
     var xGroup = d3plusCommon.elem("g.d3plus-plot-x-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
 
@@ -480,7 +482,9 @@ var Plot = (function (Viz$$1) {
       .config(this._x2Config)
       .render();
 
-    var yGroup = d3plusCommon.elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
+    var xTrans = xOffset > yWidth ? xOffset - yWidth : 0;
+    var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top) + ")";
+    var yGroup = d3plusCommon.elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: yTransform}, update: {transform: yTransform}});
 
     this._yAxis
       .domain(yDomain)
