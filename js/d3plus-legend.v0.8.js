@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.5
+  d3plus-legend v0.8.6
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -957,7 +957,7 @@ var Legend = (function (BaseClass$$1) {
         .labelPadding(0)
         .select(this$1._group.node())
         .verticalAlign("top")
-        .config(Object.assign({}, baseConfig, config))
+        .config(d3plusCommon.assign({}, baseConfig, config))
         .render());
 
     });
@@ -1111,7 +1111,7 @@ function value(d) {
       @chainable
   */
   Legend.prototype.shapeConfig = function shapeConfig (_) {
-    return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+    return arguments.length ? (this._shapeConfig = d3plusCommon.assign(this._shapeConfig, _), this) : this._shapeConfig;
   };
 
   /**
@@ -1131,7 +1131,7 @@ function value(d) {
       @chainable
   */
   Legend.prototype.titleConfig = function titleConfig (_) {
-    return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
+    return arguments.length ? (this._titleConfig = d3plusCommon.assign(this._titleConfig, _), this) : this._titleConfig;
   };
 
   /**
