@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.7
+  d3plus-legend v0.8.8
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -636,13 +636,13 @@ var Legend = (function (BaseClass$$1) {
       duration: this._duration,
       fill: d3plusCommon.accessor("color"),
       height: d3plusCommon.constant(10),
-      hitArea: function (dd) {
-        var d = this$1._lineData[this$1._data.indexOf(dd)],
+      hitArea: function (dd, i) {
+        var d = this$1._lineData[i],
               h = d3Array.max([d.height, d.shapeHeight]);
         return {width: d.width + d.shapeWidth, height: h, x: -d.shapeWidth / 2, y: -h / 2};
       },
       labelBounds: function (dd, i, s) {
-        var d = this$1._lineData[dd.i],
+        var d = this$1._lineData[i],
               w = s.r !== void 0 ? s.r : s.width / 2;
         return {width: d.width, height: d.height, x: w + this$1._padding, y: -d.height / 2};
       },
@@ -901,7 +901,7 @@ var Legend = (function (BaseClass$$1) {
       .render();
 
     this._shapes = [];
-    var baseConfig = this._shapeConfig,
+    var baseConfig = d3plusCommon.configPrep.bind(this)(this._shapeConfig, "legend"),
           config = {
             id: function (d) { return d.id; },
             label: function (d) { return d.label; },
@@ -918,29 +918,6 @@ var Legend = (function (BaseClass$$1) {
         lH: this$1._lineHeight(d, i),
         shape: this$1._shape(d, i)
       };
-
-      var loop = function ( k ) {
-        if (k !== "labelBounds" && {}.hasOwnProperty.call(baseConfig, k)) {
-          if (typeof baseConfig[k] === "function") {
-            obj[k] = baseConfig[k](d, i);
-            config[k] = function (d) { return d[k]; };
-          }
-          else if (k === "on") {
-            config[k] = {};
-            for (var t in baseConfig[k]) {
-              if ({}.hasOwnProperty.call(baseConfig[k], t)) {
-                var f = baseConfig[k][t];
-                config[k][t] = function(dd) {
-                  if (!f) { return; }
-                  f.bind(this)(dd.data, dd.i);
-                };
-              }
-            }
-          }
-        }
-      };
-
-      for (var k in baseConfig) loop( k );
 
       return obj;
 
