@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.8.6
+  d3plus-viz v0.8.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -753,30 +753,42 @@ var number = function(x) {
   return x === null ? NaN : +x;
 };
 
-var extent = function(array, f) {
-  var i = -1,
-      n = array.length,
-      a,
-      b,
-      c;
+var extent = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      min,
+      max;
 
-  if (f == null) {
-    while (++i < n) { if ((b = array[i]) != null && b >= b) { a = c = b; break; } }
-    while (++i < n) { if ((b = array[i]) != null) {
-      if (a > b) { a = b; }
-      if (c < b) { c = b; }
-    } }
+  if (valueof == null) {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = values[i]) != null && value >= value) {
+        min = max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = values[i]) != null) {
+            if (min > value) { min = value; }
+            if (max < value) { max = value; }
+          }
+        }
+      }
+    }
   }
 
   else {
-    while (++i < n) { if ((b = f(array[i], i, array)) != null && b >= b) { a = c = b; break; } }
-    while (++i < n) { if ((b = f(array[i], i, array)) != null) {
-      if (a > b) { a = b; }
-      if (c < b) { c = b; }
-    } }
+    while (++i < n) { // Find the first comparable value.
+      if ((value = valueof(values[i], i, values)) != null && value >= value) {
+        min = max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = valueof(values[i], i, values)) != null) {
+            if (min > value) { min = value; }
+            if (max < value) { max = value; }
+          }
+        }
+      }
+    }
   }
 
-  return [a, c];
+  return [min, max];
 };
 
 var identity = function(x) {
@@ -802,13 +814,41 @@ var e5 = Math.sqrt(10);
 var e2 = Math.sqrt(2);
 
 var ticks = function(start, stop, count) {
-  var step = tickStep(start, stop, count);
-  return range(
-    Math.ceil(start / step) * step,
-    Math.floor(stop / step) * step + step / 2, // inclusive
-    step
-  );
+  var reverse = stop < start,
+      i = -1,
+      n,
+      ticks,
+      step;
+
+  if (reverse) { n = start, start = stop, stop = n; }
+
+  if ((step = tickIncrement(start, stop, count)) === 0 || !isFinite(step)) { return []; }
+
+  if (step > 0) {
+    start = Math.ceil(start / step);
+    stop = Math.floor(stop / step);
+    ticks = new Array(n = Math.ceil(stop - start + 1));
+    while (++i < n) { ticks[i] = (start + i) * step; }
+  } else {
+    start = Math.floor(start * step);
+    stop = Math.ceil(stop * step);
+    ticks = new Array(n = Math.ceil(start - stop + 1));
+    while (++i < n) { ticks[i] = (start - i) / step; }
+  }
+
+  if (reverse) { ticks.reverse(); }
+
+  return ticks;
 };
+
+function tickIncrement(start, stop, count) {
+  var step = (stop - start) / Math.max(0, count),
+      power = Math.floor(Math.log(step) / Math.LN10),
+      error = step / Math.pow(10, power);
+  return power >= 0
+      ? (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1) * Math.pow(10, power)
+      : -Math.pow(10, -power) / (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1);
+}
 
 function tickStep(start, stop, count) {
   var step0 = Math.abs(stop - start) / Math.max(0, count),
@@ -824,36 +864,52 @@ var sturges = function(values) {
   return Math.ceil(Math.log(values.length) / Math.LN2) + 1;
 };
 
-var threshold = function(array, p, f) {
-  if (f == null) { f = number; }
-  if (!(n = array.length)) { return; }
-  if ((p = +p) <= 0 || n < 2) { return +f(array[0], 0, array); }
-  if (p >= 1) { return +f(array[n - 1], n - 1, array); }
+var threshold = function(values, p, valueof) {
+  if (valueof == null) { valueof = number; }
+  if (!(n = values.length)) { return; }
+  if ((p = +p) <= 0 || n < 2) { return +valueof(values[0], 0, values); }
+  if (p >= 1) { return +valueof(values[n - 1], n - 1, values); }
   var n,
-      h = (n - 1) * p,
-      i = Math.floor(h),
-      a = +f(array[i], i, array),
-      b = +f(array[i + 1], i + 1, array);
-  return a + (b - a) * (h - i);
+      i = (n - 1) * p,
+      i0 = Math.floor(i),
+      value0 = +valueof(values[i0], i0, values),
+      value1 = +valueof(values[i0 + 1], i0 + 1, values);
+  return value0 + (value1 - value0) * (i - i0);
 };
 
-var max = function(array, f) {
-  var i = -1,
-      n = array.length,
-      a,
-      b;
+var max = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      max;
 
-  if (f == null) {
-    while (++i < n) { if ((b = array[i]) != null && b >= b) { a = b; break; } }
-    while (++i < n) { if ((b = array[i]) != null && b > a) { a = b; } }
+  if (valueof == null) {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = values[i]) != null && value >= value) {
+        max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = values[i]) != null && value > max) {
+            max = value;
+          }
+        }
+      }
+    }
   }
 
   else {
-    while (++i < n) { if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; } }
-    while (++i < n) { if ((b = f(array[i], i, array)) != null && b > a) { a = b; } }
+    while (++i < n) { // Find the first comparable value.
+      if ((value = valueof(values[i], i, values)) != null && value >= value) {
+        max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = valueof(values[i], i, values)) != null && value > max) {
+            max = value;
+          }
+        }
+      }
+    }
   }
 
-  return a;
+  return max;
 };
 
 var merge = function(arrays) {
@@ -878,40 +934,60 @@ var merge = function(arrays) {
   return merged;
 };
 
-var min = function(array, f) {
-  var i = -1,
-      n = array.length,
-      a,
-      b;
+var min = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      min;
 
-  if (f == null) {
-    while (++i < n) { if ((b = array[i]) != null && b >= b) { a = b; break; } }
-    while (++i < n) { if ((b = array[i]) != null && a > b) { a = b; } }
+  if (valueof == null) {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = values[i]) != null && value >= value) {
+        min = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = values[i]) != null && min > value) {
+            min = value;
+          }
+        }
+      }
+    }
   }
 
   else {
-    while (++i < n) { if ((b = f(array[i], i, array)) != null && b >= b) { a = b; break; } }
-    while (++i < n) { if ((b = f(array[i], i, array)) != null && a > b) { a = b; } }
+    while (++i < n) { // Find the first comparable value.
+      if ((value = valueof(values[i], i, values)) != null && value >= value) {
+        min = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = valueof(values[i], i, values)) != null && min > value) {
+            min = value;
+          }
+        }
+      }
+    }
   }
 
-  return a;
+  return min;
 };
 
-var sum = function(array, f) {
-  var s = 0,
-      n = array.length,
-      a,
-      i = -1;
+var sum = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      sum = 0;
 
-  if (f == null) {
-    while (++i < n) { if (a = +array[i]) { s += a; } } // Note: zero and null are equivalent.
+  if (valueof == null) {
+    while (++i < n) {
+      if (value = +values[i]) { sum += value; } // Note: zero and null are equivalent.
+    }
   }
 
   else {
-    while (++i < n) { if (a = +f(array[i], i, array)) { s += a; } }
+    while (++i < n) {
+      if (value = +valueof(values[i], i, values)) { sum += value; }
+    }
   }
 
-  return s;
+  return sum;
 };
 
 function length(d) {
@@ -1429,7 +1505,6 @@ var slice$1 = [].slice;
 var noabort = {};
 
 function Queue(size) {
-  if (!(size >= 1)) { throw new Error; }
   this._size = size;
   this._call =
   this._error = null;
@@ -1444,7 +1519,8 @@ function Queue(size) {
 Queue.prototype = queue.prototype = {
   constructor: Queue,
   defer: function(callback) {
-    if (typeof callback !== "function" || this._call) { throw new Error; }
+    if (typeof callback !== "function") { throw new Error("invalid callback"); }
+    if (this._call) { throw new Error("defer after await"); }
     if (this._error != null) { return this; }
     var t = slice$1.call(arguments, 1);
     t.push(callback);
@@ -1457,13 +1533,15 @@ Queue.prototype = queue.prototype = {
     return this;
   },
   await: function(callback) {
-    if (typeof callback !== "function" || this._call) { throw new Error; }
+    if (typeof callback !== "function") { throw new Error("invalid callback"); }
+    if (this._call) { throw new Error("multiple await"); }
     this._call = function(error, results) { callback.apply(null, [error].concat(results)); };
     maybeNotify(this);
     return this;
   },
   awaitAll: function(callback) {
-    if (typeof callback !== "function" || this._call) { throw new Error; }
+    if (typeof callback !== "function") { throw new Error("invalid callback"); }
+    if (this._call) { throw new Error("multiple await"); }
     this._call = callback;
     maybeNotify(this);
     return this;
@@ -1539,7 +1617,9 @@ function maybeNotify(q) {
 }
 
 function queue(concurrency) {
-  return new Queue(arguments.length ? +concurrency : Infinity);
+  if (concurrency == null) { concurrency = Infinity; }
+  else if (!((concurrency = +concurrency) >= 1)) { throw new Error("invalid concurrency"); }
+  return new Queue(concurrency);
 }
 
 var xhtml = "http://www.w3.org/1999/xhtml";
@@ -2111,7 +2191,7 @@ var selection_attr = function(name, value) {
       : (fullname.local ? attrConstantNS : attrConstant)))(fullname, value));
 };
 
-var window$1 = function(node) {
+var defaultView = function(node) {
   return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
       || (node.document && node) // node is a Window
       || node.defaultView; // node is a Document
@@ -2138,16 +2218,18 @@ function styleFunction(name, value, priority) {
 }
 
 var selection_style = function(name, value, priority) {
-  var node;
   return arguments.length > 1
       ? this.each((value == null
             ? styleRemove : typeof value === "function"
             ? styleFunction
             : styleConstant)(name, value, priority == null ? "" : priority))
-      : window$1(node = this.node())
-          .getComputedStyle(node, null)
-          .getPropertyValue(name);
+      : styleValue(this.node(), name);
 };
+
+function styleValue(node, name) {
+  return node.style.getPropertyValue(name)
+      || defaultView(node).getComputedStyle(node, null).getPropertyValue(name);
+}
 
 function propertyRemove(name) {
   return function() {
@@ -2357,10 +2439,10 @@ var selection_datum = function(value) {
 };
 
 function dispatchEvent(node, type, params) {
-  var window = window$1(node),
+  var window = defaultView(node),
       event = window.CustomEvent;
 
-  if (event) {
+  if (typeof event === "function") {
     event = new event(type, params);
   } else {
     event = window.document.createEvent("Event");
@@ -2934,7 +3016,7 @@ var interpolate = function(a, b) {
       : b instanceof color ? interpolateRgb
       : b instanceof Date ? date
       : Array.isArray(b) ? array$1
-      : isNaN(b) ? object
+      : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object
       : reinterpolate)(a, b);
 };
 
@@ -3482,9 +3564,8 @@ function styleRemove$1(name, interpolate$$1) {
       value10,
       interpolate0;
   return function() {
-    var style = window$1(this).getComputedStyle(this, null),
-        value0 = style.getPropertyValue(name),
-        value1 = (this.style.removeProperty(name), style.getPropertyValue(name));
+    var value0 = styleValue(this, name),
+        value1 = (this.style.removeProperty(name), styleValue(this, name));
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
         : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
@@ -3501,7 +3582,7 @@ function styleConstant$1(name, interpolate$$1, value1) {
   var value00,
       interpolate0;
   return function() {
-    var value0 = window$1(this).getComputedStyle(this, null).getPropertyValue(name);
+    var value0 = styleValue(this, name);
     return value0 === value1 ? null
         : value0 === value00 ? interpolate0
         : interpolate0 = interpolate$$1(value00 = value0, value1);
@@ -3513,10 +3594,9 @@ function styleFunction$1(name, interpolate$$1, value) {
       value10,
       interpolate0;
   return function() {
-    var style = window$1(this).getComputedStyle(this, null),
-        value0 = style.getPropertyValue(name),
+    var value0 = styleValue(this, name),
         value1 = value(this);
-    if (value1 == null) { value1 = (this.style.removeProperty(name), style.getPropertyValue(name)); }
+    if (value1 == null) { value1 = (this.style.removeProperty(name), styleValue(this, name)); }
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
         : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
@@ -4401,7 +4481,8 @@ var formatLocale = function(locale) {
   var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$3,
       currency = locale.currency,
       decimal = locale.decimal,
-      numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$3;
+      numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$3,
+      percent = locale.percent || "%";
 
   function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
@@ -4419,7 +4500,7 @@ var formatLocale = function(locale) {
     // Compute the prefix and suffix.
     // For SI-prefix, the suffix is lazily computed.
     var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-        suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
+        suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
 
     // What format function should we use?
     // Is this an integer type?
@@ -4588,17 +4669,39 @@ function linearish(scale) {
   };
 
   scale.nice = function(count) {
-    var d = domain(),
-        i = d.length - 1,
-        n = count == null ? 10 : count,
-        start = d[0],
-        stop = d[i],
-        step = tickStep(start, stop, n);
+    if (count == null) { count = 10; }
 
-    if (step) {
-      step = tickStep(Math.floor(start / step) * step, Math.ceil(stop / step) * step, n);
-      d[0] = Math.floor(start / step) * step;
-      d[i] = Math.ceil(stop / step) * step;
+    var d = domain(),
+        i0 = 0,
+        i1 = d.length - 1,
+        start = d[i0],
+        stop = d[i1],
+        step;
+
+    if (stop < start) {
+      step = start, start = stop, stop = step;
+      step = i0, i0 = i1, i1 = step;
+    }
+
+    step = tickIncrement(start, stop, count);
+
+    if (step > 0) {
+      start = Math.floor(start / step) * step;
+      stop = Math.ceil(stop / step) * step;
+      step = tickIncrement(start, stop, count);
+    } else if (step < 0) {
+      start = Math.ceil(start * step) / step;
+      stop = Math.floor(stop * step) / step;
+      step = tickIncrement(start, stop, count);
+    }
+
+    if (step > 0) {
+      d[i0] = Math.floor(start / step) * step;
+      d[i1] = Math.ceil(stop / step) * step;
+      domain(d);
+    } else if (step < 0) {
+      d[i0] = Math.ceil(start * step) / step;
+      d[i1] = Math.floor(stop * step) / step;
       domain(d);
     }
 
@@ -6132,7 +6235,7 @@ function s() {
 
 /**
     @class BaseClass
-    @desc An abstract class that contains some global methods and functionality.
+    @summary An abstract class that contains some global methods and functionality.
 */
 var BaseClass = function BaseClass() {
   this._on = {};
@@ -6190,6 +6293,73 @@ var closest = function(n, arr) {
   if (!arr || !(arr instanceof Array) || !arr.length) { return undefined; }
   return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
 };
+
+/**
+    @function configPrep
+    @desc Preps a config object for d3plus data, and optionally bubbles up a specific nested type. When using this function, you must bind a d3plus class' `this` context.
+    @param {Object} [config = this._shapeConfig] The configuration object to parse.
+    @param {String} [type = "shape"] The event classifier to user for "on" events. For example, the default event type of "shape" will apply all events in the "on" config object with that key, like "click.shape" and "mouseleave.shape", in addition to any gloval events like "click" and "mouseleave".
+    @param {String} [nest] An optional nested key to bubble up to the parent config level.
+*/
+function configPrep(config, type, nest) {
+  if ( config === void 0 ) config = this._shapeConfig;
+  if ( type === void 0 ) type = "shape";
+  if ( nest === void 0 ) nest = false;
+
+
+  var newConfig = {duration: this._duration, on: {}};
+
+  var wrapFunction = function (func) { return function (d, i, s) {
+    while (d.__d3plus__ && d.data) {
+      i = d.i;
+      d = d.data;
+    }
+    return func(d, i, s);
+  }; };
+
+  var parseEvents = function (newObj, on) {
+
+    for (var event in on) {
+
+      if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type))) {
+
+        newObj.on[event] = wrapFunction(on[event]);
+
+      }
+
+    }
+
+  };
+
+  var keyEval = function (newObj, obj) {
+
+    for (var key in obj) {
+
+      if ({}.hasOwnProperty.call(obj, key)) {
+
+        if (key === "on") { parseEvents(newObj, obj[key]); }
+        else if (typeof obj[key] === "function") {
+          newObj[key] = wrapFunction(obj[key]);
+        }
+        else if (typeof obj[key] === "object" && !(obj instanceof Array)) {
+          newObj[key] = {};
+          keyEval(newObj[key], obj[key]);
+        }
+        else { newObj[key] = obj[key]; }
+
+      }
+
+    }
+
+  };
+
+  keyEval(newConfig, config);
+  if (this._on) { parseEvents(newConfig, this._on); }
+
+  if (nest && config[nest]) { newConfig = assign(newConfig, config[nest]); }
+  return newConfig;
+
+}
 
 /**
     @function constant
@@ -6259,20 +6429,25 @@ var arguments$1 = arguments;
 
 function _classCallCheck$1(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var consoleLogger = {
   type: 'logger',
 
   log: function log(args) {
-    this._output('log', args);
+    this.output('log', args);
   },
   warn: function warn(args) {
-    this._output('warn', args);
+    this.output('warn', args);
   },
   error: function error(args) {
-    this._output('error', args);
+    this.output('error', args);
   },
-  _output: function _output(type, args) {
-    if (console && console[type]) { console[type].apply(console, Array.prototype.slice.call(args)); }
+  output: function output(type, args) {
+    var _console;
+
+    /* eslint no-console: 0 */
+    if (console && console[type]) { (_console = console)[type].apply(_console, _toConsumableArray(args)); }
   }
 };
 
@@ -6291,7 +6466,7 @@ var Logger = function () {
     this.prefix = options.prefix || 'i18next:';
     this.logger = concreteLogger || consoleLogger;
     this.options = options;
-    this.debug = options.debug === false ? false : true;
+    this.debug = options.debug;
   };
 
   Logger.prototype.setDebug = function setDebug(bool) {
@@ -6299,110 +6474,127 @@ var Logger = function () {
   };
 
   Logger.prototype.log = function log() {
-    this.forward(arguments, 'log', '', true);
+    var arguments$1 = arguments;
+
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments$1[_key];
+    }
+
+    return this.forward(args, 'log', '', true);
   };
 
   Logger.prototype.warn = function warn() {
-    this.forward(arguments, 'warn', '', true);
+    var arguments$1 = arguments;
+
+    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+      args[_key2] = arguments$1[_key2];
+    }
+
+    return this.forward(args, 'warn', '', true);
   };
 
   Logger.prototype.error = function error() {
-    this.forward(arguments, 'error', '');
+    var arguments$1 = arguments;
+
+    for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+      args[_key3] = arguments$1[_key3];
+    }
+
+    return this.forward(args, 'error', '');
   };
 
   Logger.prototype.deprecate = function deprecate() {
-    this.forward(arguments, 'warn', 'WARNING DEPRECATED: ', true);
+    var arguments$1 = arguments;
+
+    for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+      args[_key4] = arguments$1[_key4];
+    }
+
+    return this.forward(args, 'warn', 'WARNING DEPRECATED: ', true);
   };
 
   Logger.prototype.forward = function forward(args, lvl, prefix, debugOnly) {
-    if (debugOnly && !this.debug) { return; }
-    if (typeof args[0] === 'string') { args[0] = prefix + this.prefix + ' ' + args[0]; }
-    this.logger[lvl](args);
+    if (debugOnly && !this.debug) { return null; }
+    if (typeof args[0] === 'string') { args[0] = '' + prefix + this.prefix + ' ' + args[0]; }
+    return this.logger[lvl](args);
   };
 
   Logger.prototype.create = function create(moduleName) {
-    var sub = new Logger(this.logger, _extends$1({ prefix: this.prefix + ':' + moduleName + ':' }, this.options));
-
-    return sub;
+    return new Logger(this.logger, _extends$1({ prefix: this.prefix + ':' + moduleName + ':' }, this.options));
   };
-
-  // createInstance(options = {}) {
-  //   return new Logger(options, callback);
-  // }
 
   return Logger;
 }();
-
-
 
 var baseLogger = new Logger();
 
 function _classCallCheck$2(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var EventEmitter = function () {
-	function EventEmitter() {
-		_classCallCheck$2(this, EventEmitter);
+  function EventEmitter() {
+    _classCallCheck$2(this, EventEmitter);
 
-		this.observers = {};
-	}
+    this.observers = {};
+  }
 
-	EventEmitter.prototype.on = function on(events, listener) {
-		var _this = this;
+  EventEmitter.prototype.on = function on(events, listener) {
+    var _this = this;
 
-		events.split(' ').forEach(function (event) {
-			_this.observers[event] = _this.observers[event] || [];
-			_this.observers[event].push(listener);
-		});
-	};
+    events.split(' ').forEach(function (event) {
+      _this.observers[event] = _this.observers[event] || [];
+      _this.observers[event].push(listener);
+    });
+  };
 
-	EventEmitter.prototype.off = function off(event, listener) {
-		var _this2 = this;
+  EventEmitter.prototype.off = function off(event, listener) {
+    var _this2 = this;
 
-		if (!this.observers[event]) {
-			return;
-		}
+    if (!this.observers[event]) {
+      return;
+    }
 
-		this.observers[event].forEach(function () {
-			if (!listener) {
-				delete _this2.observers[event];
-			} else {
-				var index = _this2.observers[event].indexOf(listener);
-				if (index > -1) {
-					_this2.observers[event].splice(index, 1);
-				}
-			}
-		});
-	};
+    this.observers[event].forEach(function () {
+      if (!listener) {
+        delete _this2.observers[event];
+      } else {
+        var index = _this2.observers[event].indexOf(listener);
+        if (index > -1) {
+          _this2.observers[event].splice(index, 1);
+        }
+      }
+    });
+  };
 
-	EventEmitter.prototype.emit = function emit(event) {
-		var arguments$1 = arguments;
+  EventEmitter.prototype.emit = function emit(event) {
+    var arguments$1 = arguments;
 
-		for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-			args[_key - 1] = arguments$1[_key];
-		}
+    for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments$1[_key];
+    }
 
-		if (this.observers[event]) {
-			var cloned = [].concat(this.observers[event]);
-			cloned.forEach(function (observer) {
-				observer.apply(undefined, args);
-			});
-		}
+    if (this.observers[event]) {
+      var cloned = [].concat(this.observers[event]);
+      cloned.forEach(function (observer) {
+        observer.apply(undefined, args);
+      });
+    }
 
-		if (this.observers['*']) {
-			var _cloned = [].concat(this.observers['*']);
-			_cloned.forEach(function (observer) {
-				var _ref;
+    if (this.observers['*']) {
+      var _cloned = [].concat(this.observers['*']);
+      _cloned.forEach(function (observer) {
+        var _ref;
 
-				observer.apply(observer, (_ref = [event]).concat.apply(_ref, args));
-			});
-		}
-	};
+        observer.apply(observer, (_ref = [event]).concat.apply(_ref, args));
+      });
+    }
+  };
 
-	return EventEmitter;
+  return EventEmitter;
 }();
 
 function makeString(object) {
   if (object == null) { return ''; }
+  /* eslint prefer-template: 0 */
   return '' + object;
 }
 
@@ -6417,16 +6609,20 @@ function getLastOfPath(object, path, Empty) {
     return key && key.indexOf('###') > -1 ? key.replace(/###/g, '.') : key;
   }
 
+  function canNotTraverseDeeper() {
+    return !object || typeof object === 'string';
+  }
+
   var stack = typeof path !== 'string' ? [].concat(path) : path.split('.');
   while (stack.length > 1) {
-    if (!object) { return {}; }
+    if (canNotTraverseDeeper()) { return {}; }
 
     var key = cleanKey(stack.shift());
     if (!object[key] && Empty) { object[key] = new Empty(); }
     object = object[key];
   }
 
-  if (!object) { return {}; }
+  if (canNotTraverseDeeper()) { return {}; }
   return {
     obj: object,
     k: cleanKey(stack.shift())
@@ -6461,6 +6657,7 @@ function getPath(object, path) {
 }
 
 function deepExtend(target, source, overwrite) {
+  /* eslint no-restricted-syntax: 0 */
   for (var prop in source) {
     if (prop in target) {
       // If we reached a leaf string in target or source then replace with source or skip depending on the 'overwrite' switch
@@ -6472,10 +6669,12 @@ function deepExtend(target, source, overwrite) {
     } else {
       target[prop] = source[prop];
     }
-  }return target;
+  }
+  return target;
 }
 
 function regexEscape(str) {
+  /* eslint no-useless-escape: 0 */
   return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
 }
 
@@ -6495,9 +6694,9 @@ function escape(data) {
     return data.replace(/[&<>"'\/]/g, function (s) {
       return _entityMap[s];
     });
-  } else {
-    return data;
   }
+
+  return data;
 }
 
 var _extends$2 = Object.assign || function (target) {
@@ -6583,6 +6782,7 @@ var ResourceStore = function (_EventEmitter) {
   ResourceStore.prototype.addResources = function addResources(lng, ns, resources) {
     var this$1 = this;
 
+    /* eslint no-restricted-syntax: 0 */
     for (var m in resources) {
       if (typeof resources[m] === 'string') { this$1.addResource(lng, ns, m, resources[m], { silent: true }); }
     }
@@ -6629,7 +6829,7 @@ var ResourceStore = function (_EventEmitter) {
   ResourceStore.prototype.getResourceBundle = function getResourceBundle(lng, ns) {
     if (!ns) { ns = this.options.defaultNS; }
 
-    // TODO: COMPATIBILITY remove extend in v2.1.0
+    // COMPATIBILITY: remove extend in v2.1.0
     if (this.options.compatibilityAPI === 'v1') { return _extends$2({}, this.getResource(lng, ns)); }
 
     return this.getResource(lng, ns);
@@ -6660,6 +6860,7 @@ var postProcessor = {
   }
 };
 
+/* eslint no-param-reassign: 0 */
 function convertInterpolation(options) {
 
   options.interpolation = {
@@ -6690,8 +6891,8 @@ function convertAPIOptions(options) {
 
   options.saveMissing = options.sendMissing;
   options.saveMissingTo = options.sendMissingTo || 'current';
-  options.returnNull = options.fallbackOnNull ? false : true;
-  options.returnEmptyString = options.fallbackOnEmpty ? false : true;
+  options.returnNull = !options.fallbackOnNull;
+  options.returnEmptyString = !options.fallbackOnEmpty;
   options.returnObjects = options.returnObjectTrees;
   options.joinArrays = '\n';
 
@@ -6703,7 +6904,7 @@ function convertAPIOptions(options) {
   options.keySeparator = options.keyseparator || '.';
 
   if (options.shortcutFunction === 'sprintf') {
-    options.overloadTranslationOptionHandler = function (args) {
+    options.overloadTranslationOptionHandler = function handle(args) {
       var values = [];
 
       for (var i = 1; i < args.length; i++) {
@@ -6732,12 +6933,12 @@ function convertAPIOptions(options) {
   options.cache = options.cache || {};
   options.cache.prefix = 'res_';
   options.cache.expirationTime = 7 * 24 * 60 * 60 * 1000;
-  options.cache.enabled = options.useLocalStorage ? true : false;
+  options.cache.enabled = options.useLocalStorage;
 
   options = convertInterpolation(options);
   if (options.defaultVariables) { options.interpolation.defaultVariables = options.defaultVariables; }
 
-  // TODO: deprecation
+  // COMPATIBILITY: deprecation
   // if (options.getAsync === false) throw deprecation error
 
   return options;
@@ -6751,7 +6952,7 @@ function convertJSONOptions(options) {
 }
 
 function convertTOptions(options) {
-  if (options.interpolationPrefix || options.interpolationSuffix || options.escapeInterpolation) {
+  if (options.interpolationPrefix || options.interpolationSuffix || options.escapeInterpolation !== undefined) {
     options = convertInterpolation(options);
   }
 
@@ -6786,7 +6987,7 @@ function appendBackwardsAPI(i18n) {
       if (callback) { return callback(null, i18n.getFixedT(lng)); }
     }
 
-    i18n.changeLanguage(lng, callback);
+    return i18n.changeLanguage(lng, callback);
   };
 
   i18n.addPostProcessor = function (name, fc) {
@@ -6803,7 +7004,7 @@ var _extends$3 = Object.assign || function (target) {
 var arguments$1 = arguments;
  for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _defaults$2(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
 
@@ -6868,7 +7069,8 @@ var Translator = function (_EventEmitter) {
 
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-    if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') {
+    if ((typeof options === 'undefined' ? 'undefined' : _typeof$1(options)) !== 'object') {
+      /* eslint prefer-rest-params: 0 */
       options = this.options.overloadTranslationOptionHandler(arguments);
     } else if (this.options.compatibilityAPI === 'v1') {
       options = convertTOptions(options);
@@ -6921,69 +7123,69 @@ var Translator = function (_EventEmitter) {
       if (options.keySeparator || this.options.keySeparator) {
         var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
 
+        /* eslint no-restricted-syntax: 0 */
         for (var m in res) {
-          copy$$1[m] = this$1.translate('' + key + keySeparator + m, _extends$3({}, options, { joinArrays: false, ns: namespaces }));
+          if (Object.prototype.hasOwnProperty.call(res, m)) {
+            copy$$1[m] = this$1.translate('' + key + keySeparator + m, _extends$3({}, options, { joinArrays: false, ns: namespaces }));
+          }
         }
         res = copy$$1;
       }
-    }
-    // array special treatment
-    else if (joinArrays && resType === '[object Array]') {
-        res = res.join(joinArrays);
-        if (res) { res = this.extendTranslation(res, key, options); }
-      }
+    } else if (joinArrays && resType === '[object Array]') {
+      // array special treatment
+      res = res.join(joinArrays);
+      if (res) { res = this.extendTranslation(res, key, options); }
+    } else {
       // string, empty or null
-      else {
-          var usedDefault = false,
-              usedKey = false;
+      var usedDefault = false;
+      var usedKey = false;
 
-          // fallback value
-          if (!this.isValidLookup(res) && options.defaultValue !== undefined) {
-            usedDefault = true;
-            res = options.defaultValue;
+      // fallback value
+      if (!this.isValidLookup(res) && options.defaultValue !== undefined) {
+        usedDefault = true;
+        res = options.defaultValue;
+      }
+      if (!this.isValidLookup(res)) {
+        usedKey = true;
+        res = key;
+      }
+
+      // save missing
+      if (usedKey || usedDefault) {
+        this.logger.log('missingKey', lng, namespace, key, res);
+
+        var lngs = [];
+        var fallbackLngs = this.languageUtils.getFallbackCodes(this.options.fallbackLng, options.lng || this.language);
+        if (this.options.saveMissingTo === 'fallback' && fallbackLngs && fallbackLngs[0]) {
+          for (var i = 0; i < fallbackLngs.length; i++) {
+            lngs.push(fallbackLngs[i]);
           }
-          if (!this.isValidLookup(res)) {
-            usedKey = true;
-            res = key;
-          }
-
-          // save missing
-          if (usedKey || usedDefault) {
-            this.logger.log('missingKey', lng, namespace, key, res);
-
-            var lngs = [];
-            var fallbackLngs = this.languageUtils.getFallbackCodes(this.options.fallbackLng, options.lng || this.language);
-            if (this.options.saveMissingTo === 'fallback' && fallbackLngs && fallbackLngs[0]) {
-              for (var i = 0; i < fallbackLngs.length; i++) {
-                lngs.push(fallbackLngs[i]);
-              }
-            } else if (this.options.saveMissingTo === 'all') {
-              lngs = this.languageUtils.toResolveHierarchy(options.lng || this.language);
-            } else {
-              //(this.options.saveMissingTo === 'current' || (this.options.saveMissingTo === 'fallback' && this.options.fallbackLng[0] === false) ) {
-              lngs.push(options.lng || this.language);
-            }
-
-            if (this.options.saveMissing) {
-              if (this.options.missingKeyHandler) {
-                this.options.missingKeyHandler(lngs, namespace, key, res);
-              } else if (this.backendConnector && this.backendConnector.saveMissing) {
-                this.backendConnector.saveMissing(lngs, namespace, key, res);
-              }
-            }
-
-            this.emit('missingKey', lngs, namespace, key, res);
-          }
-
-          // extend
-          res = this.extendTranslation(res, key, options);
-
-          // append namespace if still key
-          if (usedKey && res === key && this.options.appendNamespaceToMissingKey) { res = namespace + ':' + key; }
-
-          // parseMissingKeyHandler
-          if (usedKey && this.options.parseMissingKeyHandler) { res = this.options.parseMissingKeyHandler(res); }
+        } else if (this.options.saveMissingTo === 'all') {
+          lngs = this.languageUtils.toResolveHierarchy(options.lng || this.language);
+        } else {
+          lngs.push(options.lng || this.language);
         }
+
+        if (this.options.saveMissing) {
+          if (this.options.missingKeyHandler) {
+            this.options.missingKeyHandler(lngs, namespace, key, res);
+          } else if (this.backendConnector && this.backendConnector.saveMissing) {
+            this.backendConnector.saveMissing(lngs, namespace, key, res);
+          }
+        }
+
+        this.emit('missingKey', lngs, namespace, key, res);
+      }
+
+      // extend
+      res = this.extendTranslation(res, key, options);
+
+      // append namespace if still key
+      if (usedKey && res === key && this.options.appendNamespaceToMissingKey) { res = namespace + ':' + key; }
+
+      // parseMissingKeyHandler
+      if (usedKey && this.options.parseMissingKeyHandler) { res = this.options.parseMissingKeyHandler(res); }
+    }
 
     // return
     return res;
@@ -6997,18 +7199,12 @@ var Translator = function (_EventEmitter) {
     // interpolate
     var data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
     if (this.options.interpolation.defaultVariables) { data = _extends$3({}, this.options.interpolation.defaultVariables, data); }
-    res = this.interpolator.interpolate(res, data, this.language);
+    res = this.interpolator.interpolate(res, data, options.lng || this.language);
 
     // nesting
-    res = this.interpolator.nest(res, function () {
-      var arguments$1 = arguments;
-
-      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-        args[_key] = arguments$1[_key];
-      }
-
-      return _this2.translate.apply(_this2, args);
-    }, options);
+    if (options.nest !== false) { res = this.interpolator.nest(res, function () {
+      return _this2.translate.apply(_this2, arguments);
+    }, options); }
 
     if (options.interpolation) { this.interpolator.reset(); }
 
@@ -7036,10 +7232,9 @@ var Translator = function (_EventEmitter) {
     keys.forEach(function (k) {
       if (_this3.isValidLookup(found)) { return; }
 
-      var _extractFromKey2 = _this3.extractFromKey(k, options),
-          key = _extractFromKey2.key,
-          namespaces = _extractFromKey2.namespaces;
-
+      var extracted = _this3.extractFromKey(k, options);
+      var key = extracted.key;
+      var namespaces = extracted.namespaces;
       if (_this3.options.fallbackNS) { namespaces = namespaces.concat(_this3.options.fallbackNS); }
 
       var needsPluralHandling = options.count !== undefined && typeof options.count !== 'string';
@@ -7070,9 +7265,11 @@ var Translator = function (_EventEmitter) {
 
           // iterate over finalKeys starting with most specific pluralkey (-> contextkey only) -> singularkey only
           var possibleKey = void 0;
+          /* eslint no-cond-assign: 0 */
           while (possibleKey = finalKeys.pop()) {
-            if (_this3.isValidLookup(found)) { continue; }
-            found = _this3.getResource(code, ns, possibleKey, options);
+            if (!_this3.isValidLookup(found)) {
+              found = _this3.getResource(code, ns, possibleKey, options);
+            }
           }
         });
       });
@@ -7153,16 +7350,16 @@ var LanguageUtil = function () {
       }
 
       return p.join('-');
-    } else {
-      return this.options.cleanCode || this.options.lowerCaseLng ? code.toLowerCase() : code;
     }
+
+    return this.options.cleanCode || this.options.lowerCaseLng ? code.toLowerCase() : code;
   };
 
-  LanguageUtil.prototype.isWhitelisted = function isWhitelisted(code, exactMatch) {
-    if (this.options.load === 'languageOnly' || this.options.nonExplicitWhitelist && !exactMatch) {
+  LanguageUtil.prototype.isWhitelisted = function isWhitelisted(code) {
+    if (this.options.load === 'languageOnly' || this.options.nonExplicitWhitelist) {
       code = this.getLanguagePartFromCode(code);
     }
-    return !this.whitelist || !this.whitelist.length || this.whitelist.indexOf(code) > -1 ? true : false;
+    return !this.whitelist || !this.whitelist.length || this.whitelist.indexOf(code) > -1;
   };
 
   LanguageUtil.prototype.getFallbackCodes = function getFallbackCodes(fallbacks, code) {
@@ -7187,20 +7384,18 @@ var LanguageUtil = function () {
     var fallbackCodes = this.getFallbackCodes(fallbackCode || this.options.fallbackLng || [], code);
 
     var codes = [];
-    var addCode = function addCode(code) {
-      var exactMatch = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-      if (!code) { return; }
-      if (_this.isWhitelisted(code, exactMatch)) {
-        codes.push(code);
+    var addCode = function addCode(c) {
+      if (!c) { return; }
+      if (_this.isWhitelisted(c)) {
+        codes.push(c);
       } else {
-        _this.logger.warn('rejecting non-whitelisted language code: ' + code);
+        _this.logger.warn('rejecting non-whitelisted language code: ' + c);
       }
     };
 
     if (typeof code === 'string' && code.indexOf('-') > -1) {
-      if (this.options.load !== 'languageOnly') { addCode(this.formatLanguageCode(code), true); }
-      if (this.options.load !== 'languageOnly' && this.options.load !== 'currentOnly') { addCode(this.getScriptPartFromCode(code), true); }
+      if (this.options.load !== 'languageOnly') { addCode(this.formatLanguageCode(code)); }
+      if (this.options.load !== 'languageOnly' && this.options.load !== 'currentOnly') { addCode(this.getScriptPartFromCode(code)); }
       if (this.options.load !== 'currentOnly') { addCode(this.getLanguagePartFromCode(code)); }
     } else if (typeof code === 'string') {
       addCode(this.formatLanguageCode(code));
@@ -7215,6 +7410,8 @@ var LanguageUtil = function () {
 
   return LanguageUtil;
 }();
+
+var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _classCallCheck$6(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -7290,11 +7487,10 @@ var _rulesPluralsTypes = {
 /* eslint-enable */
 
 function createRules() {
-  var l,
-      rules = {};
+  var rules = {};
   sets.forEach(function (set) {
     set.lngs.forEach(function (l) {
-      return rules[l] = {
+      rules[l] = {
         numbers: set.nr,
         plurals: _rulesPluralsTypes[set.fc]
       };
@@ -7328,7 +7524,7 @@ var PluralResolver = function () {
   PluralResolver.prototype.needsPlural = function needsPlural(code) {
     var rule = this.getRule(code);
 
-    return rule && rule.numbers.length <= 1 ? false : true;
+    return rule && rule.numbers.length > 1;
   };
 
   PluralResolver.prototype.getSuffix = function getSuffix(code, count) {
@@ -7337,44 +7533,58 @@ var PluralResolver = function () {
     var rule = this.getRule(code);
 
     if (rule) {
-      if (rule.numbers.length === 1) { return ''; } // only singular
+      var _ret = function () {
+        if (rule.numbers.length === 1) { return {
+            v: ''
+          }; } // only singular
 
-      var idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
-      var suffix = rule.numbers[idx];
+        var idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
+        var suffix = rule.numbers[idx];
 
-      // special treatment for lngs only having singular and plural
-      if (rule.numbers.length === 2 && rule.numbers[0] === 1) {
-        if (suffix === 2) {
-          suffix = 'plural';
-        } else if (suffix === 1) {
-          suffix = '';
-        }
-      }
-
-      var returnSuffix = function returnSuffix() {
-        return _this.options.prepend && suffix.toString() ? _this.options.prepend + suffix.toString() : suffix.toString();
-      };
-
-      // COMPATIBILITY JSON
-      // v1
-      if (this.options.compatibilityJSON === 'v1') {
-        if (suffix === 1) { return ''; }
-        if (typeof suffix === 'number') { return '_plural_' + suffix.toString(); }
-        return returnSuffix();
-      }
-      // v2
-      else if (this.options.compatibilityJSON === 'v2' || rule.numbers.length === 2 && rule.numbers[0] === 1) {
-          return returnSuffix();
-        }
-        // v3 - gettext index
-        else if (rule.numbers.length === 2 && rule.numbers[0] === 1) {
-            return returnSuffix();
+        // special treatment for lngs only having singular and plural
+        if (_this.options.simplifyPluralSuffix && rule.numbers.length === 2 && rule.numbers[0] === 1) {
+          if (suffix === 2) {
+            suffix = 'plural';
+          } else if (suffix === 1) {
+            suffix = '';
           }
-      return this.options.prepend && idx.toString() ? this.options.prepend + idx.toString() : idx.toString();
-    } else {
-      this.logger.warn('no plural rule found for: ' + code);
-      return '';
+        }
+
+        var returnSuffix = function returnSuffix() {
+          return _this.options.prepend && suffix.toString() ? _this.options.prepend + suffix.toString() : suffix.toString();
+        };
+
+        // COMPATIBILITY JSON
+        // v1
+        if (_this.options.compatibilityJSON === 'v1') {
+          if (suffix === 1) { return {
+              v: ''
+            }; }
+          if (typeof suffix === 'number') { return {
+              v: '_plural_' + suffix.toString()
+            }; }
+          return {
+            v: returnSuffix()
+          };
+        } else if ( /* v2 */_this.options.compatibilityJSON === 'v2' || rule.numbers.length === 2 && rule.numbers[0] === 1) {
+          return {
+            v: returnSuffix()
+          };
+        } else if ( /* v3 - gettext index */rule.numbers.length === 2 && rule.numbers[0] === 1) {
+          return {
+            v: returnSuffix()
+          };
+        }
+        return {
+          v: _this.options.prepend && idx.toString() ? _this.options.prepend + idx.toString() : idx.toString()
+        };
+      }();
+
+      if ((typeof _ret === 'undefined' ? 'undefined' : _typeof$2(_ret)) === "object") { return _ret.v; }
     }
+
+    this.logger.warn('no plural rule found for: ' + code);
+    return '';
   };
 
   return PluralResolver;
@@ -7396,6 +7606,9 @@ var Interpolator = function () {
 
     this.init(options, true);
   }
+
+  /* eslint no-param-reassign: 0 */
+
 
   Interpolator.prototype.init = function init() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -7438,7 +7651,7 @@ var Interpolator = function () {
     var regexpStr = this.prefix + '(.+?)' + this.suffix;
     this.regexp = new RegExp(regexpStr, 'g');
 
-    var regexpUnescapeStr = this.prefix + this.unescapePrefix + '(.+?)' + this.unescapeSuffix + this.suffix;
+    var regexpUnescapeStr = '' + this.prefix + this.unescapePrefix + '(.+?)' + this.unescapeSuffix + this.suffix;
     this.regexpUnescape = new RegExp(regexpUnescapeStr, 'g');
 
     var nestingRegexpStr = this.nestingPrefix + '(.+?)' + this.nestingSuffix;
@@ -7450,8 +7663,8 @@ var Interpolator = function () {
 
     var _this = this;
 
-    var match = void 0,
-        value = void 0;
+    var match = void 0;
+    var value = void 0;
 
     function regexSafe(val) {
       return val.replace(/\$/g, '$$$$');
@@ -7470,9 +7683,10 @@ var Interpolator = function () {
     this.resetRegExp();
 
     // unescape if has unescapePrefix/Suffix
+    /* eslint no-cond-assign: 0 */
     while (match = this.regexpUnescape.exec(str)) {
-      var _value = handleFormat(match[1].trim());
-      str = str.replace(match[0], _value);
+      value = handleFormat(match[1].trim());
+      str = str.replace(match[0], value);
       this$1.regexpUnescape.lastIndex = 0;
     }
 
@@ -7496,12 +7710,13 @@ var Interpolator = function () {
 
     var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
-    var match = void 0,
-        value = void 0;
+    var match = void 0;
+    var value = void 0;
 
     var clonedOptions = _extends$4({}, options);
     clonedOptions.applyPostProcessor = false; // avoid post processing on nested lookup
 
+    // if value is something like "myKey": "lorem $(anotherKey, { "count": {{aValueInOptions}} })"
     function handleHasOptions(key) {
       if (key.indexOf(',') < 0) { return key; }
 
@@ -7523,9 +7738,14 @@ var Interpolator = function () {
     // regular escape on demand
     while (match = this.nestingRegexp.exec(str)) {
       value = fc(handleHasOptions.call(this$1, match[1].trim()), clonedOptions);
+
+      // is only the nesting key (key1 = '$(key2)') return the value without stringify
+      if (value && match[0] === str && typeof value !== 'string') { return value; }
+
+      // no string to include or empty
       if (typeof value !== 'string') { value = makeString(value); }
       if (!value) {
-        this$1.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
+        this$1.logger.warn('missed to resolve ' + match[1] + ' for nesting ' + str);
         value = '';
       }
       // Nested keys should not be escaped by default #854
@@ -7581,7 +7801,9 @@ var Connector = function (_EventEmitter) {
     _this.state = {};
     _this.queue = [];
 
-    _this.backend && _this.backend.init && _this.backend.init(services, options.backend, options);
+    if (_this.backend && _this.backend.init) {
+      _this.backend.init(services, options.backend, options);
+    }
     return _this;
   }
 
@@ -7589,10 +7811,10 @@ var Connector = function (_EventEmitter) {
     var _this2 = this;
 
     // find what needs to be loaded
-    var toLoad = [],
-        pending = [],
-        toLoadLanguages = [],
-        toLoadNamespaces = [];
+    var toLoad = [];
+    var pending = [];
+    var toLoadLanguages = [];
+    var toLoadNamespaces = [];
 
     languages.forEach(function (lng) {
       var hasAllNamespaces = true;
@@ -7653,6 +7875,7 @@ var Connector = function (_EventEmitter) {
 
     // set loaded
     this.state[name] = err ? -1 : 2;
+
     // callback if ready
     this.queue.forEach(function (q) {
       pushPath(q.loaded, [lng], ns);
@@ -7662,8 +7885,13 @@ var Connector = function (_EventEmitter) {
 
       if (q.pending.length === 0 && !q.done) {
         _this3.emit('loaded', q.loaded);
-        q.errors.length ? q.callback(q.errors) : q.callback();
+        /* eslint no-param-reassign: 0 */
         q.done = true;
+        if (q.errors.length) {
+          q.callback(q.errors);
+        } else {
+          q.callback();
+        }
       }
     });
 
@@ -7673,24 +7901,29 @@ var Connector = function (_EventEmitter) {
     });
   };
 
-  Connector.prototype.read = function read(lng, ns, fcName, tried, wait, callback) {
+  Connector.prototype.read = function read(lng, ns, fcName) {
+    var tried = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
+
     var _this4 = this;
 
-    if (!tried) { tried = 0; }
-    if (!wait) { wait = 250; }
+    var wait = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 250;
+    var callback = arguments[5];
 
     if (!lng.length) { return callback(null, {}); } // noting to load
 
-    this.backend[fcName](lng, ns, function (err, data) {
+    return this.backend[fcName](lng, ns, function (err, data) {
       if (err && data /* = retryFlag */ && tried < 5) {
         setTimeout(function () {
-          _this4.read.call(_this4, lng, ns, fcName, ++tried, wait * 2, callback);
+          _this4.read.call(_this4, lng, ns, fcName, tried + 1, wait * 2, callback);
         }, wait);
         return;
       }
       callback(err, data);
     });
   };
+
+  /* eslint consistent-return: 0 */
+
 
   Connector.prototype.load = function load(languages, namespaces, callback) {
     var _this5 = this;
@@ -7707,14 +7940,14 @@ var Connector = function (_EventEmitter) {
     var toLoad = this.queueLoad(languages, namespaces, callback);
     if (!toLoad.toLoad.length) {
       if (!toLoad.pending.length) { callback(); } // nothing to load and no pendings...callback now
-      return; // pendings will trigger callback
+      return null; // pendings will trigger callback
     }
 
     // load with multi-load
     if (options.allowMultiLoading && this.backend.readMulti) {
       this.read(toLoad.toLoadLanguages, toLoad.toLoadNamespaces, 'readMulti', null, null, function (err, data) {
         if (err) { _this5.logger.warn('loading namespaces ' + toLoad.toLoadNamespaces.join(', ') + ' for languages ' + toLoad.toLoadLanguages.join(', ') + ' via multiloading failed', err); }
-        if (!err && data) { _this5.logger.log('loaded namespaces ' + toLoad.toLoadNamespaces.join(', ') + ' for languages ' + toLoad.toLoadLanguages.join(', ') + ' via multiloading', data); }
+        if (!err && data) { _this5.logger.log('successfully loaded namespaces ' + toLoad.toLoadNamespaces.join(', ') + ' for languages ' + toLoad.toLoadLanguages.join(', ') + ' via multiloading', data); }
 
         toLoad.toLoad.forEach(function (name) {
           var _name$split3 = name.split('|'),
@@ -7726,42 +7959,21 @@ var Connector = function (_EventEmitter) {
           if (bundle) {
             _this5.loaded(name, err, bundle);
           } else {
-            var _err = 'loading namespace ' + n + ' for language ' + l + ' via multiloading failed';
-            _this5.loaded(name, _err);
-            _this5.logger.error(_err);
+            var error = 'loading namespace ' + n + ' for language ' + l + ' via multiloading failed';
+            _this5.loaded(name, error);
+            _this5.logger.error(error);
           }
         });
       });
+    } else {
+      toLoad.toLoad.forEach(function (name) {
+        _this5.loadOne(name);
+      });
     }
-
-    // load one by one
-    else {
-        var readOne = function readOne(name) {
-          var _this6 = this;
-
-          var _name$split5 = name.split('|'),
-              _name$split6 = _slicedToArray(_name$split5, 2),
-              lng = _name$split6[0],
-              ns = _name$split6[1];
-
-          this.read(lng, ns, 'read', null, null, function (err, data) {
-            if (err) { _this6.logger.warn('loading namespace ' + ns + ' for language ' + lng + ' failed', err); }
-            if (!err && data) { _this6.logger.log('loaded namespace ' + ns + ' for language ' + lng, data); }
-
-            _this6.loaded(name, err, data);
-          });
-        };
-
-        
-
-        toLoad.toLoad.forEach(function (name) {
-          readOne.call(_this5, name);
-        });
-      }
   };
 
   Connector.prototype.reload = function reload(languages, namespaces) {
-    var _this7 = this;
+    var _this6 = this;
 
     if (!this.backend) {
       this.logger.warn('No backend was added via i18next.use. Will not load resources.');
@@ -7774,50 +7986,47 @@ var Connector = function (_EventEmitter) {
     // load with multi-load
     if (options.allowMultiLoading && this.backend.readMulti) {
       this.read(languages, namespaces, 'readMulti', null, null, function (err, data) {
-        if (err) { _this7.logger.warn('reloading namespaces ' + namespaces.join(', ') + ' for languages ' + languages.join(', ') + ' via multiloading failed', err); }
-        if (!err && data) { _this7.logger.log('reloaded namespaces ' + namespaces.join(', ') + ' for languages ' + languages.join(', ') + ' via multiloading', data); }
+        if (err) { _this6.logger.warn('reloading namespaces ' + namespaces.join(', ') + ' for languages ' + languages.join(', ') + ' via multiloading failed', err); }
+        if (!err && data) { _this6.logger.log('successfully reloaded namespaces ' + namespaces.join(', ') + ' for languages ' + languages.join(', ') + ' via multiloading', data); }
 
         languages.forEach(function (l) {
           namespaces.forEach(function (n) {
             var bundle = getPath(data, [l, n]);
             if (bundle) {
-              _this7.loaded(l + '|' + n, err, bundle);
+              _this6.loaded(l + '|' + n, err, bundle);
             } else {
-              var _err2 = 'reloading namespace ' + n + ' for language ' + l + ' via multiloading failed';
-              _this7.loaded(l + '|' + n, _err2);
-              _this7.logger.error(_err2);
+              var error = 'reloading namespace ' + n + ' for language ' + l + ' via multiloading failed';
+              _this6.loaded(l + '|' + n, error);
+              _this6.logger.error(error);
             }
           });
         });
       });
-    }
-
-    // load one by one
-    else {
-        var readOne = function readOne(name) {
-          var _this8 = this;
-
-          var _name$split7 = name.split('|'),
-              _name$split8 = _slicedToArray(_name$split7, 2),
-              lng = _name$split8[0],
-              ns = _name$split8[1];
-
-          this.read(lng, ns, 'read', null, null, function (err, data) {
-            if (err) { _this8.logger.warn('reloading namespace ' + ns + ' for language ' + lng + ' failed', err); }
-            if (!err && data) { _this8.logger.log('reloaded namespace ' + ns + ' for language ' + lng, data); }
-
-            _this8.loaded(name, err, data);
-          });
-        };
-
-        
-
-        languages.forEach(function (l) {
-          namespaces.forEach(function (n) {
-            readOne.call(_this7, l + '|' + n);
-          });
+    } else {
+      languages.forEach(function (l) {
+        namespaces.forEach(function (n) {
+          _this6.loadOne(l + '|' + n, 're');
         });
-      }
+      });
+    }
+  };
+
+  Connector.prototype.loadOne = function loadOne(name) {
+    var _this7 = this;
+
+    var prefix = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+
+    var _name$split5 = name.split('|'),
+        _name$split6 = _slicedToArray(_name$split5, 2),
+        lng = _name$split6[0],
+        ns = _name$split6[1];
+
+    this.read(lng, ns, 'read', null, null, function (err, data) {
+      if (err) { _this7.logger.warn(prefix + 'loading namespace ' + ns + ' for language ' + lng + ' failed', err); }
+      if (!err && data) { _this7.logger.log(prefix + 'loaded namespace ' + ns + ' for language ' + lng, data); }
+
+      _this7.loaded(name, err, data);
+    });
   };
 
   Connector.prototype.saveMissing = function saveMissing(languages, namespace, key, fallbackValue) {
@@ -7859,9 +8068,12 @@ var Connector$1 = function (_EventEmitter) {
     _this.options = options;
     _this.logger = baseLogger.create('cacheConnector');
 
-    _this.cache && _this.cache.init && _this.cache.init(services, options.cache, options);
+    if (_this.cache && _this.cache.init) { _this.cache.init(services, options.cache, options); }
     return _this;
   }
+
+  /* eslint consistent-return: 0 */
+
 
   Connector.prototype.load = function load(languages, namespaces, callback) {
     var _this2 = this;
@@ -7869,25 +8081,30 @@ var Connector$1 = function (_EventEmitter) {
     if (!this.cache) { return callback && callback(); }
     var options = _extends$6({}, this.cache.options, this.options.cache);
 
-    if (typeof languages === 'string') { languages = this.services.languageUtils.toResolveHierarchy(languages); }
-    if (typeof namespaces === 'string') { namespaces = [namespaces]; }
+    var loadLngs = typeof languages === 'string' ? this.services.languageUtils.toResolveHierarchy(languages) : languages;
 
     if (options.enabled) {
-      this.cache.load(languages, function (err, data) {
-        if (err) { _this2.logger.error('loading languages ' + languages.join(', ') + ' from cache failed', err); }
+      this.cache.load(loadLngs, function (err, data) {
+        if (err) { _this2.logger.error('loading languages ' + loadLngs.join(', ') + ' from cache failed', err); }
         if (data) {
+          /* eslint no-restricted-syntax: 0 */
           for (var l in data) {
-            for (var n in data[l]) {
-              if (n === 'i18nStamp') { continue; }
-              var bundle = data[l][n];
-              if (bundle) { _this2.store.addResourceBundle(l, n, bundle); }
+            if (Object.prototype.hasOwnProperty.call(data, l)) {
+              for (var n in data[l]) {
+                if (Object.prototype.hasOwnProperty.call(data[l], n)) {
+                  if (n !== 'i18nStamp') {
+                    var bundle = data[l][n];
+                    if (bundle) { _this2.store.addResourceBundle(l, n, bundle); }
+                  }
+                }
+              }
             }
           }
         }
         if (callback) { callback(); }
       });
-    } else {
-      if (callback) { callback(); }
+    } else if (callback) {
+      callback();
     }
   };
 
@@ -7913,6 +8130,7 @@ function get$2() {
     load: 'all', // | currentOnly | languageOnly
     preload: false, // array with preload languages
 
+    simplifyPluralSuffix: true,
     keySeparator: '.',
     nsSeparator: ':',
     pluralSeparator: '_',
@@ -7931,7 +8149,7 @@ function get$2() {
     parseMissingKeyHandler: false, // function(key) parsed a key that was not found in t() before returning
     appendNamespaceToMissingKey: false,
     appendNamespaceToCIMode: false,
-    overloadTranslationOptionHandler: function overloadTranslationOptionHandler(args) {
+    overloadTranslationOptionHandler: function handle(args) {
       return { defaultValue: args[1] };
     },
 
@@ -7957,6 +8175,7 @@ function get$2() {
   };
 }
 
+/* eslint no-param-reassign: 0 */
 function transformOptions(options) {
   // create namespace object if namespace is passed in as string
   if (typeof options.ns === 'string') { options.ns = [options.ns]; }
@@ -7968,6 +8187,8 @@ function transformOptions(options) {
 
   return options;
 }
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _extends = Object.assign || function (target) {
 var arguments$1 = arguments;
@@ -7999,7 +8220,15 @@ var I18n = function (_EventEmitter) {
     _this.logger = baseLogger;
     _this.modules = { external: [] };
 
-    if (callback && !_this.isInitialized && !options.isClone) { _this.init(options, callback); }
+    if (callback && !_this.isInitialized && !options.isClone) {
+      var _ret;
+
+      // https://github.com/i18next/i18next/issues/879
+      if (!_this.options.initImmediate) { return _ret = _this.init(options, callback), _possibleConstructorReturn(_this, _ret); }
+      setTimeout(function () {
+        _this.init(options, callback);
+      }, 0);
+    }
     return _this;
   }
 
@@ -8022,91 +8251,95 @@ var I18n = function (_EventEmitter) {
     if (!callback) { callback = noop$1; }
 
     function createClassOnDemand(ClassOrObject) {
-      if (!ClassOrObject) { return; }
+      if (!ClassOrObject) { return null; }
       if (typeof ClassOrObject === 'function') { return new ClassOrObject(); }
       return ClassOrObject;
     }
 
     // init services
     if (!this.options.isClone) {
-      if (this.modules.logger) {
-        baseLogger.init(createClassOnDemand(this.modules.logger), this.options);
-      } else {
-        baseLogger.init(null, this.options);
-      }
-
-      var lu = new LanguageUtil(this.options);
-      this.store = new ResourceStore(this.options.resources, this.options);
-
-      var s = this.services;
-      s.logger = baseLogger;
-      s.resourceStore = this.store;
-      s.resourceStore.on('added removed', function (lng, ns) {
-        s.cacheConnector.save();
-      });
-      s.languageUtils = lu;
-      s.pluralResolver = new PluralResolver(lu, { prepend: this.options.pluralSeparator, compatibilityJSON: this.options.compatibilityJSON });
-      s.interpolator = new Interpolator(this.options);
-
-      s.backendConnector = new Connector(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
-      // pipe events from backendConnector
-      s.backendConnector.on('*', function (event) {
-        var arguments$1 = arguments;
-
-        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-          args[_key - 1] = arguments$1[_key];
+      (function () {
+        if (_this2.modules.logger) {
+          baseLogger.init(createClassOnDemand(_this2.modules.logger), _this2.options);
+        } else {
+          baseLogger.init(null, _this2.options);
         }
 
-        _this2.emit.apply(_this2, [event].concat(args));
-      });
+        var lu = new LanguageUtil(_this2.options);
+        _this2.store = new ResourceStore(_this2.options.resources, _this2.options);
 
-      s.backendConnector.on('loaded', function (loaded) {
-        s.cacheConnector.save();
-      });
+        var s = _this2.services;
+        s.logger = baseLogger;
+        s.resourceStore = _this2.store;
+        s.resourceStore.on('added removed', function (lng, ns) {
+          s.cacheConnector.save();
+        });
+        s.languageUtils = lu;
+        s.pluralResolver = new PluralResolver(lu, { prepend: _this2.options.pluralSeparator, compatibilityJSON: _this2.options.compatibilityJSON, simplifyPluralSuffix: _this2.options.simplifyPluralSuffix });
+        s.interpolator = new Interpolator(_this2.options);
 
-      s.cacheConnector = new Connector$1(createClassOnDemand(this.modules.cache), s.resourceStore, s, this.options);
-      // pipe events from backendConnector
-      s.cacheConnector.on('*', function (event) {
-        var arguments$1 = arguments;
+        s.backendConnector = new Connector(createClassOnDemand(_this2.modules.backend), s.resourceStore, s, _this2.options);
+        // pipe events from backendConnector
+        s.backendConnector.on('*', function (event) {
+          var arguments$1 = arguments;
 
-        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-          args[_key2 - 1] = arguments$1[_key2];
+          for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            args[_key - 1] = arguments$1[_key];
+          }
+
+          _this2.emit.apply(_this2, [event].concat(args));
+        });
+
+        s.backendConnector.on('loaded', function (loaded) {
+          s.cacheConnector.save();
+        });
+
+        s.cacheConnector = new Connector$1(createClassOnDemand(_this2.modules.cache), s.resourceStore, s, _this2.options);
+        // pipe events from backendConnector
+        s.cacheConnector.on('*', function (event) {
+          var arguments$1 = arguments;
+
+          for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+            args[_key2 - 1] = arguments$1[_key2];
+          }
+
+          _this2.emit.apply(_this2, [event].concat(args));
+        });
+
+        if (_this2.modules.languageDetector) {
+          s.languageDetector = createClassOnDemand(_this2.modules.languageDetector);
+          s.languageDetector.init(s, _this2.options.detection, _this2.options);
         }
 
-        _this2.emit.apply(_this2, [event].concat(args));
-      });
+        _this2.translator = new Translator(_this2.services, _this2.options);
+        // pipe events from translator
+        _this2.translator.on('*', function (event) {
+          var arguments$1 = arguments;
 
-      if (this.modules.languageDetector) {
-        s.languageDetector = createClassOnDemand(this.modules.languageDetector);
-        s.languageDetector.init(s, this.options.detection, this.options);
-      }
+          for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+            args[_key3 - 1] = arguments$1[_key3];
+          }
 
-      this.translator = new Translator(this.services, this.options);
-      // pipe events from translator
-      this.translator.on('*', function (event) {
-        var arguments$1 = arguments;
+          _this2.emit.apply(_this2, [event].concat(args));
+        });
 
-        for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-          args[_key3 - 1] = arguments$1[_key3];
-        }
-
-        _this2.emit.apply(_this2, [event].concat(args));
-      });
-
-      this.modules.external.forEach(function (m) {
-        if (m.init) { m.init(_this2); }
-      });
+        _this2.modules.external.forEach(function (m) {
+          if (m.init) { m.init(_this2); }
+        });
+      })();
     }
 
     // append api
     var storeApi = ['getResource', 'addResource', 'addResources', 'addResourceBundle', 'removeResourceBundle', 'hasResourceBundle', 'getResourceBundle'];
     storeApi.forEach(function (fcName) {
       _this2[fcName] = function () {
-        return this.store[fcName].apply(this.store, arguments);
+        var _store;
+
+        return (_store = _this2.store)[fcName].apply(_store, arguments);
       };
     });
 
-    // TODO: COMPATIBILITY remove this
+    // COMPATIBILITY: remove this
     if (this.options.compatibilityAPI === 'v1') { appendBackwardsAPI(this); }
 
     var load = function load() {
@@ -8128,35 +8361,52 @@ var I18n = function (_EventEmitter) {
     return this;
   };
 
+  /* eslint consistent-return: 0 */
+
+
   I18n.prototype.loadResources = function loadResources() {
     var _this3 = this;
 
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : noop$1;
 
     if (!this.options.resources) {
-      if (this.language && this.language.toLowerCase() === 'cimode') { return callback(); } // avoid loading resources for cimode
+      var _ret3 = function () {
+        if (_this3.language && _this3.language.toLowerCase() === 'cimode') { return {
+            v: callback()
+          }; } // avoid loading resources for cimode
 
-      var toLoad = [];
+        var toLoad = [];
 
-      var append = function append(lng) {
-        if (!lng) { return; }
-        var lngs = _this3.services.languageUtils.toResolveHierarchy(lng);
-        lngs.forEach(function (l) {
-          if (toLoad.indexOf(l) < 0) { toLoad.push(l); }
+        var append = function append(lng) {
+          if (!lng) { return; }
+          var lngs = _this3.services.languageUtils.toResolveHierarchy(lng);
+          lngs.forEach(function (l) {
+            if (toLoad.indexOf(l) < 0) { toLoad.push(l); }
+          });
+        };
+
+        if (!_this3.language) {
+          // at least load fallbacks in this case
+          var fallbacks = _this3.services.languageUtils.getFallbackCodes(_this3.options.fallbackLng);
+          fallbacks.forEach(function (l) {
+            return append(l);
+          });
+        } else {
+          append(_this3.language);
+        }
+
+        if (_this3.options.preload) {
+          _this3.options.preload.forEach(function (l) {
+            return append(l);
+          });
+        }
+
+        _this3.services.cacheConnector.load(toLoad, _this3.options.ns, function () {
+          _this3.services.backendConnector.load(toLoad, _this3.options.ns, callback);
         });
-      };
+      }();
 
-      append(this.language);
-
-      if (this.options.preload) {
-        this.options.preload.forEach(function (l) {
-          append(l);
-        });
-      }
-
-      this.services.cacheConnector.load(toLoad, this.options.ns, function () {
-        _this3.services.backendConnector.load(toLoad, _this3.options.ns, callback);
-      });
+      if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") { return _ret3.v; }
     } else {
       callback(null);
     }
@@ -8206,30 +8456,32 @@ var I18n = function (_EventEmitter) {
       }
 
       if (callback) { callback(err, function () {
-        var arguments$1 = arguments;
-
-        for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-          args[_key4] = arguments$1[_key4];
-        }
-
-        return _this4.t.apply(_this4, args);
+        return _this4.t.apply(_this4, arguments);
       }); }
     };
 
-    if (!lng && this.services.languageDetector) { lng = this.services.languageDetector.detect(); }
+    var setLng = function setLng(l) {
+      if (l) {
+        _this4.language = l;
+        _this4.languages = _this4.services.languageUtils.toResolveHierarchy(l);
 
-    if (lng) {
-      this.language = lng;
-      this.languages = this.services.languageUtils.toResolveHierarchy(lng);
+        _this4.translator.changeLanguage(l);
 
-      this.translator.changeLanguage(lng);
+        if (_this4.services.languageDetector) { _this4.services.languageDetector.cacheUserLanguage(l); }
+      }
 
-      if (this.services.languageDetector) { this.services.languageDetector.cacheUserLanguage(lng); }
+      _this4.loadResources(function (err) {
+        done(err);
+      });
+    };
+
+    if (!lng && this.services.languageDetector && !this.services.languageDetector.async) {
+      setLng(this.services.languageDetector.detect());
+    } else if (!lng && this.services.languageDetector && this.services.languageDetector.async) {
+      this.services.languageDetector.detect(setLng);
+    } else {
+      setLng(lng);
     }
-
-    this.loadResources(function (err) {
-      done(err);
-    });
   };
 
   I18n.prototype.getFixedT = function getFixedT(lng, ns) {
@@ -8249,11 +8501,15 @@ var I18n = function (_EventEmitter) {
   };
 
   I18n.prototype.t = function t() {
-    return this.translator && this.translator.translate.apply(this.translator, arguments);
+    var _translator;
+
+    return this.translator && (_translator = this.translator).translate.apply(_translator, arguments);
   };
 
   I18n.prototype.exists = function exists() {
-    return this.translator && this.translator.exists.apply(this.translator, arguments);
+    var _translator2;
+
+    return this.translator && (_translator2 = this.translator).exists.apply(_translator2, arguments);
   };
 
   I18n.prototype.setDefaultNamespace = function setDefaultNamespace(ns) {
@@ -8296,6 +8552,9 @@ var I18n = function (_EventEmitter) {
     return rtlLngs.indexOf(this.services.languageUtils.getLanguagePartFromCode(lng)) >= 0 ? 'rtl' : 'ltr';
   };
 
+  /* eslint class-methods-use-this: 0 */
+
+
   I18n.prototype.createInstance = function createInstance() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments[1];
@@ -8319,8 +8578,8 @@ var I18n = function (_EventEmitter) {
     clone.translator.on('*', function (event) {
       var arguments$1 = arguments;
 
-      for (var _len5 = arguments.length, args = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
-        args[_key5 - 1] = arguments$1[_key5];
+      for (var _len4 = arguments.length, args = Array(_len4 > 1 ? _len4 - 1 : 0), _key4 = 1; _key4 < _len4; _key4++) {
+        args[_key4 - 1] = arguments$1[_key4];
       }
 
       clone.emit.apply(clone, [event].concat(args));
@@ -8369,14 +8628,20 @@ var esES = {
 	array: array$4
 };
 
+var namespace$1 = "d3plus";
 var locale$3 = i18next$1.init({
   fallbackLng: "en-US",
+  defaultNS: namespace$1,
+  fallbackNS: namespace$1,
   initImmediate: false,
+  ns: namespace$1,
   resources: {
-    "en-US": {translation: enUS},
-    "es-ES": {translation: esES}
+    "en-US": ( obj = {}, obj[namespace$1] = enUS, obj ),
+    "es-ES": ( obj$1 = {}, obj$1[namespace$1] = esES, obj$1 )
   }
 });
+var obj;
+var obj$1;
 
 /**
     @function merge
@@ -9159,7 +9424,7 @@ var TextBox = (function (BaseClass$$1) {
           lineData = [],
           sizes;
 
-      var style = {
+      var style$$1 = {
         "font-family": this$1._fontFamily(d, i),
         "font-size": fS,
         "font-weight": this$1._fontWeight(d, i),
@@ -9170,9 +9435,9 @@ var TextBox = (function (BaseClass$$1) {
             w = this$1._width(d, i);
 
       var wrapper = textWrap()
-        .fontFamily(style["font-family"])
+        .fontFamily(style$$1["font-family"])
         .fontSize(fS)
-        .fontWeight(style["font-weight"])
+        .fontWeight(style$$1["font-weight"])
         .lineHeight(lH)
         .height(h)
         .overflow(this$1._overflow(d, i))
@@ -9200,8 +9465,8 @@ var TextBox = (function (BaseClass$$1) {
           wrapper
             .fontSize(fS)
             .lineHeight(lH);
-          style["font-size"] = fS;
-          style["line-height"] = lH;
+          style$$1["font-size"] = fS;
+          style$$1["line-height"] = lH;
         }
 
         var wrapResults = wrapper(t);
@@ -9227,7 +9492,7 @@ var TextBox = (function (BaseClass$$1) {
 
         if (resize) {
 
-          sizes = textWidth(words, style);
+          sizes = textWidth(words, style$$1);
 
           var areaMod = 1.165 + w / h * 0.1,
                 boxArea = w * h,
@@ -9261,8 +9526,8 @@ var TextBox = (function (BaseClass$$1) {
           i: i,
           lines: lineData,
           fC: this$1._fontColor(d, i),
-          fF: style["font-family"],
-          fW: style["font-weight"],
+          fF: style$$1["font-family"],
+          fW: style$$1["font-weight"],
           id: this$1._id(d, i),
           tA: this$1._textAnchor(d, i),
           fS: fS, lH: lH, w: w, x: this$1._x(d, i), y: this$1._y(d, i) + yP
@@ -9698,23 +9963,26 @@ var Shape = (function (BaseClass$$1) {
     this._data = [];
     this._duration = 600;
     this._fill = constant$4("black");
-
-    this._fontColor = function (d, i) { return colorContrast(this$1._fill(d, i)); };
-    this._fontFamily = constant$4("Verdana");
-    this._fontResize = constant$4(false);
-    this._fontSize = constant$4(12);
-    this._fontWeight = constant$4(400);
+    this._fillOpacity = constant$4(1);
 
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = constant$4(false);
-    this._labelRotate = constant$4(0);
+    this._labelConfig = {
+      fontColor: function (d, i) { return colorContrast(this$1._fill(d, i)); },
+      fontSize: 12
+    };
     this._labelPadding = constant$4(5);
     this._name = "Shape";
     this._opacity = constant$4(1);
+    this._rx = constant$4(0);
+    this._ry = constant$4(0);
     this._scale = constant$4(1);
     this._shapeRendering = constant$4("geometricPrecision");
     this._stroke = function (d, i) { return color(this$1._fill(d, i)).darker(1); };
+    this._strokeDasharray = constant$4("0");
+    this._strokeLinecap = constant$4("butt");
+    this._strokeOpacity = constant$4(1);
     this._strokeWidth = constant$4(0);
     this._tagName = tagName;
     this._textAnchor = constant$4("start");
@@ -9834,7 +10102,13 @@ var Shape = (function (BaseClass$$1) {
 
     elem$$1
       .attr("fill", styleLogic.bind(this._fill))
+      .attr("fill-opacity", styleLogic.bind(this._fillOpacity))
+      .attr("rx", styleLogic.bind(this._rx))
+      .attr("ry", styleLogic.bind(this._ry))
       .attr("stroke", styleLogic.bind(this._stroke))
+      .attr("stroke-dasharray", styleLogic.bind(this._strokeDasharray))
+      .attr("stroke-linecap", styleLogic.bind(this._strokeLinecap))
+      .attr("stroke-opacity", styleLogic.bind(this._strokeOpacity))
       .attr("stroke-width", styleLogic.bind(this._strokeWidth))
       .attr("vector-effect", styleLogic.bind(this._vectorEffect));
   };
@@ -9959,10 +10233,9 @@ var Shape = (function (BaseClass$$1) {
 
         var labels = this$1._label(d, i);
 
-        if (this$1._labelBounds && labels !== false && labels !== void 0) {
+        if (this$1._labelBounds && labels !== false && labels !== undefined) {
 
-          var aes = this$1._aes(datum, i),
-                bounds = this$1._labelBounds(d, i, aes);
+          var bounds = this$1._labelBounds(d, i, this$1._aes(datum, i));
 
           if (bounds) {
 
@@ -9978,42 +10251,25 @@ var Shape = (function (BaseClass$$1) {
               i = d.i;
             }
 
-            var fC = this$1._fontColor(d, i),
-                  fF = this$1._fontFamily(d, i),
-                  fR = this$1._fontResize(d, i),
-                  fS = this$1._fontSize(d, i),
-                  fW = this$1._fontWeight(d, i),
-                  lH = this$1._lineHeight(d, i),
-                  padding = this$1._labelPadding(d, i),
-                  r = this$1._labelRotate(d, i),
-                  tA = this$1._textAnchor(d, i),
-                  vA = this$1._verticalAlign(d, i);
+            var padding = this$1._labelPadding(d, i);
 
             for (var l = 0; l < labels.length; l++) {
 
               var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
                     p = padding.constructor === Array ? padding[l] : padding;
 
-              labelData.push(Object.assign(b, {
-                __d3plusShape__: true,
+              labelData.push({
+                __d3plus__: true,
                 data: d,
-                fC: fC.constructor === Array ? fC[l] : fC,
-                fF: fF.constructor === Array ? fF[l] : fF,
-                fR: fR.constructor === Array ? fR[l] : fR,
-                fS: fS.constructor === Array ? fS[l] : fS,
-                fW: fW.constructor === Array ? fW[l] : fW,
                 height: b.height - p * 2,
-                i: i,
+                l: l,
                 id: ((this$1._id(d, i)) + "_" + l),
-                lH: lH.constructor === Array ? lH[l] : lH,
-                r: bounds.angle !== void 0 ? bounds.angle : r.constructor === Array ? r[l] : r,
-                tA: tA.constructor === Array ? tA[l] : tA,
+                r: bounds.angle !== undefined ? bounds.angle : 0,
                 text: labels[l],
-                vA: vA.constructor === Array ? vA[l] : vA,
                 width: b.width - p * 2,
                 x: x + b.x + p,
                 y: y + b.y + p
-              }));
+              });
 
             }
 
@@ -10026,17 +10282,10 @@ var Shape = (function (BaseClass$$1) {
     return new TextBox()
       .data(labelData)
       .duration(this._duration)
-      .fontColor(function (d) { return d.fC; })
-      .fontFamily(function (d) { return d.fF; })
-      .fontResize(function (d) { return d.fR; })
-      .fontSize(function (d) { return d.fS; })
-      .fontWeight(function (d) { return d.fW; })
-      .lineHeight(function (d) { return d.lH; })
       .pointerEvents("none")
       .rotate(function (d) { return d.data.r; })
-      .textAnchor(function (d) { return d.tA; })
-      .verticalAlign(function (d) { return d.vA; })
       .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
+      .config(this._labelConfig)
       .render();
 
   };
@@ -10247,62 +10496,14 @@ var Shape = (function (BaseClass$$1) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the font-color accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-color accessor, which by default returns a color that contrasts the fill color. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|String|Array} [*value*]
+      @desc Defines the "fill-opacity" attribute for the shapes.
+      @param {Function|Number} [*value* = 1]
       @chainable
   */
-  Shape.prototype.fontColor = function fontColor (_) {
+  Shape.prototype.fillOpacity = function fillOpacity (_) {
     return arguments.length
-         ? (this._fontColor = typeof _ === "function" ? _ : constant$4(_), this)
-         : this._fontColor;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the font-family accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-family accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|String|Array} [*value* = "Verdana"]
-      @chainable
-  */
-  Shape.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length
-         ? (this._fontFamily = typeof _ === "function" ? _ : constant$4(_), this)
-         : this._fontFamily;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns the current class instance. If *value* is not specified, returns the current font resizing accessor. When font resizing is enabled, the font-size of the value returned by [label](#label) will be resized the best fit the shape. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|Boolean|Array} [*value*]
-      @chainable
-  */
-  Shape.prototype.fontResize = function fontResize (_) {
-    return arguments.length
-         ? (this._fontResize = typeof _ === "function" ? _ : constant$4(_), this)
-         : this._fontResize;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the font-size accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-size accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|String|Array} [*value* = 12]
-      @chainable
-  */
-  Shape.prototype.fontSize = function fontSize (_) {
-    return arguments.length
-         ? (this._fontSize = typeof _ === "function" ? _ : constant$4(_), this)
-         : this._fontSize;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the font-weight accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current font-weight accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|String|Array} [*value* = 400]
-      @chainable
-  */
-  Shape.prototype.fontWeight = function fontWeight (_) {
-    return arguments.length
-         ? (this._fontWeight = typeof _ === "function" ? _ : constant$4(_), this)
-         : this._fontWeight;
+         ? (this._fillOpacity = typeof _ === "function" ? _ : constant$4(_), this)
+         : this._fillOpacity;
   };
 
   /**
@@ -10421,14 +10622,12 @@ function(d, i, shape) {
 
   /**
       @memberof Shape
-      @desc Specifies the rotation angle, in degrees, of a shape's label. If *value* is not specified, returns the current label rotation. If an array is passed or returned from the function, each value will be used consecutively with each label.
-      @param {Function|Number|Array} [angle = 0]
+      @desc A pass-through to the config method of the TextBox class used to create a shape's labels.
+      @param {Object} [*value*]
       @chainable
   */
-  Shape.prototype.labelRotate = function labelRotate (_) {
-    return arguments.length
-         ? (this._labelRotate = typeof _ === "function" ? _ : constant$4(_), this)
-         : this._labelRotate;
+  Shape.prototype.labelConfig = function labelConfig (_) {
+    return arguments.length ? (this._labelConfig = assign(this._labelConfig, _), this) : this._labelConfig;
   };
 
   /**
@@ -10465,6 +10664,26 @@ function(d, i, shape) {
     return arguments.length
          ? (this._opacity = typeof _ === "function" ? _ : constant$4(_), this)
          : this._opacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc Defines the "rx" attribute for the shapes.
+      @param {Function|Number} [*value* = 0]
+      @chainable
+  */
+  Shape.prototype.rx = function rx (_) {
+    return arguments.length ? (this._rx = typeof _ === "function" ? _ : constant$4(_), this) : this._rx;
+  };
+
+  /**
+      @memberof Shape
+      @desc Defines the "rx" attribute for the shapes.
+      @param {Function|Number} [*value* = 0]
+      @chainable
+  */
+  Shape.prototype.ry = function ry (_) {
+    return arguments.length ? (this._ry = typeof _ === "function" ? _ : constant$4(_), this) : this._ry;
   };
 
   /**
@@ -10529,6 +10748,42 @@ function(d) {
     return arguments.length
          ? (this._stroke = typeof _ === "function" ? _ : constant$4(_), this)
          : this._stroke;
+  };
+
+  /**
+      @memberof Shape
+      @desc Defines the "stroke-dasharray" attribute for the shapes.
+      @param {Function|String} [*value* = "1"]
+      @chainable
+  */
+  Shape.prototype.strokeDasharray = function strokeDasharray (_) {
+    return arguments.length
+         ? (this._strokeDasharray = typeof _ === "function" ? _ : constant$4(_), this)
+         : this._strokeDasharray;
+  };
+
+  /**
+      @memberof Shape
+      @desc Defines the "stroke-linecap" attribute for the shapes. Accepted values are `"butt"`, `"round"`, and `"square"`.
+      @param {Function|String} [*value* = "butt"]
+      @chainable
+  */
+  Shape.prototype.strokeLinecap = function strokeLinecap (_) {
+    return arguments.length
+         ? (this._strokeLinecap = typeof _ === "function" ? _ : constant$4(_), this)
+         : this._strokeLinecap;
+  };
+
+  /**
+      @memberof Shape
+      @desc Defines the "stroke-opacity" attribute for the shapes.
+      @param {Function|Number} [*value* = 1]
+      @chainable
+  */
+  Shape.prototype.strokeOpacity = function strokeOpacity (_) {
+    return arguments.length
+         ? (this._strokeOpacity = typeof _ === "function" ? _ : constant$4(_), this)
+         : this._strokeOpacity;
   };
 
   /**
@@ -11607,7 +11862,7 @@ function curveRadial(curve) {
   return radial;
 }
 
-function radialLine(l) {
+function lineRadial(l) {
   var c = l.curve;
 
   l.angle = l.x, delete l.x;
@@ -11620,11 +11875,11 @@ function radialLine(l) {
   return l;
 }
 
-var radialLine$1 = function() {
-  return radialLine(line().curve(curveRadialLinear));
+var lineRadial$1 = function() {
+  return lineRadial(line().curve(curveRadialLinear));
 };
 
-var radialArea = function() {
+var areaRadial = function() {
   var a = area().curve(curveRadialLinear),
       c = a.curve,
       x0 = a.lineX0,
@@ -11638,10 +11893,10 @@ var radialArea = function() {
   a.radius = a.y, delete a.y;
   a.innerRadius = a.y0, delete a.y0;
   a.outerRadius = a.y1, delete a.y1;
-  a.lineStartAngle = function() { return radialLine(x0()); }, delete a.lineX0;
-  a.lineEndAngle = function() { return radialLine(x1()); }, delete a.lineX1;
-  a.lineInnerRadius = function() { return radialLine(y0()); }, delete a.lineY0;
-  a.lineOuterRadius = function() { return radialLine(y1()); }, delete a.lineY1;
+  a.lineStartAngle = function() { return lineRadial(x0()); }, delete a.lineX0;
+  a.lineEndAngle = function() { return lineRadial(x1()); }, delete a.lineX1;
+  a.lineInnerRadius = function() { return lineRadial(y0()); }, delete a.lineY0;
+  a.lineOuterRadius = function() { return lineRadial(y1()); }, delete a.lineY1;
 
   a.curve = function(_) {
     return arguments.length ? c(curveRadial(_)) : c()._curve;
@@ -11649,6 +11904,91 @@ var radialArea = function() {
 
   return a;
 };
+
+var pointRadial = function(x, y) {
+  return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
+};
+
+var slice$3 = Array.prototype.slice;
+
+function linkSource(d) {
+  return d.source;
+}
+
+function linkTarget(d) {
+  return d.target;
+}
+
+function link(curve) {
+  var source = linkSource,
+      target = linkTarget,
+      x$$1 = x,
+      y$$1 = y,
+      context = null;
+
+  function link() {
+    var buffer, argv = slice$3.call(arguments), s = source.apply(this, argv), t = target.apply(this, argv);
+    if (!context) { context = buffer = path(); }
+    curve(context, +x$$1.apply(this, (argv[0] = s, argv)), +y$$1.apply(this, argv), +x$$1.apply(this, (argv[0] = t, argv)), +y$$1.apply(this, argv));
+    if (buffer) { return context = null, buffer + "" || null; }
+  }
+
+  link.source = function(_) {
+    return arguments.length ? (source = _, link) : source;
+  };
+
+  link.target = function(_) {
+    return arguments.length ? (target = _, link) : target;
+  };
+
+  link.x = function(_) {
+    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$5(+_), link) : x$$1;
+  };
+
+  link.y = function(_) {
+    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$5(+_), link) : y$$1;
+  };
+
+  link.context = function(_) {
+    return arguments.length ? ((context = _ == null ? null : _), link) : context;
+  };
+
+  return link;
+}
+
+function curveHorizontal(context, x0, y0, x1, y1) {
+  context.moveTo(x0, y0);
+  context.bezierCurveTo(x0 = (x0 + x1) / 2, y0, x0, y1, x1, y1);
+}
+
+function curveVertical(context, x0, y0, x1, y1) {
+  context.moveTo(x0, y0);
+  context.bezierCurveTo(x0, y0 = (y0 + y1) / 2, x1, y0, x1, y1);
+}
+
+function curveRadial$1(context, x0, y0, x1, y1) {
+  var p0 = pointRadial(x0, y0),
+      p1 = pointRadial(x0, y0 = (y0 + y1) / 2),
+      p2 = pointRadial(x1, y0),
+      p3 = pointRadial(x1, y1);
+  context.moveTo(p0[0], p0[1]);
+  context.bezierCurveTo(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+}
+
+function linkHorizontal() {
+  return link(curveHorizontal);
+}
+
+function linkVertical() {
+  return link(curveVertical);
+}
+
+function linkRadial() {
+  var l = link(curveRadial$1);
+  l.angle = l.x, delete l.x;
+  l.radius = l.y, delete l.y;
+  return l;
+}
 
 var circle = {
   draw: function(context, size) {
@@ -12635,13 +12975,11 @@ function stepAfter(context) {
   return new Step(context, 1);
 }
 
-var slice$3 = Array.prototype.slice;
-
 var none$1 = function(series, order) {
   if (!((n = series.length) > 1)) { return; }
-  for (var i = 1, s0, s1 = series[order[0]], n, m = s1.length; i < n; ++i) {
+  for (var i = 1, j, s0, s1 = series[order[0]], n, m = s1.length; i < n; ++i) {
     s0 = s1, s1 = series[order[i]];
-    for (var j = 0; j < m; ++j) {
+    for (j = 0; j < m; ++j) {
       s1[j][1] += s1[j][0] = isNaN(s0[j][1]) ? s0[j][0] : s0[j][1];
     }
   }
@@ -12713,6 +13051,21 @@ var expand = function(series, order) {
     if (y) { for (i = 0; i < n; ++i) { series[i][j][1] /= y; } }
   }
   none$1(series, order);
+};
+
+var diverging = function(series, order) {
+  if (!((n = series.length) > 1)) { return; }
+  for (var i, j = 0, d, dy, yp, yn, n, m = series[order[0]].length; j < m; ++j) {
+    for (yp = yn = 0, i = 0; i < n; ++i) {
+      if ((dy = (d = series[order[i]][j])[1] - d[0]) >= 0) {
+        d[0] = yp, d[1] = yp += dy;
+      } else if (dy < 0) {
+        d[1] = yn, d[0] = yn += dy;
+      } else {
+        d[0] = yp;
+      }
+    }
+  }
 };
 
 var silhouette = function(series, order) {
@@ -12798,8 +13151,14 @@ var paths = Object.freeze({
 	area: area,
 	line: line,
 	pie: pie,
-	radialArea: radialArea,
-	radialLine: radialLine$1,
+	areaRadial: areaRadial,
+	radialArea: areaRadial,
+	lineRadial: lineRadial$1,
+	radialLine: lineRadial$1,
+	pointRadial: pointRadial,
+	linkHorizontal: linkHorizontal,
+	linkVertical: linkVertical,
+	linkRadial: linkRadial,
 	symbol: symbol,
 	symbols: symbols,
 	symbolCircle: circle,
@@ -12829,6 +13188,7 @@ var paths = Object.freeze({
 	curveStepBefore: stepBefore,
 	stack: stack,
 	stackOffsetExpand: expand,
+	stackOffsetDiverging: diverging,
 	stackOffsetNone: none$1,
 	stackOffsetSilhouette: silhouette,
 	stackOffsetWiggle: wiggle,
@@ -13464,9 +13824,11 @@ var Area = (function (Shape$$1) {
       if (!r) { return null; }
       return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2 - this$1._x(d, i), y: r.cy - r.height / 2 - this$1._y(d, i)};
     };
+    this._labelConfig = Object.assign(this._labelConfig, {
+      textAnchor: "middle",
+      verticalAlign: "middle"
+    });
     this._name = "Area";
-    this.textAnchor("middle");
-    this.verticalAlign("middle");
     this._x = accessor("x");
     this._x0 = accessor("x");
     this._x1 = null;
@@ -14256,12 +14618,14 @@ var Path$1 = (function (Shape$$1) {
     Shape$$1.call(this, "path");
     this._d = accessor("path");
     this._labelBounds = function (d, i, aes) {
-      var r = largestRect(aes.points, {angle: this$1._labelRotate(d, i)});
+      var r = largestRect(aes.points, {angle: this$1._labelConfig.rotate ? this$1._labelConfig.rotate(d, i) : 0});
       return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2};
     };
     this._name = "Path";
-    this.textAnchor("middle");
-    this.verticalAlign("middle");
+    this._labelConfig = Object.assign(this._labelConfig, {
+      textAnchor: "middle",
+      verticalAlign: "middle"
+    });
   }
 
   if ( Shape$$1 ) Path.__proto__ = Shape$$1;
@@ -14543,19 +14907,21 @@ var Axis = (function (BaseClass$$1) {
     this._shape = "Line";
     this._shapeConfig = {
       fill: "#000",
-      fontColor: "#000",
-      fontFamily: new TextBox().fontFamily(),
-      fontResize: false,
-      fontSize: constant$4(10),
       height: function (d) { return d.tick ? 8 : 0; },
       label: function (d) { return d.text; },
       labelBounds: function (d) { return d.labelBounds; },
+      labelConfig: {
+        fontColor: "#000",
+        fontFamily: new TextBox().fontFamily(),
+        fontResize: false,
+        fontSize: constant$4(10),
+        textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
+        verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
+      },
       labelPadding: 0,
       r: function (d) { return d.tick ? 4 : 0; },
       stroke: "#000",
       strokeWidth: 1,
-      textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
-      verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; },
       width: function (d) { return d.tick ? 8 : 0; }
     };
     this._tickSize = 5;
@@ -14645,7 +15011,7 @@ var Axis = (function (BaseClass$$1) {
     }
 
     if (this._lineHeight === void 0) {
-      this._lineHeight = function (d, i) { return this$1._shapeConfig.fontSize(d, i) * 1.1; };
+      this._lineHeight = function (d, i) { return this$1._shapeConfig.labelConfig.fontSize(d, i) * 1.1; };
     }
 
     var ref = this._position;
@@ -14769,8 +15135,8 @@ var Axis = (function (BaseClass$$1) {
     // Measures size of ticks
     var textData = labels.map(function (d, i) {
 
-      var f = this$1._shapeConfig.fontFamily(d, i),
-            s = this$1._shapeConfig.fontSize(d, i);
+      var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
+            s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
       var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
 
@@ -15154,7 +15520,7 @@ var Axis = (function (BaseClass$$1) {
       @chainable
   */
   Axis.prototype.shapeConfig = function shapeConfig (_) {
-    return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+    return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
   };
 
   /**
@@ -16372,20 +16738,22 @@ var Legend = (function (BaseClass$$1) {
     this._shapeConfig = {
       duration: this._duration,
       fill: accessor("color"),
-      fontColor: constant$4("#444"),
-      fontFamily: new Rect().fontFamily(),
-      fontResize: false,
-      fontSize: constant$4(10),
       height: constant$4(10),
-      hitArea: function (dd) {
-        var d = this$1._lineData[this$1._data.indexOf(dd)],
+      hitArea: function (dd, i) {
+        var d = this$1._lineData[i],
               h = max([d.height, d.shapeHeight]);
         return {width: d.width + d.shapeWidth, height: h, x: -d.shapeWidth / 2, y: -h / 2};
       },
       labelBounds: function (dd, i, s) {
-        var d = this$1._lineData[dd.i],
+        var d = this$1._lineData[i],
               w = s.r !== void 0 ? s.r : s.width / 2;
         return {width: d.width, height: d.height, x: w + this$1._padding, y: -d.height / 2};
+      },
+      labelConfig: {
+        fontColor: constant$4("#444"),
+        fontFamily: new TextBox().fontFamily(),
+        fontResize: false,
+        fontSize: constant$4(10)
       },
       opacity: 1,
       r: constant$4(5),
@@ -16422,8 +16790,8 @@ var Legend = (function (BaseClass$$1) {
   Legend.prototype.constructor = Legend;
 
   Legend.prototype._fetchConfig = function _fetchConfig (key, d, i) {
-    return typeof this._shapeConfig[key] === "function"
-         ? this._shapeConfig[key](d, i) : this._shapeConfig[key];
+    var val = this._shapeConfig[key] || this._shapeConfig.labelConfig[key];
+    return typeof val === "function" ? val(d, i) : val;
   };
 
   Legend.prototype._rowHeight = function _rowHeight (row) {
@@ -16636,7 +17004,7 @@ var Legend = (function (BaseClass$$1) {
       .render();
 
     this._shapes = [];
-    var baseConfig = this._shapeConfig,
+    var baseConfig = configPrep.bind(this)(this._shapeConfig, "legend"),
           config = {
             id: function (d) { return d.id; },
             label: function (d) { return d.label; },
@@ -16654,30 +17022,6 @@ var Legend = (function (BaseClass$$1) {
         shape: this$1._shape(d, i)
       };
 
-      var loop = function ( k ) {
-        if (k !== "labelBounds" && {}.hasOwnProperty.call(baseConfig, k)) {
-          if (typeof baseConfig[k] === "function") {
-            obj[k] = baseConfig[k](d, i);
-            config[k] = function (d) { return d[k]; };
-          }
-          else if (k === "on") {
-            config[k] = {};
-            var loop$1 = function ( t ) {
-              if ({}.hasOwnProperty.call(baseConfig[k], t)) {
-                config[k][t] = function(d) {
-                  if (!baseConfig[k][t]) { return; }
-                  baseConfig[k][t].bind(this)(d.data, d.i);
-                };
-              }
-            };
-
-            for (var t in baseConfig[k]) loop$1( t );
-          }
-        }
-      };
-
-      for (var k in baseConfig) loop( k );
-
       return obj;
 
     });
@@ -16692,7 +17036,7 @@ var Legend = (function (BaseClass$$1) {
         .labelPadding(0)
         .select(this$1._group.node())
         .verticalAlign("top")
-        .config(Object.assign({}, baseConfig, config))
+        .config(assign({}, baseConfig, config))
         .render());
 
     });
@@ -16846,7 +17190,7 @@ function value(d) {
       @chainable
   */
   Legend.prototype.shapeConfig = function shapeConfig (_) {
-    return arguments.length ? (this._shapeConfig = Object.assign(this._shapeConfig, _), this) : this._shapeConfig;
+    return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
   };
 
   /**
@@ -16866,7 +17210,7 @@ function value(d) {
       @chainable
   */
   Legend.prototype.titleConfig = function titleConfig (_) {
-    return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
+    return arguments.length ? (this._titleConfig = assign(this._titleConfig, _), this) : this._titleConfig;
   };
 
   /**
@@ -27793,872 +28137,6 @@ function build(opts) {
 
 var index$1 = canvg;
 
-var xhtml$1 = "http://www.w3.org/1999/xhtml";
-
-var namespaces$1 = {
-  svg: "http://www.w3.org/2000/svg",
-  xhtml: xhtml$1,
-  xlink: "http://www.w3.org/1999/xlink",
-  xml: "http://www.w3.org/XML/1998/namespace",
-  xmlns: "http://www.w3.org/2000/xmlns/"
-};
-
-var namespace$1 = function(name) {
-  var prefix = name += "", i = prefix.indexOf(":");
-  if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") { name = name.slice(i + 1); }
-  return namespaces$1.hasOwnProperty(prefix) ? {space: namespaces$1[prefix], local: name} : name;
-};
-
-function creatorInherit$1(name) {
-  return function() {
-    var document = this.ownerDocument,
-        uri = this.namespaceURI;
-    return uri === xhtml$1 && document.documentElement.namespaceURI === xhtml$1
-        ? document.createElement(name)
-        : document.createElementNS(uri, name);
-  };
-}
-
-function creatorFixed$1(fullname) {
-  return function() {
-    return this.ownerDocument.createElementNS(fullname.space, fullname.local);
-  };
-}
-
-var creator$1 = function(name) {
-  var fullname = namespace$1(name);
-  return (fullname.local
-      ? creatorFixed$1
-      : creatorInherit$1)(fullname);
-};
-
-var matcher$2 = function(selector) {
-  return function() {
-    return this.matches(selector);
-  };
-};
-
-if (typeof document !== "undefined") {
-  var element$2 = document.documentElement;
-  if (!element$2.matches) {
-    var vendorMatches$1 = element$2.webkitMatchesSelector
-        || element$2.msMatchesSelector
-        || element$2.mozMatchesSelector
-        || element$2.oMatchesSelector;
-    matcher$2 = function(selector) {
-      return function() {
-        return vendorMatches$1.call(this, selector);
-      };
-    };
-  }
-}
-
-var matcher$3 = matcher$2;
-
-var filterEvents$1 = {};
-
-var event$2 = null;
-
-if (typeof document !== "undefined") {
-  var element$3 = document.documentElement;
-  if (!("onmouseenter" in element$3)) {
-    filterEvents$1 = {mouseenter: "mouseover", mouseleave: "mouseout"};
-  }
-}
-
-function filterContextListener$1(listener, index, group) {
-  listener = contextListener$1(listener, index, group);
-  return function(event) {
-    var related = event.relatedTarget;
-    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
-      listener.call(this, event);
-    }
-  };
-}
-
-function contextListener$1(listener, index, group) {
-  return function(event1) {
-    var event0 = event$2; // Events can be reentrant (e.g., focus).
-    event$2 = event1;
-    try {
-      listener.call(this, this.__data__, index, group);
-    } finally {
-      event$2 = event0;
-    }
-  };
-}
-
-function parseTypenames$2(typenames) {
-  return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf(".");
-    if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
-    return {type: t, name: name};
-  });
-}
-
-function onRemove$1(typename) {
-  return function() {
-    var this$1 = this;
-
-    var on = this.__on;
-    if (!on) { return; }
-    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
-      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-      } else {
-        on[++i] = o;
-      }
-    }
-    if (++i) { on.length = i; }
-    else { delete this.__on; }
-  };
-}
-
-function onAdd$1(typename, value, capture) {
-  var wrap = filterEvents$1.hasOwnProperty(typename.type) ? filterContextListener$1 : contextListener$1;
-  return function(d, i, group) {
-    var this$1 = this;
-
-    var on = this.__on, o, listener = wrap(value, i, group);
-    if (on) { for (var j = 0, m = on.length; j < m; ++j) {
-      if ((o = on[j]).type === typename.type && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
-        o.value = value;
-        return;
-      }
-    } }
-    this.addEventListener(typename.type, listener, capture);
-    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
-    if (!on) { this.__on = [o]; }
-    else { on.push(o); }
-  };
-}
-
-var selection_on$1 = function(typename, value, capture) {
-  var this$1 = this;
-
-  var typenames = parseTypenames$2(typename + ""), i, n = typenames.length, t;
-
-  if (arguments.length < 2) {
-    var on = this.node().__on;
-    if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
-      for (i = 0, o = on[j]; i < n; ++i) {
-        if ((t = typenames[i]).type === o.type && t.name === o.name) {
-          return o.value;
-        }
-      }
-    } }
-    return;
-  }
-
-  on = value ? onAdd$1 : onRemove$1;
-  if (capture == null) { capture = false; }
-  for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
-  return this;
-};
-
-function none$3() {}
-
-var selector$1 = function(selector) {
-  return selector == null ? none$3 : function() {
-    return this.querySelector(selector);
-  };
-};
-
-var selection_select$1 = function(select) {
-  if (typeof select !== "function") { select = selector$1(select); }
-
-  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
-        if ("__data__" in node) { subnode.__data__ = node.__data__; }
-        subgroup[i] = subnode;
-      }
-    }
-  }
-
-  return new Selection$2(subgroups, this._parents);
-};
-
-function empty$2() {
-  return [];
-}
-
-var selectorAll$1 = function(selector) {
-  return selector == null ? empty$2 : function() {
-    return this.querySelectorAll(selector);
-  };
-};
-
-var selection_selectAll$1 = function(select) {
-  if (typeof select !== "function") { select = selectorAll$1(select); }
-
-  for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
-      if (node = group[i]) {
-        subgroups.push(select.call(node, node.__data__, i, group));
-        parents.push(node);
-      }
-    }
-  }
-
-  return new Selection$2(subgroups, parents);
-};
-
-var selection_filter$1 = function(match) {
-  if (typeof match !== "function") { match = matcher$3(match); }
-
-  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
-      if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
-        subgroup.push(node);
-      }
-    }
-  }
-
-  return new Selection$2(subgroups, this._parents);
-};
-
-var sparse$1 = function(update) {
-  return new Array(update.length);
-};
-
-var selection_enter$1 = function() {
-  return new Selection$2(this._enter || this._groups.map(sparse$1), this._parents);
-};
-
-function EnterNode$1(parent, datum) {
-  this.ownerDocument = parent.ownerDocument;
-  this.namespaceURI = parent.namespaceURI;
-  this._next = null;
-  this._parent = parent;
-  this.__data__ = datum;
-}
-
-EnterNode$1.prototype = {
-  constructor: EnterNode$1,
-  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
-  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
-  querySelector: function(selector) { return this._parent.querySelector(selector); },
-  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
-};
-
-var constant$8 = function(x) {
-  return function() {
-    return x;
-  };
-};
-
-var keyPrefix$1 = "$"; // Protect against keys like “__proto__”.
-
-function bindIndex$1(parent, group, enter, update, exit, data) {
-  var i = 0,
-      node,
-      groupLength = group.length,
-      dataLength = data.length;
-
-  // Put any non-null nodes that fit into update.
-  // Put any null nodes into enter.
-  // Put any remaining data into enter.
-  for (; i < dataLength; ++i) {
-    if (node = group[i]) {
-      node.__data__ = data[i];
-      update[i] = node;
-    } else {
-      enter[i] = new EnterNode$1(parent, data[i]);
-    }
-  }
-
-  // Put any non-null nodes that don’t fit into exit.
-  for (; i < groupLength; ++i) {
-    if (node = group[i]) {
-      exit[i] = node;
-    }
-  }
-}
-
-function bindKey$1(parent, group, enter, update, exit, data, key) {
-  var i,
-      node,
-      nodeByKeyValue = {},
-      groupLength = group.length,
-      dataLength = data.length,
-      keyValues = new Array(groupLength),
-      keyValue;
-
-  // Compute the key for each node.
-  // If multiple nodes have the same key, the duplicates are added to exit.
-  for (i = 0; i < groupLength; ++i) {
-    if (node = group[i]) {
-      keyValues[i] = keyValue = keyPrefix$1 + key.call(node, node.__data__, i, group);
-      if (keyValue in nodeByKeyValue) {
-        exit[i] = node;
-      } else {
-        nodeByKeyValue[keyValue] = node;
-      }
-    }
-  }
-
-  // Compute the key for each datum.
-  // If there a node associated with this key, join and add it to update.
-  // If there is not (or the key is a duplicate), add it to enter.
-  for (i = 0; i < dataLength; ++i) {
-    keyValue = keyPrefix$1 + key.call(parent, data[i], i, data);
-    if (node = nodeByKeyValue[keyValue]) {
-      update[i] = node;
-      node.__data__ = data[i];
-      nodeByKeyValue[keyValue] = null;
-    } else {
-      enter[i] = new EnterNode$1(parent, data[i]);
-    }
-  }
-
-  // Add any remaining nodes that were not bound to data to exit.
-  for (i = 0; i < groupLength; ++i) {
-    if ((node = group[i]) && (nodeByKeyValue[keyValues[i]] === node)) {
-      exit[i] = node;
-    }
-  }
-}
-
-var selection_data$1 = function(value, key) {
-  if (!value) {
-    data = new Array(this.size()), j = -1;
-    this.each(function(d) { data[++j] = d; });
-    return data;
-  }
-
-  var bind = key ? bindKey$1 : bindIndex$1,
-      parents = this._parents,
-      groups = this._groups;
-
-  if (typeof value !== "function") { value = constant$8(value); }
-
-  for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
-    var parent = parents[j],
-        group = groups[j],
-        groupLength = group.length,
-        data = value.call(parent, parent && parent.__data__, j, parents),
-        dataLength = data.length,
-        enterGroup = enter[j] = new Array(dataLength),
-        updateGroup = update[j] = new Array(dataLength),
-        exitGroup = exit[j] = new Array(groupLength);
-
-    bind(parent, group, enterGroup, updateGroup, exitGroup, data, key);
-
-    // Now connect the enter nodes to their following update node, such that
-    // appendChild can insert the materialized enter node before this node,
-    // rather than at the end of the parent node.
-    for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
-      if (previous = enterGroup[i0]) {
-        if (i0 >= i1) { i1 = i0 + 1; }
-        while (!(next = updateGroup[i1]) && ++i1 < dataLength){  }
-        previous._next = next || null;
-      }
-    }
-  }
-
-  update = new Selection$2(update, parents);
-  update._enter = enter;
-  update._exit = exit;
-  return update;
-};
-
-var selection_exit$1 = function() {
-  return new Selection$2(this._exit || this._groups.map(sparse$1), this._parents);
-};
-
-var selection_merge$1 = function(selection) {
-
-  for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
-    for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
-      if (node = group0[i] || group1[i]) {
-        merge[i] = node;
-      }
-    }
-  }
-
-  for (; j < m0; ++j) {
-    merges[j] = groups0[j];
-  }
-
-  return new Selection$2(merges, this._parents);
-};
-
-var selection_order$1 = function() {
-
-  for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
-    for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
-      if (node = group[i]) {
-        if (next && next !== node.nextSibling) { next.parentNode.insertBefore(node, next); }
-        next = node;
-      }
-    }
-  }
-
-  return this;
-};
-
-var selection_sort$1 = function(compare) {
-  if (!compare) { compare = ascending$3; }
-
-  function compareNode(a, b) {
-    return a && b ? compare(a.__data__, b.__data__) : !a - !b;
-  }
-
-  for (var groups = this._groups, m = groups.length, sortgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, sortgroup = sortgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
-      if (node = group[i]) {
-        sortgroup[i] = node;
-      }
-    }
-    sortgroup.sort(compareNode);
-  }
-
-  return new Selection$2(sortgroups, this._parents).order();
-};
-
-function ascending$3(a, b) {
-  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-}
-
-var selection_call$1 = function() {
-  var callback = arguments[0];
-  arguments[0] = this;
-  callback.apply(null, arguments);
-  return this;
-};
-
-var selection_nodes$1 = function() {
-  var nodes = new Array(this.size()), i = -1;
-  this.each(function() { nodes[++i] = this; });
-  return nodes;
-};
-
-var selection_node$1 = function() {
-
-  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
-    for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
-      var node = group[i];
-      if (node) { return node; }
-    }
-  }
-
-  return null;
-};
-
-var selection_size$1 = function() {
-  var size = 0;
-  this.each(function() { ++size; });
-  return size;
-};
-
-var selection_empty$1 = function() {
-  return !this.node();
-};
-
-var selection_each$1 = function(callback) {
-
-  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
-    for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
-      if (node = group[i]) { callback.call(node, node.__data__, i, group); }
-    }
-  }
-
-  return this;
-};
-
-function attrRemove$2(name) {
-  return function() {
-    this.removeAttribute(name);
-  };
-}
-
-function attrRemoveNS$2(fullname) {
-  return function() {
-    this.removeAttributeNS(fullname.space, fullname.local);
-  };
-}
-
-function attrConstant$2(name, value) {
-  return function() {
-    this.setAttribute(name, value);
-  };
-}
-
-function attrConstantNS$2(fullname, value) {
-  return function() {
-    this.setAttributeNS(fullname.space, fullname.local, value);
-  };
-}
-
-function attrFunction$2(name, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) { this.removeAttribute(name); }
-    else { this.setAttribute(name, v); }
-  };
-}
-
-function attrFunctionNS$2(fullname, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) { this.removeAttributeNS(fullname.space, fullname.local); }
-    else { this.setAttributeNS(fullname.space, fullname.local, v); }
-  };
-}
-
-var selection_attr$1 = function(name, value) {
-  var fullname = namespace$1(name);
-
-  if (arguments.length < 2) {
-    var node = this.node();
-    return fullname.local
-        ? node.getAttributeNS(fullname.space, fullname.local)
-        : node.getAttribute(fullname);
-  }
-
-  return this.each((value == null
-      ? (fullname.local ? attrRemoveNS$2 : attrRemove$2) : (typeof value === "function"
-      ? (fullname.local ? attrFunctionNS$2 : attrFunction$2)
-      : (fullname.local ? attrConstantNS$2 : attrConstant$2)))(fullname, value));
-};
-
-var defaultView = function(node) {
-  return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
-      || (node.document && node) // node is a Window
-      || node.defaultView; // node is a Document
-};
-
-function styleRemove$2(name) {
-  return function() {
-    this.style.removeProperty(name);
-  };
-}
-
-function styleConstant$2(name, value, priority) {
-  return function() {
-    this.style.setProperty(name, value, priority);
-  };
-}
-
-function styleFunction$2(name, value, priority) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) { this.style.removeProperty(name); }
-    else { this.style.setProperty(name, v, priority); }
-  };
-}
-
-var selection_style$1 = function(name, value, priority) {
-  var node;
-  return arguments.length > 1
-      ? this.each((value == null
-            ? styleRemove$2 : typeof value === "function"
-            ? styleFunction$2
-            : styleConstant$2)(name, value, priority == null ? "" : priority))
-      : defaultView(node = this.node())
-          .getComputedStyle(node, null)
-          .getPropertyValue(name);
-};
-
-function propertyRemove$1(name) {
-  return function() {
-    delete this[name];
-  };
-}
-
-function propertyConstant$1(name, value) {
-  return function() {
-    this[name] = value;
-  };
-}
-
-function propertyFunction$1(name, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) { delete this[name]; }
-    else { this[name] = v; }
-  };
-}
-
-var selection_property$1 = function(name, value) {
-  return arguments.length > 1
-      ? this.each((value == null
-          ? propertyRemove$1 : typeof value === "function"
-          ? propertyFunction$1
-          : propertyConstant$1)(name, value))
-      : this.node()[name];
-};
-
-function classArray$1(string) {
-  return string.trim().split(/^|\s+/);
-}
-
-function classList$1(node) {
-  return node.classList || new ClassList$1(node);
-}
-
-function ClassList$1(node) {
-  this._node = node;
-  this._names = classArray$1(node.getAttribute("class") || "");
-}
-
-ClassList$1.prototype = {
-  add: function(name) {
-    var i = this._names.indexOf(name);
-    if (i < 0) {
-      this._names.push(name);
-      this._node.setAttribute("class", this._names.join(" "));
-    }
-  },
-  remove: function(name) {
-    var i = this._names.indexOf(name);
-    if (i >= 0) {
-      this._names.splice(i, 1);
-      this._node.setAttribute("class", this._names.join(" "));
-    }
-  },
-  contains: function(name) {
-    return this._names.indexOf(name) >= 0;
-  }
-};
-
-function classedAdd$1(node, names) {
-  var list = classList$1(node), i = -1, n = names.length;
-  while (++i < n) { list.add(names[i]); }
-}
-
-function classedRemove$1(node, names) {
-  var list = classList$1(node), i = -1, n = names.length;
-  while (++i < n) { list.remove(names[i]); }
-}
-
-function classedTrue$1(names) {
-  return function() {
-    classedAdd$1(this, names);
-  };
-}
-
-function classedFalse$1(names) {
-  return function() {
-    classedRemove$1(this, names);
-  };
-}
-
-function classedFunction$1(names, value) {
-  return function() {
-    (value.apply(this, arguments) ? classedAdd$1 : classedRemove$1)(this, names);
-  };
-}
-
-var selection_classed$1 = function(name, value) {
-  var names = classArray$1(name + "");
-
-  if (arguments.length < 2) {
-    var list = classList$1(this.node()), i = -1, n = names.length;
-    while (++i < n) { if (!list.contains(names[i])) { return false; } }
-    return true;
-  }
-
-  return this.each((typeof value === "function"
-      ? classedFunction$1 : value
-      ? classedTrue$1
-      : classedFalse$1)(names, value));
-};
-
-function textRemove$1() {
-  this.textContent = "";
-}
-
-function textConstant$2(value) {
-  return function() {
-    this.textContent = value;
-  };
-}
-
-function textFunction$2(value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    this.textContent = v == null ? "" : v;
-  };
-}
-
-var selection_text$1 = function(value) {
-  return arguments.length
-      ? this.each(value == null
-          ? textRemove$1 : (typeof value === "function"
-          ? textFunction$2
-          : textConstant$2)(value))
-      : this.node().textContent;
-};
-
-function htmlRemove$1() {
-  this.innerHTML = "";
-}
-
-function htmlConstant$1(value) {
-  return function() {
-    this.innerHTML = value;
-  };
-}
-
-function htmlFunction$1(value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    this.innerHTML = v == null ? "" : v;
-  };
-}
-
-var selection_html$1 = function(value) {
-  return arguments.length
-      ? this.each(value == null
-          ? htmlRemove$1 : (typeof value === "function"
-          ? htmlFunction$1
-          : htmlConstant$1)(value))
-      : this.node().innerHTML;
-};
-
-function raise$2() {
-  if (this.nextSibling) { this.parentNode.appendChild(this); }
-}
-
-var selection_raise$1 = function() {
-  return this.each(raise$2);
-};
-
-function lower$1() {
-  if (this.previousSibling) { this.parentNode.insertBefore(this, this.parentNode.firstChild); }
-}
-
-var selection_lower$1 = function() {
-  return this.each(lower$1);
-};
-
-var selection_append$1 = function(name) {
-  var create = typeof name === "function" ? name : creator$1(name);
-  return this.select(function() {
-    return this.appendChild(create.apply(this, arguments));
-  });
-};
-
-function constantNull$1() {
-  return null;
-}
-
-var selection_insert$1 = function(name, before) {
-  var create = typeof name === "function" ? name : creator$1(name),
-      select = before == null ? constantNull$1 : typeof before === "function" ? before : selector$1(before);
-  return this.select(function() {
-    return this.insertBefore(create.apply(this, arguments), select.apply(this, arguments) || null);
-  });
-};
-
-function remove$2() {
-  var parent = this.parentNode;
-  if (parent) { parent.removeChild(this); }
-}
-
-var selection_remove$1 = function() {
-  return this.each(remove$2);
-};
-
-var selection_datum$1 = function(value) {
-  return arguments.length
-      ? this.property("__data__", value)
-      : this.node().__data__;
-};
-
-function dispatchEvent$1(node, type, params) {
-  var window = defaultView(node),
-      event = window.CustomEvent;
-
-  if (typeof event === "function") {
-    event = new event(type, params);
-  } else {
-    event = window.document.createEvent("Event");
-    if (params) { event.initEvent(type, params.bubbles, params.cancelable), event.detail = params.detail; }
-    else { event.initEvent(type, false, false); }
-  }
-
-  node.dispatchEvent(event);
-}
-
-function dispatchConstant$1(type, params) {
-  return function() {
-    return dispatchEvent$1(this, type, params);
-  };
-}
-
-function dispatchFunction$1(type, params) {
-  return function() {
-    return dispatchEvent$1(this, type, params.apply(this, arguments));
-  };
-}
-
-var selection_dispatch$1 = function(type, params) {
-  return this.each((typeof params === "function"
-      ? dispatchFunction$1
-      : dispatchConstant$1)(type, params));
-};
-
-var root$2 = [null];
-
-function Selection$2(groups, parents) {
-  this._groups = groups;
-  this._parents = parents;
-}
-
-function selection$2() {
-  return new Selection$2([[document.documentElement]], root$2);
-}
-
-Selection$2.prototype = selection$2.prototype = {
-  constructor: Selection$2,
-  select: selection_select$1,
-  selectAll: selection_selectAll$1,
-  filter: selection_filter$1,
-  data: selection_data$1,
-  enter: selection_enter$1,
-  exit: selection_exit$1,
-  merge: selection_merge$1,
-  order: selection_order$1,
-  sort: selection_sort$1,
-  call: selection_call$1,
-  nodes: selection_nodes$1,
-  node: selection_node$1,
-  size: selection_size$1,
-  empty: selection_empty$1,
-  each: selection_each$1,
-  attr: selection_attr$1,
-  style: selection_style$1,
-  property: selection_property$1,
-  classed: selection_classed$1,
-  text: selection_text$1,
-  html: selection_html$1,
-  raise: selection_raise$1,
-  lower: selection_lower$1,
-  append: selection_append$1,
-  insert: selection_insert$1,
-  remove: selection_remove$1,
-  datum: selection_datum$1,
-  on: selection_on$1,
-  dispatch: selection_dispatch$1
-};
-
-var select$1 = function(selector) {
-  return typeof selector === "string"
-      ? new Selection$2([[document.querySelector(selector)]], [document.documentElement])
-      : new Selection$2([[selector]], root$2);
-};
-
-var selectAll$1 = function(selector) {
-  return typeof selector === "string"
-      ? new Selection$2([document.querySelectorAll(selector)], [document.documentElement])
-      : new Selection$2([selector == null ? [] : selector], root$2);
-};
-
 var defaultOptions = {
   background: false,
   callback: function () {},
@@ -28706,8 +28184,8 @@ var dom2canvas = function(elem, options) {
   var reference = elem[0];
   if (reference.constructor === Object) { reference = reference.element; }
 
-  var height = options.height || parseFloat(select$1(reference).style("height")),
-        width = options.width || parseFloat(select$1(reference).style("width"));
+  var height = options.height || parseFloat(select(reference).style("height")),
+        width = options.width || parseFloat(select(reference).style("width"));
 
   var layerX, layerY, offsetX = 0, offsetY = 0;
   if (reference.getBoundingClientRect) {
@@ -28748,12 +28226,12 @@ var dom2canvas = function(elem, options) {
     // strips translate and scale from transform property
     if (this.tagName) {
 
-      var opacity = select$1(this).attr("opacity") || select$1(this).style("opacity");
-      var display = select$1(this).style("display");
-      var visibility = select$1(this).style("visibility");
+      var opacity = select(this).attr("opacity") || select(this).style("opacity");
+      var display = select(this).style("display");
+      var visibility = select(this).style("visibility");
       if (display === "none" || visibility === "hidden" || opacity && opacity === 0) { return; }
 
-      var property = select$1(this).attr("transform"),
+      var property = select(this).attr("transform"),
             tag$1 = this.tagName.toLowerCase();
 
       if (tag$1 === "g" && property) {
@@ -28773,22 +28251,22 @@ var dom2canvas = function(elem, options) {
       }
 
       if (tag$1 === "svg") {
-        var x$1 = select$1(this).attr("x");
+        var x$1 = select(this).attr("x");
         x$1 = x$1 ? Math.round(parseFloat(x$1)) * transform.scale : 0;
         transform.x += x$1;
-        var y$1 = select$1(this).attr("y");
+        var y$1 = select(this).attr("y");
         y$1 = y$1 ? Math.round(parseFloat(y$1)) * transform.scale : 0;
         transform.y += y$1;
         transform.clip = {
-          height: Math.round(parseFloat(select$1(this).attr("height") || select$1(this).style("height"))),
-          width: Math.round(parseFloat(select$1(this).attr("width") || select$1(this).style("width"))),
+          height: Math.round(parseFloat(select(this).attr("height") || select(this).style("height"))),
+          width: Math.round(parseFloat(select(this).attr("width") || select(this).style("width"))),
           x: x$1, y: y$1
         };
       }
       else {
-        var x$2 = select$1(this).attr("x");
+        var x$2 = select(this).attr("x");
         if (x$2) { transform.x += parseFloat(x$2) * transform.scale; }
-        var y$2 = select$1(this).attr("y");
+        var y$2 = select(this).attr("y");
         if (y$2) { transform.y += parseFloat(y$2) * transform.scale; }
       }
 
@@ -28815,10 +28293,10 @@ var dom2canvas = function(elem, options) {
     else if (tag === "defs") { return; }
     else if (tag === "text") {
       var elem = this.cloneNode(true);
-      select$1(elem).call(strokeWidth);
+      select(elem).call(strokeWidth);
       layers.push(Object.assign({}, transform, {type: "svg", value: elem}));
     }
-    else if (["div", "foreignobject", "span"].includes(tag) && !select$1(this).selectAll("svg").size()) {
+    else if (["div", "foreignobject", "span"].includes(tag) && !select(this).selectAll("svg").size()) {
 
       var data = {
         height: height,
@@ -28861,11 +28339,11 @@ var dom2canvas = function(elem, options) {
     }
     else if (["image", "img"].includes(tag)) {
 
-      var url = select$1(this).attr("href") || select$1(this).attr("xlink:href");
+      var url = select(this).attr("href") || select(this).attr("xlink:href");
 
       if (url.length) {
-        var height$1 = parseFloat(select$1(this).attr("height")) * transform.scale,
-              width$1 = parseFloat(select$1(this).attr("width")) * transform.scale;
+        var height$1 = parseFloat(select(this).attr("height")) * transform.scale,
+              width$1 = parseFloat(select(this).attr("width")) * transform.scale;
 
         var data$1 = {
           clip: transform.clip,
@@ -28902,13 +28380,13 @@ var dom2canvas = function(elem, options) {
     else if (tag !== "g") { // catches all SVG shapes
 
       var elem$1 = this.cloneNode(true);
-      select$1(elem$1).call(strokeWidth);
+      select(elem$1).call(strokeWidth);
       layers.push(Object.assign({}, transform, {type: "svg", value: elem$1}));
       // if (["pattern"].includes(tag)) layers.push(Object.assign({}, transform, {type: "svg", value: elem}));
       // else layers.push({type: "svg", value: elem});
-      var fill = select$1(elem$1).attr("fill");
+      var fill = select(elem$1).attr("fill");
       if (fill && fill.indexOf("url") === 0) {
-        var property$1 = select$1(elem$1).attr("transform");
+        var property$1 = select(elem$1).attr("transform");
 
         if (property$1) {
           var scale$1 = property$1.match(/scale\(([^a-z]+)\)/i);
@@ -28925,7 +28403,7 @@ var dom2canvas = function(elem, options) {
             transform.y += y$3;
           }
         }
-        checkChildren(select$1(fill.slice(4, -1)).node(), transform);
+        checkChildren(select(fill.slice(4, -1)).node(), transform);
       }
 
     }
@@ -28933,7 +28411,7 @@ var dom2canvas = function(elem, options) {
   }
 
   function checkChildren(e, trans) {
-    selectAll$1(e.childNodes).each(function() {
+    selectAll(e.childNodes).each(function() {
       checkRender.bind(this)(trans);
     });
   }
@@ -29000,7 +28478,7 @@ var dom2canvas = function(elem, options) {
 
         case "text":
 
-          var parent = select$1(layer.style);
+          var parent = select(layer.style);
           var title = layer.value
             .replace(/&/g, "&amp;")
             .replace(/"/g, "&quot;")
@@ -29599,20 +29077,10 @@ var drawLegend = function(data) {
       .duration(this._duration)
       .data(legendData.length > 1 || this._colorScale ? legendData : [])
       .height(this._height - this._margin.bottom - this._margin.top)
-      .label(function (d, i) {
-        var l = this$1._drawLabel(d, i);
-        return l instanceof Array ? l.join(", ") : l;
-      })
       .select(legendGroup)
       .verticalAlign(!wide ? "middle" : position)
       .width(this._width - this._margin.left - this._margin.right)
-      .shapeConfig(this._shapeConfig)
-      .shapeConfig({on: Object.keys(this._on)
-        .filter(function (e) { return !e.includes(".") || e.includes(".legend"); })
-        .reduce(function (obj, e) {
-          obj[e] = this$1._on[e];
-          return obj;
-        }, {})})
+      .shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend"))
       .config(this._legendConfig)
       .render();
 
@@ -29849,57 +29317,6 @@ var click = function(d, i) {
 };
 
 /**
-    @desc Tooltip logic for a specified data point.
-    @param {Object} *d* The data object being interacted with.
-    @param {Number} *i* The index of the data object being interacted with.
-    @param {Object} [*config*] Optional configuration methods for the Tooltip class.
-    @private
-*/
-var tooltip = function(d, i, config) {
-  if ( config === void 0 ) config = {};
-
-
-  if (this._tooltip && d) {
-    if (d.__d3plus__ && d.data) { d = d.data; }
-    this._select.style("cursor", "pointer");
-    this._tooltipClass.data([d])
-      .footer(this._drawDepth < this._groupBy.length - 1
-            ? locale$3.t("Click to Expand", {lng: this._locale})
-            : "")
-      .title(this._drawLabel)
-      .translate(mouse(select("html").node()))
-      .config(config)
-      .config(this._tooltipConfig)
-      .render();
-  }
-
-};
-
-/**
-    @desc On click event for Legend class.
-    @param {Object} *d* The data object being interacted with.
-    @param {Number} *i* The index of the data object being interacted with.
-    @private
-*/
-var clickLegend = function(d, i) {
-
-  tooltip.bind(this)(d, i, {title: this._legendClass.label()});
-
-};
-
-/**
-    @desc On click event for Shape classes.
-    @param {Object} *d* The data object being interacted with.
-    @param {Number} *i* The index of the data object being interacted with.
-    @private
-*/
-var clickShape = function(d, i) {
-
-  tooltip.bind(this)(d, i);
-
-};
-
-/**
     @desc On mouseenter event for all shapes in a Viz.
     @param {Object} *d* The data object being interacted with.
     @param {Number} *i* The index of the data object being interacted with.
@@ -29934,26 +29351,25 @@ var mouseleave = function() {
 };
 
 /**
-    @desc On mousemove event for all legend shapes in a Viz.
+    @desc Tooltip logic for a specified data point.
     @param {Object} *d* The data object being interacted with.
     @param {Number} *i* The index of the data object being interacted with.
+    @param {Object} [*config*] Optional configuration methods for the Tooltip class.
     @private
 */
-var mousemoveLegend = function(d, i) {
+var mousemove = function(d) {
 
-  tooltip.bind(this)(d, i, {title: this._legendClass.label()});
-
-};
-
-/**
-    @desc On mousemove event for all primary shapes in a Viz.
-    @param {Object} *d* The data object being interacted with.
-    @param {Number} *i* The index of the data object being interacted with.
-    @private
-*/
-var mousemoveShape = function(d, i) {
-
-  tooltip.bind(this)(d, i);
+  if (this._tooltip && d) {
+    this._select.style("cursor", "pointer");
+    this._tooltipClass.data([d])
+      .footer(this._drawDepth < this._groupBy.length - 1
+            ? locale$3.t("Click to Expand", {lng: this._locale})
+            : "")
+      .title(this._drawLabel)
+      .translate(mouse(select("html").node()))
+      .config(this._tooltipConfig)
+      .render();
+  }
 
 };
 
@@ -30006,8 +29422,20 @@ var Viz = (function (BaseClass$$1) {
     this._groupBy = [accessor("id")];
     this._legend = true;
     this._legendConfig = {
+      label: function (d, i) {
+        var l = this$1._drawLabel(d, i);
+        return l instanceof Array ? l.join(", ") : l;
+      },
       shapeConfig: {
-        fontResize: false
+        fill: function (d, i) {
+          var c = this$1._color(d, i);
+          if (color(c)) { return c; }
+          return colorAssign(c);
+        },
+        labelConfig: {
+          fontColor: undefined,
+          fontResize: false
+        }
       }
     };
     this._legendClass = new Legend();
@@ -30015,13 +29443,10 @@ var Viz = (function (BaseClass$$1) {
     this._locale = "en-US";
     this._lrucache = index(5);
     this._on = {
-      "click": click.bind(this),
-      "click.legend": clickLegend.bind(this),
-      "click.shape": clickShape.bind(this),
-      "mouseenter": mouseenter.bind(this),
-      "mousemove.legend": mousemoveLegend.bind(this),
-      "mousemove.shape": mousemoveShape.bind(this),
-      "mouseleave": mouseleave.bind(this)
+      click: click.bind(this),
+      mouseenter: mouseenter.bind(this),
+      mouseleave: mouseleave.bind(this),
+      mousemove: mousemove.bind(this)
     };
     this._padding = 5;
     this._queue = [];
@@ -30035,6 +29460,9 @@ var Viz = (function (BaseClass$$1) {
         var c = this$1._color(d, i);
         if (color(c)) { return c; }
         return colorAssign(c);
+      },
+      labelConfig: {
+        fontColor: function (d, i) { return colorContrast(this$1._shapeConfig.fill(d, i)); }
       },
       opacity: constant$4(1),
       stroke: function (d, i) { return color(this$1._shapeConfig.fill(d, i)).darker(); },
@@ -30100,20 +29528,36 @@ var Viz = (function (BaseClass$$1) {
 
     var newConfig = {duration: this._duration};
 
-    var loop = function ( key ) {
+    var wrapFunction = function (func) { return function (d, i, s) {
+      while (d.__d3plus__ && d.data) {
+        d = d.data;
+        i = d.i;
+      }
+      return func(d, i, s);
+    }; };
 
-      if ({}.hasOwnProperty.call(this$1._shapeConfig, key)) {
+    var keyEval = function (newObj, obj) {
 
-        if (typeof this$1._shapeConfig[key] === "function") {
-          newConfig[key] = function (d, i, s) { return this$1._shapeConfig[key](d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i, s); };
+      for (var key in obj) {
+
+        if ({}.hasOwnProperty.call(obj, key)) {
+
+          if (typeof obj[key] === "function") {
+            newObj[key] = wrapFunction(obj[key]);
+          }
+          else if (typeof obj[key] === "object" && !(obj instanceof Array)) {
+            newObj[key] = {};
+            keyEval(newObj[key], obj[key]);
+          }
+          else { newObj[key] = obj[key]; }
+
         }
-        else { newConfig[key] = this$1._shapeConfig[key]; }
 
       }
 
     };
 
-    for (var key in this$1._shapeConfig) loop( key );
+    keyEval(newConfig, this._shapeConfig);
 
     newConfig.on = Object.keys(this._on)
       .filter(function (e) { return !e.includes(".") || e.includes(".shape"); })
@@ -30146,12 +29590,13 @@ var Viz = (function (BaseClass$$1) {
       .filter(function (g) { return g !== undefined && g !== null && g.constructor !== Array; }); };
 
     this._drawLabel = function (d, i) {
-      if (d.__d3plus__) {
+      if (!d) { return ""; }
+      while (d.__d3plus__ && d.data) {
         d = d.data;
         i = d.i;
       }
       if (this$1._label) { return this$1._label(d, i); }
-      var l = that._ids(d, i).slice(0, that._drawDepth + 1).filter(function (d) { return d && d.constructor !== Array; });
+      var l = that._ids(d, i).slice(0, this$1._drawDepth + 1);
       return l[l.length - 1];
     };
 

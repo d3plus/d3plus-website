@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.8.6
+  d3plus-viz v0.8.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -319,20 +319,10 @@ var drawLegend = function(data) {
       .duration(this._duration)
       .data(legendData.length > 1 || this._colorScale ? legendData : [])
       .height(this._height - this._margin.bottom - this._margin.top)
-      .label(function (d, i) {
-        var l = this$1._drawLabel(d, i);
-        return l instanceof Array ? l.join(", ") : l;
-      })
       .select(legendGroup)
       .verticalAlign(!wide ? "middle" : position)
       .width(this._width - this._margin.left - this._margin.right)
-      .shapeConfig(this._shapeConfig)
-      .shapeConfig({on: Object.keys(this._on)
-        .filter(function (e) { return !e.includes(".") || e.includes(".legend"); })
-        .reduce(function (obj, e) {
-          obj[e] = this$1._on[e];
-          return obj;
-        }, {})})
+      .shapeConfig(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "legend"))
       .config(this._legendConfig)
       .render();
 
@@ -569,57 +559,6 @@ var click = function(d, i) {
 };
 
 /**
-    @desc Tooltip logic for a specified data point.
-    @param {Object} *d* The data object being interacted with.
-    @param {Number} *i* The index of the data object being interacted with.
-    @param {Object} [*config*] Optional configuration methods for the Tooltip class.
-    @private
-*/
-var tooltip = function(d, i, config) {
-  if ( config === void 0 ) config = {};
-
-
-  if (this._tooltip && d) {
-    if (d.__d3plus__ && d.data) { d = d.data; }
-    this._select.style("cursor", "pointer");
-    this._tooltipClass.data([d])
-      .footer(this._drawDepth < this._groupBy.length - 1
-            ? d3plusCommon.locale.t("Click to Expand", {lng: this._locale})
-            : "")
-      .title(this._drawLabel)
-      .translate(d3Selection.mouse(d3Selection.select("html").node()))
-      .config(config)
-      .config(this._tooltipConfig)
-      .render();
-  }
-
-};
-
-/**
-    @desc On click event for Legend class.
-    @param {Object} *d* The data object being interacted with.
-    @param {Number} *i* The index of the data object being interacted with.
-    @private
-*/
-var clickLegend = function(d, i) {
-
-  tooltip.bind(this)(d, i, {title: this._legendClass.label()});
-
-};
-
-/**
-    @desc On click event for Shape classes.
-    @param {Object} *d* The data object being interacted with.
-    @param {Number} *i* The index of the data object being interacted with.
-    @private
-*/
-var clickShape = function(d, i) {
-
-  tooltip.bind(this)(d, i);
-
-};
-
-/**
     @desc On mouseenter event for all shapes in a Viz.
     @param {Object} *d* The data object being interacted with.
     @param {Number} *i* The index of the data object being interacted with.
@@ -654,26 +593,25 @@ var mouseleave = function() {
 };
 
 /**
-    @desc On mousemove event for all legend shapes in a Viz.
+    @desc Tooltip logic for a specified data point.
     @param {Object} *d* The data object being interacted with.
     @param {Number} *i* The index of the data object being interacted with.
+    @param {Object} [*config*] Optional configuration methods for the Tooltip class.
     @private
 */
-var mousemoveLegend = function(d, i) {
+var mousemove = function(d) {
 
-  tooltip.bind(this)(d, i, {title: this._legendClass.label()});
-
-};
-
-/**
-    @desc On mousemove event for all primary shapes in a Viz.
-    @param {Object} *d* The data object being interacted with.
-    @param {Number} *i* The index of the data object being interacted with.
-    @private
-*/
-var mousemoveShape = function(d, i) {
-
-  tooltip.bind(this)(d, i);
+  if (this._tooltip && d) {
+    this._select.style("cursor", "pointer");
+    this._tooltipClass.data([d])
+      .footer(this._drawDepth < this._groupBy.length - 1
+            ? d3plusCommon.locale.t("Click to Expand", {lng: this._locale})
+            : "")
+      .title(this._drawLabel)
+      .translate(d3Selection.mouse(d3Selection.select("html").node()))
+      .config(this._tooltipConfig)
+      .render();
+  }
 
 };
 
@@ -726,8 +664,20 @@ var Viz = (function (BaseClass$$1) {
     this._groupBy = [d3plusCommon.accessor("id")];
     this._legend = true;
     this._legendConfig = {
+      label: function (d, i) {
+        var l = this$1._drawLabel(d, i);
+        return l instanceof Array ? l.join(", ") : l;
+      },
       shapeConfig: {
-        fontResize: false
+        fill: function (d, i) {
+          var c = this$1._color(d, i);
+          if (d3Color.color(c)) { return c; }
+          return d3plusColor.colorAssign(c);
+        },
+        labelConfig: {
+          fontColor: undefined,
+          fontResize: false
+        }
       }
     };
     this._legendClass = new d3plusLegend.Legend();
@@ -735,13 +685,10 @@ var Viz = (function (BaseClass$$1) {
     this._locale = "en-US";
     this._lrucache = lrucache(5);
     this._on = {
-      "click": click.bind(this),
-      "click.legend": clickLegend.bind(this),
-      "click.shape": clickShape.bind(this),
-      "mouseenter": mouseenter.bind(this),
-      "mousemove.legend": mousemoveLegend.bind(this),
-      "mousemove.shape": mousemoveShape.bind(this),
-      "mouseleave": mouseleave.bind(this)
+      click: click.bind(this),
+      mouseenter: mouseenter.bind(this),
+      mouseleave: mouseleave.bind(this),
+      mousemove: mousemove.bind(this)
     };
     this._padding = 5;
     this._queue = [];
@@ -755,6 +702,9 @@ var Viz = (function (BaseClass$$1) {
         var c = this$1._color(d, i);
         if (d3Color.color(c)) { return c; }
         return d3plusColor.colorAssign(c);
+      },
+      labelConfig: {
+        fontColor: function (d, i) { return d3plusColor.colorContrast(this$1._shapeConfig.fill(d, i)); }
       },
       opacity: d3plusCommon.constant(1),
       stroke: function (d, i) { return d3Color.color(this$1._shapeConfig.fill(d, i)).darker(); },
@@ -820,20 +770,36 @@ var Viz = (function (BaseClass$$1) {
 
     var newConfig = {duration: this._duration};
 
-    var loop = function ( key ) {
+    var wrapFunction = function (func) { return function (d, i, s) {
+      while (d.__d3plus__ && d.data) {
+        d = d.data;
+        i = d.i;
+      }
+      return func(d, i, s);
+    }; };
 
-      if ({}.hasOwnProperty.call(this$1._shapeConfig, key)) {
+    var keyEval = function (newObj, obj) {
 
-        if (typeof this$1._shapeConfig[key] === "function") {
-          newConfig[key] = function (d, i, s) { return this$1._shapeConfig[key](d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i, s); };
+      for (var key in obj) {
+
+        if ({}.hasOwnProperty.call(obj, key)) {
+
+          if (typeof obj[key] === "function") {
+            newObj[key] = wrapFunction(obj[key]);
+          }
+          else if (typeof obj[key] === "object" && !(obj instanceof Array)) {
+            newObj[key] = {};
+            keyEval(newObj[key], obj[key]);
+          }
+          else { newObj[key] = obj[key]; }
+
         }
-        else { newConfig[key] = this$1._shapeConfig[key]; }
 
       }
 
     };
 
-    for (var key in this$1._shapeConfig) loop( key );
+    keyEval(newConfig, this._shapeConfig);
 
     newConfig.on = Object.keys(this._on)
       .filter(function (e) { return !e.includes(".") || e.includes(".shape"); })
@@ -866,12 +832,13 @@ var Viz = (function (BaseClass$$1) {
       .filter(function (g) { return g !== undefined && g !== null && g.constructor !== Array; }); };
 
     this._drawLabel = function (d, i) {
-      if (d.__d3plus__) {
+      if (!d) { return ""; }
+      while (d.__d3plus__ && d.data) {
         d = d.data;
         i = d.i;
       }
       if (this$1._label) { return this$1._label(d, i); }
-      var l = that._ids(d, i).slice(0, that._drawDepth + 1).filter(function (d) { return d && d.constructor !== Array; });
+      var l = that._ids(d, i).slice(0, this$1._drawDepth + 1);
       return l[l.length - 1];
     };
 
