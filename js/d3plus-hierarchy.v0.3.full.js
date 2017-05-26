@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.3.5
+  d3plus-hierarchy v0.3.6
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -29427,11 +29427,6 @@ var Viz = (function (BaseClass$$1) {
         return l instanceof Array ? l.join(", ") : l;
       },
       shapeConfig: {
-        fill: function (d, i) {
-          var c = this$1._color(d, i);
-          if (color(c)) { return c; }
-          return colorAssign(c);
-        },
         labelConfig: {
           fontColor: undefined,
           fontResize: false
