@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.3.7
+  d3plus-hierarchy v0.3.8
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -29554,62 +29554,6 @@ var Viz = (function (BaseClass$$1) {
 
   /**
       @memberof Viz
-      @desc Preps a shapeConfig object for d3plus data, and optionally bubbles up a specific shape type.
-      @param {String} *shape* The shape key to bubble up to the parent config level.
-      @private
-  */
-  Viz.prototype._shapeConfigPrep = function _shapeConfigPrep (shape) {
-    var this$1 = this;
-    if ( shape === void 0 ) shape = false;
-
-
-    var newConfig = {duration: this._duration};
-
-    var wrapFunction = function (func) { return function (d, i, s) {
-      while (d.__d3plus__ && d.data) {
-        d = d.data;
-        i = d.i;
-      }
-      return func(d, i, s);
-    }; };
-
-    var keyEval = function (newObj, obj) {
-
-      for (var key in obj) {
-
-        if ({}.hasOwnProperty.call(obj, key)) {
-
-          if (typeof obj[key] === "function") {
-            newObj[key] = wrapFunction(obj[key]);
-          }
-          else if (typeof obj[key] === "object" && !(obj instanceof Array)) {
-            newObj[key] = {};
-            keyEval(newObj[key], obj[key]);
-          }
-          else { newObj[key] = obj[key]; }
-
-        }
-
-      }
-
-    };
-
-    keyEval(newConfig, this._shapeConfig);
-
-    newConfig.on = Object.keys(this._on)
-      .filter(function (e) { return !e.includes(".") || e.includes(".shape"); })
-      .reduce(function (obj, e) {
-        obj[e] = function (d, i) { return this$1._on[e] ? this$1._on[e](d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i) : null; };
-        return obj;
-      }, {});
-
-    if (shape && this._shapeConfig[shape]) { newConfig = assign(newConfig, this._shapeConfig[shape]); }
-    return newConfig;
-
-  };
-
-  /**
-      @memberof Viz
       @desc Called by render once all checks are passed.
       @private
   */
@@ -30392,7 +30336,7 @@ var Pie = (function (Viz$$1) {
         enter: {transform: transform},
         update: {transform: transform}
       }).node())
-      .config(this._shapeConfigPrep("Path"))
+      .config(configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
       .render());
 
     return this;
@@ -31355,13 +31299,13 @@ var Tree = (function (Viz$$1) {
     this._shapes.push(new Path$1()
       .data(treeData.filter(function (d) { return d.depth > 1; }))
       .select(elem("g.d3plus-Tree-Links", elemObject).node())
-      .config(this._shapeConfigPrep("Path"))
+      .config(configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
       .render());
 
     this._shapes.push(new Circle()
       .data(treeData)
       .select(elem("g.d3plus-Tree-Shapes", elemObject).node())
-      .config(this._shapeConfigPrep("Circle"))
+      .config(configPrep.bind(this)(this._shapeConfig, "shape", "Circle"))
       .render());
 
     return this;
@@ -31500,7 +31444,7 @@ var Treemap = (function (Viz$$1) {
         enter: {transform: transform},
         update: {transform: transform}
       }).node())
-      .config(this._shapeConfigPrep("Rect"))
+      .config(configPrep.bind(this)(this._shapeConfig, "shape", "Rect"))
       .render());
 
     return this;

@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.3.7
+  d3plus-hierarchy v0.3.8
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -82,7 +82,7 @@ var Pie = (function (Viz$$1) {
         enter: {transform: transform},
         update: {transform: transform}
       }).node())
-      .config(this._shapeConfigPrep("Path"))
+      .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
       .render());
 
     return this;
@@ -397,13 +397,13 @@ var Tree = (function (Viz$$1) {
     this._shapes.push(new d3plusShape.Path()
       .data(treeData.filter(function (d) { return d.depth > 1; }))
       .select(d3plusCommon.elem("g.d3plus-Tree-Links", elemObject).node())
-      .config(this._shapeConfigPrep("Path"))
+      .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
       .render());
 
     this._shapes.push(new d3plusShape.Circle()
       .data(treeData)
       .select(d3plusCommon.elem("g.d3plus-Tree-Shapes", elemObject).node())
-      .config(this._shapeConfigPrep("Circle"))
+      .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Circle"))
       .render());
 
     return this;
@@ -542,7 +542,7 @@ var Treemap = (function (Viz$$1) {
         enter: {transform: transform},
         update: {transform: transform}
       }).node())
-      .config(this._shapeConfigPrep("Rect"))
+      .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Rect"))
       .render());
 
     return this;
