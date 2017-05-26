@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.17
+  d3plus-common v0.6.18
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -235,7 +235,7 @@ function configPrep(config, type, nest) {
           newObj[key] = wrapFunction(obj[key]);
         }
         else if (typeof obj[key] === "object" && !(obj instanceof Array)) {
-          newObj[key] = {};
+          newObj[key] = {on: {}};
           keyEval(newObj[key], obj[key]);
         }
         else { newObj[key] = obj[key]; }
