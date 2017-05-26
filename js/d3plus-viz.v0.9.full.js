@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.9.0
+  d3plus-viz v0.9.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -29949,7 +29949,7 @@ If no value is specified, the method will return the current *Boolean* value.
       @chainable
   */
   Viz.prototype.downloadConfig = function downloadConfig (_) {
-    return arguments.length ? (this._downloadConfig = _, this) : this._downloadConfig;
+    return arguments.length ? (this._downloadConfig = assign(this._downloadConfig, _), this) : this._downloadConfig;
   };
 
   /**
@@ -30083,7 +30083,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.legendConfig = function legendConfig (_) {
-    return arguments.length ? (this._legendConfig = _, this) : this._legendConfig;
+    return arguments.length ? (this._legendConfig = assign(this._legendConfig, _), this) : this._legendConfig;
   };
 
   /**
