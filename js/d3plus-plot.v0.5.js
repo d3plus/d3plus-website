@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.18
+  d3plus-plot v0.5.19
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -522,45 +522,26 @@ var Plot = (function (Viz$$1) {
       label: function (d) { return this$1._drawLabel(d.data, d.i); },
       select: d3plusCommon.elem("g.d3plus-plot-shapes", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node(),
       x: function (d) { return x(d.x); },
-      y: function (d) { return y(d.y); }
-    };
-
-    function wrapConfig(config) {
-      var obj = {};
-      var loop = function ( k ) {
-        if ({}.hasOwnProperty.call(config, k) && !shapes[k]) {
-          obj[k] = typeof config[k] === "function" ? function (d) { return config[k](d.data, d.i); } : config[k];
-        }
-      };
-
-      for (var k in config) loop( k );
-      return obj;
-    }
-
-    shapeConfig = d3plusCommon.assign(shapeConfig, wrapConfig(this._shapeConfig));
-
-    var positions = {
-      x0: this._discrete === "x" ? shapeConfig.x : x(0),
-      x1: this._discrete === "x" ? null : shapeConfig.x,
-      y0: this._discrete === "y" ? shapeConfig.y : y(0),
-      y1: this._discrete === "y" ? null : shapeConfig.y
+      x0: this._discrete === "x" ? function (d) { return x(d.x); } : x(0),
+      x1: this._discrete === "x" ? null : function (d) { return x(d.x); },
+      y: function (d) { return y(d.y); },
+      y0: this._discrete === "y" ? function (d) { return y(d.y); } : y(0),
+      y1: this._discrete === "y" ? null : function (d) { return y(d.y); }
     };
 
     if (this._stacked) {
       var scale = opp === "x" ? x : y;
-      positions[("" + opp)] = positions[(opp + "0")] = function (d) {
+      shapeConfig[("" + opp)] = shapeConfig[(opp + "0")] = function (d) {
         var dataIndex = stackKeys.indexOf(d.id),
               discreteIndex = discreteKeys.indexOf(d.discrete);
         return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][0]) : scale(0);
       };
-      positions[(opp + "1")] = function (d) {
+      shapeConfig[(opp + "1")] = function (d) {
         var dataIndex = stackKeys.indexOf(d.id),
               discreteIndex = discreteKeys.indexOf(d.discrete);
         return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][1]) : scale(0);
       };
     }
-
-    shapeConfig = d3plusCommon.assign(shapeConfig, positions);
 
     var events = Object.keys(this._on);
     shapeData.forEach(function (d) {
@@ -628,7 +609,7 @@ var Plot = (function (Viz$$1) {
 
       for (var e$2 = 0; e$2 < classEvents.length; e$2++) loop$2( e$2 );
 
-      s.config(this$1._shapeConfig[d.key] ? wrapConfig(this$1._shapeConfig[d.key]) : {}).render();
+      s.config(d3plusCommon.configPrep.bind(this$1)(this$1._shapeConfig, "shape", d.key)).render();
       this$1._shapes.push(s);
 
     });
