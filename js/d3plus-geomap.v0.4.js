@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.3
+  d3plus-geomap v0.4.4
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -49,7 +49,7 @@ var Geomap = (function (Viz$$1) {
         },
         on: {
           mouseenter: function (d) { return d.data ? this$1._on.mouseenter.bind(this$1)(d) : null; },
-          mousemove: function (d) { return d.data ? this$1._on["mousemove.shape"].bind(this$1)(d) : null; },
+          mousemove: function (d) { return d.data ? this$1._on.mousemove.bind(this$1)(d) : null; },
           mouseleave: function (d) { return d.data ? this$1._on.mouseleave.bind(this$1)(d) : null; }
         },
         stroke: function (d, i) { return d3Color.color(this$1._shapeConfig.Path.fill(d, i)).darker(); },
@@ -528,7 +528,7 @@ var Geomap = (function (Viz$$1) {
       .d(function (d) { return path(d.feature); })
       .select(pathGroup.node())
       .x(0).y(0)
-      .config(this._shapeConfigPrep("Path"))
+      .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
       .render());
 
     var pointGroup = this._zoomGroup.selectAll("g.d3plus-geomap-pins").data([0]);
@@ -537,7 +537,7 @@ var Geomap = (function (Viz$$1) {
       .merge(pointGroup);
 
     var circles = new d3plusShape.Circle()
-    .config(this._shapeConfigPrep("Circle"))
+      .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Circle"))
       .data(pointData)
       .r(function (d, i) { return r(this$1._pointSize(d, i)); })
       .select(pointGroup.node())
