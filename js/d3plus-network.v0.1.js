@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.1.6
+  d3plus-network v0.1.7
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -519,7 +519,7 @@ var Network = (function (Viz$$1) {
 
     d3Collection.nest().key(function (d) { return d.shape; }).entries(nodes).forEach(function (d) {
       this$1._shapes.push(new shapes[d.key]()
-        .config(this$1._shapeConfigPrep(d.key))
+        .config(d3plusCommon.configPrep.bind(this$1)(this$1._shapeConfig, "shape", d.key))
         .config(shapeConfig)
         .data(d.values)
         .render());
