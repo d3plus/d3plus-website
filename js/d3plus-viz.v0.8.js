@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.8.7
+  d3plus-viz v0.8.8
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -669,11 +669,6 @@ var Viz = (function (BaseClass$$1) {
         return l instanceof Array ? l.join(", ") : l;
       },
       shapeConfig: {
-        fill: function (d, i) {
-          var c = this$1._color(d, i);
-          if (d3Color.color(c)) { return c; }
-          return d3plusColor.colorAssign(c);
-        },
         labelConfig: {
           fontColor: undefined,
           fontResize: false
