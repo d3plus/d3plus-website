@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.3.5
+  d3plus-timeline v0.3.6
   An easy-to-use javascript timeline.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
