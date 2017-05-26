@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.8.8
+  d3plus-viz v0.8.9
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -28152,6 +28152,28 @@ var canvgOptions = {
   ignoreClear: true
 };
 
+function parseTransform(elem) {
+
+  var property = select(elem).attr("transform");
+  var scale = 1, x = 0, y = 0;
+  if (property) {
+    scale = property.match(/scale\(([^a-z]+)\)/i);
+    if (scale) { scale = parseFloat(scale[1]); }
+    else { scale = 1; }
+    var translate = property.match(/translate\(([^a-z]+)\)/i);
+    if (translate) {
+      var assign;
+      (assign = translate[1]
+        .replace(", ", ",")
+        .replace(/([^a-z]),*\s([^a-z])/gi, "$1,$2")
+        .split(",")
+        .map(function (d) { return parseFloat(d) * scale; }), x = assign[0], y = assign[1]);
+    }
+  }
+  return [scale, x, y];
+
+}
+
 /**
     @function dom2canvas
     @desc Renders HTML/SVG elements to a shared canvas.
@@ -28178,7 +28200,7 @@ var dom2canvas = function(elem, options) {
 
   function strokeWidth(selection$$1) {
     var stroke = selection$$1.attr("stroke-width");
-    selection$$1.attr("stroke-width", !stroke ? 0 : stroke * ratio);
+    selection$$1.attr("stroke-width", !stroke ? 0 : stroke);
   }
 
   var reference = elem[0];
@@ -28229,37 +28251,34 @@ var dom2canvas = function(elem, options) {
       var opacity = select(this).attr("opacity") || select(this).style("opacity");
       var display = select(this).style("display");
       var visibility = select(this).style("visibility");
-      if (display === "none" || visibility === "hidden" || opacity && opacity === 0) { return; }
+      if (display === "none" || visibility === "hidden" || opacity && parseFloat(opacity) === 0) { return; }
 
-      var property = select(this).attr("transform"),
-            tag$1 = this.tagName.toLowerCase();
+      var tag$1 = this.tagName.toLowerCase();
+      var ref = parseTransform(this);
+      var scale = ref[0];
+      var x = ref[1];
+      var y = ref[2];
 
-      if (tag$1 === "g" && property) {
-        var scale = property.match(/scale\(([^a-z]+)\)/i);
-        if (scale) { transform.scale *= Math.round(parseFloat(scale[1])); }
-        var translate = property.match(/translate\(([^a-z]+)\)/i);
-        if (translate) {
-          var ref = translate[1]
-            .replace(/([^a-z]),*\s([^a-z])/gi, "$1,$2")
-            .split(",")
-            .map(function (d) { return Math.round(parseFloat(d) * transform.scale); });
-          var x = ref[0];
-          var y = ref[1];
-          transform.x += x;
-          transform.y += y;
-        }
+      if (tag$1 === "g") {
+        transform.scale *= scale;
+        transform.x += x;
+        transform.y += y;
       }
 
       if (tag$1 === "svg") {
+        var rect = this.getBoundingClientRect();
+        transform.x += rect.left - offsetX;
+        transform.y += rect.top - offsetY;
+
         var x$1 = select(this).attr("x");
-        x$1 = x$1 ? Math.round(parseFloat(x$1)) * transform.scale : 0;
+        x$1 = x$1 ? parseFloat(x$1) * transform.scale : 0;
         transform.x += x$1;
         var y$1 = select(this).attr("y");
-        y$1 = y$1 ? Math.round(parseFloat(y$1)) * transform.scale : 0;
+        y$1 = y$1 ? parseFloat(y$1) * transform.scale : 0;
         transform.y += y$1;
         transform.clip = {
-          height: Math.round(parseFloat(select(this).attr("height") || select(this).style("height"))),
-          width: Math.round(parseFloat(select(this).attr("width") || select(this).style("width"))),
+          height: parseFloat(select(this).attr("height") || select(this).style("height")),
+          width: parseFloat(select(this).attr("width") || select(this).style("width")),
           x: x$1, y: y$1
         };
       }
@@ -28296,9 +28315,50 @@ var dom2canvas = function(elem, options) {
       select(elem).call(strokeWidth);
       layers.push(Object.assign({}, transform, {type: "svg", value: elem}));
     }
+    else if (["image", "img"].includes(tag)) {
+
+      var url = select(this).attr("href") || select(this).attr("xlink:href");
+
+      if (url.length) {
+
+        var h = parseFloat(select(this).attr("height")) * transform.scale,
+              w = parseFloat(select(this).attr("width")) * transform.scale;
+
+        var data = {
+          clip: transform.clip,
+          height: h,
+          loaded: false,
+          type: "img",
+          width: w,
+          x: transform.x,
+          y: transform.y
+        };
+        layers.push(data);
+
+        var img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = function() {
+
+          var canvas2 = document.createElement("canvas");
+          var ctx2 = canvas2.getContext("2d");
+          canvas2.height = h * ratio;
+          canvas2.width = w * ratio;
+          ctx2.drawImage(this, 0, 0, w * ratio, h * ratio);
+          var himg = document.createElement("img");
+          himg.src = canvas2.toDataURL("image/png");
+
+          data.value = himg;
+          data.loaded = true;
+
+        };
+        img.src = url;
+
+      }
+
+    }
     else if (["div", "foreignobject", "span"].includes(tag) && !select(this).selectAll("svg").size()) {
 
-      var data = {
+      var data$1 = {
         height: height,
         loaded: false,
         type: "html",
@@ -28314,7 +28374,7 @@ var dom2canvas = function(elem, options) {
       var tempContext = tempCanvas.getContext("2d");
       tempContext.scale(options.scale * ratio, options.scale * ratio);
 
-      layers.push(data);
+      layers.push(data$1);
       html2canvas(this, {
         allowTaint: true,
         background: undefined,
@@ -28324,86 +28384,69 @@ var dom2canvas = function(elem, options) {
         taintTest: false,
         width: width
       }).then(function (c) {
-        data.value = c;
-        data.loaded = true;
+        data$1.value = c;
+        data$1.loaded = true;
       });
 
     }
-    else if (this.childNodes.length > 0) {
-      if (tag === "svg") {
-        var rect = this.getBoundingClientRect();
-        transform.x += rect.left - offsetX;
-        transform.y += rect.top - offsetY;
-      }
-      checkChildren(this, transform);
-    }
-    else if (["image", "img"].includes(tag)) {
-
-      var url = select(this).attr("href") || select(this).attr("xlink:href");
-
-      if (url.length) {
-        var height$1 = parseFloat(select(this).attr("height")) * transform.scale,
-              width$1 = parseFloat(select(this).attr("width")) * transform.scale;
-
-        var data$1 = {
-          clip: transform.clip,
-          height: height$1,
-          loaded: false,
-          type: "img",
-          width: width$1,
-          x: transform.x,
-          y: transform.y
-        };
-        layers.push(data$1);
-
-        var img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.onload = function() {
-
-          var canvas2 = document.createElement("canvas");
-          var ctx2 = canvas2.getContext("2d");
-          canvas2.height = height$1 * ratio;
-          canvas2.width = width$1 * ratio;
-          ctx2.drawImage(this, 0, 0, width$1 * ratio, height$1 * ratio);
-          var himg = document.createElement("img");
-          himg.src = canvas2.toDataURL("image/png");
-
-          data$1.value = himg;
-          data$1.loaded = true;
-
-        };
-        img.src = url;
-
-      }
-
-    }
-    else if (tag !== "g") { // catches all SVG shapes
+    else if (tag !== "svg" && this.childNodes.length > 0 && !select(this).selectAll("foreignobject, image, img, svg").size()) {
 
       var elem$1 = this.cloneNode(true);
-      select(elem$1).call(strokeWidth);
-      layers.push(Object.assign({}, transform, {type: "svg", value: elem$1}));
-      // if (["pattern"].includes(tag)) layers.push(Object.assign({}, transform, {type: "svg", value: elem}));
-      // else layers.push({type: "svg", value: elem});
-      var fill = select(elem$1).attr("fill");
-      if (fill && fill.indexOf("url") === 0) {
-        var property$1 = select(elem$1).attr("transform");
+      select(elem$1).selectAll("*").each(function() {
+        select(this).call(strokeWidth);
+        if (select(this).attr("opacity") === "0") { this.parentNode.removeChild(this); }
+      });
 
-        if (property$1) {
-          var scale$1 = property$1.match(/scale\(([^a-z]+)\)/i);
-          if (scale$1) { transform.scale *= Math.round(parseFloat(scale$1[1])); }
-          var translate$1 = property$1.match(/translate\(([^a-z]+)\)/i);
-          if (translate$1) {
-            var ref$1 = translate$1[1]
-              .replace(/([^a-z]),*\s([^a-z])/gi, "$1,$2")
-              .split(",")
-              .map(function (d) { return Math.round(parseFloat(d) * transform.scale); });
-            var x$3 = ref$1[0];
-            var y$3 = ref$1[1];
-            transform.x += x$3;
-            transform.y += y$3;
-          }
+      layers.push(Object.assign({}, transform, {type: "svg", value: elem$1, tag: tag}));
+
+    }
+    else if (this.childNodes.length > 0) {
+      checkChildren(this, transform);
+    }
+    else { // catches all SVG shapes
+
+      // console.log(this);
+
+      var elem$2 = this.cloneNode(true);
+      select(elem$2).selectAll("*").each(function() {
+        if (select(this).attr("opacity") === "0") { this.parentNode.removeChild(this); }
+      });
+
+      if (tag === "line") {
+        select(elem$2).attr("x1", parseFloat(select(elem$2).attr("x1")) + transform.x);
+        select(elem$2).attr("x2", parseFloat(select(elem$2).attr("x2")) + transform.x);
+        select(elem$2).attr("y1", parseFloat(select(elem$2).attr("y1")) + transform.y);
+        select(elem$2).attr("y2", parseFloat(select(elem$2).attr("y2")) + transform.y);
+      }
+      else if (tag === "path") {
+        var ref$1 = parseTransform(elem$2);
+        var scale$1 = ref$1[0];
+        var x$3 = ref$1[1];
+        var y$3 = ref$1[2];
+        if (select(elem$2).attr("transform")) { select(elem$2).attr("transform", ("scale(" + scale$1 + ")translate(" + (x$3 + transform.x) + "," + (y$3 + transform.y) + ")")); }
+      }
+      select(elem$2).call(strokeWidth);
+
+      var fill = select(elem$2).attr("fill");
+      var defFill = fill && fill.indexOf("url") === 0;
+      // if (defFill) select(elem).attr("fill-opacity", 0);
+
+      layers.push(Object.assign({}, transform, {type: "svg", value: elem$2, tag: tag}));
+      if (defFill) {
+        var def = select(fill.slice(4, -1)).node().cloneNode(true);
+        var defTag = (def.tagName || "").toLowerCase();
+        if (defTag === "pattern") {
+
+          var ref$2 = parseTransform(elem$2);
+          var scale$2 = ref$2[0];
+          var x$4 = ref$2[1];
+          var y$4 = ref$2[2];
+          transform.scale *= scale$2;
+          transform.x += x$4;
+          transform.y += y$4;
+          checkChildren(def, transform);
+
         }
-        checkChildren(select(fill.slice(4, -1)).node(), transform);
       }
 
     }
@@ -28454,17 +28497,17 @@ var dom2canvas = function(elem, options) {
     for (var i = 0; i < layers.length; i++) {
 
       var layer = layers[i];
-      var clip = layer.clip;
+      var clip = layer.clip || {height: height, width: width, x: 0, y: 0};
 
       switch (layer.type) {
 
         case "img":
           context.save();
           context.beginPath();
-          context.translate(options.padding, options.padding);
-          context.rect(clip ? clip.x : 0, clip ? clip.y : 0, clip ? clip.width : width, clip ? clip.height : height);
+          context.translate(options.padding + clip.x, options.padding + clip.y);
+          context.rect(0, 0, clip.width, clip.height);
           context.clip();
-          context.drawImage(layer.value, layer.x, layer.y, layer.width, layer.height);
+          context.drawImage(layer.value, layer.x + clip.x, layer.y + clip.y, layer.width, layer.height);
           context.restore();
           break;
 
@@ -28494,19 +28537,18 @@ var dom2canvas = function(elem, options) {
 
           context.save();
           context.translate(options.padding, options.padding);
-          index$1(canvas, text, Object.assign({offsetX: layer.x, offsetY: layer.y}, canvgOptions));
+          index$1(canvas, text, Object.assign({}, canvgOptions, {offsetX: layer.x, offsetY: layer.y}));
           context.restore();
 
           break;
 
         case "svg":
-
           var outer = IE ? (new XMLSerializer()).serializeToString(layer.value) : layer.value.outerHTML;
           context.save();
-          context.translate(options.padding, options.padding);
-          context.rect(clip ? clip.x : 0, clip ? clip.y : 0, clip ? clip.width : width, clip ? clip.height : height);
+          context.translate(options.padding + clip.x, options.padding + clip.y);
+          context.rect(0, 0, clip.width, clip.height);
           context.clip();
-          index$1(canvas, outer, Object.assign({offsetX: layer.x, offsetY: layer.y}, canvgOptions));
+          index$1(canvas, outer, Object.assign({}, canvgOptions, {offsetX: layer.x + clip.x, offsetY: layer.y + clip.y}));
           context.restore();
           break;
 
