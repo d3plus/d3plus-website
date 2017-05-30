@@ -1,14 +1,14 @@
 /*
-  d3plus-react v0.2.8
+  d3plus-react v0.2.9
   React components for d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('d3plus-common'), require('d3plus-geomap'), require('d3plus-hierarchy'), require('d3plus-network'), require('d3plus-priestley')) :
-	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'd3plus-common', 'd3plus-geomap', 'd3plus-hierarchy', 'd3plus-network', 'd3plus-priestley'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3plusPlot,global.React,global.d3plusCommon,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
-}(this, (function (exports,d3plusPlot,React,d3plusCommon,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('d3plus-geomap'), require('d3plus-hierarchy'), require('d3plus-network'), require('d3plus-priestley')) :
+	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'd3plus-geomap', 'd3plus-hierarchy', 'd3plus-network', 'd3plus-priestley'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3plusPlot,global.React,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
+}(this, (function (exports,d3plusPlot,React,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
 
 React = 'default' in React ? React['default'] : React;
 
@@ -51,7 +51,7 @@ var Viz = (function (superclass) {
     var config = ref.config;
     var dataFormat = ref.dataFormat;
 
-    var viz = this.state.viz.config(d3plusCommon.assign({}, this.context.d3plus || {}));
+    var viz = this.state.viz.config(this.context.d3plus || {});
 
     if (dataFormat && config.data) {
       viz
