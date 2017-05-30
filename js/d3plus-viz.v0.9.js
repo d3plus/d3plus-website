@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.9.1
+  d3plus-viz v0.9.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -184,9 +184,17 @@ var drawControls = function() {
         label: "downloadButton",
         on: {
           click: function () {
+            var resize = this$1._detectResize;
+            if (resize) { this$1.detectResize(false).render(); }
             d3plusExport.saveElement(this$1._select.node(), Object.assign({
               title: this$1._title || undefined
-            }, this$1._downloadConfig));
+            }, this$1._downloadConfig), {
+              callback: function () {
+                setTimeout(function () {
+                  if (resize) { this$1.detectResize(resize).render(); }
+                }, 5000);
+              }
+            });
           }
         },
         type: "Button"
@@ -306,7 +314,24 @@ var drawLegend = function(data) {
     var wide = ["top", "bottom"].includes(position);
 
     var legendData = [];
-    var fill = function (d, i) { return ((this$1._shapeConfig.fill(d, i)) + "_" + (this$1._shapeConfig.opacity(d, i))); };
+
+    var color$$1 = function (d, i) {
+      var shape = this$1._shape(d, i);
+      var attr = shape === "Line" ? "stroke" : "fill";
+      var value = this$1._shapeConfig[shape] && this$1._shapeConfig[shape][attr]
+                  ? this$1._shapeConfig[shape][attr] : this$1._shapeConfig[attr];
+      return typeof value === "function" ? value(d, i) : value;
+    };
+
+    var opacity = function (d, i) {
+      var shape = this$1._shape(d, i);
+      var value = this$1._shapeConfig[shape] && this$1._shapeConfig[shape].opacity
+                    ? this$1._shapeConfig[shape].opacity : this$1._shapeConfig.opacity;
+      return typeof value === "function" ? value(d, i) : value;
+    };
+
+    var fill = function (d, i) { return ((color$$1(d, i)) + "_" + (opacity(d, i))); };
+
     d3Collection.nest()
       .key(fill)
       .rollup(function (leaves) { return legendData.push(d3plusCommon.merge(leaves, this$1._aggs)); })
@@ -319,11 +344,16 @@ var drawLegend = function(data) {
       .duration(this._duration)
       .data(legendData.length > 1 || this._colorScale ? legendData : [])
       .height(this._height - this._margin.bottom - this._margin.top)
+      .label(function (d, i) {
+        var l = this$1._drawLabel(d, i);
+        return l instanceof Array ? l.join(", ") : l;
+      })
       .select(legendGroup)
       .verticalAlign(!wide ? "middle" : position)
       .width(this._width - this._margin.left - this._margin.right)
       .shapeConfig(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "legend"))
       .config(this._legendConfig)
+      .shapeConfig({fill: color$$1, opacity: opacity})
       .render();
 
     var legendBounds = this._legendClass.outerBounds();
@@ -599,7 +629,31 @@ var mouseleave = function() {
     @param {Object} [*config*] Optional configuration methods for the Tooltip class.
     @private
 */
-var mousemove = function(d) {
+var mousemoveLegend = function(d) {
+
+  if (this._tooltip && d) {
+    this._select.style("cursor", "pointer");
+    this._tooltipClass.data([d])
+      .footer(this._drawDepth < this._groupBy.length - 1
+            ? d3plusCommon.locale.t("Click to Expand", {lng: this._locale})
+            : "")
+      .title(this._legendClass.label())
+      .translate(d3Selection.mouse(d3Selection.select("html").node()))
+      .config(this._tooltipConfig)
+      .config(this._legendTooltip)
+      .render();
+  }
+
+};
+
+/**
+    @desc Tooltip logic for a specified data point.
+    @param {Object} *d* The data object being interacted with.
+    @param {Number} *i* The index of the data object being interacted with.
+    @param {Object} [*config*] Optional configuration methods for the Tooltip class.
+    @private
+*/
+var mousemoveShape = function(d) {
 
   if (this._tooltip && d) {
     this._select.style("cursor", "pointer");
@@ -675,19 +729,22 @@ var Viz = (function (BaseClass$$1) {
         }
       }
     };
+    this._legendTooltip = {};
     this._legendClass = new d3plusLegend.Legend();
     this._legendPosition = "bottom";
     this._locale = "en-US";
     this._lrucache = lrucache(5);
     this._on = {
-      click: click.bind(this),
-      mouseenter: mouseenter.bind(this),
-      mouseleave: mouseleave.bind(this),
-      mousemove: mousemove.bind(this)
+      "click": click.bind(this),
+      "mouseenter": mouseenter.bind(this),
+      "mouseleave": mouseleave.bind(this),
+      "mousemove.shape": mousemoveShape.bind(this),
+      "mousemove.legend": mousemoveLegend.bind(this)
     };
     this._padding = 5;
     this._queue = [];
 
+    this._shape = d3plusCommon.constant("Rect");
     this._shapeConfig = {
       fill: function (d, i) {
         if (this$1._colorScale) {
@@ -1284,6 +1341,16 @@ function value(d) {
   */
   Viz.prototype.legendConfig = function legendConfig (_) {
     return arguments.length ? (this._legendConfig = d3plusCommon.assign(this._legendConfig, _), this) : this._legendConfig;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the config method for the legend tooltip and returns the current class instance. If *value* is not specified, returns the current legend tooltip configuration.
+      @param {Object} [*value* = {}]
+      @chainable
+  */
+  Viz.prototype.legendTooltip = function legendTooltip (_) {
+    return arguments.length ? (this._legendTooltip = d3plusCommon.assign(this._legendTooltip, _), this) : this._legendTooltip;
   };
 
   /**
