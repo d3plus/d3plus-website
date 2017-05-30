@@ -1,16 +1,17 @@
 /*
-  d3plus-react v0.2.9
+  d3plus-react v0.2.10
   React components for d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('d3plus-geomap'), require('d3plus-hierarchy'), require('d3plus-network'), require('d3plus-priestley')) :
-	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'd3plus-geomap', 'd3plus-hierarchy', 'd3plus-network', 'd3plus-priestley'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3plusPlot,global.React,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
-}(this, (function (exports,d3plusPlot,React,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('prop-types'), require('d3plus-geomap'), require('d3plus-hierarchy'), require('d3plus-network'), require('d3plus-priestley')) :
+	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'prop-types', 'd3plus-geomap', 'd3plus-hierarchy', 'd3plus-network', 'd3plus-priestley'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3plusPlot,global.React,global.PropTypes,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
+}(this, (function (exports,d3plusPlot,React,PropTypes,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
 
 React = 'default' in React ? React['default'] : React;
+PropTypes = 'default' in PropTypes ? PropTypes['default'] : PropTypes;
 
 var typeLookup = {AreaPlot: d3plusPlot.AreaPlot, BarChart: d3plusPlot.BarChart, Donut: d3plusHierarchy.Donut, Geomap: d3plusGeomap.Geomap, LinePlot: d3plusPlot.LinePlot, Network: d3plusNetwork.Network, Pie: d3plusHierarchy.Pie, Plot: d3plusPlot.Plot, Priestley: d3plusPriestley.Priestley, StackedArea: d3plusPlot.StackedArea, Tree: d3plusHierarchy.Tree, Treemap: d3plusHierarchy.Treemap};
 
@@ -35,7 +36,7 @@ var Viz = (function (superclass) {
     var Constructor = typeof type === "string" ? typeLookup[type] : type;
 
     var viz = new Constructor()
-      .select(this.refs.container);
+      .select(this.container);
 
     this.setState({viz: viz});
   };
@@ -70,15 +71,15 @@ var Viz = (function (superclass) {
       @private
   */
   Viz.prototype.render = function render () {
-    return React.createElement('div', {className: "viz", ref: "container"});
+    var this$1 = this;
+
+    return React.createElement('div', {className: "viz", ref: function (container) { return this$1.container = container; }});
   };
 
   return Viz;
 }(React.Component));
 
-Viz.contextTypes = {
-  d3plus: React.PropTypes.object
-};
+Viz.contextTypes = {d3plus: PropTypes.object};
 
 /**
     @memberof Viz
