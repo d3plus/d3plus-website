@@ -1,14 +1,14 @@
 /*
-  d3plus-react v0.2.10
+  d3plus-react v0.2.11
   React components for d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('prop-types'), require('d3plus-geomap'), require('d3plus-hierarchy'), require('d3plus-network'), require('d3plus-priestley')) :
-	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'prop-types', 'd3plus-geomap', 'd3plus-hierarchy', 'd3plus-network', 'd3plus-priestley'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3plusPlot,global.React,global.PropTypes,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
-}(this, (function (exports,d3plusPlot,React,PropTypes,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('prop-types'), require('d3plus-common'), require('d3plus-geomap'), require('d3plus-hierarchy'), require('d3plus-network'), require('d3plus-priestley')) :
+	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'prop-types', 'd3plus-common', 'd3plus-geomap', 'd3plus-hierarchy', 'd3plus-network', 'd3plus-priestley'], factory) :
+	(factory((global.d3plus = global.d3plus || {}),global.d3plusPlot,global.React,global.PropTypes,global.d3plusCommon,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
+}(this, (function (exports,d3plusPlot,React,PropTypes,d3plusCommon,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
 
 React = 'default' in React ? React['default'] : React;
 PropTypes = 'default' in PropTypes ? PropTypes['default'] : PropTypes;
@@ -48,18 +48,20 @@ var Viz = (function (superclass) {
   */
   Viz.prototype.componentDidUpdate = function componentDidUpdate () {
 
-    var ref = this.props;
-    var config = ref.config;
-    var dataFormat = ref.dataFormat;
-
-    var viz = this.state.viz.config(this.context.d3plus || {});
+    var ref = this.context;
+    var d3plus = ref.d3plus;
+    var ref$1 = this.props;
+    var config = ref$1.config;
+    var dataFormat = ref$1.dataFormat;
+    var ref$2 = this.state;
+    var viz = ref$2.viz;
 
     if (dataFormat && config.data) {
       viz
-        .config(Object.assign({}, config, {data: []}))
+        .config(d3plusCommon.assign({}, d3plus || {}, config, {data: []}))
         .data(config.data, dataFormat);
     }
-    else { viz.config(config); }
+    else { viz.config(d3plusCommon.assign({}, d3plus || {}, config)); }
 
     viz.render();
 
