@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.18
+  d3plus-common v0.6.19
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -45,7 +45,7 @@ var isObject = function(item) {
     @example <caption>this</caption>
 assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
     @example <caption>returns this</caption>
-{id: "bar", group: "A", value: 20}
+{id: "bar", deep: {group: "A", value: 20}}
 */
 function assign() {
   var objects = [], len = arguments.length;
@@ -63,7 +63,7 @@ function assign() {
 
       if (isObject(value)) {
 
-        if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign(target[prop], value); }
+        if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
         else { target[prop] = value; }
 
       }
@@ -81,7 +81,7 @@ function assign() {
               if (Object.is(targetItem, sourceItem)) { return; }
 
               if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
-                targetArray[itemIndex] = assign(targetItem, sourceItem);
+                targetArray[itemIndex] = assign({}, targetItem, sourceItem);
               }
               else { targetArray[itemIndex] = sourceItem; }
 
