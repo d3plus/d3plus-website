@@ -31,8 +31,8 @@ navigation:
 - text: Blog
   url: /blog/
   icon: rss
-- text: Google Group
-  url: https://groups.google.com/forum/#!forum/d3plus
+- text: Gitter Chat
+  url: https://gitter.im/d3plus/
   icon: comments-o
 - text: Documentation
   url: https://github.com/alexandersimoes/d3plus/wiki
