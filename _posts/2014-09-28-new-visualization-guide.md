@@ -34,7 +34,7 @@ User Instantiation
 ---
 Feature comparison example (using checkboxes)
 
-<aside>
+<aside class="aside">
   Download test file (checkbox table).
   <p><a href="/assets/posts/new_visualization_guide/checkbox_table.html">checkbox_table.html</a>
   </p>
@@ -52,7 +52,7 @@ var visualization = d3plus.viz()
 
 Feature heatmap example (using square cells with color scale)
 
-<aside>
+<aside class="aside">
   Download test file (heatmap table).
   <p><a href="/assets/posts/new_visualization_guide/heatmap_table.html">heatmap_table.html</a>
   </p>
@@ -72,7 +72,7 @@ A New Viz
 ---
 We begin our journey by creating a new file in the <code><a href="https://github.com/alexandersimoes/d3plus/tree/master/src/viz/types">/src/viz/types/</a></code> directory. We'll call our file <code>table.js</code>. Below you'll see a boilerplate sample to help us know how to structure our new viz type.
 
-<aside>
+<aside class="aside">
   Download this boilerplate file.
   <p><a href="/assets/posts/new_visualization_guide/new_viz_boilerplate.js">new_viz_boilerplate.js</a>
   </p>

@@ -21,7 +21,7 @@ python -m SimpleHTTPServer 8888 &
 <h2>Getting the Data</h2>
 For this getting-started walkthrough we'll be using data from the <a href="http://www.ucrdatatool.gov/ranking.cfm">Uniform Crime Reports</a> collected by the FBI. The tab delimited file (TSV) we will be using is a collection of crime data from US states over the past 50 years. So the 3 dimensions of our dataset are the following: YEAR, STATE, CRIME. A sample of the first few rows looks like the following.
 
-<aside>
+<aside class="aside">
   US crime data by state (1960 - 2012).
   <p><a href="/assets/posts/getting_started_1/data/state_crime.tsv">state_crime.tsv</a>
   </p>
@@ -43,7 +43,7 @@ Alabama	1969	6415	6045.0	36644	494	41.0	23559	485	66248	3531000
 
 So we'll start with a basic template HTML page such as the following:
 
-<aside>
+<aside class="aside">
   Boilerplate HTML page.
   <p><a href="/assets/posts/getting_started_1/html/step_1.html">step_1.html</a>
   </p>
@@ -122,7 +122,7 @@ d3.tsv("state_crime.tsv", function(error, state_crime) {
 });
 {% endhighlight %}
 
-<aside>
+<aside class="aside">
   Tree map of state crime data.
   <p><a href="/assets/posts/getting_started_1/html/step_2.html">step_2.html</a>
   </p>
@@ -155,7 +155,7 @@ d3.tsv("/assets/posts/getting_started_1/data/state_crime.tsv", function(error, s
 });
 {% endhighlight %}
 
-<aside>
+<aside class="aside">
   Tree map of state crime data with US totals removed.
   <p><a href="/assets/posts/getting_started_1/html/step_3.html">step_3.html</a>
   </p>
@@ -179,7 +179,7 @@ state_crime.forEach(function(d) {
 });
 {% endhighlight %}
 
-<aside>
+<aside class="aside">
   Tree map of state crime data normalized by state populations.
   <p><a href="/assets/posts/getting_started_1/html/step_4.html">step_4.html</a>
   </p>
@@ -220,7 +220,7 @@ function make_viz3(data){
 }
 {% endhighlight %}
 
-<aside>
+<aside class="aside">
   Tree map of state crime data using a timeline.
   <p><a href="/assets/posts/getting_started_1/html/step_5.html">step_5.html</a>
   </p>
