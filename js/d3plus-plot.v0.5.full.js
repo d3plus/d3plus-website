@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.20
+  d3plus-plot v0.5.21
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -43,7 +43,7 @@ var isObject = function(item) {
     @example <caption>this</caption>
 assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
     @example <caption>returns this</caption>
-{id: "bar", group: "A", value: 20}
+{id: "bar", deep: {group: "A", value: 20}}
 */
 function assign() {
   var objects = [], len = arguments.length;
@@ -61,7 +61,7 @@ function assign() {
 
       if (isObject(value)) {
 
-        if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign(target[prop], value); }
+        if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
         else { target[prop] = value; }
 
       }
@@ -79,7 +79,7 @@ function assign() {
               if (Object.is(targetItem, sourceItem)) { return; }
 
               if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
-                targetArray[itemIndex] = assign(targetItem, sourceItem);
+                targetArray[itemIndex] = assign({}, targetItem, sourceItem);
               }
               else { targetArray[itemIndex] = sourceItem; }
 
@@ -33819,6 +33819,7 @@ var Plot = (function (Viz$$1) {
       var order = this._stackOrder;
 
       if (order instanceof Array) { stackKeys.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); }); }
+      else if (order === none$2) { stackKeys.sort(function (a, b) { return a.localeCompare(b); }); }
 
       stackData = stack()
         .keys(stackKeys)

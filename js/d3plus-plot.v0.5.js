@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.20
+  d3plus-plot v0.5.21
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -336,6 +336,7 @@ var Plot = (function (Viz$$1) {
       var order = this._stackOrder;
 
       if (order instanceof Array) { stackKeys.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); }); }
+      else if (order === d3Shape.stackOrderNone) { stackKeys.sort(function (a, b) { return a.localeCompare(b); }); }
 
       stackData = d3Shape.stack()
         .keys(stackKeys)
