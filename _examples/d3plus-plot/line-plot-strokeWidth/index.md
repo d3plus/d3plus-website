@@ -1,0 +1,30 @@
+---
+title: Changing the Stroke Width of a Line Plot
+width: 990
+height: 400
+---
+
+# Changing the Stroke Width of a Line Plot
+
+When making a line plot, you can modify the stroke-width property of the lines to be drawn by passing a value to the nested shapeConfig of "Line":
+
+```js
+var data = [
+  {id: "alpha", x: 4, y:  7},
+  {id: "alpha", x: 5, y: 25},
+  {id: "alpha", x: 6, y: 13},
+  {id: "beta",  x: 4, y: 17},
+  {id: "beta",  x: 5, y:  8},
+  {id: "beta",  x: 6, y: 13}
+];
+
+new d3plus.LinePlot()
+  .data(data)
+  .groupBy("id")
+  .shapeConfig({
+    Line: {
+      strokeWidth: 5
+    }
+  })
+  .render();
+```
