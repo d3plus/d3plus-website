@@ -26,7 +26,7 @@ var data = [
 
 new d3plus.BarChart()
   .data(data)
-  .barPadding(10)
+  .barPadding(0)
   .groupPadding(40)
   .render();
 ```
