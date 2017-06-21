@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.19
+  d3plus-common v0.6.20
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -125,6 +125,13 @@ function s() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
+/**
+    @function uuid
+    @summary Returns a unique identifier.
+*/
+var uuid = function() {
+  return ("" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s()));
+};
 
 /**
     @class BaseClass
@@ -132,7 +139,7 @@ function s() {
 */
 var BaseClass = function BaseClass() {
   this._on = {};
-  this._uuid = "" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s());
+  this._uuid = uuid();
 };
 
 /**
@@ -248,8 +255,8 @@ function configPrep(config, type, nest) {
 
   keyEval(newConfig, config);
   if (this._on) { parseEvents(newConfig, this._on); }
+  if (nest && config[nest]) { keyEval(newConfig, config[nest]); }
 
-  if (nest && config[nest]) { newConfig = assign(newConfig, config[nest]); }
   return newConfig;
 
 }
