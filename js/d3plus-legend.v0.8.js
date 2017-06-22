@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.8
+  d3plus-legend v0.8.9
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -354,6 +354,7 @@ var ColorScale = (function (BaseClass$$1) {
       var jenks = ckmeans(data, colors.length);
 
       ticks = d3Array.merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
+
       this._colorScale = d3Scale.scaleThreshold()
         .domain(ticks)
         .range(["black"].concat(colors).concat(colors[colors.length - 1]));
@@ -427,7 +428,8 @@ var ColorScale = (function (BaseClass$$1) {
       .attr("stop-color", String);
 
     function bucketWidth(d, i) {
-      return Math.abs(axisScale(ticks[i + 1]) - axisScale(d));
+      var w = Math.abs(axisScale(ticks[i + 1]) - axisScale(d));
+      return w || 2;
     }
 
     this._rectClass
