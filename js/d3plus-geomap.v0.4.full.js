@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.8
+  d3plus-geomap v0.4.9
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -19189,6 +19189,7 @@ var ColorScale = (function (BaseClass$$1) {
       var jenks = ckmeans(data, colors.length);
 
       ticks$$1 = merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
+
       this._colorScale = threshold$1()
         .domain(ticks$$1)
         .range(["black"].concat(colors).concat(colors[colors.length - 1]));
@@ -19262,7 +19263,8 @@ var ColorScale = (function (BaseClass$$1) {
       .attr("stop-color", String);
 
     function bucketWidth(d, i) {
-      return Math.abs(axisScale(ticks$$1[i + 1]) - axisScale(d));
+      var w = Math.abs(axisScale(ticks$$1[i + 1]) - axisScale(d));
+      return w || 2;
     }
 
     this._rectClass
@@ -33063,8 +33065,9 @@ var Geomap = (function (Viz$$1) {
     this._shapeConfig = assign(this._shapeConfig, {
       Path: {
         fill: function (d) {
-          if (d.data && this$1._colorScale) {
-            var c = this$1._colorScale(d.data);
+          if (this$1._colorScale && !this$1._coordData.features.includes(d)) {
+            var c = this$1._colorScale(d);
+            console.log(d, c, this$1._colorScaleClass._colorScale.range());
             if (c !== undefined && c !== null) { return this$1._colorScaleClass._colorScale(c); }
           }
           return "#f5f5f3";
