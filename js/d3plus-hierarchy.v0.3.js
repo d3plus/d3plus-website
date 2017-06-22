@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.3.9
+  d3plus-hierarchy v0.3.10
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -17,20 +17,14 @@
 */
 var Pie = (function (Viz$$1) {
   function Pie() {
-    var this$1 = this;
-
 
     Viz$$1.call(this);
 
     this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       Path: {
-        id: function (d) { return this$1._ids(d).join("-"); },
-        label: function (d) { return this$1._drawLabel(d.data, d.i); },
         labelConfig: {
           fontResize: true
-        },
-        x: 0,
-        y: 0
+        }
       }
     });
     this._innerRadius = 0;
@@ -50,6 +44,8 @@ var Pie = (function (Viz$$1) {
       @private
   */
   Pie.prototype._draw = function _draw (callback) {
+    var this$1 = this;
+
 
     Viz$$1.prototype._draw.call(this, callback);
 
@@ -82,6 +78,11 @@ var Pie = (function (Viz$$1) {
         enter: {transform: transform},
         update: {transform: transform}
       }).node())
+      .config({
+        id: function (d) { return this$1._ids(d).join("-"); },
+        x: 0,
+        y: 0
+      })
       .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
       .render());
 
@@ -227,79 +228,19 @@ function bubble(values) {
 */
 var Tree = (function (Viz$$1) {
   function Tree() {
-    var this$1 = this;
-
 
     Viz$$1.call(this);
 
     this._orient = "vertical";
     this._separation = function (a, b) { return a.parent === b.parent ? 1 : 2; };
 
-    var nodeConfig = {
-      id: function (d, i) { return this$1._ids(d, i).join("-"); },
-      label: function (d, i) {
-        if (this$1._label) { return this$1._label(d.data, i); }
-        var ids = this$1._ids(d, i).slice(0, d.depth);
-        return ids[ids.length - 1];
-      },
-      labelConfig: {
-        textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
-                       : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
-        verticalAlign: function (d) { return this$1._orient === "vertical" ? d.data.depth === 1 ? "bottom" : "top" : "middle"; }
-      },
-      hitArea: function (d, i, s) {
-
-        var h = this$1._labelHeight,
-              w = this$1._labelWidths[d.depth - 1];
-
-        return {
-          width: this$1._orient === "vertical" ? w : s.r * 2 + w,
-          height: this$1._orient === "horizontal" ? h : s.r * 2 + h,
-          x: this$1._orient === "vertical" ? -w / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + w) : -s.r,
-          y: this$1._orient === "horizontal" ? -h / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + this$1._labelHeight) : -s.r
-        };
-
-      },
-      labelBounds: function (d, i, s) {
-
-        var h = this$1._labelHeight,
-              height = this$1._orient === "vertical" ? "height" : "width",
-              w = this$1._labelWidths[d.depth - 1],
-              width = this$1._orient === "vertical" ? "width" : "height",
-              x = this$1._orient === "vertical" ? "x" : "y",
-              y = this$1._orient === "vertical" ? "y" : "x";
-
-        return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
-        var obj;
-
-      }
-    };
-
     this._shape = d3plusCommon.constant("Circle");
     this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
-      Circle: nodeConfig,
       labelConfig: {
         fontColor: "#444"
       },
       Path: {
-        d: function (d) {
-
-          var r = this$1._shapeConfig.Circle.r || this$1._shapeConfig.r;
-
-          if (typeof r === "function") { r = r(d.data, d.i); }
-
-          var px = d.parent.x - d.x + (this$1._orient === "vertical" ? 0 : r),
-                py = d.parent.y - d.y + (this$1._orient === "vertical" ? r : 0),
-                x = this$1._orient === "vertical" ? 0 : -r,
-                y = this$1._orient === "vertical" ? -r : 0;
-
-          return this$1._orient === "vertical"
-               ? ("M" + x + "," + y + "C" + x + "," + ((y + py) / 2) + " " + px + "," + ((y + py) / 2) + " " + px + "," + py)
-               : ("M" + x + "," + y + "C" + ((x + px) / 2) + "," + y + " " + ((x + px) / 2) + "," + py + " " + px + "," + py);
-
-        },
         fill: "none",
-        id: function (d, i) { return this$1._ids(d, i).join("-"); },
         stroke: "#ccc",
         strokeWidth: 1
       },
@@ -360,7 +301,7 @@ var Tree = (function (Viz$$1) {
       d.i = i;
     });
 
-    var r = this._shapeConfig.Circle.r || this._shapeConfig.r;
+    var r = this._shapeConfig.r;
     if (typeof r !== "function") { r = d3plusCommon.constant(r); }
     var rBufferRoot = d3Array.max(treeData, function (d) { return d.depth === 1 ? r(d.data, d.i) : 0; });
     var rBufferEnd = d3Array.max(treeData, function (d) { return d.children ? 0 : r(d.data, d.i); });
@@ -398,12 +339,70 @@ var Tree = (function (Viz$$1) {
       .data(treeData.filter(function (d) { return d.depth > 1; }))
       .select(d3plusCommon.elem("g.d3plus-Tree-Links", elemObject).node())
       .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
+      .config({
+        d: function (d) {
+
+          var r = this$1._shapeConfig.r;
+
+          if (typeof r === "function") { r = r(d.data, d.i); }
+
+          var px = d.parent.x - d.x + (this$1._orient === "vertical" ? 0 : r),
+                py = d.parent.y - d.y + (this$1._orient === "vertical" ? r : 0),
+                x = this$1._orient === "vertical" ? 0 : -r,
+                y = this$1._orient === "vertical" ? -r : 0;
+
+          return this$1._orient === "vertical"
+               ? ("M" + x + "," + y + "C" + x + "," + ((y + py) / 2) + " " + px + "," + ((y + py) / 2) + " " + px + "," + py)
+               : ("M" + x + "," + y + "C" + ((x + px) / 2) + "," + y + " " + ((x + px) / 2) + "," + py + " " + px + "," + py);
+
+        },
+        id: function (d, i) { return this$1._ids(d, i).join("-"); }
+      })
       .render());
 
     this._shapes.push(new d3plusShape.Circle()
       .data(treeData)
       .select(d3plusCommon.elem("g.d3plus-Tree-Shapes", elemObject).node())
       .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Circle"))
+      .config({
+        id: function (d, i) { return this$1._ids(d, i).join("-"); },
+        label: function (d, i) {
+          if (this$1._label) { return this$1._label(d.data, i); }
+          var ids = this$1._ids(d, i).slice(0, d.depth);
+          return ids[ids.length - 1];
+        },
+        labelConfig: {
+          textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
+                         : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
+          verticalAlign: function (d) { return this$1._orient === "vertical" ? d.data.depth === 1 ? "bottom" : "top" : "middle"; }
+        },
+        hitArea: function (d, i, s) {
+
+          var h = this$1._labelHeight,
+                w = this$1._labelWidths[d.depth - 1];
+
+          return {
+            width: this$1._orient === "vertical" ? w : s.r * 2 + w,
+            height: this$1._orient === "horizontal" ? h : s.r * 2 + h,
+            x: this$1._orient === "vertical" ? -w / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + w) : -s.r,
+            y: this$1._orient === "horizontal" ? -h / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + this$1._labelHeight) : -s.r
+          };
+
+        },
+        labelBounds: function (d, i, s) {
+
+          var h = this$1._labelHeight,
+                height = this$1._orient === "vertical" ? "height" : "width",
+                w = this$1._labelWidths[d.depth - 1],
+                width = this$1._orient === "vertical" ? "width" : "height",
+                x = this$1._orient === "vertical" ? "x" : "y",
+                y = this$1._orient === "vertical" ? "y" : "x";
+
+          return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
+          var obj;
+
+        }
+      })
       .render());
 
     return this;
@@ -455,21 +454,7 @@ var Treemap = (function (Viz$$1) {
     this._padding = 1;
     this._shapeConfig = d3plusCommon.assign({}, this._shapeConfig, {
       labelConfig: {
-        fontResize: true,
-        textAnchor: function (d) { return d.l ? "middle" : "start"; },
-        verticalAlign: function (d) { return d.l ? "bottom" : "top"; }
-      },
-      Rect: {
-        height: function (d) { return d.y1 - d.y0; },
-        labelBounds: function (d, i, s) {
-          var h = s.height;
-          var sh = Math.min(50, h * 0.25);
-          return [
-            {width: s.width, height: h - sh, x: -s.width / 2, y: -h / 2},
-            {width: s.width, height: sh, x: -s.width / 2, y: h / 2 - sh}
-          ];
-        },
-        width: function (d) { return d.x1 - d.x0; }
+        fontResize: true
       }
     });
     this._sort = function (a, b) { return b.value - a.value; };
@@ -542,6 +527,22 @@ var Treemap = (function (Viz$$1) {
         enter: {transform: transform},
         update: {transform: transform}
       }).node())
+      .config({
+        height: function (d) { return d.y1 - d.y0; },
+        labelBounds: function (d, i, s) {
+          var h = s.height;
+          var sh = Math.min(50, h * 0.25);
+          return [
+            {width: s.width, height: h - sh, x: -s.width / 2, y: -h / 2},
+            {width: s.width, height: sh, x: -s.width / 2, y: h / 2 - sh}
+          ];
+        },
+        labelConfig: {
+          textAnchor: function (d) { return d.l ? "middle" : "start"; },
+          verticalAlign: function (d) { return d.l ? "bottom" : "top"; }
+        },
+        width: function (d) { return d.x1 - d.x0; }
+      })
       .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Rect"))
       .render());
 

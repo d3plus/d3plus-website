@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.3.9
+  d3plus-hierarchy v0.3.10
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -2393,7 +2393,7 @@ var isObject = function(item) {
     @example <caption>this</caption>
 assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
     @example <caption>returns this</caption>
-{id: "bar", group: "A", value: 20}
+{id: "bar", deep: {group: "A", value: 20}}
 */
 function assign() {
   var objects = [], len = arguments.length;
@@ -2411,7 +2411,7 @@ function assign() {
 
       if (isObject(value)) {
 
-        if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign(target[prop], value); }
+        if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
         else { target[prop] = value; }
 
       }
@@ -2429,7 +2429,7 @@ function assign() {
               if (Object.is(targetItem, sourceItem)) { return; }
 
               if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
-                targetArray[itemIndex] = assign(targetItem, sourceItem);
+                targetArray[itemIndex] = assign({}, targetItem, sourceItem);
               }
               else { targetArray[itemIndex] = sourceItem; }
 
@@ -2473,6 +2473,13 @@ function s$1() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
+/**
+    @function uuid
+    @summary Returns a unique identifier.
+*/
+var uuid = function() {
+  return ("" + (s$1()) + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + (s$1()) + (s$1()));
+};
 
 /**
     @class BaseClass
@@ -2480,7 +2487,7 @@ function s$1() {
 */
 var BaseClass = function BaseClass() {
   this._on = {};
-  this._uuid = "" + (s$1()) + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + "-" + (s$1()) + (s$1()) + (s$1());
+  this._uuid = uuid();
 };
 
 /**
@@ -2551,9 +2558,9 @@ function configPrep(config, type, nest) {
   var newConfig = {duration: this._duration, on: {}};
 
   var wrapFunction = function (func) { return function (d, i, s) {
-    while (d.__d3plus__ && d.data) {
+    while (d.__d3plus__) {
       i = d.i;
-      d = d.data;
+      d = d.data || d.feature;
     }
     return func(d, i, s);
   }; };
@@ -2596,8 +2603,11 @@ function configPrep(config, type, nest) {
 
   keyEval(newConfig, config);
   if (this._on) { parseEvents(newConfig, this._on); }
+  if (nest && config[nest]) {
+    keyEval(newConfig, config[nest]);
+    if (config[nest].on) { parseEvents(newConfig, config[nest].on); }
+  }
 
-  if (nest && config[nest]) { newConfig = assign(newConfig, config[nest]); }
   return newConfig;
 
 }
@@ -7547,10 +7557,10 @@ var I18n = function (_EventEmitter) {
   I18n.prototype.changeLanguage = function changeLanguage(lng, callback) {
     var _this4 = this;
 
-    var done = function done(err) {
-      if (lng) {
-        _this4.emit('languageChanged', lng);
-        _this4.logger.log('languageChanged', lng);
+    var done = function done(err, l) {
+      if (l) {
+        _this4.emit('languageChanged', l);
+        _this4.logger.log('languageChanged', l);
       }
 
       if (callback) { callback(err, function () {
@@ -7569,7 +7579,7 @@ var I18n = function (_EventEmitter) {
       }
 
       _this4.loadResources(function (err) {
-        done(err);
+        done(err, l);
       });
     };
 
@@ -7666,7 +7676,7 @@ var I18n = function (_EventEmitter) {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$2;
 
-    var mergedOptions = _extends({}, options, this.options, { isClone: true });
+    var mergedOptions = _extends({}, this.options, options, { isClone: true });
     var clone = new I18n(mergedOptions, callback);
     var membersToCopy = ['store', 'services', 'language'];
     membersToCopy.forEach(function (m) {
@@ -7827,78 +7837,6 @@ function map$1(object, f) {
   else if (object) { for (var key in object) { map.set(key, object[key]); } }
 
   return map;
-}
-
-var nest = function() {
-  var keys = [],
-      sortKeys = [],
-      sortValues,
-      rollup,
-      nest;
-
-  function apply(array, depth, createResult, setResult) {
-    if (depth >= keys.length) { return rollup != null
-        ? rollup(array) : (sortValues != null
-        ? array.sort(sortValues)
-        : array); }
-
-    var i = -1,
-        n = array.length,
-        key = keys[depth++],
-        keyValue,
-        value,
-        valuesByKey = map$1(),
-        values,
-        result = createResult();
-
-    while (++i < n) {
-      if (values = valuesByKey.get(keyValue = key(value = array[i]) + "")) {
-        values.push(value);
-      } else {
-        valuesByKey.set(keyValue, [value]);
-      }
-    }
-
-    valuesByKey.each(function(values, key) {
-      setResult(result, key, apply(values, depth, createResult, setResult));
-    });
-
-    return result;
-  }
-
-  function entries(map, depth) {
-    if (++depth > keys.length) { return map; }
-    var array, sortKey = sortKeys[depth - 1];
-    if (rollup != null && depth >= keys.length) { array = map.entries(); }
-    else { array = [], map.each(function(v, k) { array.push({key: k, values: entries(v, depth)}); }); }
-    return sortKey != null ? array.sort(function(a, b) { return sortKey(a.key, b.key); }) : array;
-  }
-
-  return nest = {
-    object: function(array) { return apply(array, 0, createObject, setObject); },
-    map: function(array) { return apply(array, 0, createMap, setMap); },
-    entries: function(array) { return entries(apply(array, 0, createMap, setMap), 0); },
-    key: function(d) { keys.push(d); return nest; },
-    sortKeys: function(order) { sortKeys[keys.length - 1] = order; return nest; },
-    sortValues: function(order) { sortValues = order; return nest; },
-    rollup: function(f) { rollup = f; return nest; }
-  };
-};
-
-function createObject() {
-  return {};
-}
-
-function setObject(object, key, value) {
-  object[key] = value;
-}
-
-function createMap() {
-  return map$1();
-}
-
-function setMap(map, key, value) {
-  map.set(key, value);
 }
 
 function Set$1() {}
@@ -8243,15 +8181,211 @@ Image$1.prototype.y = function y (_) {
     @returns {String}
 */
 
+var prefix$2 = "$";
+
+function Map$1() {}
+
+Map$1.prototype = map$3.prototype = {
+  constructor: Map$1,
+  has: function(key) {
+    return (prefix$2 + key) in this;
+  },
+  get: function(key) {
+    return this[prefix$2 + key];
+  },
+  set: function(key, value) {
+    this[prefix$2 + key] = value;
+    return this;
+  },
+  remove: function(key) {
+    var property = prefix$2 + key;
+    return property in this && delete this[property];
+  },
+  clear: function() {
+    var this$1 = this;
+
+    for (var property in this$1) { if (property[0] === prefix$2) { delete this$1[property]; } }
+  },
+  keys: function() {
+    var this$1 = this;
+
+    var keys = [];
+    for (var property in this$1) { if (property[0] === prefix$2) { keys.push(property.slice(1)); } }
+    return keys;
+  },
+  values: function() {
+    var this$1 = this;
+
+    var values = [];
+    for (var property in this$1) { if (property[0] === prefix$2) { values.push(this$1[property]); } }
+    return values;
+  },
+  entries: function() {
+    var this$1 = this;
+
+    var entries = [];
+    for (var property in this$1) { if (property[0] === prefix$2) { entries.push({key: property.slice(1), value: this$1[property]}); } }
+    return entries;
+  },
+  size: function() {
+    var this$1 = this;
+
+    var size = 0;
+    for (var property in this$1) { if (property[0] === prefix$2) { ++size; } }
+    return size;
+  },
+  empty: function() {
+    var this$1 = this;
+
+    for (var property in this$1) { if (property[0] === prefix$2) { return false; } }
+    return true;
+  },
+  each: function(f) {
+    var this$1 = this;
+
+    for (var property in this$1) { if (property[0] === prefix$2) { f(this$1[property], property.slice(1), this$1); } }
+  }
+};
+
+function map$3(object, f) {
+  var map = new Map$1;
+
+  // Copy constructor.
+  if (object instanceof Map$1) { object.each(function(value, key) { map.set(key, value); }); }
+
+  // Index array by numeric index or specified key function.
+  else if (Array.isArray(object)) {
+    var i = -1,
+        n = object.length,
+        o;
+
+    if (f == null) { while (++i < n) { map.set(i, object[i]); } }
+    else { while (++i < n) { map.set(f(o = object[i], i, object), o); } }
+  }
+
+  // Convert object to map.
+  else if (object) { for (var key in object) { map.set(key, object[key]); } }
+
+  return map;
+}
+
+var nest$1 = function() {
+  var keys = [],
+      sortKeys = [],
+      sortValues,
+      rollup,
+      nest;
+
+  function apply(array, depth, createResult, setResult) {
+    if (depth >= keys.length) { return rollup != null
+        ? rollup(array) : (sortValues != null
+        ? array.sort(sortValues)
+        : array); }
+
+    var i = -1,
+        n = array.length,
+        key = keys[depth++],
+        keyValue,
+        value,
+        valuesByKey = map$3(),
+        values,
+        result = createResult();
+
+    while (++i < n) {
+      if (values = valuesByKey.get(keyValue = key(value = array[i]) + "")) {
+        values.push(value);
+      } else {
+        valuesByKey.set(keyValue, [value]);
+      }
+    }
+
+    valuesByKey.each(function(values, key) {
+      setResult(result, key, apply(values, depth, createResult, setResult));
+    });
+
+    return result;
+  }
+
+  function entries(map, depth) {
+    if (++depth > keys.length) { return map; }
+    var array, sortKey = sortKeys[depth - 1];
+    if (rollup != null && depth >= keys.length) { array = map.entries(); }
+    else { array = [], map.each(function(v, k) { array.push({key: k, values: entries(v, depth)}); }); }
+    return sortKey != null ? array.sort(function(a, b) { return sortKey(a.key, b.key); }) : array;
+  }
+
+  return nest = {
+    object: function(array) { return apply(array, 0, createObject$1, setObject$1); },
+    map: function(array) { return apply(array, 0, createMap$1, setMap$1); },
+    entries: function(array) { return entries(apply(array, 0, createMap$1, setMap$1), 0); },
+    key: function(d) { keys.push(d); return nest; },
+    sortKeys: function(order) { sortKeys[keys.length - 1] = order; return nest; },
+    sortValues: function(order) { sortValues = order; return nest; },
+    rollup: function(f) { rollup = f; return nest; }
+  };
+};
+
+function createObject$1() {
+  return {};
+}
+
+function setObject$1(object, key, value) {
+  object[key] = value;
+}
+
+function createMap$1() {
+  return map$3();
+}
+
+function setMap$1(map, key, value) {
+  map.set(key, value);
+}
+
+function Set$2() {}
+
+var proto$1 = map$3.prototype;
+
+Set$2.prototype = set$4.prototype = {
+  constructor: Set$2,
+  has: proto$1.has,
+  add: function(value) {
+    value += "";
+    this[prefix$2 + value] = value;
+    return this;
+  },
+  remove: proto$1.remove,
+  clear: proto$1.clear,
+  values: proto$1.keys,
+  size: proto$1.size,
+  empty: proto$1.empty,
+  each: proto$1.each
+};
+
+function set$4(object, f) {
+  var set = new Set$2;
+
+  // Copy constructor.
+  if (object instanceof Set$2) { object.each(function(value) { set.add(value); }); }
+
+  // Otherwise, assume it’s an array.
+  else if (object) {
+    var i = -1, n = object.length;
+    if (f == null) { while (++i < n) { set.add(object[i]); } }
+    else { while (++i < n) { set.add(f(object[i], i, object)); } }
+  }
+
+  return set;
+}
+
 var array$4 = Array.prototype;
 
-var map$3 = array$4.map;
+var map$5 = array$4.map;
 var slice$2 = array$4.slice;
 
 var implicit = {name: "implicit"};
 
 function ordinal(range) {
-  var index = map$1(),
+  var index = map$3(),
       domain = [],
       unknown = implicit;
 
@@ -8268,7 +8402,7 @@ function ordinal(range) {
 
   scale.domain = function(_) {
     if (!arguments.length) { return domain.slice(); }
-    domain = [], index = map$1();
+    domain = [], index = map$3();
     var i = -1, n = _.length, d, key;
     while (++i < n) { if (!index.has(key = (d = _[i]) + "")) { index.set(key, domain.push(d)); } }
     return scale;
@@ -8487,7 +8621,7 @@ function continuous(deinterpolate, reinterpolate) {
   };
 
   scale.domain = function(_) {
-    return arguments.length ? (domain = map$3.call(_, number$1), rescale()) : domain.slice();
+    return arguments.length ? (domain = map$5.call(_, number$1), rescale()) : domain.slice();
   };
 
   scale.range = function(_) {
@@ -8927,7 +9061,7 @@ function identity$3() {
   scale.invert = scale;
 
   scale.domain = scale.range = function(_) {
-    return arguments.length ? (domain = map$3.call(_, number$1), scale) : domain.slice();
+    return arguments.length ? (domain = map$5.call(_, number$1), scale) : domain.slice();
   };
 
   scale.copy = function() {
@@ -10167,7 +10301,7 @@ function calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1
   };
 
   scale.domain = function(_) {
-    return arguments.length ? domain(map$3.call(_, number$2)) : domain().map(date$1);
+    return arguments.length ? domain(map$5.call(_, number$2)) : domain().map(date$1);
   };
 
   scale.ticks = function(interval, step) {
@@ -13181,7 +13315,7 @@ var Area = (function (Shape$$1) {
     var this$1 = this;
 
 
-    var areas = nest().key(this._id).entries(data).map(function (d) {
+    var areas = nest$1().key(this._id).entries(data).map(function (d) {
 
       d.data = objectMerge(d.values);
       d.i = data.indexOf(d.values[0]);
@@ -13710,7 +13844,7 @@ var Line = (function (Shape$$1) {
     var this$1 = this;
 
 
-    var lines = nest().key(this._id).entries(data).map(function (d) {
+    var lines = nest$1().key(this._id).entries(data).map(function (d) {
 
       d.data = objectMerge(d.values);
       d.i = data.indexOf(d.values[0]);
@@ -14154,7 +14288,7 @@ var request = function(url, callback) {
   var request,
       event = dispatch("beforesend", "progress", "load", "error"),
       mimeType,
-      headers = map$1(),
+      headers = map$3(),
       xhr = new XMLHttpRequest,
       user = null,
       password = null,
@@ -29133,7 +29267,7 @@ var drawLegend = function(data) {
 
     var fill = function (d, i) { return ((color(d, i)) + "_" + (opacity(d, i))); };
 
-    nest()
+    nest$1()
       .key(fill)
       .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
       .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
@@ -29662,7 +29796,7 @@ var Viz = (function (BaseClass$$1) {
       flatData = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
       if (this._filter) { flatData = flatData.filter(this._filter); }
 
-      var dataNest = nest();
+      var dataNest = nest$1();
       for (var i$1 = 0; i$1 <= this._drawDepth; i$1++) { dataNest.key(this$1._groupBy[i$1]); }
       if (this._discrete && ("_" + (this._discrete)) in this) { dataNest.key(this[("_" + (this._discrete))]); }
       dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
@@ -30339,20 +30473,14 @@ function value(d) {
 */
 var Pie = (function (Viz$$1) {
   function Pie() {
-    var this$1 = this;
-
 
     Viz$$1.call(this);
 
     this._shapeConfig = assign(this._shapeConfig, {
       Path: {
-        id: function (d) { return this$1._ids(d).join("-"); },
-        label: function (d) { return this$1._drawLabel(d.data, d.i); },
         labelConfig: {
           fontResize: true
-        },
-        x: 0,
-        y: 0
+        }
       }
     });
     this._innerRadius = 0;
@@ -30372,6 +30500,8 @@ var Pie = (function (Viz$$1) {
       @private
   */
   Pie.prototype._draw = function _draw (callback) {
+    var this$1 = this;
+
 
     Viz$$1.prototype._draw.call(this, callback);
 
@@ -30404,6 +30534,11 @@ var Pie = (function (Viz$$1) {
         enter: {transform: transform},
         update: {transform: transform}
       }).node())
+      .config({
+        id: function (d) { return this$1._ids(d).join("-"); },
+        x: 0,
+        y: 0
+      })
       .config(configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
       .render());
 
@@ -31158,11 +31293,11 @@ var treemap = function() {
     @param {Array} *data* The data array to be nested.
     @param {Array} *keys* An array of key accessors that signify each nest level.
 */
-var nest$1 = function(data, keys$$1) {
+var nest$2 = function(data, keys$$1) {
 
   if (!(keys$$1 instanceof Array)) { keys$$1 = [keys$$1]; }
 
-  var dataNest = nest();
+  var dataNest = nest$1();
   for (var i = 0; i < keys$$1.length; i++) { dataNest.key(keys$$1[i]); }
   var nestedData = dataNest.entries(data);
 
@@ -31197,79 +31332,19 @@ function bubble(values$$1) {
 */
 var Tree = (function (Viz$$1) {
   function Tree() {
-    var this$1 = this;
-
 
     Viz$$1.call(this);
 
     this._orient = "vertical";
     this._separation = function (a, b) { return a.parent === b.parent ? 1 : 2; };
 
-    var nodeConfig = {
-      id: function (d, i) { return this$1._ids(d, i).join("-"); },
-      label: function (d, i) {
-        if (this$1._label) { return this$1._label(d.data, i); }
-        var ids = this$1._ids(d, i).slice(0, d.depth);
-        return ids[ids.length - 1];
-      },
-      labelConfig: {
-        textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
-                       : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
-        verticalAlign: function (d) { return this$1._orient === "vertical" ? d.data.depth === 1 ? "bottom" : "top" : "middle"; }
-      },
-      hitArea: function (d, i, s) {
-
-        var h = this$1._labelHeight,
-              w = this$1._labelWidths[d.depth - 1];
-
-        return {
-          width: this$1._orient === "vertical" ? w : s.r * 2 + w,
-          height: this$1._orient === "horizontal" ? h : s.r * 2 + h,
-          x: this$1._orient === "vertical" ? -w / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + w) : -s.r,
-          y: this$1._orient === "horizontal" ? -h / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + this$1._labelHeight) : -s.r
-        };
-
-      },
-      labelBounds: function (d, i, s) {
-
-        var h = this$1._labelHeight,
-              height = this$1._orient === "vertical" ? "height" : "width",
-              w = this$1._labelWidths[d.depth - 1],
-              width = this$1._orient === "vertical" ? "width" : "height",
-              x = this$1._orient === "vertical" ? "x" : "y",
-              y = this$1._orient === "vertical" ? "y" : "x";
-
-        return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
-        var obj;
-
-      }
-    };
-
     this._shape = constant$2("Circle");
     this._shapeConfig = assign(this._shapeConfig, {
-      Circle: nodeConfig,
       labelConfig: {
         fontColor: "#444"
       },
       Path: {
-        d: function (d) {
-
-          var r = this$1._shapeConfig.Circle.r || this$1._shapeConfig.r;
-
-          if (typeof r === "function") { r = r(d.data, d.i); }
-
-          var px = d.parent.x - d.x + (this$1._orient === "vertical" ? 0 : r),
-                py = d.parent.y - d.y + (this$1._orient === "vertical" ? r : 0),
-                x = this$1._orient === "vertical" ? 0 : -r,
-                y = this$1._orient === "vertical" ? -r : 0;
-
-          return this$1._orient === "vertical"
-               ? ("M" + x + "," + y + "C" + x + "," + ((y + py) / 2) + " " + px + "," + ((y + py) / 2) + " " + px + "," + py)
-               : ("M" + x + "," + y + "C" + ((x + px) / 2) + "," + y + " " + ((x + px) / 2) + "," + py + " " + px + "," + py);
-
-        },
         fill: "none",
-        id: function (d, i) { return this$1._ids(d, i).join("-"); },
         stroke: "#ccc",
         strokeWidth: 1
       },
@@ -31311,7 +31386,7 @@ var Tree = (function (Viz$$1) {
       .size([width, height])
       (hierarchy({
         key: "root",
-        values: nest$1(this._filteredData, this._groupBy.slice(0, this._drawDepth + 1))
+        values: nest$2(this._filteredData, this._groupBy.slice(0, this._drawDepth + 1))
       }, function (d) { return d.key && d.values ? d.values : null; }).sort(this._sort))
       .descendants()
       .filter(function (d) { return d.depth <= this$1._groupBy.length && d.parent; });
@@ -31330,7 +31405,7 @@ var Tree = (function (Viz$$1) {
       d.i = i;
     });
 
-    var r = this._shapeConfig.Circle.r || this._shapeConfig.r;
+    var r = this._shapeConfig.r;
     if (typeof r !== "function") { r = constant$2(r); }
     var rBufferRoot = max(treeData, function (d) { return d.depth === 1 ? r(d.data, d.i) : 0; });
     var rBufferEnd = max(treeData, function (d) { return d.children ? 0 : r(d.data, d.i); });
@@ -31341,7 +31416,7 @@ var Tree = (function (Viz$$1) {
       (yExtent[1] - rBufferRoot - rBufferEnd) / (this._groupBy.length + 1)
     ]);
 
-    this._labelWidths = nest$1(treeData, function (d) { return d.depth; })
+    this._labelWidths = nest$2(treeData, function (d) { return d.depth; })
       .map(function (d) { return d.values.reduce(function (num, v, i) {
         var next = i < d.values.length - 1 ? d.values[i + 1].x : width + this$1._margin[left],
               prev = i ? d.values[i - 1].x : this$1._margin[left];
@@ -31368,12 +31443,70 @@ var Tree = (function (Viz$$1) {
       .data(treeData.filter(function (d) { return d.depth > 1; }))
       .select(elem("g.d3plus-Tree-Links", elemObject).node())
       .config(configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
+      .config({
+        d: function (d) {
+
+          var r = this$1._shapeConfig.r;
+
+          if (typeof r === "function") { r = r(d.data, d.i); }
+
+          var px = d.parent.x - d.x + (this$1._orient === "vertical" ? 0 : r),
+                py = d.parent.y - d.y + (this$1._orient === "vertical" ? r : 0),
+                x = this$1._orient === "vertical" ? 0 : -r,
+                y = this$1._orient === "vertical" ? -r : 0;
+
+          return this$1._orient === "vertical"
+               ? ("M" + x + "," + y + "C" + x + "," + ((y + py) / 2) + " " + px + "," + ((y + py) / 2) + " " + px + "," + py)
+               : ("M" + x + "," + y + "C" + ((x + px) / 2) + "," + y + " " + ((x + px) / 2) + "," + py + " " + px + "," + py);
+
+        },
+        id: function (d, i) { return this$1._ids(d, i).join("-"); }
+      })
       .render());
 
     this._shapes.push(new Circle()
       .data(treeData)
       .select(elem("g.d3plus-Tree-Shapes", elemObject).node())
       .config(configPrep.bind(this)(this._shapeConfig, "shape", "Circle"))
+      .config({
+        id: function (d, i) { return this$1._ids(d, i).join("-"); },
+        label: function (d, i) {
+          if (this$1._label) { return this$1._label(d.data, i); }
+          var ids = this$1._ids(d, i).slice(0, d.depth);
+          return ids[ids.length - 1];
+        },
+        labelConfig: {
+          textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
+                         : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
+          verticalAlign: function (d) { return this$1._orient === "vertical" ? d.data.depth === 1 ? "bottom" : "top" : "middle"; }
+        },
+        hitArea: function (d, i, s) {
+
+          var h = this$1._labelHeight,
+                w = this$1._labelWidths[d.depth - 1];
+
+          return {
+            width: this$1._orient === "vertical" ? w : s.r * 2 + w,
+            height: this$1._orient === "horizontal" ? h : s.r * 2 + h,
+            x: this$1._orient === "vertical" ? -w / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + w) : -s.r,
+            y: this$1._orient === "horizontal" ? -h / 2 : d.children && d.depth !== this$1._groupBy.length ? -(s.r + this$1._labelHeight) : -s.r
+          };
+
+        },
+        labelBounds: function (d, i, s) {
+
+          var h = this$1._labelHeight,
+                height = this$1._orient === "vertical" ? "height" : "width",
+                w = this$1._labelWidths[d.depth - 1],
+                width = this$1._orient === "vertical" ? "width" : "height",
+                x = this$1._orient === "vertical" ? "x" : "y",
+                y = this$1._orient === "vertical" ? "y" : "x";
+
+          return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
+          var obj;
+
+        }
+      })
       .render());
 
     return this;
@@ -31425,21 +31558,7 @@ var Treemap = (function (Viz$$1) {
     this._padding = 1;
     this._shapeConfig = assign({}, this._shapeConfig, {
       labelConfig: {
-        fontResize: true,
-        textAnchor: function (d) { return d.l ? "middle" : "start"; },
-        verticalAlign: function (d) { return d.l ? "bottom" : "top"; }
-      },
-      Rect: {
-        height: function (d) { return d.y1 - d.y0; },
-        labelBounds: function (d, i, s) {
-          var h = s.height;
-          var sh = Math.min(50, h * 0.25);
-          return [
-            {width: s.width, height: h - sh, x: -s.width / 2, y: -h / 2},
-            {width: s.width, height: sh, x: -s.width / 2, y: h / 2 - sh}
-          ];
-        },
-        width: function (d) { return d.x1 - d.x0; }
+        fontResize: true
       }
     });
     this._sort = function (a, b) { return b.value - a.value; };
@@ -31463,7 +31582,7 @@ var Treemap = (function (Viz$$1) {
 
     Viz$$1.prototype._draw.call(this, callback);
 
-    var nestedData = nest();
+    var nestedData = nest$1();
     for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this$1._groupBy[i]); }
     nestedData = nestedData.entries(this._filteredData);
 
@@ -31512,6 +31631,22 @@ var Treemap = (function (Viz$$1) {
         enter: {transform: transform},
         update: {transform: transform}
       }).node())
+      .config({
+        height: function (d) { return d.y1 - d.y0; },
+        labelBounds: function (d, i, s) {
+          var h = s.height;
+          var sh = Math.min(50, h * 0.25);
+          return [
+            {width: s.width, height: h - sh, x: -s.width / 2, y: -h / 2},
+            {width: s.width, height: sh, x: -s.width / 2, y: h / 2 - sh}
+          ];
+        },
+        labelConfig: {
+          textAnchor: function (d) { return d.l ? "middle" : "start"; },
+          verticalAlign: function (d) { return d.l ? "bottom" : "top"; }
+        },
+        width: function (d) { return d.x1 - d.x0; }
+      })
       .config(configPrep.bind(this)(this._shapeConfig, "shape", "Rect"))
       .render());
 
