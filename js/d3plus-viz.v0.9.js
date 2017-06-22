@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.9.3
+  d3plus-viz v0.9.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -835,7 +835,6 @@ var Viz = (function (BaseClass$$1) {
       }
       if (this$1._label) { return this$1._label(d, i); }
       var l = that._ids(d, i).slice(0, this$1._drawDepth + 1);
-      if (!l.length && this$1._topojsonId) { return this$1._topojsonId(d); }
       return l[l.length - 1];
     };
 
