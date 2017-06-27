@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.21
+  d3plus-common v0.6.22
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -446,6 +446,7 @@ exports.locale = locale;
 exports.merge = objectMerge;
 exports.prefix = prefix;
 exports.stylize = stylize;
+exports.uuid = uuid;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
