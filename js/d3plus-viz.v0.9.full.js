@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.9.4
+  d3plus-viz v0.9.5
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -29283,6 +29283,8 @@ var drawTotal = function(data) {
 */
 function _elementSize(element, s) {
 
+  if (!element) { return undefined; }
+
   if (element.tagName === undefined || ["BODY", "HTML"].indexOf(element.tagName) >= 0) {
 
     var val  = window[("inner" + (s.charAt(0).toUpperCase() + s.slice(1)))];
@@ -29338,18 +29340,11 @@ var inViewport = function(elem, buffer) {
         pageY = window.pageYOffset !== undefined ? window.pageYOffset
               : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 
-  var height = elem.offsetHeight,
-      left = elem.offsetLeft,
-      top = elem.offsetTop,
-      width = elem.offsetWidth;
-
-  if (height === void 0) {
-    var bounds = elem.getBoundingClientRect();
-    height = bounds.height;
-    left = bounds.left + pageX;
-    top = bounds.top + pageY;
-    width = bounds.width;
-  }
+  var bounds = elem.getBoundingClientRect();
+  var height = bounds.height,
+        left = bounds.left + pageX,
+        top = bounds.top + pageY,
+        width = bounds.width;
 
   return pageY + window.innerHeight > top + buffer && pageY + buffer < top + height &&
          pageX + window.innerWidth > left + buffer && pageX + buffer < left + width;
