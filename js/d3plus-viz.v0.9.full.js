@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.9.5
+  d3plus-viz v0.9.6
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -4003,7 +4003,7 @@ var index = createCommonjsModule(function (module) {
   };
 
   function CacheState (capacity) {
-    this.capacity = capacity > 0 ? +capacity : Number.MAX_VALUE;
+    this.capacity = capacity > 0 ? +capacity : (Number.MAX_SAFE_INTEGER || Number.MAX_VALUE);
     this.data = Object.create ? Object.create(null) : {};
     this.hash = Object.create ? Object.create(null) : {};
     this.linkedList = new LinkedList();
@@ -29003,10 +29003,11 @@ var drawControls = function() {
 
     var transform = {
       height: this$1._height - this$1._margin.top - this$1._margin.bottom,
-      width: this$1._width - this$1._margin.left - this$1._margin.right,
-      x: this$1._margin.left,
-      y: this$1._margin.top
+      width: this$1._width - this$1._margin.left - this$1._margin.right
     };
+
+    transform.x = this$1._margin.left + (area === "right" ? transform.width : 0);
+    transform.y = this$1._margin.top + (area === "bottom" ? transform.height : 0);
 
     var foreign = elem(("foreignObject.d3plus-viz-controls-" + area), {
       condition: controls.length,
@@ -29014,7 +29015,7 @@ var drawControls = function() {
       exit: Object.assign({opacity: 0}, transform),
       parent: this$1._select,
       transition: this$1._transition,
-      update: Object.assign({opacity: 1}, transform)
+      update: {height: transform.height, opacity: 1, width: transform.width}
     });
 
     var container = foreign.selectAll("div.d3plus-viz-controls-container")
@@ -29022,8 +29023,6 @@ var drawControls = function() {
 
     container = container.enter().append("xhtml:div")
         .attr("class", "d3plus-viz-controls-container")
-        .style("margin-top", area === "bottom" ? ((transform.height) + "px") : 0)
-        .style("margin-left", area === "right" ? ((transform.width) + "px") : 0)
       .merge(container);
 
     if (controls.length) {
@@ -29072,10 +29071,15 @@ var drawControls = function() {
 
       var bounds = container.node().getBoundingClientRect();
 
-      container
-        .transition(this$1._transition)
-          .style("margin-top", area === "bottom" ? ((transform.height - bounds.height) + "px") : 0)
-          .style("margin-left", area === "right" ? ((transform.width - bounds.width) + "px") : 0);
+      if (area === "bottom") {
+        console.log(this$1._margin);
+        console.log(transform);
+        console.log(bounds);
+      }
+
+      foreign.transition(this$1._transition)
+        .attr("x", transform.x - (area === "right" ? bounds.width : 0))
+        .attr("y", transform.y - (area === "bottom" ? bounds.height : 0));
 
       this$1._margin[area] += ["top", "bottom"].includes(area) ? bounds.height : bounds.width;
 
