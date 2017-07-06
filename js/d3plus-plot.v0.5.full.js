@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.21
+  d3plus-plot v0.5.22
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -123,6 +123,13 @@ function s() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
+/**
+    @function uuid
+    @summary Returns a unique identifier.
+*/
+var uuid = function() {
+  return ("" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s()));
+};
 
 /**
     @class BaseClass
@@ -130,7 +137,7 @@ function s() {
 */
 var BaseClass = function BaseClass() {
   this._on = {};
-  this._uuid = "" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s());
+  this._uuid = uuid();
 };
 
 /**
@@ -201,9 +208,9 @@ function configPrep(config, type, nest) {
   var newConfig = {duration: this._duration, on: {}};
 
   var wrapFunction = function (func) { return function (d, i, s) {
-    while (d.__d3plus__ && d.data) {
+    while (d.__d3plus__) {
       i = d.i;
-      d = d.data;
+      d = d.data || d.feature;
     }
     return func(d, i, s);
   }; };
@@ -246,8 +253,11 @@ function configPrep(config, type, nest) {
 
   keyEval(newConfig, config);
   if (this._on) { parseEvents(newConfig, this._on); }
+  if (nest && config[nest]) {
+    keyEval(newConfig, config[nest]);
+    if (config[nest].on) { parseEvents(newConfig, config[nest].on); }
+  }
 
-  if (nest && config[nest]) { newConfig = assign(newConfig, config[nest]); }
   return newConfig;
 
 }
@@ -5210,10 +5220,15 @@ var I18n = function (_EventEmitter) {
 
       var options = _extends({}, opts);
       options.lng = options.lng || fixedT.lng;
+      options.lngs = options.lngs || fixedT.lngs;
       options.ns = options.ns || fixedT.ns;
       return _this5.t(key, options);
     };
-    fixedT.lng = lng;
+    if (typeof lng === 'string') {
+      fixedT.lng = lng;
+    } else {
+      fixedT.lngs = lng;
+    }
     fixedT.ns = ns;
     return fixedT;
   };
@@ -5286,7 +5301,7 @@ var I18n = function (_EventEmitter) {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$1;
 
-    var mergedOptions = _extends({}, options, this.options, { isClone: true });
+    var mergedOptions = _extends({}, this.options, options, { isClone: true });
     var clone = new I18n(mergedOptions, callback);
     var membersToCopy = ['store', 'services', 'language'];
     membersToCopy.forEach(function (m) {
@@ -5745,10 +5760,10 @@ var nest = function() {
       nest;
 
   function apply(array, depth, createResult, setResult) {
-    if (depth >= keys.length) { return rollup != null
-        ? rollup(array) : (sortValues != null
-        ? array.sort(sortValues)
-        : array); }
+    if (depth >= keys.length) {
+      if (sortValues != null) { array.sort(sortValues); }
+      return rollup != null ? rollup(array) : array;
+    }
 
     var i = -1,
         n = array.length,
@@ -6957,7 +6972,13 @@ function newInterval(floori, offseti, count, field) {
     return newInterval(function(date) {
       if (date >= date) { while (floori(date), !test(date)) { date.setTime(date - 1); } }
     }, function(date, step) {
-      if (date >= date) { while (--step >= 0) { while (offseti(date, 1), !test(date)) {} } } // eslint-disable-line no-empty
+      if (date >= date) {
+        if (step < 0) { while (++step <= 0) {
+          while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
+        } } else { while (--step >= 0) {
+          while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
+        } }
+      }
     });
   };
 
@@ -14108,8 +14129,9 @@ var shapes = Object.freeze({
 
 /**
     @function date
-    @desc Parses numbers and strings to valid Javascript Date obejcts.
-    @param {Date|Number|String} *date*
+    @summary Parses numbers and strings to valid Javascript Date objects.
+    @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
+    @param {Number|String} *date*
 */
 var date$2 = function(d) {
 
@@ -14424,15 +14446,17 @@ var Axis = (function (BaseClass$$1) {
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lh)
-        .width(horizontal ? this$1._space : this$1._width - hBuff - p)
-        .height(horizontal ? this$1._height - hBuff - p : this$1._space)
+        .width(horizontal ? this$1._space * 2 : this$1._width - hBuff - p)
+        .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2)
         (tickFormat(d));
 
       res.lines = res.lines.filter(function (d) { return d !== ""; });
       res.d = d;
       res.fS = s;
-      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s / 4;
-      res.height = Math.ceil(res.lines.length * (lh + 1));
+      res.width = res.lines.length
+        ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
+        : 0;
+      res.height = res.lines.length ? Math.ceil(res.lines.length * (lh + 1)) : 0;
       res.offset = 0;
       if (res.width % 2) { res.width++; }
 
@@ -14445,7 +14469,6 @@ var Axis = (function (BaseClass$$1) {
         var prev = textData[i - 1];
         if (!prev.offset && this$1._d3Scale(d.d) - d[width] / 2 < this$1._d3Scale(prev.d) + prev[width] / 2) {
           d.offset = prev[height] + this$1._padding;
-          d[height] += d.offset;
         }
       }
     });
@@ -14453,7 +14476,10 @@ var Axis = (function (BaseClass$$1) {
     var maxOffset = max(textData, function (d) { return d.offset; });
     if (maxOffset) {
       textData.forEach(function (d) {
-        if (d.offset) { d.offset = maxOffset; }
+        if (d.offset) {
+          d.offset = maxOffset;
+          d[height] += maxOffset;
+        }
       });
     }
 
@@ -14489,14 +14515,29 @@ var Axis = (function (BaseClass$$1) {
         }
       }
 
+      if (range$$1.length > 2) { range$$1 = range(this._domain.length).map(function (d) { return this$1._size * (d / (range$$1.length - 1)) + range$$1[0]; }); }
+      range$$1 = range$$1.map(Math.round);
       if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
       else { this._d3Scale.range(range$$1); }
 
     }
 
+    if (this._scale === "band") {
+      this._space = this._d3Scale.bandwidth();
+    }
+    else if (labels.length > 1) {
+      this._space = 0;
+      for (var i$1 = 0; i$1 < labels.length - 1; i$1++) {
+        var s$1 = this$1._d3Scale(labels[i$1 + 1]) - this$1._d3Scale(labels[i$1]);
+        if (s$1 > this$1._space) { this$1._space = s$1; }
+      }
+    }
+    else { this._space = this._size; }
+
     var tBuff = this._shape === "Line" ? 0 : hBuff;
     this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
     var obj;
+
     this._margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
     this._margin[this._orient] += hBuff;
     this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
@@ -14524,21 +14565,34 @@ var Axis = (function (BaseClass$$1) {
         .call(this._gridPosition.bind(this));
 
     var labelHeight = max(textData, function (t) { return t.height; }) || 0,
-          labelWidth = horizontal ? this._space * 1.1 : (this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p) * 1.1;
+          labelWidth = horizontal ? this._space : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
+
     var tickData = ticks$$1
       .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks$$1.includes(d); }))
-      .map(function (d) {
+      .map(function (d, i, arr) {
         var data = textData.filter(function (td) { return td.d === d; });
         var labelOffset = data.length ? data[0].offset : 0;
+        var inline = false;
+        if (i) {
+          var prev = textData.filter(function (td) { return td.d === arr[i - 1]; });
+          if (prev.length && prev[0].offset === labelOffset) { inline = true; }
+        }
+        if (i < arr.length - 1) {
+          var next = textData.filter(function (td) { return td.d === arr[i + 1]; });
+          if (next.length && next[0].offset === labelOffset) { inline = true; }
+        }
         var offset = this$1._margin[opposite],
               position = flip ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
               size = (hBuff + labelOffset) * (flip ? -1 : 1);
+
+        var space = inline ? labelWidth : labelWidth * 1.9;
+
         return ( obj = {
           id: d,
           labelBounds: {
-            x: horizontal ? -labelWidth / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
+            x: horizontal ? -space / 2 : this$1._orient === "left" ? -space - p + size : size + p,
             y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -labelHeight / 2,
-            width: labelWidth,
+            width: space,
             height: labelHeight
           },
           size: ticks$$1.includes(d) ? size : 0,
@@ -14559,6 +14613,9 @@ var Axis = (function (BaseClass$$1) {
     new shapes[this._shape]()
       .data(tickData)
       .duration(this._duration)
+      .labelConfig({
+        ellipsis: function (d) { return d && d.length ? (d + "...") : ""; }
+      })
       .select(elem("g.ticks", {parent: group}).node())
       .config(this._shapeConfig)
       .render();
@@ -15585,7 +15642,7 @@ var index = createCommonjsModule(function (module) {
   };
 
   function CacheState (capacity) {
-    this.capacity = capacity > 0 ? +capacity : Number.MAX_VALUE;
+    this.capacity = capacity > 0 ? +capacity : (Number.MAX_SAFE_INTEGER || Number.MAX_VALUE);
     this.data = Object.create ? Object.create(null) : {};
     this.hash = Object.create ? Object.create(null) : {};
     this.linkedList = new LinkedList();
@@ -16500,6 +16557,7 @@ var ColorScale = (function (BaseClass$$1) {
       var jenks = ckmeans(data, colors.length);
 
       ticks$$1 = merge$1(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
+
       this._colorScale = threshold$1()
         .domain(ticks$$1)
         .range(["black"].concat(colors).concat(colors[colors.length - 1]));
@@ -16573,7 +16631,8 @@ var ColorScale = (function (BaseClass$$1) {
       .attr("stop-color", String);
 
     function bucketWidth(d, i) {
-      return Math.abs(axisScale(ticks$$1[i + 1]) - axisScale(d));
+      var w = Math.abs(axisScale(ticks$$1[i + 1]) - axisScale(d));
+      return w || 2;
     }
 
     this._rectClass
@@ -29046,10 +29105,11 @@ var drawControls = function() {
 
     var transform = {
       height: this$1._height - this$1._margin.top - this$1._margin.bottom,
-      width: this$1._width - this$1._margin.left - this$1._margin.right,
-      x: this$1._margin.left,
-      y: this$1._margin.top
+      width: this$1._width - this$1._margin.left - this$1._margin.right
     };
+
+    transform.x = this$1._margin.left + (area === "right" ? transform.width : 0);
+    transform.y = this$1._margin.top + (area === "bottom" ? transform.height : 0);
 
     var foreign = elem(("foreignObject.d3plus-viz-controls-" + area), {
       condition: controls.length,
@@ -29057,7 +29117,7 @@ var drawControls = function() {
       exit: Object.assign({opacity: 0}, transform),
       parent: this$1._select,
       transition: this$1._transition,
-      update: Object.assign({opacity: 1}, transform)
+      update: {height: transform.height, opacity: 1, width: transform.width}
     });
 
     var container = foreign.selectAll("div.d3plus-viz-controls-container")
@@ -29065,8 +29125,6 @@ var drawControls = function() {
 
     container = container.enter().append("xhtml:div")
         .attr("class", "d3plus-viz-controls-container")
-        .style("margin-top", area === "bottom" ? ((transform.height) + "px") : 0)
-        .style("margin-left", area === "right" ? ((transform.width) + "px") : 0)
       .merge(container);
 
     if (controls.length) {
@@ -29115,10 +29173,15 @@ var drawControls = function() {
 
       var bounds = container.node().getBoundingClientRect();
 
-      container
-        .transition(this$1._transition)
-          .style("margin-top", area === "bottom" ? ((transform.height - bounds.height) + "px") : 0)
-          .style("margin-left", area === "right" ? ((transform.width - bounds.width) + "px") : 0);
+      if (area === "bottom") {
+        console.log(this$1._margin);
+        console.log(transform);
+        console.log(bounds);
+      }
+
+      foreign.transition(this$1._transition)
+        .attr("x", transform.x - (area === "right" ? bounds.width : 0))
+        .attr("y", transform.y - (area === "bottom" ? bounds.height : 0));
 
       this$1._margin[area] += ["top", "bottom"].includes(area) ? bounds.height : bounds.width;
 
@@ -29326,6 +29389,8 @@ var drawTotal = function(data) {
 */
 function _elementSize(element, s) {
 
+  if (!element) { return undefined; }
+
   if (element.tagName === undefined || ["BODY", "HTML"].indexOf(element.tagName) >= 0) {
 
     var val  = window[("inner" + (s.charAt(0).toUpperCase() + s.slice(1)))];
@@ -29381,18 +29446,11 @@ var inViewport = function(elem, buffer) {
         pageY = window.pageYOffset !== undefined ? window.pageYOffset
               : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 
-  var height = elem.offsetHeight,
-      left = elem.offsetLeft,
-      top = elem.offsetTop,
-      width = elem.offsetWidth;
-
-  if (height === void 0) {
-    var bounds = elem.getBoundingClientRect();
-    height = bounds.height;
-    left = bounds.left + pageX;
-    top = bounds.top + pageY;
-    width = bounds.width;
-  }
+  var bounds = elem.getBoundingClientRect();
+  var height = bounds.height,
+        left = bounds.left + pageX,
+        top = bounds.top + pageY,
+        width = bounds.width;
 
   return pageY + window.innerHeight > top + buffer && pageY + buffer < top + height &&
          pageX + window.innerWidth > left + buffer && pageX + buffer < left + width;
@@ -30533,14 +30591,14 @@ var Plot = (function (Viz$$1) {
 
 
     Viz$$1.call(this);
-    this._barPadding = 5;
+    this._barPadding = 0;
     this._buffer = {
       Bar: BarBuffer,
       Circle: CircleBuffer,
       Line: LineBuffer,
       Rect: RectBuffer
     };
-    this._groupPadding = 20;
+    this._groupPadding = 5;
     this._shape = constant("Circle");
     this._shapeConfig = assign(this._shapeConfig, {
       Area: {
@@ -30775,9 +30833,7 @@ var Plot = (function (Viz$$1) {
           yTicks = this._discrete === "y" && !yTime ? domains.y : undefined;
 
     var yC = {
-      barConfig: {"stroke-width": !this._discrete || this._discrete === "y" ? 1 : 0},
-      gridConfig: {"stroke-width": !this._discrete || this._discrete === "x" ? 1 : 0},
-      shapeConfig: {stroke: this._discrete ? "transparent" : this._yTest.barConfig().stroke}
+      gridConfig: {stroke: !this._discrete || this._discrete === "x" ? this._yTest.gridConfig().stroke : "transparent"}
     };
 
     this._yTest
@@ -30795,9 +30851,7 @@ var Plot = (function (Viz$$1) {
     var yWidth = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
 
     var xC = {
-      barConfig: {"stroke-width": !this._discrete || this._discrete === "x" ? 1 : 0},
-      gridConfig: {"stroke-width": !this._discrete || this._discrete === "y" ? 1 : 0},
-      shapeConfig: {stroke: this._discrete ? "transparent" : this._xTest.barConfig().stroke}
+      gridConfig: {stroke: !this._discrete || this._discrete === "y" ? this._xTest.gridConfig().stroke : "transparent"}
     };
 
     this._xTest
@@ -30813,6 +30867,10 @@ var Plot = (function (Viz$$1) {
       .render();
 
     var xOffset = max([yWidth, this._xTest._d3Scale.range()[0]]);
+
+    this._xTest
+      .range([xOffset, undefined])
+      .render();
 
     var xGroup = elem("g.d3plus-plot-x-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
 
@@ -30882,6 +30940,9 @@ var Plot = (function (Viz$$1) {
 
     y = this._yAxis._d3Scale;
 
+    var yOffset = this._xAxis.barConfig()["stroke-width"];
+    if (yOffset) { yOffset /= 2; }
+
     var shapeConfig = {
       duration: this._duration,
       label: function (d) { return this$1._drawLabel(d.data, d.i); },
@@ -30890,8 +30951,8 @@ var Plot = (function (Viz$$1) {
       x0: this._discrete === "x" ? function (d) { return x(d.x); } : x(0),
       x1: this._discrete === "x" ? null : function (d) { return x(d.x); },
       y: function (d) { return y(d.y); },
-      y0: this._discrete === "y" ? function (d) { return y(d.y); } : y(0),
-      y1: this._discrete === "y" ? null : function (d) { return y(d.y); }
+      y0: this._discrete === "y" ? function (d) { return y(d.y); } : y(0) - yOffset,
+      y1: this._discrete === "y" ? null : function (d) { return y(d.y) - yOffset; }
     };
 
     if (this._stacked) {
@@ -30986,7 +31047,7 @@ var Plot = (function (Viz$$1) {
   /**
       @memberof Plot
       @desc Sets the pixel space between each bar in a group of bars.
-      @param {Number} [*value* = 5]
+      @param {Number} [*value* = 0]
   */
   Plot.prototype.barPadding = function barPadding (_) {
     return arguments.length ? (this._barPadding = _, this) : this._barPadding;
@@ -31013,7 +31074,7 @@ var Plot = (function (Viz$$1) {
   /**
       @memberof Plot
       @desc Sets the pixel space between groups of bars.
-      @param {Number} [*value* = 20]
+      @param {Number} [*value* = 5]
   */
   Plot.prototype.groupPadding = function groupPadding (_) {
     return arguments.length ? (this._groupPadding = _, this) : this._groupPadding;

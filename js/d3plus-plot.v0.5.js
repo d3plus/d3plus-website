@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.21
+  d3plus-plot v0.5.22
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -169,14 +169,14 @@ var Plot = (function (Viz$$1) {
 
 
     Viz$$1.call(this);
-    this._barPadding = 5;
+    this._barPadding = 0;
     this._buffer = {
       Bar: BarBuffer,
       Circle: CircleBuffer,
       Line: LineBuffer,
       Rect: RectBuffer
     };
-    this._groupPadding = 20;
+    this._groupPadding = 5;
     this._shape = d3plusCommon.constant("Circle");
     this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       Area: {
@@ -411,9 +411,7 @@ var Plot = (function (Viz$$1) {
           yTicks = this._discrete === "y" && !yTime ? domains.y : undefined;
 
     var yC = {
-      barConfig: {"stroke-width": !this._discrete || this._discrete === "y" ? 1 : 0},
-      gridConfig: {"stroke-width": !this._discrete || this._discrete === "x" ? 1 : 0},
-      shapeConfig: {stroke: this._discrete ? "transparent" : this._yTest.barConfig().stroke}
+      gridConfig: {stroke: !this._discrete || this._discrete === "x" ? this._yTest.gridConfig().stroke : "transparent"}
     };
 
     this._yTest
@@ -431,9 +429,7 @@ var Plot = (function (Viz$$1) {
     var yWidth = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
 
     var xC = {
-      barConfig: {"stroke-width": !this._discrete || this._discrete === "x" ? 1 : 0},
-      gridConfig: {"stroke-width": !this._discrete || this._discrete === "y" ? 1 : 0},
-      shapeConfig: {stroke: this._discrete ? "transparent" : this._xTest.barConfig().stroke}
+      gridConfig: {stroke: !this._discrete || this._discrete === "y" ? this._xTest.gridConfig().stroke : "transparent"}
     };
 
     this._xTest
@@ -449,6 +445,10 @@ var Plot = (function (Viz$$1) {
       .render();
 
     var xOffset = d3Array.max([yWidth, this._xTest._d3Scale.range()[0]]);
+
+    this._xTest
+      .range([xOffset, undefined])
+      .render();
 
     var xGroup = d3plusCommon.elem("g.d3plus-plot-x-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
 
@@ -518,6 +518,9 @@ var Plot = (function (Viz$$1) {
 
     y = this._yAxis._d3Scale;
 
+    var yOffset = this._xAxis.barConfig()["stroke-width"];
+    if (yOffset) { yOffset /= 2; }
+
     var shapeConfig = {
       duration: this._duration,
       label: function (d) { return this$1._drawLabel(d.data, d.i); },
@@ -526,8 +529,8 @@ var Plot = (function (Viz$$1) {
       x0: this._discrete === "x" ? function (d) { return x(d.x); } : x(0),
       x1: this._discrete === "x" ? null : function (d) { return x(d.x); },
       y: function (d) { return y(d.y); },
-      y0: this._discrete === "y" ? function (d) { return y(d.y); } : y(0),
-      y1: this._discrete === "y" ? null : function (d) { return y(d.y); }
+      y0: this._discrete === "y" ? function (d) { return y(d.y); } : y(0) - yOffset,
+      y1: this._discrete === "y" ? null : function (d) { return y(d.y) - yOffset; }
     };
 
     if (this._stacked) {
@@ -622,7 +625,7 @@ var Plot = (function (Viz$$1) {
   /**
       @memberof Plot
       @desc Sets the pixel space between each bar in a group of bars.
-      @param {Number} [*value* = 5]
+      @param {Number} [*value* = 0]
   */
   Plot.prototype.barPadding = function barPadding (_) {
     return arguments.length ? (this._barPadding = _, this) : this._barPadding;
@@ -649,7 +652,7 @@ var Plot = (function (Viz$$1) {
   /**
       @memberof Plot
       @desc Sets the pixel space between groups of bars.
-      @param {Number} [*value* = 20]
+      @param {Number} [*value* = 5]
   */
   Plot.prototype.groupPadding = function groupPadding (_) {
     return arguments.length ? (this._groupPadding = _, this) : this._groupPadding;
