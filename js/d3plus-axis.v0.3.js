@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.30
+  d3plus-axis v0.3.31
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -329,8 +329,8 @@ var Axis = (function (BaseClass$$1) {
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lh)
-        .width(horizontal ? this$1._space : this$1._width - hBuff - p)
-        .height(horizontal ? this$1._height - hBuff - p : this$1._space)
+        .width(horizontal ? this$1._space * 2 : this$1._width - hBuff - p)
+        .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2)
         (tickFormat(d));
 
       res.lines = res.lines.filter(function (d) { return d !== ""; });
@@ -352,7 +352,6 @@ var Axis = (function (BaseClass$$1) {
         var prev = textData[i - 1];
         if (!prev.offset && this$1._d3Scale(d.d) - d[width] / 2 < this$1._d3Scale(prev.d) + prev[width] / 2) {
           d.offset = prev[height] + this$1._padding;
-          d[height] += d.offset;
         }
       }
     });
@@ -360,7 +359,10 @@ var Axis = (function (BaseClass$$1) {
     var maxOffset = d3Array.max(textData, function (d) { return d.offset; });
     if (maxOffset) {
       textData.forEach(function (d) {
-        if (d.offset) { d.offset = maxOffset; }
+        if (d.offset) {
+          d.offset = maxOffset;
+          d[height] += maxOffset;
+        }
       });
     }
 
@@ -396,14 +398,29 @@ var Axis = (function (BaseClass$$1) {
         }
       }
 
+      if (range$$1.length > 2) { range$$1 = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (range$$1.length - 1)) + range$$1[0]; }); }
+      range$$1 = range$$1.map(Math.round);
       if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
       else { this._d3Scale.range(range$$1); }
 
     }
 
+    if (this._scale === "band") {
+      this._space = this._d3Scale.bandwidth();
+    }
+    else if (labels.length > 1) {
+      this._space = 0;
+      for (var i$1 = 0; i$1 < labels.length - 1; i$1++) {
+        var s$1 = this$1._d3Scale(labels[i$1 + 1]) - this$1._d3Scale(labels[i$1]);
+        if (s$1 > this$1._space) { this$1._space = s$1; }
+      }
+    }
+    else { this._space = this._size; }
+
     var tBuff = this._shape === "Line" ? 0 : hBuff;
     this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
     var obj;
+
     this._margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
     this._margin[this._orient] += hBuff;
     this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
@@ -431,21 +448,34 @@ var Axis = (function (BaseClass$$1) {
         .call(this._gridPosition.bind(this));
 
     var labelHeight = d3Array.max(textData, function (t) { return t.height; }) || 0,
-          labelWidth = horizontal ? this._space * 1.1 : (this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p) * 1.1;
+          labelWidth = horizontal ? this._space : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
+
     var tickData = ticks
       .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); }))
-      .map(function (d) {
+      .map(function (d, i, arr) {
         var data = textData.filter(function (td) { return td.d === d; });
         var labelOffset = data.length ? data[0].offset : 0;
+        var inline = false;
+        if (i) {
+          var prev = textData.filter(function (td) { return td.d === arr[i - 1]; });
+          if (prev.length && prev[0].offset === labelOffset) { inline = true; }
+        }
+        if (i < arr.length - 1) {
+          var next = textData.filter(function (td) { return td.d === arr[i + 1]; });
+          if (next.length && next[0].offset === labelOffset) { inline = true; }
+        }
         var offset = this$1._margin[opposite],
               position = flip ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
               size = (hBuff + labelOffset) * (flip ? -1 : 1);
+
+        var space = inline ? labelWidth : labelWidth * 1.9;
+
         return ( obj = {
           id: d,
           labelBounds: {
-            x: horizontal ? -labelWidth / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
+            x: horizontal ? -space / 2 : this$1._orient === "left" ? -space - p + size : size + p,
             y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -labelHeight / 2,
-            width: labelWidth,
+            width: space,
             height: labelHeight
           },
           size: ticks.includes(d) ? size : 0,
