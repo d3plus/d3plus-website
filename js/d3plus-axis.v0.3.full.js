@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.31
+  d3plus-axis v0.3.32
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -14245,7 +14245,6 @@ var Axis = (function (BaseClass$$1) {
                ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
                : ticks$$1;
 
-
     ticks$$1 = ticks$$1.slice();
     labels = labels.slice();
 
@@ -14256,6 +14255,9 @@ var Axis = (function (BaseClass$$1) {
     if (this._scale === "time") {
       ticks$$1 = ticks$$1.map(Number);
       labels = labels.map(Number);
+    }
+    else if (this._scale === "ordinal") {
+      labels = labels.filter(function (label) { return ticks$$1.includes(label); });
     }
 
     ticks$$1 = ticks$$1.sort(function (a, b) { return this$1._d3Scale(a) - this$1._d3Scale(b); });
@@ -14276,6 +14278,7 @@ var Axis = (function (BaseClass$$1) {
       if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
       else { pixels.push(false); }
     });
+
     ticks$$1 = ticks$$1.filter(function (d, i) { return pixels[i] !== false; });
 
     this._visibleTicks = ticks$$1;
@@ -14437,8 +14440,9 @@ var Axis = (function (BaseClass$$1) {
     var labelHeight = max(textData, function (t) { return t.height; }) || 0,
           labelWidth = horizontal ? this._space : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
 
-    var tickData = ticks$$1
-      .concat(labels.filter(function (d, i) { return textData[i].lines.length && !ticks$$1.includes(d); }))
+    var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks$$1.includes(d); });
+
+    var tickData = ticks$$1.concat(labelOnly)
       .map(function (d, i, arr) {
         var data = textData.filter(function (td) { return td.d === d; });
         var labelOffset = data.length ? data[0].offset : 0;
