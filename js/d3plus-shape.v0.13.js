@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.13.2
+  d3plus-shape v0.13.3
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -2498,7 +2498,7 @@ var path2polygon = function (path, segmentLength) {
       var start = Math.atan2(-prev[1], -prev[0]) - pi;
       var i = step;
       while (i < angle) {
-        poly.push(shapeEdgePoint(start + i, radius));
+        poly.push(shapeEdgePoint(points[4] ? start + i : start - i, radius));
         i += step;
       }
       poly.push(last);
