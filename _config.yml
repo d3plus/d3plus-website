@@ -11,6 +11,8 @@ gems:
 permalink: /blog/:categories/:year/:month/:day/:title/
 
 collections:
+  docs:
+    output: false
   examples:
     output: true
     permalink: examples/:path
@@ -28,17 +30,14 @@ navigation:
 - text: Examples
   url: /examples/
   icon: code
-- text: Blog
-  url: /blog/
-  icon: rss
-- text: Gitter Chat
-  url: https://gitter.im/d3plus/
-  icon: comments-o
 - text: Documentation
-  url: https://github.com/alexandersimoes/d3plus/wiki
+  url: /docs/
 # - text: Workshops
 #   url: /workshops/
   icon: book
+- text: Blog
+  url: /blog/
+  icon: rss
 - text: Source
   url: https://github.com/alexandersimoes/d3plus
   icon: github

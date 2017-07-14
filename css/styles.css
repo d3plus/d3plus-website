@@ -16,17 +16,17 @@ h1,h2,h3,h4,h5 {
   font-weight: normal;
 }
 h5 {
-  color: #b35c1e;
+  color: #458251;
   margin: 0px;
 }
 a {
-  color: #b35c1e; /* rust */
+  color: #458251; /* rust */
   text-decoration: none;
   -webkit-transition: color .1s;
           transition: color .1s;
 }
 a:hover {
-  color: #C9853A; /* orange */
+  color: #53925F; /* orange */
 }
 .clear {
   clear: both;
@@ -87,7 +87,7 @@ header h1 a:hover {
   color: #808080;
 }
 header h2, section h2, footer h2 {
-  color: #b35c1e; /* rust */
+  color: #458251; /* rust */
   padding: 12px 20px 14px;
 }
 header a {
@@ -95,7 +95,7 @@ header a {
   padding: 10px 15px;
 }
 header a.active {
-  color: #b35c1e;
+  color: #458251;
   text-decoration: none;
 }
 header a i {
@@ -111,7 +111,7 @@ div.exampleWrapper {
 }
 
 a.example {
-  /*background-color: #b35c1e;*/
+  /*background-color: #458251;*/
   border: 1px solid #ddd;
   box-shadow: 0px 2px 5px #ccc;
   display: inline-block;
@@ -127,6 +127,18 @@ a.example {
 }
 
 a.example img {
+  border: 0px;
+  display: block;
+  height: 100px;
+  /*opacity: 0.8;*/
+  /*-webkit-transition: opacity .1s;*/
+          /*transition: opacity .1s;*/
+  width: 150px;
+}
+
+a.example div.img {
+  background-position: center;
+  background-size: cover;
   border: 0px;
   display: block;
   height: 100px;
@@ -168,13 +180,13 @@ a.example:hover {
 }*/
 
 a.example span.banner.New {
-  color: rgba(179,92,30,1);
+  color: #458251;
   font-weight: bold;
   text-transform: uppercase;
 }
 
 .button {
-  background-color: #b35c1e;
+  background-color: #458251;
     box-shadow: 0px 2px 5px #ccc;
   color: #f7f7f7;
   cursor: pointer;
@@ -254,7 +266,7 @@ footer img {
 }
 #content h2.bar {
   background: rgba(179,92,30,0.15);
-  color: rgba(179,92,30,1);
+  color: #458251;
   margin: 10px 0px 20px;
 }
 
@@ -386,4 +398,44 @@ div.note {
 p.learn_more {
   background: #f7f7f7fca;
   padding: 10px;
+}
+
+#doc-sidebar {
+  box-sizing: border-box;
+  height: 100vh;
+  left: 0;
+  overflow-y: scroll;
+  padding: 68px 25px 25px;
+  position: fixed;
+  top: 0;
+  width: 250px;
+}
+
+#doc-sidebar input {
+  box-sizing: border-box;
+  display: block;
+  font-size: 24px;
+  font-weight: 200;
+  letter-spacing: 1px;
+  margin: 30px auto;
+  padding: 5px;
+  text-align: center;
+  width: 100%;
+}
+
+#doc-sidebar h3 {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+#docs {
+  padding-left: 250px;
+}
+
+.docWrapper > p:first-child > a {
+  display: block;
+  margin-top: -70px;
+  padding-top: 70px;
+  position: relative;
+  z-index: -1;
 }

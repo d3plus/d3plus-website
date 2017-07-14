@@ -123,9 +123,17 @@ style: blog
       All Examples <i class="fa fa-angle-right"></i>
     </a>
 
-</section>
+    {% assign examples = site.examples | sort: "date" %}
+    {% for example in examples limit:12 %}
+    <div class="exampleWrapper" id="{{ example.path | replace: "_", "" }}" data-content="{{ example.content | replace: '\"', '\'' | strip_html | strip_newlines }}">
+      <a class="example" href="/{{ example.path | replace: "index.md", "" | replace: "_", "" }}">
+        <div class="img" style="background-image: url('/{{ example.path | replace: "index.md", "thumb.png" | replace: "_", "" }}');"></div>
+        <div class="title">{{ example.title }}</div>
+      </a>
+    </div>
+    {% endfor %}
 
-{% include examples.html container="section#examples" limit=9 %}
+</section>\
 
 <section class="half" id="posts">
 

@@ -1,0 +1,55 @@
+---
+layout: default
+title: Documentation
+style: docs
+---
+
+<div id="doc-sidebar">
+  <input id="doc-search" type="text" placeholder="Search" />
+  {% assign docs = site.docs | sort: "kind" | group_by: "kind" | sort: "name" %}
+  {% for group in docs %}
+    <h3>{{ group.name }}</h3>
+    <ul>
+    {% for doc in group.items %}
+      <li data-name="{{ doc.name }}"><a href="#{{ doc.name }}">{{ doc.name }}</a></li>
+    {% endfor %}
+    </ul>
+  {% endfor %}
+</div>
+
+<div id="docs">
+  <h1>Documentation</h1>
+  <p>
+    This documentation is for the new d3plus 2.0. For 1.0 documentation, please visit the wiki: <a href="https://github.com/alexandersimoes/d3plus/wiki">https://github.com/alexandersimoes/d3plus/wiki</a>
+  </p>
+  {% assign docs = site.docs | sort: "kind" | group_by: "kind" | sort: "name" %}
+  {% for group in docs %}
+    {% for doc in group.items %}
+    <div class="docWrapper" data-name="{{ doc.name }}">
+      {{ doc.content | markdownify }}
+    </div>
+    <hr />
+    {% endfor %}
+  {% endfor %}
+</div>
+
+<script>
+
+  d3.select("#doc-search").on("keyup", function() {
+
+    var q = this.value.toLowerCase();
+
+    var names = [];
+    d3.selectAll(".docWrapper").style("display", function() {
+      var visible = q.length ? this.innerHTML.toLowerCase().indexOf(q) >= 0 : true;
+      if (visible) names.push(d3.select(this).attr("data-name"));
+      return visible ? "block" : "none";
+    });
+
+    d3.select("#doc-sidebar").selectAll("li").style("display", function() {
+      return names.indexOf(d3.select(this).attr("data-name")) >= 0 ? "block" : "none";
+    });
+
+  })
+
+</script>
