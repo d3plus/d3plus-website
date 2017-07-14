@@ -1,16 +1,16 @@
 ---
-name: Geomap
-kind: class
----
+  name: Geomap
+  kind: class
+  ---
 
-<a name="Geomap"></a>
+  <a name="Geomap"></a>
 
 ### **Geomap** [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L14)
 
 
-This is a global class, and extends all of the methods and functionality of [<code>Viz</code>](#Viz).
+This is a global class, and extends all of the methods and functionality of <code>Viz</code>.
 
-* [Geomap](#Geomap) ⇐ [<code>Viz</code>](#Viz)
+* [Geomap](#Geomap) ⇐ <code>Viz</code>
     * [new Geomap()](#new_Geomap_new)
     * [.fitFilter([*value*])](#Geomap.fitFilter) ↩︎
     * [.fitKey(*value*)](#Geomap.fitKey) ↩︎
