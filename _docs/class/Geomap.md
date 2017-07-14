@@ -1,7 +1,7 @@
 ---
-  name: Geomap
-  kind: class
-  ---
+name: Geomap
+kind: class
+---
 
   <a name="Geomap"></a>
 
