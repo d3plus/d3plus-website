@@ -7,7 +7,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-geo'), require('d3-scale'), require('d3-selection'), require('d3-tile'), require('d3-zoom'), require('topojson-client'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
 	typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports', 'd3-array', 'd3-color', 'd3-geo', 'd3-scale', 'd3-selection', 'd3-tile', 'd3-zoom', 'topojson-client', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Color,global.d3Geo,global.scales,global.d3Selection,global.d3Tile,global.d3Zoom,global.topojsonClient,global.d3plusCommon,global.d3plusShape,global.d3plusViz));
+	(factory((global.d3plus = {}),global.d3Array,global.d3Color,global.d3Geo,global.scales,global.d3Selection,global.d3Tile,global.d3Zoom,global.topojsonClient,global.d3plusCommon,global.d3plusShape,global.d3plusViz));
 }(this, (function (exports,d3Array,d3Color,d3Geo,scales,d3Selection,d3Tile,d3Zoom,topojsonClient,d3plusCommon,d3plusShape,d3plusViz) { 'use strict';
 
 /**
@@ -300,8 +300,8 @@ var Geomap = (function (Viz$$1) {
     }
 
     var coordData = this._coordData = this._topojson
-                    ? topo2feature(this._topojson, this._topojsonKey)
-                    : {type: "FeatureCollection", features: []};
+      ? topo2feature(this._topojson, this._topojsonKey)
+      : {type: "FeatureCollection", features: []};
 
     if (this._topojsonFilter) { coordData.features = coordData.features.filter(this._topojsonFilter); }
 

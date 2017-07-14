@@ -7,7 +7,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports'], factory) :
-	(factory((global.d3plus = global.d3plus || {})));
+	(factory((global.d3plus = {})));
 }(this, (function (exports) { 'use strict';
 
 var ascending = function(a, b) {
@@ -2668,12 +2668,6 @@ function projectionMutator(projectAt) {
   };
 }
 
-// A composite projection for the United States, configured by default for
-// 960×500. The projection also works quite well at 960×600 if you change the
-// scale to 1285 and adjust the translate accordingly. The set of standard
-// parallels for each region comes from USGS, which is published here:
-// http://egsc.usgs.gov/isb/pubs/MapProjections/projections.html#albers
-
 function azimuthalRaw(scale) {
   return function(x, y) {
     var cx = cos(x),
@@ -3156,7 +3150,7 @@ function nogamma(a, b) {
   return d ? linear$1(a, d) : constant$2(isNaN(a) ? b : a);
 }
 
-var interpolateRgb = ((function rgbGamma(y) {
+var interpolateRgb = (function rgbGamma(y) {
   var color$$1 = gamma(y);
 
   function rgb$$1(start, end) {
@@ -3176,7 +3170,7 @@ var interpolateRgb = ((function rgbGamma(y) {
   rgb$$1.gamma = rgbGamma;
 
   return rgb$$1;
-}))(1);
+})(1);
 
 var array$2 = function(a, b) {
   var nb = b ? b.length : 0,
@@ -3607,7 +3601,7 @@ function copy(source, target) {
 function continuous(deinterpolate, reinterpolate) {
   var domain = unit,
       range$$1 = unit,
-      interpolate$$1 = interpolate$1,
+      interpolate = interpolate$1,
       clamp = false,
       piecewise,
       output,
@@ -3620,7 +3614,7 @@ function continuous(deinterpolate, reinterpolate) {
   }
 
   function scale(x) {
-    return (output || (output = piecewise(domain, range$$1, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate$$1)))(+x);
+    return (output || (output = piecewise(domain, range$$1, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate)))(+x);
   }
 
   scale.invert = function(y) {
@@ -3636,7 +3630,7 @@ function continuous(deinterpolate, reinterpolate) {
   };
 
   scale.rangeRound = function(_) {
-    return range$$1 = slice$1.call(_), interpolate$$1 = interpolateRound, rescale();
+    return range$$1 = slice$1.call(_), interpolate = interpolateRound, rescale();
   };
 
   scale.clamp = function(_) {
@@ -3644,7 +3638,7 @@ function continuous(deinterpolate, reinterpolate) {
   };
 
   scale.interpolate = function(_) {
-    return arguments.length ? (interpolate$$1 = _, rescale()) : interpolate$$1;
+    return arguments.length ? (interpolate = _, rescale()) : interpolate;
   };
 
   return rescale();
@@ -4255,7 +4249,7 @@ function sqrt$1() {
   return pow$1().exponent(0.5);
 }
 
-function quantile$$1() {
+function quantile() {
   var domain = [],
       range$$1 = [],
       thresholds = [];
@@ -4296,7 +4290,7 @@ function quantile$$1() {
   };
 
   scale.copy = function() {
-    return quantile$$1()
+    return quantile()
         .domain(domain)
         .range(range$$1);
   };
@@ -5274,39 +5268,39 @@ function calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1
     [  year$$1,  1,      durationYear  ]
   ];
 
-  function tickFormat(date) {
-    return (second$$1(date) < date ? formatMillisecond
-        : minute$$1(date) < date ? formatSecond
-        : hour$$1(date) < date ? formatMinute
-        : day$$1(date) < date ? formatHour
-        : month$$1(date) < date ? (week(date) < date ? formatDay : formatWeek)
-        : year$$1(date) < date ? formatMonth
-        : formatYear)(date);
+  function tickFormat(date$$1) {
+    return (second$$1(date$$1) < date$$1 ? formatMillisecond
+        : minute$$1(date$$1) < date$$1 ? formatSecond
+        : hour$$1(date$$1) < date$$1 ? formatMinute
+        : day$$1(date$$1) < date$$1 ? formatHour
+        : month$$1(date$$1) < date$$1 ? (week(date$$1) < date$$1 ? formatDay : formatWeek)
+        : year$$1(date$$1) < date$$1 ? formatMonth
+        : formatYear)(date$$1);
   }
 
-  function tickInterval(interval, start, stop, step) {
-    if (interval == null) { interval = 10; }
+  function tickInterval(interval$$1, start, stop, step) {
+    if (interval$$1 == null) { interval$$1 = 10; }
 
     // If a desired tick count is specified, pick a reasonable tick interval
     // based on the extent of the domain and a rough estimate of tick size.
     // Otherwise, assume interval is already a time interval and use it.
-    if (typeof interval === "number") {
-      var target = Math.abs(stop - start) / interval,
+    if (typeof interval$$1 === "number") {
+      var target = Math.abs(stop - start) / interval$$1,
           i = bisector(function(i) { return i[2]; }).right(tickIntervals, target);
       if (i === tickIntervals.length) {
-        step = tickStep(start / durationYear, stop / durationYear, interval);
-        interval = year$$1;
+        step = tickStep(start / durationYear, stop / durationYear, interval$$1);
+        interval$$1 = year$$1;
       } else if (i) {
         i = tickIntervals[target / tickIntervals[i - 1][2] < tickIntervals[i][2] / target ? i - 1 : i];
         step = i[1];
-        interval = i[0];
+        interval$$1 = i[0];
       } else {
-        step = tickStep(start, stop, interval);
-        interval = millisecond$$1;
+        step = tickStep(start, stop, interval$$1);
+        interval$$1 = millisecond$$1;
       }
     }
 
-    return step == null ? interval : interval.every(step);
+    return step == null ? interval$$1 : interval$$1.every(step);
   }
 
   scale.invert = function(y) {
@@ -5317,14 +5311,14 @@ function calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1
     return arguments.length ? domain(map$3.call(_, number$2)) : domain().map(date$1);
   };
 
-  scale.ticks = function(interval, step) {
+  scale.ticks = function(interval$$1, step) {
     var d = domain(),
         t0 = d[0],
         t1 = d[d.length - 1],
         r = t1 < t0,
         t;
     if (r) { t = t0, t0 = t1, t1 = t; }
-    t = tickInterval(interval, t0, t1, step);
+    t = tickInterval(interval$$1, t0, t1, step);
     t = t ? t.range(t0, t1 + 1) : []; // inclusive stop
     return r ? t.reverse() : t;
   };
@@ -5333,10 +5327,10 @@ function calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1
     return specifier == null ? tickFormat : format(specifier);
   };
 
-  scale.nice = function(interval, step) {
+  scale.nice = function(interval$$1, step) {
     var d = domain();
-    return (interval = tickInterval(interval, d[0], d[d.length - 1], step))
-        ? domain(nice(d, interval))
+    return (interval$$1 = tickInterval(interval$$1, d[0], d[d.length - 1], step))
+        ? domain(nice(d, interval$$1))
         : scale;
   };
 
@@ -5442,7 +5436,7 @@ var scales = Object.freeze({
 	scaleImplicit: implicit,
 	scalePow: pow$1,
 	scaleSqrt: sqrt$1,
-	scaleQuantile: quantile$$1,
+	scaleQuantile: quantile,
 	scaleQuantize: quantize$1,
 	scaleThreshold: threshold$1,
 	scaleTime: time,
@@ -5875,9 +5869,9 @@ var selection_exit = function() {
   return new Selection(this._exit || this._groups.map(sparse), this._parents);
 };
 
-var selection_merge = function(selection) {
+var selection_merge = function(selection$$1) {
 
-  for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
+  for (var groups0 = this._groups, groups1 = selection$$1._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
     for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
       if (node = group0[i] || group1[i]) {
         merge[i] = node;
@@ -6845,7 +6839,7 @@ function create(node, id, self) {
 
 var interrupt = function(node, name) {
   var schedules = node.__transition,
-      schedule,
+      schedule$$1,
       active,
       empty = true,
       i;
@@ -6855,11 +6849,11 @@ var interrupt = function(node, name) {
   name = name == null ? null : name + "";
 
   for (i in schedules) {
-    if ((schedule = schedules[i]).name !== name) { empty = false; continue; }
-    active = schedule.state > STARTING && schedule.state < ENDING;
-    schedule.state = ENDED;
-    schedule.timer.stop();
-    if (active) { schedule.on.call("interrupt", node, node.__data__, schedule.index, schedule.group); }
+    if ((schedule$$1 = schedules[i]).name !== name) { empty = false; continue; }
+    active = schedule$$1.state > STARTING && schedule$$1.state < ENDING;
+    schedule$$1.state = ENDED;
+    schedule$$1.timer.stop();
+    if (active) { schedule$$1.on.call("interrupt", node, node.__data__, schedule$$1.index, schedule$$1.group); }
     delete schedules[i];
   }
 
@@ -6875,8 +6869,8 @@ var selection_interrupt = function(name) {
 function tweenRemove(id, name) {
   var tween0, tween1;
   return function() {
-    var schedule = set$3(this, id),
-        tween = schedule.tween;
+    var schedule$$1 = set$3(this, id),
+        tween = schedule$$1.tween;
 
     // If this node shared tween with the previous node,
     // just assign the updated shared tween and we’re done!
@@ -6892,7 +6886,7 @@ function tweenRemove(id, name) {
       }
     }
 
-    schedule.tween = tween1;
+    schedule$$1.tween = tween1;
   };
 }
 
@@ -6900,8 +6894,8 @@ function tweenFunction(id, name, value) {
   var tween0, tween1;
   if (typeof value !== "function") { throw new Error; }
   return function() {
-    var schedule = set$3(this, id),
-        tween = schedule.tween;
+    var schedule$$1 = set$3(this, id),
+        tween = schedule$$1.tween;
 
     // If this node shared tween with the previous node,
     // just assign the updated shared tween and we’re done!
@@ -6917,7 +6911,7 @@ function tweenFunction(id, name, value) {
       if (i === n) { tween1.push(t); }
     }
 
-    schedule.tween = tween1;
+    schedule$$1.tween = tween1;
   };
 }
 
@@ -6943,8 +6937,8 @@ function tweenValue(transition, name, value) {
   var id = transition._id;
 
   transition.each(function() {
-    var schedule = set$3(this, id);
-    (schedule.value || (schedule.value = {}))[name] = value.apply(this, arguments);
+    var schedule$$1 = set$3(this, id);
+    (schedule$$1.value || (schedule$$1.value = {}))[name] = value.apply(this, arguments);
   });
 
   return function(node) {
@@ -6972,29 +6966,29 @@ function attrRemoveNS$1(fullname) {
   };
 }
 
-function attrConstant$1(name, interpolate$$1, value1) {
+function attrConstant$1(name, interpolate, value1) {
   var value00,
       interpolate0;
   return function() {
     var value0 = this.getAttribute(name);
     return value0 === value1 ? null
         : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value1);
+        : interpolate0 = interpolate(value00 = value0, value1);
   };
 }
 
-function attrConstantNS$1(fullname, interpolate$$1, value1) {
+function attrConstantNS$1(fullname, interpolate, value1) {
   var value00,
       interpolate0;
   return function() {
     var value0 = this.getAttributeNS(fullname.space, fullname.local);
     return value0 === value1 ? null
         : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value1);
+        : interpolate0 = interpolate(value00 = value0, value1);
   };
 }
 
-function attrFunction$1(name, interpolate$$1, value) {
+function attrFunction$1(name, interpolate, value) {
   var value00,
       value10,
       interpolate0;
@@ -7004,11 +6998,11 @@ function attrFunction$1(name, interpolate$$1, value) {
     value0 = this.getAttribute(name);
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate(value00 = value0, value10 = value1);
   };
 }
 
-function attrFunctionNS$1(fullname, interpolate$$1, value) {
+function attrFunctionNS$1(fullname, interpolate, value) {
   var value00,
       value10,
       interpolate0;
@@ -7018,7 +7012,7 @@ function attrFunctionNS$1(fullname, interpolate$$1, value) {
     value0 = this.getAttributeNS(fullname.space, fullname.local);
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate(value00 = value0, value10 = value1);
   };
 }
 
@@ -7134,10 +7128,10 @@ var transition_filter = function(match) {
   return new Transition(subgroups, this._parents, this._name, this._id);
 };
 
-var transition_merge = function(transition) {
-  if (transition._id !== this._id) { throw new Error; }
+var transition_merge = function(transition$$1) {
+  if (transition$$1._id !== this._id) { throw new Error; }
 
-  for (var groups0 = this._groups, groups1 = transition._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
+  for (var groups0 = this._groups, groups1 = transition$$1._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
     for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
       if (node = group0[i] || group1[i]) {
         merge[i] = node;
@@ -7163,15 +7157,15 @@ function start(name) {
 function onFunction(id, name, listener) {
   var on0, on1, sit = start(name) ? init : set$3;
   return function() {
-    var schedule = sit(this, id),
-        on = schedule.on;
+    var schedule$$1 = sit(this, id),
+        on = schedule$$1.on;
 
     // If this node shared a dispatch with the previous node,
     // just assign the updated shared dispatch and we’re done!
     // Otherwise, copy-on-write.
     if (on !== on0) { (on1 = (on0 = on).copy()).on(name, listener); }
 
-    schedule.on = on1;
+    schedule$$1.on = on1;
   };
 }
 
@@ -7245,7 +7239,7 @@ var transition_selection = function() {
   return new Selection$1(this._groups, this._parents);
 };
 
-function styleRemove$1(name, interpolate$$1) {
+function styleRemove$1(name, interpolate) {
   var value00,
       value10,
       interpolate0;
@@ -7254,7 +7248,7 @@ function styleRemove$1(name, interpolate$$1) {
         value1 = (this.style.removeProperty(name), styleValue(this, name));
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate(value00 = value0, value10 = value1);
   };
 }
 
@@ -7264,18 +7258,18 @@ function styleRemoveEnd(name) {
   };
 }
 
-function styleConstant$1(name, interpolate$$1, value1) {
+function styleConstant$1(name, interpolate, value1) {
   var value00,
       interpolate0;
   return function() {
     var value0 = styleValue(this, name);
     return value0 === value1 ? null
         : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value1);
+        : interpolate0 = interpolate(value00 = value0, value1);
   };
 }
 
-function styleFunction$1(name, interpolate$$1, value) {
+function styleFunction$1(name, interpolate, value) {
   var value00,
       value10,
       interpolate0;
@@ -7285,7 +7279,7 @@ function styleFunction$1(name, interpolate$$1, value) {
     if (value1 == null) { value1 = (this.style.removeProperty(name), styleValue(this, name)); }
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate(value00 = value0, value10 = value1);
   };
 }
 
@@ -7680,7 +7674,7 @@ var zoom = function() {
       y0 = x0,
       y1 = x1,
       duration = 250,
-      interpolate$$1 = interpolateZoom,
+      interpolate = interpolateZoom,
       gestures = [],
       listeners = dispatch("start", "zoom", "end"),
       touchstarting,
@@ -7782,7 +7776,7 @@ var zoom = function() {
               w = Math.max(e[1][0] - e[0][0], e[1][1] - e[0][1]),
               a = that.__zoom,
               b = typeof transform === "function" ? transform.apply(that, args) : transform,
-              i = interpolate$$1(a.invert(p).concat(w / a.k), b.invert(p).concat(w / b.k));
+              i = interpolate(a.invert(p).concat(w / a.k), b.invert(p).concat(w / b.k));
           return function(t) {
             if (t === 1) { t = b; } // Avoid rounding error on end.
             else { var l = i(t), k = w / l[2]; t = new Transform(k, p[0] - l[0] * k, p[1] - l[1] * k); }
@@ -8024,7 +8018,7 @@ var zoom = function() {
   };
 
   zoom.interpolate = function(_) {
-    return arguments.length ? (interpolate$$1 = _, zoom) : interpolate$$1;
+    return arguments.length ? (interpolate = _, zoom) : interpolate;
   };
 
   zoom.on = function() {
@@ -9155,15 +9149,15 @@ var Translator = function (_EventEmitter) {
       // if we got a separator we loop over children - else we just return object as is
       // as having it set to false means no hierarchy so no lookup for nested values
       if (options.keySeparator || this.options.keySeparator) {
-        var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
+        var copy = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
 
         /* eslint no-restricted-syntax: 0 */
         for (var m in res) {
           if (Object.prototype.hasOwnProperty.call(res, m)) {
-            copy$$1[m] = this$1.translate('' + key + keySeparator + m, _extends$3({}, options, { joinArrays: false, ns: namespaces }));
+            copy[m] = this$1.translate('' + key + keySeparator + m, _extends$3({}, options, { joinArrays: false, ns: namespaces }));
           }
         }
-        res = copy$$1;
+        res = copy;
       }
     } else if (joinArrays && resType === '[object Array]') {
       // array special treatment
@@ -10969,16 +10963,6 @@ Image$1.prototype.y = function y (_) {
 };
 
 /**
-    @function colorAdd
-    @desc Adds two colors together.
-    @param {String} c1 The first color, a valid CSS color string.
-    @param {String} c2 The second color, also a valid CSS color string.
-    @param {String} [o1 = 1] Value from 0 to 1 of the first color's opacity.
-    @param {String} [o2 = 1] Value from 0 to 1 of the first color's opacity.
-    @returns {String}
-*/
-
-/**
     @module {Object} colorDefaults
     @desc A set of default color values used when assigning colors based on data.
       *
@@ -11057,13 +11041,6 @@ var colorContrast = function(c, u) {
 };
 
 /**
-    @function colorLegible
-    @desc Darkens a color so that it will appear legible on a white background.
-    @param {String} c A valid CSS color string.
-    @returns {String}
-*/
-
-/**
     @function colorLighter
     @desc Similar to d3.color.brighter, except that this also reduces saturation so that colors don't appear neon.
     @param {String} c A valid CSS color string.
@@ -11079,16 +11056,6 @@ var colorLighter = function(c, i) {
   c.s -= i;
   return c.toString();
 };
-
-/**
-    @function colorSubtract
-    @desc Subtracts one color from another.
-    @param {String} c1 The base color, a valid CSS color string.
-    @param {String} c2 The color to remove from the base color, also a valid CSS color string.
-    @param {String} [o1 = 1] Value from 0 to 1 of the first color's opacity.
-    @param {String} [o2 = 1] Value from 0 to 1 of the first color's opacity.
-    @returns {String}
-*/
 
 /**
     @function textWidth
@@ -11459,7 +11426,7 @@ var TextBox = (function (BaseClass$$1) {
           lineData = [],
           sizes;
 
-      var style$$1 = {
+      var style = {
         "font-family": this$1._fontFamily(d, i),
         "font-size": fS,
         "font-weight": this$1._fontWeight(d, i),
@@ -11470,9 +11437,9 @@ var TextBox = (function (BaseClass$$1) {
             w = this$1._width(d, i);
 
       var wrapper = textWrap()
-        .fontFamily(style$$1["font-family"])
+        .fontFamily(style["font-family"])
         .fontSize(fS)
-        .fontWeight(style$$1["font-weight"])
+        .fontWeight(style["font-weight"])
         .lineHeight(lH)
         .height(h)
         .overflow(this$1._overflow(d, i))
@@ -11500,8 +11467,8 @@ var TextBox = (function (BaseClass$$1) {
           wrapper
             .fontSize(fS)
             .lineHeight(lH);
-          style$$1["font-size"] = fS;
-          style$$1["line-height"] = lH;
+          style["font-size"] = fS;
+          style["line-height"] = lH;
         }
 
         var wrapResults = wrapper(t);
@@ -11527,7 +11494,7 @@ var TextBox = (function (BaseClass$$1) {
 
         if (resize) {
 
-          sizes = textWidth(words, style$$1);
+          sizes = textWidth(words, style);
 
           var areaMod = 1.165 + w / h * 0.1,
                 boxArea = w * h,
@@ -11561,8 +11528,8 @@ var TextBox = (function (BaseClass$$1) {
           i: i,
           lines: lineData,
           fC: this$1._fontColor(d, i),
-          fF: style$$1["font-family"],
-          fW: style$$1["font-weight"],
+          fF: style["font-family"],
+          fW: style["font-weight"],
           id: this$1._id(d, i),
           tA: this$1._textAnchor(d, i),
           fS: fS, lH: lH, w: w, x: this$1._x(d, i), y: this$1._y(d, i) + yP
@@ -11934,14 +11901,6 @@ function(d) {
 
   return TextBox;
 }(BaseClass));
-
-/**
-    @function titleCase
-    @desc Capitalizes the first letter of each word in a phrase/sentence.
-    @param {String} str The string to apply the title case logic.
-    @param {Object} [opts] Optional parameters to apply.
-    @param {String} [opts.lng] The locale to use when looking up all lowercase or uppecase words.
-*/
 
 /**
     @function pointDistanceSquared
@@ -14360,7 +14319,7 @@ Bundle.prototype = {
   }
 };
 
-var bundle = ((function custom(beta) {
+var bundle = (function custom(beta) {
 
   function bundle(context) {
     return beta === 1 ? new Basis(context) : new Bundle(context, beta);
@@ -14371,7 +14330,7 @@ var bundle = ((function custom(beta) {
   };
 
   return bundle;
-}))(0.85);
+})(0.85);
 
 function point$3(that, x, y) {
   that._context.bezierCurveTo(
@@ -14422,7 +14381,7 @@ Cardinal.prototype = {
   }
 };
 
-var cardinal = ((function custom(tension) {
+var cardinal = (function custom(tension) {
 
   function cardinal(context) {
     return new Cardinal(context, tension);
@@ -14433,7 +14392,7 @@ var cardinal = ((function custom(tension) {
   };
 
   return cardinal;
-}))(0);
+})(0);
 
 function CardinalClosed(context, tension) {
   this._context = context;
@@ -14481,18 +14440,18 @@ CardinalClosed.prototype = {
   }
 };
 
-var cardinalClosed = ((function custom(tension) {
+var cardinalClosed = (function custom(tension) {
 
-  function cardinal(context) {
+  function cardinal$$1(context) {
     return new CardinalClosed(context, tension);
   }
 
-  cardinal.tension = function(tension) {
+  cardinal$$1.tension = function(tension) {
     return custom(+tension);
   };
 
-  return cardinal;
-}))(0);
+  return cardinal$$1;
+})(0);
 
 function CardinalOpen(context, tension) {
   this._context = context;
@@ -14529,18 +14488,18 @@ CardinalOpen.prototype = {
   }
 };
 
-var cardinalOpen = ((function custom(tension) {
+var cardinalOpen = (function custom(tension) {
 
-  function cardinal(context) {
+  function cardinal$$1(context) {
     return new CardinalOpen(context, tension);
   }
 
-  cardinal.tension = function(tension) {
+  cardinal$$1.tension = function(tension) {
     return custom(+tension);
   };
 
-  return cardinal;
-}))(0);
+  return cardinal$$1;
+})(0);
 
 function point$4(that, x, y) {
   var x1 = that._x1,
@@ -14615,7 +14574,7 @@ CatmullRom.prototype = {
   }
 };
 
-var catmullRom = ((function custom(alpha) {
+var catmullRom = (function custom(alpha) {
 
   function catmullRom(context) {
     return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
@@ -14626,7 +14585,7 @@ var catmullRom = ((function custom(alpha) {
   };
 
   return catmullRom;
-}))(0.5);
+})(0.5);
 
 function CatmullRomClosed(context, alpha) {
   this._context = context;
@@ -14686,18 +14645,18 @@ CatmullRomClosed.prototype = {
   }
 };
 
-var catmullRomClosed = ((function custom(alpha) {
+var catmullRomClosed = (function custom(alpha) {
 
-  function catmullRom(context) {
+  function catmullRom$$1(context) {
     return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
   }
 
-  catmullRom.alpha = function(alpha) {
+  catmullRom$$1.alpha = function(alpha) {
     return custom(+alpha);
   };
 
-  return catmullRom;
-}))(0.5);
+  return catmullRom$$1;
+})(0.5);
 
 function CatmullRomOpen(context, alpha) {
   this._context = context;
@@ -14746,18 +14705,18 @@ CatmullRomOpen.prototype = {
   }
 };
 
-var catmullRomOpen = ((function custom(alpha) {
+var catmullRomOpen = (function custom(alpha) {
 
-  function catmullRom(context) {
+  function catmullRom$$1(context) {
     return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
   }
 
-  catmullRom.alpha = function(alpha) {
+  catmullRom$$1.alpha = function(alpha) {
     return custom(+alpha);
   };
 
-  return catmullRom;
-}))(0.5);
+  return catmullRom$$1;
+})(0.5);
 
 function LinearClosed(context) {
   this._context = context;
@@ -17035,22 +16994,12 @@ var type = function(defaultMimeType, response) {
   };
 };
 
-type("text/html", function(xhr) {
-  return document.createRange().createContextualFragment(xhr.responseText);
-});
-
 var json = type("application/json", function(xhr) {
   return JSON.parse(xhr.responseText);
 });
 
 var text = type("text/plain", function(xhr) {
   return xhr.responseText;
-});
-
-type("application/xml", function(xhr) {
-  var xml = xhr.responseXML;
-  if (!xml) { throw new Error("parse error"); }
-  return xml;
 });
 
 function objectConverter(columns) {
@@ -18376,8 +18325,8 @@ var Button = (function (BaseClass$$1) {
         .call(stylize, this._buttonStyle)
         .html(function (d, i) { return this$1._text(d, i); });
 
-    for (var event$$1 in this$1._on) {
-      if ({}.hasOwnProperty.call(this$1._on, event$$1)) { button.on(event$$1, this$1._on[event$$1]); }
+    for (var event in this$1._on) {
+      if ({}.hasOwnProperty.call(this$1._on, event)) { button.on(event, this$1._on[event]); }
     }
 
     return this;
@@ -18535,8 +18484,8 @@ var Radio = (function (BaseClass$$1) {
               });
             });
 
-          for (var event$$1 in that._on) {
-            if ({}.hasOwnProperty.call(that._on, event$$1)) { input.on(event$$1, that._on[event$$1]); }
+          for (var event in that._on) {
+            if ({}.hasOwnProperty.call(that._on, event)) { input.on(event, that._on[event]); }
           }
 
         });
@@ -18720,8 +18669,8 @@ var Select = (function (BaseClass$$1) {
           that.selected(this.value);
         });
 
-    for (var event$$1 in this$1._on) {
-      if ({}.hasOwnProperty.call(this$1._on, event$$1)) { select$$1.on(event$$1, this$1._on[event$$1]); }
+    for (var event in this$1._on) {
+      if ({}.hasOwnProperty.call(this$1._on, event)) { select$$1.on(event, this$1._on[event]); }
     }
 
     var options = select$$1.selectAll("option")
@@ -32872,7 +32821,7 @@ function value(d) {
       @param {String} [*value* = "en-US"]
       @chainable
   */
-  Viz.prototype.locale = function locale$$1 (_) {
+  Viz.prototype.locale = function locale (_) {
     return arguments.length ? (this._locale = _, this) : this._locale;
   };
 
@@ -33039,12 +32988,12 @@ function value(d) {
     @extends Viz
     @desc Creates SVG paths and coordinate points based on an array of data. See [this example](https://d3plus.org/examples/d3plus-geomap/getting-started/) for help getting started using the geomap generator.
 */
-var Geomap = (function (Viz$$1) {
+var Geomap = (function (Viz) {
   function Geomap() {
     var this$1 = this;
 
 
-    Viz$$1.call(this);
+    Viz.call(this);
 
     this._fitObject = false;
     this._ocean = "#cdd1d3";
@@ -33100,8 +33049,8 @@ var Geomap = (function (Viz$$1) {
 
   }
 
-  if ( Viz$$1 ) Geomap.__proto__ = Viz$$1;
-  Geomap.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
+  if ( Viz ) Geomap.__proto__ = Viz;
+  Geomap.prototype = Object.create( Viz && Viz.prototype );
   Geomap.prototype.constructor = Geomap;
 
   /**
@@ -33243,7 +33192,7 @@ var Geomap = (function (Viz$$1) {
     var this$1 = this;
 
 
-    Viz$$1.prototype._draw.call(this, callback);
+    Viz.prototype._draw.call(this, callback);
 
     var height = this._height - this._margin.top - this._margin.bottom,
           width = this._width - this._margin.left - this._margin.right;
@@ -33324,8 +33273,8 @@ var Geomap = (function (Viz$$1) {
     }
 
     var coordData = this._coordData = this._topojson
-                    ? topo2feature(this._topojson, this._topojsonKey)
-                    : {type: "FeatureCollection", features: []};
+      ? topo2feature(this._topojson, this._topojsonKey)
+      : {type: "FeatureCollection", features: []};
 
     if (this._topojsonFilter) { coordData.features = coordData.features.filter(this._topojsonFilter); }
 
@@ -33429,14 +33378,14 @@ var Geomap = (function (Viz$$1) {
 
       if (!extentBounds.features.length && pointData.length) {
 
-        var bounds = [[undefined, undefined], [undefined, undefined]];
+        var bounds$$1 = [[undefined, undefined], [undefined, undefined]];
         pointData.forEach(function (d, i) {
 
-          var point = this$1._projection(this$1._point(d, i));
-          if (bounds[0][0] === void 0 || point[0] < bounds[0][0]) { bounds[0][0] = point[0]; }
-          if (bounds[1][0] === void 0 || point[0] > bounds[1][0]) { bounds[1][0] = point[0]; }
-          if (bounds[0][1] === void 0 || point[1] < bounds[0][1]) { bounds[0][1] = point[1]; }
-          if (bounds[1][1] === void 0 || point[1] > bounds[1][1]) { bounds[1][1] = point[1]; }
+          var point$$1 = this$1._projection(this$1._point(d, i));
+          if (bounds$$1[0][0] === void 0 || point$$1[0] < bounds$$1[0][0]) { bounds$$1[0][0] = point$$1[0]; }
+          if (bounds$$1[1][0] === void 0 || point$$1[0] > bounds$$1[1][0]) { bounds$$1[1][0] = point$$1[0]; }
+          if (bounds$$1[0][1] === void 0 || point$$1[1] < bounds$$1[0][1]) { bounds$$1[0][1] = point$$1[1]; }
+          if (bounds$$1[1][1] === void 0 || point$$1[1] > bounds$$1[1][1]) { bounds$$1[1][1] = point$$1[1]; }
 
         });
 
@@ -33446,7 +33395,7 @@ var Geomap = (function (Viz$$1) {
             type: "Feature",
             geometry: {
               type: "MultiPoint",
-              coordinates: bounds.map(function (b) { return this$1._projection.invert(b); })
+              coordinates: bounds$$1.map(function (b) { return this$1._projection.invert(b); })
             }
           }]
         };
@@ -33684,7 +33633,7 @@ If *data* is not specified, this method returns the current Topojson *Object*, w
       @param {Function|Array} [*value*]
       @chainable
   */
-  Geomap.prototype.point = function point (_) {
+  Geomap.prototype.point = function point$$1 (_) {
     return arguments.length ? (this._point = typeof _ === "function" ? _ : constant$7(_), this) : this._point;
   };
 
