@@ -3,7 +3,7 @@ name: dataFold
 kind: function
 ---
 
-<a name="dataFold"></a>
+  <a name="dataFold"></a>
 
 ### d3plus.**dataFold**(json, [data], [headers]) [<>](https://github.com/d3plus/d3plus-viz/blob/master/src/data/fold.js#L1)
 
@@ -17,4 +17,5 @@ This is a global function.
 | json | <code>Object</code> |  | A JSON data Object with `data` and `headers` keys. |
 | [data] | <code>String</code> | <code>&quot;data&quot;</code> | The key used for the flat data array inside of the JSON object. |
 | [headers] | <code>String</code> | <code>&quot;headers&quot;</code> | The key used for the flat headers array inside of the JSON object. |
+
 

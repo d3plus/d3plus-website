@@ -3,7 +3,7 @@ name: dataLoad
 kind: function
 ---
 
-<a name="dataLoad"></a>
+  <a name="dataLoad"></a>
 
 ### d3plus.**dataLoad**(path, [formatter], [key], [callback]) [<>](https://github.com/d3plus/d3plus-viz/blob/master/src/data/load.js#L4)
 
@@ -18,4 +18,5 @@ This is a global function.
 | [formatter] | <code>function</code> | An optional formatter function that is run on the loaded data. |
 | [key] | <code>String</code> | The key in the `this` context to save the resulting data to. |
 | [callback] | <code>function</code> | A function that is called when the final data is loaded. It is passed 2 variables, any error present and the data loaded. |
+
 
