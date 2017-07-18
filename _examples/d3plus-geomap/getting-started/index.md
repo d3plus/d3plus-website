@@ -2,8 +2,8 @@
 title: Simple Choropleth Map
 width: 990
 height: 400
-time: 1500132682576
-date: July 15, 2017
+time: 1500403393703
+date: July 18, 2017
 ---
 
 # Simple Choropleth Map
