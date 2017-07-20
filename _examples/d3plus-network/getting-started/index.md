@@ -1,12 +1,14 @@
 ---
-title: Getting Started
+title: Simple Network
 width: 990
 height: 400
+time: 1500552936551
+date: July 20, 2017
 ---
 
-# Getting Started
+# Simple Network
 
-Given an array of nodes and an array of links, d3plus-network can create simple network visualization based on supplied x and y coordinates.
+Given an array of nodes and an array of links, d3plus-network creates a simple network visualization based on the supplied x and y coordinates.
 
 ```js
 var nodes = [
