@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.1.7
+  d3plus-network v0.1.8
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -7,7 +7,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-brush'), require('d3-collection'), require('d3-selection'), require('d3-scale'), require('d3-zoom'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
 	typeof define === 'function' && define.amd ? define('d3plus-network', ['exports', 'd3-array', 'd3-brush', 'd3-collection', 'd3-selection', 'd3-scale', 'd3-zoom', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Brush,global.d3Collection,global.d3Selection,global.scales,global.d3Zoom,global.d3plusCommon,global.shapes,global.d3plusViz));
+	(factory((global.d3plus = {}),global.d3Array,global.d3Brush,global.d3Collection,global.d3Selection,global.scales,global.d3Zoom,global.d3plusCommon,global.shapes,global.d3plusViz));
 }(this, (function (exports,d3Array,d3Brush,d3Collection,d3Selection,scales,d3Zoom,d3plusCommon,shapes,d3plusViz) { 'use strict';
 
 /**
@@ -19,7 +19,7 @@
 /**
     @class Network
     @extends external:Viz
-    @desc Creates an x/y plot based on an array of data.
+    @desc Creates a network visualization based on a defined set of nodes and edges. [Click here](http://d3plus.org/examples/d3plus-network/getting-started/) for help getting started using the Network class.
 */
 var Network = (function (Viz$$1) {
   function Network() {
@@ -381,12 +381,12 @@ var Network = (function (Viz$$1) {
 
     var rExtent = d3Array.extent(nodes.map(function (n) { return n.r; }));
     var rMax = this._sizeMax || d3Array.min(
-          d3Array.merge(nodes
-            .map(function (n1) { return nodes
-              .map(function (n2) { return n1 === n2 ? null : shapes.pointDistance([n1.x, n1.y], [n2.x, n2.y]); }); }
-            )
-          )
-        ) / 2;
+      d3Array.merge(nodes
+        .map(function (n1) { return nodes
+          .map(function (n2) { return n1 === n2 ? null : shapes.pointDistance([n1.x, n1.y], [n2.x, n2.y]); }); }
+        )
+      )
+    ) / 2;
 
     var r = scales[("scale" + (this._sizeScale.charAt(0).toUpperCase()) + (this._sizeScale.slice(1)))]()
                 .domain(rExtent).range([rExtent[0] === rExtent[1] ? rMax : d3Array.min([rMax / 2, this._sizeMin]), rMax]),
@@ -433,11 +433,11 @@ var Network = (function (Viz$$1) {
     var nodeIndices = nodes.map(function (n) { return n.node; });
     var links = this._links.map(function (l) { return ({
       source: typeof l.source === "number"
-            ? nodes[nodeIndices.indexOf(this$1._nodes[l.source])]
-            : nodeLookup[l.source.id],
+        ? nodes[nodeIndices.indexOf(this$1._nodes[l.source])]
+        : nodeLookup[l.source.id],
       target: typeof l.target === "number"
-            ? nodes[nodeIndices.indexOf(this$1._nodes[l.target])]
-            : nodeLookup[l.target.id]
+        ? nodes[nodeIndices.indexOf(this$1._nodes[l.target])]
+        : nodeLookup[l.target.id]
     }); });
 
     this._linkLookup = links.reduce(function (obj, d) {
@@ -533,7 +533,10 @@ var Network = (function (Viz$$1) {
 
   /**
       @memberof Network
-      @desc If *links* is specified, sets the links array to the specified array and returns the current class instance. If *links* is not specified, returns the current links array.
+      @desc A predefined *Array* of edges that connect each object passed to the [node](#Network.node) method. The `source` and `target` keys in each link need to map to the nodes in one of three ways:
+1. The index of the node in the nodes array (as in [this](http://d3plus.org/examples/d3plus-network/getting-started/) example).
+2. The actual node *Object* itself.
+3. A *String* value matching the `id` of the node.
       @param {Array} [*links* = []]
       @chainable
   */
@@ -583,9 +586,7 @@ var Network = (function (Viz$$1) {
       @chainable
   */
   Network.prototype.size = function size (_) {
-    return arguments.length
-         ? (this._size = typeof _ === "function" || !_ ? _ : d3plusCommon.accessor(_), this)
-         : this._size;
+    return arguments.length ? (this._size = typeof _ === "function" || !_ ? _ : d3plusCommon.accessor(_), this) : this._size;
   };
 
   /**
