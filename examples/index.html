@@ -18,16 +18,10 @@ style: blog
 </div>
 
 <div id="examples">
-  {% assign examples = site.examples | sort: "date" %}
+  {% assign examples = (site.examples | sort: "time") | reverse %}
   {% for example in examples %}
-  <div class="exampleWrapper" id="{{ example.path | replace: "_", "" }}" data-content="{{ example.content | replace: '\"', '\'' | strip_html | strip_newlines }}">
-    <a class="example" href="/{{ example.path | replace: "index.md", "" | replace: "_", "" }}">
-      <div class="img" style="background-image: url('/{{ example.path | replace: "index.md", "thumb.png" | replace: "_", "" }}');"></div>
-      <div class="title">{{ example.title }}</div>
-    </a>
-  </div>
+  {% include example-tile.html example=example %}
   {% endfor %}
-
 </div>
 
 <script>
