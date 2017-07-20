@@ -1,7 +1,7 @@
 {% capture expiry %}{{ 60 | times: 60 | times: 24 | times: 7 }}{% endcapture %}
 {% capture nowunix %}{{ 'now' | date: '%s' | minus: expiry }}{% endcapture %}
 {% capture example %}{{ include.example }}{% endcapture %}
-<div class="exampleWrapper" id="{{ example.path | replace: "_", "" }}" data-content="{{ example.content | replace: '\"', '\'' | strip_html | strip_newlines }}">
+<div class="exampleWrapper" id="{{ example.path | replace: "_", "" }}" data-content="{{ example.content | remove: '"' | strip_html | strip_newlines }}">
   <a class="example" href="/{{ example.path | replace: "index.md", "" | replace: "_", "" }}">
     <div class="img" style="background-image: url('/{{ example.path | replace: "index.md", "thumb.png" | replace: "_", "" }}');"></div>
     <div class="title">{{ example.title }}</div>

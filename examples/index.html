@@ -32,29 +32,10 @@ style: blog
 
     var q = this.value.toLowerCase();
 
-    var paths = [];
-    d3.selectAll("div.exampleWrapper").each(function() {
-      var visible = q.length ? d3.select(this).attr("data-content").toLowerCase().indexOf(q) >= 0 : true;
-      if (visible) paths.push(this.id);
-    });
-
-    d3.selectAll("div.exampleWrapper").transition().duration(200)
-      .style("opacity",function(d){
-        if (!height) height = this.offsetHeight || Math.round(this.getBoundingClientRect().height)
-        if (!width) width = this.offsetWidth
-        return paths.indexOf(this.id) >= 0 ? 1 : 0
-      })
-      .style("width",function(d){
-        return paths.indexOf(this.id) >= 0 ? width+"px" : "0px"
-      })
-      .style("height",function(d){
-        return paths.indexOf(this.id) >= 0 ? height+"px" : "0px"
-      })
-
-    d3.selectAll("a.example").transition().duration(200)
-      .style(d3plus.client.prefix()+"transform",function(d){
-        return paths.indexOf(this.parentNode.id) >= 0 ? "scale(1)" : "scale(0)"
-      })
+    d3.selectAll("div.exampleWrapper")
+      .classed("hidden", function() {
+        return q.length ? d3.select(this).attr("data-content").toLowerCase().indexOf(q) < 0 : false;
+      });
 
   })
 
