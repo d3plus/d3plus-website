@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.18
+  d3plus-text v0.9.19
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -7,7 +7,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3-array'), require('d3plus-common')) :
 	typeof define === 'function' && define.amd ? define('d3plus-text', ['exports', 'd3-selection', 'd3-transition', 'd3-array', 'd3plus-common'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3Array,global.d3plusCommon));
+	(factory((global.d3plus = {}),global.d3Selection,global.d3Transition,global.d3Array,global.d3plusCommon));
 }(this, (function (exports,d3Selection,d3Transition,d3Array,d3plusCommon) { 'use strict';
 
 /**
@@ -45,6 +45,33 @@ var measure = function(text, style) {
 
 };
 
+/**
+    @function trim
+    @desc Cross-browser implementation of [trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim).
+    @param {String} str
+*/
+function trim(str) {
+  return str.replace(/^\s+|\s+$/g, "");
+}
+
+/**
+    @function trimLeft
+    @desc Cross-browser implementation of [trimLeft](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/TrimLeft).
+    @param {String} str
+*/
+function trimLeft(str) {
+  return str.replace(/^\s+/, "");
+}
+
+/**
+    @function trimRight
+    @desc Cross-browser implementation of [trimRight](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/TrimRight).
+    @param {String} str
+*/
+function trimRight(str) {
+  return str.replace(/\s+$/, "");
+}
+
 var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
 var checked = {};
 var height = 32;
@@ -70,7 +97,7 @@ var fontExists = function (font) {
   }
 
   if (!(font instanceof Array)) { font = font.split(","); }
-  font = font.map(function (f) { return f.trim(); });
+  font = font.map(function (f) { return trim(f); });
 
   for (var i = 0; i < font.length; i++) {
     var fam = font[i];
@@ -257,7 +284,7 @@ var wrap = function() {
           truncated = true;
           break;
         }
-        lineData[line - 1] = lineData[line - 1].trimRight();
+        lineData[line - 1] = trimRight(lineData[line - 1]);
         line++;
         if (lineHeight * line > height || wordWidth > width && !overflow) {
           truncated = true;
@@ -357,7 +384,7 @@ var wrap = function() {
 };
 
 /**
-    @function TextBox
+    @class TextBox
     @extends BaseClass
     @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the textBox function.
 */
@@ -588,7 +615,7 @@ var TextBox = (function (BaseClass$$1) {
         */
         function tspanStyle(tspan) {
           tspan
-            .text(function (t) { return t.trimRight(); })
+            .text(function (t) { return trimRight(t); })
             .attr("x", ((d.x) + "px"))
             .attr("dx", (dx + "px"))
             .attr("dy", ((d.lH) + "px"));
@@ -948,6 +975,9 @@ exports.textSplit = textSplit;
 exports.textWidth = measure;
 exports.textWrap = wrap;
 exports.titleCase = titleCase;
+exports.trim = trim;
+exports.trimLeft = trimLeft;
+exports.trimRight = trimRight;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
