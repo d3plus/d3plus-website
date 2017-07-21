@@ -2,6 +2,8 @@
 title: Getting Started
 width: 700
 height: 75
+time: 1500677305449
+date: July 21, 2017
 ---
 
 [width]: 700

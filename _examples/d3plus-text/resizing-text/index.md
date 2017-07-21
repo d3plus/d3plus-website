@@ -2,6 +2,8 @@
 title: Automatic Font Resizing to Fit Container
 width: 450
 height: 100
+time: 1500677305449
+date: July 21, 2017
 ---
 
 [width]: 450
