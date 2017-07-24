@@ -446,10 +446,12 @@ p.learn_more {
   padding-left: 250px;
 }
 
-.docWrapper > p:first-child > a {
-  display: block;
+.docWrapper > p > a[name=*],
+.docWrapper > p > a.nav-offset {
+  display: inline-block;
+  margin-right: 10px;
   margin-top: -70px;
   padding-top: 70px;
   position: relative;
-  z-index: -1;
+  width: 0;
 }

@@ -27,6 +27,7 @@ style: docs
     {% for doc in group.items %}
     <div class="docWrapper" data-name="{{ doc.name }}">
       {{ doc.content | markdownify }}
+      <p><a class="nav-offset"></a></p>
     </div>
     <hr />
     {% endfor %}
