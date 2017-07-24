@@ -446,8 +446,8 @@ p.learn_more {
   padding-left: 250px;
 }
 
-.docWrapper > p > a[name=*],
-.docWrapper > p > a.nav-offset {
+.docWrapper a[name],
+.docWrapper a.nav-offset {
   display: inline-block;
   margin-right: 10px;
   margin-top: -70px;
