@@ -3,7 +3,7 @@ name: configPrep
 kind: function
 ---
 
-<a name="configPrep"></a>
+  <a name="configPrep"></a>
 
 ### d3plus.**configPrep**([config], [type], [nest]) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/configPrep.js#L1)
 
@@ -17,4 +17,5 @@ This is a global function.
 | [config] | <code>Object</code> | <code>this._shapeConfig</code> | The configuration object to parse. |
 | [type] | <code>String</code> | <code>&quot;shape&quot;</code> | The event classifier to user for "on" events. For example, the default event type of "shape" will apply all events in the "on" config object with that key, like "click.shape" and "mouseleave.shape", in addition to any gloval events like "click" and "mouseleave". |
 | [nest] | <code>String</code> |  | An optional nested key to bubble up to the parent config level. |
+
 

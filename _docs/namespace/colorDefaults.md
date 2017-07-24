@@ -3,7 +3,7 @@ name: colorDefaults
 kind: namespace
 ---
 
-<a name="colorDefaults"></a>
+  <a name="colorDefaults"></a>
 
 ### **colorDefaults** [<>](https://github.com/d3plus/d3plus-color/blob/master/src/defaults.js#L3)
 
@@ -20,3 +20,4 @@ A set of default color values used when assigning colors based on data.
 
 
 This is a global namespace.
+

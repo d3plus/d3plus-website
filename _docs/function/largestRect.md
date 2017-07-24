@@ -3,7 +3,7 @@ name: largestRect
 kind: function
 ---
 
-<a name="largestRect"></a>
+  <a name="largestRect"></a>
 
 ### d3plus.**largestRect**(poly, [options]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/largestRect.js#L26)
 
@@ -26,4 +26,5 @@ This is a global function.
 | [options.minWidth] | <code>Number</code> | <code>0</code> | The minimum width of the rectangle. |
 | [options.tolerance] | <code>Number</code> | <code>0.02</code> | The simplification tolerance factor, between 0 and 1. A larger tolerance corresponds to more extensive simplification. |
 | [options.origin] | <code>Array</code> |  | The center point of the rectangle. If specified, the rectangle will be fixed at that point, otherwise the algorithm optimizes across all possible points. The given value can be either a two dimensional array specifying the x and y coordinate of the origin or an array of two dimensional points specifying multiple possible center points of the rectangle. |
+
 

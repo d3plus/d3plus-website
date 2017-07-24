@@ -3,7 +3,7 @@ name: polygonRayCast
 kind: function
 ---
 
-<a name="polygonRayCast"></a>
+  <a name="polygonRayCast"></a>
 
 ### d3plus.**polygonRayCast**(poly, origin, [alpha]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/polygonRayCast.js#L5)
 
@@ -18,4 +18,5 @@ This is a global function.
 | poly | <code>Array</code> |  | The polygon to test against, which should be an `[x, y]` formatted Array. |
 | origin | <code>Array</code> |  | The origin point of the ray to be cast, which should be an `[x, y]` formatted Array. |
 | [alpha] | <code>Number</code> | <code>0</code> | The angle in radians of the ray. |
+
 

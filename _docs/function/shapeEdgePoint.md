@@ -3,7 +3,7 @@ name: shapeEdgePoint
 kind: function
 ---
 
-<a name="shapeEdgePoint"></a>
+  <a name="shapeEdgePoint"></a>
 
 ### d3plus.**shapeEdgePoint**(angle, distance) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/shapeEdgePoint.js#L3)
 
@@ -17,4 +17,5 @@ This is a global function.
 | --- | --- | --- |
 | angle | <code>Number</code> | The angle, in radians, of the offset point. |
 | distance | <code>Number</code> | The pixel distance away from the origin. |
+
 

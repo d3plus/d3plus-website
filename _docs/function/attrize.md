@@ -3,7 +3,7 @@ name: attrize
 kind: function
 ---
 
-<a name="attrize"></a>
+  <a name="attrize"></a>
 
 ### d3plus.**attrize**(elem, attrs) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/attrize.js#L1)
 
@@ -16,4 +16,5 @@ This is a global function.
 | --- | --- | --- |
 | elem | <code>D3selection</code> | The D3 element to apply the styles to. |
 | attrs | <code>Object</code> | An object of key/value attr pairs. |
+
 

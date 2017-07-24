@@ -3,7 +3,7 @@ name: assign
 kind: function
 ---
 
-<a name="assign"></a>
+  <a name="assign"></a>
 
 ### d3plus.**assign**(...objects) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/assign.js#L3)
 
@@ -22,3 +22,4 @@ returns this
 ```js
 {id: "bar", deep: {group: "A", value: 20}}
 ```
+

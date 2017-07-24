@@ -3,7 +3,7 @@ name: dom2canvas
 kind: function
 ---
 
-<a name="dom2canvas"></a>
+  <a name="dom2canvas"></a>
 
 ### d3plus.**dom2canvas**(elem, [options]) [<>](https://github.com/d3plus/d3plus-export/blob/master/src/dom2canvas.js#L41)
 
@@ -25,4 +25,5 @@ This is a global function.
 | [options.padding] | <code>Number</code> | <code>0</code> | Outer padding for the final file. |
 | [options.scale] | <code>Number</code> | <code>1</code> | Scale for the final file. |
 | [options.width] | <code>Number</code> |  | Pixel width for the final output. If a width value has not been passed, it will be inferred from the sizing of the first DOM element passed. |
+
 

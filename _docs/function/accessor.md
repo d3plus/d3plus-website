@@ -3,7 +3,7 @@ name: accessor
 kind: function
 ---
 
-<a name="accessor"></a>
+  <a name="accessor"></a>
 
 ### d3plus.**accessor**(key, [def]) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/accessor.js#L1)
 
@@ -30,3 +30,4 @@ function(d) {
   return d["id"];
 }
 ```
+

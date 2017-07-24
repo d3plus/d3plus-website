@@ -3,7 +3,7 @@ name: constant
 kind: function
 ---
 
-<a name="constant"></a>
+  <a name="constant"></a>
 
 ### d3plus.**constant**(value) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/constant.js#L1)
 
@@ -24,3 +24,4 @@ function() {
   return 42;
 }
 ```
+

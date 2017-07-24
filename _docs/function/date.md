@@ -3,7 +3,7 @@ name: date
 kind: function
 ---
 
-<a name="date"></a>
+  <a name="date"></a>
 
 ### d3plus.**date**(*date*) [<>](https://github.com/d3plus/d3plus-axis/blob/master/src/date.js#L1)
 
@@ -11,3 +11,4 @@ Returns a javascript Date object for a given a Number (representing either a 4-d
 
 
 This is a global function.
+

@@ -3,21 +3,25 @@ name: Tree
 kind: class
 ---
 
-<a name="Tree"></a>
+  <a name="Tree"></a>
 
 ### **Tree** [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Tree.js#L11)
 
 
 This is a global class, and extends all of the methods and functionality of [<code>Viz</code>](#Viz).
 
+
 * [Tree](#Tree) ⇐ [<code>Viz</code>](#Viz)
     * [new Tree()](#new_Tree_new)
     * [.orient([*value*])](#Tree.orient)
     * [.separation([*value*])](#Tree.separation)
 
+
 <a name="new_Tree_new" href="#new_Tree_new">#</a> new **Tree**()
 
 Uses d3's [tree layout](https://github.com/d3/d3-hierarchy#tree) to create a tidy tree chart based on an array of data.
+
+
 
 
 
@@ -27,6 +31,8 @@ If *value* is specified, sets the orientation to the specified value. If *value*
 
 
 This is a static method of [<code>Tree</code>](#Tree).
+
+
 <a name="Tree.separation" href="#Tree.separation">#</a> Tree.**separation**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Tree.js#L226)
 
 If *value* is specified, sets the separation accessor to the specified function. If *value* is not specified, returns the current separation accessor.
@@ -43,3 +49,4 @@ function separation(a, b) {
   return a.parent === b.parent ? 1 : 2;
 }
 ```
+
