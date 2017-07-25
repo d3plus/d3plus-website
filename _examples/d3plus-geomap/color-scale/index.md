@@ -2,8 +2,8 @@
 title: Choropleth w/ Jenks Breaks
 width: 990
 height: 400
-time: 1500403446175
-date: July 18, 2017
+time: 1501024813145
+date: July 25, 2017
 ---
 
 # Choropleth w/ Jenks Breaks
