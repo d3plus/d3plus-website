@@ -5,7 +5,7 @@ kind: class
 
   <a name="TextBox"></a>
 
-### **TextBox** [<>](https://github.com/d3plus/d3plus-text/blob/master/src/TextBox.js#L16)
+### **TextBox** [<>](https://github.com/d3plus/d3plus-text/blob/master/src/TextBox.js#L18)
 
 
 This is a global class, and extends all of the methods and functionality of [<code>BaseClass</code>](#BaseClass).
@@ -49,7 +49,7 @@ Creates a wrapped text box for each point in an array of data. See [this example
 
 
 
-<a name="TextBox.render" href="#TextBox.render">#</a> TextBox.**render**([*callback*]) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/TextBox.js#L63)
+<a name="TextBox.render" href="#TextBox.render">#</a> TextBox.**render**([*callback*]) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/TextBox.js#L65)
 
 Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
 
@@ -106,7 +106,7 @@ This is a static method of [<code>TextBox</code>](#TextBox).
 
 <a name="TextBox.fontFamily" href="#TextBox.fontFamily">#</a> TextBox.**fontFamily**([*value*]) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/TextBox.js#L356)
 
-Sets the font family to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
+Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
 
 
 This is a static method of [<code>TextBox</code>](#TextBox).
@@ -184,7 +184,7 @@ function(d, i) {
 
 <a name="TextBox.lineHeight" href="#TextBox.lineHeight">#</a> TextBox.**lineHeight**([*value*]) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/TextBox.js#L436)
 
-Sets the line height to the specified accessor function or static number, which is 1.1 times the [font size](#textBox.fontSize) by default.
+Sets the line height to the specified accessor function or static number, which is 1.4 times the [font size](#textBox.fontSize) by default.
 
 
 This is a static method of [<code>TextBox</code>](#TextBox).

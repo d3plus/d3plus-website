@@ -11,5 +11,4 @@ Given either a single font-family or a list of fonts, returns the name of the fi
 
 
 This is a global function.
-**Returns**: <code>String</code> \| <code>Boolean</code> - Either the name of the first font that can be rendered, or `false` if none are installed on the user's machine.  
 
