@@ -1,9 +1,68 @@
 /*
-  d3plus-text v0.9.19
+  d3plus-text v0.9.20
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define('d3plus-text', ['exports'], factory) :
@@ -85,7 +144,6 @@ var proportional;
     @function fontExists
     @desc Given either a single font-family or a list of fonts, returns the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
     @param {String|Array} font Can be either a valid CSS font-family string (single or comma-separated names) or an Array of string names.
-    @return {String|Boolean} Either the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
 */
 var fontExists = function (font) {
 
@@ -2319,12 +2377,12 @@ function attrConstantNS$1(fullname, interpolate$$1, value1) {
   };
 }
 
-function attrFunction$1(name, interpolate$$1, value$$1) {
+function attrFunction$1(name, interpolate$$1, value) {
   var value00,
       value10,
       interpolate0;
   return function() {
-    var value0, value1 = value$$1(this);
+    var value0, value1 = value(this);
     if (value1 == null) { return void this.removeAttribute(name); }
     value0 = this.getAttribute(name);
     return value0 === value1 ? null
@@ -2333,12 +2391,12 @@ function attrFunction$1(name, interpolate$$1, value$$1) {
   };
 }
 
-function attrFunctionNS$1(fullname, interpolate$$1, value$$1) {
+function attrFunctionNS$1(fullname, interpolate$$1, value) {
   var value00,
       value10,
       interpolate0;
   return function() {
-    var value0, value1 = value$$1(this);
+    var value0, value1 = value(this);
     if (value1 == null) { return void this.removeAttributeNS(fullname.space, fullname.local); }
     value0 = this.getAttributeNS(fullname.space, fullname.local);
     return value0 === value1 ? null
@@ -2347,12 +2405,12 @@ function attrFunctionNS$1(fullname, interpolate$$1, value$$1) {
   };
 }
 
-var transition_attr = function(name, value$$1) {
+var transition_attr = function(name, value) {
   var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate;
-  return this.attrTween(name, typeof value$$1 === "function"
-      ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value$$1))
-      : value$$1 == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
-      : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value$$1 + ""));
+  return this.attrTween(name, typeof value === "function"
+      ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
+      : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
+      : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value + ""));
 };
 
 function attrTweenNS(fullname, value) {
@@ -2522,15 +2580,15 @@ var transition_remove = function() {
   return this.on("end.remove", removeFunction(this._id));
 };
 
-var transition_select = function(select$$1) {
+var transition_select = function(select) {
   var name = this._name,
       id = this._id;
 
-  if (typeof select$$1 !== "function") { select$$1 = selector(select$$1); }
+  if (typeof select !== "function") { select = selector(select); }
 
   for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-      if ((node = group[i]) && (subnode = select$$1.call(node, node.__data__, i, group))) {
+      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
         if ("__data__" in node) { subnode.__data__ = node.__data__; }
         subgroup[i] = subnode;
         schedule(subgroup[i], name, id, i, subgroup, get(node, id));
@@ -2541,16 +2599,16 @@ var transition_select = function(select$$1) {
   return new Transition(subgroups, this._parents, name, id);
 };
 
-var transition_selectAll = function(select$$1) {
+var transition_selectAll = function(select) {
   var name = this._name,
       id = this._id;
 
-  if (typeof select$$1 !== "function") { select$$1 = selectorAll(select$$1); }
+  if (typeof select !== "function") { select = selectorAll(select); }
 
   for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        for (var children = select$$1.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
+        for (var children = select.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
           if (child = children[k]) {
             schedule(child, name, id, k, children, inherit);
           }
@@ -2600,13 +2658,13 @@ function styleConstant$1(name, interpolate$$1, value1) {
   };
 }
 
-function styleFunction$1(name, interpolate$$1, value$$1) {
+function styleFunction$1(name, interpolate$$1, value) {
   var value00,
       value10,
       interpolate0;
   return function() {
     var value0 = styleValue(this, name),
-        value1 = value$$1(this);
+        value1 = value(this);
     if (value1 == null) { value1 = (this.style.removeProperty(name), styleValue(this, name)); }
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
@@ -2614,14 +2672,14 @@ function styleFunction$1(name, interpolate$$1, value$$1) {
   };
 }
 
-var transition_style = function(name, value$$1, priority) {
+var transition_style = function(name, value, priority) {
   var i = (name += "") === "transform" ? interpolateTransformCss : interpolate;
-  return value$$1 == null ? this
+  return value == null ? this
           .styleTween(name, styleRemove$1(name, i))
           .on("end.style." + name, styleRemoveEnd(name))
-      : this.styleTween(name, typeof value$$1 === "function"
-          ? styleFunction$1(name, i, tweenValue(this, "style." + name, value$$1))
-          : styleConstant$1(name, i, value$$1 + ""), priority);
+      : this.styleTween(name, typeof value === "function"
+          ? styleFunction$1(name, i, tweenValue(this, "style." + name, value))
+          : styleConstant$1(name, i, value + ""), priority);
 };
 
 function styleTween(name, value, priority) {
@@ -5772,7 +5830,7 @@ var wrap = function() {
 
     sentence = stringify(sentence);
 
-    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.1); }
+    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.4); }
 
     var words = split(sentence);
 
@@ -5819,7 +5877,9 @@ var wrap = function() {
 
     return {
       lines: lineData,
-      sentence: sentence, truncated: truncated, words: words
+      sentence: sentence, truncated: truncated,
+      widths: measure(lineData, style),
+      words: words
     };
 
   }
@@ -5901,9 +5961,14 @@ var wrap = function() {
 };
 
 /**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
+
+/**
     @class TextBox
-    @extends BaseClass
-    @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the textBox function.
+    @extends external:BaseClass
+    @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
 */
 var TextBox = (function (BaseClass) {
   function TextBox() {
@@ -5914,7 +5979,7 @@ var TextBox = (function (BaseClass) {
     this._duration = 0;
     this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
     this._fontColor = constant$3("black");
-    this._fontFamily = constant$3("Verdana");
+    this._fontFamily = constant$3(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
     this._fontMax = constant$3(50);
     this._fontMin = constant$3(8);
     this._fontResize = constant$3(false);
@@ -5950,7 +6015,7 @@ var TextBox = (function (BaseClass) {
 
 
     if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
-    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.1; }; }
+    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.4; }; }
     var that = this;
 
     var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
@@ -5961,13 +6026,14 @@ var TextBox = (function (BaseClass) {
       var resize = this$1._fontResize(d, i);
 
       var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
-          lH = resize ? fS * 1.1 : this$1._lineHeight(d, i),
+          lH = resize ? fS * 1.4 : this$1._lineHeight(d, i),
           line = 1,
           lineData = [],
-          sizes;
+          sizes,
+          wrapResults;
 
       var style = {
-        "font-family": this$1._fontFamily(d, i),
+        "font-family": fontExists(this$1._fontFamily(d, i)),
         "font-size": fS,
         "font-weight": this$1._fontWeight(d, i),
         "line-height": lH
@@ -6003,7 +6069,7 @@ var TextBox = (function (BaseClass) {
         else if (fS > fMax) { fS = fMax; }
 
         if (resize) {
-          lH = fS * 1.1;
+          lH = fS * 1.4;
           wrapper
             .fontSize(fS)
             .lineHeight(lH);
@@ -6011,7 +6077,7 @@ var TextBox = (function (BaseClass) {
           style["line-height"] = lH;
         }
 
-        var wrapResults = wrapper(t);
+        wrapResults = wrapper(t);
         lineData = wrapResults.lines.filter(function (l) { return l !== ""; });
         line = lineData.length;
 
@@ -6030,7 +6096,7 @@ var TextBox = (function (BaseClass) {
 
       }
 
-      if (w > fMin && (h > lH || resize && h > fMin * 1.1)) {
+      if (w > fMin && (h > lH || resize && h > fMin * 1.4)) {
 
         if (resize) {
 
@@ -6072,7 +6138,8 @@ var TextBox = (function (BaseClass) {
           fW: style["font-weight"],
           id: this$1._id(d, i),
           tA: this$1._textAnchor(d, i),
-          fS: fS, lH: lH, w: w, x: this$1._x(d, i), y: this$1._y(d, i) + yP
+          widths: wrapResults.widths,
+          fS: fS, lH: lH, w: w, h: h, x: this$1._x(d, i), y: this$1._y(d, i) + yP
         });
 
       }
@@ -6092,80 +6159,76 @@ var TextBox = (function (BaseClass) {
 
       boxes.exit().transition().delay(this._duration).remove();
 
-      boxes.exit().selectAll("tspan").transition(t)
+      boxes.exit().selectAll("text").transition(t)
         .attr("opacity", 0);
 
     }
 
     function rotate(text) {
-      text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + " " + (d.x + d.w / 2) + " " + (d.y + d.lH / 4 + d.lH * d.lines.length / 2) + ")"); });
+      text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + ", " + (d.x + d.w / 2) + ", " + (d.y + d.h / 2) + ")translate(" + (d.x) + ", " + (d.y) + ")"); });
     }
 
-    var update = boxes.enter().append("text")
+    var update = boxes.enter().append("g")
         .attr("class", "d3plus-textBox")
         .attr("id", function (d) { return ("d3plus-textBox-" + (d.id)); })
-        .attr("y", function (d) { return ((d.y) + "px"); })
         .call(rotate)
       .merge(boxes);
 
+    var rtl = select("html").attr("dir") === "rtl";
+
     update
-      .attr("fill", function (d) { return d.fC; })
-      .attr("text-anchor", function (d) { return d.tA; })
-      .attr("font-family", function (d) { return d.fF; })
-      .style("font-family", function (d) { return d.fF; })
-      .attr("font-size", function (d) { return ((d.fS) + "px"); })
-      .style("font-size", function (d) { return ((d.fS) + "px"); })
-      .attr("font-weight", function (d) { return d.fW; })
-      .style("font-weight", function (d) { return d.fW; })
       .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
       .each(function(d) {
 
-        var dx = d.tA === "start" ? 0 : d.tA === "end" ? d.w : d.w / 2,
-              tB = select(this);
-
-        if (that._duration === 0) { tB.attr("y", function (d) { return ((d.y) + "px"); }); }
-        else { tB.transition(t).attr("y", function (d) { return ((d.y) + "px"); }); }
-
         /**
-            Styles to apply to each <tspan> element.
+            Styles to apply to each <text> element.
             @private
         */
-        function tspanStyle(tspan) {
-          tspan
+        function textStyle(text) {
+          text
             .text(function (t) { return trimRight(t); })
-            .attr("x", ((d.x) + "px"))
-            .attr("dx", (dx + "px"))
-            .attr("dy", ((d.lH) + "px"));
+            .attr("dir", rtl ? "rtl" : "ltr")
+            .attr("fill", d.fC)
+            .attr("text-anchor", d.tA)
+            .attr("font-family", d.fF)
+            .style("font-family", d.fF)
+            .attr("font-size", ((d.fS) + "px"))
+            .style("font-size", ((d.fS) + "px"))
+            .attr("font-weight", d.fW)
+            .style("font-weight", d.fW)
+            .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
+            .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
         }
 
-        var tspans = tB.selectAll("tspan").data(d.lines);
+        var texts = select(this).selectAll("text").data(d.lines);
 
         if (that._duration === 0) {
 
-          tspans.call(tspanStyle);
+          texts.call(textStyle);
 
-          tspans.exit().remove();
+          texts.exit().remove();
 
-          tspans.enter().append("tspan")
+          texts.enter().append("text")
             .attr("dominant-baseline", "alphabetic")
             .style("baseline-shift", "0%")
-            .call(tspanStyle);
+            .attr("unicode-bidi", "bidi-override")
+            .call(textStyle);
 
         }
         else {
 
-          tspans.transition(t).call(tspanStyle);
+          texts.transition(t).call(textStyle);
 
-          tspans.exit().transition(t)
+          texts.exit().transition(t)
             .attr("opacity", 0).remove();
 
-          tspans.enter().append("tspan")
+          texts.enter().append("text")
               .attr("dominant-baseline", "alphabetic")
               .style("baseline-shift", "0%")
               .attr("opacity", 0)
-              .call(tspanStyle)
-            .merge(tspans).transition(t).delay(that._delay)
-              .call(tspanStyle)
+              .call(textStyle)
+            .merge(texts).transition(t).delay(that._delay)
+              .call(textStyle)
               .attr("opacity", 1);
 
         }
@@ -6188,7 +6251,7 @@ var TextBox = (function (BaseClass) {
 
   /**
       @memberof TextBox
-      @desc If *data* is specified, sets the data array to the specified array and returns this generator. If *data* is not specified, returns the current data array. A text box will be drawn for each object in the array.
+      @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
       @param {Array} [*data* = []]
   */
   TextBox.prototype.data = function data (_) {
@@ -6197,7 +6260,7 @@ var TextBox = (function (BaseClass) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the animation delay to the specified number and returns this generator. If *value* is not specified, returns the current animation delay.
+      @desc Sets the animation delay to the specified number in milliseconds.
       @param {Number} [*value* = 0]
   */
   TextBox.prototype.delay = function delay (_) {
@@ -6206,7 +6269,7 @@ var TextBox = (function (BaseClass) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the animation duration to the specified number and returns this generator. If *value* is not specified, returns the current animation duration.
+      @desc Sets the animation duration to the specified number in milliseconds.
       @param {Number} [*value* = 0]
   */
   TextBox.prototype.duration = function duration (_) {
@@ -6215,7 +6278,7 @@ var TextBox = (function (BaseClass) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the ellipsis method to the specified function or string and returns this generator. If *value* is not specified, returns the current ellipsis method, which simply adds an ellipsis to the string by default.
+      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
 function(d) {
@@ -6228,7 +6291,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the font color accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font color accessor, which is inferred from the [container element](#textBox.select) by default.
+      @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
       @param {Function|String} [*value* = "black"]
   */
   TextBox.prototype.fontColor = function fontColor (_) {
@@ -6237,8 +6300,8 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family accessor, which is inferred from the [container element](#textBox.select) by default.
-      @param {Function|String} [*value* = "Verdana"]
+      @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
+      @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
   */
   TextBox.prototype.fontFamily = function fontFamily (_) {
     return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$3(_), this) : this._fontFamily;
@@ -6246,7 +6309,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the maximum font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current maximum font size accessor. The maximum font size is used when [resizing fonts](#textBox.fontResize) dynamically.
+      @desc Sets the maximum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
       @param {Function|Number} [*value* = 50]
   */
   TextBox.prototype.fontMax = function fontMax (_) {
@@ -6255,7 +6318,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the minimum font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current minimum font size accessor. The minimum font size is used when [resizing fonts](#textBox.fontResize) dynamically.
+      @desc Sets the minimum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
       @param {Function|Number} [*value* = 8]
   */
   TextBox.prototype.fontMin = function fontMin (_) {
@@ -6264,7 +6327,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the font resizing accessor to the specified function or boolean and returns this generator. If *value* is not specified, returns the current font resizing accessor.
+      @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
       @param {Function|Boolean} [*value* = false]
   */
   TextBox.prototype.fontResize = function fontResize (_) {
@@ -6273,7 +6336,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size accessor, which is inferred from the [container element](#textBox.select) by default.
+      @desc Sets the font size to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
       @param {Function|Number} [*value* = 10]
   */
   TextBox.prototype.fontSize = function fontSize (_) {
@@ -6282,7 +6345,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight accessor, which is inferred from the [container element](#textBox.select) by default.
+      @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
       @param {Function|Number|String} [*value* = 400]
   */
   TextBox.prototype.fontWeight = function fontWeight (_) {
@@ -6291,7 +6354,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current height accessor.
+      @desc Sets the height for each box to the specified accessor function or static number.
       @param {Function|Number} [*value*]
       @example <caption>default accessor</caption>
 function(d) {
@@ -6304,7 +6367,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the id accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current id accessor.
+      @desc Defines the unique id for each box to the specified accessor function or static number.
       @param {Function|Number} [*value*]
       @example <caption>default accessor</caption>
 function(d, i) {
@@ -6317,7 +6380,7 @@ function(d, i) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textBox.fontSize) by default.
+      @desc Sets the line height to the specified accessor function or static number, which is 1.4 times the [font size](#textBox.fontSize) by default.
       @param {Function|Number} [*value*]
   */
   TextBox.prototype.lineHeight = function lineHeight (_) {
@@ -6326,7 +6389,7 @@ function(d, i) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the overflow accessor to the specified function or boolean and returns this generator. If *value* is not specified, returns the current overflow accessor.
+      @desc Sets the text overflow to the specified accessor function or static boolean.
       @param {Function|Boolean} [*value* = false]
   */
   TextBox.prototype.overflow = function overflow (_) {
@@ -6335,7 +6398,7 @@ function(d, i) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current pointer-events accessor.
+      @desc Sets the pointer-events to the specified accessor function or static string.
       @param {Function|String} [*value* = "auto"]
   */
   TextBox.prototype.pointerEvents = function pointerEvents (_) {
@@ -6344,7 +6407,7 @@ function(d, i) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the rotate accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current rotate accessor.
+      @desc Sets the rotate percentage for each box to the specified accessor function or static string.
       @param {Function|Number} [*value* = 0]
   */
   TextBox.prototype.rotate = function rotate (_) {
@@ -6353,7 +6416,7 @@ function(d, i) {
 
   /**
       @memberof TextBox
-      @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns this generator. If *selector* is not specified, returns the current SVG container element, which adds an SVG element to the page by default.
+      @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
       @param {String|HTMLElement} [*selector*]
   */
   TextBox.prototype.select = function select$1 (_) {
@@ -6362,8 +6425,8 @@ function(d, i) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
-      @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to wrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
+      @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
+      @param {Function} [*value*]
   */
   TextBox.prototype.split = function split (_) {
     return arguments.length ? (this._split = _, this) : this._split;
@@ -6371,7 +6434,7 @@ function(d, i) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the text accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current text accessor.
+      @desc Sets the text for each box to the specified accessor function or static string.
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
 function(d) {
@@ -6384,8 +6447,8 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the horizontal text anchor accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current horizontal text anchor accessor.
-      @param {Function|String} [*value* = "start"] Analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
+      @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
+      @param {Function|String} [*value* = "start"]
   */
   TextBox.prototype.textAnchor = function textAnchor (_) {
     return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$3(_), this) : this._textAnchor;
@@ -6393,8 +6456,8 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current vertical alignment accessor.
-      @param {Function|String} [*value* = "top"] Accepts `"top"`, `"middle"`, and `"bottom"`.
+      @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
+      @param {Function|String} [*value* = "top"]
   */
   TextBox.prototype.verticalAlign = function verticalAlign (_) {
     return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$3(_), this) : this._verticalAlign;
@@ -6402,7 +6465,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current width accessor.
+      @desc Sets the width for each box to the specified accessor function or static number.
       @param {Function|Number} [*value*]
       @example <caption>default accessor</caption>
 function(d) {
@@ -6415,7 +6478,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current x accessor. The number returned should correspond to the left position of the textBox.
+      @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
       @param {Function|Number} [*value*]
       @example <caption>default accessor</caption>
 function(d) {
@@ -6428,7 +6491,7 @@ function(d) {
 
   /**
       @memberof TextBox
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current y accessor. The number returned should correspond to the top position of the textBox.
+      @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
       @param {Function|Number} [*value*]
       @example <caption>default accessor</caption>
 function(d) {
