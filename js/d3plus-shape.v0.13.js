@@ -1,13 +1,72 @@
 /*
-  d3plus-shape v0.13.3
+  d3plus-shape v0.13.4
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3-array'), require('d3-color'), require('d3plus-color'), require('d3plus-text'), require('d3-collection'), require('d3-interpolate-path'), require('d3-shape'), require('d3-polygon')) :
 	typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3-array', 'd3-color', 'd3plus-color', 'd3plus-text', 'd3-collection', 'd3-interpolate-path', 'd3-shape', 'd3-polygon'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3plusCommon,global.d3Array,global.d3Color,global.d3plusColor,global.d3plusText,global.d3Collection,global.d3InterpolatePath,global.paths,global.d3Polygon));
+	(factory((global.d3plus = {}),global.d3Selection,global.d3Transition,global.d3plusCommon,global.d3Array,global.d3Color,global.d3plusColor,global.d3plusText,global.d3Collection,global.d3InterpolatePath,global.paths,global.d3Polygon));
 }(this, (function (exports,d3Selection,d3Transition,d3plusCommon,d3Array,d3Color,d3plusColor,d3plusText,d3Collection,d3InterpolatePath,paths,d3Polygon) { 'use strict';
 
 /**
@@ -63,31 +122,31 @@ Image.prototype.render = function render (callback) {
         update = enter.merge(images);
 
   update
-      .attr("xlink:href", this._url)
-      .style("pointer-events", this._pointerEvents)
+    .attr("xlink:href", this._url)
+    .style("pointer-events", this._pointerEvents)
     .transition(t)
-      .attr("opacity", 1)
-      .attr("width", function (d, i) { return this$1._width(d, i); })
-      .attr("height", function (d, i) { return this$1._height(d, i); })
-      .attr("x", function (d, i) { return this$1._x(d, i); })
-      .attr("y", function (d, i) { return this$1._y(d, i); })
-      .each(function(d, i) {
-        var image = d3Selection.select(this), link = that._url(d, i);
-        var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
-        if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
-          var img = new Image();
-          img.src = link;
-          img.crossOrigin = "Anonymous";
-          img.onload = function() {
-            var canvas = document.createElement("canvas");
-            canvas.width = this.width;
-            canvas.height = this.height;
-            var context = canvas.getContext("2d");
-            context.drawImage(this, 0, 0);
-            image.attr("xlink:href", canvas.toDataURL("image/png"));
-          };
-        }
-      });
+    .attr("opacity", 1)
+    .attr("width", function (d, i) { return this$1._width(d, i); })
+    .attr("height", function (d, i) { return this$1._height(d, i); })
+    .attr("x", function (d, i) { return this$1._x(d, i); })
+    .attr("y", function (d, i) { return this$1._y(d, i); })
+    .each(function(d, i) {
+      var image = d3Selection.select(this), link = that._url(d, i);
+      var fullAddress = link.indexOf("http://") === 0 || link.indexOf("https://") === 0;
+      if (!fullAddress || link.indexOf(window.location.hostname) === 0) {
+        var img = new Image();
+        img.src = link;
+        img.crossOrigin = "Anonymous";
+        img.onload = function() {
+          var canvas = document.createElement("canvas");
+          canvas.width = this.width;
+          canvas.height = this.height;
+          var context = canvas.getContext("2d");
+          context.drawImage(this, 0, 0);
+          image.attr("xlink:href", canvas.toDataURL("image/png"));
+        };
+      }
+    });
 
   images.exit().transition(t)
     .attr("width", function (d, i) { return this$1._width(d, i); })
@@ -124,7 +183,7 @@ Image.prototype.duration = function duration (_) {
 
 /**
     @memberof Image
-    @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+    @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance.
     @param {Function|Number} [*value*]
     @chainable
     @example
@@ -138,7 +197,7 @@ Image.prototype.height = function height (_) {
 
 /**
     @memberof Image
-    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor. This is useful if you want to duplicate the same image.
+    @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance.
     @param {Function} [*value*]
     @chainable
     @example
@@ -152,7 +211,7 @@ Image.prototype.id = function id (_) {
 
 /**
     @memberof Image
-    @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current pointer-events accessor.
+    @desc If *value* is specified, sets the pointer-events accessor to the specified function or string and returns the current class instance.
     @param {Function|String} [*value* = "auto"]
     @chainable
 */
@@ -172,7 +231,7 @@ Image.prototype.select = function select$1 (_) {
 
 /**
     @memberof Image
-    @desc If *value* is specified, sets the URL accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current URL accessor.
+    @desc If *value* is specified, sets the URL accessor to the specified function and returns the current class instance.
     @param {Function} [*value*]
     @chainable
     @example
@@ -186,7 +245,7 @@ Image.prototype.url = function url (_) {
 
 /**
     @memberof Image
-    @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+    @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance.
     @param {Function|Number} [*value*]
     @chainable
     @example
@@ -200,7 +259,7 @@ Image.prototype.width = function width (_) {
 
 /**
     @memberof Image
-    @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+    @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance.
     @param {Function|Number} [*value*]
     @chainable
     @example
@@ -214,7 +273,7 @@ Image.prototype.x = function x (_) {
 
 /**
     @memberof Image
-    @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+    @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance.
     @param {Function|Number} [*value*]
     @chainable
     @example
@@ -377,9 +436,9 @@ var Shape = (function (BaseClass$$1) {
     */
     function styleLogic(d, i) {
       return typeof this !== "function" ? this
-           : d.nested && d.key && d.values
-           ? this(d.values[0], that._data.indexOf(d.values[0]))
-           : this(d, i);
+        : d.nested && d.key && d.values
+          ? this(d.values[0], that._data.indexOf(d.values[0]))
+          : this(d, i);
     }
 
     var activeStyle = {};
@@ -413,9 +472,9 @@ var Shape = (function (BaseClass$$1) {
     */
     function styleLogic(d, i) {
       return typeof this !== "function" ? this
-           : d.nested && d.key && d.values
-           ? this(d.values[0], that._data.indexOf(d.values[0]))
-           : this(d, i);
+        : d.nested && d.key && d.values
+          ? this(d.values[0], that._data.indexOf(d.values[0]))
+          : this(d, i);
     }
 
     elem$$1
@@ -443,10 +502,10 @@ var Shape = (function (BaseClass$$1) {
 
     elem$$1
       .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plusShape__
-                  ? d.translate ? d.translate
-                  : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
-                  : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plusShape__ ? d.scale || this$1._scale(d.data, d.i)
-              : this$1._scale(d, i)) + ")"); });
+    ? d.translate ? d.translate
+      : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
+    : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plusShape__ ? d.scale || this$1._scale(d.data, d.i)
+    : this$1._scale(d, i)) + ")"); });
   };
 
   /**
@@ -625,10 +684,6 @@ var Shape = (function (BaseClass$$1) {
         .style("display", "block").node());
     }
 
-    if (this._lineHeight === void 0) {
-      this.lineHeight(function (d, i) { return this$1._fontSize(d, i) * 1.1; });
-    }
-
     this._transition = d3Transition.transition().duration(this._duration);
 
     var data = this._data, key = this._id;
@@ -648,7 +703,7 @@ var Shape = (function (BaseClass$$1) {
     this._group = d3plusCommon.elem(("g.d3plus-" + (this._name) + "-group"), {parent: this._select});
     var update = this._update = d3plusCommon.elem(("g.d3plus-" + (this._name) + "-shape"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}})
       .selectAll((".d3plus-" + (this._name)))
-        .data(data, key);
+      .data(data, key);
 
     // Orders and transforms the updating Shapes.
     update.order().transition(this._transition)
@@ -656,19 +711,19 @@ var Shape = (function (BaseClass$$1) {
 
     // Makes the enter state of the group selection accessible.
     var enter = this._enter = update.enter().append(this._tagName)
-        .attr("class", function (d, i) { return ("d3plus-Shape d3plus-" + (this$1._name) + " d3plus-id-" + (d3plusText.strip(this$1._nestWrapper(this$1._id)(d, i)))); })
+      .attr("class", function (d, i) { return ("d3plus-Shape d3plus-" + (this$1._name) + " d3plus-id-" + (d3plusText.strip(this$1._nestWrapper(this$1._id)(d, i)))); })
       .call(this._applyTransform.bind(this))
-        .attr("opacity", this._nestWrapper(this._opacity));
+      .attr("opacity", this._nestWrapper(this._opacity));
 
     var enterUpdate = enter.merge(update);
 
     enterUpdate
-        .attr("shape-rendering", this._nestWrapper(this._shapeRendering))
-        .attr("pointer-events", "none")
+      .attr("shape-rendering", this._nestWrapper(this._shapeRendering))
+      .attr("pointer-events", "none")
       .transition(this._transition)
-        .attr("opacity", this._nestWrapper(this._opacity))
+      .attr("opacity", this._nestWrapper(this._opacity))
       .transition()
-        .attr("pointer-events", "all");
+      .attr("pointer-events", "all");
 
     // Makes the exit state of the group selection accessible.
     var exit = this._exit = update.exit();
@@ -689,8 +744,8 @@ var Shape = (function (BaseClass$$1) {
       .call(this._applyTransform.bind(this));
 
     var hitEnter = hitAreas.enter().append("rect")
-        .attr("class", function (d, i) { return ("d3plus-HitArea d3plus-id-" + (d3plusText.strip(this$1._nestWrapper(this$1._id)(d, i)))); })
-        .attr("fill", "transparent")
+      .attr("class", function (d, i) { return ("d3plus-HitArea d3plus-id-" + (d3plusText.strip(this$1._nestWrapper(this$1._id)(d, i)))); })
+      .attr("fill", "transparent")
       .call(this._applyTransform.bind(this));
 
     var hitUpdates = hitAreas.merge(hitEnter)
@@ -712,7 +767,7 @@ var Shape = (function (BaseClass$$1) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
+      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance.
       @param {Function} [*value*]
       @chainable
   */
@@ -756,7 +811,7 @@ var Shape = (function (BaseClass$$1) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the active opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current active opacity.
+      @desc If *value* is specified, sets the active opacity to the specified function and returns the current class instance.
       @param {Number} [*value* = 0.75]
       @chainable
   */
@@ -766,14 +821,14 @@ var Shape = (function (BaseClass$$1) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current background-image accessor.
+      @desc If *value* is specified, sets the background-image accessor to the specified function or string and returns the current class instance.
       @param {Function|String} [*value* = false]
       @chainable
   */
   Shape.prototype.backgroundImage = function backgroundImage (_) {
     return arguments.length
-         ? (this._backgroundImage = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._backgroundImage;
+      ? (this._backgroundImage = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+      : this._backgroundImage;
   };
 
   /**
@@ -784,8 +839,8 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.data = function data (_) {
     return arguments.length
-         ? (this._data = _, this)
-         : this._data;
+      ? (this._data = _, this)
+      : this._data;
   };
 
   /**
@@ -796,20 +851,20 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.duration = function duration (_) {
     return arguments.length
-         ? (this._duration = _, this)
-         : this._duration;
+      ? (this._duration = _, this)
+      : this._duration;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current fill accessor.
+      @desc If *value* is specified, sets the fill accessor to the specified function or string and returns the current class instance.
       @param {Function|String} [*value* = "black"]
       @chainable
   */
   Shape.prototype.fill = function fill (_) {
     return arguments.length
-         ? (this._fill = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._fill;
+      ? (this._fill = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+      : this._fill;
   };
 
   /**
@@ -820,13 +875,13 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.fillOpacity = function fillOpacity (_) {
     return arguments.length
-         ? (this._fillOpacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._fillOpacity;
+      ? (this._fillOpacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
+      : this._fillOpacity;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current highlight accessor.
+      @desc If *value* is specified, sets the highlight accessor to the specified function and returns the current class instance.
       @param {Function} [*value*]
       @chainable
   */
@@ -864,7 +919,7 @@ var Shape = (function (BaseClass$$1) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the hover opacity to the specified function and returns the current class instance. If *value* is not specified, returns the current hover opacity.
+      @desc If *value* is specified, sets the hover opacity to the specified function and returns the current class instance.
       @param {Number} [*value* = 0.5]
       @chainable
   */
@@ -888,33 +943,27 @@ function(d, i, shape) {
 }
   */
   Shape.prototype.hitArea = function hitArea (_) {
-    return arguments.length
-         ? (this._hitArea = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._hitArea;
+    return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._hitArea;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor.
+      @desc If *value* is specified, sets the id accessor to the specified function and returns the current class instance.
       @param {Function} [*value*]
       @chainable
   */
   Shape.prototype.id = function id (_) {
-    return arguments.length
-         ? (this._id = _, this)
-         : this._id;
+    return arguments.length ? (this._id = _, this) : this._id;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text accessor, which is `undefined` by default. If an array is passed or returned from the function, each value will be rendered as an individual label.
+      @desc If *value* is specified, sets the label accessor to the specified function or string and returns the current class instance.
       @param {Function|String|Array} [*value*]
       @chainable
   */
   Shape.prototype.label = function label (_) {
-    return arguments.length
-         ? (this._label = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._label;
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._label;
   };
 
   /**
@@ -933,9 +982,7 @@ function(d, i, shape) {
 }
   */
   Shape.prototype.labelBounds = function labelBounds (_) {
-    return arguments.length
-         ? (this._labelBounds = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._labelBounds;
+    return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._labelBounds;
   };
 
   /**
@@ -950,38 +997,22 @@ function(d, i, shape) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance. If *value* is not specified, returns the current label padding. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance.
       @param {Function|Number|Array} [*value* = 10]
       @chainable
   */
   Shape.prototype.labelPadding = function labelPadding (_) {
-    return arguments.length
-         ? (this._labelPadding = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._labelPadding;
+    return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._labelPadding;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the line-height accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current line-height accessor. If an array is passed or returned from the function, each value will be used in conjunction with each label.
-      @param {Function|String|Array} [*value*]
-      @chainable
-  */
-  Shape.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length
-         ? (this._lineHeight = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._lineHeight;
-  };
-
-  /**
-      @memberof Shape
-      @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current opacity accessor.
+      @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance.
       @param {Number} [*value* = 1]
       @chainable
   */
   Shape.prototype.opacity = function opacity (_) {
-    return arguments.length
-         ? (this._opacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._opacity;
+    return arguments.length ? (this._opacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._opacity;
   };
 
   /**
@@ -1006,14 +1037,12 @@ function(d, i, shape) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current scale accessor.
+      @desc If *value* is specified, sets the scale accessor to the specified function or string and returns the current class instance.
       @param {Function|Number} [*value* = 1]
       @chainable
   */
   Shape.prototype.scale = function scale (_) {
-    return arguments.length
-         ? (this._scale = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._scale;
+    return arguments.length ? (this._scale = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._scale;
   };
 
   /**
@@ -1023,14 +1052,12 @@ function(d, i, shape) {
       @chainable
   */
   Shape.prototype.select = function select$1 (_) {
-    return arguments.length
-         ? (this._select = d3Selection.select(_), this)
-         : this._select;
+    return arguments.length ? (this._select = d3Selection.select(_), this) : this._select;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the shape-rendering accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current shape-rendering accessor.
+      @desc If *value* is specified, sets the shape-rendering accessor to the specified function or string and returns the current class instance.
       @param {Function|String} [*value* = "geometricPrecision"]
       @chainable
       @example
@@ -1039,33 +1066,27 @@ function(d) {
 }
   */
   Shape.prototype.shapeRendering = function shapeRendering (_) {
-    return arguments.length
-         ? (this._shapeRendering = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._shapeRendering;
+    return arguments.length ? (this._shapeRendering = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._shapeRendering;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the sort comparator to the specified function and returns the current class instance. If *value* is not specified, returns the current sort comparator.
+      @desc If *value* is specified, sets the sort comparator to the specified function and returns the current class instance.
       @param {false|Function} [*value* = []]
       @chainable
   */
   Shape.prototype.sort = function sort (_) {
-    return arguments.length
-         ? (this._sort = _, this)
-         : this._sort;
+    return arguments.length ? (this._sort = _, this) : this._sort;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke accessor.
+      @desc If *value* is specified, sets the stroke accessor to the specified function or string and returns the current class instance.
       @param {Function|String} [*value* = "black"]
       @chainable
   */
   Shape.prototype.stroke = function stroke (_) {
-    return arguments.length
-         ? (this._stroke = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._stroke;
+    return arguments.length ? (this._stroke = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._stroke;
   };
 
   /**
@@ -1075,9 +1096,7 @@ function(d) {
       @chainable
   */
   Shape.prototype.strokeDasharray = function strokeDasharray (_) {
-    return arguments.length
-         ? (this._strokeDasharray = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._strokeDasharray;
+    return arguments.length ? (this._strokeDasharray = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._strokeDasharray;
   };
 
   /**
@@ -1087,9 +1106,7 @@ function(d) {
       @chainable
   */
   Shape.prototype.strokeLinecap = function strokeLinecap (_) {
-    return arguments.length
-         ? (this._strokeLinecap = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._strokeLinecap;
+    return arguments.length ? (this._strokeLinecap = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._strokeLinecap;
   };
 
   /**
@@ -1099,62 +1116,52 @@ function(d) {
       @chainable
   */
   Shape.prototype.strokeOpacity = function strokeOpacity (_) {
-    return arguments.length
-         ? (this._strokeOpacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._strokeOpacity;
+    return arguments.length ? (this._strokeOpacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._strokeOpacity;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current stroke-width accessor.
+      @desc If *value* is specified, sets the stroke-width accessor to the specified function or string and returns the current class instance.
       @param {Function|Number} [*value* = 0]
       @chainable
   */
   Shape.prototype.strokeWidth = function strokeWidth (_) {
-    return arguments.length
-         ? (this._strokeWidth = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._strokeWidth;
+    return arguments.length ? (this._strokeWidth = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._strokeWidth;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current text-anchor accessor, which is `"start"` by default. Accepted values are `"start"`, `"middle"`, and `"end"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the text-anchor accessor to the specified function or string and returns the current class instance.
       @param {Function|String|Array} [*value* = "start"]
       @chainable
   */
   Shape.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length
-         ? (this._textAnchor = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._textAnchor;
+    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._textAnchor;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the vector-effect accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vector-effect accessor.
+      @desc If *value* is specified, sets the vector-effect accessor to the specified function or string and returns the current class instance.
       @param {Function|String} [*value* = "non-scaling-stroke"]
       @chainable
   */
   Shape.prototype.vectorEffect = function vectorEffect (_) {
-    return arguments.length
-         ? (this._vectorEffect = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._vectorEffect;
+    return arguments.length ? (this._vectorEffect = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._vectorEffect;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current vertical alignment accessor, which is `"top"` by default. Accepted values are `"top"`, `"middle"`, and `"bottom"`. If an array is passed or returned from the function, each value will be used in conjunction with each label.
+      @desc If *value* is specified, sets the vertical alignment accessor to the specified function or string and returns the current class instance.
       @param {Function|String|Array} [*value* = "start"]
       @chainable
   */
   Shape.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length
-         ? (this._verticalAlign = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._verticalAlign;
+    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._verticalAlign;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance.
       @param {Function|Number} [*value*]
       @chainable
       @example
@@ -1163,14 +1170,12 @@ function(d) {
 }
   */
   Shape.prototype.x = function x (_) {
-    return arguments.length
-         ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._x;
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._x;
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance.
       @param {Function|Number} [*value*]
       @chainable
       @example
@@ -1179,9 +1184,7 @@ function(d) {
 }
   */
   Shape.prototype.y = function y (_) {
-    return arguments.length
-         ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._y;
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._y;
   };
 
   return Shape;
@@ -1548,18 +1551,18 @@ var largestRect = function(poly, options) {
   }, options);
 
   var angles = options.angle instanceof Array ? options.angle
-               : typeof options.angle === "number" ? [options.angle]
-               : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
-               : [];
+    : typeof options.angle === "number" ? [options.angle]
+      : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
+        : [];
 
   var aspectRatios = options.aspectRatio instanceof Array ? options.aspectRatio
-               : typeof options.aspectRatio === "number" ? [options.aspectRatio]
-               : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
-               : [];
+    : typeof options.aspectRatio === "number" ? [options.aspectRatio]
+      : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
+        : [];
 
   var origins = options.origin && options.origin instanceof Array
-                ? options.origin[0] instanceof Array ? options.origin
-                : [options.origin] : [];
+    ? options.origin[0] instanceof Array ? options.origin
+      : [options.origin] : [];
 
   var area$$1 = Math.abs(d3Polygon.polygonArea(poly)); // take absolute value of the signed area
   if (area$$1 === 0) {
@@ -1860,9 +1863,7 @@ var Area = (function (Shape$$1) {
       @chainable
   */
   Area.prototype.curve = function curve (_) {
-    return arguments.length
-         ? (this._curve = _, this)
-         : this._curve;
+    return arguments.length ? (this._curve = _, this) : this._curve;
   };
 
   /**
@@ -1872,9 +1873,7 @@ var Area = (function (Shape$$1) {
       @chainable
   */
   Area.prototype.defined = function defined (_) {
-    return arguments.length
-         ? (this._defined = _, this)
-         : this._defined;
+    return arguments.length ? (this._defined = _, this) : this._defined;
   };
 
   /**
@@ -1910,9 +1909,7 @@ var Area = (function (Shape$$1) {
       @chainable
   */
   Area.prototype.x1 = function x1 (_) {
-    return arguments.length
-         ? (this._x1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this)
-         : this._x1;
+    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this) : this._x1;
   };
 
   /**
@@ -1948,9 +1945,7 @@ var Area = (function (Shape$$1) {
       @chainable
   */
   Area.prototype.y1 = function y1 (_) {
-    return arguments.length
-         ? (this._y1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this)
-         : this._y1;
+    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this) : this._y1;
   };
 
   return Area;
@@ -2003,13 +1998,13 @@ var Bar = (function (Shape$$1) {
     Shape$$1.prototype.render.call(this, callback);
 
     this._enter
-        .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
-        .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
-        .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
-        .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; })
-        .call(this._applyStyle.bind(this))
+      .attr("width", function (d, i) { return this$1._x1 === null ? this$1._getWidth(d, i) : 0; })
+      .attr("height", function (d, i) { return this$1._x1 !== null ? this$1._getHeight(d, i) : 0; })
+      .attr("x", function (d, i) { return this$1._x1 === null ? -this$1._getWidth(d, i) / 2 : 0; })
+      .attr("y", function (d, i) { return this$1._x1 !== null ? -this$1._getHeight(d, i) / 2 : 0; })
+      .call(this._applyStyle.bind(this))
       .transition(this._transition)
-        .call(this._applyPosition.bind(this));
+      .call(this._applyPosition.bind(this));
 
     this._update.transition(this._transition)
       .call(this._applyStyle.bind(this))
@@ -2104,7 +2099,7 @@ var Bar = (function (Shape$$1) {
 
   /**
       @memberof Bar
-      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance.
       @param {Function|Number} [*value*]
       @chainable
       @example
@@ -2113,14 +2108,12 @@ function(d) {
 }
   */
   Bar.prototype.height = function height (_) {
-    return arguments.length
-         ? (this._height = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._height;
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._height;
   };
 
   /**
       @memberof Bar
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance.
       @param {Function|Number} [*value*]
       @chainable
       @example
@@ -2129,14 +2122,12 @@ function(d) {
 }
   */
   Bar.prototype.width = function width (_) {
-    return arguments.length
-         ? (this._width = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._width;
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._width;
   };
 
   /**
       @memberof Bar
-      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x0 accessor.
+      @desc If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance.
       @param {Function|Number} [*value*]
       @chainable
   */
@@ -2149,19 +2140,17 @@ function(d) {
 
   /**
       @memberof Bar
-      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x1 accessor.
+      @desc If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance.
       @param {Function|Number|null} [*value*]
       @chainable
   */
   Bar.prototype.x1 = function x1 (_) {
-    return arguments.length
-         ? (this._x1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this)
-         : this._x1;
+    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this) : this._x1;
   };
 
   /**
       @memberof Bar
-      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y0 accessor.
+      @desc If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance.
       @param {Function|Number} [*value*]
       @chainable
   */
@@ -2174,14 +2163,12 @@ function(d) {
 
   /**
       @memberof Bar
-      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y1 accessor.
+      @desc If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance.
       @param {Function|Number|null} [*value*]
       @chainable
   */
   Bar.prototype.y1 = function y1 (_) {
-    return arguments.length
-         ? (this._y1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this)
-         : this._y1;
+    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : d3plusCommon.constant(_), this) : this._y1;
   };
 
   return Bar;
@@ -2228,10 +2215,10 @@ var Circle = (function (Shape$$1) {
     Shape$$1.prototype.render.call(this, callback);
 
     this._enter
-        .attr("r", 0).attr("x", 0).attr("y", 0)
-        .call(this._applyStyle.bind(this))
+      .attr("r", 0).attr("x", 0).attr("y", 0)
+      .call(this._applyStyle.bind(this))
       .transition(this._transition)
-        .call(this._applyPosition.bind(this));
+      .call(this._applyPosition.bind(this));
 
     this._update.transition(this._transition)
       .call(this._applyStyle.bind(this))
@@ -2257,7 +2244,7 @@ var Circle = (function (Shape$$1) {
 
   /**
       @memberof Circle
-      @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current radius accessor.
+      @desc If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance.
       @param {Function|Number} [*value*]
       @chainable
       @example
@@ -2515,7 +2502,7 @@ var path2polygon = function (path, segmentLength) {
 /**
     @class Path
     @extends Shape
-    @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+    @desc Creates SVG Paths based on an array of data.
 */
 var Path = (function (Shape$$1) {
   function Path() {
@@ -2560,16 +2547,16 @@ var Path = (function (Shape$$1) {
     Shape$$1.prototype.render.call(this, callback);
 
     this._enter
-        .attr("opacity", 0)
-        .attr("d", this._d)
+      .attr("opacity", 0)
+      .attr("d", this._d)
       .call(this._applyStyle.bind(this))
       .transition(this._transition)
-        .attr("opacity", 1);
+      .attr("opacity", 1);
 
     this._update.transition(this._transition)
       .call(this._applyStyle.bind(this))
-        .attr("opacity", 1)
-        .attr("d", this._d);
+      .attr("opacity", 1)
+      .attr("d", this._d);
 
     this._exit.transition(this._transition)
       .attr("opacity", 0);
@@ -2580,7 +2567,7 @@ var Path = (function (Shape$$1) {
 
   /**
       @memberof Path
-      @desc If *value* is specified, sets the "d" attribute accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current "d" attribute accessor.
+      @desc If *value* is specified, sets the "d" attribute accessor to the specified function or number and returns the current class instance.
       @param {Function|String} [*value*]
       @chainable
       @example
@@ -2589,9 +2576,7 @@ function(d) {
 }
   */
   Path.prototype.d = function d (_) {
-    return arguments.length
-         ? (this._d = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._d;
+    return arguments.length ? (this._d = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._d;
   };
 
   return Path;
@@ -2626,11 +2611,11 @@ var Rect = (function (Shape$$1) {
     Shape$$1.prototype.render.call(this, callback);
 
     this._enter
-        .attr("width", 0).attr("height", 0)
-        .attr("x", 0).attr("y", 0)
-        .call(this._applyStyle.bind(this))
+      .attr("width", 0).attr("height", 0)
+      .attr("x", 0).attr("y", 0)
+      .call(this._applyStyle.bind(this))
       .transition(this._transition)
-        .call(this._applyPosition.bind(this));
+      .call(this._applyPosition.bind(this));
 
     this._update.transition(this._transition)
       .call(this._applyStyle.bind(this))
@@ -2673,7 +2658,7 @@ var Rect = (function (Shape$$1) {
 
   /**
       @memberof Rect
-      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+      @desc If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance.
       @param {Function|Number} [*value*]
       @chainable
       @example
@@ -2682,14 +2667,12 @@ function(d) {
 }
   */
   Rect.prototype.height = function height (_) {
-    return arguments.length
-         ? (this._height = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._height;
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._height;
   };
 
   /**
       @memberof Rect
-      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+      @desc If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance.
       @param {Function|Number} [*value*]
       @chainable
       @example
@@ -2698,9 +2681,7 @@ function(d) {
 }
   */
   Rect.prototype.width = function width (_) {
-    return arguments.length
-         ? (this._width = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._width;
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._width;
   };
 
   return Rect;
