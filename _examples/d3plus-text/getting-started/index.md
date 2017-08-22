@@ -2,13 +2,12 @@
 title: Wrapping SVG Text
 width: 700
 height: 75
-time: 1503202712444
-date: August 20, 2017
+time: 1503372776581
+date: August 22, 2017
 ---
 
 [width]: 700
 [height]: 75
-
 
 # Wrapping SVG Text
 
@@ -21,6 +20,7 @@ var data = [
   {text: "这是句3号。这也即使包装没有空格！"}
 ];
 ```
+
 
 And finally, this is how that data array would be passed to the [textBox](http://d3plus.org/docs/#TextBox):
 
