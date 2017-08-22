@@ -10,6 +10,7 @@
 
     body {
       margin: 0;
+      overflow: hidden;
     }
 
   </style>
@@ -21,12 +22,12 @@
 <script>
 
   var data = [
-    {x: 0, y0: 300, y1: 200},
+    {x: 0,   y0: 300, y1: 200},
     {x: 150, y0: 100, y1: 0},
     {x: 450, y0: 300, y1: 180},
     {x: 700, y0: 140, y1: 40}
   ];
-
+  
   new d3plus.Area()
     .data(data)
     .y0(function(d) { return d.y0; })
