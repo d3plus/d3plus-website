@@ -2,8 +2,8 @@
 title: Drawing Rectangles
 width: 360
 height: 150
-time: 1503367767945
-date: August 21, 2017
+time: 1503372881461
+date: August 22, 2017
 ---
 
 [width]: 360
@@ -29,6 +29,7 @@ new d3plus.Rect()
   .label(function(d) { return d.text; })
   .render();
 ```
+
 
 It even detects that the blue rectangle should have a dark label and the red rectangle's should be light!
 

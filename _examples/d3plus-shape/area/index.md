@@ -2,8 +2,8 @@
 title: Drawing Area Shapes
 width: 700
 height: 300
-time: 1503367767945
-date: August 21, 2017
+time: 1503372881461
+date: August 22, 2017
 ---
 
 [width]: 700
@@ -16,6 +16,7 @@ This [Area](http://d3plus.org/docs/#Area) class extends the lower level function
 > An area is defined by two bounding lines, either splines or polylines. Typically, the two lines share the same x-values (x0 = x1), differing only in y-value (y0 and y1); most commonly, y0 is defined as a constant representing zero. The first line (the topline) is defined by x1 and y1 and is rendered first; the second line (the baseline) is defined by x0 and y0 and is rendered second, with the points in reverse order.
 
 In the simplest case, it only needs a few data points to draw a custom area:
+
 
 ```js
 var data = [
