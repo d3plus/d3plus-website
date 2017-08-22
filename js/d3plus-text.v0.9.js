@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.20
+  d3plus-text v0.9.21
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -174,6 +174,15 @@ var fontExists = function (font) {
 };
 
 /**
+    @function rtl
+    @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
+*/
+var detectRTL = function () { return d3Selection.select("html").attr("dir") === "rtl" ||
+  d3Selection.select("body").attr("dir") === "rtl" ||
+  d3Selection.select("html").style("direction") === "rtl" ||
+  d3Selection.select("body").style("direction") === "rtl"; };
+
+/**
     @function stringify
     @desc Coerces value into a String.
     @param {String} value
@@ -296,7 +305,7 @@ var textSplit = function(sentence) {
 */
 var wrap = function() {
 
-  var fontFamily = "Verdana",
+  var fontFamily = "sans-serif",
       fontSize = 10,
       fontWeight = 400,
       height = 200,
@@ -370,7 +379,7 @@ var wrap = function() {
   /**
       @memberof textWrap
       @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value* = "Verdana"]
+      @param {Function|String} [*value* = "sans-serif"]
   */
   textWrap.fontFamily = function(_) {
     return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
@@ -657,7 +666,7 @@ var TextBox = (function (BaseClass$$1) {
         .call(rotate)
       .merge(boxes);
 
-    var rtl = d3Selection.select("html").attr("dir") === "rtl";
+    var rtl = detectRTL();
 
     update
       .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
@@ -1031,6 +1040,7 @@ var titleCase = function(str, opts) {
 };
 
 exports.fontExists = fontExists;
+exports.rtl = detectRTL;
 exports.stringify = stringify;
 exports.strip = strip;
 exports.TextBox = TextBox;

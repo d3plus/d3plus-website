@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.20
+  d3plus-text v0.9.21
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -171,58 +171,6 @@ var fontExists = function (font) {
 
   return false;
 
-};
-
-/**
-    @function stringify
-    @desc Coerces value into a String.
-    @param {String} value
-*/
-var stringify = function(value) {
-  if (value === void 0) { value = "undefined"; }
-  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
-  return value;
-};
-
-// great unicode list: http://asecuritysite.com/coding/asc2
-
-var diacritics = [
-  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
-  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
-  [/[\337]/g, "B"],
-  [/[\307]/g, "C"], [/[\347]/g, "c"],
-  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
-  [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
-  [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
-  [/[\321]/g, "N"], [/[\361]/g, "n"],
-  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
-  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
-  [/[\327]/g, "x"],
-  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
-];
-
-/**
-    @function strip
-    @desc Removes all non ASCII characters from a string.
-    @param {String} value
-*/
-var strip = function(value) {
-
-  return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
-
-    if (char === " ") { return "-"; }
-
-    var ret = false;
-    for (var d = 0; d < diacritics.length; d++) {
-      if (new RegExp(diacritics[d][0]).test(char)) {
-        ret = diacritics[d][1];
-        break;
-      }
-    }
-
-    return ret || "";
-
-  });
 };
 
 var xhtml = "http://www.w3.org/1999/xhtml";
@@ -1085,6 +1033,67 @@ var select = function(selector) {
   return typeof selector === "string"
       ? new Selection([[document.querySelector(selector)]], [document.documentElement])
       : new Selection([[selector]], root);
+};
+
+/**
+    @function rtl
+    @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
+*/
+var detectRTL = function () { return select("html").attr("dir") === "rtl" ||
+  select("body").attr("dir") === "rtl" ||
+  select("html").style("direction") === "rtl" ||
+  select("body").style("direction") === "rtl"; };
+
+/**
+    @function stringify
+    @desc Coerces value into a String.
+    @param {String} value
+*/
+var stringify = function(value) {
+  if (value === void 0) { value = "undefined"; }
+  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
+  return value;
+};
+
+// great unicode list: http://asecuritysite.com/coding/asc2
+
+var diacritics = [
+  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
+  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
+  [/[\337]/g, "B"],
+  [/[\307]/g, "C"], [/[\347]/g, "c"],
+  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
+  [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
+  [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
+  [/[\321]/g, "N"], [/[\361]/g, "n"],
+  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
+  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
+  [/[\327]/g, "x"],
+  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
+];
+
+/**
+    @function strip
+    @desc Removes all non ASCII characters from a string.
+    @param {String} value
+*/
+var strip = function(value) {
+
+  return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
+
+    if (char === " ") { return "-"; }
+
+    var ret = false;
+    for (var d = 0; d < diacritics.length; d++) {
+      if (new RegExp(diacritics[d][0]).test(char)) {
+        ret = diacritics[d][1];
+        break;
+      }
+    }
+
+    return ret || "";
+
+  });
 };
 
 var noop = {value: function() {}};
@@ -5813,7 +5822,7 @@ var textSplit = function(sentence) {
 */
 var wrap = function() {
 
-  var fontFamily = "Verdana",
+  var fontFamily = "sans-serif",
       fontSize = 10,
       fontWeight = 400,
       height = 200,
@@ -5887,7 +5896,7 @@ var wrap = function() {
   /**
       @memberof textWrap
       @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value* = "Verdana"]
+      @param {Function|String} [*value* = "sans-serif"]
   */
   textWrap.fontFamily = function(_) {
     return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
@@ -6174,7 +6183,7 @@ var TextBox = (function (BaseClass) {
         .call(rotate)
       .merge(boxes);
 
-    var rtl = select("html").attr("dir") === "rtl";
+    var rtl = detectRTL();
 
     update
       .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
@@ -6548,6 +6557,7 @@ var titleCase = function(str, opts) {
 };
 
 exports.fontExists = fontExists;
+exports.rtl = detectRTL;
 exports.stringify = stringify;
 exports.strip = strip;
 exports.TextBox = TextBox;
