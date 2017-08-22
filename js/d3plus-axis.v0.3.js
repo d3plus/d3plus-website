@@ -1,13 +1,72 @@
 /*
-  d3plus-axis v0.3.32
+  d3plus-axis v0.3.33
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-scale'), require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
 	typeof define === 'function' && define.amd ? define('d3plus-axis', ['exports', 'd3-array', 'd3-scale', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.scales,global.d3Selection,global.d3Transition,global.d3plusCommon,global.shapes,global.d3plusText));
+	(factory((global.d3plus = {}),global.d3Array,global.scales,global.d3Selection,global.d3Transition,global.d3plusCommon,global.shapes,global.d3plusText));
 }(this, (function (exports,d3Array,scales,d3Selection,d3Transition,d3plusCommon,shapes,d3plusText) { 'use strict';
 
 /**
@@ -100,7 +159,12 @@ var Axis = (function (BaseClass$$1) {
         fontFamily: new d3plusText.TextBox().fontFamily(),
         fontResize: false,
         fontSize: d3plusCommon.constant(10),
-        textAnchor: function () { return this$1._orient === "left" ? "end" : this$1._orient === "right" ? "start" : "middle"; },
+        textAnchor: function () {
+          var rtl$$1 = d3plusText.rtl();
+          return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
+          : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
+          : "middle";
+        },
         verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
       },
       labelPadding: 0,
@@ -110,10 +174,9 @@ var Axis = (function (BaseClass$$1) {
       width: function (d) { return d.tick ? 8 : 0; }
     };
     this._tickSize = 5;
+    this._titleClass = new d3plusText.TextBox();
     this._titleConfig = {
-      fontFamily: "Verdana",
       fontSize: 12,
-      lineHeight: 13,
       textAnchor: "middle"
     };
     this._width = 400;
@@ -195,10 +258,6 @@ var Axis = (function (BaseClass$$1) {
         .node());
     }
 
-    if (this._lineHeight === void 0) {
-      this._lineHeight = function (d, i) { return this$1._shapeConfig.labelConfig.fontSize(d, i) * 1.1; };
-    }
-
     var ref = this._position;
     var width = ref.width;
     var height = ref.height;
@@ -220,18 +279,17 @@ var Axis = (function (BaseClass$$1) {
       range$$1 = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
     }
 
-    this._margin = {top: 0, right: 0, bottom: 0, left: 0};
+    var margin = this._margin = {top: 0, right: 0, bottom: 0, left: 0};
 
     if (this._title) {
-      var lH = this._titleConfig.lineHeight ? this._titleConfig.lineHeight : this._titleConfig.fontSize * 1.1,
-            titleWrap = d3plusText.textWrap()
-              .fontFamily(this._titleConfig.fontFamily)
-              .fontSize(this._titleConfig.fontSize)
-              .lineHeight(lH)
-              .width(this._size)
-              .height(this[("_" + height)] - this._tickSize - p)
-              (this._title);
-      this._margin[this._orient] = titleWrap.lines.length * lH + p;
+      var titleWrap = d3plusText.textWrap()
+        .fontFamily(this._titleConfig.fontFamily)
+        .fontSize(this._titleConfig.fontSize)
+        .lineHeight(this._titleConfig.lineHeight)
+        .width(this._size)
+        .height(this[("_" + height)] - this._tickSize - p);
+      var lines = titleWrap(this._title).lines.length;
+      margin[this._orient] = lines * titleWrap.lineHeight() + p;
     }
 
     this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
@@ -247,23 +305,23 @@ var Axis = (function (BaseClass$$1) {
     var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
 
     var ticks = this._ticks
-              ? this._scale === "time" ? this._ticks.map(date) : this._ticks
-              : this._d3Scale.ticks
-              ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
-              : this._domain;
+      ? this._scale === "time" ? this._ticks.map(date) : this._ticks
+      : this._d3Scale.ticks
+        ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+        : this._domain;
 
     var labels = this._labels
-               ? this._scale === "time" ? this._labels.map(date) : this._labels
-               : this._d3Scale.ticks
-               ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
-               : ticks;
+      ? this._scale === "time" ? this._labels.map(date) : this._labels
+      : this._d3Scale.ticks
+        ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+        : ticks;
 
     ticks = ticks.slice();
     labels = labels.slice();
 
     var tickFormat = this._tickFormat ? this._tickFormat : this._d3Scale.tickFormat
-                     ? this._d3Scale.tickFormat(labels.length - 1)
-                     : function (d) { return d; };
+      ? this._d3Scale.tickFormat(labels.length - 1)
+      : function (d) { return d; };
 
     if (this._scale === "time") {
       ticks = ticks.map(Number);
@@ -277,8 +335,8 @@ var Axis = (function (BaseClass$$1) {
     labels = labels.sort(function (a, b) { return this$1._d3Scale(a) - this$1._d3Scale(b); });
 
     var tickSize = this._shape === "Circle" ? this._shapeConfig.r
-                   : this._shape === "Rect" ? this._shapeConfig[width]
-                   : this._shapeConfig.strokeWidth;
+      : this._shape === "Rect" ? this._shapeConfig[width]
+      : this._shapeConfig.strokeWidth;
 
     var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
 
@@ -297,10 +355,10 @@ var Axis = (function (BaseClass$$1) {
     this._visibleTicks = ticks;
 
     var hBuff = this._shape === "Circle"
-              ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
-              : this._shape === "Rect"
-              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
-              : this._tickSize,
+          ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
+          : this._shape === "Rect"
+            ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
+            : this._tickSize,
         wBuff = tickGet({tick: true});
 
     if (typeof hBuff === "function") { hBuff = d3Array.max(ticks.map(hBuff)); }
@@ -326,23 +384,21 @@ var Axis = (function (BaseClass$$1) {
       var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
             s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-      var lh = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.1;
-
-      var res = d3plusText.textWrap()
+      var wrap = d3plusText.textWrap()
         .fontFamily(f)
         .fontSize(s)
-        .lineHeight(lh)
+        .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
         .width(horizontal ? this$1._space * 2 : this$1._width - hBuff - p)
-        .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2)
-        (tickFormat(d));
+        .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
 
+      var res = wrap(tickFormat(d));
       res.lines = res.lines.filter(function (d) { return d !== ""; });
       res.d = d;
       res.fS = s;
       res.width = res.lines.length
         ? Math.ceil(d3Array.max(res.lines.map(function (line) { return d3plusText.textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
         : 0;
-      res.height = res.lines.length ? Math.ceil(res.lines.length * (lh + 1)) : 0;
+      res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
       res.offset = 0;
       if (res.width % 2) { res.width++; }
 
@@ -421,15 +477,15 @@ var Axis = (function (BaseClass$$1) {
     else { this._space = this._size; }
 
     var tBuff = this._shape === "Line" ? 0 : hBuff;
-    this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    var bounds = this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
     var obj;
 
-    this._margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, tBuff]) : this[("_" + height)] - this._margin[this._orient] - this._outerBounds[height] - p * 2 - hBuff;
-    this._margin[this._orient] += hBuff;
-    this._outerBounds[height] += this._margin[opposite] + this._margin[this._orient];
-    this._outerBounds[y] = this._align === "start" ? this._padding
-                         : this._align === "end" ? this[("_" + height)] - this._outerBounds[height] - this._padding
-                         : this[("_" + height)] / 2 - this._outerBounds[height] / 2;
+    margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, tBuff]) : this[("_" + height)] - margin[this._orient] - bounds[height] - p * 2 - hBuff;
+    margin[this._orient] += hBuff;
+    bounds[height] += margin[opposite] + margin[this._orient];
+    bounds[y] = this._align === "start" ? this._padding
+      : this._align === "end" ? this[("_" + height)] - bounds[height] - this._padding
+      : this[("_" + height)] / 2 - bounds[height] / 2;
 
     var group = d3plusCommon.elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
     this._group = group;
@@ -451,7 +507,7 @@ var Axis = (function (BaseClass$$1) {
         .call(this._gridPosition.bind(this));
 
     var labelHeight = d3Array.max(textData, function (t) { return t.height; }) || 0,
-          labelWidth = horizontal ? this._space : this._outerBounds.width - this._margin[this._position.opposite] - hBuff - this._margin[this._orient] + p;
+          labelWidth = horizontal ? this._space : bounds.width - margin[this._position.opposite] - hBuff - margin[this._orient] + p;
 
     var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); });
 
@@ -468,8 +524,8 @@ var Axis = (function (BaseClass$$1) {
           var next = textData.filter(function (td) { return td.d === arr[i + 1]; });
           if (next.length && next[0].offset === labelOffset) { inline = true; }
         }
-        var offset = this$1._margin[opposite],
-              position = flip ? this$1._outerBounds[y] + this$1._outerBounds[height] - offset : this$1._outerBounds[y] + offset,
+        var offset = margin[opposite],
+              position = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset,
               size = (hBuff + labelOffset) * (flip ? -1 : 1);
 
         var space = inline ? labelWidth : labelWidth * 1.9;
@@ -517,18 +573,17 @@ var Axis = (function (BaseClass$$1) {
         .attr("opacity", 1)
         .call(this._barPosition.bind(this));
 
-    new d3plusText.TextBox()
+    this._titleClass
       .data(this._title ? [{text: this._title}] : [])
       .duration(this._duration)
-      .height(this._outerBounds.height)
+      .height(margin[this._orient])
       .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
       .select(d3plusCommon.elem("g.d3plus-Axis-title", {parent: group}).node())
       .text(function (d) { return d.text; })
-      .textAnchor("middle")
-      .verticalAlign(this._orient === "bottom" ? "bottom" : "top")
-      .width(this._outerBounds[width])
-      .x(horizontal ? this._outerBounds.x : this._orient === "left" ? this._outerBounds.x + this._margin[this._orient] / 2 - this._outerBounds[width] / 2 : this._outerBounds.x + this._outerBounds.width - this._margin[this._orient] / 2 - this._outerBounds[width] / 2)
-      .y(horizontal ? this._outerBounds.y : this._outerBounds.y - this._margin[this._orient] / 2 + this._outerBounds[width] / 2)
+      .verticalAlign("middle")
+      .width(bounds[width])
+      .x(horizontal ? bounds.x : this._orient === "left" ? bounds.x + margin[this._orient] / 2 - bounds[width] / 2 : bounds.x + bounds.width - margin[this._orient] / 2 - bounds[width] / 2)
+      .y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom + p : bounds.y : bounds.y - margin[this._orient] / 2 + bounds[width] / 2)
       .config(this._titleConfig)
       .render();
 
@@ -542,7 +597,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
+      @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance.
       @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
       @chainable
   */
@@ -552,7 +607,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the axis line style and returns the current class instance. If *value* is not specified, returns the current axis line style.
+      @desc If *value* is specified, sets the axis line style and returns the current class instance.
       @param {Object} [*value*]
       @chainable
   */
@@ -562,7 +617,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance. If *value* is not specified, returns the current scale domain.
+      @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance.
       @param {Array} [*value* = [0, 10]]
       @chainable
   */
@@ -572,7 +627,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance. If *value* is not specified, returns the current duration.
+      @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance.
       @param {Number} [*value* = 600]
       @chainable
   */
@@ -582,7 +637,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the grid values of the axis and returns the current class instance. If *value* is not specified, returns the current grid values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
+      @desc If *value* is specified, sets the grid values of the axis and returns the current class instance.
       @param {Array} [*value*]
       @chainable
   */
@@ -592,7 +647,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the grid style of the axis and returns the current class instance. If *value* is not specified, returns the current grid style.
+      @desc If *value* is specified, sets the grid style of the axis and returns the current class instance.
       @param {Object} [*value*]
       @chainable
   */
@@ -602,7 +657,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the grid size of the axis and returns the current class instance. If *value* is not specified, returns the current grid size, which defaults to taking up as much space as available.
+      @desc If *value* is specified, sets the grid size of the axis and returns the current class instance.
       @param {Number} [*value* = undefined]
       @chainable
   */
@@ -612,7 +667,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the overall height of the axis and returns the current class instance. If *value* is not specified, returns the current height value.
+      @desc If *value* is specified, sets the overall height of the axis and returns the current class instance.
       @param {Number} [*value* = 100]
       @chainable
   */
@@ -622,7 +677,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance. If *value* is not specified, returns the current visible tick labels, which defaults to showing all labels.
+      @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance.
       @param {Array} [*value*]
       @chainable
   */
@@ -669,7 +724,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance. If *value* is not specified, returns the current padding value.
+      @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance.
       @param {Number} [*value* = 10]
       @chainable
   */
@@ -679,7 +734,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance. If *value* is not specified, returns the current inner padding value.
+      @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance.
       @param {Number} [*value* = 0.1]
       @chainable
   */
@@ -689,7 +744,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance. If *value* is not specified, returns the current outer padding value.
+      @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance.
       @param {Number} [*value* = 0.1]
       @chainable
   */
@@ -699,7 +754,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value. If *value* is not specified, returns the current scale range.
+      @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value.
       @param {Array} [*value*]
       @chainable
   */
@@ -709,7 +764,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the scale of the axis and returns the current class instance. If *value* is not specified, returns the current this._d3Scale
+      @desc If *value* is specified, sets the scale of the axis and returns the current class instance.
       @param {String} [*value* = "linear"]
       @chainable
   */
@@ -729,7 +784,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the tick shape constructor and returns the current class instance. If *value* is not specified, returns the current shape.
+      @desc If *value* is specified, sets the tick shape constructor and returns the current class instance.
       @param {String} [*value* = "Line"]
       @chainable
   */
@@ -739,7 +794,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the tick style of the axis and returns the current class instance. If *value* is not specified, returns the current tick style.
+      @desc If *value* is specified, sets the tick style of the axis and returns the current class instance.
       @param {Object} [*value*]
       @chainable
   */
@@ -749,7 +804,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the tick formatter and returns the current class instance. If *value* is not specified, returns the current tick formatter, which by default is retrieved from the [d3-scale](https://github.com/d3/d3-scale#continuous_tickFormat).
+      @desc If *value* is specified, sets the tick formatter and returns the current class instance.
       @param {Function} [*value*]
       @chainable
   */
@@ -759,7 +814,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the tick values of the axis and returns the current class instance. If *value* is not specified, returns the current tick values, which by default are interpreted based on the [domain](#Axis.domain) and the available [width](#Axis.width).
+      @desc If *value* is specified, sets the tick values of the axis and returns the current class instance.
       @param {Array} [*value*]
       @chainable
   */
@@ -769,7 +824,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the tick size of the axis and returns the current class instance. If *value* is not specified, returns the current tick size.
+      @desc If *value* is specified, sets the tick size of the axis and returns the current class instance.
       @param {Number} [*value* = 5]
       @chainable
   */
@@ -779,7 +834,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the title of the axis and returns the current class instance. If *value* is not specified, returns the current title.
+      @desc If *value* is specified, sets the title of the axis and returns the current class instance.
       @param {String} [*value*]
       @chainable
   */
@@ -789,7 +844,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance. If *value* is not specified, returns the current title configuration.
+      @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance.
       @param {Object} [*value*]
       @chainable
   */
@@ -799,7 +854,7 @@ var Axis = (function (BaseClass$$1) {
 
   /**
       @memberof Axis
-      @desc If *value* is specified, sets the overall width of the axis and returns the current class instance. If *value* is not specified, returns the current width value.
+      @desc If *value* is specified, sets the overall width of the axis and returns the current class instance.
       @param {Number} [*value* = 400]
       @chainable
   */
