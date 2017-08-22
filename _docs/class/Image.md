@@ -85,7 +85,7 @@ This is a static method of [<code>Image</code>](#Image), and is chainable with o
 
 <a name="Image.height" href="#Image.height">#</a> Image.**height**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L133)
 
-If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance.
 
 
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
@@ -100,7 +100,7 @@ function(d) {
 
 <a name="Image.id" href="#Image.id">#</a> Image.**id**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L147)
 
-If *value* is specified, sets the id accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current id accessor. This is useful if you want to duplicate the same image.
+If *value* is specified, sets the id accessor to the specified function and returns the current class instance.
 
 
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
@@ -115,7 +115,7 @@ function(d) {
 
 <a name="Image.pointerEvents" href="#Image.pointerEvents">#</a> Image.**pointerEvents**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L157)
 
-If *value* is specified, sets the pointer-events accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current pointer-events accessor.
+If *value* is specified, sets the pointer-events accessor to the specified function or string and returns the current class instance.
 
 
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
@@ -131,7 +131,7 @@ This is a static method of [<code>Image</code>](#Image), and is chainable with o
 
 <a name="Image.url" href="#Image.url">#</a> Image.**url**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L181)
 
-If *value* is specified, sets the URL accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current URL accessor.
+If *value* is specified, sets the URL accessor to the specified function and returns the current class instance.
 
 
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
@@ -146,7 +146,7 @@ function(d) {
 
 <a name="Image.width" href="#Image.width">#</a> Image.**width**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L195)
 
-If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance.
 
 
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
@@ -161,7 +161,7 @@ function(d) {
 
 <a name="Image.x" href="#Image.x">#</a> Image.**x**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L209)
 
-If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
+If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance.
 
 
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
@@ -176,7 +176,7 @@ function(d) {
 
 <a name="Image.y" href="#Image.y">#</a> Image.**y**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L223)
 
-If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
+If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance.
 
 
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.

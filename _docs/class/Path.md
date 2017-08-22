@@ -19,7 +19,7 @@ This is a global class, and extends all of the methods and functionality of [<co
 
 <a name="new_Path_new" href="#new_Path_new">#</a> new **Path**()
 
-Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
+Creates SVG Paths based on an array of data.
 
 
 
@@ -35,7 +35,7 @@ This is a static method of [<code>Path</code>](#Path), and is chainable with oth
 
 <a name="Path.d" href="#Path.d">#</a> Path.**d**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Path.js#L83)
 
-If *value* is specified, sets the "d" attribute accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current "d" attribute accessor.
+If *value* is specified, sets the "d" attribute accessor to the specified function or number and returns the current class instance.
 
 
 This is a static method of [<code>Path</code>](#Path), and is chainable with other methods of this Class.

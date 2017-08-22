@@ -36,7 +36,7 @@ This is a static method of [<code>Rect</code>](#Rect), and is chainable with oth
 
 <a name="Rect.height" href="#Rect.height">#</a> Rect.**height**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Rect.js#L90)
 
-If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current height accessor.
+If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance.
 
 
 This is a static method of [<code>Rect</code>](#Rect), and is chainable with other methods of this Class.
@@ -49,9 +49,9 @@ function(d) {
 ```
 
 
-<a name="Rect.width" href="#Rect.width">#</a> Rect.**width**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Rect.js#L106)
+<a name="Rect.width" href="#Rect.width">#</a> Rect.**width**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Rect.js#L104)
 
-If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current width accessor.
+If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance.
 
 
 This is a static method of [<code>Rect</code>](#Rect), and is chainable with other methods of this Class.
