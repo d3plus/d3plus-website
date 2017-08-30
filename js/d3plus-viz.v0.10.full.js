@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.2
+  d3plus-viz v0.10.3
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -29803,7 +29803,7 @@ var Viz = (function (BaseClass) {
     };
 
     // set the default timeFilter if it has not been specified
-    if (this._time && this._timeFilter === void 0) {
+    if (this._time && this._timeFilter === void 0 && this._data.length) {
 
       var dates = this._data.map(this._time).map(date$2);
       var d = this._data[0], i = 0;
