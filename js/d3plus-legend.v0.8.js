@@ -1,13 +1,72 @@
 /*
-  d3plus-legend v0.8.9
+  d3plus-legend v0.8.10
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-interpolate'), require('d3-scale'), require('d3-selection'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
 	typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-interpolate', 'd3-scale', 'd3-selection', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Interpolate,global.d3Scale,global.d3Selection,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.shapes,global.d3plusText));
+	(factory((global.d3plus = {}),global.d3Array,global.d3Interpolate,global.d3Scale,global.d3Selection,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.shapes,global.d3plusText));
 }(this, (function (exports,d3Array,d3Interpolate,d3Scale,d3Selection,d3plusAxis,d3plusColor,d3plusCommon,shapes,d3plusText) { 'use strict';
 
 /**
@@ -646,7 +705,7 @@ var Legend = (function (BaseClass$$1) {
       labelBounds: function (dd, i, s) {
         var d = this$1._lineData[i],
               w = s.r !== void 0 ? s.r : s.width / 2;
-        return {width: d.width, height: d.height, x: w + this$1._padding, y: -d.height / 2};
+        return {width: d.width, height: d.height, x: w + this$1._padding, y: -d.height / 2 + (d.lh - d.s) / 2 + 1};
       },
       labelConfig: {
         fontColor: d3plusCommon.constant("#444"),
@@ -661,8 +720,8 @@ var Legend = (function (BaseClass$$1) {
         var s = this$1._shapeConfig.width;
         var y = this$1._lineData[i].y;
         var pad = this$1._align === "left" || this$1._align === "right" && this$1._direction === "column" ? 0 : this$1._align === "center"
-                  ? (this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }))) / 2
-                  : this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }));
+          ? (this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }))) / 2
+          : this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }));
         var prevWords = this$1._lineData.slice(0, i).filter(function (l) { return y === l.y; });
         return this$1._rowWidth(prevWords) + this$1._padding * (prevWords.length ? 2 : 0) +
                this$1._outerBounds.x + s(d, i) / 2 + pad;
@@ -674,11 +733,8 @@ var Legend = (function (BaseClass$$1) {
                d3Array.max(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return s(l, x); }))) / 2;
       }
     };
-    this._titleConfig = {
-      fontFamily: "Verdana",
-      fontSize: 12,
-      lineHeight: 13
-    };
+    this._titleClass = new d3plusText.TextBox();
+    this._titleConfig = {};
     this._verticalAlign = "middle";
     this._width = 400;
 
@@ -690,6 +746,7 @@ var Legend = (function (BaseClass$$1) {
 
   Legend.prototype._fetchConfig = function _fetchConfig (key, d, i) {
     var val = this._shapeConfig[key] || this._shapeConfig.labelConfig[key];
+    if (!val && key === "lineHeight") { return this._fetchConfig("fontSize", d, i) * 1.4; }
     return typeof val === "function" ? val(d, i) : val;
   };
 
@@ -717,7 +774,6 @@ var Legend = (function (BaseClass$$1) {
 
 
     if (this._select === void 0) { this.select(d3Selection.select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node()); }
-    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fetchConfig("fontSize", d, i) * 1.1; }; }
 
     // Shape <g> Group
     this._group = d3plusCommon.elem("g.d3plus-Legend", {parent: this._select});
@@ -725,9 +781,12 @@ var Legend = (function (BaseClass$$1) {
     var availableHeight = this._height;
     this._titleHeight = 0;
     if (this._title) {
-      var f = this._titleConfig.fontFamily,
-            lH = this._titleConfig.lineHeight,
-            s = this._titleConfig.fontSize;
+
+      var f = this._titleConfig.fontFamily || this._titleClass.fontFamily()(),
+            s = this._titleConfig.fontSize || this._titleClass.fontSize()();
+      var lH = lH = this._titleConfig.lineHeight || this._titleClass.lineHeight();
+      lH = lH ? lH() : s * 1.4;
+
       var res = d3plusText.textWrap()
         .fontFamily(f)
         .fontSize(s)
@@ -742,7 +801,7 @@ var Legend = (function (BaseClass$$1) {
     // Calculate Text Sizes
     this._lineData = this._data.map(function (d, i) {
       var f = this$1._fetchConfig("fontFamily", d, i),
-            lh = this$1._lineHeight(d, i),
+            lh = this$1._fetchConfig("lineHeight", d, i),
             s = this$1._fetchConfig("fontSize", d, i),
             shapeWidth = this$1._fetchConfig("width", d, i);
       var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
@@ -786,8 +845,8 @@ var Legend = (function (BaseClass$$1) {
         if (lines > maxLines) { return; }
 
         var wrappable = lines === 1 ? this._lineData.slice()
-                        : this._lineData.filter(function (d) { return d.width + d.shapeWidth + this$1._padding * (d.width ? 2 : 1) > availableWidth && d.words.length >= lines; })
-                            .sort(function (a, b) { return b.sentence.length - a.sentence.length; });
+          : this._lineData.filter(function (d) { return d.width + d.shapeWidth + this$1._padding * (d.width ? 2 : 1) > availableWidth && d.words.length >= lines; })
+              .sort(function (a, b) { return b.sentence.length - a.sentence.length; });
 
         if (wrappable.length && availableHeight > wrappable[0].height * lines) {
 
@@ -891,7 +950,7 @@ var Legend = (function (BaseClass$$1) {
     this._outerBounds.x = xOffset;
     this._outerBounds.y = yOffset;
 
-    new d3plusText.TextBox()
+    this._titleClass
       .data(this._title ? [{text: this._title}] : [])
       .duration(this._duration)
       .select(this._group.node())
@@ -917,7 +976,7 @@ var Legend = (function (BaseClass$$1) {
         data: d, i: i,
         id: this$1._id(d, i),
         label: this$1._lineData[i].width ? this$1._label(d, i) : false,
-        lH: this$1._lineHeight(d, i),
+        lH: this$1._fetchConfig("lineHeight", d, i),
         shape: this$1._shape(d, i)
       };
 
