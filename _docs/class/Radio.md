@@ -34,7 +34,7 @@ Creates a set of HTML radio input elements.
 
 
 
-<a name="Radio.data" href="#Radio.data">#</a> Radio.**data**([*value*]) [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L96)
+<a name="Radio.data" href="#Radio.data">#</a> Radio.**data**([*value*]) [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L98)
 
 Defines the array of values to be created as <button> tags. If no value is passed, the current array is returned.
 

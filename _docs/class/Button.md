@@ -28,7 +28,7 @@ Creates a set of HTML radio input elements.
 
 
 
-<a name="Button.render" href="#Button.render">#</a> Button.**render**() [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L38)
+<a name="Button.render" href="#Button.render">#</a> Button.**render**() [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L40)
 
 Renders the element to the page.
 
@@ -36,7 +36,7 @@ Renders the element to the page.
 This is a static method of [<code>Button</code>](#Button), and is chainable with other methods of this Class.
 
 
-<a name="Button.buttonStyle" href="#Button.buttonStyle">#</a> Button.**buttonStyle**([*value*]) [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L76)
+<a name="Button.buttonStyle" href="#Button.buttonStyle">#</a> Button.**buttonStyle**([*value*]) [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L78)
 
 Sets the css styles for the <input type="radio"> elements.
 
@@ -44,7 +44,7 @@ Sets the css styles for the <input type="radio"> elements.
 This is a static method of [<code>Button</code>](#Button), and is chainable with other methods of this Class.
 
 
-<a name="Button.container" href="#Button.container">#</a> Button.**container**([*selector*]) [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L86)
+<a name="Button.container" href="#Button.container">#</a> Button.**container**([*selector*]) [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L88)
 
 If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element, which is `undefined` by default.
 
@@ -52,7 +52,7 @@ If *selector* is specified, sets the SVG container element to the specified d3 s
 This is a static method of [<code>Button</code>](#Button), and is chainable with other methods of this Class.
 
 
-<a name="Button.text" href="#Button.text">#</a> Button.**text**([*value*]) [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L106)
+<a name="Button.text" href="#Button.text">#</a> Button.**text**([*value*]) [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L108)
 
 Sets the inner text for each <button> element.
 
@@ -60,7 +60,7 @@ Sets the inner text for each <button> element.
 This is a static method of [<code>Button</code>](#Button), and is chainable with other methods of this Class.
 
 
-<a name="Button.value" href="#Button.value">#</a> Button.**value**([*value*]) [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L116)
+<a name="Button.value" href="#Button.value">#</a> Button.**value**([*value*]) [<>](https://github.com/d3plus/d3plus-form/blob/master/src/Button.js#L118)
 
 Sets the value for each <button> element.
 
