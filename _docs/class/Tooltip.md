@@ -8,10 +8,10 @@ kind: class
 ### **Tooltip** [<>](https://github.com/d3plus/d3plus-tooltip/blob/master/src/Tooltip.js#L6)
 
 
-This is a global class, and extends all of the methods and functionality of [<code>BaseClass</code>](#BaseClass).
+This is a global class, and extends all of the methods and functionality of <code>BaseClass</code>.
 
 
-* [Tooltip](#Tooltip) ⇐ [<code>BaseClass</code>](#BaseClass)
+* [Tooltip](#Tooltip) ⇐ <code>BaseClass</code>
     * [new Tooltip()](#new_Tooltip_new)
     * [.background([*value*])](#Tooltip.background)
     * [.body([*value*])](#Tooltip.body)
@@ -80,8 +80,8 @@ default styles
 
 ```js
 {
-  "font-family": "Verdana",
-  "font-size": "10px",
+  "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+  "font-size": "12px",
   "font-weight": "400"
 }
 ```
@@ -152,8 +152,8 @@ default styles
 
 ```js
 {
-  "font-family": "Verdana",
-  "font-size": "10px",
+  "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+  "font-size": "12px",
   "font-weight": "400"
 }
 ```
@@ -240,8 +240,8 @@ default styles
 
 ```js
 {
-  "font-family": "Verdana",
-  "font-size": "10px",
+  "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+  "font-size": "12px",
   "font-weight": "600",
   "text-align": "center"
 }
@@ -266,8 +266,8 @@ default styles
 
 ```js
 {
-  "font-family": "Verdana",
-  "font-size": "10px",
+  "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+  "font-size": "12px",
   "font-weight": "600",
   "text-align": "center"
 }
@@ -299,8 +299,8 @@ default styles
 
 ```js
 {
-  "font-family": "Verdana",
-  "font-size": "12px",
+  "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+  "font-size": "14px",
   "font-weight": "600",
   "padding-bottom": "5px"
 }
