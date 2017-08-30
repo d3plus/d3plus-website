@@ -26,7 +26,7 @@ Creates a priestley timeline based on an array of data.
 
 
 
-<a name="Priestley.axisConfig" href="#Priestley.axisConfig">#</a> Priestley.**axisConfig**([*value*]) [<>](https://github.com/d3plus/d3plus-priestley/blob/master/src/Priestley.js#L138)
+<a name="Priestley.axisConfig" href="#Priestley.axisConfig">#</a> Priestley.**axisConfig**([*value*]) [<>](https://github.com/d3plus/d3plus-priestley/blob/master/src/Priestley.js#L140)
 
 If *value* is specified, sets the config method for the axis and returns the current class instance. If *value* is not specified, returns the current axis configuration.
 
@@ -34,7 +34,7 @@ If *value* is specified, sets the config method for the axis and returns the cur
 This is a static method of [<code>Priestley</code>](#Priestley), and is chainable with other methods of this Class.
 
 
-<a name="Priestley.end" href="#Priestley.end">#</a> Priestley.**end**([*value*]) [<>](https://github.com/d3plus/d3plus-priestley/blob/master/src/Priestley.js#L148)
+<a name="Priestley.end" href="#Priestley.end">#</a> Priestley.**end**([*value*]) [<>](https://github.com/d3plus/d3plus-priestley/blob/master/src/Priestley.js#L150)
 
 If *value* is specified, sets the end accessor to the specified function or key and returns the current class instance. If *value* is not specified, returns the current end accessor.
 
@@ -42,7 +42,7 @@ If *value* is specified, sets the end accessor to the specified function or key 
 This is a static method of [<code>Priestley</code>](#Priestley), and is chainable with other methods of this Class.
 
 
-<a name="Priestley.start" href="#Priestley.start">#</a> Priestley.**start**([*value*]) [<>](https://github.com/d3plus/d3plus-priestley/blob/master/src/Priestley.js#L166)
+<a name="Priestley.start" href="#Priestley.start">#</a> Priestley.**start**([*value*]) [<>](https://github.com/d3plus/d3plus-priestley/blob/master/src/Priestley.js#L168)
 
 If *value* is specified, sets the start accessor to the specified function or key and returns the current class instance. If *value* is not specified, returns the current start accessor.
 
