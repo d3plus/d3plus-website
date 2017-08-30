@@ -1,10 +1,12 @@
 ---
-title: Getting Started
+title: Simple Priestley Diagram
 width: 990
 height: 400
+time: 1504130403497
+date: August 30, 2017
 ---
 
-# Getting Started
+# Simple Priestley Diagram
 
 Priestly Timelines (named after 18th-century English theologian [Joseph Priestly](https://en.wikipedia.org/wiki/Joseph_Priestley)), show the duration of multiple data points over time by stacking blocks to best fit. Given data with unique IDs and start and end dates:
 

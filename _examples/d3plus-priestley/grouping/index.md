@@ -1,10 +1,12 @@
 ---
-title: Grouping into Lanes
+title: Grouping Priestley Bars into Lanes
 width: 990
 height: 400
+time: 1504130403497
+date: August 30, 2017
 ---
 
-# Grouping into Lanes
+# Grouping Priestley Bars into Lanes
 
 If the data provided has inherent groupings, as such:
 
