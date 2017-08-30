@@ -5,7 +5,7 @@ kind: function
 
   <a name="dom2canvas"></a>
 
-### d3plus.**dom2canvas**(elem, [options]) [<>](https://github.com/d3plus/d3plus-export/blob/master/src/dom2canvas.js#L41)
+### d3plus.**dom2canvas**(elem, [options]) [<>](https://github.com/d3plus/d3plus-export/blob/master/src/dom2canvas.js#L43)
 
 Renders HTML/SVG elements to a shared canvas.
 
