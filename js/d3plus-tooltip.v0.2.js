@@ -1,13 +1,72 @@
 /*
-  d3plus-tooltip v0.2.5
+  d3plus-tooltip v0.2.6
   A javascript-only tooltip.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3plus-common')) :
 	typeof define === 'function' && define.amd ? define('d3plus-tooltip', ['exports', 'd3-selection', 'd3-transition', 'd3plus-common'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.d3plusCommon));
+	(factory((global.d3plus = {}),global.d3Selection,global.d3Transition,global.d3plusCommon));
 }(this, (function (exports,d3Selection,d3Transition,d3plusCommon) { 'use strict';
 
 /**
@@ -22,8 +81,8 @@ var Tooltip = (function (BaseClass$$1) {
     this._background = d3plusCommon.constant("rgba(255, 255, 255, 0.75)");
     this._body = d3plusCommon.accessor("body", "");
     this._bodyStyle = {
-      "font-family": "Verdana",
-      "font-size": "10px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "12px",
       "font-weight": "400"
     };
     this._border = d3plusCommon.constant("1px solid rgba(0, 0, 0, 0.1)");
@@ -33,8 +92,8 @@ var Tooltip = (function (BaseClass$$1) {
     this._duration = d3plusCommon.constant(200);
     this._footer = d3plusCommon.accessor("footer", "");
     this._footerStyle = {
-      "font-family": "Verdana",
-      "font-size": "10px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "12px",
       "font-weight": "400"
     };
     this._height = d3plusCommon.constant("auto");
@@ -49,21 +108,21 @@ var Tooltip = (function (BaseClass$$1) {
     };
     this._tbody = [];
     this._tbodyStyle = {
-      "font-family": "Verdana",
-      "font-size": "10px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "12px",
       "text-align": "center"
     };
     this._thead = [];
     this._theadStyle = {
-      "font-family": "Verdana",
-      "font-size": "10px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "12px",
       "font-weight": "600",
       "text-align": "center"
     };
     this._title = d3plusCommon.accessor("title", "");
     this._titleStyle = {
-      "font-family": "Verdana",
-      "font-size": "12px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
       "font-weight": "600"
     };
     this._translate = function (d) { return [d.x, d.y]; };
@@ -219,8 +278,8 @@ function value(d) {
       @param {Object} [*value*]
       @example <caption>default styles</caption>
 {
-  "font-family": "Verdana",
-  "font-size": "10px",
+  "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+  "font-size": "12px",
   "font-weight": "400"
 }
   */
@@ -292,8 +351,8 @@ function value(d) {
       @param {Object} [*value*]
       @example <caption>default styles</caption>
 {
-  "font-family": "Verdana",
-  "font-size": "10px",
+  "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+  "font-size": "12px",
   "font-weight": "400"
 }
   */
@@ -379,8 +438,8 @@ function value(d, i) {
       @param {Object} [*value*]
       @example <caption>default styles</caption>
 {
-  "font-family": "Verdana",
-  "font-size": "10px",
+  "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+  "font-size": "12px",
   "font-weight": "600",
   "text-align": "center"
 }
@@ -404,8 +463,8 @@ function value(d, i) {
       @param {Object} [*value*]
       @example <caption>default styles</caption>
 {
-  "font-family": "Verdana",
-  "font-size": "10px",
+  "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+  "font-size": "12px",
   "font-weight": "600",
   "text-align": "center"
 }
@@ -433,8 +492,8 @@ function value(d) {
       @param {Object} [*value*]
       @example <caption>default styles</caption>
 {
-  "font-family": "Verdana",
-  "font-size": "12px",
+  "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+  "font-size": "14px",
   "font-weight": "600",
   "padding-bottom": "5px"
 }
