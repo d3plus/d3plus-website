@@ -42,7 +42,7 @@ Creates an SVG scale based on an array of data. If *data* is specified, immediat
 
 
 
-<a name="Legend.render" href="#Legend.render">#</a> Legend.**render**([*callback*]) [<>](https://github.com/d3plus/d3plus-legend/blob/master/src/Legend.js#L112)
+<a name="Legend.render" href="#Legend.render">#</a> Legend.**render**([*callback*]) [<>](https://github.com/d3plus/d3plus-legend/blob/master/src/Legend.js#L110)
 
 Renders the current Legend to the page. If a *callback* is specified, it will be called once the legend is done drawing.
 
