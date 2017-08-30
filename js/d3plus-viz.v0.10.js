@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.1
+  d3plus-viz v0.10.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -880,7 +880,7 @@ var Viz = (function (BaseClass$$1) {
 
     this._message = true;
     this._messageClass = new Message();
-    this._messageHTML = d3plusCommon.constant("\n    <div style=\"font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
+    this._messageHTML = d3plusCommon.constant("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
     this._messageMask = "rgba(0, 0, 0, 0.1)";
     this._messageStyle = {
       "left": "0px",

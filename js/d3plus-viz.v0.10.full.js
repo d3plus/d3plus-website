@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.1
+  d3plus-viz v0.10.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -28371,6 +28371,24 @@ function build(opts) {
 
 var canvgBrowser = canvg;
 
+/**
+    @function svgPresets
+    @desc Adds SVG default attributes to a d3 selection in order to redner it properly.
+    @param {Selection} selection
+*/
+var svgPresets = function(selection) {
+
+  // sets "stroke-width" attribute to `0` if not defined
+  var strokeWidth = selection.attr("stroke-width");
+  selection.attr("stroke-width", !strokeWidth ? 0 : strokeWidth);
+
+  // sets "fill-opacity" attribute to `0` if fill is "transparent" or "none"
+  var transparent = ["none", "transparent"].includes(selection.attr("fill"));
+  var fillOpacity = selection.attr("fill-opacity");
+  selection.attr("fill-opacity", transparent ? 0 : fillOpacity);
+
+};
+
 var defaultOptions = {
   background: false,
   callback: function () {},
@@ -28431,11 +28449,6 @@ var dom2canvas = function(elem, options) {
   options = Object.assign({}, defaultOptions, options);
   var IE = new RegExp(/(MSIE|Trident\/|Edge\/)/i).test(navigator.userAgent);
   var ratio = window ? window.devicePixelRatio || 1 : 1;
-
-  function strokeWidth(selection) {
-    var stroke = selection.attr("stroke-width");
-    selection.attr("stroke-width", !stroke ? 0 : stroke);
-  }
 
   var reference = elem[0];
   if (reference.constructor === Object) { reference = reference.element; }
@@ -28546,7 +28559,7 @@ var dom2canvas = function(elem, options) {
     else if (tag === "defs") { return; }
     else if (tag === "text") {
       var elem = this.cloneNode(true);
-      select(elem).call(strokeWidth);
+      select(elem).call(svgPresets);
       layers.push(Object.assign({}, transform, {type: "svg", value: elem}));
     }
     else if (["image", "img"].includes(tag)) {
@@ -28611,11 +28624,8 @@ var dom2canvas = function(elem, options) {
       layers.push(data$1);
       html2canvas(this, {
         allowTaint: true,
-        background: undefined,
         canvas: tempCanvas,
         height: height,
-        letterRendering: true,
-        taintTest: false,
         width: width
       }).then(function (c) {
         data$1.value = c;
@@ -28627,7 +28637,7 @@ var dom2canvas = function(elem, options) {
 
       var elem$1 = this.cloneNode(true);
       select(elem$1).selectAll("*").each(function() {
-        select(this).call(strokeWidth);
+        select(this).call(svgPresets);
         if (select(this).attr("opacity") === "0") { this.parentNode.removeChild(this); }
       });
 
@@ -28659,7 +28669,7 @@ var dom2canvas = function(elem, options) {
         var y$3 = ref$1[2];
         if (select(elem$2).attr("transform")) { select(elem$2).attr("transform", ("scale(" + scale$1 + ")translate(" + (x$3 + transform.x) + "," + (y$3 + transform.y) + ")")); }
       }
-      select(elem$2).call(strokeWidth);
+      select(elem$2).call(svgPresets);
 
       var fill = select(elem$2).attr("fill");
       var defFill = fill && fill.indexOf("url") === 0;
@@ -29678,7 +29688,7 @@ var Viz = (function (BaseClass) {
 
     this._message = true;
     this._messageClass = new Message();
-    this._messageHTML = constant$4("\n    <div style=\"font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
+    this._messageHTML = constant$4("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
     this._messageMask = "rgba(0, 0, 0, 0.1)";
     this._messageStyle = {
       "left": "0px",
