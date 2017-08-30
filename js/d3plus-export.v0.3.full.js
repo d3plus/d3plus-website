@@ -1,13 +1,72 @@
 /*
-  d3plus-export v0.3.0
+  d3plus-export v0.3.1
   Export methods for transforming and downloading SVG.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define('d3plus-export', ['exports'], factory) :
-	(factory((global.d3plus = global.d3plus || {})));
+	(factory((global.d3plus = {})));
 }(this, (function (exports) { 'use strict';
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -30,7 +89,7 @@ var html2canvas = createCommonjsModule(function (module, exports) {
   Released under  License
 */
 
-(function(f){{module.exports=f();}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof commonjsRequire=="function"&&commonjsRequire;if(!u&&a){ return a(o,!0); }if(i){ return i(o,!0); }var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r);}return n[o].exports}var i=typeof commonjsRequire=="function"&&commonjsRequire;for(var o=0;o<r.length;o++){ s(r[o]); }return s})({1:[function(_dereq_,module,exports){
+(function(f){{module.exports=f();}})(function(){var define;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof commonjsRequire=="function"&&commonjsRequire;if(!u&&a){ return a(o,!0); }if(i){ return i(o,!0); }var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r);}return n[o].exports}var i=typeof commonjsRequire=="function"&&commonjsRequire;for(var o=0;o<r.length;o++){ s(r[o]); }return s})({1:[function(_dereq_,module,exports){
 (function (global){
 /*! https://mths.be/punycode v1.4.0 by @mathias */
 (function(root) {
@@ -546,9 +605,7 @@ var html2canvas = createCommonjsModule(function (module, exports) {
 		typeof define.amd == 'object' &&
 		define.amd
 	) {
-		define('punycode', function() {
-			return punycode;
-		});
+		
 	} else if (freeExports && freeModule) {
 		if (module.exports == freeExports) {
 			// in Node.js, io.js, or RingoJS v0.8.0+
@@ -1010,12 +1067,6 @@ var html2canvasExport = (typeof(document) === "undefined" || typeof(Object.creat
 } : html2canvas;
 
 module.exports = html2canvasExport;
-
-if (typeof(define) === 'function' && define.amd) {
-    define('html2canvas', [], function() {
-        return html2canvasExport;
-    });
-}
 
 function renderDocument(document, options, windowWidth, windowHeight, html2canvasIndex) {
     return createWindowClone(document, document, windowWidth, windowHeight, options, document.defaultView.pageXOffset, document.defaultView.pageYOffset).then(function(container) {
@@ -3577,7 +3628,7 @@ module.exports = XHR;
 	http://www.phpied.com/rgb-color-parser-in-javascript/
 */
 
-var index$1 = function(color_string) {
+var rgbcolor = function(color_string) {
     var this$1 = this;
 
     this.ok = false;
@@ -3965,7 +4016,6 @@ function blur( pixels, width, height, radius )
 	pr, pg, pb, pa, rbs;
 			
 	var div = radius + radius + 1;
-	var w4 = width << 2;
 	var widthMinus1  = width - 1;
 	var heightMinus1 = height - 1;
 	var radiusPlus1  = radius + 1;
@@ -4198,7 +4248,7 @@ function BlurStack()
 	this.next = null;
 }
 
-var index$3 = blur;
+var stackblur = blur;
 
 //[4]   	NameStartChar	   ::=   	":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
 //[4a]   	NameChar	   ::=   	NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
@@ -4557,7 +4607,7 @@ function parseElementStartPart(source,start,el,currentNSMap,entityReplacer,error
 				//case S_ATTR:void();break;
 				//case S_ATTR_NOQUOT_VALUE:void();break;
 				case S_ATTR_SPACE:
-					var tagName =  el.tagName;
+					
 					if(currentNSMap[''] !== 'http://www.w3.org/1999/xhtml' || !attrName.match(/^(?:disabled|checked|selected)$/i)){
 						errorHandler.warning('attribute "'+attrName+'" missed value!! "'+attrName+'" instead2!!');
 					}
@@ -4753,7 +4803,6 @@ function parseInstruction(source,start,domBuilder){
 	if(end){
 		var match = source.substring(start,end).match(/^<\?(\S*)\s*([\s\S]*?)\s*$/);
 		if(match){
-			var len = match[0].length;
 			domBuilder.processingInstruction(match[1], match[2]) ;
 			return end+2;
 		}else{//error
@@ -5829,7 +5878,7 @@ function serializeToString(node,buf,isHTML,nodeFilter,visibleNamespaces){
 	switch(node.nodeType){
 	case ELEMENT_NODE:
 		if (!visibleNamespaces) { visibleNamespaces = []; }
-		var startVisibleNamespaces = visibleNamespaces.length;
+		
 		var attrs = node.attributes;
 		var len = attrs.length;
 		var child = node.firstChild;
@@ -6206,7 +6255,6 @@ DOMHandler.prototype = {
 	},
 	endElement:function(namespaceURI, localName, qName) {
 		var current = this.currentElement;
-		var tagName = current.tagName;
 		this.currentElement = current.parentNode;
 	},
 	startPrefixMapping:function(prefix, uri) {
@@ -6354,6 +6402,12 @@ function appendElement (hander,node) {
 	exports.DOMParser = DOMParser;
 //}
 });
+
+'use strict';
+
+ 
+ 
+ 
 
 /*
  * canvg.js - Javascript SVG parser and renderer on Canvas
@@ -6655,7 +6709,7 @@ function build(opts) {
 			svg.Property.prototype.addOpacity = function(opacityProp) {
 				var newValue = this.value;
 				if (opacityProp.value != null && opacityProp.value != '' && typeof this.value == 'string') { // can only add opacity to colors, not patterns
-					var color = new index$1(this.value);
+					var color = new rgbcolor(this.value);
 					if (color.ok) {
 						newValue = 'rgba(' + color.r + ', ' + color.g + ', ' + color.b + ', ' + opacityProp.numValue() + ')';
 					}
@@ -8434,8 +8488,8 @@ function build(opts) {
 
 		this.calcValue = function() {
 			var p = this.progress();
-			var from = new index$1(p.from.value);
-			var to = new index$1(p.to.value);
+			var from = new rgbcolor(p.from.value);
+			var to = new rgbcolor(p.to.value);
 
 			if (from.ok && to.ok) {
 				// tween color linearly
@@ -9236,7 +9290,7 @@ function build(opts) {
 		this.extraFilterDistance = this.blurRadius;
 
 		this.apply = function(ctx, x, y, width, height) {
-			if (typeof index$3.canvasRGBA == 'undefined') {
+			if (typeof stackblur.canvasRGBA == 'undefined') {
 				svg.log('ERROR: StackBlur.js must be included for blur to work');
 				return;
 			}
@@ -9245,7 +9299,7 @@ function build(opts) {
 			ctx.canvas.id = svg.UniqueId();
 			ctx.canvas.style.display = 'none';
 			document.body.appendChild(ctx.canvas);
-			index$3.canvasRGBA(ctx.canvas.id, x, y, width, height, this.blurRadius);
+			stackblur.canvasRGBA(ctx.canvas.id, x, y, width, height, this.blurRadius);
 			document.body.removeChild(ctx.canvas);
 		};
 	};
@@ -9485,7 +9539,7 @@ function build(opts) {
 	return svg;
 }
 
-var index = canvg;
+var canvgBrowser = canvg;
 
 var xhtml = "http://www.w3.org/1999/xhtml";
 
@@ -9551,7 +9605,7 @@ var matcher$1 = matcher;
 
 var filterEvents = {};
 
-var event$1 = null;
+
 
 if (typeof document !== "undefined") {
   var element$1 = document.documentElement;
@@ -9572,12 +9626,10 @@ function filterContextListener(listener, index, group) {
 
 function contextListener(listener, index, group) {
   return function(event1) {
-    var event0 = event$1; // Events can be reentrant (e.g., focus).
-    event$1 = event1;
     try {
       listener.call(this, this.__data__, index, group);
     } finally {
-      event$1 = event0;
+      
     }
   };
 }
@@ -9863,9 +9915,9 @@ var selection_exit = function() {
   return new Selection(this._exit || this._groups.map(sparse), this._parents);
 };
 
-var selection_merge = function(selection) {
+var selection_merge = function(selection$$1) {
 
-  for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
+  for (var groups0 = this._groups, groups1 = selection$$1._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
     for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
       if (node = group0[i] || group1[i]) {
         merge[i] = node;
@@ -10355,6 +10407,24 @@ var selectAll = function(selector) {
       : new Selection([selector == null ? [] : selector], root);
 };
 
+/**
+    @function svgPresets
+    @desc Adds SVG default attributes to a d3 selection in order to redner it properly.
+    @param {Selection} selection
+*/
+var svgPresets = function(selection) {
+
+  // sets "stroke-width" attribute to `0` if not defined
+  var strokeWidth = selection.attr("stroke-width");
+  selection.attr("stroke-width", !strokeWidth ? 0 : strokeWidth);
+
+  // sets "fill-opacity" attribute to `0` if fill is "transparent" or "none"
+  var transparent = ["none", "transparent"].includes(selection.attr("fill"));
+  var fillOpacity = selection.attr("fill-opacity");
+  selection.attr("fill-opacity", transparent ? 0 : fillOpacity);
+
+};
+
 var defaultOptions = {
   background: false,
   callback: function () {},
@@ -10415,11 +10485,6 @@ var dom2canvas = function(elem, options) {
   options = Object.assign({}, defaultOptions, options);
   var IE = new RegExp(/(MSIE|Trident\/|Edge\/)/i).test(navigator.userAgent);
   var ratio = window ? window.devicePixelRatio || 1 : 1;
-
-  function strokeWidth(selection$$1) {
-    var stroke = selection$$1.attr("stroke-width");
-    selection$$1.attr("stroke-width", !stroke ? 0 : stroke);
-  }
 
   var reference = elem[0];
   if (reference.constructor === Object) { reference = reference.element; }
@@ -10530,7 +10595,7 @@ var dom2canvas = function(elem, options) {
     else if (tag === "defs") { return; }
     else if (tag === "text") {
       var elem = this.cloneNode(true);
-      select(elem).call(strokeWidth);
+      select(elem).call(svgPresets);
       layers.push(Object.assign({}, transform, {type: "svg", value: elem}));
     }
     else if (["image", "img"].includes(tag)) {
@@ -10595,11 +10660,8 @@ var dom2canvas = function(elem, options) {
       layers.push(data$1);
       html2canvas(this, {
         allowTaint: true,
-        background: undefined,
         canvas: tempCanvas,
         height: height,
-        letterRendering: true,
-        taintTest: false,
         width: width
       }).then(function (c) {
         data$1.value = c;
@@ -10611,7 +10673,7 @@ var dom2canvas = function(elem, options) {
 
       var elem$1 = this.cloneNode(true);
       select(elem$1).selectAll("*").each(function() {
-        select(this).call(strokeWidth);
+        select(this).call(svgPresets);
         if (select(this).attr("opacity") === "0") { this.parentNode.removeChild(this); }
       });
 
@@ -10643,7 +10705,7 @@ var dom2canvas = function(elem, options) {
         var y$3 = ref$1[2];
         if (select(elem$2).attr("transform")) { select(elem$2).attr("transform", ("scale(" + scale$1 + ")translate(" + (x$3 + transform.x) + "," + (y$3 + transform.y) + ")")); }
       }
-      select(elem$2).call(strokeWidth);
+      select(elem$2).call(svgPresets);
 
       var fill = select(elem$2).attr("fill");
       var defFill = fill && fill.indexOf("url") === 0;
@@ -10755,7 +10817,7 @@ var dom2canvas = function(elem, options) {
 
           context.save();
           context.translate(options.padding, options.padding);
-          index(canvas, text, Object.assign({}, canvgOptions, {offsetX: layer.x, offsetY: layer.y}));
+          canvgBrowser(canvas, text, Object.assign({}, canvgOptions, {offsetX: layer.x, offsetY: layer.y}));
           context.restore();
 
           break;
@@ -10766,7 +10828,7 @@ var dom2canvas = function(elem, options) {
           context.translate(options.padding + clip.x, options.padding + clip.y);
           context.rect(0, 0, clip.width, clip.height);
           context.clip();
-          index(canvas, outer, Object.assign({}, canvgOptions, {offsetX: layer.x + clip.x, offsetY: layer.y + clip.y}));
+          canvgBrowser(canvas, outer, Object.assign({}, canvgOptions, {offsetX: layer.x + clip.x, offsetY: layer.y + clip.y}));
           context.restore();
           break;
 
@@ -10807,44 +10869,7 @@ var
 	, canvas_proto = HTMLCanvasElement && HTMLCanvasElement.prototype
 	, is_base64_regex = /\s*;\s*base64\s*(?:;|$)/i
 	, to_data_url = "toDataURL"
-	, base64_ranks
-	, decode_base64 = function(base64) {
-		var
-			  len = base64.length
-			, buffer = new Uint8Array(len / 4 * 3 | 0)
-			, i = 0
-			, outptr = 0
-			, last = [0, 0]
-			, state = 0
-			, save = 0
-			, rank
-			, code
-			, undef;
-		while (len--) {
-			code = base64.charCodeAt(i++);
-			rank = base64_ranks[code-43];
-			if (rank !== 255 && rank !== undef) {
-				last[1] = last[0];
-				last[0] = code;
-				save = (save << 6) | rank;
-				state++;
-				if (state === 4) {
-					buffer[outptr++] = save >>> 16;
-					if (last[1] !== 61 /* padding character */) {
-						buffer[outptr++] = save >>> 8;
-					}
-					if (last[0] !== 61 /* padding character */) {
-						buffer[outptr++] = save;
-					}
-					state = 0;
-				}
-			}
-		}
-		// 2/3 chance there's going to be some null bytes at the end, but that
-		// doesn't really matter with most image formats.
-		// If it somehow matters for you, truncate the buffer up outptr.
-		return buffer;
-	};
+	, base64_ranks;
 if (Uint8Array) {
 	base64_ranks = new Uint8Array([
 		  62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1
@@ -10854,57 +10879,7 @@ if (Uint8Array) {
 		, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
 	]);
 }
-if (HTMLCanvasElement && (!canvas_proto.toBlob || !canvas_proto.toBlobHD)) {
-	if (!canvas_proto.toBlob)
-	{ canvas_proto.toBlob = function(callback, type /*, ...args*/) {
-		  if (!type) {
-			type = "image/png";
-		} if (this.mozGetAsFile) {
-			callback(this.mozGetAsFile("canvas", type));
-			return;
-		} if (this.msToBlob && /^\s*image\/png\s*(?:$|;)/i.test(type)) {
-			callback(this.msToBlob());
-			return;
-		}
 
-		var
-			  args = Array.prototype.slice.call(arguments, 1)
-			, dataURI = this[to_data_url].apply(this, args)
-			, header_end = dataURI.indexOf(",")
-			, data = dataURI.substring(header_end + 1)
-			, is_base64 = is_base64_regex.test(dataURI.substring(0, header_end))
-			, blob;
-		if (Blob.fake) {
-			// no reason to decode a data: URI that's just going to become a data URI again
-			blob = new Blob;
-			if (is_base64) {
-				blob.encoding = "base64";
-			} else {
-				blob.encoding = "URI";
-			}
-			blob.data = data;
-			blob.size = data.length;
-		} else if (Uint8Array) {
-			if (is_base64) {
-				blob = new Blob([decode_base64(data)], {type: type});
-			} else {
-				blob = new Blob([decodeURIComponent(data)], {type: type});
-			}
-		}
-		callback(blob);
-	}; }
-
-	if (!canvas_proto.toBlobHD && canvas_proto.toDataURLHD) {
-		canvas_proto.toBlobHD = function() {
-			to_data_url = "toDataURLHD";
-			var blob = this.toBlob();
-			to_data_url = "toDataURL";
-			return blob;
-		};
-	} else {
-		canvas_proto.toBlobHD = canvas_proto.toBlob;
-	}
-}
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || commonjsGlobal.content || commonjsGlobal));
 
 var FileSaver = createCommonjsModule(function (module) {

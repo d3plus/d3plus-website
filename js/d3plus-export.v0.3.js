@@ -1,17 +1,94 @@
 /*
-  d3plus-export v0.3.0
+  d3plus-export v0.3.1
   Export methods for transforming and downloading SVG.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('html2canvas'), require('canvg-browser'), require('d3-selection'), require('canvas-toBlob'), require('file-saver')) :
 	typeof define === 'function' && define.amd ? define('d3plus-export', ['exports', 'html2canvas', 'canvg-browser', 'd3-selection', 'canvas-toBlob', 'file-saver'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.html2canvas,global.canvg,global.d3Selection,null,global.fileSaver));
+	(factory((global.d3plus = {}),global.html2canvas,global.canvg,global.d3Selection,null,global.fileSaver));
 }(this, (function (exports,html2canvas,canvg,d3Selection,canvasToBlob,fileSaver) { 'use strict';
 
-html2canvas = 'default' in html2canvas ? html2canvas['default'] : html2canvas;
-canvg = 'default' in canvg ? canvg['default'] : canvg;
+html2canvas = html2canvas && html2canvas.hasOwnProperty('default') ? html2canvas['default'] : html2canvas;
+canvg = canvg && canvg.hasOwnProperty('default') ? canvg['default'] : canvg;
+
+/**
+    @function svgPresets
+    @desc Adds SVG default attributes to a d3 selection in order to redner it properly.
+    @param {Selection} selection
+*/
+var svgPresets = function(selection) {
+
+  // sets "stroke-width" attribute to `0` if not defined
+  var strokeWidth = selection.attr("stroke-width");
+  selection.attr("stroke-width", !strokeWidth ? 0 : strokeWidth);
+
+  // sets "fill-opacity" attribute to `0` if fill is "transparent" or "none"
+  var transparent = ["none", "transparent"].includes(selection.attr("fill"));
+  var fillOpacity = selection.attr("fill-opacity");
+  selection.attr("fill-opacity", transparent ? 0 : fillOpacity);
+
+};
 
 var defaultOptions = {
   background: false,
@@ -73,11 +150,6 @@ var dom2canvas = function(elem, options) {
   options = Object.assign({}, defaultOptions, options);
   var IE = new RegExp(/(MSIE|Trident\/|Edge\/)/i).test(navigator.userAgent);
   var ratio = window ? window.devicePixelRatio || 1 : 1;
-
-  function strokeWidth(selection) {
-    var stroke = selection.attr("stroke-width");
-    selection.attr("stroke-width", !stroke ? 0 : stroke);
-  }
 
   var reference = elem[0];
   if (reference.constructor === Object) { reference = reference.element; }
@@ -188,7 +260,7 @@ var dom2canvas = function(elem, options) {
     else if (tag === "defs") { return; }
     else if (tag === "text") {
       var elem = this.cloneNode(true);
-      d3Selection.select(elem).call(strokeWidth);
+      d3Selection.select(elem).call(svgPresets);
       layers.push(Object.assign({}, transform, {type: "svg", value: elem}));
     }
     else if (["image", "img"].includes(tag)) {
@@ -253,11 +325,8 @@ var dom2canvas = function(elem, options) {
       layers.push(data$1);
       html2canvas(this, {
         allowTaint: true,
-        background: undefined,
         canvas: tempCanvas,
         height: height,
-        letterRendering: true,
-        taintTest: false,
         width: width
       }).then(function (c) {
         data$1.value = c;
@@ -269,7 +338,7 @@ var dom2canvas = function(elem, options) {
 
       var elem$1 = this.cloneNode(true);
       d3Selection.select(elem$1).selectAll("*").each(function() {
-        d3Selection.select(this).call(strokeWidth);
+        d3Selection.select(this).call(svgPresets);
         if (d3Selection.select(this).attr("opacity") === "0") { this.parentNode.removeChild(this); }
       });
 
@@ -301,7 +370,7 @@ var dom2canvas = function(elem, options) {
         var y$3 = ref$1[2];
         if (d3Selection.select(elem$2).attr("transform")) { d3Selection.select(elem$2).attr("transform", ("scale(" + scale$1 + ")translate(" + (x$3 + transform.x) + "," + (y$3 + transform.y) + ")")); }
       }
-      d3Selection.select(elem$2).call(strokeWidth);
+      d3Selection.select(elem$2).call(svgPresets);
 
       var fill = d3Selection.select(elem$2).attr("fill");
       var defFill = fill && fill.indexOf("url") === 0;
