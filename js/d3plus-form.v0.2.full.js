@@ -1,13 +1,72 @@
 /*
-  d3plus-form v0.2.4
+  d3plus-form v0.2.5
   Javascript rendered input forms.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define('d3plus-form', ['exports'], factory) :
-	(factory((global.d3plus = global.d3plus || {})));
+	(factory((global.d3plus = {})));
 }(this, (function (exports) { 'use strict';
 
 var xhtml = "http://www.w3.org/1999/xhtml";
@@ -74,7 +133,7 @@ var matcher$1 = matcher;
 
 var filterEvents = {};
 
-var event = null;
+
 
 if (typeof document !== "undefined") {
   var element$1 = document.documentElement;
@@ -95,12 +154,10 @@ function filterContextListener(listener, index, group) {
 
 function contextListener(listener, index, group) {
   return function(event1) {
-    var event0 = event; // Events can be reentrant (e.g., focus).
-    event = event1;
     try {
       listener.call(this, this.__data__, index, group);
     } finally {
-      event = event0;
+      
     }
   };
 }
@@ -386,9 +443,9 @@ var selection_exit = function() {
   return new Selection(this._exit || this._groups.map(sparse), this._parents);
 };
 
-var selection_merge = function(selection) {
+var selection_merge = function(selection$$1) {
 
-  for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
+  for (var groups0 = this._groups, groups1 = selection$$1._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
     for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
       if (node = group0[i] || group1[i]) {
         merge[i] = node;
@@ -894,75 +951,6 @@ var accessor = function(key, def) {
     @desc Detects if a variable is a javascript Object.
     @param {*} item
 */
-var isObject = function(item) {
-  return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
-};
-
-/**
-    @function assign
-    @desc A deeply recursive version of `Object.assign`.
-    @param {...Object} objects
-    @example <caption>this</caption>
-assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
-    @example <caption>returns this</caption>
-{id: "bar", group: "A", value: 20}
-*/
-function assign() {
-  var objects = [], len = arguments.length;
-  while ( len-- ) objects[ len ] = arguments[ len ];
-
-
-  var target = objects[0];
-  var loop = function ( i ) {
-
-    var source = objects[i];
-
-    Object.keys(source).forEach(function (prop) {
-
-      var value = source[prop];
-
-      if (isObject(value)) {
-
-        if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign(target[prop], value); }
-        else { target[prop] = value; }
-
-      }
-      else if (Array.isArray(value)) {
-
-        if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
-
-          var targetArray = target[prop];
-
-          value.forEach(function (sourceItem, itemIndex) {
-
-            if (itemIndex < targetArray.length) {
-              var targetItem = targetArray[itemIndex];
-
-              if (Object.is(targetItem, sourceItem)) { return; }
-
-              if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
-                targetArray[itemIndex] = assign(targetItem, sourceItem);
-              }
-              else { targetArray[itemIndex] = sourceItem; }
-
-            }
-            else { targetArray.push(sourceItem); }
-
-          });
-        }
-        else { target[prop] = value; }
-
-      }
-      else { target[prop] = value; }
-
-    });
-  };
-
-  for (var i = 1; i < objects.length; i++) loop( i );
-
-  return target;
-
-}
 
 /**
     @function attrize
@@ -980,6 +968,13 @@ function s() {
   return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
 }
 
+/**
+    @function uuid
+    @summary Returns a unique identifier.
+*/
+var uuid = function() {
+  return ("" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s()));
+};
 
 /**
     @class BaseClass
@@ -987,7 +982,7 @@ function s() {
 */
 var BaseClass = function BaseClass() {
   this._on = {};
-  this._uuid = "" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s());
+  this._uuid = uuid();
 };
 
 /**
@@ -1034,6 +1029,14 @@ BaseClass.prototype.on = function on (_, f) {
     @desc Finds the closest numeric value in an array.
     @param {Number} n The number value to use when searching the array.
     @param {Array} arr The array of values to test against.
+*/
+
+/**
+    @function configPrep
+    @desc Preps a config object for d3plus data, and optionally bubbles up a specific nested type. When using this function, you must bind a d3plus class' `this` context.
+    @param {Object} [config = this._shapeConfig] The configuration object to parse.
+    @param {String} [type = "shape"] The event classifier to user for "on" events. For example, the default event type of "shape" will apply all events in the "on" config object with that key, like "click.shape" and "mouseleave.shape", in addition to any gloval events like "click" and "mouseleave".
+    @param {String} [nest] An optional nested key to bubble up to the parent config level.
 */
 
 /**
@@ -1150,7 +1153,7 @@ var clockLast = 0;
 var clockNow = 0;
 var clockSkew = 0;
 var clock = typeof performance === "object" && performance.now ? performance : Date;
-var setFrame = typeof requestAnimationFrame === "function" ? requestAnimationFrame : function(f) { setTimeout(f, 17); };
+var setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
 
 function now() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
@@ -1416,7 +1419,7 @@ function create(node, id, self) {
 
 var interrupt = function(node, name) {
   var schedules = node.__transition,
-      schedule,
+      schedule$$1,
       active,
       empty = true,
       i;
@@ -1426,11 +1429,11 @@ var interrupt = function(node, name) {
   name = name == null ? null : name + "";
 
   for (i in schedules) {
-    if ((schedule = schedules[i]).name !== name) { empty = false; continue; }
-    active = schedule.state > STARTING && schedule.state < ENDING;
-    schedule.state = ENDED;
-    schedule.timer.stop();
-    if (active) { schedule.on.call("interrupt", node, node.__data__, schedule.index, schedule.group); }
+    if ((schedule$$1 = schedules[i]).name !== name) { empty = false; continue; }
+    active = schedule$$1.state > STARTING && schedule$$1.state < ENDING;
+    schedule$$1.state = ENDED;
+    schedule$$1.timer.stop();
+    if (active) { schedule$$1.on.call("interrupt", node, node.__data__, schedule$$1.index, schedule$$1.group); }
     delete schedules[i];
   }
 
@@ -1949,14 +1952,6 @@ define(Cubehelix, cubehelix, extend(Color, {
   }
 }));
 
-function basis(t1, v0, v1, v2, v3) {
-  var t2 = t1 * t1, t3 = t2 * t1;
-  return ((1 - 3 * t1 + 3 * t2 - t3) * v0
-      + (4 - 6 * t2 + 3 * t3) * v1
-      + (1 + 3 * t1 + 3 * t2 - 3 * t3) * v2
-      + t3 * v3) / 6;
-}
-
 var constant$2 = function(x) {
   return function() {
     return x;
@@ -1975,10 +1970,7 @@ function exponential(a, b, y) {
   };
 }
 
-function hue(a, b) {
-  var d = b - a;
-  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$2(isNaN(a) ? b : a);
-}
+
 
 function gamma(y) {
   return (y = +y) === 1 ? nogamma : function(a, b) {
@@ -1991,7 +1983,7 @@ function nogamma(a, b) {
   return d ? linear(a, d) : constant$2(isNaN(a) ? b : a);
 }
 
-var interpolateRgb = ((function rgbGamma(y) {
+var interpolateRgb = (function rgbGamma(y) {
   var color$$1 = gamma(y);
 
   function rgb$$1(start, end) {
@@ -2011,7 +2003,7 @@ var interpolateRgb = ((function rgbGamma(y) {
   rgb$$1.gamma = rgbGamma;
 
   return rgb$$1;
-}))(1);
+})(1);
 
 var interpolateNumber = function(a, b) {
   return a = +a, b -= a, function(t) {
@@ -2194,41 +2186,11 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
 var interpolateTransformCss = interpolateTransform(parseCss, "px, ", "px)", "deg)");
 var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
 
-// p0 = [ux0, uy0, w0]
-// p1 = [ux1, uy1, w1]
-
-function cubehelix$1(hue$$1) {
-  return (function cubehelixGamma(y) {
-    y = +y;
-
-    function cubehelix$$1(start, end) {
-      var h = hue$$1((start = cubehelix(start)).h, (end = cubehelix(end)).h),
-          s = nogamma(start.s, end.s),
-          l = nogamma(start.l, end.l),
-          opacity = nogamma(start.opacity, end.opacity);
-      return function(t) {
-        start.h = h(t);
-        start.s = s(t);
-        start.l = l(Math.pow(t, y));
-        start.opacity = opacity(t);
-        return start + "";
-      };
-    }
-
-    cubehelix$$1.gamma = cubehelixGamma;
-
-    return cubehelix$$1;
-  })(1);
-}
-
-cubehelix$1(hue);
-var cubehelixLong = cubehelix$1(nogamma);
-
 function tweenRemove(id, name) {
   var tween0, tween1;
   return function() {
-    var schedule = set(this, id),
-        tween = schedule.tween;
+    var schedule$$1 = set(this, id),
+        tween = schedule$$1.tween;
 
     // If this node shared tween with the previous node,
     // just assign the updated shared tween and we’re done!
@@ -2244,7 +2206,7 @@ function tweenRemove(id, name) {
       }
     }
 
-    schedule.tween = tween1;
+    schedule$$1.tween = tween1;
   };
 }
 
@@ -2252,8 +2214,8 @@ function tweenFunction(id, name, value) {
   var tween0, tween1;
   if (typeof value !== "function") { throw new Error; }
   return function() {
-    var schedule = set(this, id),
-        tween = schedule.tween;
+    var schedule$$1 = set(this, id),
+        tween = schedule$$1.tween;
 
     // If this node shared tween with the previous node,
     // just assign the updated shared tween and we’re done!
@@ -2269,7 +2231,7 @@ function tweenFunction(id, name, value) {
       if (i === n) { tween1.push(t); }
     }
 
-    schedule.tween = tween1;
+    schedule$$1.tween = tween1;
   };
 }
 
@@ -2295,8 +2257,8 @@ function tweenValue(transition, name, value) {
   var id = transition._id;
 
   transition.each(function() {
-    var schedule = set(this, id);
-    (schedule.value || (schedule.value = {}))[name] = value.apply(this, arguments);
+    var schedule$$1 = set(this, id);
+    (schedule$$1.value || (schedule$$1.value = {}))[name] = value.apply(this, arguments);
   });
 
   return function(node) {
@@ -2304,7 +2266,7 @@ function tweenValue(transition, name, value) {
   };
 }
 
-var interpolate$$1 = function(a, b) {
+var interpolate = function(a, b) {
   var c;
   return (typeof b === "number" ? interpolateNumber
       : b instanceof color ? interpolateRgb
@@ -2375,7 +2337,7 @@ function attrFunctionNS$1(fullname, interpolate$$1, value) {
 }
 
 var transition_attr = function(name, value) {
-  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate$$1;
+  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate;
   return this.attrTween(name, typeof value === "function"
       ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
       : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
@@ -2486,10 +2448,10 @@ var transition_filter = function(match) {
   return new Transition(subgroups, this._parents, this._name, this._id);
 };
 
-var transition_merge = function(transition) {
-  if (transition._id !== this._id) { throw new Error; }
+var transition_merge = function(transition$$1) {
+  if (transition$$1._id !== this._id) { throw new Error; }
 
-  for (var groups0 = this._groups, groups1 = transition._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
+  for (var groups0 = this._groups, groups1 = transition$$1._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
     for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
       if (node = group0[i] || group1[i]) {
         merge[i] = node;
@@ -2515,15 +2477,15 @@ function start(name) {
 function onFunction(id, name, listener) {
   var on0, on1, sit = start(name) ? init : set;
   return function() {
-    var schedule = sit(this, id),
-        on = schedule.on;
+    var schedule$$1 = sit(this, id),
+        on = schedule$$1.on;
 
     // If this node shared a dispatch with the previous node,
     // just assign the updated shared dispatch and we’re done!
     // Otherwise, copy-on-write.
     if (on !== on0) { (on1 = (on0 = on).copy()).on(name, listener); }
 
-    schedule.on = on1;
+    schedule$$1.on = on1;
   };
 }
 
@@ -2549,15 +2511,15 @@ var transition_remove = function() {
   return this.on("end.remove", removeFunction(this._id));
 };
 
-var transition_select = function(select$$1) {
+var transition_select = function(select) {
   var name = this._name,
       id = this._id;
 
-  if (typeof select$$1 !== "function") { select$$1 = selector(select$$1); }
+  if (typeof select !== "function") { select = selector(select); }
 
   for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-      if ((node = group[i]) && (subnode = select$$1.call(node, node.__data__, i, group))) {
+      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
         if ("__data__" in node) { subnode.__data__ = node.__data__; }
         subgroup[i] = subnode;
         schedule(subgroup[i], name, id, i, subgroup, get(node, id));
@@ -2568,16 +2530,16 @@ var transition_select = function(select$$1) {
   return new Transition(subgroups, this._parents, name, id);
 };
 
-var transition_selectAll = function(select$$1) {
+var transition_selectAll = function(select) {
   var name = this._name,
       id = this._id;
 
-  if (typeof select$$1 !== "function") { select$$1 = selectorAll(select$$1); }
+  if (typeof select !== "function") { select = selectorAll(select); }
 
   for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        for (var children = select$$1.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
+        for (var children = select.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
           if (child = children[k]) {
             schedule(child, name, id, k, children, inherit);
           }
@@ -2597,7 +2559,7 @@ var transition_selection = function() {
   return new Selection$1(this._groups, this._parents);
 };
 
-function styleRemove$1(name, interpolate$$2) {
+function styleRemove$1(name, interpolate$$1) {
   var value00,
       value10,
       interpolate0;
@@ -2606,7 +2568,7 @@ function styleRemove$1(name, interpolate$$2) {
         value1 = (this.style.removeProperty(name), styleValue(this, name));
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$2(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
   };
 }
 
@@ -2616,18 +2578,18 @@ function styleRemoveEnd(name) {
   };
 }
 
-function styleConstant$1(name, interpolate$$2, value1) {
+function styleConstant$1(name, interpolate$$1, value1) {
   var value00,
       interpolate0;
   return function() {
     var value0 = styleValue(this, name);
     return value0 === value1 ? null
         : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate$$2(value00 = value0, value1);
+        : interpolate0 = interpolate$$1(value00 = value0, value1);
   };
 }
 
-function styleFunction$1(name, interpolate$$2, value) {
+function styleFunction$1(name, interpolate$$1, value) {
   var value00,
       value10,
       interpolate0;
@@ -2637,12 +2599,12 @@ function styleFunction$1(name, interpolate$$2, value) {
     if (value1 == null) { value1 = (this.style.removeProperty(name), styleValue(this, name)); }
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate$$2(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
   };
 }
 
 var transition_style = function(name, value, priority) {
-  var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$$1;
+  var i = (name += "") === "transform" ? interpolateTransformCss : interpolate;
   return value == null ? this
           .styleTween(name, styleRemove$1(name, i))
           .on("end.style." + name, styleRemoveEnd(name))
@@ -2761,127 +2723,6 @@ function cubicInOut(t) {
   return ((t *= 2) <= 1 ? t * t * t : (t -= 2) * t * t + 2) / 2;
 }
 
-var exponent = 3;
-
-var polyIn = (function custom(e) {
-  e = +e;
-
-  function polyIn(t) {
-    return Math.pow(t, e);
-  }
-
-  polyIn.exponent = custom;
-
-  return polyIn;
-})(exponent);
-
-var polyOut = (function custom(e) {
-  e = +e;
-
-  function polyOut(t) {
-    return 1 - Math.pow(1 - t, e);
-  }
-
-  polyOut.exponent = custom;
-
-  return polyOut;
-})(exponent);
-
-var polyInOut = (function custom(e) {
-  e = +e;
-
-  function polyInOut(t) {
-    return ((t *= 2) <= 1 ? Math.pow(t, e) : 2 - Math.pow(2 - t, e)) / 2;
-  }
-
-  polyInOut.exponent = custom;
-
-  return polyInOut;
-})(exponent);
-
-var overshoot = 1.70158;
-
-var backIn = (function custom(s) {
-  s = +s;
-
-  function backIn(t) {
-    return t * t * ((s + 1) * t - s);
-  }
-
-  backIn.overshoot = custom;
-
-  return backIn;
-})(overshoot);
-
-var backOut = (function custom(s) {
-  s = +s;
-
-  function backOut(t) {
-    return --t * t * ((s + 1) * t + s) + 1;
-  }
-
-  backOut.overshoot = custom;
-
-  return backOut;
-})(overshoot);
-
-var backInOut = (function custom(s) {
-  s = +s;
-
-  function backInOut(t) {
-    return ((t *= 2) < 1 ? t * t * ((s + 1) * t - s) : (t -= 2) * t * ((s + 1) * t + s) + 2) / 2;
-  }
-
-  backInOut.overshoot = custom;
-
-  return backInOut;
-})(overshoot);
-
-var tau = 2 * Math.PI;
-var amplitude = 1;
-var period = 0.3;
-
-var elasticIn = (function custom(a, p) {
-  var s = Math.asin(1 / (a = Math.max(1, a))) * (p /= tau);
-
-  function elasticIn(t) {
-    return a * Math.pow(2, 10 * --t) * Math.sin((s - t) / p);
-  }
-
-  elasticIn.amplitude = function(a) { return custom(a, p * tau); };
-  elasticIn.period = function(p) { return custom(a, p); };
-
-  return elasticIn;
-})(amplitude, period);
-
-var elasticOut = (function custom(a, p) {
-  var s = Math.asin(1 / (a = Math.max(1, a))) * (p /= tau);
-
-  function elasticOut(t) {
-    return 1 - a * Math.pow(2, -10 * (t = +t)) * Math.sin((t + s) / p);
-  }
-
-  elasticOut.amplitude = function(a) { return custom(a, p * tau); };
-  elasticOut.period = function(p) { return custom(a, p); };
-
-  return elasticOut;
-})(amplitude, period);
-
-var elasticInOut = (function custom(a, p) {
-  var s = Math.asin(1 / (a = Math.max(1, a))) * (p /= tau);
-
-  function elasticInOut(t) {
-    return ((t = t * 2 - 1) < 0
-        ? a * Math.pow(2, 10 * t) * Math.sin((s - t) / p)
-        : 2 - a * Math.pow(2, -10 * t) * Math.sin((s + t) / p)) / 2;
-  }
-
-  elasticInOut.amplitude = function(a) { return custom(a, p * tau); };
-  elasticInOut.period = function(p) { return custom(a, p); };
-
-  return elasticInOut;
-})(amplitude, period);
-
 var defaultTiming = {
   time: null, // Set on use.
   delay: 0,
@@ -2922,19 +2763,6 @@ var selection_transition = function(name) {
 
 selection.prototype.interrupt = selection_interrupt;
 selection.prototype.transition = selection_transition;
-
-/**
-    @function elem
-    @desc Manages the enter/update/exit pattern for a single DOM element.
-    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
-    @param {Object} params Additional parameters.
-    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
-    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
-    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
-    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
-    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
-    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
-*/
 
 var _extends$1 = Object.assign || function (target) {
 var arguments$1 = arguments;
@@ -3517,7 +3345,7 @@ var _extends$3 = Object.assign || function (target) {
 var arguments$1 = arguments;
  for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _typeof$1 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _defaults$2(obj, defaults) { var keys = Object.getOwnPropertyNames(defaults); for (var i = 0; i < keys.length; i++) { var key = keys[i]; var value = Object.getOwnPropertyDescriptor(defaults, key); if (value && value.configurable && obj[key] === undefined) { Object.defineProperty(obj, key, value); } } return obj; }
 
@@ -3582,7 +3410,7 @@ var Translator = function (_EventEmitter) {
 
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-    if ((typeof options === 'undefined' ? 'undefined' : _typeof$1(options)) !== 'object') {
+    if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') {
       /* eslint prefer-rest-params: 0 */
       options = this.options.overloadTranslationOptionHandler(arguments);
     } else if (this.options.compatibilityAPI === 'v1') {
@@ -3810,7 +3638,7 @@ function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-var LanguageUtil = function () {
+var LanguageUtil$1 = function () {
   function LanguageUtil(options) {
     _classCallCheck$5(this, LanguageUtil);
 
@@ -3923,8 +3751,6 @@ var LanguageUtil = function () {
 
   return LanguageUtil;
 }();
-
-var _typeof$2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 function _classCallCheck$6(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -4046,54 +3872,36 @@ var PluralResolver = function () {
     var rule = this.getRule(code);
 
     if (rule) {
-      var _ret = function () {
-        if (rule.numbers.length === 1) { return {
-            v: ''
-          }; } // only singular
+      if (rule.numbers.length === 1) { return ''; } // only singular
 
-        var idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
-        var suffix = rule.numbers[idx];
+      var idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
+      var suffix = rule.numbers[idx];
 
-        // special treatment for lngs only having singular and plural
-        if (_this.options.simplifyPluralSuffix && rule.numbers.length === 2 && rule.numbers[0] === 1) {
-          if (suffix === 2) {
-            suffix = 'plural';
-          } else if (suffix === 1) {
-            suffix = '';
-          }
+      // special treatment for lngs only having singular and plural
+      if (this.options.simplifyPluralSuffix && rule.numbers.length === 2 && rule.numbers[0] === 1) {
+        if (suffix === 2) {
+          suffix = 'plural';
+        } else if (suffix === 1) {
+          suffix = '';
         }
+      }
 
-        var returnSuffix = function returnSuffix() {
-          return _this.options.prepend && suffix.toString() ? _this.options.prepend + suffix.toString() : suffix.toString();
-        };
+      var returnSuffix = function returnSuffix() {
+        return _this.options.prepend && suffix.toString() ? _this.options.prepend + suffix.toString() : suffix.toString();
+      };
 
-        // COMPATIBILITY JSON
-        // v1
-        if (_this.options.compatibilityJSON === 'v1') {
-          if (suffix === 1) { return {
-              v: ''
-            }; }
-          if (typeof suffix === 'number') { return {
-              v: '_plural_' + suffix.toString()
-            }; }
-          return {
-            v: returnSuffix()
-          };
-        } else if ( /* v2 */_this.options.compatibilityJSON === 'v2' || rule.numbers.length === 2 && rule.numbers[0] === 1) {
-          return {
-            v: returnSuffix()
-          };
-        } else if ( /* v3 - gettext index */rule.numbers.length === 2 && rule.numbers[0] === 1) {
-          return {
-            v: returnSuffix()
-          };
-        }
-        return {
-          v: _this.options.prepend && idx.toString() ? _this.options.prepend + idx.toString() : idx.toString()
-        };
-      }();
-
-      if ((typeof _ret === 'undefined' ? 'undefined' : _typeof$2(_ret)) === "object") { return _ret.v; }
+      // COMPATIBILITY JSON
+      // v1
+      if (this.options.compatibilityJSON === 'v1') {
+        if (suffix === 1) { return ''; }
+        if (typeof suffix === 'number') { return '_plural_' + suffix.toString(); }
+        return returnSuffix();
+      } else if ( /* v2 */this.options.compatibilityJSON === 'v2' || rule.numbers.length === 2 && rule.numbers[0] === 1) {
+        return returnSuffix();
+      } else if ( /* v3 - gettext index */rule.numbers.length === 2 && rule.numbers[0] === 1) {
+        return returnSuffix();
+      }
+      return this.options.prepend && idx.toString() ? this.options.prepend + idx.toString() : idx.toString();
     }
 
     this.logger.warn('no plural rule found for: ' + code);
@@ -4295,7 +4103,7 @@ function remove$1(arr, what) {
   }
 }
 
-var Connector = function (_EventEmitter) {
+var Connector$1 = function (_EventEmitter) {
   _inherits$3(Connector, _EventEmitter);
 
   function Connector(backend, store, services) {
@@ -4565,7 +4373,7 @@ function _possibleConstructorReturn$4(self, call) { if (!self) { throw new Refer
 
 function _inherits$4(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults$4(subClass, superClass); } }
 
-var Connector$1 = function (_EventEmitter) {
+var Connector$2 = function (_EventEmitter) {
   _inherits$4(Connector, _EventEmitter);
 
   function Connector(cache, store, services) {
@@ -4701,8 +4509,6 @@ function transformOptions(options) {
   return options;
 }
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _extends = Object.assign || function (target) {
 var arguments$1 = arguments;
  for (var i = 1; i < arguments.length; i++) { var source = arguments$1[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -4761,6 +4567,7 @@ var I18n = function (_EventEmitter) {
     } else {
       this.options = _extends({}, get$2(), this.options, transformOptions(options));
     }
+    this.format = this.options.interpolation.format;
     if (!callback) { callback = noop$1; }
 
     function createClassOnDemand(ClassOrObject) {
@@ -4771,75 +4578,73 @@ var I18n = function (_EventEmitter) {
 
     // init services
     if (!this.options.isClone) {
-      (function () {
-        if (_this2.modules.logger) {
-          baseLogger.init(createClassOnDemand(_this2.modules.logger), _this2.options);
-        } else {
-          baseLogger.init(null, _this2.options);
+      if (this.modules.logger) {
+        baseLogger.init(createClassOnDemand(this.modules.logger), this.options);
+      } else {
+        baseLogger.init(null, this.options);
+      }
+
+      var lu = new LanguageUtil$1(this.options);
+      this.store = new ResourceStore(this.options.resources, this.options);
+
+      var s = this.services;
+      s.logger = baseLogger;
+      s.resourceStore = this.store;
+      s.resourceStore.on('added removed', function (lng, ns) {
+        s.cacheConnector.save();
+      });
+      s.languageUtils = lu;
+      s.pluralResolver = new PluralResolver(lu, { prepend: this.options.pluralSeparator, compatibilityJSON: this.options.compatibilityJSON, simplifyPluralSuffix: this.options.simplifyPluralSuffix });
+      s.interpolator = new Interpolator(this.options);
+
+      s.backendConnector = new Connector$1(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
+      // pipe events from backendConnector
+      s.backendConnector.on('*', function (event) {
+        var arguments$1 = arguments;
+
+        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+          args[_key - 1] = arguments$1[_key];
         }
 
-        var lu = new LanguageUtil(_this2.options);
-        _this2.store = new ResourceStore(_this2.options.resources, _this2.options);
+        _this2.emit.apply(_this2, [event].concat(args));
+      });
 
-        var s = _this2.services;
-        s.logger = baseLogger;
-        s.resourceStore = _this2.store;
-        s.resourceStore.on('added removed', function (lng, ns) {
-          s.cacheConnector.save();
-        });
-        s.languageUtils = lu;
-        s.pluralResolver = new PluralResolver(lu, { prepend: _this2.options.pluralSeparator, compatibilityJSON: _this2.options.compatibilityJSON, simplifyPluralSuffix: _this2.options.simplifyPluralSuffix });
-        s.interpolator = new Interpolator(_this2.options);
+      s.backendConnector.on('loaded', function (loaded) {
+        s.cacheConnector.save();
+      });
 
-        s.backendConnector = new Connector(createClassOnDemand(_this2.modules.backend), s.resourceStore, s, _this2.options);
-        // pipe events from backendConnector
-        s.backendConnector.on('*', function (event) {
-          var arguments$1 = arguments;
+      s.cacheConnector = new Connector$2(createClassOnDemand(this.modules.cache), s.resourceStore, s, this.options);
+      // pipe events from backendConnector
+      s.cacheConnector.on('*', function (event) {
+        var arguments$1 = arguments;
 
-          for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-            args[_key - 1] = arguments$1[_key];
-          }
-
-          _this2.emit.apply(_this2, [event].concat(args));
-        });
-
-        s.backendConnector.on('loaded', function (loaded) {
-          s.cacheConnector.save();
-        });
-
-        s.cacheConnector = new Connector$1(createClassOnDemand(_this2.modules.cache), s.resourceStore, s, _this2.options);
-        // pipe events from backendConnector
-        s.cacheConnector.on('*', function (event) {
-          var arguments$1 = arguments;
-
-          for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-            args[_key2 - 1] = arguments$1[_key2];
-          }
-
-          _this2.emit.apply(_this2, [event].concat(args));
-        });
-
-        if (_this2.modules.languageDetector) {
-          s.languageDetector = createClassOnDemand(_this2.modules.languageDetector);
-          s.languageDetector.init(s, _this2.options.detection, _this2.options);
+        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+          args[_key2 - 1] = arguments$1[_key2];
         }
 
-        _this2.translator = new Translator(_this2.services, _this2.options);
-        // pipe events from translator
-        _this2.translator.on('*', function (event) {
-          var arguments$1 = arguments;
+        _this2.emit.apply(_this2, [event].concat(args));
+      });
 
-          for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
-            args[_key3 - 1] = arguments$1[_key3];
-          }
+      if (this.modules.languageDetector) {
+        s.languageDetector = createClassOnDemand(this.modules.languageDetector);
+        s.languageDetector.init(s, this.options.detection, this.options);
+      }
 
-          _this2.emit.apply(_this2, [event].concat(args));
-        });
+      this.translator = new Translator(this.services, this.options);
+      // pipe events from translator
+      this.translator.on('*', function (event) {
+        var arguments$1 = arguments;
 
-        _this2.modules.external.forEach(function (m) {
-          if (m.init) { m.init(_this2); }
-        });
-      })();
+        for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+          args[_key3 - 1] = arguments$1[_key3];
+        }
+
+        _this2.emit.apply(_this2, [event].concat(args));
+      });
+
+      this.modules.external.forEach(function (m) {
+        if (m.init) { m.init(_this2); }
+      });
     }
 
     // append api
@@ -4883,43 +4688,37 @@ var I18n = function (_EventEmitter) {
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : noop$1;
 
     if (!this.options.resources) {
-      var _ret3 = function () {
-        if (_this3.language && _this3.language.toLowerCase() === 'cimode') { return {
-            v: callback()
-          }; } // avoid loading resources for cimode
+      if (this.language && this.language.toLowerCase() === 'cimode') { return callback(); } // avoid loading resources for cimode
 
-        var toLoad = [];
+      var toLoad = [];
 
-        var append = function append(lng) {
-          if (!lng) { return; }
-          var lngs = _this3.services.languageUtils.toResolveHierarchy(lng);
-          lngs.forEach(function (l) {
-            if (toLoad.indexOf(l) < 0) { toLoad.push(l); }
-          });
-        };
-
-        if (!_this3.language) {
-          // at least load fallbacks in this case
-          var fallbacks = _this3.services.languageUtils.getFallbackCodes(_this3.options.fallbackLng);
-          fallbacks.forEach(function (l) {
-            return append(l);
-          });
-        } else {
-          append(_this3.language);
-        }
-
-        if (_this3.options.preload) {
-          _this3.options.preload.forEach(function (l) {
-            return append(l);
-          });
-        }
-
-        _this3.services.cacheConnector.load(toLoad, _this3.options.ns, function () {
-          _this3.services.backendConnector.load(toLoad, _this3.options.ns, callback);
+      var append = function append(lng) {
+        if (!lng) { return; }
+        var lngs = _this3.services.languageUtils.toResolveHierarchy(lng);
+        lngs.forEach(function (l) {
+          if (toLoad.indexOf(l) < 0) { toLoad.push(l); }
         });
-      }();
+      };
 
-      if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") { return _ret3.v; }
+      if (!this.language) {
+        // at least load fallbacks in this case
+        var fallbacks = this.services.languageUtils.getFallbackCodes(this.options.fallbackLng);
+        fallbacks.forEach(function (l) {
+          return append(l);
+        });
+      } else {
+        append(this.language);
+      }
+
+      if (this.options.preload) {
+        this.options.preload.forEach(function (l) {
+          return append(l);
+        });
+      }
+
+      this.services.cacheConnector.load(toLoad, this.options.ns, function () {
+        _this3.services.backendConnector.load(toLoad, _this3.options.ns, callback);
+      });
     } else {
       callback(null);
     }
@@ -4962,10 +4761,10 @@ var I18n = function (_EventEmitter) {
   I18n.prototype.changeLanguage = function changeLanguage(lng, callback) {
     var _this4 = this;
 
-    var done = function done(err) {
-      if (lng) {
-        _this4.emit('languageChanged', lng);
-        _this4.logger.log('languageChanged', lng);
+    var done = function done(err, l) {
+      if (l) {
+        _this4.emit('languageChanged', l);
+        _this4.logger.log('languageChanged', l);
       }
 
       if (callback) { callback(err, function () {
@@ -4984,7 +4783,7 @@ var I18n = function (_EventEmitter) {
       }
 
       _this4.loadResources(function (err) {
-        done(err);
+        done(err, l);
       });
     };
 
@@ -5005,10 +4804,15 @@ var I18n = function (_EventEmitter) {
 
       var options = _extends({}, opts);
       options.lng = options.lng || fixedT.lng;
+      options.lngs = options.lngs || fixedT.lngs;
       options.ns = options.ns || fixedT.ns;
       return _this5.t(key, options);
     };
-    fixedT.lng = lng;
+    if (typeof lng === 'string') {
+      fixedT.lng = lng;
+    } else {
+      fixedT.lngs = lng;
+    }
     fixedT.ns = ns;
     return fixedT;
   };
@@ -5057,7 +4861,7 @@ var I18n = function (_EventEmitter) {
   };
 
   I18n.prototype.dir = function dir(lng) {
-    if (!lng) { lng = this.language; }
+    if (!lng) { lng = this.languages && this.languages.length > 0 ? this.languages[0] : this.language; }
     if (!lng) { return 'rtl'; }
 
     var rtlLngs = ['ar', 'shu', 'sqr', 'ssh', 'xaa', 'yhd', 'yud', 'aao', 'abh', 'abv', 'acm', 'acq', 'acw', 'acx', 'acy', 'adf', 'ads', 'aeb', 'aec', 'afb', 'ajp', 'apc', 'apd', 'arb', 'arq', 'ars', 'ary', 'arz', 'auz', 'avl', 'ayh', 'ayl', 'ayn', 'ayp', 'bbz', 'pga', 'he', 'iw', 'ps', 'pbt', 'pbu', 'pst', 'prp', 'prd', 'ur', 'ydd', 'yds', 'yih', 'ji', 'yi', 'hbo', 'men', 'xmn', 'fa', 'jpr', 'peo', 'pes', 'prs', 'dv', 'sam'];
@@ -5081,7 +4885,7 @@ var I18n = function (_EventEmitter) {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop$1;
 
-    var mergedOptions = _extends({}, options, this.options, { isClone: true });
+    var mergedOptions = _extends({}, this.options, options, { isClone: true });
     var clone = new I18n(mergedOptions, callback);
     var membersToCopy = ['store', 'services', 'language'];
     membersToCopy.forEach(function (m) {
@@ -5156,312 +4960,6 @@ i18next$1.init({
 var obj;
 var obj$1;
 
-var ascending$1 = function(a, b) {
-  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-};
-
-var bisector = function(compare) {
-  if (compare.length === 1) { compare = ascendingComparator(compare); }
-  return {
-    left: function(a, x, lo, hi) {
-      if (lo == null) { lo = 0; }
-      if (hi == null) { hi = a.length; }
-      while (lo < hi) {
-        var mid = lo + hi >>> 1;
-        if (compare(a[mid], x) < 0) { lo = mid + 1; }
-        else { hi = mid; }
-      }
-      return lo;
-    },
-    right: function(a, x, lo, hi) {
-      if (lo == null) { lo = 0; }
-      if (hi == null) { hi = a.length; }
-      while (lo < hi) {
-        var mid = lo + hi >>> 1;
-        if (compare(a[mid], x) > 0) { hi = mid; }
-        else { lo = mid + 1; }
-      }
-      return lo;
-    }
-  };
-};
-
-function ascendingComparator(f) {
-  return function(d, x) {
-    return ascending$1(f(d), x);
-  };
-}
-
-var ascendingBisect = bisector(ascending$1);
-var bisectRight = ascendingBisect.right;
-
-function pair(a, b) {
-  return [a, b];
-}
-
-var number = function(x) {
-  return x === null ? NaN : +x;
-};
-
-var extent = function(values, valueof) {
-  var n = values.length,
-      i = -1,
-      value,
-      min,
-      max;
-
-  if (valueof == null) {
-    while (++i < n) { // Find the first comparable value.
-      if ((value = values[i]) != null && value >= value) {
-        min = max = value;
-        while (++i < n) { // Compare the remaining values.
-          if ((value = values[i]) != null) {
-            if (min > value) { min = value; }
-            if (max < value) { max = value; }
-          }
-        }
-      }
-    }
-  }
-
-  else {
-    while (++i < n) { // Find the first comparable value.
-      if ((value = valueof(values[i], i, values)) != null && value >= value) {
-        min = max = value;
-        while (++i < n) { // Compare the remaining values.
-          if ((value = valueof(values[i], i, values)) != null) {
-            if (min > value) { min = value; }
-            if (max < value) { max = value; }
-          }
-        }
-      }
-    }
-  }
-
-  return [min, max];
-};
-
-var identity$1 = function(x) {
-  return x;
-};
-
-var range = function(start, stop, step) {
-  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
-
-  var i = -1,
-      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-      range = new Array(n);
-
-  while (++i < n) {
-    range[i] = start + i * step;
-  }
-
-  return range;
-};
-
-var e10 = Math.sqrt(50);
-var e5 = Math.sqrt(10);
-var e2 = Math.sqrt(2);
-
-function tickIncrement(start, stop, count) {
-  var step = (stop - start) / Math.max(0, count),
-      power = Math.floor(Math.log(step) / Math.LN10),
-      error = step / Math.pow(10, power);
-  return power >= 0
-      ? (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1) * Math.pow(10, power)
-      : -Math.pow(10, -power) / (error >= e10 ? 10 : error >= e5 ? 5 : error >= e2 ? 2 : 1);
-}
-
-function tickStep(start, stop, count) {
-  var step0 = Math.abs(stop - start) / Math.max(0, count),
-      step1 = Math.pow(10, Math.floor(Math.log(step0) / Math.LN10)),
-      error = step0 / step1;
-  if (error >= e10) { step1 *= 10; }
-  else if (error >= e5) { step1 *= 5; }
-  else if (error >= e2) { step1 *= 2; }
-  return stop < start ? -step1 : step1;
-}
-
-var sturges = function(values) {
-  return Math.ceil(Math.log(values.length) / Math.LN2) + 1;
-};
-
-var quantile = function(values, p, valueof) {
-  if (valueof == null) { valueof = number; }
-  if (!(n = values.length)) { return; }
-  if ((p = +p) <= 0 || n < 2) { return +valueof(values[0], 0, values); }
-  if (p >= 1) { return +valueof(values[n - 1], n - 1, values); }
-  var n,
-      i = (n - 1) * p,
-      i0 = Math.floor(i),
-      value0 = +valueof(values[i0], i0, values),
-      value1 = +valueof(values[i0 + 1], i0 + 1, values);
-  return value0 + (value1 - value0) * (i - i0);
-};
-
-var min = function(values, valueof) {
-  var n = values.length,
-      i = -1,
-      value,
-      min;
-
-  if (valueof == null) {
-    while (++i < n) { // Find the first comparable value.
-      if ((value = values[i]) != null && value >= value) {
-        min = value;
-        while (++i < n) { // Compare the remaining values.
-          if ((value = values[i]) != null && min > value) {
-            min = value;
-          }
-        }
-      }
-    }
-  }
-
-  else {
-    while (++i < n) { // Find the first comparable value.
-      if ((value = valueof(values[i], i, values)) != null && value >= value) {
-        min = value;
-        while (++i < n) { // Compare the remaining values.
-          if ((value = valueof(values[i], i, values)) != null && min > value) {
-            min = value;
-          }
-        }
-      }
-    }
-  }
-
-  return min;
-};
-
-function length(d) {
-  return d.length;
-}
-
-var prefix = "$";
-
-function Map() {}
-
-Map.prototype = map$1.prototype = {
-  constructor: Map,
-  has: function(key) {
-    return (prefix + key) in this;
-  },
-  get: function(key) {
-    return this[prefix + key];
-  },
-  set: function(key, value) {
-    this[prefix + key] = value;
-    return this;
-  },
-  remove: function(key) {
-    var property = prefix + key;
-    return property in this && delete this[property];
-  },
-  clear: function() {
-    var this$1 = this;
-
-    for (var property in this$1) { if (property[0] === prefix) { delete this$1[property]; } }
-  },
-  keys: function() {
-    var this$1 = this;
-
-    var keys = [];
-    for (var property in this$1) { if (property[0] === prefix) { keys.push(property.slice(1)); } }
-    return keys;
-  },
-  values: function() {
-    var this$1 = this;
-
-    var values = [];
-    for (var property in this$1) { if (property[0] === prefix) { values.push(this$1[property]); } }
-    return values;
-  },
-  entries: function() {
-    var this$1 = this;
-
-    var entries = [];
-    for (var property in this$1) { if (property[0] === prefix) { entries.push({key: property.slice(1), value: this$1[property]}); } }
-    return entries;
-  },
-  size: function() {
-    var this$1 = this;
-
-    var size = 0;
-    for (var property in this$1) { if (property[0] === prefix) { ++size; } }
-    return size;
-  },
-  empty: function() {
-    var this$1 = this;
-
-    for (var property in this$1) { if (property[0] === prefix) { return false; } }
-    return true;
-  },
-  each: function(f) {
-    var this$1 = this;
-
-    for (var property in this$1) { if (property[0] === prefix) { f(this$1[property], property.slice(1), this$1); } }
-  }
-};
-
-function map$1(object, f) {
-  var map = new Map;
-
-  // Copy constructor.
-  if (object instanceof Map) { object.each(function(value, key) { map.set(key, value); }); }
-
-  // Index array by numeric index or specified key function.
-  else if (Array.isArray(object)) {
-    var i = -1,
-        n = object.length,
-        o;
-
-    if (f == null) { while (++i < n) { map.set(i, object[i]); } }
-    else { while (++i < n) { map.set(f(o = object[i], i, object), o); } }
-  }
-
-  // Convert object to map.
-  else if (object) { for (var key in object) { map.set(key, object[key]); } }
-
-  return map;
-}
-
-function Set$1() {}
-
-var proto = map$1.prototype;
-
-Set$1.prototype = set$2.prototype = {
-  constructor: Set$1,
-  has: proto.has,
-  add: function(value) {
-    value += "";
-    this[prefix + value] = value;
-    return this;
-  },
-  remove: proto.remove,
-  clear: proto.clear,
-  values: proto.keys,
-  size: proto.size,
-  empty: proto.empty,
-  each: proto.each
-};
-
-function set$2(object, f) {
-  var set = new Set$1;
-
-  // Copy constructor.
-  if (object instanceof Set$1) { object.each(function(value) { set.add(value); }); }
-
-  // Otherwise, assume it’s an array.
-  else if (object) {
-    var i = -1, n = object.length;
-    if (f == null) { while (++i < n) { set.add(object[i]); } }
-    else { while (++i < n) { set.add(f(object[i], i, object)); } }
-  }
-
-  return set;
-}
-
 /**
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
@@ -5488,13 +4986,15 @@ var stylize = function(e, s) {
     @extends external:BaseClass
     @desc Creates a set of HTML radio input elements.
 */
-var Button = (function (BaseClass$$1) {
+var Button = (function (BaseClass) {
   function Button() {
 
-    BaseClass$$1.call(this);
+    BaseClass.call(this);
 
     this._buttonStyle = {
-      margin: "0 5px"
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
+      "margin": "0 5px"
     };
     this._data = [];
     this._text = accessor("text");
@@ -5502,8 +5002,8 @@ var Button = (function (BaseClass$$1) {
 
   }
 
-  if ( BaseClass$$1 ) Button.__proto__ = BaseClass$$1;
-  Button.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  if ( BaseClass ) Button.__proto__ = BaseClass;
+  Button.prototype = Object.create( BaseClass && BaseClass.prototype );
   Button.prototype.constructor = Button;
 
   /**
@@ -5537,8 +5037,8 @@ var Button = (function (BaseClass$$1) {
         .call(stylize, this._buttonStyle)
         .html(function (d, i) { return this$1._text(d, i); });
 
-    for (var event$$1 in this$1._on) {
-      if ({}.hasOwnProperty.call(this$1._on, event$$1)) { button.on(event$$1, this$1._on[event$$1]); }
+    for (var event in this$1._on) {
+      if ({}.hasOwnProperty.call(this$1._on, event)) { button.on(event, this$1._on[event]); }
     }
 
     return this;
@@ -5607,19 +5107,19 @@ var Button = (function (BaseClass$$1) {
     @extends external:BaseClass
     @desc Creates a set of HTML radio input elements.
 */
-var Radio = (function (BaseClass$$1) {
+var Radio = (function (BaseClass) {
   function Radio() {
 
-    BaseClass$$1.call(this);
+    BaseClass.call(this);
 
     this._labelStyle = {
-      "font-family": "Verdana",
-      "font-size": "12px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
       "padding-right": "5px"
     };
     this._legendStyle = {
-      "font-family": "Verdana",
-      "font-size": "12px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
       "padding-right": "5px"
     };
     this._options = [];
@@ -5631,8 +5131,8 @@ var Radio = (function (BaseClass$$1) {
 
   }
 
-  if ( BaseClass$$1 ) Radio.__proto__ = BaseClass$$1;
-  Radio.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  if ( BaseClass ) Radio.__proto__ = BaseClass;
+  Radio.prototype = Object.create( BaseClass && BaseClass.prototype );
   Radio.prototype.constructor = Radio;
 
   /**
@@ -5696,8 +5196,8 @@ var Radio = (function (BaseClass$$1) {
               });
             });
 
-          for (var event$$1 in that._on) {
-            if ({}.hasOwnProperty.call(that._on, event$$1)) { input.on(event$$1, that._on[event$$1]); }
+          for (var event in that._on) {
+            if ({}.hasOwnProperty.call(that._on, event)) { input.on(event, that._on[event]); }
           }
 
         });
@@ -5818,27 +5318,27 @@ var Radio = (function (BaseClass$$1) {
     @extends external:BaseClass
     @desc Creates an HTML select element.
 */
-var Select = (function (BaseClass$$1) {
+var Select = (function (BaseClass) {
   function Select() {
 
-    BaseClass$$1.call(this);
+    BaseClass.call(this);
 
     this._labelStyle = {
-      "font-family": "Verdana",
-      "font-size": "12px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
       "margin-right": "5px"
     };
     this._options = [];
     this._optionStyle = {
-      "font-family": "Verdana",
-      "font-size": "12px"
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px"
     };
     this._selectStyle = {
       "background": "#fafafa",
       "border": "1px solid #ccc",
       "border-radius": "0",
-      "font-family": "Verdana",
-      "font-size": "12px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
       "outline": "0",
       "padding": "3px 5px 4px"
     };
@@ -5847,8 +5347,8 @@ var Select = (function (BaseClass$$1) {
 
   }
 
-  if ( BaseClass$$1 ) Select.__proto__ = BaseClass$$1;
-  Select.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  if ( BaseClass ) Select.__proto__ = BaseClass;
+  Select.prototype = Object.create( BaseClass && BaseClass.prototype );
   Select.prototype.constructor = Select;
 
   /**
@@ -5860,7 +5360,7 @@ var Select = (function (BaseClass$$1) {
     var this$1 = this;
 
 
-    if (this._container === void 0) { this.container(select$$1("body").append("div").node()); }
+    if (this._container === void 0) { this.container(select("body").append("div").node()); }
     var that = this;
 
     var container = this._container.selectAll(("div#d3plus-Form-" + (this._uuid))).data([0]);
@@ -5871,21 +5371,21 @@ var Select = (function (BaseClass$$1) {
         .attr("class", "d3plus-Form d3plus-Form-Select")
       .merge(container);
 
-    var select$$1 = container.selectAll(("select#d3plus-Select-" + (this._uuid))).data([0]);
-    select$$1 = select$$1.enter().append("select")
+    var select = container.selectAll(("select#d3plus-Select-" + (this._uuid))).data([0]);
+    select = select.enter().append("select")
         .attr("id", ("d3plus-Select-" + (this._uuid)))
         .attr("class", "d3plus-Select")
-      .merge(select$$1)
+      .merge(select)
         .call(stylize, this._selectStyle)
         .on("change.d3plus", function() {
           that.selected(this.value);
         });
 
-    for (var event$$1 in this$1._on) {
-      if ({}.hasOwnProperty.call(this$1._on, event$$1)) { select$$1.on(event$$1, this$1._on[event$$1]); }
+    for (var event in this$1._on) {
+      if ({}.hasOwnProperty.call(this$1._on, event)) { select.on(event, this$1._on[event]); }
     }
 
-    var options = select$$1.selectAll("option")
+    var options = select.selectAll("option")
       .data(this._options, function (d, i) { return this$1._value(d, i); });
 
     options.exit().remove();

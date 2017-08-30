@@ -1,13 +1,72 @@
 /*
-  d3plus-form v0.2.4
+  d3plus-form v0.2.5
   Javascript rendered input forms.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3plus-common')) :
 	typeof define === 'function' && define.amd ? define('d3plus-form', ['exports', 'd3-selection', 'd3plus-common'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3plusCommon));
+	(factory((global.d3plus = {}),global.d3Selection,global.d3plusCommon));
 }(this, (function (exports,d3Selection,d3plusCommon) { 'use strict';
 
 /**
@@ -25,7 +84,9 @@ var Button = (function (BaseClass$$1) {
     BaseClass$$1.call(this);
 
     this._buttonStyle = {
-      margin: "0 5px"
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
+      "margin": "0 5px"
     };
     this._data = [];
     this._text = d3plusCommon.accessor("text");
@@ -144,13 +205,13 @@ var Radio = (function (BaseClass$$1) {
     BaseClass$$1.call(this);
 
     this._labelStyle = {
-      "font-family": "Verdana",
-      "font-size": "12px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
       "padding-right": "5px"
     };
     this._legendStyle = {
-      "font-family": "Verdana",
-      "font-size": "12px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
       "padding-right": "5px"
     };
     this._options = [];
@@ -355,21 +416,21 @@ var Select = (function (BaseClass$$1) {
     BaseClass$$1.call(this);
 
     this._labelStyle = {
-      "font-family": "Verdana",
-      "font-size": "12px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
       "margin-right": "5px"
     };
     this._options = [];
     this._optionStyle = {
-      "font-family": "Verdana",
-      "font-size": "12px"
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px"
     };
     this._selectStyle = {
       "background": "#fafafa",
       "border": "1px solid #ccc",
       "border-radius": "0",
-      "font-family": "Verdana",
-      "font-size": "12px",
+      "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
+      "font-size": "14px",
       "outline": "0",
       "padding": "3px 5px 4px"
     };
