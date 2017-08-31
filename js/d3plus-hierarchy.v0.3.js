@@ -1,13 +1,72 @@
 /*
-  d3plus-hierarchy v0.3.10
+  d3plus-hierarchy v0.3.11
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-shape'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3-hierarchy'), require('d3-scale'), require('d3-collection')) :
 	typeof define === 'function' && define.amd ? define('d3plus-hierarchy', ['exports', 'd3-array', 'd3-shape', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3-hierarchy', 'd3-scale', 'd3-collection'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Array,global.d3Shape,global.d3plusCommon,global.d3plusShape,global.d3plusViz,global.d3Hierarchy,global.d3Scale,global.d3Collection));
+	(factory((global.d3plus = {}),global.d3Array,global.d3Shape,global.d3plusCommon,global.d3plusShape,global.d3plusViz,global.d3Hierarchy,global.d3Scale,global.d3Collection));
 }(this, (function (exports,d3Array,d3Shape,d3plusCommon,d3plusShape,d3plusViz,d3Hierarchy,d3Scale,d3Collection) { 'use strict';
 
 /**
@@ -96,9 +155,7 @@ var Pie = (function (Viz$$1) {
       @param {Function|Number} [*value*]
   */
   Pie.prototype.innerRadius = function innerRadius (_) {
-    return arguments.length
-         ? (this._innerRadius = _, this)
-         : this._innerRadius;
+    return arguments.length ? (this._innerRadius = _, this) : this._innerRadius;
   };
 
   /**
@@ -107,9 +164,7 @@ var Pie = (function (Viz$$1) {
       @param {Number} [*value*]
   */
   Pie.prototype.padAngle = function padAngle (_) {
-    return arguments.length
-         ? (this._padAngle = _, this)
-         : this._padAngle;
+    return arguments.length ? (this._padAngle = _, this) : this._padAngle;
   };
 
   /**
@@ -118,9 +173,7 @@ var Pie = (function (Viz$$1) {
       @param {Number} [*value*]
   */
   Pie.prototype.padPixel = function padPixel (_) {
-    return arguments.length
-         ? (this._padPixel = _, this)
-         : this._padPixel;
+    return arguments.length ? (this._padPixel = _, this) : this._padPixel;
   };
 
   /**
@@ -133,9 +186,7 @@ function comparator(a, b) {
 }
   */
   Pie.prototype.sort = function sort (_) {
-    return arguments.length
-         ? (this._sort = _, this)
-         : this._sort;
+    return arguments.length ? (this._sort = _, this) : this._sort;
   };
 
   /**
@@ -148,9 +199,7 @@ function value(d) {
 }
   */
   Pie.prototype.value = function value (_) {
-    return arguments.length
-         ? (this._value = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._value;
+    return arguments.length ? (this._value = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._value;
   };
 
   return Pie;
@@ -185,7 +234,7 @@ var Donut = (function (Pie$$1) {
 
 /**
     @function nest
-    Extends the base behavior of d3.nest to allow for multiple depth levels.
+    @summary Extends the base behavior of d3.nest to allow for multiple depth levels.
     @param {Array} *data* The data array to be nested.
     @param {Array} *keys* An array of key accessors that signify each nest level.
 */
@@ -268,14 +317,14 @@ var Tree = (function (Viz$$1) {
     Viz$$1.prototype._draw.call(this, callback);
 
     var height = this._orient === "vertical"
-                 ? this._height - this._margin.top - this._margin.bottom
-                 : this._width - this._margin.left - this._margin.right,
+            ? this._height - this._margin.top - this._margin.bottom
+            : this._width - this._margin.left - this._margin.right,
           left = this._orient === "vertical" ? "left" : "top",
           that = this,
           transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")",
           width = this._orient === "horizontal"
-                ? this._height - this._margin.top - this._margin.bottom
-                : this._width - this._margin.left - this._margin.right;
+            ? this._height - this._margin.top - this._margin.bottom
+            : this._width - this._margin.left - this._margin.right;
 
     var treeData = this._tree
       .separation(this._separation)
@@ -317,8 +366,7 @@ var Tree = (function (Viz$$1) {
         var next = i < d.values.length - 1 ? d.values[i + 1].x : width + this$1._margin[left],
               prev = i ? d.values[i - 1].x : this$1._margin[left];
         return d3Array.min([num, next - v.x, v.x - prev]);
-      }, width); }
-    );
+      }, width); });
 
     var yScale = d3Scale.scaleLinear()
       .domain(yExtent)
@@ -352,8 +400,8 @@ var Tree = (function (Viz$$1) {
                 y = this$1._orient === "vertical" ? -r : 0;
 
           return this$1._orient === "vertical"
-               ? ("M" + x + "," + y + "C" + x + "," + ((y + py) / 2) + " " + px + "," + ((y + py) / 2) + " " + px + "," + py)
-               : ("M" + x + "," + y + "C" + ((x + px) / 2) + "," + y + " " + ((x + px) / 2) + "," + py + " " + px + "," + py);
+            ? ("M" + x + "," + y + "C" + x + "," + ((y + py) / 2) + " " + px + "," + ((y + py) / 2) + " " + px + "," + py)
+            : ("M" + x + "," + y + "C" + ((x + px) / 2) + "," + y + " " + ((x + px) / 2) + "," + py + " " + px + "," + py);
 
         },
         id: function (d, i) { return this$1._ids(d, i).join("-"); }
@@ -373,7 +421,7 @@ var Tree = (function (Viz$$1) {
         },
         labelConfig: {
           textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
-                         : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
+            : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
           verticalAlign: function (d) { return this$1._orient === "vertical" ? d.data.depth === 1 ? "bottom" : "top" : "middle"; }
         },
         hitArea: function (d, i, s) {
@@ -415,9 +463,7 @@ var Tree = (function (Viz$$1) {
       @param {String} [*value* = "vertical"] Accepts either "vertical" or "horizontal".
   */
   Tree.prototype.orient = function orient (_) {
-    return arguments.length
-         ? (this._orient = _, this)
-         : this._orient;
+    return arguments.length ? (this._orient = _, this) : this._orient;
   };
 
   /**
@@ -433,9 +479,7 @@ function separation(a, b) {
 }
   */
   Tree.prototype.separation = function separation (_) {
-    return arguments.length
-         ? (this._separation = _, this)
-         : this._separation;
+    return arguments.length ? (this._separation = _, this) : this._separation;
   };
 
   return Tree;
@@ -556,9 +600,7 @@ var Treemap = (function (Viz$$1) {
       @param {Function|Number} [*value*]
   */
   Treemap.prototype.padding = function padding (_) {
-    return arguments.length
-         ? (this._padding = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._padding;
+    return arguments.length ? (this._padding = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._padding;
   };
 
   /**
@@ -571,9 +613,7 @@ function comparator(a, b) {
 }
   */
   Treemap.prototype.sort = function sort (_) {
-    return arguments.length
-         ? (this._sort = _, this)
-         : this._sort;
+    return arguments.length ? (this._sort = _, this) : this._sort;
   };
 
   /**
@@ -586,9 +626,7 @@ function sum(d) {
 }
   */
   Treemap.prototype.sum = function sum (_) {
-    return arguments.length
-         ? (this._sum = typeof _ === "function" ? _ : d3plusCommon.constant(_), this)
-         : this._sum;
+    return arguments.length ? (this._sum = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._sum;
   };
 
   /**
@@ -597,9 +635,7 @@ function sum(d) {
       @param {Function} [*value*]
   */
   Treemap.prototype.tile = function tile (_) {
-    return arguments.length
-         ? (this._tile = _, this)
-         : this._tile;
+    return arguments.length ? (this._tile = _, this) : this._tile;
   };
 
   return Treemap;
