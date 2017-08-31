@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.10
+  d3plus-legend v0.8.11
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -717,20 +717,19 @@ var Legend = (function (BaseClass$$1) {
       r: d3plusCommon.constant(5),
       width: d3plusCommon.constant(10),
       x: function (d, i) {
-        var s = this$1._shapeConfig.width;
-        var y = this$1._lineData[i].y;
+        var datum = this$1._lineData[i];
+        var y = datum.y;
         var pad = this$1._align === "left" || this$1._align === "right" && this$1._direction === "column" ? 0 : this$1._align === "center"
           ? (this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }))) / 2
           : this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }));
         var prevWords = this$1._lineData.slice(0, i).filter(function (l) { return y === l.y; });
-        return this$1._rowWidth(prevWords) + this$1._padding * (prevWords.length ? 2 : 0) +
-               this$1._outerBounds.x + s(d, i) / 2 + pad;
+        return this$1._rowWidth(prevWords) + this$1._padding * (prevWords.length ? datum.sentence ? 2 : 1 : 0) +
+               this$1._outerBounds.x + datum.shapeWidth / 2 + pad;
       },
       y: function (d, i) {
-        var s = this$1._shapeConfig.height;
         var ld = this$1._lineData[i];
         return ld.y + this$1._titleHeight + this$1._outerBounds.y +
-               d3Array.max(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return s(l, x); }))) / 2;
+               d3Array.max(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return this$1._fetchConfig("height", l, x); }))) / 2;
       }
     };
     this._titleClass = new d3plusText.TextBox();
@@ -800,32 +799,50 @@ var Legend = (function (BaseClass$$1) {
 
     // Calculate Text Sizes
     this._lineData = this._data.map(function (d, i) {
+
+      var label = this$1._label(d, i);
+
+      var res = {
+        data: d,
+        i: i,
+        id: this$1._id(d, i),
+        shapeWidth: this$1._fetchConfig("width", d, i),
+        shapeHeight: this$1._fetchConfig("height", d, i),
+        y: 0
+      };
+
+      if (!label) {
+        res.sentence = false;
+        res.words = [];
+        res.height = 0;
+        res.width = 0;
+        return res;
+      }
+
       var f = this$1._fetchConfig("fontFamily", d, i),
             lh = this$1._fetchConfig("lineHeight", d, i),
-            s = this$1._fetchConfig("fontSize", d, i),
-            shapeWidth = this$1._fetchConfig("width", d, i);
+            s = this$1._fetchConfig("fontSize", d, i);
+
       var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
             w = this$1._width;
-      var res = d3plusText.textWrap()
+
+      res = Object.assign(res, d3plusText.textWrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lh)
         .width(w)
         .height(h)
-        (this$1._label(d, i));
+        (label));
+
       res.width = Math.ceil(d3Array.max(res.lines.map(function (t) { return d3plusText.textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
       res.height = Math.ceil(res.lines.length * (lh + 1));
       res.og = {height: res.height, width: res.width};
-      res.data = d;
       res.f = f;
       res.s = s;
       res.lh = lh;
-      res.y = 0;
-      res.id = this$1._id(d, i);
-      res.i = i;
-      res.shapeWidth = shapeWidth;
-      res.shapeHeight = this$1._fetchConfig("height", d, i);
+
       return res;
+
     });
 
     var spaceNeeded;
