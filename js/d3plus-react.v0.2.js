@@ -1,17 +1,76 @@
 /*
-  d3plus-react v0.2.12
+  d3plus-react v0.2.13
   React components for d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('prop-types'), require('d3plus-common'), require('d3plus-geomap'), require('d3plus-hierarchy'), require('d3plus-network'), require('d3plus-priestley')) :
 	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'prop-types', 'd3plus-common', 'd3plus-geomap', 'd3plus-hierarchy', 'd3plus-network', 'd3plus-priestley'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3plusPlot,global.React,global.PropTypes,global.d3plusCommon,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
+	(factory((global.d3plus = {}),global.d3plusPlot,global.React,global.PropTypes,global.d3plusCommon,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
 }(this, (function (exports,d3plusPlot,React,PropTypes,d3plusCommon,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
 
-React = 'default' in React ? React['default'] : React;
-PropTypes = 'default' in PropTypes ? PropTypes['default'] : PropTypes;
+React = React && React.hasOwnProperty('default') ? React['default'] : React;
+PropTypes = PropTypes && PropTypes.hasOwnProperty('default') ? PropTypes['default'] : PropTypes;
 
 var typeLookup = {AreaPlot: d3plusPlot.AreaPlot, BarChart: d3plusPlot.BarChart, Donut: d3plusHierarchy.Donut, Geomap: d3plusGeomap.Geomap, LinePlot: d3plusPlot.LinePlot, Network: d3plusNetwork.Network, Pie: d3plusHierarchy.Pie, Plot: d3plusPlot.Plot, Priestley: d3plusPriestley.Priestley, StackedArea: d3plusPlot.StackedArea, Tree: d3plusHierarchy.Tree, Treemap: d3plusHierarchy.Treemap};
 
@@ -94,11 +153,11 @@ Viz.defaultProps = {type: d3plusHierarchy.Treemap};
     @class AreaPlot
     @extends Viz
 */
-var AreaPlot$1 = (function (Shell) {
+var AreaPlot$1 = (function (Shell$$1) {
     function AreaPlot$$1 () {
-        Shell.apply(this, arguments);
-    }if ( Shell ) AreaPlot$$1.__proto__ = Shell;
-    AreaPlot$$1.prototype = Object.create( Shell && Shell.prototype );
+        Shell$$1.apply(this, arguments);
+    }if ( Shell$$1 ) AreaPlot$$1.__proto__ = Shell$$1;
+    AreaPlot$$1.prototype = Object.create( Shell$$1 && Shell$$1.prototype );
     AreaPlot$$1.prototype.constructor = AreaPlot$$1;
 
     
