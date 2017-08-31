@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-legend.v0.8.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var data = [
+    {id: "Apple", color: "orange", image: "https://datausa.io/static/img/attrs/thing_apple.png"},
+    {id: "Fish", color: "blue", image: "https://datausa.io/static/img/attrs/thing_fish.png"},
+    {id: "Tomato", color: "red", image: "https://datausa.io/static/img/attrs/thing_tomato.png"}
+  ];
+  
+  var legend = new d3plus.Legend()
+    .data(data)
+    .label(false)
+    .shapeConfig({
+      backgroundImage: function(d) { return d.image; },
+      fill: function(d) { return d.color; },
+      height: 25,
+      width: 25
+    })
+    .render();
+
+</script>
+
+</html>
