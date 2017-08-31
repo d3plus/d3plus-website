@@ -8,7 +8,7 @@ kind: class
 ### **StackedArea** [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/StackedArea.js#L3)
 
 
-This is a global class, and extends all of the methods and functionality of [<code>Area</code>](#Area).
+This is a global class, and extends all of the methods and functionality of <code>Area</code>.
 
 
 <a name="new_StackedArea_new" href="#new_StackedArea_new">#</a> new **StackedArea**()

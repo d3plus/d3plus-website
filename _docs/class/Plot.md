@@ -8,10 +8,10 @@ kind: class
 ### **Plot** [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Plot.js#L17)
 
 
-This is a global class, and extends all of the methods and functionality of [<code>Viz</code>](#Viz).
+This is a global class, and extends all of the methods and functionality of <code>Viz</code>.
 
 
-* [Plot](#Plot) ⇐ [<code>Viz</code>](#Viz)
+* [Plot](#Plot) ⇐ <code>Viz</code>
     * [new Plot()](#new_Plot_new)
     * [.barPadding([*value*])](#Plot.barPadding)
     * [.baseline([*value*])](#Plot.baseline)
