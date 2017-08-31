@@ -1,14 +1,14 @@
 ---
-title: Simple Network
+title: Simple Network Graph
 width: 990
 height: 400
-time: 1500553235145
-date: July 20, 2017
+time: 1504199539674
+date: August 31, 2017
 ---
 
-# Simple Network
+# Simple Network Graph
 
-Given an array of nodes and an array of links, d3plus-network creates a simple network visualization based on the supplied x and y coordinates.
+Given an array of [nodes](http://d3plus.org/docs/#Network.nodes) and an array of [links](http://d3plus.org/docs/#Network.links), [d3plus-network](https://github.com/d3plus/d3plus-network) creates a simple network visualization based on the supplied x and y coordinates.
 
 ```js
 var nodes = [
