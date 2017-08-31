@@ -1,9 +1,68 @@
 /*
-  d3plus-geomap v0.4.11
+  d3plus-geomap v0.4.12
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-geo'), require('d3-scale'), require('d3-selection'), require('d3-tile'), require('d3-zoom'), require('topojson-client'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
 	typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports', 'd3-array', 'd3-color', 'd3-geo', 'd3-scale', 'd3-selection', 'd3-tile', 'd3-zoom', 'topojson-client', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
