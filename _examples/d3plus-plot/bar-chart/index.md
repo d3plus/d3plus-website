@@ -2,11 +2,13 @@
 title: Bar Chart
 width: 990
 height: 400
+time: 1504199304711
+date: August 31, 2017
 ---
 
 # Bar Chart
 
-When constructing data to be used with a Bar Chart, there must be a unique data point for each bar. Given this data array:
+When constructing data to be used with the [BarChart](http://d3plus.org/docs/#BarChart) class, there must be a unique data point for each bar. Given this data array:
 
 ```js
 var data = [

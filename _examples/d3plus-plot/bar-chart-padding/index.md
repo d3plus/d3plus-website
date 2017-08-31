@@ -2,11 +2,13 @@
 title: Custom Bar Chart Padding
 width: 990
 height: 400
+time: 1504199304711
+date: August 31, 2017
 ---
 
 # Custom Bar Chart Padding
 
-The default values for padding between each group of bars and the bars within a group do not always work with every dataset. Those values can be changed using the barPadding and groupPadding methods.
+The default values for padding between each group of bars and the bars within a group do not always work with every dataset. Those values can be changed using the [.barPadding( )](http://d3plus.org/docs/#BarChart.barPadding) and [.groupPadding( )](http://d3plus.org/docs/#BarChart.groupPadding) methods.
 
 ```js
 var data = [

@@ -2,11 +2,13 @@
 title: Changing the Stroke Width of a Line Plot
 width: 990
 height: 400
+time: 1504199304711
+date: August 31, 2017
 ---
 
 # Changing the Stroke Width of a Line Plot
 
-When making a line plot, you can modify the stroke-width property of the lines to be drawn by passing a value to the nested shapeConfig of "Line":
+When making a [LinePlot](http://d3plus.org/docs/#LinePlot), you can modify the stroke-width property of the lines to be drawn by passing a value to the nested [.shapeConfig( )](http://d3plus.org/docs/#Plot.shapeConfig) of "Line":
 
 ```js
 var data = [

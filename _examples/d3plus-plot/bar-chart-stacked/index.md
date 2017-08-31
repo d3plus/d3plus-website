@@ -2,11 +2,13 @@
 title: Stacked Bar Chart
 width: 990
 height: 400
+time: 1504199304711
+date: August 31, 2017
 ---
 
 # Stacked Bar Chart
 
-The rectangles in a bar chart can be stacked on top of each other by simply setting the stacked method to `true`:
+The rectangles in a bar chart can be stacked on top of each other by simply setting the [.stacked( )](http://d3plus.org/docs/#Plot.stacked) method to `true`:
 
 ```js
 var data = [

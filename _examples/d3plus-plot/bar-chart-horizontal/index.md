@@ -2,11 +2,13 @@
 title: Horizontal Bar Chart
 width: 990
 height: 400
+time: 1504199304711
+date: August 31, 2017
 ---
 
 # Horizontal Bar Chart
 
-The BarChart class defaults to being vertical, so there are a few methods that need to be make the bars drawn horizontal.
+The [BarChart](http://d3plus.org/docs/#BarChart) class defaults to being vertical, so there are a few methods that need to be make the bars drawn horizontal.
 
 ```js
 var data = [
@@ -19,7 +21,7 @@ var data = [
 ];
 ```
 
-In addition to switching the x and y accessor to reference the opposite key in or data, we also need to define the y-axis as the discrete axis, meaning that the values on that axis should never be aggregated and treated as individual buckets.
+In addition to switching the x and y accessor to reference the opposite key in or data, we also need to define the y-axis as the [discrete](http://d3plus.org/docs/#Plot.discrete) axis, meaning that the values on that axis should never be aggregated and treated as individual buckets.
 
 ```js
 new d3plus.BarChart()

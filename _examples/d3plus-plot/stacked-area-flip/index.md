@@ -1,10 +1,12 @@
 ---
-title: Flipping a Stacked Area Chart
+title: Horizontal Stacked Area Chart
 width: 990
 height: 400
+time: 1504199304711
+date: August 31, 2017
 ---
 
-# Flipping a Stacked Area Chart
+# Horizontal Stacked Area Chart
 
 Sometimes the need arises to flip the x/y axes on a chart. Based on the [Simple Stacked Area Chart Example](https://d3plus.org/examples/d3plus-plot/stacked-area/), swapping the x/y keys in the data array:
 

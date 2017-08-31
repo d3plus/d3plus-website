@@ -2,11 +2,13 @@
 title: Stacked Area Chart
 width: 990
 height: 400
+time: 1504199304711
+date: August 31, 2017
 ---
 
 # Stacked Area Chart
 
-When constructing data to be used with an Stacked Area Chart, there must be a unique data point for each point on the discrete axis (defaults to the X axis). Given this data array:
+When constructing data to be used with an [StackedArea](http://d3plus.org/docs/#StackedArea) chart, there must be a unique data point for each point on the discrete axis (defaults to the X axis). Given this data array:
 
 ```js
 var data = [
