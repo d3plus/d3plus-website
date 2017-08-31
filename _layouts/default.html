@@ -11,7 +11,7 @@
     <link rel="apple-touch-icon" sizes="256x256" href="/assets/img/touchicon.png?v=2">
 
     <!-- Facebook Properties -->
-    <meta property="og:image" content="http://d3plus.org/assets/img/facebook.jpg" />
+    <meta property="og:image" content="{% if page.url contains '/examples/d3plus-' %}http://d3plus.org{{ page.url | replace: 'index', 'thumb.png' }}{% else %}http://d3plus.org/assets/img/facebook.jpg{% endif %}" />
 
     <!-- Roboto -->
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
