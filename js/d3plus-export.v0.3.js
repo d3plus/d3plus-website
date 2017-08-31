@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.1
+  d3plus-export v0.3.2
   Export methods for transforming and downloading SVG.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -105,6 +105,12 @@ var canvgOptions = {
   ignoreClear: true
 };
 
+/**
+    @function parseTransform
+    @desc Extracts scale, x, and y position from an elements "transform" attribute, respecting cross-browser render differences.
+    @param {HTMLElement} elem The element to be analyzed.
+    @private
+*/
 function parseTransform(elem) {
 
   var property = d3Selection.select(elem).attr("transform");
@@ -189,7 +195,8 @@ var dom2canvas = function(elem, options) {
 
   function checkRender(trans) {
 
-    if (options.exclude.includes(this)) { return; }
+    var tag = (this.tagName || "").toLowerCase();
+    if (options.exclude.includes(this) || tag === "foreignobject") { return; }
 
     var transform = Object.assign({}, trans);
 
@@ -238,8 +245,6 @@ var dom2canvas = function(elem, options) {
       }
 
     }
-
-    var tag = (this.tagName || "").toLowerCase();
 
     if (!tag.length) {
       var test = (this.wholeText || "").replace(/\s/g, "");
@@ -304,7 +309,7 @@ var dom2canvas = function(elem, options) {
       }
 
     }
-    else if (["div", "foreignobject", "span"].includes(tag) && !d3Selection.select(this).selectAll("svg").size()) {
+    else if (["div", "span"].includes(tag) && !d3Selection.select(this).selectAll("svg").size()) {
 
       var data$1 = {
         height: height,
@@ -334,7 +339,7 @@ var dom2canvas = function(elem, options) {
       });
 
     }
-    else if (tag !== "svg" && this.childNodes.length > 0 && !d3Selection.select(this).selectAll("foreignobject, image, img, svg").size()) {
+    else if (tag !== "svg" && this.childNodes.length > 0 && !d3Selection.select(this).selectAll("image, img, svg").size()) {
 
       var elem$1 = this.cloneNode(true);
       d3Selection.select(elem$1).selectAll("*").each(function() {
