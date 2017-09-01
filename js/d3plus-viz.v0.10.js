@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.5
+  d3plus-viz v0.10.6
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -1271,8 +1271,6 @@ var Viz = (function (BaseClass$$1) {
     //     .attr("x", this._margin.left)
     //     .attr("y", this._margin.top);
 
-    zoomControls.bind(this)();
-
   };
 
   /**
@@ -1387,6 +1385,7 @@ var Viz = (function (BaseClass$$1) {
       q.awaitAll(function () {
 
         this$1._draw(callback);
+        zoomControls.bind(this$1)();
         if (this$1._message) { this$1._messageClass.hide(); }
 
         if (this$1._detectResize && (this$1._autoWidth || this$1._autoHeight)) {
