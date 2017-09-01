@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.12
+  d3plus-geomap v0.4.13
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -64,15 +64,26 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-geo'), require('d3-scale'), require('d3-selection'), require('d3-tile'), require('d3-zoom'), require('topojson-client'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
-	typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports', 'd3-array', 'd3-color', 'd3-geo', 'd3-scale', 'd3-selection', 'd3-tile', 'd3-zoom', 'topojson-client', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-	(factory((global.d3plus = {}),global.d3Array,global.d3Color,global.d3Geo,global.scales,global.d3Selection,global.d3Tile,global.d3Zoom,global.topojsonClient,global.d3plusCommon,global.d3plusShape,global.d3plusViz));
-}(this, (function (exports,d3Array,d3Color,d3Geo,scales,d3Selection,d3Tile,d3Zoom,topojsonClient,d3plusCommon,d3plusShape,d3plusViz) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-geo'), require('d3-scale'), require('d3-tile'), require('topojson-client'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
+	typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports', 'd3-array', 'd3-color', 'd3-geo', 'd3-scale', 'd3-tile', 'topojson-client', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
+	(factory((global.d3plus = {}),global.d3Array,global.d3Color,global.d3Geo,global.scales,global.d3Tile,global.topojsonClient,global.d3plusCommon,global.d3plusShape,global.d3plusViz));
+}(this, (function (exports,d3Array,d3Color,d3Geo,scales,d3Tile,topojsonClient,d3plusCommon,d3plusShape,d3plusViz) { 'use strict';
 
 /**
     @external Viz
     @see https://github.com/d3plus/d3plus-viz#Viz
 */
+/**
+    @name topo2feature
+    @desc Converts a specific topojson object key into a feature ready for projection.
+    @param {Object} *topo* A valid topojson json object.
+    @param {String} [*key*] The topojson object key to be used. If undefined, the first key available will be used.
+    @private
+*/
+function topo2feature(topo, key) {
+  var k = key && topo.objects[key] ? key : Object.keys(topo.objects)[0];
+  return topojsonClient.feature(topo, topo.objects[k]);
+}
 
 /**
     @class Geomap
@@ -130,12 +141,6 @@ var Geomap = (function (Viz$$1) {
     this._topojsonId = d3plusCommon.accessor("id");
 
     this._zoom = true;
-    this._zoomBehavior = d3Zoom.zoom();
-    this._zoomBrush = false;
-    // this._zoomFactor = 2;
-    this._zoomPan = true;
-    // this._zoomReset = true;
-    this._zoomScroll = true;
     this._zoomSet = false;
 
   }
@@ -148,19 +153,16 @@ var Geomap = (function (Viz$$1) {
       Renders map tiles based on the current zoom level.
       @private
   */
-  Geomap.prototype._renderTiles = function _renderTiles () {
+  Geomap.prototype._renderTiles = function _renderTiles (transform) {
     var this$1 = this;
 
 
-    var tau = 2 * Math.PI,
-          transform = d3Zoom.zoomTransform(this._geomapGroup.node());
-
     var tileData = [];
     if (this._tiles) {
-      // const d = this._projection(this._rotate)[0] - this._projection([0, 0])[0];
+
       tileData = this._tileGen
         .extent(this._zoomBehavior.translateExtent())
-        .scale(this._projection.scale() * tau * transform.k)
+        .scale(this._projection.scale() * (2 * Math.PI) * transform.k)
         .translate(transform.apply(this._projection.translate()))
         ();
 
@@ -188,94 +190,6 @@ var Geomap = (function (Viz$$1) {
   };
 
   /**
-      Handles events dispatched from this._zoomBehavior
-      @private
-  */
-  Geomap.prototype._zoomed = function _zoomed () {
-
-    this._zoomGroup.attr("transform", d3Selection.event.transform);
-    this._renderTiles();
-
-    //   if (event && !this._zoomPan) {
-    //     this._zoomPan = true;
-    //     zoomEvents();
-    //   }
-
-    //   let s = this._zoomBehavior.scale();
-    //   const trans = this._zoomBehavior.translate();
-    //
-    //   let pz = s / this._polyZoom;
-    //
-    //   if (pz < minZoom) {
-    //     pz = minZoom;
-    //     s = pz * this._polyZoom;
-    //     this._zoomBehavior.scale(s);
-    //   }
-    // const nh = height;
-    // const bh = coordBounds[1][1] - coordBounds[0][1];
-    // const bw = coordBounds[1][0] - coordBounds[0][0];
-    // const xoffset = (width - bw * pz) / 2;
-    // const xmin = xoffset > 0 ? xoffset : 0;
-    // const xmax = xoffset > 0 ? width - xoffset : width;
-    // const yoffset = (nh - bh * pz) / 2;
-    // const ymin = yoffset > 0 ? yoffset : 0;
-    // const ymax = yoffset > 0 ? nh - yoffset : nh;
-    //
-    // const extent = this._zoomBehavior.translateExtent();
-    // if (transform.x + extent[0][0] * transform.k > xmin) {
-    //   transform.x = -extent[0][0] * transform.k + xmin;
-    // }
-    // else if (transform.x + extent[1][0] * transform.k < xmax) {
-    //   transform.x = xmax - extent[1][0] * transform.k;
-    // }
-    //
-    // if (transform.y + extent[0][1] * transform.k > ymin) {
-    //   transform.y = -extent[0][1] * transform.k + ymin;
-    // }
-    // else if (transform.y + extent[1][1] * transform.k < ymax) {
-    //   transform.y = ymax - extent[1][1] * transform.k;
-    // }
-    // console.log(transform, this._zoomBehavior.translateExtent());
-    //   this._zoomBehavior.translate(trans);
-
-  };
-
-
-
-  /**
-      Handles adding/removing zoom event listeners.
-      @private
-  */
-  Geomap.prototype._zoomEvents = function _zoomEvents () {
-
-    if (this._zoomBrush) {
-      // brushGroup.style("display", "inline");
-      this._geomapGroup.on(".zoom", null);
-    }
-    else if (this._zoom) {
-      // brushGroup.style("display", "none");
-      this._geomapGroup.call(this._zoomBehavior);
-      if (!this._zoomScroll) {
-        this._geomapGroup
-          .on("mousewheel.zoom", null)
-          .on("MozMousePixelScroll.zoom", null)
-          .on("wheel.zoom", null);
-      }
-      if (!this._zoomPan) {
-        this._geomapGroup
-          .on("mousedown.zoom", null)
-          .on("mousemove.zoom", null)
-          .on("touchstart.zoom", null)
-          .on("touchmove.zoom", null);
-      }
-    }
-    else {
-      this._geomapGroup.on(".zoom", null);
-    }
-
-  };
-
-  /**
       Extends the draw behavior of the abstract Viz class.
       @private
   */
@@ -288,24 +202,24 @@ var Geomap = (function (Viz$$1) {
     var height = this._height - this._margin.top - this._margin.bottom,
           width = this._width - this._margin.left - this._margin.right;
 
-    this._geomapGroup = this._select.selectAll("svg.d3plus-geomap-geomapGroup").data([0]);
-    this._geomapGroup = this._geomapGroup.enter().append("svg")
-      .attr("class", "d3plus-geomap-geomapGroup")
+    this._container = this._select.selectAll("svg.d3plus-geomap").data([0]);
+    this._container = this._container.enter().append("svg")
+      .attr("class", "d3plus-geomap")
       .attr("opacity", 0)
       .attr("width", width)
       .attr("height", height)
       .attr("x", this._margin.left)
       .attr("y", this._margin.top)
       .style("background-color", this._ocean || "transparent")
-      .merge(this._geomapGroup);
-    this._geomapGroup.transition(this._transition)
+      .merge(this._container);
+    this._container.transition(this._transition)
       .attr("opacity", 1)
       .attr("width", width)
       .attr("height", height)
       .attr("x", this._margin.left)
       .attr("y", this._margin.top);
 
-    var ocean = this._geomapGroup.selectAll("rect.d3plus-geomap-ocean").data([0]);
+    var ocean = this._container.selectAll("rect.d3plus-geomap-ocean").data([0]);
     ocean.enter().append("rect")
         .attr("class", "d3plus-geomap-ocean")
       .merge(ocean)
@@ -313,12 +227,12 @@ var Geomap = (function (Viz$$1) {
         .attr("height", height)
         .attr("fill", this._ocean || "transparent");
 
-    this._tileGroup = this._geomapGroup.selectAll("g.d3plus-geomap-tileGroup").data([0]);
+    this._tileGroup = this._container.selectAll("g.d3plus-geomap-tileGroup").data([0]);
     this._tileGroup = this._tileGroup.enter().append("g")
       .attr("class", "d3plus-geomap-tileGroup")
       .merge(this._tileGroup);
 
-    this._zoomGroup = this._geomapGroup.selectAll("g.d3plus-geomap-zoomGroup").data([0]);
+    this._zoomGroup = this._container.selectAll("g.d3plus-geomap-zoomGroup").data([0]);
     this._zoomGroup = this._zoomGroup.enter().append("g")
       .attr("class", "d3plus-geomap-zoomGroup")
       .merge(this._zoomGroup);
@@ -327,41 +241,6 @@ var Geomap = (function (Viz$$1) {
     pathGroup = pathGroup.enter().append("g")
       .attr("class", "d3plus-geomap-paths")
       .merge(pathGroup);
-
-    // TODO: Brush to Zoom
-    // const brushGroup = this._select.selectAll("g.brush").data([0]);
-    // brushGroup.enter().append("g").attr("class", "brush");
-    //
-    // var xBrush = d3.scale.identity().domain([0, width]),
-    //     yBrush = d3.scale.identity().domain([0, height]);
-    //
-    // function brushended(e) {
-    //
-    //   if (!event.sourceEvent) return;
-    //
-    //   const extent = brush.extent();
-    //   brushGroup.call(brush.clear());
-    //
-    //   const zs = this._zoomBehavior.scale(), zt = this._zoomBehavior.translate();
-    //
-    //   const pos1 = extent[0].map((p, i) => (p - zt[i]) / (zs / this._polyZoom));
-    //   const pos2 = extent[1].map((p, i) => (p - zt[i]) / (zs / this._polyZoom));
-    //
-    //   zoomToBounds([pos1, pos2]);
-    //
-    // }
-    //
-    // var brush = d3.svg.brush()
-    //   .x(xBrush)
-    //   .y(yBrush)
-    //   .on("brushend", brushended);
-    //
-    // if (this._zoom) brushGroup.call(brush);
-
-    function topo2feature(topo, key) {
-      var k = key && topo.objects[key] ? key : Object.keys(topo.objects)[0];
-      return topojsonClient.feature(topo, topo.objects[k]);
-    }
 
     var coordData = this._coordData = this._topojson
       ? topo2feature(this._topojson, this._topojsonKey)
@@ -504,88 +383,11 @@ var Geomap = (function (Viz$$1) {
       this._zoomBehavior
         .extent([[0, 0], [width, height]])
         .scaleExtent([1, 16])
-        .translateExtent([[0, 0], [width, height]])
-        .on("zoom", this._zoomed.bind(this));
+        .translateExtent([[0, 0], [width, height]]);
 
       this._zoomSet = true;
 
     }
-
-    // TODO: Zoom math?
-    // function zoomMath(factor) {
-    //
-    //   const center = [width / 2, height / 2];
-    //
-    //   const extent = this._zoomBehavior.scaleExtent(),
-    //         scale = this._zoomBehavior.scale(),
-    //         translate = this._zoomBehavior.translate();
-    //
-    //   let targetScale = scale * factor,
-    //       x = translate[0],
-    //       y = translate[1];
-    //
-    //   // If we're already at an extent, done
-    //   if (targetScale === extent[0] || targetScale === extent[1]) return false;
-    //
-    //   // If the factor is too much, scale it down to reach the extent exactly
-    //   const clampedScale = Math.max(extent[0], Math.min(extent[1], targetScale));
-    //   if (clampedScale !== targetScale) {
-    //     targetScale = clampedScale;
-    //     factor = targetScale / scale;
-    //   }
-    //
-    //   // Center each vector, stretch, then put back
-    //   x = (x - center[0]) * factor + center[0];
-    //   y = (y - center[1]) * factor + center[1];
-    //
-    //   this._zoomBehavior.scale(targetScale).translate([x, y]);
-    //   zoomed(this._duration);
-    //
-    //   return true;
-    //
-    // }
-
-    // TODO: Zoom controls
-    // if (this._zoom) {
-    //
-    //   const controls = this._select.selectAll(".map-controls").data([0]);
-    //   const controlsEnter = controls.enter().append("div")
-    //     .attr("class", "map-controls");
-    //
-    //   controlsEnter.append("div").attr("class", "zoom-in")
-    //     .on("click", () => zoomMath(this._zoomFactor));
-    //
-    //   controlsEnter.append("div").attr("class", "zoom-out")
-    //     .on("click", () => zoomMath(1 / this._zoomFactor));
-    //
-    //   controlsEnter.append("div").attr("class", "zoom-reset");
-    //   controls.select(".zoom-reset").on("click", () => {
-    //     // vars.highlight.value = false;
-    //     // this._highlightPath = undefined;
-    //     zoomLogic();
-    //   });
-    //
-    // }
-
-    // TODO: Zoom logic? What's this do?
-    // function zoomLogic(d) {
-    //
-    //   this._zoomReset = true;
-    //
-    //   if (d) zoomToBounds(this._path.bounds(d));
-    //   else {
-    //
-    //     let ns = s;
-    //
-    //     // next line might not be needed?
-    //     ns = ns / Math.PI / 2 * this._polyZoom;
-    //
-    //     this._zoomBehavior.scale(ns * 2 * Math.PI).translate(t);
-    //     zoomed(this._duration);
-    //
-    //   }
-    //
-    // }
 
     this._shapes.push(new d3plusShape.Path()
       .data(topoData)
@@ -618,41 +420,6 @@ var Geomap = (function (Viz$$1) {
     for (var e$2 = 0; e$2 < classEvents.length; e$2++) { circles.on(classEvents[e$2], this$1._on[classEvents[e$2]]); }
 
     this._shapes.push(circles.render());
-
-    // Attaches any initial zoom event handlers.
-    this._zoomEvents();
-
-    // TODO: Zooming to Bounds
-    // function zoomToBounds(b, mod = 250) {
-    //
-    //   const w = width - mod;
-    //
-    //   let ns = this._scale / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / height);
-    //   const nt = [(w - ns * (b[1][0] + b[0][0])) / 2, (height - ns * (b[1][1] + b[0][1])) / 2];
-    //
-    //   ns = ns / Math.PI / 2 * this._polyZoom;
-    //
-    //   this._zoomBehavior.scale(ns * 2 * Math.PI).translate(nt);
-    //   zoomed(this._duration);
-    //
-    // }
-
-    // TODO: Detect zoom brushing
-    // select("body")
-    //   .on(`keydown.d3plus-geomap-${this._uuid}`, function() {
-    //     if (event.keyCode === 16) {
-    //       this._zoomBrush = true;
-    //       zoomEvents();
-    //     }
-    //   })
-    //   .on(`keyup.d3plus-geomap-${this._uuid}`, function() {
-    //     if (event.keyCode === 16) {
-    //       this._zoomBrush = false;
-    //       zoomEvents();
-    //     }
-    //   });
-
-    this._renderTiles();
 
     return this;
 
@@ -828,16 +595,6 @@ If not specified, the first key in the *Array* returned from using `Object.keys`
   */
   Geomap.prototype.topojsonId = function topojsonId (_) {
     return arguments.length ? (this._topojsonId = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this, this) : this._topojsonId;
-  };
-
-  /**
-      @memberof Geomap
-      @desc Toggles the ability to zoom/pan the map.
-      @param {Boolean} [*value* = true]
-      @chainable
-  */
-  Geomap.prototype.zoom = function zoom$$1 (_) {
-    return arguments.length ? (this._zoom = _, this) : this._zoom;
   };
 
   return Geomap;

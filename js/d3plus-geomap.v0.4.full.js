@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.12
+  d3plus-geomap v0.4.13
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -5337,6 +5337,441 @@ var scales = Object.freeze({
 	scaleSequential: sequential
 });
 
+var tile = function() {
+  var x0 = 0,
+      y0 = 0,
+      x1 = 960,
+      y1 = 500,
+      tx = (x0 + x1) / 2,
+      ty = (y0 + y1) / 2,
+      scale = 256,
+      zoomDelta = 0,
+      wrap = true;
+
+  function tile() {
+    var z = Math.max(Math.log(scale) / Math.LN2 - 8, 0),
+        z0 = Math.round(z + zoomDelta),
+        j = 1 << z0,
+        k = Math.pow(2, z - z0 + 8),
+        x = tx - scale / 2,
+        y = ty - scale / 2,
+        tiles = [],
+        cols = range(
+          Math.max(wrap ? -Infinity : 0, Math.floor((x0 - x) / k)),
+          Math.min(Math.ceil((x1 - x) / k), wrap ? Infinity : j)
+        ),
+        rows = range(
+          Math.max(0, Math.floor((y0 - y) / k)),
+          Math.min(Math.ceil((y1 - y) / k), j)
+        );
+
+    rows.forEach(function(y) {
+      cols.forEach(function(x) {
+        tiles.push({
+          x: (x % j + j) % j,
+          y: y,
+          z: z0,
+          tx: x * 256,
+          ty: y * 256
+        });
+      });
+    });
+
+    tiles.translate = [x / k, y / k];
+    tiles.scale = k;
+    return tiles;
+  }
+
+  tile.size = function(_) {
+    return arguments.length ? (x0 = y0 = 0, x1 = +_[0], y1 = +_[1], tile) : [x1 - x0, y1 - y0];
+  };
+
+  tile.extent = function(_) {
+    return arguments.length ? (x0 = +_[0][0], y0 = +_[0][1], x1 = +_[1][0], y1 = +_[1][1], tile) : [[x0, y0], [x1, y1]];
+  };
+
+  tile.scale = function(_) {
+    return arguments.length ? (scale = +_, tile) : scale;
+  };
+
+  tile.translate = function(_) {
+    return arguments.length ? (tx = +_[0], ty = +_[1], tile) : [tx, ty];
+  };
+
+  tile.zoomDelta = function(_) {
+    return arguments.length ? (zoomDelta = +_, tile) : zoomDelta;
+  };
+
+  tile.wrap = function(_) {
+    return arguments.length ? (wrap = _, tile) : wrap;
+  };
+
+  return tile;
+};
+
+var identity$6 = function(x) {
+  return x;
+};
+
+var transform$1 = function(transform) {
+  if (transform == null) { return identity$6; }
+  var x0,
+      y0,
+      kx = transform.scale[0],
+      ky = transform.scale[1],
+      dx = transform.translate[0],
+      dy = transform.translate[1];
+  return function(input, i) {
+    if (!i) { x0 = y0 = 0; }
+    var j = 2, n = input.length, output = new Array(n);
+    output[0] = (x0 += input[0]) * kx + dx;
+    output[1] = (y0 += input[1]) * ky + dy;
+    while (j < n) { output[j] = input[j], ++j; }
+    return output;
+  };
+};
+
+var reverse = function(array, n) {
+  var t, j = array.length, i = j - n;
+  while (i < --j) { t = array[i], array[i++] = array[j], array[j] = t; }
+};
+
+var feature = function(topology, o) {
+  return o.type === "GeometryCollection"
+      ? {type: "FeatureCollection", features: o.geometries.map(function(o) { return feature$1(topology, o); })}
+      : feature$1(topology, o);
+};
+
+function feature$1(topology, o) {
+  var id = o.id,
+      bbox = o.bbox,
+      properties = o.properties == null ? {} : o.properties,
+      geometry = object$2(topology, o);
+  return id == null && bbox == null ? {type: "Feature", properties: properties, geometry: geometry}
+      : bbox == null ? {type: "Feature", id: id, properties: properties, geometry: geometry}
+      : {type: "Feature", id: id, bbox: bbox, properties: properties, geometry: geometry};
+}
+
+function object$2(topology, o) {
+  var transformPoint = transform$1(topology.transform),
+      arcs = topology.arcs;
+
+  function arc(i, points) {
+    if (points.length) { points.pop(); }
+    for (var a = arcs[i < 0 ? ~i : i], k = 0, n = a.length; k < n; ++k) {
+      points.push(transformPoint(a[k], k));
+    }
+    if (i < 0) { reverse(points, n); }
+  }
+
+  function point(p) {
+    return transformPoint(p);
+  }
+
+  function line(arcs) {
+    var points = [];
+    for (var i = 0, n = arcs.length; i < n; ++i) { arc(arcs[i], points); }
+    if (points.length < 2) { points.push(points[0]); } // This should never happen per the specification.
+    return points;
+  }
+
+  function ring(arcs) {
+    var points = line(arcs);
+    while (points.length < 4) { points.push(points[0]); } // This may happen if an arc has only two points.
+    return points;
+  }
+
+  function polygon(arcs) {
+    return arcs.map(ring);
+  }
+
+  function geometry(o) {
+    var type = o.type, coordinates;
+    switch (type) {
+      case "GeometryCollection": return {type: type, geometries: o.geometries.map(geometry)};
+      case "Point": coordinates = point(o.coordinates); break;
+      case "MultiPoint": coordinates = o.coordinates.map(point); break;
+      case "LineString": coordinates = line(o.arcs); break;
+      case "MultiLineString": coordinates = o.arcs.map(line); break;
+      case "Polygon": coordinates = polygon(o.arcs); break;
+      case "MultiPolygon": coordinates = o.arcs.map(polygon); break;
+      default: return null;
+    }
+    return {type: type, coordinates: coordinates};
+  }
+
+  return geometry(o);
+}
+
+/**
+    @function accessor
+    @desc Wraps an object key in a simple accessor function.
+    @param {String} key The key to be returned from each Object passed to the function.
+    @param {*} [def] A default value to be returned if the key is not present.
+    @example <caption>this</caption>
+accessor("id");
+    @example <caption>returns this</caption>
+function(d) {
+  return d["id"];
+}
+*/
+var accessor = function(key, def) {
+  if (def === void 0) { return function (d) { return d[key]; }; }
+  return function (d) { return d[key] === void 0 ? def : d[key]; };
+};
+
+/**
+    @function isObject
+    @desc Detects if a variable is a javascript Object.
+    @param {*} item
+*/
+var isObject = function(item) {
+  return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
+};
+
+/**
+    @function assign
+    @desc A deeply recursive version of `Object.assign`.
+    @param {...Object} objects
+    @example <caption>this</caption>
+assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
+    @example <caption>returns this</caption>
+{id: "bar", deep: {group: "A", value: 20}}
+*/
+function assign() {
+  var objects = [], len = arguments.length;
+  while ( len-- ) objects[ len ] = arguments[ len ];
+
+
+  var target = objects[0];
+  var loop = function ( i ) {
+
+    var source = objects[i];
+
+    Object.keys(source).forEach(function (prop) {
+
+      var value = source[prop];
+
+      if (isObject(value)) {
+
+        if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
+        else { target[prop] = value; }
+
+      }
+      else if (Array.isArray(value)) {
+
+        if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
+
+          var targetArray = target[prop];
+
+          value.forEach(function (sourceItem, itemIndex) {
+
+            if (itemIndex < targetArray.length) {
+              var targetItem = targetArray[itemIndex];
+
+              if (Object.is(targetItem, sourceItem)) { return; }
+
+              if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
+                targetArray[itemIndex] = assign({}, targetItem, sourceItem);
+              }
+              else { targetArray[itemIndex] = sourceItem; }
+
+            }
+            else { targetArray.push(sourceItem); }
+
+          });
+        }
+        else { target[prop] = value; }
+
+      }
+      else { target[prop] = value; }
+
+    });
+  };
+
+  for (var i = 1; i < objects.length; i++) loop( i );
+
+  return target;
+
+}
+
+/**
+    @function attrize
+    @desc Applies each key/value in an object as an attr.
+    @param {D3selection} elem The D3 element to apply the styles to.
+    @param {Object} attrs An object of key/value attr pairs.
+*/
+var attrize = function(e, a) {
+  if ( a === void 0 ) a = {};
+
+  for (var k in a) { if ({}.hasOwnProperty.call(a, k)) { e.attr(k, a[k]); } }
+};
+
+/**
+    @function s
+    @desc Returns 4 random characters, used for constructing unique identifiers.
+    @private
+*/
+function s() {
+  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+}
+
+/**
+    @function uuid
+    @summary Returns a unique identifier.
+*/
+var uuid = function() {
+  return ("" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s()));
+};
+
+/**
+    @class BaseClass
+    @summary An abstract class that contains some global methods and functionality.
+*/
+var BaseClass = function BaseClass() {
+  this._on = {};
+  this._uuid = uuid();
+};
+
+/**
+    @memberof BaseClass
+    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
+    @param {Object} [*value*]
+    @chainable
+*/
+BaseClass.prototype.config = function config (_) {
+    var this$1 = this;
+
+  if (arguments.length) {
+    for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
+    return this;
+  }
+  else {
+    var config = {};
+    for (var k$1 in this$1.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
+    return config;
+  }
+};
+
+/**
+    @memberof BaseClass
+    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
+    @param {String} [*typenames*]
+    @param {Function} [*listener*]
+    @chainable
+    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
+new Plot
+.on("click.Shape", function(d) {
+  console.log("data for shape clicked:", d);
+})
+.on("click.Legend", function(d) {
+  console.log("data for legend clicked:", d);
+})
+*/
+BaseClass.prototype.on = function on (_, f) {
+  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
+};
+
+/**
+    @function closest
+    @desc Finds the closest numeric value in an array.
+    @param {Number} n The number value to use when searching the array.
+    @param {Array} arr The array of values to test against.
+*/
+var closest = function(n, arr) {
+  if ( arr === void 0 ) arr = [];
+
+  if (!arr || !(arr instanceof Array) || !arr.length) { return undefined; }
+  return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
+};
+
+/**
+    @function configPrep
+    @desc Preps a config object for d3plus data, and optionally bubbles up a specific nested type. When using this function, you must bind a d3plus class' `this` context.
+    @param {Object} [config = this._shapeConfig] The configuration object to parse.
+    @param {String} [type = "shape"] The event classifier to user for "on" events. For example, the default event type of "shape" will apply all events in the "on" config object with that key, like "click.shape" and "mouseleave.shape", in addition to any gloval events like "click" and "mouseleave".
+    @param {String} [nest] An optional nested key to bubble up to the parent config level.
+*/
+function configPrep(config, type, nest) {
+  if ( config === void 0 ) config = this._shapeConfig;
+  if ( type === void 0 ) type = "shape";
+  if ( nest === void 0 ) nest = false;
+
+
+  var newConfig = {duration: this._duration, on: {}};
+
+  var wrapFunction = function (func) { return function (d, i, s) {
+    while (d.__d3plus__) {
+      i = d.i;
+      d = d.data || d.feature;
+    }
+    return func(d, i, s);
+  }; };
+
+  var parseEvents = function (newObj, on) {
+
+    for (var event in on) {
+
+      if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type))) {
+
+        newObj.on[event] = wrapFunction(on[event]);
+
+      }
+
+    }
+
+  };
+
+  var keyEval = function (newObj, obj) {
+
+    for (var key in obj) {
+
+      if ({}.hasOwnProperty.call(obj, key)) {
+
+        if (key === "on") { parseEvents(newObj, obj[key]); }
+        else if (typeof obj[key] === "function") {
+          newObj[key] = wrapFunction(obj[key]);
+        }
+        else if (typeof obj[key] === "object" && !(obj instanceof Array)) {
+          newObj[key] = {on: {}};
+          keyEval(newObj[key], obj[key]);
+        }
+        else { newObj[key] = obj[key]; }
+
+      }
+
+    }
+
+  };
+
+  keyEval(newConfig, config);
+  if (this._on) { parseEvents(newConfig, this._on); }
+  if (nest && config[nest]) {
+    keyEval(newConfig, config[nest]);
+    if (config[nest].on) { parseEvents(newConfig, config[nest].on); }
+  }
+
+  return newConfig;
+
+}
+
+/**
+    @function constant
+    @desc Wraps non-function variables in a simple return function.
+    @param {Array|Number|Object|String} value The value to be returned from the function.
+    @example <caption>this</caption>
+constant(42);
+    @example <caption>returns this</caption>
+function() {
+  return 42;
+}
+*/
+var constant$4 = function(value) {
+  return function constant() {
+    return value;
+  };
+};
+
 var xhtml = "http://www.w3.org/1999/xhtml";
 
 var namespaces = {
@@ -5625,7 +6060,7 @@ EnterNode.prototype = {
   querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
 };
 
-var constant$4 = function(x) {
+var constant$5 = function(x) {
   return function() {
     return x;
   };
@@ -5714,7 +6149,7 @@ var selection_data = function(value, key) {
       parents = this._parents,
       groups = this._groups;
 
-  if (typeof value !== "function") { value = constant$4(value); }
+  if (typeof value !== "function") { value = constant$5(value); }
 
   for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
     var parent = parents[j],
@@ -6254,78 +6689,6 @@ var touch = function(node, touches, identifier) {
   return null;
 };
 
-var tile = function() {
-  var x0 = 0,
-      y0 = 0,
-      x1 = 960,
-      y1 = 500,
-      tx = (x0 + x1) / 2,
-      ty = (y0 + y1) / 2,
-      scale = 256,
-      zoomDelta = 0,
-      wrap = true;
-
-  function tile() {
-    var z = Math.max(Math.log(scale) / Math.LN2 - 8, 0),
-        z0 = Math.round(z + zoomDelta),
-        j = 1 << z0,
-        k = Math.pow(2, z - z0 + 8),
-        x = tx - scale / 2,
-        y = ty - scale / 2,
-        tiles = [],
-        cols = range(
-          Math.max(wrap ? -Infinity : 0, Math.floor((x0 - x) / k)),
-          Math.min(Math.ceil((x1 - x) / k), wrap ? Infinity : j)
-        ),
-        rows = range(
-          Math.max(0, Math.floor((y0 - y) / k)),
-          Math.min(Math.ceil((y1 - y) / k), j)
-        );
-
-    rows.forEach(function(y) {
-      cols.forEach(function(x) {
-        tiles.push({
-          x: (x % j + j) % j,
-          y: y,
-          z: z0,
-          tx: x * 256,
-          ty: y * 256
-        });
-      });
-    });
-
-    tiles.translate = [x / k, y / k];
-    tiles.scale = k;
-    return tiles;
-  }
-
-  tile.size = function(_) {
-    return arguments.length ? (x0 = y0 = 0, x1 = +_[0], y1 = +_[1], tile) : [x1 - x0, y1 - y0];
-  };
-
-  tile.extent = function(_) {
-    return arguments.length ? (x0 = +_[0][0], y0 = +_[0][1], x1 = +_[1][0], y1 = +_[1][1], tile) : [[x0, y0], [x1, y1]];
-  };
-
-  tile.scale = function(_) {
-    return arguments.length ? (scale = +_, tile) : scale;
-  };
-
-  tile.translate = function(_) {
-    return arguments.length ? (tx = +_[0], ty = +_[1], tile) : [tx, ty];
-  };
-
-  tile.zoomDelta = function(_) {
-    return arguments.length ? (zoomDelta = +_, tile) : zoomDelta;
-  };
-
-  tile.wrap = function(_) {
-    return arguments.length ? (wrap = _, tile) : wrap;
-  };
-
-  return tile;
-};
-
 var noop$1 = {value: function() {}};
 
 function dispatch() {
@@ -6362,7 +6725,7 @@ Dispatch.prototype = dispatch.prototype = {
 
     // If no callback was specified, return the callback of the given type and name.
     if (arguments.length < 2) {
-      while (++i < n) { if ((t = (typename = T[i]).type) && (t = get(_[t], typename.name))) { return t; } }
+      while (++i < n) { if ((t = (typename = T[i]).type) && (t = get$1(_[t], typename.name))) { return t; } }
       return;
     }
 
@@ -6370,8 +6733,8 @@ Dispatch.prototype = dispatch.prototype = {
     // Otherwise, if a null callback was specified, remove callbacks of the given name.
     if (callback != null && typeof callback !== "function") { throw new Error("invalid callback: " + callback); }
     while (++i < n) {
-      if (t = (typename = T[i]).type) { _[t] = set$2(_[t], typename.name, callback); }
-      else if (callback == null) { for (t in _) { _[t] = set$2(_[t], typename.name, null); } }
+      if (t = (typename = T[i]).type) { _[t] = set$3(_[t], typename.name, callback); }
+      else if (callback == null) { for (t in _) { _[t] = set$3(_[t], typename.name, null); } }
     }
 
     return this;
@@ -6394,7 +6757,7 @@ Dispatch.prototype = dispatch.prototype = {
   }
 };
 
-function get(type, name) {
+function get$1(type, name) {
   for (var i = 0, n = type.length, c; i < n; ++i) {
     if ((c = type[i]).name === name) {
       return c.value;
@@ -6402,7 +6765,7 @@ function get(type, name) {
   }
 }
 
-function set$2(type, name, callback) {
+function set$3(type, name, callback) {
   for (var i = 0, n = type.length; i < n; ++i) {
     if (type[i].name === name) {
       type[i] = noop$1, type = type.slice(0, i).concat(type.slice(i + 1));
@@ -6412,55 +6775,6 @@ function set$2(type, name, callback) {
   if (callback != null) { type.push({name: name, value: callback}); }
   return type;
 }
-
-var noevent = function() {
-  event$1.preventDefault();
-  event$1.stopImmediatePropagation();
-};
-
-var dragDisable = function(view) {
-  var root = view.document.documentElement,
-      selection = select(view).on("dragstart.drag", noevent, true);
-  if ("onselectstart" in root) {
-    selection.on("selectstart.drag", noevent, true);
-  } else {
-    root.__noselect = root.style.MozUserSelect;
-    root.style.MozUserSelect = "none";
-  }
-};
-
-function yesdrag(view, noclick) {
-  var root = view.document.documentElement,
-      selection = select(view).on("dragstart.drag", null);
-  if (noclick) {
-    selection.on("click.drag", noevent, true);
-    setTimeout(function() { selection.on("click.drag", null); }, 0);
-  }
-  if ("onselectstart" in root) {
-    selection.on("selectstart.drag", null);
-  } else {
-    root.style.MozUserSelect = root.__noselect;
-    delete root.__noselect;
-  }
-}
-
-function DragEvent(target, type, subject, id, active, x, y, dx, dy, dispatch) {
-  this.target = target;
-  this.type = type;
-  this.subject = subject;
-  this.identifier = id;
-  this.active = active;
-  this.x = x;
-  this.y = y;
-  this.dx = dx;
-  this.dy = dy;
-  this._ = dispatch;
-}
-
-DragEvent.prototype.on = function() {
-  var value = this._.on.apply(this._, arguments);
-  return value === this._ ? this : value;
-};
 
 var frame = 0;
 var timeout = 0;
@@ -6619,13 +6933,13 @@ function init(node, id) {
   return schedule;
 }
 
-function set$3(node, id) {
+function set$2(node, id) {
   var schedule = node.__transition;
   if (!schedule || !(schedule = schedule[id]) || schedule.state > STARTING) { throw new Error("too late"); }
   return schedule;
 }
 
-function get$1(node, id) {
+function get(node, id) {
   var schedule = node.__transition;
   if (!schedule || !(schedule = schedule[id])) { throw new Error("too late"); }
   return schedule;
@@ -6768,7 +7082,7 @@ var selection_interrupt = function(name) {
 function tweenRemove(id, name) {
   var tween0, tween1;
   return function() {
-    var schedule$$1 = set$3(this, id),
+    var schedule$$1 = set$2(this, id),
         tween = schedule$$1.tween;
 
     // If this node shared tween with the previous node,
@@ -6793,7 +7107,7 @@ function tweenFunction(id, name, value) {
   var tween0, tween1;
   if (typeof value !== "function") { throw new Error; }
   return function() {
-    var schedule$$1 = set$3(this, id),
+    var schedule$$1 = set$2(this, id),
         tween = schedule$$1.tween;
 
     // If this node shared tween with the previous node,
@@ -6820,7 +7134,7 @@ var transition_tween = function(name, value) {
   name += "";
 
   if (arguments.length < 2) {
-    var tween = get$1(this.node(), id).tween;
+    var tween = get(this.node(), id).tween;
     for (var i = 0, n = tween.length, t; i < n; ++i) {
       if ((t = tween[i]).name === name) {
         return t.value;
@@ -6836,12 +7150,12 @@ function tweenValue(transition, name, value) {
   var id = transition._id;
 
   transition.each(function() {
-    var schedule$$1 = set$3(this, id);
+    var schedule$$1 = set$2(this, id);
     (schedule$$1.value || (schedule$$1.value = {}))[name] = value.apply(this, arguments);
   });
 
   return function(node) {
-    return get$1(node, id).value[name];
+    return get(node, id).value[name];
   };
 }
 
@@ -6973,18 +7287,18 @@ var transition_delay = function(value) {
       ? this.each((typeof value === "function"
           ? delayFunction
           : delayConstant)(id, value))
-      : get$1(this.node(), id).delay;
+      : get(this.node(), id).delay;
 };
 
 function durationFunction(id, value) {
   return function() {
-    set$3(this, id).duration = +value.apply(this, arguments);
+    set$2(this, id).duration = +value.apply(this, arguments);
   };
 }
 
 function durationConstant(id, value) {
   return value = +value, function() {
-    set$3(this, id).duration = value;
+    set$2(this, id).duration = value;
   };
 }
 
@@ -6995,13 +7309,13 @@ var transition_duration = function(value) {
       ? this.each((typeof value === "function"
           ? durationFunction
           : durationConstant)(id, value))
-      : get$1(this.node(), id).duration;
+      : get(this.node(), id).duration;
 };
 
 function easeConstant(id, value) {
   if (typeof value !== "function") { throw new Error; }
   return function() {
-    set$3(this, id).ease = value;
+    set$2(this, id).ease = value;
   };
 }
 
@@ -7010,7 +7324,7 @@ var transition_ease = function(value) {
 
   return arguments.length
       ? this.each(easeConstant(id, value))
-      : get$1(this.node(), id).ease;
+      : get(this.node(), id).ease;
 };
 
 var transition_filter = function(match) {
@@ -7054,7 +7368,7 @@ function start(name) {
 }
 
 function onFunction(id, name, listener) {
-  var on0, on1, sit = start(name) ? init : set$3;
+  var on0, on1, sit = start(name) ? init : set$2;
   return function() {
     var schedule$$1 = sit(this, id),
         on = schedule$$1.on;
@@ -7072,7 +7386,7 @@ var transition_on = function(name, listener) {
   var id = this._id;
 
   return arguments.length < 2
-      ? get$1(this.node(), id).on.on(name)
+      ? get(this.node(), id).on.on(name)
       : this.each(onFunction(id, name, listener));
 };
 
@@ -7101,7 +7415,7 @@ var transition_select = function(select) {
       if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
         if ("__data__" in node) { subnode.__data__ = node.__data__; }
         subgroup[i] = subnode;
-        schedule(subgroup[i], name, id, i, subgroup, get$1(node, id));
+        schedule(subgroup[i], name, id, i, subgroup, get(node, id));
       }
     }
   }
@@ -7118,7 +7432,7 @@ var transition_selectAll = function(select) {
   for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        for (var children = select.call(node, node.__data__, i, group), child, inherit = get$1(node, id), k = 0, l = children.length; k < l; ++k) {
+        for (var children = select.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
           if (child = children[k]) {
             schedule(child, name, id, k, children, inherit);
           }
@@ -7238,7 +7552,7 @@ var transition_transition = function() {
   for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        var inherit = get$1(node, id0);
+        var inherit = get(node, id0);
         schedule(node, name, id1, i, group, {
           time: inherit.time + inherit.delay + inherit.duration,
           delay: 0,
@@ -7342,855 +7656,6 @@ var selection_transition = function(name) {
 
 selection.prototype.interrupt = selection_interrupt;
 selection.prototype.transition = selection_transition;
-
-var constant$6 = function(x) {
-  return function() {
-    return x;
-  };
-};
-
-function ZoomEvent(target, type, transform) {
-  this.target = target;
-  this.type = type;
-  this.transform = transform;
-}
-
-function Transform(k, x, y) {
-  this.k = k;
-  this.x = x;
-  this.y = y;
-}
-
-Transform.prototype = {
-  constructor: Transform,
-  scale: function(k) {
-    return k === 1 ? this : new Transform(this.k * k, this.x, this.y);
-  },
-  translate: function(x, y) {
-    return x === 0 & y === 0 ? this : new Transform(this.k, this.x + this.k * x, this.y + this.k * y);
-  },
-  apply: function(point) {
-    return [point[0] * this.k + this.x, point[1] * this.k + this.y];
-  },
-  applyX: function(x) {
-    return x * this.k + this.x;
-  },
-  applyY: function(y) {
-    return y * this.k + this.y;
-  },
-  invert: function(location) {
-    return [(location[0] - this.x) / this.k, (location[1] - this.y) / this.k];
-  },
-  invertX: function(x) {
-    return (x - this.x) / this.k;
-  },
-  invertY: function(y) {
-    return (y - this.y) / this.k;
-  },
-  rescaleX: function(x) {
-    return x.copy().domain(x.range().map(this.invertX, this).map(x.invert, x));
-  },
-  rescaleY: function(y) {
-    return y.copy().domain(y.range().map(this.invertY, this).map(y.invert, y));
-  },
-  toString: function() {
-    return "translate(" + this.x + "," + this.y + ") scale(" + this.k + ")";
-  }
-};
-
-var identity$6 = new Transform(1, 0, 0);
-
-transform$1.prototype = Transform.prototype;
-
-function transform$1(node) {
-  return node.__zoom || identity$6;
-}
-
-function nopropagation$1() {
-  event$1.stopImmediatePropagation();
-}
-
-var noevent$1 = function() {
-  event$1.preventDefault();
-  event$1.stopImmediatePropagation();
-};
-
-// Ignore right-click, since that should open the context menu.
-function defaultFilter() {
-  return !event$1.button;
-}
-
-function defaultExtent() {
-  var e = this, w, h;
-  if (e instanceof SVGElement) {
-    e = e.ownerSVGElement || e;
-    w = e.width.baseVal.value;
-    h = e.height.baseVal.value;
-  } else {
-    w = e.clientWidth;
-    h = e.clientHeight;
-  }
-  return [[0, 0], [w, h]];
-}
-
-function defaultTransform() {
-  return this.__zoom || identity$6;
-}
-
-function defaultWheelDelta() {
-  return -event$1.deltaY * (event$1.deltaMode ? 120 : 1) / 500;
-}
-
-function touchable() {
-  return "ontouchstart" in this;
-}
-
-var zoom = function() {
-  var filter = defaultFilter,
-      extent = defaultExtent,
-      wheelDelta = defaultWheelDelta,
-      k0 = 0,
-      k1 = Infinity,
-      x0 = -k1,
-      x1 = k1,
-      y0 = x0,
-      y1 = x1,
-      duration = 250,
-      interpolate = interpolateZoom,
-      gestures = [],
-      listeners = dispatch("start", "zoom", "end"),
-      touchstarting,
-      touchending,
-      touchDelay = 500,
-      wheelDelay = 150,
-      clickDistance2 = 0;
-
-  function zoom(selection) {
-    selection
-        .property("__zoom", defaultTransform)
-        .on("wheel.zoom", wheeled)
-        .on("mousedown.zoom", mousedowned)
-        .on("dblclick.zoom", dblclicked)
-      .filter(touchable)
-        .on("touchstart.zoom", touchstarted)
-        .on("touchmove.zoom", touchmoved)
-        .on("touchend.zoom touchcancel.zoom", touchended)
-        .style("touch-action", "none")
-        .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
-  }
-
-  zoom.transform = function(collection, transform) {
-    var selection = collection.selection ? collection.selection() : collection;
-    selection.property("__zoom", defaultTransform);
-    if (collection !== selection) {
-      schedule(collection, transform);
-    } else {
-      selection.interrupt().each(function() {
-        gesture(this, arguments)
-            .start()
-            .zoom(null, typeof transform === "function" ? transform.apply(this, arguments) : transform)
-            .end();
-      });
-    }
-  };
-
-  zoom.scaleBy = function(selection, k) {
-    zoom.scaleTo(selection, function() {
-      var k0 = this.__zoom.k,
-          k1 = typeof k === "function" ? k.apply(this, arguments) : k;
-      return k0 * k1;
-    });
-  };
-
-  zoom.scaleTo = function(selection, k) {
-    zoom.transform(selection, function() {
-      var e = extent.apply(this, arguments),
-          t0 = this.__zoom,
-          p0 = centroid(e),
-          p1 = t0.invert(p0),
-          k1 = typeof k === "function" ? k.apply(this, arguments) : k;
-      return constrain(translate(scale(t0, k1), p0, p1), e);
-    });
-  };
-
-  zoom.translateBy = function(selection, x, y) {
-    zoom.transform(selection, function() {
-      return constrain(this.__zoom.translate(
-        typeof x === "function" ? x.apply(this, arguments) : x,
-        typeof y === "function" ? y.apply(this, arguments) : y
-      ), extent.apply(this, arguments));
-    });
-  };
-
-  zoom.translateTo = function(selection, x, y) {
-    zoom.transform(selection, function() {
-      var e = extent.apply(this, arguments),
-          t = this.__zoom,
-          p = centroid(e);
-      return constrain(identity$6.translate(p[0], p[1]).scale(t.k).translate(
-        typeof x === "function" ? -x.apply(this, arguments) : -x,
-        typeof y === "function" ? -y.apply(this, arguments) : -y
-      ), e);
-    });
-  };
-
-  function scale(transform, k) {
-    k = Math.max(k0, Math.min(k1, k));
-    return k === transform.k ? transform : new Transform(k, transform.x, transform.y);
-  }
-
-  function translate(transform, p0, p1) {
-    var x = p0[0] - p1[0] * transform.k, y = p0[1] - p1[1] * transform.k;
-    return x === transform.x && y === transform.y ? transform : new Transform(transform.k, x, y);
-  }
-
-  function constrain(transform, extent) {
-    var dx0 = transform.invertX(extent[0][0]) - x0,
-        dx1 = transform.invertX(extent[1][0]) - x1,
-        dy0 = transform.invertY(extent[0][1]) - y0,
-        dy1 = transform.invertY(extent[1][1]) - y1;
-    return transform.translate(
-      dx1 > dx0 ? (dx0 + dx1) / 2 : Math.min(0, dx0) || Math.max(0, dx1),
-      dy1 > dy0 ? (dy0 + dy1) / 2 : Math.min(0, dy0) || Math.max(0, dy1)
-    );
-  }
-
-  function centroid(extent) {
-    return [(+extent[0][0] + +extent[1][0]) / 2, (+extent[0][1] + +extent[1][1]) / 2];
-  }
-
-  function schedule(transition, transform, center) {
-    transition
-        .on("start.zoom", function() { gesture(this, arguments).start(); })
-        .on("interrupt.zoom end.zoom", function() { gesture(this, arguments).end(); })
-        .tween("zoom", function() {
-          var that = this,
-              args = arguments,
-              g = gesture(that, args),
-              e = extent.apply(that, args),
-              p = center || centroid(e),
-              w = Math.max(e[1][0] - e[0][0], e[1][1] - e[0][1]),
-              a = that.__zoom,
-              b = typeof transform === "function" ? transform.apply(that, args) : transform,
-              i = interpolate(a.invert(p).concat(w / a.k), b.invert(p).concat(w / b.k));
-          return function(t) {
-            if (t === 1) { t = b; } // Avoid rounding error on end.
-            else { var l = i(t), k = w / l[2]; t = new Transform(k, p[0] - l[0] * k, p[1] - l[1] * k); }
-            g.zoom(null, t);
-          };
-        });
-  }
-
-  function gesture(that, args) {
-    for (var i = 0, n = gestures.length, g; i < n; ++i) {
-      if ((g = gestures[i]).that === that) {
-        return g;
-      }
-    }
-    return new Gesture(that, args);
-  }
-
-  function Gesture(that, args) {
-    this.that = that;
-    this.args = args;
-    this.index = -1;
-    this.active = 0;
-    this.extent = extent.apply(that, args);
-  }
-
-  Gesture.prototype = {
-    start: function() {
-      if (++this.active === 1) {
-        this.index = gestures.push(this) - 1;
-        this.emit("start");
-      }
-      return this;
-    },
-    zoom: function(key, transform) {
-      if (this.mouse && key !== "mouse") { this.mouse[1] = transform.invert(this.mouse[0]); }
-      if (this.touch0 && key !== "touch") { this.touch0[1] = transform.invert(this.touch0[0]); }
-      if (this.touch1 && key !== "touch") { this.touch1[1] = transform.invert(this.touch1[0]); }
-      this.that.__zoom = transform;
-      this.emit("zoom");
-      return this;
-    },
-    end: function() {
-      if (--this.active === 0) {
-        gestures.splice(this.index, 1);
-        this.index = -1;
-        this.emit("end");
-      }
-      return this;
-    },
-    emit: function(type) {
-      customEvent(new ZoomEvent(zoom, type, this.that.__zoom), listeners.apply, listeners, [type, this.that, this.args]);
-    }
-  };
-
-  function wheeled() {
-    if (!filter.apply(this, arguments)) { return; }
-    var g = gesture(this, arguments),
-        t = this.__zoom,
-        k = Math.max(k0, Math.min(k1, t.k * Math.pow(2, wheelDelta.apply(this, arguments)))),
-        p = mouse(this);
-
-    // If the mouse is in the same location as before, reuse it.
-    // If there were recent wheel events, reset the wheel idle timeout.
-    if (g.wheel) {
-      if (g.mouse[0][0] !== p[0] || g.mouse[0][1] !== p[1]) {
-        g.mouse[1] = t.invert(g.mouse[0] = p);
-      }
-      clearTimeout(g.wheel);
-    }
-
-    // If this wheel event won’t trigger a transform change, ignore it.
-    else if (t.k === k) { return; }
-
-    // Otherwise, capture the mouse point and location at the start.
-    else {
-      g.mouse = [p, t.invert(p)];
-      interrupt(this);
-      g.start();
-    }
-
-    noevent$1();
-    g.wheel = setTimeout(wheelidled, wheelDelay);
-    g.zoom("mouse", constrain(translate(scale(t, k), g.mouse[0], g.mouse[1]), g.extent));
-
-    function wheelidled() {
-      g.wheel = null;
-      g.end();
-    }
-  }
-
-  function mousedowned() {
-    if (touchending || !filter.apply(this, arguments)) { return; }
-    var g = gesture(this, arguments),
-        v = select(event$1.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
-        p = mouse(this),
-        x0 = event$1.clientX,
-        y0 = event$1.clientY;
-
-    dragDisable(event$1.view);
-    nopropagation$1();
-    g.mouse = [p, this.__zoom.invert(p)];
-    interrupt(this);
-    g.start();
-
-    function mousemoved() {
-      noevent$1();
-      if (!g.moved) {
-        var dx = event$1.clientX - x0, dy = event$1.clientY - y0;
-        g.moved = dx * dx + dy * dy > clickDistance2;
-      }
-      g.zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = mouse(g.that), g.mouse[1]), g.extent));
-    }
-
-    function mouseupped() {
-      v.on("mousemove.zoom mouseup.zoom", null);
-      yesdrag(event$1.view, g.moved);
-      noevent$1();
-      g.end();
-    }
-  }
-
-  function dblclicked() {
-    if (!filter.apply(this, arguments)) { return; }
-    var t0 = this.__zoom,
-        p0 = mouse(this),
-        p1 = t0.invert(p0),
-        k1 = t0.k * (event$1.shiftKey ? 0.5 : 2),
-        t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, arguments));
-
-    noevent$1();
-    if (duration > 0) { select(this).transition().duration(duration).call(schedule, t1, p0); }
-    else { select(this).call(zoom.transform, t1); }
-  }
-
-  function touchstarted() {
-    var this$1 = this;
-
-    if (!filter.apply(this, arguments)) { return; }
-    var g = gesture(this, arguments),
-        touches = event$1.changedTouches,
-        started,
-        n = touches.length, i, t, p;
-
-    nopropagation$1();
-    for (i = 0; i < n; ++i) {
-      t = touches[i], p = touch(this$1, touches, t.identifier);
-      p = [p, this$1.__zoom.invert(p), t.identifier];
-      if (!g.touch0) { g.touch0 = p, started = true; }
-      else if (!g.touch1) { g.touch1 = p; }
-    }
-
-    // If this is a dbltap, reroute to the (optional) dblclick.zoom handler.
-    if (touchstarting) {
-      touchstarting = clearTimeout(touchstarting);
-      if (!g.touch1) {
-        g.end();
-        p = select(this).on("dblclick.zoom");
-        if (p) { p.apply(this, arguments); }
-        return;
-      }
-    }
-
-    if (started) {
-      touchstarting = setTimeout(function() { touchstarting = null; }, touchDelay);
-      interrupt(this);
-      g.start();
-    }
-  }
-
-  function touchmoved() {
-    var this$1 = this;
-
-    var g = gesture(this, arguments),
-        touches = event$1.changedTouches,
-        n = touches.length, i, t, p, l;
-
-    noevent$1();
-    if (touchstarting) { touchstarting = clearTimeout(touchstarting); }
-    for (i = 0; i < n; ++i) {
-      t = touches[i], p = touch(this$1, touches, t.identifier);
-      if (g.touch0 && g.touch0[2] === t.identifier) { g.touch0[0] = p; }
-      else if (g.touch1 && g.touch1[2] === t.identifier) { g.touch1[0] = p; }
-    }
-    t = g.that.__zoom;
-    if (g.touch1) {
-      var p0 = g.touch0[0], l0 = g.touch0[1],
-          p1 = g.touch1[0], l1 = g.touch1[1],
-          dp = (dp = p1[0] - p0[0]) * dp + (dp = p1[1] - p0[1]) * dp,
-          dl = (dl = l1[0] - l0[0]) * dl + (dl = l1[1] - l0[1]) * dl;
-      t = scale(t, Math.sqrt(dp / dl));
-      p = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2];
-      l = [(l0[0] + l1[0]) / 2, (l0[1] + l1[1]) / 2];
-    }
-    else if (g.touch0) { p = g.touch0[0], l = g.touch0[1]; }
-    else { return; }
-    g.zoom("touch", constrain(translate(t, p, l), g.extent));
-  }
-
-  function touchended() {
-    var g = gesture(this, arguments),
-        touches = event$1.changedTouches,
-        n = touches.length, i, t;
-
-    nopropagation$1();
-    if (touchending) { clearTimeout(touchending); }
-    touchending = setTimeout(function() { touchending = null; }, touchDelay);
-    for (i = 0; i < n; ++i) {
-      t = touches[i];
-      if (g.touch0 && g.touch0[2] === t.identifier) { delete g.touch0; }
-      else if (g.touch1 && g.touch1[2] === t.identifier) { delete g.touch1; }
-    }
-    if (g.touch1 && !g.touch0) { g.touch0 = g.touch1, delete g.touch1; }
-    if (g.touch0) { g.touch0[1] = this.__zoom.invert(g.touch0[0]); }
-    else { g.end(); }
-  }
-
-  zoom.wheelDelta = function(_) {
-    return arguments.length ? (wheelDelta = typeof _ === "function" ? _ : constant$6(+_), zoom) : wheelDelta;
-  };
-
-  zoom.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$6(!!_), zoom) : filter;
-  };
-
-  zoom.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$6([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), zoom) : extent;
-  };
-
-  zoom.scaleExtent = function(_) {
-    return arguments.length ? (k0 = +_[0], k1 = +_[1], zoom) : [k0, k1];
-  };
-
-  zoom.translateExtent = function(_) {
-    return arguments.length ? (x0 = +_[0][0], x1 = +_[1][0], y0 = +_[0][1], y1 = +_[1][1], zoom) : [[x0, y0], [x1, y1]];
-  };
-
-  zoom.duration = function(_) {
-    return arguments.length ? (duration = +_, zoom) : duration;
-  };
-
-  zoom.interpolate = function(_) {
-    return arguments.length ? (interpolate = _, zoom) : interpolate;
-  };
-
-  zoom.on = function() {
-    var value = listeners.on.apply(listeners, arguments);
-    return value === listeners ? zoom : value;
-  };
-
-  zoom.clickDistance = function(_) {
-    return arguments.length ? (clickDistance2 = (_ = +_) * _, zoom) : Math.sqrt(clickDistance2);
-  };
-
-  return zoom;
-};
-
-var identity$7 = function(x) {
-  return x;
-};
-
-var transform$2 = function(transform) {
-  if (transform == null) { return identity$7; }
-  var x0,
-      y0,
-      kx = transform.scale[0],
-      ky = transform.scale[1],
-      dx = transform.translate[0],
-      dy = transform.translate[1];
-  return function(input, i) {
-    if (!i) { x0 = y0 = 0; }
-    var j = 2, n = input.length, output = new Array(n);
-    output[0] = (x0 += input[0]) * kx + dx;
-    output[1] = (y0 += input[1]) * ky + dy;
-    while (j < n) { output[j] = input[j], ++j; }
-    return output;
-  };
-};
-
-var reverse = function(array, n) {
-  var t, j = array.length, i = j - n;
-  while (i < --j) { t = array[i], array[i++] = array[j], array[j] = t; }
-};
-
-var feature = function(topology, o) {
-  return o.type === "GeometryCollection"
-      ? {type: "FeatureCollection", features: o.geometries.map(function(o) { return feature$1(topology, o); })}
-      : feature$1(topology, o);
-};
-
-function feature$1(topology, o) {
-  var id = o.id,
-      bbox = o.bbox,
-      properties = o.properties == null ? {} : o.properties,
-      geometry = object$2(topology, o);
-  return id == null && bbox == null ? {type: "Feature", properties: properties, geometry: geometry}
-      : bbox == null ? {type: "Feature", id: id, properties: properties, geometry: geometry}
-      : {type: "Feature", id: id, bbox: bbox, properties: properties, geometry: geometry};
-}
-
-function object$2(topology, o) {
-  var transformPoint = transform$2(topology.transform),
-      arcs = topology.arcs;
-
-  function arc(i, points) {
-    if (points.length) { points.pop(); }
-    for (var a = arcs[i < 0 ? ~i : i], k = 0, n = a.length; k < n; ++k) {
-      points.push(transformPoint(a[k], k));
-    }
-    if (i < 0) { reverse(points, n); }
-  }
-
-  function point(p) {
-    return transformPoint(p);
-  }
-
-  function line(arcs) {
-    var points = [];
-    for (var i = 0, n = arcs.length; i < n; ++i) { arc(arcs[i], points); }
-    if (points.length < 2) { points.push(points[0]); } // This should never happen per the specification.
-    return points;
-  }
-
-  function ring(arcs) {
-    var points = line(arcs);
-    while (points.length < 4) { points.push(points[0]); } // This may happen if an arc has only two points.
-    return points;
-  }
-
-  function polygon(arcs) {
-    return arcs.map(ring);
-  }
-
-  function geometry(o) {
-    var type = o.type, coordinates;
-    switch (type) {
-      case "GeometryCollection": return {type: type, geometries: o.geometries.map(geometry)};
-      case "Point": coordinates = point(o.coordinates); break;
-      case "MultiPoint": coordinates = o.coordinates.map(point); break;
-      case "LineString": coordinates = line(o.arcs); break;
-      case "MultiLineString": coordinates = o.arcs.map(line); break;
-      case "Polygon": coordinates = polygon(o.arcs); break;
-      case "MultiPolygon": coordinates = o.arcs.map(polygon); break;
-      default: return null;
-    }
-    return {type: type, coordinates: coordinates};
-  }
-
-  return geometry(o);
-}
-
-/**
-    @function accessor
-    @desc Wraps an object key in a simple accessor function.
-    @param {String} key The key to be returned from each Object passed to the function.
-    @param {*} [def] A default value to be returned if the key is not present.
-    @example <caption>this</caption>
-accessor("id");
-    @example <caption>returns this</caption>
-function(d) {
-  return d["id"];
-}
-*/
-var accessor = function(key, def) {
-  if (def === void 0) { return function (d) { return d[key]; }; }
-  return function (d) { return d[key] === void 0 ? def : d[key]; };
-};
-
-/**
-    @function isObject
-    @desc Detects if a variable is a javascript Object.
-    @param {*} item
-*/
-var isObject = function(item) {
-  return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
-};
-
-/**
-    @function assign
-    @desc A deeply recursive version of `Object.assign`.
-    @param {...Object} objects
-    @example <caption>this</caption>
-assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
-    @example <caption>returns this</caption>
-{id: "bar", deep: {group: "A", value: 20}}
-*/
-function assign() {
-  var objects = [], len = arguments.length;
-  while ( len-- ) objects[ len ] = arguments[ len ];
-
-
-  var target = objects[0];
-  var loop = function ( i ) {
-
-    var source = objects[i];
-
-    Object.keys(source).forEach(function (prop) {
-
-      var value = source[prop];
-
-      if (isObject(value)) {
-
-        if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
-        else { target[prop] = value; }
-
-      }
-      else if (Array.isArray(value)) {
-
-        if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
-
-          var targetArray = target[prop];
-
-          value.forEach(function (sourceItem, itemIndex) {
-
-            if (itemIndex < targetArray.length) {
-              var targetItem = targetArray[itemIndex];
-
-              if (Object.is(targetItem, sourceItem)) { return; }
-
-              if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
-                targetArray[itemIndex] = assign({}, targetItem, sourceItem);
-              }
-              else { targetArray[itemIndex] = sourceItem; }
-
-            }
-            else { targetArray.push(sourceItem); }
-
-          });
-        }
-        else { target[prop] = value; }
-
-      }
-      else { target[prop] = value; }
-
-    });
-  };
-
-  for (var i = 1; i < objects.length; i++) loop( i );
-
-  return target;
-
-}
-
-/**
-    @function attrize
-    @desc Applies each key/value in an object as an attr.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} attrs An object of key/value attr pairs.
-*/
-var attrize = function(e, a) {
-  if ( a === void 0 ) a = {};
-
-  for (var k in a) { if ({}.hasOwnProperty.call(a, k)) { e.attr(k, a[k]); } }
-};
-
-/**
-    @function s
-    @desc Returns 4 random characters, used for constructing unique identifiers.
-    @private
-*/
-function s() {
-  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-}
-
-/**
-    @function uuid
-    @summary Returns a unique identifier.
-*/
-var uuid = function() {
-  return ("" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s()));
-};
-
-/**
-    @class BaseClass
-    @summary An abstract class that contains some global methods and functionality.
-*/
-var BaseClass = function BaseClass() {
-  this._on = {};
-  this._uuid = uuid();
-};
-
-/**
-    @memberof BaseClass
-    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
-    @param {Object} [*value*]
-    @chainable
-*/
-BaseClass.prototype.config = function config (_) {
-    var this$1 = this;
-
-  if (arguments.length) {
-    for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
-    return this;
-  }
-  else {
-    var config = {};
-    for (var k$1 in this$1.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
-    return config;
-  }
-};
-
-/**
-    @memberof BaseClass
-    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-    @param {String} [*typenames*]
-    @param {Function} [*listener*]
-    @chainable
-    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
-new Plot
-.on("click.Shape", function(d) {
-  console.log("data for shape clicked:", d);
-})
-.on("click.Legend", function(d) {
-  console.log("data for legend clicked:", d);
-})
-*/
-BaseClass.prototype.on = function on (_, f) {
-  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-};
-
-/**
-    @function closest
-    @desc Finds the closest numeric value in an array.
-    @param {Number} n The number value to use when searching the array.
-    @param {Array} arr The array of values to test against.
-*/
-var closest = function(n, arr) {
-  if ( arr === void 0 ) arr = [];
-
-  if (!arr || !(arr instanceof Array) || !arr.length) { return undefined; }
-  return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
-};
-
-/**
-    @function configPrep
-    @desc Preps a config object for d3plus data, and optionally bubbles up a specific nested type. When using this function, you must bind a d3plus class' `this` context.
-    @param {Object} [config = this._shapeConfig] The configuration object to parse.
-    @param {String} [type = "shape"] The event classifier to user for "on" events. For example, the default event type of "shape" will apply all events in the "on" config object with that key, like "click.shape" and "mouseleave.shape", in addition to any gloval events like "click" and "mouseleave".
-    @param {String} [nest] An optional nested key to bubble up to the parent config level.
-*/
-function configPrep(config, type, nest) {
-  if ( config === void 0 ) config = this._shapeConfig;
-  if ( type === void 0 ) type = "shape";
-  if ( nest === void 0 ) nest = false;
-
-
-  var newConfig = {duration: this._duration, on: {}};
-
-  var wrapFunction = function (func) { return function (d, i, s) {
-    while (d.__d3plus__) {
-      i = d.i;
-      d = d.data || d.feature;
-    }
-    return func(d, i, s);
-  }; };
-
-  var parseEvents = function (newObj, on) {
-
-    for (var event in on) {
-
-      if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type))) {
-
-        newObj.on[event] = wrapFunction(on[event]);
-
-      }
-
-    }
-
-  };
-
-  var keyEval = function (newObj, obj) {
-
-    for (var key in obj) {
-
-      if ({}.hasOwnProperty.call(obj, key)) {
-
-        if (key === "on") { parseEvents(newObj, obj[key]); }
-        else if (typeof obj[key] === "function") {
-          newObj[key] = wrapFunction(obj[key]);
-        }
-        else if (typeof obj[key] === "object" && !(obj instanceof Array)) {
-          newObj[key] = {on: {}};
-          keyEval(newObj[key], obj[key]);
-        }
-        else { newObj[key] = obj[key]; }
-
-      }
-
-    }
-
-  };
-
-  keyEval(newConfig, config);
-  if (this._on) { parseEvents(newConfig, this._on); }
-  if (nest && config[nest]) {
-    keyEval(newConfig, config[nest]);
-    if (config[nest].on) { parseEvents(newConfig, config[nest].on); }
-  }
-
-  return newConfig;
-
-}
-
-/**
-    @function constant
-    @desc Wraps non-function variables in a simple return function.
-    @param {Array|Number|Object|String} value The value to be returned from the function.
-    @example <caption>this</caption>
-constant(42);
-    @example <caption>returns this</caption>
-function() {
-  return 42;
-}
-*/
-var constant$7 = function(value) {
-  return function constant() {
-    return value;
-  };
-};
 
 /**
     @function elem
@@ -10525,7 +9990,7 @@ var Image$1 = function Image() {
   this._duration = 600;
   this._height = accessor("height");
   this._id = accessor("id");
-  this._pointerEvents = constant$7("auto");
+  this._pointerEvents = constant$4("auto");
   this._select;
   this._url = accessor("url");
   this._width = accessor("width");
@@ -10630,7 +10095,7 @@ return d.height;
 }
 */
 Image$1.prototype.height = function height (_) {
-  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$7(_), this) : this._height;
+  return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$4(_), this) : this._height;
 };
 
 /**
@@ -10654,7 +10119,7 @@ Image$1.prototype.id = function id (_) {
     @chainable
 */
 Image$1.prototype.pointerEvents = function pointerEvents (_) {
-  return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$7(_), this) : this._pointerEvents;
+  return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$4(_), this) : this._pointerEvents;
 };
 
 /**
@@ -10692,7 +10157,7 @@ return d.width;
 }
 */
 Image$1.prototype.width = function width (_) {
-  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$7(_), this) : this._width;
+  return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$4(_), this) : this._width;
 };
 
 /**
@@ -10706,7 +10171,7 @@ return d.x || 0;
 }
 */
 Image$1.prototype.x = function x (_) {
-  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$7(_), this) : this._x;
+  return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$4(_), this) : this._x;
 };
 
 /**
@@ -10720,7 +10185,7 @@ return d.y || 0;
 }
 */
 Image$1.prototype.y = function y (_) {
-  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$7(_), this) : this._y;
+  return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$4(_), this) : this._y;
 };
 
 /**
@@ -11210,23 +10675,23 @@ var TextBox = (function (BaseClass) {
     this._delay = 0;
     this._duration = 0;
     this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
-    this._fontColor = constant$7("black");
-    this._fontFamily = constant$7(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
-    this._fontMax = constant$7(50);
-    this._fontMin = constant$7(8);
-    this._fontResize = constant$7(false);
-    this._fontSize = constant$7(10);
-    this._fontWeight = constant$7(400);
+    this._fontColor = constant$4("black");
+    this._fontFamily = constant$4(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
+    this._fontMax = constant$4(50);
+    this._fontMin = constant$4(8);
+    this._fontResize = constant$4(false);
+    this._fontSize = constant$4(10);
+    this._fontWeight = constant$4(400);
     this._height = accessor("height", 200);
     this._id = function (d, i) { return d.id || ("" + i); };
     this._on = {};
-    this._overflow = constant$7(false);
-    this._pointerEvents = constant$7("auto");
-    this._rotate = constant$7(0);
+    this._overflow = constant$4(false);
+    this._pointerEvents = constant$4("auto");
+    this._rotate = constant$4(0);
     this._split = textSplit;
     this._text = accessor("text");
-    this._textAnchor = constant$7("start");
-    this._verticalAlign = constant$7("top");
+    this._textAnchor = constant$4("start");
+    this._verticalAlign = constant$4("top");
     this._width = accessor("width", 200);
     this._x = accessor("x", 0);
     this._y = accessor("y", 0);
@@ -11518,7 +10983,7 @@ function(d) {
 }
   */
   TextBox.prototype.ellipsis = function ellipsis (_) {
-    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$7(_), this) : this._ellipsis;
+    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$4(_), this) : this._ellipsis;
   };
 
   /**
@@ -11527,7 +10992,7 @@ function(d) {
       @param {Function|String} [*value* = "black"]
   */
   TextBox.prototype.fontColor = function fontColor (_) {
-    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$7(_), this) : this._fontColor;
+    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$4(_), this) : this._fontColor;
   };
 
   /**
@@ -11536,7 +11001,7 @@ function(d) {
       @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
   */
   TextBox.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$7(_), this) : this._fontFamily;
+    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$4(_), this) : this._fontFamily;
   };
 
   /**
@@ -11545,7 +11010,7 @@ function(d) {
       @param {Function|Number} [*value* = 50]
   */
   TextBox.prototype.fontMax = function fontMax (_) {
-    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$7(_), this) : this._fontMax;
+    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$4(_), this) : this._fontMax;
   };
 
   /**
@@ -11554,7 +11019,7 @@ function(d) {
       @param {Function|Number} [*value* = 8]
   */
   TextBox.prototype.fontMin = function fontMin (_) {
-    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$7(_), this) : this._fontMin;
+    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$4(_), this) : this._fontMin;
   };
 
   /**
@@ -11563,7 +11028,7 @@ function(d) {
       @param {Function|Boolean} [*value* = false]
   */
   TextBox.prototype.fontResize = function fontResize (_) {
-    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$7(_), this) : this._fontResize;
+    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$4(_), this) : this._fontResize;
   };
 
   /**
@@ -11572,7 +11037,7 @@ function(d) {
       @param {Function|Number} [*value* = 10]
   */
   TextBox.prototype.fontSize = function fontSize (_) {
-    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$7(_), this) : this._fontSize;
+    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$4(_), this) : this._fontSize;
   };
 
   /**
@@ -11581,7 +11046,7 @@ function(d) {
       @param {Function|Number|String} [*value* = 400]
   */
   TextBox.prototype.fontWeight = function fontWeight (_) {
-    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$7(_), this) : this._fontWeight;
+    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$4(_), this) : this._fontWeight;
   };
 
   /**
@@ -11594,7 +11059,7 @@ function(d) {
 }
   */
   TextBox.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$7(_), this) : this._height;
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$4(_), this) : this._height;
   };
 
   /**
@@ -11607,7 +11072,7 @@ function(d, i) {
 }
   */
   TextBox.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$7(_), this) : this._id;
+    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$4(_), this) : this._id;
   };
 
   /**
@@ -11616,7 +11081,7 @@ function(d, i) {
       @param {Function|Number} [*value*]
   */
   TextBox.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$7(_), this) : this._lineHeight;
+    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$4(_), this) : this._lineHeight;
   };
 
   /**
@@ -11625,7 +11090,7 @@ function(d, i) {
       @param {Function|Boolean} [*value* = false]
   */
   TextBox.prototype.overflow = function overflow (_) {
-    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$7(_), this) : this._overflow;
+    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$4(_), this) : this._overflow;
   };
 
   /**
@@ -11634,7 +11099,7 @@ function(d, i) {
       @param {Function|String} [*value* = "auto"]
   */
   TextBox.prototype.pointerEvents = function pointerEvents (_) {
-    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$7(_), this) : this._pointerEvents;
+    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$4(_), this) : this._pointerEvents;
   };
 
   /**
@@ -11643,7 +11108,7 @@ function(d, i) {
       @param {Function|Number} [*value* = 0]
   */
   TextBox.prototype.rotate = function rotate (_) {
-    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$7(_), this) : this._rotate;
+    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$4(_), this) : this._rotate;
   };
 
   /**
@@ -11674,7 +11139,7 @@ function(d) {
 }
   */
   TextBox.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$7(_), this) : this._text;
+    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$4(_), this) : this._text;
   };
 
   /**
@@ -11683,7 +11148,7 @@ function(d) {
       @param {Function|String} [*value* = "start"]
   */
   TextBox.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$7(_), this) : this._textAnchor;
+    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$4(_), this) : this._textAnchor;
   };
 
   /**
@@ -11692,7 +11157,7 @@ function(d) {
       @param {Function|String} [*value* = "top"]
   */
   TextBox.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$7(_), this) : this._verticalAlign;
+    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$4(_), this) : this._verticalAlign;
   };
 
   /**
@@ -11705,7 +11170,7 @@ function(d) {
 }
   */
   TextBox.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$7(_), this) : this._width;
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$4(_), this) : this._width;
   };
 
   /**
@@ -11718,7 +11183,7 @@ function(d) {
 }
   */
   TextBox.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$7(_), this) : this._x;
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$4(_), this) : this._x;
   };
 
   /**
@@ -11731,7 +11196,7 @@ function(d) {
 }
   */
   TextBox.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$7(_), this) : this._y;
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$4(_), this) : this._y;
   };
 
   return TextBox;
@@ -11788,35 +11253,35 @@ var Shape = (function (BaseClass) {
         return s ? s * 2 : 1;
       }
     };
-    this._backgroundImage = constant$7(false);
+    this._backgroundImage = constant$4(false);
     this._data = [];
     this._duration = 600;
-    this._fill = constant$7("black");
-    this._fillOpacity = constant$7(1);
+    this._fill = constant$4("black");
+    this._fillOpacity = constant$4(1);
 
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
-    this._label = constant$7(false);
+    this._label = constant$4(false);
     this._labelConfig = {
       fontColor: function (d, i) { return colorContrast(this$1._fill(d, i)); },
       fontSize: 12
     };
-    this._labelPadding = constant$7(5);
+    this._labelPadding = constant$4(5);
     this._name = "Shape";
-    this._opacity = constant$7(1);
-    this._rx = constant$7(0);
-    this._ry = constant$7(0);
-    this._scale = constant$7(1);
-    this._shapeRendering = constant$7("geometricPrecision");
+    this._opacity = constant$4(1);
+    this._rx = constant$4(0);
+    this._ry = constant$4(0);
+    this._scale = constant$4(1);
+    this._shapeRendering = constant$4("geometricPrecision");
     this._stroke = function (d, i) { return color(this$1._fill(d, i)).darker(1); };
-    this._strokeDasharray = constant$7("0");
-    this._strokeLinecap = constant$7("butt");
-    this._strokeOpacity = constant$7(1);
-    this._strokeWidth = constant$7(0);
+    this._strokeDasharray = constant$4("0");
+    this._strokeLinecap = constant$4("butt");
+    this._strokeOpacity = constant$4(1);
+    this._strokeWidth = constant$4(0);
     this._tagName = tagName;
-    this._textAnchor = constant$7("start");
-    this._vectorEffect = constant$7("non-scaling-stroke");
-    this._verticalAlign = constant$7("top");
+    this._textAnchor = constant$4("start");
+    this._vectorEffect = constant$4("non-scaling-stroke");
+    this._verticalAlign = constant$4("top");
 
     this._x = accessor("x", 0);
     this._y = accessor("y", 0);
@@ -12279,7 +11744,7 @@ var Shape = (function (BaseClass) {
   */
   Shape.prototype.backgroundImage = function backgroundImage (_) {
     return arguments.length
-      ? (this._backgroundImage = typeof _ === "function" ? _ : constant$7(_), this)
+      ? (this._backgroundImage = typeof _ === "function" ? _ : constant$4(_), this)
       : this._backgroundImage;
   };
 
@@ -12315,7 +11780,7 @@ var Shape = (function (BaseClass) {
   */
   Shape.prototype.fill = function fill (_) {
     return arguments.length
-      ? (this._fill = typeof _ === "function" ? _ : constant$7(_), this)
+      ? (this._fill = typeof _ === "function" ? _ : constant$4(_), this)
       : this._fill;
   };
 
@@ -12327,7 +11792,7 @@ var Shape = (function (BaseClass) {
   */
   Shape.prototype.fillOpacity = function fillOpacity (_) {
     return arguments.length
-      ? (this._fillOpacity = typeof _ === "function" ? _ : constant$7(_), this)
+      ? (this._fillOpacity = typeof _ === "function" ? _ : constant$4(_), this)
       : this._fillOpacity;
   };
 
@@ -12395,7 +11860,7 @@ function(d, i, shape) {
 }
   */
   Shape.prototype.hitArea = function hitArea (_) {
-    return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : constant$7(_), this) : this._hitArea;
+    return arguments.length ? (this._hitArea = typeof _ === "function" ? _ : constant$4(_), this) : this._hitArea;
   };
 
   /**
@@ -12415,7 +11880,7 @@ function(d, i, shape) {
       @chainable
   */
   Shape.prototype.label = function label (_) {
-    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$7(_), this) : this._label;
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$4(_), this) : this._label;
   };
 
   /**
@@ -12434,7 +11899,7 @@ function(d, i, shape) {
 }
   */
   Shape.prototype.labelBounds = function labelBounds (_) {
-    return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : constant$7(_), this) : this._labelBounds;
+    return arguments.length ? (this._labelBounds = typeof _ === "function" ? _ : constant$4(_), this) : this._labelBounds;
   };
 
   /**
@@ -12454,7 +11919,7 @@ function(d, i, shape) {
       @chainable
   */
   Shape.prototype.labelPadding = function labelPadding (_) {
-    return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : constant$7(_), this) : this._labelPadding;
+    return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : constant$4(_), this) : this._labelPadding;
   };
 
   /**
@@ -12464,7 +11929,7 @@ function(d, i, shape) {
       @chainable
   */
   Shape.prototype.opacity = function opacity (_) {
-    return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$7(_), this) : this._opacity;
+    return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$4(_), this) : this._opacity;
   };
 
   /**
@@ -12474,7 +11939,7 @@ function(d, i, shape) {
       @chainable
   */
   Shape.prototype.rx = function rx (_) {
-    return arguments.length ? (this._rx = typeof _ === "function" ? _ : constant$7(_), this) : this._rx;
+    return arguments.length ? (this._rx = typeof _ === "function" ? _ : constant$4(_), this) : this._rx;
   };
 
   /**
@@ -12484,7 +11949,7 @@ function(d, i, shape) {
       @chainable
   */
   Shape.prototype.ry = function ry (_) {
-    return arguments.length ? (this._ry = typeof _ === "function" ? _ : constant$7(_), this) : this._ry;
+    return arguments.length ? (this._ry = typeof _ === "function" ? _ : constant$4(_), this) : this._ry;
   };
 
   /**
@@ -12494,7 +11959,7 @@ function(d, i, shape) {
       @chainable
   */
   Shape.prototype.scale = function scale (_) {
-    return arguments.length ? (this._scale = typeof _ === "function" ? _ : constant$7(_), this) : this._scale;
+    return arguments.length ? (this._scale = typeof _ === "function" ? _ : constant$4(_), this) : this._scale;
   };
 
   /**
@@ -12518,7 +11983,7 @@ function(d) {
 }
   */
   Shape.prototype.shapeRendering = function shapeRendering (_) {
-    return arguments.length ? (this._shapeRendering = typeof _ === "function" ? _ : constant$7(_), this) : this._shapeRendering;
+    return arguments.length ? (this._shapeRendering = typeof _ === "function" ? _ : constant$4(_), this) : this._shapeRendering;
   };
 
   /**
@@ -12538,7 +12003,7 @@ function(d) {
       @chainable
   */
   Shape.prototype.stroke = function stroke (_) {
-    return arguments.length ? (this._stroke = typeof _ === "function" ? _ : constant$7(_), this) : this._stroke;
+    return arguments.length ? (this._stroke = typeof _ === "function" ? _ : constant$4(_), this) : this._stroke;
   };
 
   /**
@@ -12548,7 +12013,7 @@ function(d) {
       @chainable
   */
   Shape.prototype.strokeDasharray = function strokeDasharray (_) {
-    return arguments.length ? (this._strokeDasharray = typeof _ === "function" ? _ : constant$7(_), this) : this._strokeDasharray;
+    return arguments.length ? (this._strokeDasharray = typeof _ === "function" ? _ : constant$4(_), this) : this._strokeDasharray;
   };
 
   /**
@@ -12558,7 +12023,7 @@ function(d) {
       @chainable
   */
   Shape.prototype.strokeLinecap = function strokeLinecap (_) {
-    return arguments.length ? (this._strokeLinecap = typeof _ === "function" ? _ : constant$7(_), this) : this._strokeLinecap;
+    return arguments.length ? (this._strokeLinecap = typeof _ === "function" ? _ : constant$4(_), this) : this._strokeLinecap;
   };
 
   /**
@@ -12568,7 +12033,7 @@ function(d) {
       @chainable
   */
   Shape.prototype.strokeOpacity = function strokeOpacity (_) {
-    return arguments.length ? (this._strokeOpacity = typeof _ === "function" ? _ : constant$7(_), this) : this._strokeOpacity;
+    return arguments.length ? (this._strokeOpacity = typeof _ === "function" ? _ : constant$4(_), this) : this._strokeOpacity;
   };
 
   /**
@@ -12578,7 +12043,7 @@ function(d) {
       @chainable
   */
   Shape.prototype.strokeWidth = function strokeWidth (_) {
-    return arguments.length ? (this._strokeWidth = typeof _ === "function" ? _ : constant$7(_), this) : this._strokeWidth;
+    return arguments.length ? (this._strokeWidth = typeof _ === "function" ? _ : constant$4(_), this) : this._strokeWidth;
   };
 
   /**
@@ -12588,7 +12053,7 @@ function(d) {
       @chainable
   */
   Shape.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$7(_), this) : this._textAnchor;
+    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$4(_), this) : this._textAnchor;
   };
 
   /**
@@ -12598,7 +12063,7 @@ function(d) {
       @chainable
   */
   Shape.prototype.vectorEffect = function vectorEffect (_) {
-    return arguments.length ? (this._vectorEffect = typeof _ === "function" ? _ : constant$7(_), this) : this._vectorEffect;
+    return arguments.length ? (this._vectorEffect = typeof _ === "function" ? _ : constant$4(_), this) : this._vectorEffect;
   };
 
   /**
@@ -12608,7 +12073,7 @@ function(d) {
       @chainable
   */
   Shape.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$7(_), this) : this._verticalAlign;
+    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$4(_), this) : this._verticalAlign;
   };
 
   /**
@@ -12622,7 +12087,7 @@ function(d) {
 }
   */
   Shape.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$7(_), this) : this._x;
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$4(_), this) : this._x;
   };
 
   /**
@@ -12636,7 +12101,7 @@ function(d) {
 }
   */
   Shape.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$7(_), this) : this._y;
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$4(_), this) : this._y;
   };
 
   return Shape;
@@ -13253,7 +12718,7 @@ Path.prototype = path.prototype = {
   }
 };
 
-var constant$8 = function(x) {
+var constant$6 = function(x) {
   return function constant() {
     return x;
   };
@@ -13353,7 +12818,7 @@ function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
 var arc = function() {
   var innerRadius = arcInnerRadius,
       outerRadius = arcOuterRadius,
-      cornerRadius = constant$8(0),
+      cornerRadius = constant$6(0),
       padRadius = null,
       startAngle = arcStartAngle,
       endAngle = arcEndAngle,
@@ -13502,31 +12967,31 @@ var arc = function() {
   };
 
   arc.innerRadius = function(_) {
-    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$8(+_), arc) : innerRadius;
+    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$6(+_), arc) : innerRadius;
   };
 
   arc.outerRadius = function(_) {
-    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$8(+_), arc) : outerRadius;
+    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$6(+_), arc) : outerRadius;
   };
 
   arc.cornerRadius = function(_) {
-    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$8(+_), arc) : cornerRadius;
+    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$6(+_), arc) : cornerRadius;
   };
 
   arc.padRadius = function(_) {
-    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$8(+_), arc) : padRadius;
+    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$6(+_), arc) : padRadius;
   };
 
   arc.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$8(+_), arc) : startAngle;
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$6(+_), arc) : startAngle;
   };
 
   arc.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$8(+_), arc) : endAngle;
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$6(+_), arc) : endAngle;
   };
 
   arc.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$8(+_), arc) : padAngle;
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$6(+_), arc) : padAngle;
   };
 
   arc.context = function(_) {
@@ -13579,7 +13044,7 @@ function y(p) {
 var line = function() {
   var x$$1 = x,
       y$$1 = y,
-      defined = constant$8(true),
+      defined = constant$6(true),
       context = null,
       curve = curveLinear,
       output = null;
@@ -13605,15 +13070,15 @@ var line = function() {
   }
 
   line.x = function(_) {
-    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$8(+_), line) : x$$1;
+    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$6(+_), line) : x$$1;
   };
 
   line.y = function(_) {
-    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$8(+_), line) : y$$1;
+    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$6(+_), line) : y$$1;
   };
 
   line.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$8(!!_), line) : defined;
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$6(!!_), line) : defined;
   };
 
   line.curve = function(_) {
@@ -13630,9 +13095,9 @@ var line = function() {
 var area$1 = function() {
   var x0 = x,
       x1 = null,
-      y0 = constant$8(0),
+      y0 = constant$6(0),
       y1 = y,
-      defined = constant$8(true),
+      defined = constant$6(true),
       context = null,
       curve = curveLinear,
       output = null;
@@ -13680,27 +13145,27 @@ var area$1 = function() {
   }
 
   area.x = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$8(+_), x1 = null, area) : x0;
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$6(+_), x1 = null, area) : x0;
   };
 
   area.x0 = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$8(+_), area) : x0;
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$6(+_), area) : x0;
   };
 
   area.x1 = function(_) {
-    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$8(+_), area) : x1;
+    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$6(+_), area) : x1;
   };
 
   area.y = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$8(+_), y1 = null, area) : y0;
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$6(+_), y1 = null, area) : y0;
   };
 
   area.y0 = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$8(+_), area) : y0;
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$6(+_), area) : y0;
   };
 
   area.y1 = function(_) {
-    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$8(+_), area) : y1;
+    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$6(+_), area) : y1;
   };
 
   area.lineX0 =
@@ -13717,7 +13182,7 @@ var area$1 = function() {
   };
 
   area.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$8(!!_), area) : defined;
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$6(!!_), area) : defined;
   };
 
   area.curve = function(_) {
@@ -13735,17 +13200,17 @@ var descending$1 = function(a, b) {
   return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
 };
 
-var identity$8 = function(d) {
+var identity$7 = function(d) {
   return d;
 };
 
 var pie = function() {
-  var value = identity$8,
+  var value = identity$7,
       sortValues = descending$1,
       sort = null,
-      startAngle = constant$8(0),
-      endAngle = constant$8(tau$3),
-      padAngle = constant$8(0);
+      startAngle = constant$6(0),
+      endAngle = constant$6(tau$3),
+      padAngle = constant$6(0);
 
   function pie(data) {
     var i,
@@ -13788,7 +13253,7 @@ var pie = function() {
   }
 
   pie.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$8(+_), pie) : value;
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$6(+_), pie) : value;
   };
 
   pie.sortValues = function(_) {
@@ -13800,15 +13265,15 @@ var pie = function() {
   };
 
   pie.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$8(+_), pie) : startAngle;
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$6(+_), pie) : startAngle;
   };
 
   pie.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$8(+_), pie) : endAngle;
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$6(+_), pie) : endAngle;
   };
 
   pie.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$8(+_), pie) : padAngle;
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$6(+_), pie) : padAngle;
   };
 
   return pie;
@@ -13929,11 +13394,11 @@ function link$1(curve) {
   };
 
   link.x = function(_) {
-    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$8(+_), link) : x$$1;
+    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$6(+_), link) : x$$1;
   };
 
   link.y = function(_) {
-    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$8(+_), link) : y$$1;
+    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$6(+_), link) : y$$1;
   };
 
   link.context = function(_) {
@@ -14100,8 +13565,8 @@ var symbols = [
 ];
 
 var symbol = function() {
-  var type = constant$8(circle$2),
-      size = constant$8(64),
+  var type = constant$6(circle$2),
+      size = constant$6(64),
       context = null;
 
   function symbol() {
@@ -14112,11 +13577,11 @@ var symbol = function() {
   }
 
   symbol.type = function(_) {
-    return arguments.length ? (type = typeof _ === "function" ? _ : constant$8(_), symbol) : type;
+    return arguments.length ? (type = typeof _ === "function" ? _ : constant$6(_), symbol) : type;
   };
 
   symbol.size = function(_) {
-    return arguments.length ? (size = typeof _ === "function" ? _ : constant$8(+_), symbol) : size;
+    return arguments.length ? (size = typeof _ === "function" ? _ : constant$6(+_), symbol) : size;
   };
 
   symbol.context = function(_) {
@@ -14983,7 +14448,7 @@ function stackValue(d, key) {
 }
 
 var stack = function() {
-  var keys = constant$8([]),
+  var keys = constant$6([]),
       order = none$2,
       offset = none$1,
       value = stackValue;
@@ -15013,15 +14478,15 @@ var stack = function() {
   }
 
   stack.keys = function(_) {
-    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$8(slice$2.call(_)), stack) : keys;
+    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$6(slice$2.call(_)), stack) : keys;
   };
 
   stack.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$8(+_), stack) : value;
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$6(+_), stack) : value;
   };
 
   stack.order = function(_) {
-    return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$8(slice$2.call(_)), stack) : order;
+    return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$6(slice$2.call(_)), stack) : order;
   };
 
   stack.offset = function(_) {
@@ -15796,8 +15261,8 @@ var Area = (function (Shape$$1) {
     this._x = accessor("x");
     this._x0 = accessor("x");
     this._x1 = null;
-    this._y = constant$7(0);
-    this._y0 = constant$7(0);
+    this._y = constant$4(0);
+    this._y0 = constant$4(0);
     this._y1 = accessor("y");
 
   }
@@ -15939,7 +15404,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.x = function x (_) {
     if (!arguments.length) { return this._x; }
-    this._x = typeof _ === "function" ? _ : constant$7(_);
+    this._x = typeof _ === "function" ? _ : constant$4(_);
     this._x0 = this._x;
     return this;
   };
@@ -15952,7 +15417,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.x0 = function x0 (_) {
     if (!arguments.length) { return this._x0; }
-    this._x0 = typeof _ === "function" ? _ : constant$7(_);
+    this._x0 = typeof _ === "function" ? _ : constant$4(_);
     this._x = this._x0;
     return this;
   };
@@ -15964,7 +15429,7 @@ var Area = (function (Shape$$1) {
       @chainable
   */
   Area.prototype.x1 = function x1 (_) {
-    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this) : this._x1;
+    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$4(_), this) : this._x1;
   };
 
   /**
@@ -15975,7 +15440,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.y = function y (_) {
     if (!arguments.length) { return this._y; }
-    this._y = typeof _ === "function" ? _ : constant$7(_);
+    this._y = typeof _ === "function" ? _ : constant$4(_);
     this._y0 = this._y;
     return this;
   };
@@ -15988,7 +15453,7 @@ var Area = (function (Shape$$1) {
   */
   Area.prototype.y0 = function y0 (_) {
     if (!arguments.length) { return this._y0; }
-    this._y0 = typeof _ === "function" ? _ : constant$7(_);
+    this._y0 = typeof _ === "function" ? _ : constant$4(_);
     this._y = this._y0;
     return this;
   };
@@ -16000,7 +15465,7 @@ var Area = (function (Shape$$1) {
       @chainable
   */
   Area.prototype.y1 = function y1 (_) {
-    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this) : this._y1;
+    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$4(_), this) : this._y1;
   };
 
   return Area;
@@ -16019,19 +15484,19 @@ var Bar = (function (Shape$$1) {
     Shape$$1.call(this, "rect");
 
     this._name = "Bar";
-    this._height = constant$7(10);
+    this._height = constant$4(10);
     this._labelBounds = function (d, i, s) { return ({
       width: s.width,
       height: s.height,
       x: this$1._x1 !== null ? this$1._getX(d, i) : -s.width / 2,
       y: this$1._x1 === null ? this$1._getY(d, i) : -s.height / 2
     }); };
-    this._width = constant$7(10);
+    this._width = constant$4(10);
     this._x = accessor("x");
     this._x0 = accessor("x");
     this._x1 = null;
-    this._y = constant$7(0);
-    this._y0 = constant$7(0);
+    this._y = constant$4(0);
+    this._y0 = constant$4(0);
     this._y1 = accessor("y");
 
   }
@@ -16163,7 +15628,7 @@ function(d) {
 }
   */
   Bar.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$7(_), this) : this._height;
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$4(_), this) : this._height;
   };
 
   /**
@@ -16177,7 +15642,7 @@ function(d) {
 }
   */
   Bar.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$7(_), this) : this._width;
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$4(_), this) : this._width;
   };
 
   /**
@@ -16188,7 +15653,7 @@ function(d) {
   */
   Bar.prototype.x0 = function x0 (_) {
     if (!arguments.length) { return this._x0; }
-    this._x0 = typeof _ === "function" ? _ : constant$7(_);
+    this._x0 = typeof _ === "function" ? _ : constant$4(_);
     this._x = this._x0;
     return this;
   };
@@ -16200,7 +15665,7 @@ function(d) {
       @chainable
   */
   Bar.prototype.x1 = function x1 (_) {
-    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this) : this._x1;
+    return arguments.length ? (this._x1 = typeof _ === "function" || _ === null ? _ : constant$4(_), this) : this._x1;
   };
 
   /**
@@ -16211,7 +15676,7 @@ function(d) {
   */
   Bar.prototype.y0 = function y0 (_) {
     if (!arguments.length) { return this._y0; }
-    this._y0 = typeof _ === "function" ? _ : constant$7(_);
+    this._y0 = typeof _ === "function" ? _ : constant$4(_);
     this._y = this._y0;
     return this;
   };
@@ -16223,7 +15688,7 @@ function(d) {
       @chainable
   */
   Bar.prototype.y1 = function y1 (_) {
-    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$7(_), this) : this._y1;
+    return arguments.length ? (this._y1 = typeof _ === "function" || _ === null ? _ : constant$4(_), this) : this._y1;
   };
 
   return Bar;
@@ -16308,7 +15773,7 @@ function(d) {
 }
   */
   Circle.prototype.r = function r (_) {
-    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$7(_), this) : this._r;
+    return arguments.length ? (this._r = typeof _ === "function" ? _ : constant$4(_), this) : this._r;
   };
 
   return Circle;
@@ -16326,11 +15791,11 @@ var Line = (function (Shape$$1) {
 
     this._curve = "linear";
     this._defined = function (d) { return d; };
-    this._fill = constant$7("none");
+    this._fill = constant$4("none");
     this._name = "Line";
     this._path = line();
-    this._stroke = constant$7("black");
-    this._strokeWidth = constant$7(1);
+    this._stroke = constant$4("black");
+    this._strokeWidth = constant$4(1);
 
   }
 
@@ -16631,7 +16096,7 @@ function(d) {
 }
   */
   Path.prototype.d = function d (_) {
-    return arguments.length ? (this._d = typeof _ === "function" ? _ : constant$7(_), this) : this._d;
+    return arguments.length ? (this._d = typeof _ === "function" ? _ : constant$4(_), this) : this._d;
   };
 
   return Path;
@@ -16722,7 +16187,7 @@ function(d) {
 }
   */
   Rect.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$7(_), this) : this._height;
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$4(_), this) : this._height;
   };
 
   /**
@@ -16736,7 +16201,7 @@ function(d) {
 }
   */
   Rect.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$7(_), this) : this._width;
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$4(_), this) : this._width;
   };
 
   return Rect;
@@ -16960,6 +16425,12 @@ type("application/xml", function(xhr) {
   return xml;
 });
 
+var EOL = {};
+var EOF = {};
+var QUOTE = 34;
+var NEWLINE = 10;
+var RETURN = 13;
+
 function objectConverter(columns) {
   return new Function("d", "return {" + columns.map(function(name, i) {
     return JSON.stringify(name) + ": d[" + i + "]";
@@ -16991,7 +16462,7 @@ function inferColumns(rows) {
 
 var dsv = function(delimiter) {
   var reFormat = new RegExp("[\"" + delimiter + "\n\r]"),
-      delimiterCode = delimiter.charCodeAt(0);
+      DELIMITER = delimiter.charCodeAt(0);
 
   function parse(text, f) {
     var convert, columns, rows = parseRows(text, function(row, i) {
@@ -17003,62 +16474,49 @@ var dsv = function(delimiter) {
   }
 
   function parseRows(text, f) {
-    var EOL = {}, // sentinel value for end-of-line
-        EOF = {}, // sentinel value for end-of-file
-        rows = [], // output rows
+    var rows = [], // output rows
         N = text.length,
         I = 0, // current character index
-        n = 0, // the current line number
-        t, // the current token
-        eol; // is the current token followed by EOL?
+        n = 0, // current line number
+        t, // current token
+        eof = N <= 0, // current token followed by EOF?
+        eol = false; // current token followed by EOL?
+
+    // Strip the trailing newline.
+    if (text.charCodeAt(N - 1) === NEWLINE) { --N; }
+    if (text.charCodeAt(N - 1) === RETURN) { --N; }
 
     function token() {
-      if (I >= N) { return EOF; } // special case: end of file
-      if (eol) { return eol = false, EOL; } // special case: end of line
+      if (eof) { return EOF; }
+      if (eol) { return eol = false, EOL; }
 
-      // special case: quotes
-      var j = I, c;
-      if (text.charCodeAt(j) === 34) {
-        var i = j;
-        while (i++ < N) {
-          if (text.charCodeAt(i) === 34) {
-            if (text.charCodeAt(i + 1) !== 34) { break; }
-            ++i;
-          }
-        }
-        I = i + 2;
-        c = text.charCodeAt(i + 1);
-        if (c === 13) {
-          eol = true;
-          if (text.charCodeAt(i + 2) === 10) { ++I; }
-        } else if (c === 10) {
-          eol = true;
-        }
-        return text.slice(j + 1, i).replace(/""/g, "\"");
+      // Unescape quotes.
+      var i, j = I, c;
+      if (text.charCodeAt(j) === QUOTE) {
+        while (I++ < N && text.charCodeAt(I) !== QUOTE || text.charCodeAt(++I) === QUOTE){  }
+        if ((i = I) >= N) { eof = true; }
+        else if ((c = text.charCodeAt(I++)) === NEWLINE) { eol = true; }
+        else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) { ++I; } }
+        return text.slice(j + 1, i - 1).replace(/""/g, "\"");
       }
 
-      // common case: find next delimiter or newline
+      // Find next delimiter or newline.
       while (I < N) {
-        var k = 1;
-        c = text.charCodeAt(I++);
-        if (c === 10) { eol = true; } // \n
-        else if (c === 13) { eol = true; if (text.charCodeAt(I) === 10) { ++I, ++k; } } // \r|\r\n
-        else if (c !== delimiterCode) { continue; }
-        return text.slice(j, I - k);
+        if ((c = text.charCodeAt(i = I++)) === NEWLINE) { eol = true; }
+        else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) { ++I; } }
+        else if (c !== DELIMITER) { continue; }
+        return text.slice(j, i);
       }
 
-      // special case: last token before EOF
-      return text.slice(j);
+      // Return last token before EOF.
+      return eof = true, text.slice(j, N);
     }
 
     while ((t = token()) !== EOF) {
-      var a = [];
-      while (t !== EOL && t !== EOF) {
-        a.push(t);
-        t = token();
-      }
-      if (f && (a = f(a, n++)) == null) { continue; }
-      rows.push(a);
+      var row = [];
+      while (t !== EOL && t !== EOF) { row.push(t), t = token(); }
+      if (f && (row = f(row, n++)) == null) { continue; }
+      rows.push(row);
     }
 
     return rows;
@@ -17083,7 +16541,7 @@ var dsv = function(delimiter) {
 
   function formatValue(text) {
     return text == null ? ""
-        : reFormat.test(text += "") ? "\"" + text.replace(/\"/g, "\"\"") + "\""
+        : reFormat.test(text += "") ? "\"" + text.replace(/"/g, "\"\"") + "\""
         : text;
   }
 
@@ -17296,6 +16754,541 @@ function queue(concurrency) {
   else if (!((concurrency = +concurrency) >= 1)) { throw new Error("invalid concurrency"); }
   return new Queue(concurrency);
 }
+
+var noevent = function() {
+  event$1.preventDefault();
+  event$1.stopImmediatePropagation();
+};
+
+var dragDisable = function(view) {
+  var root = view.document.documentElement,
+      selection = select(view).on("dragstart.drag", noevent, true);
+  if ("onselectstart" in root) {
+    selection.on("selectstart.drag", noevent, true);
+  } else {
+    root.__noselect = root.style.MozUserSelect;
+    root.style.MozUserSelect = "none";
+  }
+};
+
+function yesdrag(view, noclick) {
+  var root = view.document.documentElement,
+      selection = select(view).on("dragstart.drag", null);
+  if (noclick) {
+    selection.on("click.drag", noevent, true);
+    setTimeout(function() { selection.on("click.drag", null); }, 0);
+  }
+  if ("onselectstart" in root) {
+    selection.on("selectstart.drag", null);
+  } else {
+    root.style.MozUserSelect = root.__noselect;
+    delete root.__noselect;
+  }
+}
+
+function DragEvent(target, type, subject, id, active, x, y, dx, dy, dispatch) {
+  this.target = target;
+  this.type = type;
+  this.subject = subject;
+  this.identifier = id;
+  this.active = active;
+  this.x = x;
+  this.y = y;
+  this.dx = dx;
+  this.dy = dy;
+  this._ = dispatch;
+}
+
+DragEvent.prototype.on = function() {
+  var value = this._.on.apply(this._, arguments);
+  return value === this._ ? this : value;
+};
+
+var constant$8 = function(x) {
+  return function() {
+    return x;
+  };
+};
+
+function ZoomEvent(target, type, transform) {
+  this.target = target;
+  this.type = type;
+  this.transform = transform;
+}
+
+function Transform(k, x, y) {
+  this.k = k;
+  this.x = x;
+  this.y = y;
+}
+
+Transform.prototype = {
+  constructor: Transform,
+  scale: function(k) {
+    return k === 1 ? this : new Transform(this.k * k, this.x, this.y);
+  },
+  translate: function(x, y) {
+    return x === 0 & y === 0 ? this : new Transform(this.k, this.x + this.k * x, this.y + this.k * y);
+  },
+  apply: function(point) {
+    return [point[0] * this.k + this.x, point[1] * this.k + this.y];
+  },
+  applyX: function(x) {
+    return x * this.k + this.x;
+  },
+  applyY: function(y) {
+    return y * this.k + this.y;
+  },
+  invert: function(location) {
+    return [(location[0] - this.x) / this.k, (location[1] - this.y) / this.k];
+  },
+  invertX: function(x) {
+    return (x - this.x) / this.k;
+  },
+  invertY: function(y) {
+    return (y - this.y) / this.k;
+  },
+  rescaleX: function(x) {
+    return x.copy().domain(x.range().map(this.invertX, this).map(x.invert, x));
+  },
+  rescaleY: function(y) {
+    return y.copy().domain(y.range().map(this.invertY, this).map(y.invert, y));
+  },
+  toString: function() {
+    return "translate(" + this.x + "," + this.y + ") scale(" + this.k + ")";
+  }
+};
+
+var identity$8 = new Transform(1, 0, 0);
+
+transform$2.prototype = Transform.prototype;
+
+function transform$2(node) {
+  return node.__zoom || identity$8;
+}
+
+function nopropagation$1() {
+  event$1.stopImmediatePropagation();
+}
+
+var noevent$1 = function() {
+  event$1.preventDefault();
+  event$1.stopImmediatePropagation();
+};
+
+// Ignore right-click, since that should open the context menu.
+function defaultFilter() {
+  return !event$1.button;
+}
+
+function defaultExtent() {
+  var e = this, w, h;
+  if (e instanceof SVGElement) {
+    e = e.ownerSVGElement || e;
+    w = e.width.baseVal.value;
+    h = e.height.baseVal.value;
+  } else {
+    w = e.clientWidth;
+    h = e.clientHeight;
+  }
+  return [[0, 0], [w, h]];
+}
+
+function defaultTransform() {
+  return this.__zoom || identity$8;
+}
+
+function defaultWheelDelta() {
+  return -event$1.deltaY * (event$1.deltaMode ? 120 : 1) / 500;
+}
+
+function touchable() {
+  return "ontouchstart" in this;
+}
+
+var zoom = function() {
+  var filter = defaultFilter,
+      extent = defaultExtent,
+      wheelDelta = defaultWheelDelta,
+      k0 = 0,
+      k1 = Infinity,
+      x0 = -k1,
+      x1 = k1,
+      y0 = x0,
+      y1 = x1,
+      duration = 250,
+      interpolate = interpolateZoom,
+      gestures = [],
+      listeners = dispatch("start", "zoom", "end"),
+      touchstarting,
+      touchending,
+      touchDelay = 500,
+      wheelDelay = 150,
+      clickDistance2 = 0;
+
+  function zoom(selection) {
+    selection
+        .property("__zoom", defaultTransform)
+        .on("wheel.zoom", wheeled)
+        .on("mousedown.zoom", mousedowned)
+        .on("dblclick.zoom", dblclicked)
+      .filter(touchable)
+        .on("touchstart.zoom", touchstarted)
+        .on("touchmove.zoom", touchmoved)
+        .on("touchend.zoom touchcancel.zoom", touchended)
+        .style("touch-action", "none")
+        .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
+  }
+
+  zoom.transform = function(collection, transform) {
+    var selection = collection.selection ? collection.selection() : collection;
+    selection.property("__zoom", defaultTransform);
+    if (collection !== selection) {
+      schedule(collection, transform);
+    } else {
+      selection.interrupt().each(function() {
+        gesture(this, arguments)
+            .start()
+            .zoom(null, typeof transform === "function" ? transform.apply(this, arguments) : transform)
+            .end();
+      });
+    }
+  };
+
+  zoom.scaleBy = function(selection, k) {
+    zoom.scaleTo(selection, function() {
+      var k0 = this.__zoom.k,
+          k1 = typeof k === "function" ? k.apply(this, arguments) : k;
+      return k0 * k1;
+    });
+  };
+
+  zoom.scaleTo = function(selection, k) {
+    zoom.transform(selection, function() {
+      var e = extent.apply(this, arguments),
+          t0 = this.__zoom,
+          p0 = centroid(e),
+          p1 = t0.invert(p0),
+          k1 = typeof k === "function" ? k.apply(this, arguments) : k;
+      return constrain(translate(scale(t0, k1), p0, p1), e);
+    });
+  };
+
+  zoom.translateBy = function(selection, x, y) {
+    zoom.transform(selection, function() {
+      return constrain(this.__zoom.translate(
+        typeof x === "function" ? x.apply(this, arguments) : x,
+        typeof y === "function" ? y.apply(this, arguments) : y
+      ), extent.apply(this, arguments));
+    });
+  };
+
+  zoom.translateTo = function(selection, x, y) {
+    zoom.transform(selection, function() {
+      var e = extent.apply(this, arguments),
+          t = this.__zoom,
+          p = centroid(e);
+      return constrain(identity$8.translate(p[0], p[1]).scale(t.k).translate(
+        typeof x === "function" ? -x.apply(this, arguments) : -x,
+        typeof y === "function" ? -y.apply(this, arguments) : -y
+      ), e);
+    });
+  };
+
+  function scale(transform, k) {
+    k = Math.max(k0, Math.min(k1, k));
+    return k === transform.k ? transform : new Transform(k, transform.x, transform.y);
+  }
+
+  function translate(transform, p0, p1) {
+    var x = p0[0] - p1[0] * transform.k, y = p0[1] - p1[1] * transform.k;
+    return x === transform.x && y === transform.y ? transform : new Transform(transform.k, x, y);
+  }
+
+  function constrain(transform, extent) {
+    var dx0 = transform.invertX(extent[0][0]) - x0,
+        dx1 = transform.invertX(extent[1][0]) - x1,
+        dy0 = transform.invertY(extent[0][1]) - y0,
+        dy1 = transform.invertY(extent[1][1]) - y1;
+    return transform.translate(
+      dx1 > dx0 ? (dx0 + dx1) / 2 : Math.min(0, dx0) || Math.max(0, dx1),
+      dy1 > dy0 ? (dy0 + dy1) / 2 : Math.min(0, dy0) || Math.max(0, dy1)
+    );
+  }
+
+  function centroid(extent) {
+    return [(+extent[0][0] + +extent[1][0]) / 2, (+extent[0][1] + +extent[1][1]) / 2];
+  }
+
+  function schedule(transition, transform, center) {
+    transition
+        .on("start.zoom", function() { gesture(this, arguments).start(); })
+        .on("interrupt.zoom end.zoom", function() { gesture(this, arguments).end(); })
+        .tween("zoom", function() {
+          var that = this,
+              args = arguments,
+              g = gesture(that, args),
+              e = extent.apply(that, args),
+              p = center || centroid(e),
+              w = Math.max(e[1][0] - e[0][0], e[1][1] - e[0][1]),
+              a = that.__zoom,
+              b = typeof transform === "function" ? transform.apply(that, args) : transform,
+              i = interpolate(a.invert(p).concat(w / a.k), b.invert(p).concat(w / b.k));
+          return function(t) {
+            if (t === 1) { t = b; } // Avoid rounding error on end.
+            else { var l = i(t), k = w / l[2]; t = new Transform(k, p[0] - l[0] * k, p[1] - l[1] * k); }
+            g.zoom(null, t);
+          };
+        });
+  }
+
+  function gesture(that, args) {
+    for (var i = 0, n = gestures.length, g; i < n; ++i) {
+      if ((g = gestures[i]).that === that) {
+        return g;
+      }
+    }
+    return new Gesture(that, args);
+  }
+
+  function Gesture(that, args) {
+    this.that = that;
+    this.args = args;
+    this.index = -1;
+    this.active = 0;
+    this.extent = extent.apply(that, args);
+  }
+
+  Gesture.prototype = {
+    start: function() {
+      if (++this.active === 1) {
+        this.index = gestures.push(this) - 1;
+        this.emit("start");
+      }
+      return this;
+    },
+    zoom: function(key, transform) {
+      if (this.mouse && key !== "mouse") { this.mouse[1] = transform.invert(this.mouse[0]); }
+      if (this.touch0 && key !== "touch") { this.touch0[1] = transform.invert(this.touch0[0]); }
+      if (this.touch1 && key !== "touch") { this.touch1[1] = transform.invert(this.touch1[0]); }
+      this.that.__zoom = transform;
+      this.emit("zoom");
+      return this;
+    },
+    end: function() {
+      if (--this.active === 0) {
+        gestures.splice(this.index, 1);
+        this.index = -1;
+        this.emit("end");
+      }
+      return this;
+    },
+    emit: function(type) {
+      customEvent(new ZoomEvent(zoom, type, this.that.__zoom), listeners.apply, listeners, [type, this.that, this.args]);
+    }
+  };
+
+  function wheeled() {
+    if (!filter.apply(this, arguments)) { return; }
+    var g = gesture(this, arguments),
+        t = this.__zoom,
+        k = Math.max(k0, Math.min(k1, t.k * Math.pow(2, wheelDelta.apply(this, arguments)))),
+        p = mouse(this);
+
+    // If the mouse is in the same location as before, reuse it.
+    // If there were recent wheel events, reset the wheel idle timeout.
+    if (g.wheel) {
+      if (g.mouse[0][0] !== p[0] || g.mouse[0][1] !== p[1]) {
+        g.mouse[1] = t.invert(g.mouse[0] = p);
+      }
+      clearTimeout(g.wheel);
+    }
+
+    // If this wheel event won’t trigger a transform change, ignore it.
+    else if (t.k === k) { return; }
+
+    // Otherwise, capture the mouse point and location at the start.
+    else {
+      g.mouse = [p, t.invert(p)];
+      interrupt(this);
+      g.start();
+    }
+
+    noevent$1();
+    g.wheel = setTimeout(wheelidled, wheelDelay);
+    g.zoom("mouse", constrain(translate(scale(t, k), g.mouse[0], g.mouse[1]), g.extent));
+
+    function wheelidled() {
+      g.wheel = null;
+      g.end();
+    }
+  }
+
+  function mousedowned() {
+    if (touchending || !filter.apply(this, arguments)) { return; }
+    var g = gesture(this, arguments),
+        v = select(event$1.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
+        p = mouse(this),
+        x0 = event$1.clientX,
+        y0 = event$1.clientY;
+
+    dragDisable(event$1.view);
+    nopropagation$1();
+    g.mouse = [p, this.__zoom.invert(p)];
+    interrupt(this);
+    g.start();
+
+    function mousemoved() {
+      noevent$1();
+      if (!g.moved) {
+        var dx = event$1.clientX - x0, dy = event$1.clientY - y0;
+        g.moved = dx * dx + dy * dy > clickDistance2;
+      }
+      g.zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = mouse(g.that), g.mouse[1]), g.extent));
+    }
+
+    function mouseupped() {
+      v.on("mousemove.zoom mouseup.zoom", null);
+      yesdrag(event$1.view, g.moved);
+      noevent$1();
+      g.end();
+    }
+  }
+
+  function dblclicked() {
+    if (!filter.apply(this, arguments)) { return; }
+    var t0 = this.__zoom,
+        p0 = mouse(this),
+        p1 = t0.invert(p0),
+        k1 = t0.k * (event$1.shiftKey ? 0.5 : 2),
+        t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, arguments));
+
+    noevent$1();
+    if (duration > 0) { select(this).transition().duration(duration).call(schedule, t1, p0); }
+    else { select(this).call(zoom.transform, t1); }
+  }
+
+  function touchstarted() {
+    var this$1 = this;
+
+    if (!filter.apply(this, arguments)) { return; }
+    var g = gesture(this, arguments),
+        touches = event$1.changedTouches,
+        started,
+        n = touches.length, i, t, p;
+
+    nopropagation$1();
+    for (i = 0; i < n; ++i) {
+      t = touches[i], p = touch(this$1, touches, t.identifier);
+      p = [p, this$1.__zoom.invert(p), t.identifier];
+      if (!g.touch0) { g.touch0 = p, started = true; }
+      else if (!g.touch1) { g.touch1 = p; }
+    }
+
+    // If this is a dbltap, reroute to the (optional) dblclick.zoom handler.
+    if (touchstarting) {
+      touchstarting = clearTimeout(touchstarting);
+      if (!g.touch1) {
+        g.end();
+        p = select(this).on("dblclick.zoom");
+        if (p) { p.apply(this, arguments); }
+        return;
+      }
+    }
+
+    if (started) {
+      touchstarting = setTimeout(function() { touchstarting = null; }, touchDelay);
+      interrupt(this);
+      g.start();
+    }
+  }
+
+  function touchmoved() {
+    var this$1 = this;
+
+    var g = gesture(this, arguments),
+        touches = event$1.changedTouches,
+        n = touches.length, i, t, p, l;
+
+    noevent$1();
+    if (touchstarting) { touchstarting = clearTimeout(touchstarting); }
+    for (i = 0; i < n; ++i) {
+      t = touches[i], p = touch(this$1, touches, t.identifier);
+      if (g.touch0 && g.touch0[2] === t.identifier) { g.touch0[0] = p; }
+      else if (g.touch1 && g.touch1[2] === t.identifier) { g.touch1[0] = p; }
+    }
+    t = g.that.__zoom;
+    if (g.touch1) {
+      var p0 = g.touch0[0], l0 = g.touch0[1],
+          p1 = g.touch1[0], l1 = g.touch1[1],
+          dp = (dp = p1[0] - p0[0]) * dp + (dp = p1[1] - p0[1]) * dp,
+          dl = (dl = l1[0] - l0[0]) * dl + (dl = l1[1] - l0[1]) * dl;
+      t = scale(t, Math.sqrt(dp / dl));
+      p = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2];
+      l = [(l0[0] + l1[0]) / 2, (l0[1] + l1[1]) / 2];
+    }
+    else if (g.touch0) { p = g.touch0[0], l = g.touch0[1]; }
+    else { return; }
+    g.zoom("touch", constrain(translate(t, p, l), g.extent));
+  }
+
+  function touchended() {
+    var g = gesture(this, arguments),
+        touches = event$1.changedTouches,
+        n = touches.length, i, t;
+
+    nopropagation$1();
+    if (touchending) { clearTimeout(touchending); }
+    touchending = setTimeout(function() { touchending = null; }, touchDelay);
+    for (i = 0; i < n; ++i) {
+      t = touches[i];
+      if (g.touch0 && g.touch0[2] === t.identifier) { delete g.touch0; }
+      else if (g.touch1 && g.touch1[2] === t.identifier) { delete g.touch1; }
+    }
+    if (g.touch1 && !g.touch0) { g.touch0 = g.touch1, delete g.touch1; }
+    if (g.touch0) { g.touch0[1] = this.__zoom.invert(g.touch0[0]); }
+    else { g.end(); }
+  }
+
+  zoom.wheelDelta = function(_) {
+    return arguments.length ? (wheelDelta = typeof _ === "function" ? _ : constant$8(+_), zoom) : wheelDelta;
+  };
+
+  zoom.filter = function(_) {
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$8(!!_), zoom) : filter;
+  };
+
+  zoom.extent = function(_) {
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$8([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), zoom) : extent;
+  };
+
+  zoom.scaleExtent = function(_) {
+    return arguments.length ? (k0 = +_[0], k1 = +_[1], zoom) : [k0, k1];
+  };
+
+  zoom.translateExtent = function(_) {
+    return arguments.length ? (x0 = +_[0][0], x1 = +_[1][0], y0 = +_[0][1], y1 = +_[1][1], zoom) : [[x0, y0], [x1, y1]];
+  };
+
+  zoom.duration = function(_) {
+    return arguments.length ? (duration = +_, zoom) : duration;
+  };
+
+  zoom.interpolate = function(_) {
+    return arguments.length ? (interpolate = _, zoom) : interpolate;
+  };
+
+  zoom.on = function() {
+    var value = listeners.on.apply(listeners, arguments);
+    return value === listeners ? zoom : value;
+  };
+
+  zoom.clickDistance = function(_) {
+    return arguments.length ? (clickDistance2 = (_ = +_) * _, zoom) : Math.sqrt(clickDistance2);
+  };
+
+  return zoom;
+};
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -17548,7 +17541,7 @@ var Axis = (function (BaseClass) {
         fontColor: "#000",
         fontFamily: new TextBox().fontFamily(),
         fontResize: false,
-        fontSize: constant$7(10),
+        fontSize: constant$4(10),
         textAnchor: function () {
           var rtl$$1 = detectRTL();
           return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
@@ -18432,7 +18425,7 @@ var Button = (function (BaseClass) {
       @chainable
   */
   Button.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$7(_), this) : this._text;
+    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$4(_), this) : this._text;
   };
 
   /**
@@ -18643,7 +18636,7 @@ var Radio = (function (BaseClass) {
       @chainable
   */
   Radio.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$7(_), this) : this._text;
+    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$4(_), this) : this._text;
   };
 
   /**
@@ -18840,7 +18833,7 @@ var Select = (function (BaseClass) {
       @chainable
   */
   Select.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$7(_), this) : this._text;
+    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$4(_), this) : this._text;
   };
 
   /**
@@ -19436,7 +19429,7 @@ function value(d) {
 }
   */
   ColorScale.prototype.value = function value (_) {
-    return arguments.length ? (this._value = typeof _ === "function" ? _ : constant$7(_), this) : this._value;
+    return arguments.length ? (this._value = typeof _ === "function" ? _ : constant$4(_), this) : this._value;
   };
 
   /**
@@ -19450,6 +19443,925 @@ function value(d) {
   };
 
   return ColorScale;
+}(BaseClass));
+
+/**
+    @function textWidth
+    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
+    @param {String|Array} text Can be either a single string or an array of strings to analyze.
+    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
+*/
+var measure = function(text, style) {
+
+  style = Object.assign({
+    "font-size": 10,
+    "font-family": "sans-serif",
+    "font-style": "normal",
+    "font-weight": 400,
+    "font-variant": "normal"
+  }, style);
+
+  var context = document.createElement("canvas").getContext("2d");
+
+  var font = [];
+  font.push(style["font-style"]);
+  font.push(style["font-variant"]);
+  font.push(style["font-weight"]);
+  font.push(typeof style["font-size"] === "string" ? style["font-size"] : ((style["font-size"]) + "px"));
+  // let s = `${style["font-size"]}px`;
+  // if ("line-height" in style) s += `/${style["line-height"]}px`;
+  // font.push(s);
+  font.push(style["font-family"]);
+
+  context.font = font.join(" ");
+
+  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
+  return context.measureText(text).width;
+
+};
+
+/**
+    @function trim
+    @desc Cross-browser implementation of [trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim).
+    @param {String} str
+*/
+function trim$1(str) {
+  return str.replace(/^\s+|\s+$/g, "");
+}
+
+/**
+    @function trimRight
+    @desc Cross-browser implementation of [trimRight](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/TrimRight).
+    @param {String} str
+*/
+function trimRight$1(str) {
+  return str.replace(/\s+$/, "");
+}
+
+var alpha$1 = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
+var checked$1 = {};
+var height$1 = 32;
+
+var dejavu$1;
+var macos$1;
+var monospace$1;
+var proportional$1;
+
+/**
+    @function fontExists
+    @desc Given either a single font-family or a list of fonts, returns the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
+    @param {String|Array} font Can be either a valid CSS font-family string (single or comma-separated names) or an Array of string names.
+*/
+var fontExists$2 = function (font) {
+
+  if (!dejavu$1) {
+    dejavu$1 = measure(alpha$1, {"font-family": "DejaVuSans", "font-size": height$1});
+    macos$1 = measure(alpha$1, {"font-family": "-apple-system", "font-size": height$1});
+    monospace$1 = measure(alpha$1, {"font-family": "monospace", "font-size": height$1});
+    proportional$1 = measure(alpha$1, {"font-family": "sans-serif", "font-size": height$1});
+  }
+
+  if (!(font instanceof Array)) { font = font.split(","); }
+  font = font.map(function (f) { return trim$1(f); });
+
+  for (var i = 0; i < font.length; i++) {
+    var fam = font[i];
+    if (checked$1[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
+    else if (checked$1[fam] === false) { continue; }
+    var width = measure(alpha$1, {"font-family": fam, "font-size": height$1});
+    checked$1[fam] = width !== monospace$1;
+    if (checked$1[fam]) { checked$1[fam] = width !== proportional$1; }
+    if (macos$1 && checked$1[fam]) { checked$1[fam] = width !== macos$1; }
+    if (dejavu$1 && checked$1[fam]) { checked$1[fam] = width !== dejavu$1; }
+    if (checked$1[fam]) { return fam; }
+  }
+
+  return false;
+
+};
+
+/**
+    @function rtl
+    @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
+*/
+var detectRTL$1 = function () { return select("html").attr("dir") === "rtl" ||
+  select("body").attr("dir") === "rtl" ||
+  select("html").style("direction") === "rtl" ||
+  select("body").style("direction") === "rtl"; };
+
+/**
+    @function stringify
+    @desc Coerces value into a String.
+    @param {String} value
+*/
+var stringify$1 = function(value) {
+  if (value === void 0) { value = "undefined"; }
+  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
+  return value;
+};
+
+// great unicode list: http://asecuritysite.com/coding/asc2
+
+var diacritics$1 = [
+  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
+  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
+  [/[\337]/g, "B"],
+  [/[\307]/g, "C"], [/[\347]/g, "c"],
+  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
+  [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
+  [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
+  [/[\321]/g, "N"], [/[\361]/g, "n"],
+  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
+  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
+  [/[\327]/g, "x"],
+  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
+];
+
+/**
+    @function strip
+    @desc Removes all non ASCII characters from a string.
+    @param {String} value
+*/
+var strip$1 = function(value) {
+
+  return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
+
+    if (char === " ") { return "-"; }
+
+    var ret = false;
+    for (var d = 0; d < diacritics$1.length; d++) {
+      if (new RegExp(diacritics$1[d][0]).test(char)) {
+        ret = diacritics$1[d][1];
+        break;
+      }
+    }
+
+    return ret || "";
+
+  });
+};
+
+// scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
+// and http://www.fileformat.info/info/unicode/category/Mn/list.htm
+// JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
+var a$2 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
+var b$1 = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
+var combiningMarks$1 = a$2.concat(b$1);
+
+var splitChars$1 = ["-",  "/",  ";",  ":",  "&",
+  "u0E2F",  // thai character pairannoi
+  "u0EAF",  // lao ellipsis
+  "u0EC6",  // lao ko la (word repetition)
+  "u0ECC",  // lao cancellation mark
+  "u104A",  // myanmar sign little section
+  "u104B",  // myanmar sign section
+  "u104C",  // myanmar symbol locative
+  "u104D",  // myanmar symbol completed
+  "u104E",  // myanmar symbol aforementioned
+  "u104F",  // myanmar symbol genitive
+  "u2013",  // en dash
+  "u2014",  // em dash
+  "u2027",  // simplified chinese hyphenation point
+  "u3000",  // simplified chinese ideographic space
+  "u3001",  // simplified chinese ideographic comma
+  "u3002",  // simplified chinese ideographic full stop
+  "uFF0C",  // full-width comma
+  "uFF5E"   // wave dash
+];
+
+var prefixChars$1 = ["'",  "<",  "(",  "{",  "[",
+  "u00AB",  // left-pointing double angle quotation mark
+  "u300A",  // left double angle bracket
+  "u3008"  // left angle bracket
+];
+
+var suffixChars$1 = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
+  "u00BB",  // right-pointing double angle quotation mark
+  "u300B",  // right double angle bracket
+  "u3009"  // right angle bracket
+].concat(splitChars$1);
+
+var burmeseRange$1 = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
+var japaneseRange$1 = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff0b\uff0d-\uff5d\uff5f-\uff9f\u3400-\u4dbf";
+var chineseRange$1 = "\u3400-\u9FBF";
+var laoRange$1 = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
+
+var noSpaceRange$1 = burmeseRange$1 + chineseRange$1 + laoRange$1;
+
+var splitWords$1 = new RegExp(("(\\" + (splitChars$1.join("|\\")) + ")*[^\\s|\\" + (splitChars$1.join("|\\")) + "]*(\\" + (splitChars$1.join("|\\")) + ")*"), "g");
+var japaneseChars$1 = new RegExp(("[" + japaneseRange$1 + "]"));
+var noSpaceLanguage$1 = new RegExp(("[" + noSpaceRange$1 + "]"));
+var splitAllChars$1 = new RegExp(("(\\" + (prefixChars$1.join("|\\")) + ")*[" + noSpaceRange$1 + "](\\" + (suffixChars$1.join("|\\")) + "|\\" + (combiningMarks$1.join("|\\")) + ")*|[a-z0-9]+"), "gi");
+
+/**
+    @function textSplit
+    @desc Splits a given sentence into an array of words.
+    @param {String} sentence
+*/
+var textSplit$1 = function(sentence) {
+  if (!noSpaceLanguage$1.test(sentence)) { return stringify$1(sentence).match(splitWords$1).filter(function (w) { return w.length; }); }
+  return merge(stringify$1(sentence).match(splitWords$1).map(function (d) {
+    if (!japaneseChars$1.test(d) && noSpaceLanguage$1.test(d)) { return d.match(splitAllChars$1); }
+    return [d];
+  }));
+};
+
+/**
+    @function textWrap
+    @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
+*/
+var wrap = function() {
+
+  var fontFamily = "sans-serif",
+      fontSize = 10,
+      fontWeight = 400,
+      height = 200,
+      lineHeight,
+      overflow = false,
+      split = textSplit$1,
+      width = 200;
+
+  /**
+      The inner return object and wraps the text and returns the line data array.
+      @private
+  */
+  function textWrap(sentence) {
+
+    sentence = stringify$1(sentence);
+
+    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.4); }
+
+    var words = split(sentence);
+
+    var style = {
+      "font-family": fontFamily,
+      "font-size": fontSize,
+      "font-weight": fontWeight,
+      "line-height": lineHeight
+    };
+
+    var line = 1,
+        textProg = "",
+        truncated = false,
+        widthProg = 0;
+
+    var lineData = [],
+          sizes = measure(words, style),
+          space = measure(" ", style);
+
+    for (var i = 0; i < words.length; i++) {
+      var word = words[i];
+      var wordWidth = sizes[words.indexOf(word)];
+      word += sentence.slice(textProg.length + word.length).match("^( |\n)*", "g")[0];
+      if (textProg.slice(-1) === "\n" || widthProg + wordWidth > width) {
+        if (!i && !overflow) {
+          truncated = true;
+          break;
+        }
+        lineData[line - 1] = trimRight$1(lineData[line - 1]);
+        line++;
+        if (lineHeight * line > height || wordWidth > width && !overflow) {
+          truncated = true;
+          break;
+        }
+        widthProg = 0;
+        lineData.push(word);
+      }
+      else if (!i) { lineData[0] = word; }
+      else { lineData[line - 1] += word; }
+      textProg += word;
+      widthProg += wordWidth;
+      widthProg += word.match(/[\s]*$/g)[0].length * space;
+    }
+
+    return {
+      lines: lineData,
+      sentence: sentence, truncated: truncated,
+      widths: measure(lineData, style),
+      words: words
+    };
+
+  }
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
+      @param {Function|String} [*value* = "sans-serif"]
+  */
+  textWrap.fontFamily = function(_) {
+    return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
+  };
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
+      @param {Function|Number} [*value* = 10]
+  */
+  textWrap.fontSize = function(_) {
+    return arguments.length ? (fontSize = _, textWrap) : fontSize;
+  };
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
+      @param {Function|Number|String} [*value* = 400]
+  */
+  textWrap.fontWeight = function(_) {
+    return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
+  };
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets height limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
+      @param {Number} [*value* = 200]
+  */
+  textWrap.height = function(_) {
+    return arguments.length ? (height = _, textWrap) : height;
+  };
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textWrap.fontSize) by default.
+      @param {Function|Number} [*value*]
+  */
+  textWrap.lineHeight = function(_) {
+    return arguments.length ? (lineHeight = _, textWrap) : lineHeight;
+  };
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
+      @param {Boolean} [*value* = false]
+  */
+  textWrap.overflow = function(_) {
+    return arguments.length ? (overflow = _, textWrap) : overflow;
+  };
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
+      @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to textWrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
+  */
+  textWrap.split = function(_) {
+    return arguments.length ? (split = _, textWrap) : split;
+  };
+
+  /**
+      @memberof textWrap
+      @desc If *value* is specified, sets width limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
+      @param {Number} [*value* = 200]
+  */
+  textWrap.width = function(_) {
+    return arguments.length ? (width = _, textWrap) : width;
+  };
+
+  return textWrap;
+
+};
+
+/**
+    @external BaseClass
+    @see https://github.com/d3plus/d3plus-common#BaseClass
+*/
+
+/**
+    @class TextBox
+    @extends external:BaseClass
+    @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
+*/
+var TextBox$2 = (function (BaseClass) {
+  function TextBox() {
+
+    BaseClass.call(this);
+
+    this._delay = 0;
+    this._duration = 0;
+    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
+    this._fontColor = constant$4("black");
+    this._fontFamily = constant$4(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
+    this._fontMax = constant$4(50);
+    this._fontMin = constant$4(8);
+    this._fontResize = constant$4(false);
+    this._fontSize = constant$4(10);
+    this._fontWeight = constant$4(400);
+    this._height = accessor("height", 200);
+    this._id = function (d, i) { return d.id || ("" + i); };
+    this._on = {};
+    this._overflow = constant$4(false);
+    this._pointerEvents = constant$4("auto");
+    this._rotate = constant$4(0);
+    this._split = textSplit$1;
+    this._text = accessor("text");
+    this._textAnchor = constant$4("start");
+    this._verticalAlign = constant$4("top");
+    this._width = accessor("width", 200);
+    this._x = accessor("x", 0);
+    this._y = accessor("y", 0);
+
+  }
+
+  if ( BaseClass ) TextBox.__proto__ = BaseClass;
+  TextBox.prototype = Object.create( BaseClass && BaseClass.prototype );
+  TextBox.prototype.constructor = TextBox;
+
+  /**
+      @memberof TextBox
+      @desc Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
+      @param {Function} [*callback* = undefined]
+  */
+  TextBox.prototype.render = function render (callback) {
+    var this$1 = this;
+
+
+    if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
+    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.4; }; }
+    var that = this;
+
+    var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
+
+      var t = this$1._text(d, i);
+      if (t === void 0) { return arr; }
+
+      var resize = this$1._fontResize(d, i);
+
+      var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
+          lH = resize ? fS * 1.4 : this$1._lineHeight(d, i),
+          line = 1,
+          lineData = [],
+          sizes,
+          wrapResults;
+
+      var style = {
+        "font-family": fontExists$2(this$1._fontFamily(d, i)),
+        "font-size": fS,
+        "font-weight": this$1._fontWeight(d, i),
+        "line-height": lH
+      };
+
+      var h = this$1._height(d, i),
+            w = this$1._width(d, i);
+
+      var wrapper = wrap()
+        .fontFamily(style["font-family"])
+        .fontSize(fS)
+        .fontWeight(style["font-weight"])
+        .lineHeight(lH)
+        .height(h)
+        .overflow(this$1._overflow(d, i))
+        .width(w);
+
+      var fMax = this$1._fontMax(d, i),
+            fMin = this$1._fontMin(d, i),
+            vA = this$1._verticalAlign(d, i),
+            words = this$1._split(t, i);
+
+      /**
+          Figures out the lineData to be used for wrapping.
+          @private
+      */
+      function checkSize() {
+
+        if (fS < fMin) {
+          lineData = [];
+          return;
+        }
+        else if (fS > fMax) { fS = fMax; }
+
+        if (resize) {
+          lH = fS * 1.4;
+          wrapper
+            .fontSize(fS)
+            .lineHeight(lH);
+          style["font-size"] = fS;
+          style["line-height"] = lH;
+        }
+
+        wrapResults = wrapper(t);
+        lineData = wrapResults.lines.filter(function (l) { return l !== ""; });
+        line = lineData.length;
+
+        if (wrapResults.truncated) {
+
+          if (resize) {
+            fS--;
+            if (fS < fMin) { lineData = []; }
+            else { checkSize(); }
+          }
+          else if (line < 1) { lineData = [that._ellipsis("")]; }
+          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
+
+        }
+
+
+      }
+
+      if (w > fMin && (h > lH || resize && h > fMin * 1.4)) {
+
+        if (resize) {
+
+          sizes = measure(words, style);
+
+          var areaMod = 1.165 + w / h * 0.1,
+                boxArea = w * h,
+                maxWidth = max(sizes),
+                textArea = sum(sizes, function (d) { return d * lH; }) * areaMod;
+
+          if (maxWidth > w || textArea > boxArea) {
+            var areaRatio = Math.sqrt(boxArea / textArea),
+                  widthRatio = w / maxWidth;
+            var sizeRatio = min([areaRatio, widthRatio]);
+            fS = Math.floor(fS * sizeRatio);
+          }
+
+          var heightMax = Math.floor(h * 0.8);
+          if (fS > heightMax) { fS = heightMax; }
+
+        }
+
+        checkSize();
+
+      }
+
+      if (lineData.length) {
+
+        var tH = line * lH;
+        var yP = vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH;
+        yP -= lH * 0.1;
+
+        arr.push({
+          data: d,
+          i: i,
+          lines: lineData,
+          fC: this$1._fontColor(d, i),
+          fF: style["font-family"],
+          fW: style["font-weight"],
+          id: this$1._id(d, i),
+          tA: this$1._textAnchor(d, i),
+          widths: wrapResults.widths,
+          fS: fS, lH: lH, w: w, h: h, x: this$1._x(d, i), y: this$1._y(d, i) + yP
+        });
+
+      }
+
+      return arr;
+
+    }, []), this._id);
+
+    var t = transition().duration(this._duration);
+
+    if (this._duration === 0) {
+
+      boxes.exit().remove();
+
+    }
+    else {
+
+      boxes.exit().transition().delay(this._duration).remove();
+
+      boxes.exit().selectAll("text").transition(t)
+        .attr("opacity", 0);
+
+    }
+
+    function rotate(text) {
+      text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + ", " + (d.x + d.w / 2) + ", " + (d.y + d.h / 2) + ")translate(" + (d.x) + ", " + (d.y) + ")"); });
+    }
+
+    var update = boxes.enter().append("g")
+        .attr("class", "d3plus-textBox")
+        .attr("id", function (d) { return ("d3plus-textBox-" + (strip$1(d.id))); })
+        .call(rotate)
+      .merge(boxes);
+
+    var rtl = detectRTL$1();
+
+    update
+      .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
+      .each(function(d) {
+
+        /**
+            Styles to apply to each <text> element.
+            @private
+        */
+        function textStyle(text) {
+          text
+            .text(function (t) { return trimRight$1(t); })
+            .attr("dir", rtl ? "rtl" : "ltr")
+            .attr("fill", d.fC)
+            .attr("text-anchor", d.tA)
+            .attr("font-family", d.fF)
+            .style("font-family", d.fF)
+            .attr("font-size", ((d.fS) + "px"))
+            .style("font-size", ((d.fS) + "px"))
+            .attr("font-weight", d.fW)
+            .style("font-weight", d.fW)
+            .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
+            .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
+        }
+
+        var texts = select(this).selectAll("text").data(d.lines);
+
+        if (that._duration === 0) {
+
+          texts.call(textStyle);
+
+          texts.exit().remove();
+
+          texts.enter().append("text")
+            .attr("dominant-baseline", "alphabetic")
+            .style("baseline-shift", "0%")
+            .attr("unicode-bidi", "bidi-override")
+            .call(textStyle);
+
+        }
+        else {
+
+          texts.transition(t).call(textStyle);
+
+          texts.exit().transition(t)
+            .attr("opacity", 0).remove();
+
+          texts.enter().append("text")
+              .attr("dominant-baseline", "alphabetic")
+              .style("baseline-shift", "0%")
+              .attr("opacity", 0)
+              .call(textStyle)
+            .merge(texts).transition(t).delay(that._delay)
+              .call(textStyle)
+              .attr("opacity", 1);
+
+        }
+
+      })
+      .transition(t).call(rotate);
+
+    var events = Object.keys(this._on),
+          on = events.reduce(function (obj, e) {
+            obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
+            return obj;
+          }, {});
+    for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
+
+    if (callback) { setTimeout(callback, this._duration + 100); }
+
+    return this;
+
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
+      @param {Array} [*data* = []]
+  */
+  TextBox.prototype.data = function data (_) {
+    return arguments.length ? (this._data = _, this) : this._data;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the animation delay to the specified number in milliseconds.
+      @param {Number} [*value* = 0]
+  */
+  TextBox.prototype.delay = function delay (_) {
+    return arguments.length ? (this._delay = _, this) : this._delay;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the animation duration to the specified number in milliseconds.
+      @param {Number} [*value* = 0]
+  */
+  TextBox.prototype.duration = function duration (_) {
+    return arguments.length ? (this._duration = _, this) : this._duration;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
+      @param {Function|String} [*value*]
+      @example <caption>default accessor</caption>
+function(d) {
+  return d + "...";
+}
+  */
+  TextBox.prototype.ellipsis = function ellipsis (_) {
+    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$4(_), this) : this._ellipsis;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
+      @param {Function|String} [*value* = "black"]
+  */
+  TextBox.prototype.fontColor = function fontColor (_) {
+    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$4(_), this) : this._fontColor;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
+      @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
+  */
+  TextBox.prototype.fontFamily = function fontFamily (_) {
+    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$4(_), this) : this._fontFamily;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the maximum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
+      @param {Function|Number} [*value* = 50]
+  */
+  TextBox.prototype.fontMax = function fontMax (_) {
+    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$4(_), this) : this._fontMax;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the minimum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
+      @param {Function|Number} [*value* = 8]
+  */
+  TextBox.prototype.fontMin = function fontMin (_) {
+    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$4(_), this) : this._fontMin;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
+      @param {Function|Boolean} [*value* = false]
+  */
+  TextBox.prototype.fontResize = function fontResize (_) {
+    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$4(_), this) : this._fontResize;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the font size to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
+      @param {Function|Number} [*value* = 10]
+  */
+  TextBox.prototype.fontSize = function fontSize (_) {
+    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$4(_), this) : this._fontSize;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
+      @param {Function|Number|String} [*value* = 400]
+  */
+  TextBox.prototype.fontWeight = function fontWeight (_) {
+    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$4(_), this) : this._fontWeight;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the height for each box to the specified accessor function or static number.
+      @param {Function|Number} [*value*]
+      @example <caption>default accessor</caption>
+function(d) {
+  return d.height || 200;
+}
+  */
+  TextBox.prototype.height = function height (_) {
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$4(_), this) : this._height;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Defines the unique id for each box to the specified accessor function or static number.
+      @param {Function|Number} [*value*]
+      @example <caption>default accessor</caption>
+function(d, i) {
+  return d.id || i + "";
+}
+  */
+  TextBox.prototype.id = function id (_) {
+    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$4(_), this) : this._id;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the line height to the specified accessor function or static number, which is 1.4 times the [font size](#textBox.fontSize) by default.
+      @param {Function|Number} [*value*]
+  */
+  TextBox.prototype.lineHeight = function lineHeight (_) {
+    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$4(_), this) : this._lineHeight;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the text overflow to the specified accessor function or static boolean.
+      @param {Function|Boolean} [*value* = false]
+  */
+  TextBox.prototype.overflow = function overflow (_) {
+    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$4(_), this) : this._overflow;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the pointer-events to the specified accessor function or static string.
+      @param {Function|String} [*value* = "auto"]
+  */
+  TextBox.prototype.pointerEvents = function pointerEvents (_) {
+    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$4(_), this) : this._pointerEvents;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the rotate percentage for each box to the specified accessor function or static string.
+      @param {Function|Number} [*value* = 0]
+  */
+  TextBox.prototype.rotate = function rotate (_) {
+    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$4(_), this) : this._rotate;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
+      @param {String|HTMLElement} [*selector*]
+  */
+  TextBox.prototype.select = function select$1 (_) {
+    return arguments.length ? (this._select = select(_), this) : this._select;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
+      @param {Function} [*value*]
+  */
+  TextBox.prototype.split = function split (_) {
+    return arguments.length ? (this._split = _, this) : this._split;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the text for each box to the specified accessor function or static string.
+      @param {Function|String} [*value*]
+      @example <caption>default accessor</caption>
+function(d) {
+  return d.text;
+}
+  */
+  TextBox.prototype.text = function text (_) {
+    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$4(_), this) : this._text;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
+      @param {Function|String} [*value* = "start"]
+  */
+  TextBox.prototype.textAnchor = function textAnchor (_) {
+    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$4(_), this) : this._textAnchor;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
+      @param {Function|String} [*value* = "top"]
+  */
+  TextBox.prototype.verticalAlign = function verticalAlign (_) {
+    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$4(_), this) : this._verticalAlign;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the width for each box to the specified accessor function or static number.
+      @param {Function|Number} [*value*]
+      @example <caption>default accessor</caption>
+function(d) {
+  return d.width || 200;
+}
+  */
+  TextBox.prototype.width = function width (_) {
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$4(_), this) : this._width;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
+      @param {Function|Number} [*value*]
+      @example <caption>default accessor</caption>
+function(d) {
+  return d.x || 0;
+}
+  */
+  TextBox.prototype.x = function x (_) {
+    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$4(_), this) : this._x;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
+      @param {Function|Number} [*value*]
+      @example <caption>default accessor</caption>
+function(d) {
+  return d.y || 0;
+}
+  */
+  TextBox.prototype.y = function y (_) {
+    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$4(_), this) : this._y;
+  };
+
+  return TextBox;
 }(BaseClass));
 
 /**
@@ -19479,11 +20391,11 @@ var Legend = (function (BaseClass) {
     this._lineData = [];
     this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
     this._padding = 5;
-    this._shape = constant$7("Rect");
+    this._shape = constant$4("Rect");
     this._shapeConfig = {
       duration: this._duration,
       fill: accessor("color"),
-      height: constant$7(10),
+      height: constant$4(10),
       hitArea: function (dd, i) {
         var d = this$1._lineData[i],
               h = max([d.height, d.shapeHeight]);
@@ -19495,32 +20407,31 @@ var Legend = (function (BaseClass) {
         return {width: d.width, height: d.height, x: w + this$1._padding, y: -d.height / 2 + (d.lh - d.s) / 2 + 1};
       },
       labelConfig: {
-        fontColor: constant$7("#444"),
-        fontFamily: new TextBox().fontFamily(),
+        fontColor: constant$4("#444"),
+        fontFamily: new TextBox$2().fontFamily(),
         fontResize: false,
-        fontSize: constant$7(10)
+        fontSize: constant$4(10)
       },
       opacity: 1,
-      r: constant$7(5),
-      width: constant$7(10),
+      r: constant$4(5),
+      width: constant$4(10),
       x: function (d, i) {
-        var s = this$1._shapeConfig.width;
-        var y = this$1._lineData[i].y;
+        var datum = this$1._lineData[i];
+        var y = datum.y;
         var pad = this$1._align === "left" || this$1._align === "right" && this$1._direction === "column" ? 0 : this$1._align === "center"
           ? (this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }))) / 2
           : this$1._outerBounds.width - this$1._rowWidth(this$1._lineData.filter(function (l) { return y === l.y; }));
         var prevWords = this$1._lineData.slice(0, i).filter(function (l) { return y === l.y; });
-        return this$1._rowWidth(prevWords) + this$1._padding * (prevWords.length ? 2 : 0) +
-               this$1._outerBounds.x + s(d, i) / 2 + pad;
+        return this$1._rowWidth(prevWords) + this$1._padding * (prevWords.length ? datum.sentence ? 2 : 1 : 0) +
+               this$1._outerBounds.x + datum.shapeWidth / 2 + pad;
       },
       y: function (d, i) {
-        var s = this$1._shapeConfig.height;
         var ld = this$1._lineData[i];
         return ld.y + this$1._titleHeight + this$1._outerBounds.y +
-               max(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return s(l, x); }))) / 2;
+               max(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return this$1._fetchConfig("height", l, x); }))) / 2;
       }
     };
-    this._titleClass = new TextBox();
+    this._titleClass = new TextBox$2();
     this._titleConfig = {};
     this._verticalAlign = "middle";
     this._width = 400;
@@ -19574,7 +20485,7 @@ var Legend = (function (BaseClass) {
       var lH = lH = this._titleConfig.lineHeight || this._titleClass.lineHeight();
       lH = lH ? lH() : s * 1.4;
 
-      var res = textWrap()
+      var res = wrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lH)
@@ -19587,32 +20498,50 @@ var Legend = (function (BaseClass) {
 
     // Calculate Text Sizes
     this._lineData = this._data.map(function (d, i) {
+
+      var label = this$1._label(d, i);
+
+      var res = {
+        data: d,
+        i: i,
+        id: this$1._id(d, i),
+        shapeWidth: this$1._fetchConfig("width", d, i),
+        shapeHeight: this$1._fetchConfig("height", d, i),
+        y: 0
+      };
+
+      if (!label) {
+        res.sentence = false;
+        res.words = [];
+        res.height = 0;
+        res.width = 0;
+        return res;
+      }
+
       var f = this$1._fetchConfig("fontFamily", d, i),
             lh = this$1._fetchConfig("lineHeight", d, i),
-            s = this$1._fetchConfig("fontSize", d, i),
-            shapeWidth = this$1._fetchConfig("width", d, i);
+            s = this$1._fetchConfig("fontSize", d, i);
+
       var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
             w = this$1._width;
-      var res = textWrap()
+
+      res = Object.assign(res, wrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lh)
         .width(w)
         .height(h)
-        (this$1._label(d, i));
-      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
+        (label));
+
+      res.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
       res.height = Math.ceil(res.lines.length * (lh + 1));
       res.og = {height: res.height, width: res.width};
-      res.data = d;
       res.f = f;
       res.s = s;
       res.lh = lh;
-      res.y = 0;
-      res.id = this$1._id(d, i);
-      res.i = i;
-      res.shapeWidth = shapeWidth;
-      res.shapeHeight = this$1._fetchConfig("height", d, i);
+
       return res;
+
     });
 
     var spaceNeeded;
@@ -19641,9 +20570,9 @@ var Legend = (function (BaseClass) {
           var loop = function ( x ) {
             var label = wrappable[x];
             var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
-            var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+            var res = wrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
             if (!res.truncated) {
-              label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+              label.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
               label.height = res.lines.length * (label.lh + 1);
             }
             else {
@@ -19885,7 +20814,7 @@ function value(d) {
       @chainable
   */
   Legend.prototype.label = function label (_) {
-    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$7(_), this) : this._label;
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$4(_), this) : this._label;
   };
 
   /**
@@ -19925,7 +20854,7 @@ function value(d) {
       @chainable
   */
   Legend.prototype.shape = function shape (_) {
-    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$7(_), this) : this._shape;
+    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$4(_), this) : this._shape;
   };
 
   /**
@@ -20856,29 +21785,29 @@ var Tooltip = (function (BaseClass) {
   function Tooltip() {
 
     BaseClass.call(this);
-    this._background = constant$7("rgba(255, 255, 255, 0.75)");
+    this._background = constant$4("rgba(255, 255, 255, 0.75)");
     this._body = accessor("body", "");
     this._bodyStyle = {
       "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
       "font-size": "12px",
       "font-weight": "400"
     };
-    this._border = constant$7("1px solid rgba(0, 0, 0, 0.1)");
-    this._borderRadius = constant$7("2px");
+    this._border = constant$4("1px solid rgba(0, 0, 0, 0.1)");
+    this._borderRadius = constant$4("2px");
     this._className = "d3plus-tooltip";
     this._data = [];
-    this._duration = constant$7(200);
+    this._duration = constant$4(200);
     this._footer = accessor("footer", "");
     this._footerStyle = {
       "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
       "font-size": "12px",
       "font-weight": "400"
     };
-    this._height = constant$7("auto");
+    this._height = constant$4("auto");
     this._id = function (d, i) { return d.id || ("" + i); };
-    this._offset = constant$7(10);
-    this._padding = constant$7("5px");
-    this._pointerEvents = constant$7("auto");
+    this._offset = constant$4(10);
+    this._padding = constant$4("5px");
+    this._pointerEvents = constant$4("auto");
     this._prefix = prefix$1();
     this._tableStyle = {
       "border-spacing": "0",
@@ -20904,7 +21833,7 @@ var Tooltip = (function (BaseClass) {
       "font-weight": "600"
     };
     this._translate = function (d) { return [d.x, d.y]; };
-    this._width = constant$7("auto");
+    this._width = constant$4("auto");
 
   }
 
@@ -21034,7 +21963,7 @@ var Tooltip = (function (BaseClass) {
       @param {Function|String} [*value* = "rgba(255, 255, 255, 0.75)"]
   */
   Tooltip.prototype.background = function background (_) {
-    return arguments.length ? (this._background = typeof _ === "function" ? _ : constant$7(_), this) : this._background;
+    return arguments.length ? (this._background = typeof _ === "function" ? _ : constant$4(_), this) : this._background;
   };
 
   /**
@@ -21047,7 +21976,7 @@ function value(d) {
 }
   */
   Tooltip.prototype.body = function body (_) {
-    return arguments.length ? (this._body = typeof _ === "function" ? _ : constant$7(_), this) : this._body;
+    return arguments.length ? (this._body = typeof _ === "function" ? _ : constant$4(_), this) : this._body;
   };
 
   /**
@@ -21071,7 +22000,7 @@ function value(d) {
       @param {Function|String} [*value* = "1px solid rgba(0, 0, 0, 0.1)"]
   */
   Tooltip.prototype.border = function border (_) {
-    return arguments.length ? (this._border = typeof _ === "function" ? _ : constant$7(_), this) : this._border;
+    return arguments.length ? (this._border = typeof _ === "function" ? _ : constant$4(_), this) : this._border;
   };
 
   /**
@@ -21080,7 +22009,7 @@ function value(d) {
       @param {Function|String} [*value* = "2px"]
   */
   Tooltip.prototype.borderRadius = function borderRadius (_) {
-    return arguments.length ? (this._borderRadius = typeof _ === "function" ? _ : constant$7(_), this) : this._borderRadius;
+    return arguments.length ? (this._borderRadius = typeof _ === "function" ? _ : constant$4(_), this) : this._borderRadius;
   };
 
   /**
@@ -21107,7 +22036,7 @@ function value(d) {
       @param {Function|Number} [*ms* = 200]
   */
   Tooltip.prototype.duration = function duration (_) {
-    return arguments.length ? (this._duration = typeof _ === "function" ? _ : constant$7(_), this) : this._duration;
+    return arguments.length ? (this._duration = typeof _ === "function" ? _ : constant$4(_), this) : this._duration;
   };
 
   /**
@@ -21120,7 +22049,7 @@ function value(d) {
 }
   */
   Tooltip.prototype.footer = function footer (_) {
-    return arguments.length ? (this._footer = typeof _ === "function" ? _ : constant$7(_), this) : this._footer;
+    return arguments.length ? (this._footer = typeof _ === "function" ? _ : constant$4(_), this) : this._footer;
   };
 
   /**
@@ -21144,7 +22073,7 @@ function value(d) {
       @param {Function|String} [*value* = "auto"]
   */
   Tooltip.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$7(_), this) : this._height;
+    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$4(_), this) : this._height;
   };
 
   /**
@@ -21157,7 +22086,7 @@ function value(d, i) {
 }
   */
   Tooltip.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$7(_), this) : this._id;
+    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$4(_), this) : this._id;
   };
 
   /**
@@ -21166,7 +22095,7 @@ function value(d, i) {
       @param {Function|Number} [*value* = 10]
   */
   Tooltip.prototype.offset = function offset (_) {
-    return arguments.length ? (this._offset = typeof _ === "function" ? _ : constant$7(_), this) : this._offset;
+    return arguments.length ? (this._offset = typeof _ === "function" ? _ : constant$4(_), this) : this._offset;
   };
 
   /**
@@ -21175,7 +22104,7 @@ function value(d, i) {
       @param {Function|String} [*value* = "5px"]
   */
   Tooltip.prototype.padding = function padding (_) {
-    return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$7(_), this) : this._padding;
+    return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$4(_), this) : this._padding;
   };
 
   /**
@@ -21184,7 +22113,7 @@ function value(d, i) {
       @param {Function|String} [*value* = "auto"]
   */
   Tooltip.prototype.pointerEvents = function pointerEvents (_) {
-    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$7(_), this) : this._pointerEvents;
+    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$4(_), this) : this._pointerEvents;
   };
 
   /**
@@ -21261,7 +22190,7 @@ function value(d) {
 }
   */
   Tooltip.prototype.title = function title (_) {
-    return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$7(_), this) : this._title;
+    return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$4(_), this) : this._title;
   };
 
   /**
@@ -21290,7 +22219,7 @@ function value(d) {
 }
   */
   Tooltip.prototype.translate = function translate (_) {
-    return arguments.length ? (this._translate = typeof _ === "function" ? _ : constant$7(_), this) : this._translate;
+    return arguments.length ? (this._translate = typeof _ === "function" ? _ : constant$4(_), this) : this._translate;
   };
 
   /**
@@ -21299,7 +22228,7 @@ function value(d) {
       @param {Function|String} [*value* = "auto"]
   */
   Tooltip.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$7(_), this) : this._width;
+    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$4(_), this) : this._width;
   };
 
   return Tooltip;
@@ -32188,6 +33117,207 @@ var mousemoveShape = function(d) {
 };
 
 /**
+    @name zoomControls
+    @desc Sets up initial zoom events and controls.
+    @private
+*/
+var zoomControls = function() {
+
+  var that = this;
+  this._zoomBehavior.on("zoom", zoomed.bind(this));
+
+  var control = select(this._select.node().parentNode).selectAll("div.d3plus-geomap-control").data(this._zoom ? [0] : []);
+  var controlEnter = control.enter().append("div").attr("class", "d3plus-geomap-control");
+  control.exit().remove();
+  control = control.merge(controlEnter)
+    .style("position", "absolute")
+    .style("top", ((this._margin.top) + "px"))
+    .style("left", ((this._margin.left) + "px"));
+
+  controlEnter.append("div").attr("class", "zoom-control zoom-in");
+  control.select(".zoom-in")
+    .on("click", zoomMath.bind(this, this._zoomFactor))
+    .html("&#65291;");
+
+  controlEnter.append("div").attr("class", "zoom-control zoom-out");
+  control.select(".zoom-out")
+    .on("click", zoomMath.bind(this, 1 / this._zoomFactor))
+    .html("&#65293;");
+
+  controlEnter.append("div").attr("class", "zoom-control zoom-reset");
+  control.select(".zoom-reset")
+    .on("click", zoomMath.bind(this, 0))
+    .html("&#8634");
+
+  control.selectAll(".zoom-control")
+    .call(stylize, that._zoomControlStyle || {})
+    .on("mouseenter", function() {
+      select(this).call(stylize, that._zoomControlStyleHover || {});
+    })
+    .on("mouseleave", function() {
+      select(this).call(stylize, that._zoomControlStyle || {});
+    });
+
+  // TODO: Brush to Zoom
+  // const brushGroup = this._select.selectAll("g.brush").data([0]);
+  // brushGroup.enter().append("g").attr("class", "brush");
+  //
+  // var xBrush = d3.scale.identity().domain([0, width]),
+  //     yBrush = d3.scale.identity().domain([0, height]);
+  //
+  // function brushended(e) {
+  //
+  //   if (!event.sourceEvent) return;
+  //
+  //   const extent = brush.extent();
+  //   brushGroup.call(brush.clear());
+  //
+  //   const zs = this._zoomBehavior.scale(), zt = this._zoomBehavior.translate();
+  //
+  //   const pos1 = extent[0].map((p, i) => (p - zt[i]) / (zs / this._polyZoom));
+  //   const pos2 = extent[1].map((p, i) => (p - zt[i]) / (zs / this._polyZoom));
+  //
+  //   zoomToBounds([pos1, pos2]);
+  //
+  // }
+  //
+  // var brush = d3.svg.brush()
+  //   .x(xBrush)
+  //   .y(yBrush)
+  //   .on("brushend", brushended);
+  //
+  // if (this._zoom) brushGroup.call(brush);
+
+  // TODO: Detect zoom brushing
+  // select("body")
+  //   .on(`keydown.d3plus-geomap-${this._uuid}`, function() {
+  //     if (event.keyCode === 16) {
+  //       this._zoomBrush = true;
+  //       zoomEvents();
+  //     }
+  //   })
+  //   .on(`keyup.d3plus-geomap-${this._uuid}`, function() {
+  //     if (event.keyCode === 16) {
+  //       this._zoomBrush = false;
+  //       zoomEvents();
+  //     }
+  //   });
+
+  zoomEvents.bind(this)();
+  if (this._renderTiles) { this._renderTiles(transform$2(this._container.node())); }
+
+};
+
+/**
+    @name zoomEvents
+    @desc Handles adding/removing zoom event listeners.
+    @private
+*/
+function zoomEvents() {
+
+  if (!this._container || !this._zoomGroup) { return; }
+
+  if (this._zoomBrush) {
+    // brushGroup.style("display", "inline");
+    this._container.on(".zoom", null);
+  }
+  else if (this._zoom) {
+    // brushGroup.style("display", "none");
+    this._container.call(this._zoomBehavior);
+    if (!this._zoomScroll) {
+      this._container
+        .on("wheel.zoom", null);
+    }
+    if (!this._zoomPan) {
+      this._container
+        .on("mousedown.zoom mousemove.zoom", null)
+        .on("touchstart.zoom touchmove.zoom touchend.zoom touchcancel.zoom", null);
+    }
+  }
+  else {
+    this._container.on(".zoom", null);
+  }
+
+}
+
+/**
+    @name zoomed
+    @desc Handles events dispatched from this._zoomBehavior
+    @param {Object} [*transform* = event.transform]
+    @param {Number} [*duration* = 0]
+    @private
+*/
+function zoomed(transform, duration) {
+  if ( transform === void 0 ) transform = false;
+  if ( duration === void 0 ) duration = 0;
+
+
+  if (this._zoomGroup) {
+    if (!duration) { this._zoomGroup.attr("transform", transform || event$1.transform); }
+    else { this._zoomGroup.transition().duration(duration).attr("transform", transform || event$1.transform); }
+  }
+
+  if (this._renderTiles) { this._renderTiles(transform$2(this._container.node())); }
+
+}
+
+/**
+    @name zoomMath
+    @desc Zooms in or out based on the provided multiplier.
+    @param {Number} [*factor* = 0]
+    @private
+*/
+function zoomMath(factor) {
+  if ( factor === void 0 ) factor = 0;
+
+
+  if (!this._container) { return; }
+
+  var center = this._zoomBehavior.extent().bind(document)()[1].map(function (d) { return d / 2; }),
+        scaleExtent = this._zoomBehavior.scaleExtent(),
+        t = transform$2(this._container.node());
+
+  if (!factor) {
+    t.k = scaleExtent[0];
+    t.x = 0;
+    t.y = 0;
+  }
+  else {
+    var translate0 = [(center[0] - t.x) / t.k, (center[1] - t.y) / t.k];
+    t.k *= factor;
+    if (t.k <= scaleExtent[0]) {
+      t.k = scaleExtent[0];
+      t.x = 0;
+      t.y = 0;
+    }
+    else {
+      if (t.k > scaleExtent[1]) { t.k = scaleExtent[1]; }
+
+      t.x += center[0] - (translate0[0] * t.k + t.x);
+      t.y += center[1] - (translate0[1] * t.k + t.y);
+    }
+
+  }
+  zoomed.bind(this)(t);
+
+}
+
+// TODO: Zooming to Bounds
+// function zoomToBounds(b, mod = 250) {
+//
+//   const w = width - mod;
+//
+//   let ns = this._scale / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / height);
+//   const nt = [(w - ns * (b[1][0] + b[0][0])) / 2, (height - ns * (b[1][1] + b[0][1])) / 2];
+//
+//   ns = ns / Math.PI / 2 * this._polyZoom;
+//
+//   this._zoomBehavior.scale(ns * 2 * Math.PI).translate(nt);
+//   zoomed();
+//
+// }
+
+/**
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
@@ -32258,7 +33388,7 @@ var Viz = (function (BaseClass) {
 
     this._message = true;
     this._messageClass = new Message();
-    this._messageHTML = constant$7("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
+    this._messageHTML = constant$4("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
     this._messageMask = "rgba(0, 0, 0, 0.1)";
     this._messageStyle = {
       "left": "0px",
@@ -32278,7 +33408,7 @@ var Viz = (function (BaseClass) {
     this._padding = 5;
     this._queue = [];
 
-    this._shape = constant$7("Rect");
+    this._shape = constant$4("Rect");
     this._shapeConfig = {
       fill: function (d, i) {
         if (this$1._colorScale) {
@@ -32292,9 +33422,9 @@ var Viz = (function (BaseClass) {
       labelConfig: {
         fontColor: function (d, i) { return colorContrast(this$1._shapeConfig.fill(d, i)); }
       },
-      opacity: constant$7(1),
+      opacity: constant$4(1),
       stroke: function (d, i) { return color(this$1._shapeConfig.fill(d, i)).darker(); },
-      strokeWidth: constant$7(0)
+      strokeWidth: constant$4(0)
     };
 
     this._timeline = true;
@@ -32336,6 +33466,30 @@ var Viz = (function (BaseClass) {
       resize: false,
       textAnchor: "middle"
     };
+
+    this._zoom = false;
+    this._zoomBehavior = zoom();
+    this._zoomBrush = false;
+    this._zoomControlStyle = {
+      "background": "rgba(255, 255, 255, 0.75)",
+      "border": "1px solid rgba(0, 0, 0, 0.75)",
+      "color": "rgba(0, 0, 0, 0.75)",
+      "display": "block",
+      "font": "900 15px/21px 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+      "height": "20px",
+      "margin": "5px",
+      "opacity": 0.75,
+      "padding": 0,
+      "text-align": "center",
+      "width": "20px"
+    };
+    this._zoomControlStyleHover = {
+      cursor: "pointer",
+      opacity: 1
+    };
+    this._zoomFactor = 2;
+    this._zoomPan = true;
+    this._zoomScroll = true;
 
   }
 
@@ -32412,7 +33566,7 @@ var Viz = (function (BaseClass) {
 
     this._shapes = [];
 
-    // Draws a rectangle showing the available space for a visualization.
+    // // Draws a rectangle showing the available space for a visualization.
     // const tester = this._select.selectAll(".tester").data([0]);
     // console.log(this._margin);
     // tester.enter().append("rect")
@@ -32538,6 +33692,7 @@ var Viz = (function (BaseClass) {
       q.awaitAll(function () {
 
         this$1._draw(callback);
+        zoomControls.bind(this$1)();
         if (this$1._message) { this$1._messageClass.hide(); }
 
         if (this$1._detectResize && (this$1._autoWidth || this$1._autoHeight)) {
@@ -32882,7 +34037,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.label = function label (_) {
-    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$7(_), this) : this._label;
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$4(_), this) : this._label;
   };
 
   /**
@@ -32952,7 +34107,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.messageHTML = function messageHTML (_) {
-    return arguments.length ? (this._messageHTML = typeof _ === "function" ? _ : constant$7(_), this) : this._messageHTML;
+    return arguments.length ? (this._messageHTML = typeof _ === "function" ? _ : constant$4(_), this) : this._messageHTML;
   };
 
   /**
@@ -32992,7 +34147,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.shape = function shape (_) {
-    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$7(_), this) : this._shape;
+    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$4(_), this) : this._shape;
   };
 
   /**
@@ -33067,7 +34222,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.title = function title (_) {
-    return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$7(_), this) : this._title;
+    return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$4(_), this) : this._title;
   };
 
   /**
@@ -33130,6 +34285,46 @@ function value(d) {
     return arguments.length ? (this._width = _, this) : this._width;
   };
 
+  /**
+      @memberof Viz
+      @desc Toggles the ability to zoom/pan the visualization. Certain parameters for zooming are required to be hooked up on a visualization by visualization basis.
+      @param {Boolean} *value* = false
+      @chainable
+  */
+  Viz.prototype.zoom = function zoom (_) {
+    return arguments.length ? (this._zoom = _, this) : this._zoom;
+  };
+
+  /**
+      @memberof Viz
+      @desc An object containing CSS key/value pairs that is used to style each zoom control button (`.zoom-in`, `.zoom-out`, and `.zoom-reset`). Passing `false` will remove all default styling.
+      @param {Object|Boolean} *value*
+      @chainable
+  */
+  Viz.prototype.zoomControlStyle = function zoomControlStyle (_) {
+    return arguments.length ? (this._zoomControlStyle = _, this) : this._zoomControlStyle;
+  };
+
+  /**
+      @memberof Viz
+      @desc An object containing CSS key/value pairs that is used to style each zoom control button on hover (`.zoom-in`, `.zoom-out`, and `.zoom-reset`). Passing `false` will remove all default styling.
+      @param {Object|Boolean} *value*
+      @chainable
+  */
+  Viz.prototype.zoomControlStyleHover = function zoomControlStyleHover (_) {
+    return arguments.length ? (this._zoomControlStyleHover = _, this) : this._zoomControlStyleHover;
+  };
+
+  /**
+      @memberof Viz
+      @desc The multiplier that is used in with the control buttons when zooming in and out.
+      @param {Number} *value* = 2
+      @chainable
+  */
+  Viz.prototype.zoomFactor = function zoomFactor (_) {
+    return arguments.length ? (this._zoomFactor = _, this) : this._zoomFactor;
+  };
+
   return Viz;
 }(BaseClass));
 
@@ -33137,6 +34332,17 @@ function value(d) {
     @external Viz
     @see https://github.com/d3plus/d3plus-viz#Viz
 */
+/**
+    @name topo2feature
+    @desc Converts a specific topojson object key into a feature ready for projection.
+    @param {Object} *topo* A valid topojson json object.
+    @param {String} [*key*] The topojson object key to be used. If undefined, the first key available will be used.
+    @private
+*/
+function topo2feature(topo, key) {
+  var k = key && topo.objects[key] ? key : Object.keys(topo.objects)[0];
+  return feature(topo, topo.objects[k]);
+}
 
 /**
     @class Geomap
@@ -33156,7 +34362,7 @@ var Geomap = (function (Viz) {
     this._padding = 20;
 
     this._point = accessor("point");
-    this._pointSize = constant$7(1);
+    this._pointSize = constant$4(1);
     this._pointSizeMax = 10;
     this._pointSizeMin = 5;
     this._pointSizeScale = "linear";
@@ -33165,7 +34371,7 @@ var Geomap = (function (Viz) {
 
     this._rotate = [0, 0];
 
-    this._shape = constant$7("Circle");
+    this._shape = constant$4("Circle");
     this._shapeConfig = assign(this._shapeConfig, {
       Path: {
         fill: function (d) {
@@ -33194,12 +34400,6 @@ var Geomap = (function (Viz) {
     this._topojsonId = accessor("id");
 
     this._zoom = true;
-    this._zoomBehavior = zoom();
-    this._zoomBrush = false;
-    // this._zoomFactor = 2;
-    this._zoomPan = true;
-    // this._zoomReset = true;
-    this._zoomScroll = true;
     this._zoomSet = false;
 
   }
@@ -33212,19 +34412,16 @@ var Geomap = (function (Viz) {
       Renders map tiles based on the current zoom level.
       @private
   */
-  Geomap.prototype._renderTiles = function _renderTiles () {
+  Geomap.prototype._renderTiles = function _renderTiles (transform) {
     var this$1 = this;
 
 
-    var tau = 2 * Math.PI,
-          transform = transform$1(this._geomapGroup.node());
-
     var tileData = [];
     if (this._tiles) {
-      // const d = this._projection(this._rotate)[0] - this._projection([0, 0])[0];
+
       tileData = this._tileGen
         .extent(this._zoomBehavior.translateExtent())
-        .scale(this._projection.scale() * tau * transform.k)
+        .scale(this._projection.scale() * (2 * Math.PI) * transform.k)
         .translate(transform.apply(this._projection.translate()))
         ();
 
@@ -33252,94 +34449,6 @@ var Geomap = (function (Viz) {
   };
 
   /**
-      Handles events dispatched from this._zoomBehavior
-      @private
-  */
-  Geomap.prototype._zoomed = function _zoomed () {
-
-    this._zoomGroup.attr("transform", event$1.transform);
-    this._renderTiles();
-
-    //   if (event && !this._zoomPan) {
-    //     this._zoomPan = true;
-    //     zoomEvents();
-    //   }
-
-    //   let s = this._zoomBehavior.scale();
-    //   const trans = this._zoomBehavior.translate();
-    //
-    //   let pz = s / this._polyZoom;
-    //
-    //   if (pz < minZoom) {
-    //     pz = minZoom;
-    //     s = pz * this._polyZoom;
-    //     this._zoomBehavior.scale(s);
-    //   }
-    // const nh = height;
-    // const bh = coordBounds[1][1] - coordBounds[0][1];
-    // const bw = coordBounds[1][0] - coordBounds[0][0];
-    // const xoffset = (width - bw * pz) / 2;
-    // const xmin = xoffset > 0 ? xoffset : 0;
-    // const xmax = xoffset > 0 ? width - xoffset : width;
-    // const yoffset = (nh - bh * pz) / 2;
-    // const ymin = yoffset > 0 ? yoffset : 0;
-    // const ymax = yoffset > 0 ? nh - yoffset : nh;
-    //
-    // const extent = this._zoomBehavior.translateExtent();
-    // if (transform.x + extent[0][0] * transform.k > xmin) {
-    //   transform.x = -extent[0][0] * transform.k + xmin;
-    // }
-    // else if (transform.x + extent[1][0] * transform.k < xmax) {
-    //   transform.x = xmax - extent[1][0] * transform.k;
-    // }
-    //
-    // if (transform.y + extent[0][1] * transform.k > ymin) {
-    //   transform.y = -extent[0][1] * transform.k + ymin;
-    // }
-    // else if (transform.y + extent[1][1] * transform.k < ymax) {
-    //   transform.y = ymax - extent[1][1] * transform.k;
-    // }
-    // console.log(transform, this._zoomBehavior.translateExtent());
-    //   this._zoomBehavior.translate(trans);
-
-  };
-
-
-
-  /**
-      Handles adding/removing zoom event listeners.
-      @private
-  */
-  Geomap.prototype._zoomEvents = function _zoomEvents () {
-
-    if (this._zoomBrush) {
-      // brushGroup.style("display", "inline");
-      this._geomapGroup.on(".zoom", null);
-    }
-    else if (this._zoom) {
-      // brushGroup.style("display", "none");
-      this._geomapGroup.call(this._zoomBehavior);
-      if (!this._zoomScroll) {
-        this._geomapGroup
-          .on("mousewheel.zoom", null)
-          .on("MozMousePixelScroll.zoom", null)
-          .on("wheel.zoom", null);
-      }
-      if (!this._zoomPan) {
-        this._geomapGroup
-          .on("mousedown.zoom", null)
-          .on("mousemove.zoom", null)
-          .on("touchstart.zoom", null)
-          .on("touchmove.zoom", null);
-      }
-    }
-    else {
-      this._geomapGroup.on(".zoom", null);
-    }
-
-  };
-
-  /**
       Extends the draw behavior of the abstract Viz class.
       @private
   */
@@ -33352,24 +34461,24 @@ var Geomap = (function (Viz) {
     var height = this._height - this._margin.top - this._margin.bottom,
           width = this._width - this._margin.left - this._margin.right;
 
-    this._geomapGroup = this._select.selectAll("svg.d3plus-geomap-geomapGroup").data([0]);
-    this._geomapGroup = this._geomapGroup.enter().append("svg")
-      .attr("class", "d3plus-geomap-geomapGroup")
+    this._container = this._select.selectAll("svg.d3plus-geomap").data([0]);
+    this._container = this._container.enter().append("svg")
+      .attr("class", "d3plus-geomap")
       .attr("opacity", 0)
       .attr("width", width)
       .attr("height", height)
       .attr("x", this._margin.left)
       .attr("y", this._margin.top)
       .style("background-color", this._ocean || "transparent")
-      .merge(this._geomapGroup);
-    this._geomapGroup.transition(this._transition)
+      .merge(this._container);
+    this._container.transition(this._transition)
       .attr("opacity", 1)
       .attr("width", width)
       .attr("height", height)
       .attr("x", this._margin.left)
       .attr("y", this._margin.top);
 
-    var ocean = this._geomapGroup.selectAll("rect.d3plus-geomap-ocean").data([0]);
+    var ocean = this._container.selectAll("rect.d3plus-geomap-ocean").data([0]);
     ocean.enter().append("rect")
         .attr("class", "d3plus-geomap-ocean")
       .merge(ocean)
@@ -33377,12 +34486,12 @@ var Geomap = (function (Viz) {
         .attr("height", height)
         .attr("fill", this._ocean || "transparent");
 
-    this._tileGroup = this._geomapGroup.selectAll("g.d3plus-geomap-tileGroup").data([0]);
+    this._tileGroup = this._container.selectAll("g.d3plus-geomap-tileGroup").data([0]);
     this._tileGroup = this._tileGroup.enter().append("g")
       .attr("class", "d3plus-geomap-tileGroup")
       .merge(this._tileGroup);
 
-    this._zoomGroup = this._geomapGroup.selectAll("g.d3plus-geomap-zoomGroup").data([0]);
+    this._zoomGroup = this._container.selectAll("g.d3plus-geomap-zoomGroup").data([0]);
     this._zoomGroup = this._zoomGroup.enter().append("g")
       .attr("class", "d3plus-geomap-zoomGroup")
       .merge(this._zoomGroup);
@@ -33391,41 +34500,6 @@ var Geomap = (function (Viz) {
     pathGroup = pathGroup.enter().append("g")
       .attr("class", "d3plus-geomap-paths")
       .merge(pathGroup);
-
-    // TODO: Brush to Zoom
-    // const brushGroup = this._select.selectAll("g.brush").data([0]);
-    // brushGroup.enter().append("g").attr("class", "brush");
-    //
-    // var xBrush = d3.scale.identity().domain([0, width]),
-    //     yBrush = d3.scale.identity().domain([0, height]);
-    //
-    // function brushended(e) {
-    //
-    //   if (!event.sourceEvent) return;
-    //
-    //   const extent = brush.extent();
-    //   brushGroup.call(brush.clear());
-    //
-    //   const zs = this._zoomBehavior.scale(), zt = this._zoomBehavior.translate();
-    //
-    //   const pos1 = extent[0].map((p, i) => (p - zt[i]) / (zs / this._polyZoom));
-    //   const pos2 = extent[1].map((p, i) => (p - zt[i]) / (zs / this._polyZoom));
-    //
-    //   zoomToBounds([pos1, pos2]);
-    //
-    // }
-    //
-    // var brush = d3.svg.brush()
-    //   .x(xBrush)
-    //   .y(yBrush)
-    //   .on("brushend", brushended);
-    //
-    // if (this._zoom) brushGroup.call(brush);
-
-    function topo2feature(topo, key) {
-      var k = key && topo.objects[key] ? key : Object.keys(topo.objects)[0];
-      return feature(topo, topo.objects[k]);
-    }
 
     var coordData = this._coordData = this._topojson
       ? topo2feature(this._topojson, this._topojsonKey)
@@ -33568,88 +34642,11 @@ var Geomap = (function (Viz) {
       this._zoomBehavior
         .extent([[0, 0], [width, height]])
         .scaleExtent([1, 16])
-        .translateExtent([[0, 0], [width, height]])
-        .on("zoom", this._zoomed.bind(this));
+        .translateExtent([[0, 0], [width, height]]);
 
       this._zoomSet = true;
 
     }
-
-    // TODO: Zoom math?
-    // function zoomMath(factor) {
-    //
-    //   const center = [width / 2, height / 2];
-    //
-    //   const extent = this._zoomBehavior.scaleExtent(),
-    //         scale = this._zoomBehavior.scale(),
-    //         translate = this._zoomBehavior.translate();
-    //
-    //   let targetScale = scale * factor,
-    //       x = translate[0],
-    //       y = translate[1];
-    //
-    //   // If we're already at an extent, done
-    //   if (targetScale === extent[0] || targetScale === extent[1]) return false;
-    //
-    //   // If the factor is too much, scale it down to reach the extent exactly
-    //   const clampedScale = Math.max(extent[0], Math.min(extent[1], targetScale));
-    //   if (clampedScale !== targetScale) {
-    //     targetScale = clampedScale;
-    //     factor = targetScale / scale;
-    //   }
-    //
-    //   // Center each vector, stretch, then put back
-    //   x = (x - center[0]) * factor + center[0];
-    //   y = (y - center[1]) * factor + center[1];
-    //
-    //   this._zoomBehavior.scale(targetScale).translate([x, y]);
-    //   zoomed(this._duration);
-    //
-    //   return true;
-    //
-    // }
-
-    // TODO: Zoom controls
-    // if (this._zoom) {
-    //
-    //   const controls = this._select.selectAll(".map-controls").data([0]);
-    //   const controlsEnter = controls.enter().append("div")
-    //     .attr("class", "map-controls");
-    //
-    //   controlsEnter.append("div").attr("class", "zoom-in")
-    //     .on("click", () => zoomMath(this._zoomFactor));
-    //
-    //   controlsEnter.append("div").attr("class", "zoom-out")
-    //     .on("click", () => zoomMath(1 / this._zoomFactor));
-    //
-    //   controlsEnter.append("div").attr("class", "zoom-reset");
-    //   controls.select(".zoom-reset").on("click", () => {
-    //     // vars.highlight.value = false;
-    //     // this._highlightPath = undefined;
-    //     zoomLogic();
-    //   });
-    //
-    // }
-
-    // TODO: Zoom logic? What's this do?
-    // function zoomLogic(d) {
-    //
-    //   this._zoomReset = true;
-    //
-    //   if (d) zoomToBounds(this._path.bounds(d));
-    //   else {
-    //
-    //     let ns = s;
-    //
-    //     // next line might not be needed?
-    //     ns = ns / Math.PI / 2 * this._polyZoom;
-    //
-    //     this._zoomBehavior.scale(ns * 2 * Math.PI).translate(t);
-    //     zoomed(this._duration);
-    //
-    //   }
-    //
-    // }
 
     this._shapes.push(new Path$1()
       .data(topoData)
@@ -33682,41 +34679,6 @@ var Geomap = (function (Viz) {
     for (var e$2 = 0; e$2 < classEvents.length; e$2++) { circles.on(classEvents[e$2], this$1._on[classEvents[e$2]]); }
 
     this._shapes.push(circles.render());
-
-    // Attaches any initial zoom event handlers.
-    this._zoomEvents();
-
-    // TODO: Zooming to Bounds
-    // function zoomToBounds(b, mod = 250) {
-    //
-    //   const w = width - mod;
-    //
-    //   let ns = this._scale / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / height);
-    //   const nt = [(w - ns * (b[1][0] + b[0][0])) / 2, (height - ns * (b[1][1] + b[0][1])) / 2];
-    //
-    //   ns = ns / Math.PI / 2 * this._polyZoom;
-    //
-    //   this._zoomBehavior.scale(ns * 2 * Math.PI).translate(nt);
-    //   zoomed(this._duration);
-    //
-    // }
-
-    // TODO: Detect zoom brushing
-    // select("body")
-    //   .on(`keydown.d3plus-geomap-${this._uuid}`, function() {
-    //     if (event.keyCode === 16) {
-    //       this._zoomBrush = true;
-    //       zoomEvents();
-    //     }
-    //   })
-    //   .on(`keyup.d3plus-geomap-${this._uuid}`, function() {
-    //     if (event.keyCode === 16) {
-    //       this._zoomBrush = false;
-    //       zoomEvents();
-    //     }
-    //   });
-
-    this._renderTiles();
 
     return this;
 
@@ -33791,7 +34753,7 @@ Additionally, a custom formatting function can be passed as a second argument to
       @chainable
   */
   Geomap.prototype.point = function point (_) {
-    return arguments.length ? (this._point = typeof _ === "function" ? _ : constant$7(_), this) : this._point;
+    return arguments.length ? (this._point = typeof _ === "function" ? _ : constant$4(_), this) : this._point;
   };
 
   /**
@@ -33801,7 +34763,7 @@ Additionally, a custom formatting function can be passed as a second argument to
       @chainable
   */
   Geomap.prototype.pointSize = function pointSize (_) {
-    return arguments.length ? (this._pointSize = typeof _ === "function" ? _ : constant$7(_), this) : this._pointSize;
+    return arguments.length ? (this._pointSize = typeof _ === "function" ? _ : constant$4(_), this) : this._pointSize;
   };
 
   /**
@@ -33892,16 +34854,6 @@ If not specified, the first key in the *Array* returned from using `Object.keys`
   */
   Geomap.prototype.topojsonId = function topojsonId (_) {
     return arguments.length ? (this._topojsonId = typeof _ === "function" ? _ : accessor(_), this, this) : this._topojsonId;
-  };
-
-  /**
-      @memberof Geomap
-      @desc Toggles the ability to zoom/pan the map.
-      @param {Boolean} [*value* = true]
-      @chainable
-  */
-  Geomap.prototype.zoom = function zoom (_) {
-    return arguments.length ? (this._zoom = _, this) : this._zoom;
   };
 
   return Geomap;
