@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.6
+  d3plus-viz v0.10.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -64,10 +64,10 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3-zoom'), require('lrucache'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-form'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip'), require('d3plus-export')) :
-	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3-zoom', 'lrucache', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-form', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip', 'd3plus-export'], factory) :
-	(factory((global.d3plus = {}),global.d3Request,global.d3Array,global.d3Color,global.d3Collection,global.d3Queue,global.d3Selection,global.d3Transition,global.d3Zoom,global.lrucache,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusForm,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip,global.d3plusExport));
-}(this, (function (exports,d3Request,d3Array,d3Color,d3Collection,d3Queue,d3Selection,d3Transition,d3Zoom,lrucache,d3plusAxis,d3plusColor,d3plusCommon,d3plusForm,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip,d3plusExport) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-brush'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3-zoom'), require('lrucache'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-form'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip'), require('d3plus-export')) :
+	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-brush', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3-zoom', 'lrucache', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-form', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip', 'd3plus-export'], factory) :
+	(factory((global.d3plus = {}),global.d3Request,global.d3Array,global.d3Brush,global.d3Color,global.d3Collection,global.d3Queue,global.d3Selection,global.d3Transition,global.d3Zoom,global.lrucache,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusForm,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip,global.d3plusExport));
+}(this, (function (exports,d3Request,d3Array,d3Brush,d3Color,d3Collection,d3Queue,d3Selection,d3Transition,d3Zoom,lrucache,d3plusAxis,d3plusColor,d3plusCommon,d3plusForm,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip,d3plusExport) { 'use strict';
 
 lrucache = lrucache && lrucache.hasOwnProperty('default') ? lrucache['default'] : lrucache;
 
@@ -435,6 +435,16 @@ var drawControls = function() {
 };
 
 /**
+    @function legendLabel
+    @desc Default label function for the legend.
+    @private
+*/
+function legendLabel(d, i) {
+  var l = this._drawLabel(d, i);
+  return l instanceof Array ? l.join(", ") : l;
+}
+
+/**
     @function _drawLegend
     @desc Renders the legend if this._legend is not falsy.
     @param {Array} data The filtered data array to be displayed.
@@ -491,10 +501,6 @@ var drawLegend = function(data) {
       .duration(this._duration)
       .data(legendData.length > 1 || this._colorScale ? legendData : [])
       .height(this._height - this._margin.bottom - this._margin.top)
-      .label(function (d, i) {
-        var l = this$1._drawLabel(d, i);
-        return l instanceof Array ? l.join(", ") : l;
-      })
       .select(legendGroup)
       .verticalAlign(!wide ? "middle" : position)
       .width(this._width - this._margin.left - this._margin.right)
@@ -778,7 +784,7 @@ var mousemoveLegend = function(d) {
     this._tooltipClass.data([d])
       .footer(this._drawDepth < this._groupBy.length - 1
         ? d3plusCommon.locale.t("Click to Expand", {lng: this._locale}) : "")
-      .title(this._legendClass.label())
+      .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
       .translate(d3Selection.mouse(d3Selection.select("html").node()))
       .config(this._tooltipConfig)
       .config(this._legendTooltip)
@@ -809,6 +815,8 @@ var mousemoveShape = function(d) {
 
 };
 
+var brushing = false;
+
 /**
     @name zoomControls
     @desc Sets up initial zoom events and controls.
@@ -816,8 +824,19 @@ var mousemoveShape = function(d) {
 */
 var zoomControls = function() {
 
-  var that = this;
-  this._zoomBehavior.on("zoom", zoomed.bind(this));
+  if (!this._container || !this._zoomGroup) { return; }
+
+  var height = this._zoomHeight || this._height - this._margin.top - this._margin.bottom,
+        that = this,
+        width = this._zoomWidth || this._width - this._margin.left - this._margin.right;
+
+  this._zoomBehavior
+    .extent([[0, 0], [width, height]])
+    .scaleExtent([1, this._zoomMax])
+    .translateExtent([[0, 0], [width, height]])
+    .on("zoom", zoomed.bind(this));
+
+  this._zoomToBounds = zoomToBounds.bind(this);
 
   var control = d3Selection.select(this._select.node().parentNode).selectAll("div.d3plus-geomap-control").data(this._zoom ? [0] : []);
   var controlEnter = control.enter().append("div").attr("class", "d3plus-geomap-control");
@@ -842,59 +861,38 @@ var zoomControls = function() {
     .on("click", zoomMath.bind(this, 0))
     .html("&#8634");
 
+  controlEnter.append("div").attr("class", "zoom-control zoom-brush");
+  control.select(".zoom-brush")
+    .on("click", function() {
+      d3Selection.select(this)
+        .classed("active", !brushing)
+        .call(d3plusCommon.stylize, brushing ? that._zoomControlStyle || {} : that._zoomControlStyleActive || {});
+      zoomEvents.bind(that)(!brushing);
+    })
+    .html("&#10696");
+
   control.selectAll(".zoom-control")
-    .call(d3plusCommon.stylize, that._zoomControlStyle || {})
+    .call(d3plusCommon.stylize, that._zoomControlStyle)
     .on("mouseenter", function() {
       d3Selection.select(this).call(d3plusCommon.stylize, that._zoomControlStyleHover || {});
     })
     .on("mouseleave", function() {
-      d3Selection.select(this).call(d3plusCommon.stylize, that._zoomControlStyle || {});
+      d3Selection.select(this).call(d3plusCommon.stylize, d3Selection.select(this).classed("active") ? that._zoomControlStyleActive || {} : that._zoomControlStyle || {});
     });
 
-  // TODO: Brush to Zoom
-  // const brushGroup = this._select.selectAll("g.brush").data([0]);
-  // brushGroup.enter().append("g").attr("class", "brush");
-  //
-  // var xBrush = d3.scale.identity().domain([0, width]),
-  //     yBrush = d3.scale.identity().domain([0, height]);
-  //
-  // function brushended(e) {
-  //
-  //   if (!event.sourceEvent) return;
-  //
-  //   const extent = brush.extent();
-  //   brushGroup.call(brush.clear());
-  //
-  //   const zs = this._zoomBehavior.scale(), zt = this._zoomBehavior.translate();
-  //
-  //   const pos1 = extent[0].map((p, i) => (p - zt[i]) / (zs / this._polyZoom));
-  //   const pos2 = extent[1].map((p, i) => (p - zt[i]) / (zs / this._polyZoom));
-  //
-  //   zoomToBounds([pos1, pos2]);
-  //
-  // }
-  //
-  // var brush = d3.svg.brush()
-  //   .x(xBrush)
-  //   .y(yBrush)
-  //   .on("brushend", brushended);
-  //
-  // if (this._zoom) brushGroup.call(brush);
+  this._zoomBrush
+    .extent([[0, 0], [width, height]])
+    .filter(function () { return !d3Selection.event.button && d3Selection.event.detail < 2; })
+    .handleSize(this._zoomBrushHandleSize)
+    .on("start", brushStart.bind(this))
+    .on("brush", brushBrush.bind(this))
+    .on("end", brushEnd.bind(this));
 
-  // TODO: Detect zoom brushing
-  // select("body")
-  //   .on(`keydown.d3plus-geomap-${this._uuid}`, function() {
-  //     if (event.keyCode === 16) {
-  //       this._zoomBrush = true;
-  //       zoomEvents();
-  //     }
-  //   })
-  //   .on(`keyup.d3plus-geomap-${this._uuid}`, function() {
-  //     if (event.keyCode === 16) {
-  //       this._zoomBrush = false;
-  //       zoomEvents();
-  //     }
-  //   });
+  var brushGroup = this._container.selectAll("g.brush").data([0]);
+  this._brushGroup = brushGroup.enter().append("g")
+      .attr("class", "brush")
+    .merge(brushGroup)
+    .call(this._zoomBrush);
 
   zoomEvents.bind(this)();
   if (this._renderTiles) { this._renderTiles(d3Zoom.zoomTransform(this._container.node())); }
@@ -906,16 +904,16 @@ var zoomControls = function() {
     @desc Handles adding/removing zoom event listeners.
     @private
 */
-function zoomEvents() {
+function zoomEvents(brush$$1) {
+  if ( brush$$1 === void 0 ) brush$$1 = false;
 
-  if (!this._container || !this._zoomGroup) { return; }
 
-  if (this._zoomBrush) {
-    // brushGroup.style("display", "inline");
-    this._container.on(".zoom", null);
-  }
-  else if (this._zoom) {
-    // brushGroup.style("display", "none");
+  brushing = brush$$1;
+
+  if (brushing) { this._brushGroup.style("display", "inline"); }
+  else { this._brushGroup.style("display", "none"); }
+
+  if (!brushing && this._zoom) {
     this._container.call(this._zoomBehavior);
     if (!this._zoomScroll) {
       this._container
@@ -944,6 +942,8 @@ function zoomed(transform, duration) {
   if ( transform === void 0 ) transform = false;
   if ( duration === void 0 ) duration = 0;
 
+
+  // console.log(transform || event.transform);
 
   if (this._zoomGroup) {
     if (!duration) { this._zoomGroup.attr("transform", transform || d3Selection.event.transform); }
@@ -977,44 +977,130 @@ function zoomMath(factor) {
   }
   else {
     var translate0 = [(center[0] - t.x) / t.k, (center[1] - t.y) / t.k];
-    t.k *= factor;
+    t.k = Math.min(scaleExtent[1], t.k * factor);
     if (t.k <= scaleExtent[0]) {
       t.k = scaleExtent[0];
       t.x = 0;
       t.y = 0;
     }
     else {
-      if (t.k > scaleExtent[1]) { t.k = scaleExtent[1]; }
-
       t.x += center[0] - (translate0[0] * t.k + t.x);
       t.y += center[1] - (translate0[1] * t.k + t.y);
     }
 
   }
-  zoomed.bind(this)(t);
+
+  zoomed.bind(this)(t, this._duration);
 
 }
 
-// TODO: Zooming to Bounds
-// function zoomToBounds(b, mod = 250) {
-//
-//   const w = width - mod;
-//
-//   let ns = this._scale / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / height);
-//   const nt = [(w - ns * (b[1][0] + b[0][0])) / 2, (height - ns * (b[1][1] + b[0][1])) / 2];
-//
-//   ns = ns / Math.PI / 2 * this._polyZoom;
-//
-//   this._zoomBehavior.scale(ns * 2 * Math.PI).translate(nt);
-//   zoomed();
-//
-// }
+/**
+    @name zoomToBounds
+    @desc Zooms to given bounds.
+    @param {Array} *bounds*
+    @param {Number} [*duration* = 0]
+    @private
+*/
+function zoomToBounds(bounds, duration) {
+  if ( duration === void 0 ) duration = this._duration;
+
+
+  var scaleExtent = this._zoomBehavior.scaleExtent(),
+        t = d3Zoom.zoomTransform(this._container.node());
+
+  if (bounds) {
+
+    var ref = this._zoomBehavior.translateExtent()[1];
+    var width = ref[0];
+    var height = ref[1];
+    var dx = bounds[1][0] - bounds[0][0],
+          dy = bounds[1][1] - bounds[0][1];
+
+    var k = Math.min(scaleExtent[1], 1 / Math.max(dx / width, dy / height));
+
+    var xMod, yMod;
+    if (dx / dy < width / height) {
+      k *= (height - this._zoomPadding * 2) / height;
+      xMod = (width - dx * k) / 2 / k;
+      yMod = this._zoomPadding / k;
+    }
+    else {
+      k *= (width - this._zoomPadding * 2) / width;
+      yMod = (height - dy * k) / 2 / k;
+      xMod = this._zoomPadding / k;
+    }
+
+    t.x = (t.x - bounds[0][0] + xMod) * (t.k * k / t.k);
+    t.y = (t.y - bounds[0][1] + yMod) * (t.k * k / t.k);
+    t.k *= k;
+
+    if (t.x > 0) { t.x = 0; }
+    else if (t.x < width * -t.k + width) { t.x = width * -t.k + width; }
+    if (t.y > 0) { t.y = 0; }
+    else if (t.y < height * -t.k + height) { t.y = height * -t.k + height; }
+
+  }
+  else {
+
+    t.k = scaleExtent[0];
+    t.x = 0;
+    t.y = 0;
+
+  }
+
+  zoomed.bind(this)(t, duration);
+
+}
+
+/**
+    @desc Triggered on brush "brush".
+    @private
+*/
+function brushBrush() {
+  brushStyle.bind(this)();
+}
+
+/**
+    @desc Triggered on brush "end".
+    @private
+*/
+function brushEnd() {
+
+  if (!d3Selection.event.selection) { return; } // Only transition after input.
+
+  this._brushGroup.call(this._zoomBrush.move, null);
+  zoomToBounds.bind(this)(d3Selection.event.selection);
+
+}
+
+/**
+    @desc Triggered on brush "start".
+    @private
+*/
+function brushStart() {
+  brushStyle.bind(this)();
+}
+
+/**
+    @desc Overrides the default brush styles.
+    @private
+*/
+function brushStyle() {
+
+  this._brushGroup.selectAll(".selection")
+    .call(d3plusCommon.attrize, this._zoomBrushSelectionStyle || {});
+
+  this._brushGroup.selectAll(".handle")
+    .call(d3plusCommon.attrize, this._zoomBrushHandleStyle || {});
+
+}
 
 /**
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
 
+// import {Rect} from "d3plus-shape";
 /**
     @class Viz
     @extends external:BaseClass
@@ -1061,10 +1147,7 @@ var Viz = (function (BaseClass$$1) {
     this._groupBy = [d3plusCommon.accessor("id")];
     this._legend = true;
     this._legendConfig = {
-      label: function (d, i) {
-        var l = this$1._drawLabel(d, i);
-        return l instanceof Array ? l.join(", ") : l;
-      },
+      label: legendLabel.bind(this),
       shapeConfig: {
         labelConfig: {
           fontColor: undefined,
@@ -1162,7 +1245,15 @@ var Viz = (function (BaseClass$$1) {
 
     this._zoom = false;
     this._zoomBehavior = d3Zoom.zoom();
-    this._zoomBrush = false;
+    this._zoomBrush = d3Brush.brush();
+    this._zoomBrushHandleSize = 1;
+    this._zoomBrushHandleStyle = {
+      fill: "#444"
+    };
+    this._zoomBrushSelectionStyle = {
+      "fill": "#777",
+      "stroke-width": 0
+    };
     this._zoomControlStyle = {
       "background": "rgba(255, 255, 255, 0.75)",
       "border": "1px solid rgba(0, 0, 0, 0.75)",
@@ -1176,11 +1267,18 @@ var Viz = (function (BaseClass$$1) {
       "text-align": "center",
       "width": "20px"
     };
+    this._zoomControlStyleActive = {
+      background: "rgba(0, 0, 0, 0.75)",
+      color: "rgba(255, 255, 255, 0.75)",
+      opacity: 1
+    };
     this._zoomControlStyleHover = {
       cursor: "pointer",
       opacity: 1
     };
     this._zoomFactor = 2;
+    this._zoomMax = 16;
+    this._zoomPadding = 20;
     this._zoomPan = true;
     this._zoomScroll = true;
 
@@ -1259,17 +1357,34 @@ var Viz = (function (BaseClass$$1) {
 
     this._shapes = [];
 
-    // // Draws a rectangle showing the available space for a visualization.
-    // const tester = this._select.selectAll(".tester").data([0]);
-    // console.log(this._margin);
-    // tester.enter().append("rect")
-    //     .attr("class", "tester")
-    //     .attr("fill", "#ccc")
-    //   .merge(tester)
+    // Draws a container and zoomGroup to test functionality.
+    // this._container = this._select.selectAll("svg.d3plus-viz").data([0]);
+    //
+    // this._container = this._container.enter().append("svg")
+    //     .attr("class", "d3plus-viz")
     //     .attr("width", this._width - this._margin.left - this._margin.right)
     //     .attr("height", this._height - this._margin.top - this._margin.bottom)
     //     .attr("x", this._margin.left)
-    //     .attr("y", this._margin.top);
+    //     .attr("y", this._margin.top)
+    //     .style("background-color", "transparent")
+    //   .merge(this._container);
+    //
+    // this._zoomGroup = this._container.selectAll("g.d3plus-viz-zoomGroup").data([0]);
+    // const enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
+    //   .merge(this._zoomGroup);
+    //
+    // this._zoomGroup = enter.merge(this._zoomGroup);
+    //
+    // this._shapes.push(new Rect()
+    //   .config(this._shapeConfig)
+    //   .data([
+    //     {id: 1, text: "My Label", x: 100, y: 100, width: 100, height: 100},
+    //     {id: 2, text: "My Label", x: 300, y: 100, width: 100, height: 100}
+    //   ])
+    //   .label(d => d.text)
+    //   .select(this._zoomGroup.node())
+    //   .on(this._on)
+    //   .render());
 
   };
 
@@ -1990,7 +2105,37 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc An object containing CSS key/value pairs that is used to style each zoom control button (`.zoom-in`, `.zoom-out`, and `.zoom-reset`). Passing `false` will remove all default styling.
+      @desc The pixel stroke-width of the zoom brush area.
+      @param {Number} *value* = 1
+      @chainable
+  */
+  Viz.prototype.zoomBrushHandleSize = function zoomBrushHandleSize (_) {
+    return arguments.length ? (this._zoomBrushHandleSize = _, this) : this._zoomBrushHandleSize;
+  };
+
+  /**
+      @memberof Viz
+      @desc An object containing CSS key/value pairs that is used to style the outer handle area of the zoom brush. Passing `false` will remove all default styling.
+      @param {Object|Boolean} *value*
+      @chainable
+  */
+  Viz.prototype.zoomBrushHandleStyle = function zoomBrushHandleStyle (_) {
+    return arguments.length ? (this._zoomBrushHandleStyle = _, this) : this._zoomBrushHandleStyle;
+  };
+
+  /**
+      @memberof Viz
+      @desc An object containing CSS key/value pairs that is used to style the inner selection area of the zoom brush. Passing `false` will remove all default styling.
+      @param {Object|Boolean} *value*
+      @chainable
+  */
+  Viz.prototype.zoomBrushSelectionStyle = function zoomBrushSelectionStyle (_) {
+    return arguments.length ? (this._zoomBrushSelectionStyle = _, this) : this._zoomBrushSelectionStyle;
+  };
+
+  /**
+      @memberof Viz
+      @desc An object containing CSS key/value pairs that is used to style each zoom control button (`.zoom-in`, `.zoom-out`, `.zoom-reset`, and `.zoom-brush`). Passing `false` will remove all default styling.
       @param {Object|Boolean} *value*
       @chainable
   */
@@ -2000,7 +2145,17 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc An object containing CSS key/value pairs that is used to style each zoom control button on hover (`.zoom-in`, `.zoom-out`, and `.zoom-reset`). Passing `false` will remove all default styling.
+      @desc An object containing CSS key/value pairs that is used to style each zoom control button when active (`.zoom-in`, `.zoom-out`, `.zoom-reset`, and `.zoom-brush`). Passing `false` will remove all default styling.
+      @param {Object|Boolean} *value*
+      @chainable
+  */
+  Viz.prototype.zoomControlStyleActive = function zoomControlStyleActive (_) {
+    return arguments.length ? (this._zoomControlStyleActive = _, this) : this._zoomControlStyleActive;
+  };
+
+  /**
+      @memberof Viz
+      @desc An object containing CSS key/value pairs that is used to style each zoom control button on hover (`.zoom-in`, `.zoom-out`, `.zoom-reset`, and `.zoom-brush`). Passing `false` will remove all default styling.
       @param {Object|Boolean} *value*
       @chainable
   */
@@ -2016,6 +2171,46 @@ function value(d) {
   */
   Viz.prototype.zoomFactor = function zoomFactor (_) {
     return arguments.length ? (this._zoomFactor = _, this) : this._zoomFactor;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the max zoom scale to the specified number and returns the current class instance. If *value* is not specified, returns the current max zoom scale.
+      @param {Number} *value* = 16
+      @chainable
+  */
+  Viz.prototype.zoomMax = function zoomMax (_) {
+    return arguments.length ? (this._zoomMax = _, this) : this._zoomMax;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, toggles panning to the specified boolean and returns the current class instance. If *value* is not specified, returns the current panning value.
+      @param {Boolean} *value* = true
+      @chainable
+  */
+  Viz.prototype.zoomPan = function zoomPan (_) {
+    return arguments.length ? (this._zoomPan = _, this) : this._zoomPan;
+  };
+
+  /**
+      @memberof Viz
+      @desc A pixel value to be used to pad all sides of a zoomed area.
+      @param {Number} *value* = 20
+      @chainable
+  */
+  Viz.prototype.zoomPadding = function zoomPadding (_) {
+    return arguments.length ? (this._zoomPadding = _, this) : this._zoomPadding;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, toggles scroll zooming to the specified boolean and returns the current class instance. If *value* is not specified, returns the current scroll zooming value.
+      @param {Boolean} [*value* = true]
+      @chainable
+  */
+  Viz.prototype.zoomScroll = function zoomScroll (_) {
+    return arguments.length ? (this._zoomScroll = _, this) : this._zoomScroll;
   };
 
   return Viz;
