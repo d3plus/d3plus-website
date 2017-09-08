@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.13
+  d3plus-geomap v0.4.14
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -6877,12 +6877,12 @@ function nap() {
 function sleep(time) {
   if (frame) { return; } // Soonest alarm already set, or will be.
   if (timeout) { timeout = clearTimeout(timeout); }
-  var delay = time - clockNow;
+  var delay = time - clockNow; // Strictly less than if we recomputed clockNow.
   if (delay > 24) {
-    if (time < Infinity) { timeout = setTimeout(wake, delay); }
+    if (time < Infinity) { timeout = setTimeout(wake, time - clock.now() - clockSkew); }
     if (interval) { interval = clearInterval(interval); }
   } else {
-    if (!interval) { clockLast = clockNow, interval = setInterval(poke, pokeDelay); }
+    if (!interval) { clockLast = clock.now(), interval = setInterval(poke, pokeDelay); }
     frame = 1, setFrame(wake);
   }
 }
@@ -10867,7 +10867,7 @@ var TextBox = (function (BaseClass) {
 
     var update = boxes.enter().append("g")
         .attr("class", "d3plus-textBox")
-        .attr("id", function (d) { return ("d3plus-textBox-" + (d.id)); })
+        .attr("id", function (d) { return ("d3plus-textBox-" + (strip(d.id))); })
         .call(rotate)
       .merge(boxes);
 
@@ -11698,15 +11698,17 @@ var Shape = (function (BaseClass) {
     this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
-
-        if (this.tagName === "text") { d = d.data; }
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
-          i = d.i;
-          d = d.data;
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
         }
         else { i = that._data.indexOf(d); }
+
+        var parent = this.parentNode;
+        if (d && d.parentNode) { parent = d.parentNode; }
 
         var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
         if (group !== this.parentNode) {
@@ -11813,17 +11815,20 @@ var Shape = (function (BaseClass) {
       .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
-
-        if (this.tagName === "text") { d = d.data; }
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
-          i = d.i;
-          d = d.data;
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
         }
         else { i = that._data.indexOf(d); }
 
+        var parent = this.parentNode;
+        if (d && d.parentNode) { parent = d.parentNode; }
+
         var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
+
         if (group !== this.parentNode) { group.appendChild(this); }
 
       });
@@ -16633,6 +16638,602 @@ var load = function(path, formatter, key, callback) {
 
 };
 
+var noevent = function() {
+  event$1.preventDefault();
+  event$1.stopImmediatePropagation();
+};
+
+var dragDisable = function(view) {
+  var root = view.document.documentElement,
+      selection = select(view).on("dragstart.drag", noevent, true);
+  if ("onselectstart" in root) {
+    selection.on("selectstart.drag", noevent, true);
+  } else {
+    root.__noselect = root.style.MozUserSelect;
+    root.style.MozUserSelect = "none";
+  }
+};
+
+function yesdrag(view, noclick) {
+  var root = view.document.documentElement,
+      selection = select(view).on("dragstart.drag", null);
+  if (noclick) {
+    selection.on("click.drag", noevent, true);
+    setTimeout(function() { selection.on("click.drag", null); }, 0);
+  }
+  if ("onselectstart" in root) {
+    selection.on("selectstart.drag", null);
+  } else {
+    root.style.MozUserSelect = root.__noselect;
+    delete root.__noselect;
+  }
+}
+
+function DragEvent(target, type, subject, id, active, x, y, dx, dy, dispatch) {
+  this.target = target;
+  this.type = type;
+  this.subject = subject;
+  this.identifier = id;
+  this.active = active;
+  this.x = x;
+  this.y = y;
+  this.dx = dx;
+  this.dy = dy;
+  this._ = dispatch;
+}
+
+DragEvent.prototype.on = function() {
+  var value = this._.on.apply(this._, arguments);
+  return value === this._ ? this : value;
+};
+
+var constant$8 = function(x) {
+  return function() {
+    return x;
+  };
+};
+
+var BrushEvent = function(target, type, selection) {
+  this.target = target;
+  this.type = type;
+  this.selection = selection;
+};
+
+function nopropagation$1() {
+  event$1.stopImmediatePropagation();
+}
+
+var noevent$1 = function() {
+  event$1.preventDefault();
+  event$1.stopImmediatePropagation();
+};
+
+var MODE_DRAG = {name: "drag"};
+var MODE_SPACE = {name: "space"};
+var MODE_HANDLE = {name: "handle"};
+var MODE_CENTER = {name: "center"};
+
+var X = {
+  name: "x",
+  handles: ["e", "w"].map(type$1),
+  input: function(x, e) { return x && [[x[0], e[0][1]], [x[1], e[1][1]]]; },
+  output: function(xy) { return xy && [xy[0][0], xy[1][0]]; }
+};
+
+var Y = {
+  name: "y",
+  handles: ["n", "s"].map(type$1),
+  input: function(y, e) { return y && [[e[0][0], y[0]], [e[1][0], y[1]]]; },
+  output: function(xy) { return xy && [xy[0][1], xy[1][1]]; }
+};
+
+var XY = {
+  name: "xy",
+  handles: ["n", "e", "s", "w", "nw", "ne", "se", "sw"].map(type$1),
+  input: function(xy) { return xy; },
+  output: function(xy) { return xy; }
+};
+
+var cursors = {
+  overlay: "crosshair",
+  selection: "move",
+  n: "ns-resize",
+  e: "ew-resize",
+  s: "ns-resize",
+  w: "ew-resize",
+  nw: "nwse-resize",
+  ne: "nesw-resize",
+  se: "nwse-resize",
+  sw: "nesw-resize"
+};
+
+var flipX = {
+  e: "w",
+  w: "e",
+  nw: "ne",
+  ne: "nw",
+  se: "sw",
+  sw: "se"
+};
+
+var flipY = {
+  n: "s",
+  s: "n",
+  nw: "sw",
+  ne: "se",
+  se: "ne",
+  sw: "nw"
+};
+
+var signsX = {
+  overlay: +1,
+  selection: +1,
+  n: null,
+  e: +1,
+  s: null,
+  w: -1,
+  nw: -1,
+  ne: +1,
+  se: +1,
+  sw: -1
+};
+
+var signsY = {
+  overlay: +1,
+  selection: +1,
+  n: -1,
+  e: null,
+  s: +1,
+  w: null,
+  nw: -1,
+  ne: -1,
+  se: +1,
+  sw: +1
+};
+
+function type$1(t) {
+  return {type: t};
+}
+
+// Ignore right-click, since that should open the context menu.
+function defaultFilter() {
+  return !event$1.button;
+}
+
+function defaultExtent() {
+  var svg = this.ownerSVGElement || this;
+  return [[0, 0], [svg.width.baseVal.value, svg.height.baseVal.value]];
+}
+
+// Like d3.local, but with the name “__brush” rather than auto-generated.
+function local$1(node) {
+  while (!node.__brush) { if (!(node = node.parentNode)) { return; } }
+  return node.__brush;
+}
+
+function empty$1(extent) {
+  return extent[0][0] === extent[1][0]
+      || extent[0][1] === extent[1][1];
+}
+
+
+
+function brushX() {
+  return brush$1(X);
+}
+
+
+
+var brush = function() {
+  return brush$1(XY);
+};
+
+function brush$1(dim) {
+  var extent = defaultExtent,
+      filter = defaultFilter,
+      listeners = dispatch(brush, "start", "brush", "end"),
+      handleSize = 6,
+      touchending;
+
+  function brush(group) {
+    var overlay = group
+        .property("__brush", initialize)
+      .selectAll(".overlay")
+      .data([type$1("overlay")]);
+
+    overlay.enter().append("rect")
+        .attr("class", "overlay")
+        .attr("pointer-events", "all")
+        .attr("cursor", cursors.overlay)
+      .merge(overlay)
+        .each(function() {
+          var extent = local$1(this).extent;
+          select(this)
+              .attr("x", extent[0][0])
+              .attr("y", extent[0][1])
+              .attr("width", extent[1][0] - extent[0][0])
+              .attr("height", extent[1][1] - extent[0][1]);
+        });
+
+    group.selectAll(".selection")
+      .data([type$1("selection")])
+      .enter().append("rect")
+        .attr("class", "selection")
+        .attr("cursor", cursors.selection)
+        .attr("fill", "#777")
+        .attr("fill-opacity", 0.3)
+        .attr("stroke", "#fff")
+        .attr("shape-rendering", "crispEdges");
+
+    var handle = group.selectAll(".handle")
+      .data(dim.handles, function(d) { return d.type; });
+
+    handle.exit().remove();
+
+    handle.enter().append("rect")
+        .attr("class", function(d) { return "handle handle--" + d.type; })
+        .attr("cursor", function(d) { return cursors[d.type]; });
+
+    group
+        .each(redraw)
+        .attr("fill", "none")
+        .attr("pointer-events", "all")
+        .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)")
+        .on("mousedown.brush touchstart.brush", started);
+  }
+
+  brush.move = function(group, selection) {
+    if (group.selection) {
+      group
+          .on("start.brush", function() { emitter(this, arguments).beforestart().start(); })
+          .on("interrupt.brush end.brush", function() { emitter(this, arguments).end(); })
+          .tween("brush", function() {
+            var that = this,
+                state = that.__brush,
+                emit = emitter(that, arguments),
+                selection0 = state.selection,
+                selection1 = dim.input(typeof selection === "function" ? selection.apply(this, arguments) : selection, state.extent),
+                i = interpolate$1(selection0, selection1);
+
+            function tween(t) {
+              state.selection = t === 1 && empty$1(selection1) ? null : i(t);
+              redraw.call(that);
+              emit.brush();
+            }
+
+            return selection0 && selection1 ? tween : tween(1);
+          });
+    } else {
+      group
+          .each(function() {
+            var that = this,
+                args = arguments,
+                state = that.__brush,
+                selection1 = dim.input(typeof selection === "function" ? selection.apply(that, args) : selection, state.extent),
+                emit = emitter(that, args).beforestart();
+
+            interrupt(that);
+            state.selection = selection1 == null || empty$1(selection1) ? null : selection1;
+            redraw.call(that);
+            emit.start().brush().end();
+          });
+    }
+  };
+
+  function redraw() {
+    var group = select(this),
+        selection = local$1(this).selection;
+
+    if (selection) {
+      group.selectAll(".selection")
+          .style("display", null)
+          .attr("x", selection[0][0])
+          .attr("y", selection[0][1])
+          .attr("width", selection[1][0] - selection[0][0])
+          .attr("height", selection[1][1] - selection[0][1]);
+
+      group.selectAll(".handle")
+          .style("display", null)
+          .attr("x", function(d) { return d.type[d.type.length - 1] === "e" ? selection[1][0] - handleSize / 2 : selection[0][0] - handleSize / 2; })
+          .attr("y", function(d) { return d.type[0] === "s" ? selection[1][1] - handleSize / 2 : selection[0][1] - handleSize / 2; })
+          .attr("width", function(d) { return d.type === "n" || d.type === "s" ? selection[1][0] - selection[0][0] + handleSize : handleSize; })
+          .attr("height", function(d) { return d.type === "e" || d.type === "w" ? selection[1][1] - selection[0][1] + handleSize : handleSize; });
+    }
+
+    else {
+      group.selectAll(".selection,.handle")
+          .style("display", "none")
+          .attr("x", null)
+          .attr("y", null)
+          .attr("width", null)
+          .attr("height", null);
+    }
+  }
+
+  function emitter(that, args) {
+    return that.__brush.emitter || new Emitter(that, args);
+  }
+
+  function Emitter(that, args) {
+    this.that = that;
+    this.args = args;
+    this.state = that.__brush;
+    this.active = 0;
+  }
+
+  Emitter.prototype = {
+    beforestart: function() {
+      if (++this.active === 1) { this.state.emitter = this, this.starting = true; }
+      return this;
+    },
+    start: function() {
+      if (this.starting) { this.starting = false, this.emit("start"); }
+      return this;
+    },
+    brush: function() {
+      this.emit("brush");
+      return this;
+    },
+    end: function() {
+      if (--this.active === 0) { delete this.state.emitter, this.emit("end"); }
+      return this;
+    },
+    emit: function(type) {
+      customEvent(new BrushEvent(brush, type, dim.output(this.state.selection)), listeners.apply, listeners, [type, this.that, this.args]);
+    }
+  };
+
+  function started() {
+    if (event$1.touches) { if (event$1.changedTouches.length < event$1.touches.length) { return noevent$1(); } }
+    else if (touchending) { return; }
+    if (!filter.apply(this, arguments)) { return; }
+
+    var that = this,
+        type = event$1.target.__data__.type,
+        mode = (event$1.metaKey ? type = "overlay" : type) === "selection" ? MODE_DRAG : (event$1.altKey ? MODE_CENTER : MODE_HANDLE),
+        signX = dim === Y ? null : signsX[type],
+        signY = dim === X ? null : signsY[type],
+        state = local$1(that),
+        extent = state.extent,
+        selection = state.selection,
+        W = extent[0][0], w0, w1,
+        N = extent[0][1], n0, n1,
+        E = extent[1][0], e0, e1,
+        S = extent[1][1], s0, s1,
+        dx,
+        dy,
+        moving,
+        shifting = signX && signY && event$1.shiftKey,
+        lockX,
+        lockY,
+        point0 = mouse(that),
+        point = point0,
+        emit = emitter(that, arguments).beforestart();
+
+    if (type === "overlay") {
+      state.selection = selection = [
+        [w0 = dim === Y ? W : point0[0], n0 = dim === X ? N : point0[1]],
+        [e0 = dim === Y ? E : w0, s0 = dim === X ? S : n0]
+      ];
+    } else {
+      w0 = selection[0][0];
+      n0 = selection[0][1];
+      e0 = selection[1][0];
+      s0 = selection[1][1];
+    }
+
+    w1 = w0;
+    n1 = n0;
+    e1 = e0;
+    s1 = s0;
+
+    var group = select(that)
+        .attr("pointer-events", "none");
+
+    var overlay = group.selectAll(".overlay")
+        .attr("cursor", cursors[type]);
+
+    if (event$1.touches) {
+      group
+          .on("touchmove.brush", moved, true)
+          .on("touchend.brush touchcancel.brush", ended, true);
+    } else {
+      var view = select(event$1.view)
+          .on("keydown.brush", keydowned, true)
+          .on("keyup.brush", keyupped, true)
+          .on("mousemove.brush", moved, true)
+          .on("mouseup.brush", ended, true);
+
+      dragDisable(event$1.view);
+    }
+
+    nopropagation$1();
+    interrupt(that);
+    redraw.call(that);
+    emit.start();
+
+    function moved() {
+      var point1 = mouse(that);
+      if (shifting && !lockX && !lockY) {
+        if (Math.abs(point1[0] - point[0]) > Math.abs(point1[1] - point[1])) { lockY = true; }
+        else { lockX = true; }
+      }
+      point = point1;
+      moving = true;
+      noevent$1();
+      move();
+    }
+
+    function move() {
+      var t;
+
+      dx = point[0] - point0[0];
+      dy = point[1] - point0[1];
+
+      switch (mode) {
+        case MODE_SPACE:
+        case MODE_DRAG: {
+          if (signX) { dx = Math.max(W - w0, Math.min(E - e0, dx)), w1 = w0 + dx, e1 = e0 + dx; }
+          if (signY) { dy = Math.max(N - n0, Math.min(S - s0, dy)), n1 = n0 + dy, s1 = s0 + dy; }
+          break;
+        }
+        case MODE_HANDLE: {
+          if (signX < 0) { dx = Math.max(W - w0, Math.min(E - w0, dx)), w1 = w0 + dx, e1 = e0; }
+          else if (signX > 0) { dx = Math.max(W - e0, Math.min(E - e0, dx)), w1 = w0, e1 = e0 + dx; }
+          if (signY < 0) { dy = Math.max(N - n0, Math.min(S - n0, dy)), n1 = n0 + dy, s1 = s0; }
+          else if (signY > 0) { dy = Math.max(N - s0, Math.min(S - s0, dy)), n1 = n0, s1 = s0 + dy; }
+          break;
+        }
+        case MODE_CENTER: {
+          if (signX) { w1 = Math.max(W, Math.min(E, w0 - dx * signX)), e1 = Math.max(W, Math.min(E, e0 + dx * signX)); }
+          if (signY) { n1 = Math.max(N, Math.min(S, n0 - dy * signY)), s1 = Math.max(N, Math.min(S, s0 + dy * signY)); }
+          break;
+        }
+      }
+
+      if (e1 < w1) {
+        signX *= -1;
+        t = w0, w0 = e0, e0 = t;
+        t = w1, w1 = e1, e1 = t;
+        if (type in flipX) { overlay.attr("cursor", cursors[type = flipX[type]]); }
+      }
+
+      if (s1 < n1) {
+        signY *= -1;
+        t = n0, n0 = s0, s0 = t;
+        t = n1, n1 = s1, s1 = t;
+        if (type in flipY) { overlay.attr("cursor", cursors[type = flipY[type]]); }
+      }
+
+      if (state.selection) { selection = state.selection; } // May be set by brush.move!
+      if (lockX) { w1 = selection[0][0], e1 = selection[1][0]; }
+      if (lockY) { n1 = selection[0][1], s1 = selection[1][1]; }
+
+      if (selection[0][0] !== w1
+          || selection[0][1] !== n1
+          || selection[1][0] !== e1
+          || selection[1][1] !== s1) {
+        state.selection = [[w1, n1], [e1, s1]];
+        redraw.call(that);
+        emit.brush();
+      }
+    }
+
+    function ended() {
+      nopropagation$1();
+      if (event$1.touches) {
+        if (event$1.touches.length) { return; }
+        if (touchending) { clearTimeout(touchending); }
+        touchending = setTimeout(function() { touchending = null; }, 500); // Ghost clicks are delayed!
+        group.on("touchmove.brush touchend.brush touchcancel.brush", null);
+      } else {
+        yesdrag(event$1.view, moving);
+        view.on("keydown.brush keyup.brush mousemove.brush mouseup.brush", null);
+      }
+      group.attr("pointer-events", "all");
+      overlay.attr("cursor", cursors.overlay);
+      if (state.selection) { selection = state.selection; } // May be set by brush.move (on start)!
+      if (empty$1(selection)) { state.selection = null, redraw.call(that); }
+      emit.end();
+    }
+
+    function keydowned() {
+      switch (event$1.keyCode) {
+        case 16: { // SHIFT
+          shifting = signX && signY;
+          break;
+        }
+        case 18: { // ALT
+          if (mode === MODE_HANDLE) {
+            if (signX) { e0 = e1 - dx * signX, w0 = w1 + dx * signX; }
+            if (signY) { s0 = s1 - dy * signY, n0 = n1 + dy * signY; }
+            mode = MODE_CENTER;
+            move();
+          }
+          break;
+        }
+        case 32: { // SPACE; takes priority over ALT
+          if (mode === MODE_HANDLE || mode === MODE_CENTER) {
+            if (signX < 0) { e0 = e1 - dx; } else if (signX > 0) { w0 = w1 - dx; }
+            if (signY < 0) { s0 = s1 - dy; } else if (signY > 0) { n0 = n1 - dy; }
+            mode = MODE_SPACE;
+            overlay.attr("cursor", cursors.selection);
+            move();
+          }
+          break;
+        }
+        default: return;
+      }
+      noevent$1();
+    }
+
+    function keyupped() {
+      switch (event$1.keyCode) {
+        case 16: { // SHIFT
+          if (shifting) {
+            lockX = lockY = shifting = false;
+            move();
+          }
+          break;
+        }
+        case 18: { // ALT
+          if (mode === MODE_CENTER) {
+            if (signX < 0) { e0 = e1; } else if (signX > 0) { w0 = w1; }
+            if (signY < 0) { s0 = s1; } else if (signY > 0) { n0 = n1; }
+            mode = MODE_HANDLE;
+            move();
+          }
+          break;
+        }
+        case 32: { // SPACE
+          if (mode === MODE_SPACE) {
+            if (event$1.altKey) {
+              if (signX) { e0 = e1 - dx * signX, w0 = w1 + dx * signX; }
+              if (signY) { s0 = s1 - dy * signY, n0 = n1 + dy * signY; }
+              mode = MODE_CENTER;
+            } else {
+              if (signX < 0) { e0 = e1; } else if (signX > 0) { w0 = w1; }
+              if (signY < 0) { s0 = s1; } else if (signY > 0) { n0 = n1; }
+              mode = MODE_HANDLE;
+            }
+            overlay.attr("cursor", cursors[type]);
+            move();
+          }
+          break;
+        }
+        default: return;
+      }
+      noevent$1();
+    }
+  }
+
+  function initialize() {
+    var state = this.__brush || {selection: null};
+    state.extent = extent.apply(this, arguments);
+    state.dim = dim;
+    return state;
+  }
+
+  brush.extent = function(_) {
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$8([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
+  };
+
+  brush.filter = function(_) {
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$8(!!_), brush) : filter;
+  };
+
+  brush.handleSize = function(_) {
+    return arguments.length ? (handleSize = +_, brush) : handleSize;
+  };
+
+  brush.on = function() {
+    var value = listeners.on.apply(listeners, arguments);
+    return value === listeners ? brush : value;
+  };
+
+  return brush;
+}
+
 var slice$3 = [].slice;
 
 var noabort = {};
@@ -16755,56 +17356,7 @@ function queue(concurrency) {
   return new Queue(concurrency);
 }
 
-var noevent = function() {
-  event$1.preventDefault();
-  event$1.stopImmediatePropagation();
-};
-
-var dragDisable = function(view) {
-  var root = view.document.documentElement,
-      selection = select(view).on("dragstart.drag", noevent, true);
-  if ("onselectstart" in root) {
-    selection.on("selectstart.drag", noevent, true);
-  } else {
-    root.__noselect = root.style.MozUserSelect;
-    root.style.MozUserSelect = "none";
-  }
-};
-
-function yesdrag(view, noclick) {
-  var root = view.document.documentElement,
-      selection = select(view).on("dragstart.drag", null);
-  if (noclick) {
-    selection.on("click.drag", noevent, true);
-    setTimeout(function() { selection.on("click.drag", null); }, 0);
-  }
-  if ("onselectstart" in root) {
-    selection.on("selectstart.drag", null);
-  } else {
-    root.style.MozUserSelect = root.__noselect;
-    delete root.__noselect;
-  }
-}
-
-function DragEvent(target, type, subject, id, active, x, y, dx, dy, dispatch) {
-  this.target = target;
-  this.type = type;
-  this.subject = subject;
-  this.identifier = id;
-  this.active = active;
-  this.x = x;
-  this.y = y;
-  this.dx = dx;
-  this.dy = dy;
-  this._ = dispatch;
-}
-
-DragEvent.prototype.on = function() {
-  var value = this._.on.apply(this._, arguments);
-  return value === this._ ? this : value;
-};
-
-var constant$8 = function(x) {
+var constant$9 = function(x) {
   return function() {
     return x;
   };
@@ -16867,21 +17419,21 @@ function transform$2(node) {
   return node.__zoom || identity$8;
 }
 
-function nopropagation$1() {
+function nopropagation$2() {
   event$1.stopImmediatePropagation();
 }
 
-var noevent$1 = function() {
+var noevent$2 = function() {
   event$1.preventDefault();
   event$1.stopImmediatePropagation();
 };
 
 // Ignore right-click, since that should open the context menu.
-function defaultFilter() {
+function defaultFilter$2() {
   return !event$1.button;
 }
 
-function defaultExtent() {
+function defaultExtent$1() {
   var e = this, w, h;
   if (e instanceof SVGElement) {
     e = e.ownerSVGElement || e;
@@ -16902,13 +17454,13 @@ function defaultWheelDelta() {
   return -event$1.deltaY * (event$1.deltaMode ? 120 : 1) / 500;
 }
 
-function touchable() {
+function touchable$1() {
   return "ontouchstart" in this;
 }
 
 var zoom = function() {
-  var filter = defaultFilter,
-      extent = defaultExtent,
+  var filter = defaultFilter$2,
+      extent = defaultExtent$1,
       wheelDelta = defaultWheelDelta,
       k0 = 0,
       k1 = Infinity,
@@ -16932,7 +17484,7 @@ var zoom = function() {
         .on("wheel.zoom", wheeled)
         .on("mousedown.zoom", mousedowned)
         .on("dblclick.zoom", dblclicked)
-      .filter(touchable)
+      .filter(touchable$1)
         .on("touchstart.zoom", touchstarted)
         .on("touchmove.zoom", touchmoved)
         .on("touchend.zoom touchcancel.zoom", touchended)
@@ -17114,7 +17666,7 @@ var zoom = function() {
       g.start();
     }
 
-    noevent$1();
+    noevent$2();
     g.wheel = setTimeout(wheelidled, wheelDelay);
     g.zoom("mouse", constrain(translate(scale(t, k), g.mouse[0], g.mouse[1]), g.extent));
 
@@ -17133,13 +17685,13 @@ var zoom = function() {
         y0 = event$1.clientY;
 
     dragDisable(event$1.view);
-    nopropagation$1();
+    nopropagation$2();
     g.mouse = [p, this.__zoom.invert(p)];
     interrupt(this);
     g.start();
 
     function mousemoved() {
-      noevent$1();
+      noevent$2();
       if (!g.moved) {
         var dx = event$1.clientX - x0, dy = event$1.clientY - y0;
         g.moved = dx * dx + dy * dy > clickDistance2;
@@ -17150,7 +17702,7 @@ var zoom = function() {
     function mouseupped() {
       v.on("mousemove.zoom mouseup.zoom", null);
       yesdrag(event$1.view, g.moved);
-      noevent$1();
+      noevent$2();
       g.end();
     }
   }
@@ -17163,7 +17715,7 @@ var zoom = function() {
         k1 = t0.k * (event$1.shiftKey ? 0.5 : 2),
         t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, arguments));
 
-    noevent$1();
+    noevent$2();
     if (duration > 0) { select(this).transition().duration(duration).call(schedule, t1, p0); }
     else { select(this).call(zoom.transform, t1); }
   }
@@ -17177,7 +17729,7 @@ var zoom = function() {
         started,
         n = touches.length, i, t, p;
 
-    nopropagation$1();
+    nopropagation$2();
     for (i = 0; i < n; ++i) {
       t = touches[i], p = touch(this$1, touches, t.identifier);
       p = [p, this$1.__zoom.invert(p), t.identifier];
@@ -17210,7 +17762,7 @@ var zoom = function() {
         touches = event$1.changedTouches,
         n = touches.length, i, t, p, l;
 
-    noevent$1();
+    noevent$2();
     if (touchstarting) { touchstarting = clearTimeout(touchstarting); }
     for (i = 0; i < n; ++i) {
       t = touches[i], p = touch(this$1, touches, t.identifier);
@@ -17237,7 +17789,7 @@ var zoom = function() {
         touches = event$1.changedTouches,
         n = touches.length, i, t;
 
-    nopropagation$1();
+    nopropagation$2();
     if (touchending) { clearTimeout(touchending); }
     touchending = setTimeout(function() { touchending = null; }, touchDelay);
     for (i = 0; i < n; ++i) {
@@ -17251,15 +17803,15 @@ var zoom = function() {
   }
 
   zoom.wheelDelta = function(_) {
-    return arguments.length ? (wheelDelta = typeof _ === "function" ? _ : constant$8(+_), zoom) : wheelDelta;
+    return arguments.length ? (wheelDelta = typeof _ === "function" ? _ : constant$9(+_), zoom) : wheelDelta;
   };
 
   zoom.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$8(!!_), zoom) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$9(!!_), zoom) : filter;
   };
 
   zoom.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$8([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), zoom) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$9([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), zoom) : extent;
   };
 
   zoom.scaleExtent = function(_) {
@@ -19446,925 +19998,6 @@ function value(d) {
 }(BaseClass));
 
 /**
-    @function textWidth
-    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
-    @param {String|Array} text Can be either a single string or an array of strings to analyze.
-    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
-*/
-var measure = function(text, style) {
-
-  style = Object.assign({
-    "font-size": 10,
-    "font-family": "sans-serif",
-    "font-style": "normal",
-    "font-weight": 400,
-    "font-variant": "normal"
-  }, style);
-
-  var context = document.createElement("canvas").getContext("2d");
-
-  var font = [];
-  font.push(style["font-style"]);
-  font.push(style["font-variant"]);
-  font.push(style["font-weight"]);
-  font.push(typeof style["font-size"] === "string" ? style["font-size"] : ((style["font-size"]) + "px"));
-  // let s = `${style["font-size"]}px`;
-  // if ("line-height" in style) s += `/${style["line-height"]}px`;
-  // font.push(s);
-  font.push(style["font-family"]);
-
-  context.font = font.join(" ");
-
-  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-  return context.measureText(text).width;
-
-};
-
-/**
-    @function trim
-    @desc Cross-browser implementation of [trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim).
-    @param {String} str
-*/
-function trim$1(str) {
-  return str.replace(/^\s+|\s+$/g, "");
-}
-
-/**
-    @function trimRight
-    @desc Cross-browser implementation of [trimRight](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/TrimRight).
-    @param {String} str
-*/
-function trimRight$1(str) {
-  return str.replace(/\s+$/, "");
-}
-
-var alpha$1 = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
-var checked$1 = {};
-var height$1 = 32;
-
-var dejavu$1;
-var macos$1;
-var monospace$1;
-var proportional$1;
-
-/**
-    @function fontExists
-    @desc Given either a single font-family or a list of fonts, returns the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
-    @param {String|Array} font Can be either a valid CSS font-family string (single or comma-separated names) or an Array of string names.
-*/
-var fontExists$2 = function (font) {
-
-  if (!dejavu$1) {
-    dejavu$1 = measure(alpha$1, {"font-family": "DejaVuSans", "font-size": height$1});
-    macos$1 = measure(alpha$1, {"font-family": "-apple-system", "font-size": height$1});
-    monospace$1 = measure(alpha$1, {"font-family": "monospace", "font-size": height$1});
-    proportional$1 = measure(alpha$1, {"font-family": "sans-serif", "font-size": height$1});
-  }
-
-  if (!(font instanceof Array)) { font = font.split(","); }
-  font = font.map(function (f) { return trim$1(f); });
-
-  for (var i = 0; i < font.length; i++) {
-    var fam = font[i];
-    if (checked$1[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
-    else if (checked$1[fam] === false) { continue; }
-    var width = measure(alpha$1, {"font-family": fam, "font-size": height$1});
-    checked$1[fam] = width !== monospace$1;
-    if (checked$1[fam]) { checked$1[fam] = width !== proportional$1; }
-    if (macos$1 && checked$1[fam]) { checked$1[fam] = width !== macos$1; }
-    if (dejavu$1 && checked$1[fam]) { checked$1[fam] = width !== dejavu$1; }
-    if (checked$1[fam]) { return fam; }
-  }
-
-  return false;
-
-};
-
-/**
-    @function rtl
-    @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
-*/
-var detectRTL$1 = function () { return select("html").attr("dir") === "rtl" ||
-  select("body").attr("dir") === "rtl" ||
-  select("html").style("direction") === "rtl" ||
-  select("body").style("direction") === "rtl"; };
-
-/**
-    @function stringify
-    @desc Coerces value into a String.
-    @param {String} value
-*/
-var stringify$1 = function(value) {
-  if (value === void 0) { value = "undefined"; }
-  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
-  return value;
-};
-
-// great unicode list: http://asecuritysite.com/coding/asc2
-
-var diacritics$1 = [
-  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
-  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
-  [/[\337]/g, "B"],
-  [/[\307]/g, "C"], [/[\347]/g, "c"],
-  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
-  [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
-  [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
-  [/[\321]/g, "N"], [/[\361]/g, "n"],
-  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
-  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
-  [/[\327]/g, "x"],
-  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
-];
-
-/**
-    @function strip
-    @desc Removes all non ASCII characters from a string.
-    @param {String} value
-*/
-var strip$1 = function(value) {
-
-  return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
-
-    if (char === " ") { return "-"; }
-
-    var ret = false;
-    for (var d = 0; d < diacritics$1.length; d++) {
-      if (new RegExp(diacritics$1[d][0]).test(char)) {
-        ret = diacritics$1[d][1];
-        break;
-      }
-    }
-
-    return ret || "";
-
-  });
-};
-
-// scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
-// and http://www.fileformat.info/info/unicode/category/Mn/list.htm
-// JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
-var a$2 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
-var b$1 = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
-var combiningMarks$1 = a$2.concat(b$1);
-
-var splitChars$1 = ["-",  "/",  ";",  ":",  "&",
-  "u0E2F",  // thai character pairannoi
-  "u0EAF",  // lao ellipsis
-  "u0EC6",  // lao ko la (word repetition)
-  "u0ECC",  // lao cancellation mark
-  "u104A",  // myanmar sign little section
-  "u104B",  // myanmar sign section
-  "u104C",  // myanmar symbol locative
-  "u104D",  // myanmar symbol completed
-  "u104E",  // myanmar symbol aforementioned
-  "u104F",  // myanmar symbol genitive
-  "u2013",  // en dash
-  "u2014",  // em dash
-  "u2027",  // simplified chinese hyphenation point
-  "u3000",  // simplified chinese ideographic space
-  "u3001",  // simplified chinese ideographic comma
-  "u3002",  // simplified chinese ideographic full stop
-  "uFF0C",  // full-width comma
-  "uFF5E"   // wave dash
-];
-
-var prefixChars$1 = ["'",  "<",  "(",  "{",  "[",
-  "u00AB",  // left-pointing double angle quotation mark
-  "u300A",  // left double angle bracket
-  "u3008"  // left angle bracket
-];
-
-var suffixChars$1 = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
-  "u00BB",  // right-pointing double angle quotation mark
-  "u300B",  // right double angle bracket
-  "u3009"  // right angle bracket
-].concat(splitChars$1);
-
-var burmeseRange$1 = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-var japaneseRange$1 = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff0b\uff0d-\uff5d\uff5f-\uff9f\u3400-\u4dbf";
-var chineseRange$1 = "\u3400-\u9FBF";
-var laoRange$1 = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
-
-var noSpaceRange$1 = burmeseRange$1 + chineseRange$1 + laoRange$1;
-
-var splitWords$1 = new RegExp(("(\\" + (splitChars$1.join("|\\")) + ")*[^\\s|\\" + (splitChars$1.join("|\\")) + "]*(\\" + (splitChars$1.join("|\\")) + ")*"), "g");
-var japaneseChars$1 = new RegExp(("[" + japaneseRange$1 + "]"));
-var noSpaceLanguage$1 = new RegExp(("[" + noSpaceRange$1 + "]"));
-var splitAllChars$1 = new RegExp(("(\\" + (prefixChars$1.join("|\\")) + ")*[" + noSpaceRange$1 + "](\\" + (suffixChars$1.join("|\\")) + "|\\" + (combiningMarks$1.join("|\\")) + ")*|[a-z0-9]+"), "gi");
-
-/**
-    @function textSplit
-    @desc Splits a given sentence into an array of words.
-    @param {String} sentence
-*/
-var textSplit$1 = function(sentence) {
-  if (!noSpaceLanguage$1.test(sentence)) { return stringify$1(sentence).match(splitWords$1).filter(function (w) { return w.length; }); }
-  return merge(stringify$1(sentence).match(splitWords$1).map(function (d) {
-    if (!japaneseChars$1.test(d) && noSpaceLanguage$1.test(d)) { return d.match(splitAllChars$1); }
-    return [d];
-  }));
-};
-
-/**
-    @function textWrap
-    @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
-*/
-var wrap = function() {
-
-  var fontFamily = "sans-serif",
-      fontSize = 10,
-      fontWeight = 400,
-      height = 200,
-      lineHeight,
-      overflow = false,
-      split = textSplit$1,
-      width = 200;
-
-  /**
-      The inner return object and wraps the text and returns the line data array.
-      @private
-  */
-  function textWrap(sentence) {
-
-    sentence = stringify$1(sentence);
-
-    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.4); }
-
-    var words = split(sentence);
-
-    var style = {
-      "font-family": fontFamily,
-      "font-size": fontSize,
-      "font-weight": fontWeight,
-      "line-height": lineHeight
-    };
-
-    var line = 1,
-        textProg = "",
-        truncated = false,
-        widthProg = 0;
-
-    var lineData = [],
-          sizes = measure(words, style),
-          space = measure(" ", style);
-
-    for (var i = 0; i < words.length; i++) {
-      var word = words[i];
-      var wordWidth = sizes[words.indexOf(word)];
-      word += sentence.slice(textProg.length + word.length).match("^( |\n)*", "g")[0];
-      if (textProg.slice(-1) === "\n" || widthProg + wordWidth > width) {
-        if (!i && !overflow) {
-          truncated = true;
-          break;
-        }
-        lineData[line - 1] = trimRight$1(lineData[line - 1]);
-        line++;
-        if (lineHeight * line > height || wordWidth > width && !overflow) {
-          truncated = true;
-          break;
-        }
-        widthProg = 0;
-        lineData.push(word);
-      }
-      else if (!i) { lineData[0] = word; }
-      else { lineData[line - 1] += word; }
-      textProg += word;
-      widthProg += wordWidth;
-      widthProg += word.match(/[\s]*$/g)[0].length * space;
-    }
-
-    return {
-      lines: lineData,
-      sentence: sentence, truncated: truncated,
-      widths: measure(lineData, style),
-      words: words
-    };
-
-  }
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value* = "sans-serif"]
-  */
-  textWrap.fontFamily = function(_) {
-    return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
-      @param {Function|Number} [*value* = 10]
-  */
-  textWrap.fontSize = function(_) {
-    return arguments.length ? (fontSize = _, textWrap) : fontSize;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  textWrap.fontWeight = function(_) {
-    return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets height limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.height = function(_) {
-    return arguments.length ? (height = _, textWrap) : height;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textWrap.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  textWrap.lineHeight = function(_) {
-    return arguments.length ? (lineHeight = _, textWrap) : lineHeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
-      @param {Boolean} [*value* = false]
-  */
-  textWrap.overflow = function(_) {
-    return arguments.length ? (overflow = _, textWrap) : overflow;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
-      @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to textWrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
-  */
-  textWrap.split = function(_) {
-    return arguments.length ? (split = _, textWrap) : split;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets width limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.width = function(_) {
-    return arguments.length ? (width = _, textWrap) : width;
-  };
-
-  return textWrap;
-
-};
-
-/**
-    @external BaseClass
-    @see https://github.com/d3plus/d3plus-common#BaseClass
-*/
-
-/**
-    @class TextBox
-    @extends external:BaseClass
-    @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
-*/
-var TextBox$2 = (function (BaseClass) {
-  function TextBox() {
-
-    BaseClass.call(this);
-
-    this._delay = 0;
-    this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
-    this._fontColor = constant$4("black");
-    this._fontFamily = constant$4(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
-    this._fontMax = constant$4(50);
-    this._fontMin = constant$4(8);
-    this._fontResize = constant$4(false);
-    this._fontSize = constant$4(10);
-    this._fontWeight = constant$4(400);
-    this._height = accessor("height", 200);
-    this._id = function (d, i) { return d.id || ("" + i); };
-    this._on = {};
-    this._overflow = constant$4(false);
-    this._pointerEvents = constant$4("auto");
-    this._rotate = constant$4(0);
-    this._split = textSplit$1;
-    this._text = accessor("text");
-    this._textAnchor = constant$4("start");
-    this._verticalAlign = constant$4("top");
-    this._width = accessor("width", 200);
-    this._x = accessor("x", 0);
-    this._y = accessor("y", 0);
-
-  }
-
-  if ( BaseClass ) TextBox.__proto__ = BaseClass;
-  TextBox.prototype = Object.create( BaseClass && BaseClass.prototype );
-  TextBox.prototype.constructor = TextBox;
-
-  /**
-      @memberof TextBox
-      @desc Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
-      @param {Function} [*callback* = undefined]
-  */
-  TextBox.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
-    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.4; }; }
-    var that = this;
-
-    var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
-
-      var t = this$1._text(d, i);
-      if (t === void 0) { return arr; }
-
-      var resize = this$1._fontResize(d, i);
-
-      var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
-          lH = resize ? fS * 1.4 : this$1._lineHeight(d, i),
-          line = 1,
-          lineData = [],
-          sizes,
-          wrapResults;
-
-      var style = {
-        "font-family": fontExists$2(this$1._fontFamily(d, i)),
-        "font-size": fS,
-        "font-weight": this$1._fontWeight(d, i),
-        "line-height": lH
-      };
-
-      var h = this$1._height(d, i),
-            w = this$1._width(d, i);
-
-      var wrapper = wrap()
-        .fontFamily(style["font-family"])
-        .fontSize(fS)
-        .fontWeight(style["font-weight"])
-        .lineHeight(lH)
-        .height(h)
-        .overflow(this$1._overflow(d, i))
-        .width(w);
-
-      var fMax = this$1._fontMax(d, i),
-            fMin = this$1._fontMin(d, i),
-            vA = this$1._verticalAlign(d, i),
-            words = this$1._split(t, i);
-
-      /**
-          Figures out the lineData to be used for wrapping.
-          @private
-      */
-      function checkSize() {
-
-        if (fS < fMin) {
-          lineData = [];
-          return;
-        }
-        else if (fS > fMax) { fS = fMax; }
-
-        if (resize) {
-          lH = fS * 1.4;
-          wrapper
-            .fontSize(fS)
-            .lineHeight(lH);
-          style["font-size"] = fS;
-          style["line-height"] = lH;
-        }
-
-        wrapResults = wrapper(t);
-        lineData = wrapResults.lines.filter(function (l) { return l !== ""; });
-        line = lineData.length;
-
-        if (wrapResults.truncated) {
-
-          if (resize) {
-            fS--;
-            if (fS < fMin) { lineData = []; }
-            else { checkSize(); }
-          }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
-
-        }
-
-
-      }
-
-      if (w > fMin && (h > lH || resize && h > fMin * 1.4)) {
-
-        if (resize) {
-
-          sizes = measure(words, style);
-
-          var areaMod = 1.165 + w / h * 0.1,
-                boxArea = w * h,
-                maxWidth = max(sizes),
-                textArea = sum(sizes, function (d) { return d * lH; }) * areaMod;
-
-          if (maxWidth > w || textArea > boxArea) {
-            var areaRatio = Math.sqrt(boxArea / textArea),
-                  widthRatio = w / maxWidth;
-            var sizeRatio = min([areaRatio, widthRatio]);
-            fS = Math.floor(fS * sizeRatio);
-          }
-
-          var heightMax = Math.floor(h * 0.8);
-          if (fS > heightMax) { fS = heightMax; }
-
-        }
-
-        checkSize();
-
-      }
-
-      if (lineData.length) {
-
-        var tH = line * lH;
-        var yP = vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH;
-        yP -= lH * 0.1;
-
-        arr.push({
-          data: d,
-          i: i,
-          lines: lineData,
-          fC: this$1._fontColor(d, i),
-          fF: style["font-family"],
-          fW: style["font-weight"],
-          id: this$1._id(d, i),
-          tA: this$1._textAnchor(d, i),
-          widths: wrapResults.widths,
-          fS: fS, lH: lH, w: w, h: h, x: this$1._x(d, i), y: this$1._y(d, i) + yP
-        });
-
-      }
-
-      return arr;
-
-    }, []), this._id);
-
-    var t = transition().duration(this._duration);
-
-    if (this._duration === 0) {
-
-      boxes.exit().remove();
-
-    }
-    else {
-
-      boxes.exit().transition().delay(this._duration).remove();
-
-      boxes.exit().selectAll("text").transition(t)
-        .attr("opacity", 0);
-
-    }
-
-    function rotate(text) {
-      text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + ", " + (d.x + d.w / 2) + ", " + (d.y + d.h / 2) + ")translate(" + (d.x) + ", " + (d.y) + ")"); });
-    }
-
-    var update = boxes.enter().append("g")
-        .attr("class", "d3plus-textBox")
-        .attr("id", function (d) { return ("d3plus-textBox-" + (strip$1(d.id))); })
-        .call(rotate)
-      .merge(boxes);
-
-    var rtl = detectRTL$1();
-
-    update
-      .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
-      .each(function(d) {
-
-        /**
-            Styles to apply to each <text> element.
-            @private
-        */
-        function textStyle(text) {
-          text
-            .text(function (t) { return trimRight$1(t); })
-            .attr("dir", rtl ? "rtl" : "ltr")
-            .attr("fill", d.fC)
-            .attr("text-anchor", d.tA)
-            .attr("font-family", d.fF)
-            .style("font-family", d.fF)
-            .attr("font-size", ((d.fS) + "px"))
-            .style("font-size", ((d.fS) + "px"))
-            .attr("font-weight", d.fW)
-            .style("font-weight", d.fW)
-            .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
-            .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
-        }
-
-        var texts = select(this).selectAll("text").data(d.lines);
-
-        if (that._duration === 0) {
-
-          texts.call(textStyle);
-
-          texts.exit().remove();
-
-          texts.enter().append("text")
-            .attr("dominant-baseline", "alphabetic")
-            .style("baseline-shift", "0%")
-            .attr("unicode-bidi", "bidi-override")
-            .call(textStyle);
-
-        }
-        else {
-
-          texts.transition(t).call(textStyle);
-
-          texts.exit().transition(t)
-            .attr("opacity", 0).remove();
-
-          texts.enter().append("text")
-              .attr("dominant-baseline", "alphabetic")
-              .style("baseline-shift", "0%")
-              .attr("opacity", 0)
-              .call(textStyle)
-            .merge(texts).transition(t).delay(that._delay)
-              .call(textStyle)
-              .attr("opacity", 1);
-
-        }
-
-      })
-      .transition(t).call(rotate);
-
-    var events = Object.keys(this._on),
-          on = events.reduce(function (obj, e) {
-            obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
-            return obj;
-          }, {});
-    for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
-
-    if (callback) { setTimeout(callback, this._duration + 100); }
-
-    return this;
-
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
-      @param {Array} [*data* = []]
-  */
-  TextBox.prototype.data = function data (_) {
-    return arguments.length ? (this._data = _, this) : this._data;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the animation delay to the specified number in milliseconds.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.delay = function delay (_) {
-    return arguments.length ? (this._delay = _, this) : this._delay;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the animation duration to the specified number in milliseconds.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.duration = function duration (_) {
-    return arguments.length ? (this._duration = _, this) : this._duration;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
-}
-  */
-  TextBox.prototype.ellipsis = function ellipsis (_) {
-    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$4(_), this) : this._ellipsis;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|String} [*value* = "black"]
-  */
-  TextBox.prototype.fontColor = function fontColor (_) {
-    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$4(_), this) : this._fontColor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
-      @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
-  */
-  TextBox.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$4(_), this) : this._fontFamily;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the maximum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
-      @param {Function|Number} [*value* = 50]
-  */
-  TextBox.prototype.fontMax = function fontMax (_) {
-    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$4(_), this) : this._fontMax;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the minimum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
-      @param {Function|Number} [*value* = 8]
-  */
-  TextBox.prototype.fontMin = function fontMin (_) {
-    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$4(_), this) : this._fontMin;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.fontResize = function fontResize (_) {
-    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$4(_), this) : this._fontResize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font size to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|Number} [*value* = 10]
-  */
-  TextBox.prototype.fontSize = function fontSize (_) {
-    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$4(_), this) : this._fontSize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  TextBox.prototype.fontWeight = function fontWeight (_) {
-    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$4(_), this) : this._fontWeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the height for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.height || 200;
-}
-  */
-  TextBox.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$4(_), this) : this._height;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Defines the unique id for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d, i) {
-  return d.id || i + "";
-}
-  */
-  TextBox.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$4(_), this) : this._id;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the line height to the specified accessor function or static number, which is 1.4 times the [font size](#textBox.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  TextBox.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$4(_), this) : this._lineHeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the text overflow to the specified accessor function or static boolean.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.overflow = function overflow (_) {
-    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$4(_), this) : this._overflow;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the pointer-events to the specified accessor function or static string.
-      @param {Function|String} [*value* = "auto"]
-  */
-  TextBox.prototype.pointerEvents = function pointerEvents (_) {
-    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$4(_), this) : this._pointerEvents;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the rotate percentage for each box to the specified accessor function or static string.
-      @param {Function|Number} [*value* = 0]
-  */
-  TextBox.prototype.rotate = function rotate (_) {
-    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$4(_), this) : this._rotate;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
-      @param {String|HTMLElement} [*selector*]
-  */
-  TextBox.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = select(_), this) : this._select;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
-      @param {Function} [*value*]
-  */
-  TextBox.prototype.split = function split (_) {
-    return arguments.length ? (this._split = _, this) : this._split;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the text for each box to the specified accessor function or static string.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.text;
-}
-  */
-  TextBox.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$4(_), this) : this._text;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
-      @param {Function|String} [*value* = "start"]
-  */
-  TextBox.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$4(_), this) : this._textAnchor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
-      @param {Function|String} [*value* = "top"]
-  */
-  TextBox.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$4(_), this) : this._verticalAlign;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the width for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.width || 200;
-}
-  */
-  TextBox.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$4(_), this) : this._width;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.x || 0;
-}
-  */
-  TextBox.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$4(_), this) : this._x;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.y || 0;
-}
-  */
-  TextBox.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$4(_), this) : this._y;
-  };
-
-  return TextBox;
-}(BaseClass));
-
-/**
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
@@ -20408,7 +20041,7 @@ var Legend = (function (BaseClass) {
       },
       labelConfig: {
         fontColor: constant$4("#444"),
-        fontFamily: new TextBox$2().fontFamily(),
+        fontFamily: new TextBox().fontFamily(),
         fontResize: false,
         fontSize: constant$4(10)
       },
@@ -20431,7 +20064,7 @@ var Legend = (function (BaseClass) {
                max(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return this$1._fetchConfig("height", l, x); }))) / 2;
       }
     };
-    this._titleClass = new TextBox$2();
+    this._titleClass = new TextBox();
     this._titleConfig = {};
     this._verticalAlign = "middle";
     this._width = 400;
@@ -20485,7 +20118,7 @@ var Legend = (function (BaseClass) {
       var lH = lH = this._titleConfig.lineHeight || this._titleClass.lineHeight();
       lH = lH ? lH() : s * 1.4;
 
-      var res = wrap()
+      var res = textWrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lH)
@@ -20525,7 +20158,7 @@ var Legend = (function (BaseClass) {
       var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
             w = this$1._width;
 
-      res = Object.assign(res, wrap()
+      res = Object.assign(res, textWrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lh)
@@ -20533,7 +20166,7 @@ var Legend = (function (BaseClass) {
         .height(h)
         (label));
 
-      res.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
+      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
       res.height = Math.ceil(res.lines.length * (lh + 1));
       res.og = {height: res.height, width: res.width};
       res.f = f;
@@ -20570,9 +20203,9 @@ var Legend = (function (BaseClass) {
           var loop = function ( x ) {
             var label = wrappable[x];
             var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
-            var res = wrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+            var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
             if (!res.truncated) {
-              label.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+              label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
               label.height = res.lines.length * (label.lh + 1);
             }
             else {
@@ -20909,549 +20542,6 @@ function value(d) {
 
   return Legend;
 }(BaseClass));
-
-var constant$9 = function(x) {
-  return function() {
-    return x;
-  };
-};
-
-var BrushEvent = function(target, type, selection) {
-  this.target = target;
-  this.type = type;
-  this.selection = selection;
-};
-
-function nopropagation$2() {
-  event$1.stopImmediatePropagation();
-}
-
-var noevent$2 = function() {
-  event$1.preventDefault();
-  event$1.stopImmediatePropagation();
-};
-
-var MODE_DRAG = {name: "drag"};
-var MODE_SPACE = {name: "space"};
-var MODE_HANDLE = {name: "handle"};
-var MODE_CENTER = {name: "center"};
-
-var X = {
-  name: "x",
-  handles: ["e", "w"].map(type$1),
-  input: function(x, e) { return x && [[x[0], e[0][1]], [x[1], e[1][1]]]; },
-  output: function(xy) { return xy && [xy[0][0], xy[1][0]]; }
-};
-
-var Y = {
-  name: "y",
-  handles: ["n", "s"].map(type$1),
-  input: function(y, e) { return y && [[e[0][0], y[0]], [e[1][0], y[1]]]; },
-  output: function(xy) { return xy && [xy[0][1], xy[1][1]]; }
-};
-
-var XY = {
-  name: "xy",
-  handles: ["n", "e", "s", "w", "nw", "ne", "se", "sw"].map(type$1),
-  input: function(xy) { return xy; },
-  output: function(xy) { return xy; }
-};
-
-var cursors = {
-  overlay: "crosshair",
-  selection: "move",
-  n: "ns-resize",
-  e: "ew-resize",
-  s: "ns-resize",
-  w: "ew-resize",
-  nw: "nwse-resize",
-  ne: "nesw-resize",
-  se: "nwse-resize",
-  sw: "nesw-resize"
-};
-
-var flipX = {
-  e: "w",
-  w: "e",
-  nw: "ne",
-  ne: "nw",
-  se: "sw",
-  sw: "se"
-};
-
-var flipY = {
-  n: "s",
-  s: "n",
-  nw: "sw",
-  ne: "se",
-  se: "ne",
-  sw: "nw"
-};
-
-var signsX = {
-  overlay: +1,
-  selection: +1,
-  n: null,
-  e: +1,
-  s: null,
-  w: -1,
-  nw: -1,
-  ne: +1,
-  se: +1,
-  sw: -1
-};
-
-var signsY = {
-  overlay: +1,
-  selection: +1,
-  n: -1,
-  e: null,
-  s: +1,
-  w: null,
-  nw: -1,
-  ne: -1,
-  se: +1,
-  sw: +1
-};
-
-function type$1(t) {
-  return {type: t};
-}
-
-// Ignore right-click, since that should open the context menu.
-function defaultFilter$2() {
-  return !event$1.button;
-}
-
-function defaultExtent$1() {
-  var svg = this.ownerSVGElement || this;
-  return [[0, 0], [svg.width.baseVal.value, svg.height.baseVal.value]];
-}
-
-// Like d3.local, but with the name “__brush” rather than auto-generated.
-function local$1(node) {
-  while (!node.__brush) { if (!(node = node.parentNode)) { return; } }
-  return node.__brush;
-}
-
-function empty$1(extent) {
-  return extent[0][0] === extent[1][0]
-      || extent[0][1] === extent[1][1];
-}
-
-
-
-function brushX() {
-  return brush$1(X);
-}
-
-
-
-function brush$1(dim) {
-  var extent = defaultExtent$1,
-      filter = defaultFilter$2,
-      listeners = dispatch(brush, "start", "brush", "end"),
-      handleSize = 6,
-      touchending;
-
-  function brush(group) {
-    var overlay = group
-        .property("__brush", initialize)
-      .selectAll(".overlay")
-      .data([type$1("overlay")]);
-
-    overlay.enter().append("rect")
-        .attr("class", "overlay")
-        .attr("pointer-events", "all")
-        .attr("cursor", cursors.overlay)
-      .merge(overlay)
-        .each(function() {
-          var extent = local$1(this).extent;
-          select(this)
-              .attr("x", extent[0][0])
-              .attr("y", extent[0][1])
-              .attr("width", extent[1][0] - extent[0][0])
-              .attr("height", extent[1][1] - extent[0][1]);
-        });
-
-    group.selectAll(".selection")
-      .data([type$1("selection")])
-      .enter().append("rect")
-        .attr("class", "selection")
-        .attr("cursor", cursors.selection)
-        .attr("fill", "#777")
-        .attr("fill-opacity", 0.3)
-        .attr("stroke", "#fff")
-        .attr("shape-rendering", "crispEdges");
-
-    var handle = group.selectAll(".handle")
-      .data(dim.handles, function(d) { return d.type; });
-
-    handle.exit().remove();
-
-    handle.enter().append("rect")
-        .attr("class", function(d) { return "handle handle--" + d.type; })
-        .attr("cursor", function(d) { return cursors[d.type]; });
-
-    group
-        .each(redraw)
-        .attr("fill", "none")
-        .attr("pointer-events", "all")
-        .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)")
-        .on("mousedown.brush touchstart.brush", started);
-  }
-
-  brush.move = function(group, selection) {
-    if (group.selection) {
-      group
-          .on("start.brush", function() { emitter(this, arguments).beforestart().start(); })
-          .on("interrupt.brush end.brush", function() { emitter(this, arguments).end(); })
-          .tween("brush", function() {
-            var that = this,
-                state = that.__brush,
-                emit = emitter(that, arguments),
-                selection0 = state.selection,
-                selection1 = dim.input(typeof selection === "function" ? selection.apply(this, arguments) : selection, state.extent),
-                i = interpolate$1(selection0, selection1);
-
-            function tween(t) {
-              state.selection = t === 1 && empty$1(selection1) ? null : i(t);
-              redraw.call(that);
-              emit.brush();
-            }
-
-            return selection0 && selection1 ? tween : tween(1);
-          });
-    } else {
-      group
-          .each(function() {
-            var that = this,
-                args = arguments,
-                state = that.__brush,
-                selection1 = dim.input(typeof selection === "function" ? selection.apply(that, args) : selection, state.extent),
-                emit = emitter(that, args).beforestart();
-
-            interrupt(that);
-            state.selection = selection1 == null || empty$1(selection1) ? null : selection1;
-            redraw.call(that);
-            emit.start().brush().end();
-          });
-    }
-  };
-
-  function redraw() {
-    var group = select(this),
-        selection = local$1(this).selection;
-
-    if (selection) {
-      group.selectAll(".selection")
-          .style("display", null)
-          .attr("x", selection[0][0])
-          .attr("y", selection[0][1])
-          .attr("width", selection[1][0] - selection[0][0])
-          .attr("height", selection[1][1] - selection[0][1]);
-
-      group.selectAll(".handle")
-          .style("display", null)
-          .attr("x", function(d) { return d.type[d.type.length - 1] === "e" ? selection[1][0] - handleSize / 2 : selection[0][0] - handleSize / 2; })
-          .attr("y", function(d) { return d.type[0] === "s" ? selection[1][1] - handleSize / 2 : selection[0][1] - handleSize / 2; })
-          .attr("width", function(d) { return d.type === "n" || d.type === "s" ? selection[1][0] - selection[0][0] + handleSize : handleSize; })
-          .attr("height", function(d) { return d.type === "e" || d.type === "w" ? selection[1][1] - selection[0][1] + handleSize : handleSize; });
-    }
-
-    else {
-      group.selectAll(".selection,.handle")
-          .style("display", "none")
-          .attr("x", null)
-          .attr("y", null)
-          .attr("width", null)
-          .attr("height", null);
-    }
-  }
-
-  function emitter(that, args) {
-    return that.__brush.emitter || new Emitter(that, args);
-  }
-
-  function Emitter(that, args) {
-    this.that = that;
-    this.args = args;
-    this.state = that.__brush;
-    this.active = 0;
-  }
-
-  Emitter.prototype = {
-    beforestart: function() {
-      if (++this.active === 1) { this.state.emitter = this, this.starting = true; }
-      return this;
-    },
-    start: function() {
-      if (this.starting) { this.starting = false, this.emit("start"); }
-      return this;
-    },
-    brush: function() {
-      this.emit("brush");
-      return this;
-    },
-    end: function() {
-      if (--this.active === 0) { delete this.state.emitter, this.emit("end"); }
-      return this;
-    },
-    emit: function(type) {
-      customEvent(new BrushEvent(brush, type, dim.output(this.state.selection)), listeners.apply, listeners, [type, this.that, this.args]);
-    }
-  };
-
-  function started() {
-    if (event$1.touches) { if (event$1.changedTouches.length < event$1.touches.length) { return noevent$2(); } }
-    else if (touchending) { return; }
-    if (!filter.apply(this, arguments)) { return; }
-
-    var that = this,
-        type = event$1.target.__data__.type,
-        mode = (event$1.metaKey ? type = "overlay" : type) === "selection" ? MODE_DRAG : (event$1.altKey ? MODE_CENTER : MODE_HANDLE),
-        signX = dim === Y ? null : signsX[type],
-        signY = dim === X ? null : signsY[type],
-        state = local$1(that),
-        extent = state.extent,
-        selection = state.selection,
-        W = extent[0][0], w0, w1,
-        N = extent[0][1], n0, n1,
-        E = extent[1][0], e0, e1,
-        S = extent[1][1], s0, s1,
-        dx,
-        dy,
-        moving,
-        shifting = signX && signY && event$1.shiftKey,
-        lockX,
-        lockY,
-        point0 = mouse(that),
-        point = point0,
-        emit = emitter(that, arguments).beforestart();
-
-    if (type === "overlay") {
-      state.selection = selection = [
-        [w0 = dim === Y ? W : point0[0], n0 = dim === X ? N : point0[1]],
-        [e0 = dim === Y ? E : w0, s0 = dim === X ? S : n0]
-      ];
-    } else {
-      w0 = selection[0][0];
-      n0 = selection[0][1];
-      e0 = selection[1][0];
-      s0 = selection[1][1];
-    }
-
-    w1 = w0;
-    n1 = n0;
-    e1 = e0;
-    s1 = s0;
-
-    var group = select(that)
-        .attr("pointer-events", "none");
-
-    var overlay = group.selectAll(".overlay")
-        .attr("cursor", cursors[type]);
-
-    if (event$1.touches) {
-      group
-          .on("touchmove.brush", moved, true)
-          .on("touchend.brush touchcancel.brush", ended, true);
-    } else {
-      var view = select(event$1.view)
-          .on("keydown.brush", keydowned, true)
-          .on("keyup.brush", keyupped, true)
-          .on("mousemove.brush", moved, true)
-          .on("mouseup.brush", ended, true);
-
-      dragDisable(event$1.view);
-    }
-
-    nopropagation$2();
-    interrupt(that);
-    redraw.call(that);
-    emit.start();
-
-    function moved() {
-      var point1 = mouse(that);
-      if (shifting && !lockX && !lockY) {
-        if (Math.abs(point1[0] - point[0]) > Math.abs(point1[1] - point[1])) { lockY = true; }
-        else { lockX = true; }
-      }
-      point = point1;
-      moving = true;
-      noevent$2();
-      move();
-    }
-
-    function move() {
-      var t;
-
-      dx = point[0] - point0[0];
-      dy = point[1] - point0[1];
-
-      switch (mode) {
-        case MODE_SPACE:
-        case MODE_DRAG: {
-          if (signX) { dx = Math.max(W - w0, Math.min(E - e0, dx)), w1 = w0 + dx, e1 = e0 + dx; }
-          if (signY) { dy = Math.max(N - n0, Math.min(S - s0, dy)), n1 = n0 + dy, s1 = s0 + dy; }
-          break;
-        }
-        case MODE_HANDLE: {
-          if (signX < 0) { dx = Math.max(W - w0, Math.min(E - w0, dx)), w1 = w0 + dx, e1 = e0; }
-          else if (signX > 0) { dx = Math.max(W - e0, Math.min(E - e0, dx)), w1 = w0, e1 = e0 + dx; }
-          if (signY < 0) { dy = Math.max(N - n0, Math.min(S - n0, dy)), n1 = n0 + dy, s1 = s0; }
-          else if (signY > 0) { dy = Math.max(N - s0, Math.min(S - s0, dy)), n1 = n0, s1 = s0 + dy; }
-          break;
-        }
-        case MODE_CENTER: {
-          if (signX) { w1 = Math.max(W, Math.min(E, w0 - dx * signX)), e1 = Math.max(W, Math.min(E, e0 + dx * signX)); }
-          if (signY) { n1 = Math.max(N, Math.min(S, n0 - dy * signY)), s1 = Math.max(N, Math.min(S, s0 + dy * signY)); }
-          break;
-        }
-      }
-
-      if (e1 < w1) {
-        signX *= -1;
-        t = w0, w0 = e0, e0 = t;
-        t = w1, w1 = e1, e1 = t;
-        if (type in flipX) { overlay.attr("cursor", cursors[type = flipX[type]]); }
-      }
-
-      if (s1 < n1) {
-        signY *= -1;
-        t = n0, n0 = s0, s0 = t;
-        t = n1, n1 = s1, s1 = t;
-        if (type in flipY) { overlay.attr("cursor", cursors[type = flipY[type]]); }
-      }
-
-      if (state.selection) { selection = state.selection; } // May be set by brush.move!
-      if (lockX) { w1 = selection[0][0], e1 = selection[1][0]; }
-      if (lockY) { n1 = selection[0][1], s1 = selection[1][1]; }
-
-      if (selection[0][0] !== w1
-          || selection[0][1] !== n1
-          || selection[1][0] !== e1
-          || selection[1][1] !== s1) {
-        state.selection = [[w1, n1], [e1, s1]];
-        redraw.call(that);
-        emit.brush();
-      }
-    }
-
-    function ended() {
-      nopropagation$2();
-      if (event$1.touches) {
-        if (event$1.touches.length) { return; }
-        if (touchending) { clearTimeout(touchending); }
-        touchending = setTimeout(function() { touchending = null; }, 500); // Ghost clicks are delayed!
-        group.on("touchmove.brush touchend.brush touchcancel.brush", null);
-      } else {
-        yesdrag(event$1.view, moving);
-        view.on("keydown.brush keyup.brush mousemove.brush mouseup.brush", null);
-      }
-      group.attr("pointer-events", "all");
-      overlay.attr("cursor", cursors.overlay);
-      if (state.selection) { selection = state.selection; } // May be set by brush.move (on start)!
-      if (empty$1(selection)) { state.selection = null, redraw.call(that); }
-      emit.end();
-    }
-
-    function keydowned() {
-      switch (event$1.keyCode) {
-        case 16: { // SHIFT
-          shifting = signX && signY;
-          break;
-        }
-        case 18: { // ALT
-          if (mode === MODE_HANDLE) {
-            if (signX) { e0 = e1 - dx * signX, w0 = w1 + dx * signX; }
-            if (signY) { s0 = s1 - dy * signY, n0 = n1 + dy * signY; }
-            mode = MODE_CENTER;
-            move();
-          }
-          break;
-        }
-        case 32: { // SPACE; takes priority over ALT
-          if (mode === MODE_HANDLE || mode === MODE_CENTER) {
-            if (signX < 0) { e0 = e1 - dx; } else if (signX > 0) { w0 = w1 - dx; }
-            if (signY < 0) { s0 = s1 - dy; } else if (signY > 0) { n0 = n1 - dy; }
-            mode = MODE_SPACE;
-            overlay.attr("cursor", cursors.selection);
-            move();
-          }
-          break;
-        }
-        default: return;
-      }
-      noevent$2();
-    }
-
-    function keyupped() {
-      switch (event$1.keyCode) {
-        case 16: { // SHIFT
-          if (shifting) {
-            lockX = lockY = shifting = false;
-            move();
-          }
-          break;
-        }
-        case 18: { // ALT
-          if (mode === MODE_CENTER) {
-            if (signX < 0) { e0 = e1; } else if (signX > 0) { w0 = w1; }
-            if (signY < 0) { s0 = s1; } else if (signY > 0) { n0 = n1; }
-            mode = MODE_HANDLE;
-            move();
-          }
-          break;
-        }
-        case 32: { // SPACE
-          if (mode === MODE_SPACE) {
-            if (event$1.altKey) {
-              if (signX) { e0 = e1 - dx * signX, w0 = w1 + dx * signX; }
-              if (signY) { s0 = s1 - dy * signY, n0 = n1 + dy * signY; }
-              mode = MODE_CENTER;
-            } else {
-              if (signX < 0) { e0 = e1; } else if (signX > 0) { w0 = w1; }
-              if (signY < 0) { s0 = s1; } else if (signY > 0) { n0 = n1; }
-              mode = MODE_HANDLE;
-            }
-            overlay.attr("cursor", cursors[type]);
-            move();
-          }
-          break;
-        }
-        default: return;
-      }
-      noevent$2();
-    }
-  }
-
-  function initialize() {
-    var state = this.__brush || {selection: null};
-    state.extent = extent.apply(this, arguments);
-    state.dim = dim;
-    return state;
-  }
-
-  brush.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$9([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
-  };
-
-  brush.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$9(!!_), brush) : filter;
-  };
-
-  brush.handleSize = function(_) {
-    return arguments.length ? (handleSize = +_, brush) : handleSize;
-  };
-
-  brush.on = function() {
-    var value = listeners.on.apply(listeners, arguments);
-    return value === listeners ? brush : value;
-  };
-
-  return brush;
-}
 
 /**
     @external Axis
@@ -32332,7 +31422,44 @@ var
 	, canvas_proto = HTMLCanvasElement && HTMLCanvasElement.prototype
 	, is_base64_regex = /\s*;\s*base64\s*(?:;|$)/i
 	, to_data_url = "toDataURL"
-	, base64_ranks;
+	, base64_ranks
+	, decode_base64 = function(base64) {
+		var
+			  len = base64.length
+			, buffer = new Uint8Array(len / 4 * 3 | 0)
+			, i = 0
+			, outptr = 0
+			, last = [0, 0]
+			, state = 0
+			, save = 0
+			, rank
+			, code
+			, undef;
+		while (len--) {
+			code = base64.charCodeAt(i++);
+			rank = base64_ranks[code-43];
+			if (rank !== 255 && rank !== undef) {
+				last[1] = last[0];
+				last[0] = code;
+				save = (save << 6) | rank;
+				state++;
+				if (state === 4) {
+					buffer[outptr++] = save >>> 16;
+					if (last[1] !== 61 /* padding character */) {
+						buffer[outptr++] = save >>> 8;
+					}
+					if (last[0] !== 61 /* padding character */) {
+						buffer[outptr++] = save;
+					}
+					state = 0;
+				}
+			}
+		}
+		// 2/3 chance there's going to be some null bytes at the end, but that
+		// doesn't really matter with most image formats.
+		// If it somehow matters for you, truncate the buffer up outptr.
+		return buffer;
+	};
 if (Uint8Array) {
 	base64_ranks = new Uint8Array([
 		  62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1
@@ -32342,7 +31469,57 @@ if (Uint8Array) {
 		, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
 	]);
 }
+if (HTMLCanvasElement && (!canvas_proto.toBlob || !canvas_proto.toBlobHD)) {
+	if (!canvas_proto.toBlob)
+	{ canvas_proto.toBlob = function(callback, type /*, ...args*/) {
+		  if (!type) {
+			type = "image/png";
+		} if (this.mozGetAsFile) {
+			callback(this.mozGetAsFile("canvas", type));
+			return;
+		} if (this.msToBlob && /^\s*image\/png\s*(?:$|;)/i.test(type)) {
+			callback(this.msToBlob());
+			return;
+		}
 
+		var
+			  args = Array.prototype.slice.call(arguments, 1)
+			, dataURI = this[to_data_url].apply(this, args)
+			, header_end = dataURI.indexOf(",")
+			, data = dataURI.substring(header_end + 1)
+			, is_base64 = is_base64_regex.test(dataURI.substring(0, header_end))
+			, blob;
+		if (Blob.fake) {
+			// no reason to decode a data: URI that's just going to become a data URI again
+			blob = new Blob;
+			if (is_base64) {
+				blob.encoding = "base64";
+			} else {
+				blob.encoding = "URI";
+			}
+			blob.data = data;
+			blob.size = data.length;
+		} else if (Uint8Array) {
+			if (is_base64) {
+				blob = new Blob([decode_base64(data)], {type: type});
+			} else {
+				blob = new Blob([decodeURIComponent(data)], {type: type});
+			}
+		}
+		callback(blob);
+	}; }
+
+	if (!canvas_proto.toBlobHD && canvas_proto.toDataURLHD) {
+		canvas_proto.toBlobHD = function() {
+			to_data_url = "toDataURLHD";
+			var blob = this.toBlob();
+			to_data_url = "toDataURL";
+			return blob;
+		};
+	} else {
+		canvas_proto.toBlobHD = canvas_proto.toBlob;
+	}
+}
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || commonjsGlobal.content || commonjsGlobal));
 
 var FileSaver = createCommonjsModule(function (module) {
@@ -32742,6 +31919,16 @@ var drawControls = function() {
 };
 
 /**
+    @function legendLabel
+    @desc Default label function for the legend.
+    @private
+*/
+function legendLabel(d, i) {
+  var l = this._drawLabel(d, i);
+  return l instanceof Array ? l.join(", ") : l;
+}
+
+/**
     @function _drawLegend
     @desc Renders the legend if this._legend is not falsy.
     @param {Array} data The filtered data array to be displayed.
@@ -32798,10 +31985,6 @@ var drawLegend = function(data) {
       .duration(this._duration)
       .data(legendData.length > 1 || this._colorScale ? legendData : [])
       .height(this._height - this._margin.bottom - this._margin.top)
-      .label(function (d, i) {
-        var l = this$1._drawLabel(d, i);
-        return l instanceof Array ? l.join(", ") : l;
-      })
       .select(legendGroup)
       .verticalAlign(!wide ? "middle" : position)
       .width(this._width - this._margin.left - this._margin.right)
@@ -33085,7 +32268,7 @@ var mousemoveLegend = function(d) {
     this._tooltipClass.data([d])
       .footer(this._drawDepth < this._groupBy.length - 1
         ? locale$3.t("Click to Expand", {lng: this._locale}) : "")
-      .title(this._legendClass.label())
+      .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
       .translate(mouse(select("html").node()))
       .config(this._tooltipConfig)
       .config(this._legendTooltip)
@@ -33116,6 +32299,8 @@ var mousemoveShape = function(d) {
 
 };
 
+var brushing = false;
+
 /**
     @name zoomControls
     @desc Sets up initial zoom events and controls.
@@ -33123,8 +32308,19 @@ var mousemoveShape = function(d) {
 */
 var zoomControls = function() {
 
-  var that = this;
-  this._zoomBehavior.on("zoom", zoomed.bind(this));
+  if (!this._container || !this._zoomGroup) { return; }
+
+  var height = this._zoomHeight || this._height - this._margin.top - this._margin.bottom,
+        that = this,
+        width = this._zoomWidth || this._width - this._margin.left - this._margin.right;
+
+  this._zoomBehavior
+    .extent([[0, 0], [width, height]])
+    .scaleExtent([1, this._zoomMax])
+    .translateExtent([[0, 0], [width, height]])
+    .on("zoom", zoomed.bind(this));
+
+  this._zoomToBounds = zoomToBounds.bind(this);
 
   var control = select(this._select.node().parentNode).selectAll("div.d3plus-geomap-control").data(this._zoom ? [0] : []);
   var controlEnter = control.enter().append("div").attr("class", "d3plus-geomap-control");
@@ -33149,62 +32345,41 @@ var zoomControls = function() {
     .on("click", zoomMath.bind(this, 0))
     .html("&#8634");
 
+  controlEnter.append("div").attr("class", "zoom-control zoom-brush");
+  control.select(".zoom-brush")
+    .on("click", function() {
+      select(this)
+        .classed("active", !brushing)
+        .call(stylize, brushing ? that._zoomControlStyle || {} : that._zoomControlStyleActive || {});
+      zoomEvents.bind(that)(!brushing);
+    })
+    .html("&#10696");
+
   control.selectAll(".zoom-control")
-    .call(stylize, that._zoomControlStyle || {})
+    .call(stylize, that._zoomControlStyle)
     .on("mouseenter", function() {
       select(this).call(stylize, that._zoomControlStyleHover || {});
     })
     .on("mouseleave", function() {
-      select(this).call(stylize, that._zoomControlStyle || {});
+      select(this).call(stylize, select(this).classed("active") ? that._zoomControlStyleActive || {} : that._zoomControlStyle || {});
     });
 
-  // TODO: Brush to Zoom
-  // const brushGroup = this._select.selectAll("g.brush").data([0]);
-  // brushGroup.enter().append("g").attr("class", "brush");
-  //
-  // var xBrush = d3.scale.identity().domain([0, width]),
-  //     yBrush = d3.scale.identity().domain([0, height]);
-  //
-  // function brushended(e) {
-  //
-  //   if (!event.sourceEvent) return;
-  //
-  //   const extent = brush.extent();
-  //   brushGroup.call(brush.clear());
-  //
-  //   const zs = this._zoomBehavior.scale(), zt = this._zoomBehavior.translate();
-  //
-  //   const pos1 = extent[0].map((p, i) => (p - zt[i]) / (zs / this._polyZoom));
-  //   const pos2 = extent[1].map((p, i) => (p - zt[i]) / (zs / this._polyZoom));
-  //
-  //   zoomToBounds([pos1, pos2]);
-  //
-  // }
-  //
-  // var brush = d3.svg.brush()
-  //   .x(xBrush)
-  //   .y(yBrush)
-  //   .on("brushend", brushended);
-  //
-  // if (this._zoom) brushGroup.call(brush);
+  this._zoomBrush
+    .extent([[0, 0], [width, height]])
+    .filter(function () { return !event$1.button && event$1.detail < 2; })
+    .handleSize(this._zoomBrushHandleSize)
+    .on("start", brushStart.bind(this))
+    .on("brush", brushBrush.bind(this))
+    .on("end", brushEnd.bind(this));
 
-  // TODO: Detect zoom brushing
-  // select("body")
-  //   .on(`keydown.d3plus-geomap-${this._uuid}`, function() {
-  //     if (event.keyCode === 16) {
-  //       this._zoomBrush = true;
-  //       zoomEvents();
-  //     }
-  //   })
-  //   .on(`keyup.d3plus-geomap-${this._uuid}`, function() {
-  //     if (event.keyCode === 16) {
-  //       this._zoomBrush = false;
-  //       zoomEvents();
-  //     }
-  //   });
+  var brushGroup = this._container.selectAll("g.brush").data([0]);
+  this._brushGroup = brushGroup.enter().append("g")
+      .attr("class", "brush")
+    .merge(brushGroup)
+    .call(this._zoomBrush);
 
   zoomEvents.bind(this)();
-  if (this._renderTiles) { this._renderTiles(transform$2(this._container.node())); }
+  if (this._renderTiles) { this._renderTiles(transform$2(this._container.node()), 0); }
 
 };
 
@@ -33213,16 +32388,16 @@ var zoomControls = function() {
     @desc Handles adding/removing zoom event listeners.
     @private
 */
-function zoomEvents() {
+function zoomEvents(brush) {
+  if ( brush === void 0 ) brush = false;
 
-  if (!this._container || !this._zoomGroup) { return; }
 
-  if (this._zoomBrush) {
-    // brushGroup.style("display", "inline");
-    this._container.on(".zoom", null);
-  }
-  else if (this._zoom) {
-    // brushGroup.style("display", "none");
+  brushing = brush;
+
+  if (brushing) { this._brushGroup.style("display", "inline"); }
+  else { this._brushGroup.style("display", "none"); }
+
+  if (!brushing && this._zoom) {
     this._container.call(this._zoomBehavior);
     if (!this._zoomScroll) {
       this._container
@@ -33252,12 +32427,14 @@ function zoomed(transform, duration) {
   if ( duration === void 0 ) duration = 0;
 
 
+  // console.log(transform || event.transform);
+
   if (this._zoomGroup) {
     if (!duration) { this._zoomGroup.attr("transform", transform || event$1.transform); }
     else { this._zoomGroup.transition().duration(duration).attr("transform", transform || event$1.transform); }
   }
 
-  if (this._renderTiles) { this._renderTiles(transform$2(this._container.node())); }
+  if (this._renderTiles) { this._renderTiles(transform$2(this._container.node()), duration); }
 
 }
 
@@ -33284,44 +32461,130 @@ function zoomMath(factor) {
   }
   else {
     var translate0 = [(center[0] - t.x) / t.k, (center[1] - t.y) / t.k];
-    t.k *= factor;
+    t.k = Math.min(scaleExtent[1], t.k * factor);
     if (t.k <= scaleExtent[0]) {
       t.k = scaleExtent[0];
       t.x = 0;
       t.y = 0;
     }
     else {
-      if (t.k > scaleExtent[1]) { t.k = scaleExtent[1]; }
-
       t.x += center[0] - (translate0[0] * t.k + t.x);
       t.y += center[1] - (translate0[1] * t.k + t.y);
     }
 
   }
-  zoomed.bind(this)(t);
+
+  zoomed.bind(this)(t, this._duration);
 
 }
 
-// TODO: Zooming to Bounds
-// function zoomToBounds(b, mod = 250) {
-//
-//   const w = width - mod;
-//
-//   let ns = this._scale / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / height);
-//   const nt = [(w - ns * (b[1][0] + b[0][0])) / 2, (height - ns * (b[1][1] + b[0][1])) / 2];
-//
-//   ns = ns / Math.PI / 2 * this._polyZoom;
-//
-//   this._zoomBehavior.scale(ns * 2 * Math.PI).translate(nt);
-//   zoomed();
-//
-// }
+/**
+    @name zoomToBounds
+    @desc Zooms to given bounds.
+    @param {Array} *bounds*
+    @param {Number} [*duration* = 0]
+    @private
+*/
+function zoomToBounds(bounds, duration) {
+  if ( duration === void 0 ) duration = this._duration;
+
+
+  var scaleExtent = this._zoomBehavior.scaleExtent(),
+        t = transform$2(this._container.node());
+
+  if (bounds) {
+
+    var ref = this._zoomBehavior.translateExtent()[1];
+    var width = ref[0];
+    var height = ref[1];
+    var dx = bounds[1][0] - bounds[0][0],
+          dy = bounds[1][1] - bounds[0][1];
+
+    var k = Math.min(scaleExtent[1], 1 / Math.max(dx / width, dy / height));
+
+    var xMod, yMod;
+    if (dx / dy < width / height) {
+      k *= (height - this._zoomPadding * 2) / height;
+      xMod = (width - dx * k) / 2 / k;
+      yMod = this._zoomPadding / k;
+    }
+    else {
+      k *= (width - this._zoomPadding * 2) / width;
+      yMod = (height - dy * k) / 2 / k;
+      xMod = this._zoomPadding / k;
+    }
+
+    t.x = (t.x - bounds[0][0] + xMod) * (t.k * k / t.k);
+    t.y = (t.y - bounds[0][1] + yMod) * (t.k * k / t.k);
+    t.k *= k;
+
+    if (t.x > 0) { t.x = 0; }
+    else if (t.x < width * -t.k + width) { t.x = width * -t.k + width; }
+    if (t.y > 0) { t.y = 0; }
+    else if (t.y < height * -t.k + height) { t.y = height * -t.k + height; }
+
+  }
+  else {
+
+    t.k = scaleExtent[0];
+    t.x = 0;
+    t.y = 0;
+
+  }
+
+  zoomed.bind(this)(t, duration);
+
+}
+
+/**
+    @desc Triggered on brush "brush".
+    @private
+*/
+function brushBrush() {
+  brushStyle.bind(this)();
+}
+
+/**
+    @desc Triggered on brush "end".
+    @private
+*/
+function brushEnd() {
+
+  if (!event$1.selection) { return; } // Only transition after input.
+
+  this._brushGroup.call(this._zoomBrush.move, null);
+  zoomToBounds.bind(this)(event$1.selection);
+
+}
+
+/**
+    @desc Triggered on brush "start".
+    @private
+*/
+function brushStart() {
+  brushStyle.bind(this)();
+}
+
+/**
+    @desc Overrides the default brush styles.
+    @private
+*/
+function brushStyle() {
+
+  this._brushGroup.selectAll(".selection")
+    .call(attrize, this._zoomBrushSelectionStyle || {});
+
+  this._brushGroup.selectAll(".handle")
+    .call(attrize, this._zoomBrushHandleStyle || {});
+
+}
 
 /**
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
 
+// import {Rect} from "d3plus-shape";
 /**
     @class Viz
     @extends external:BaseClass
@@ -33368,10 +32631,7 @@ var Viz = (function (BaseClass) {
     this._groupBy = [accessor("id")];
     this._legend = true;
     this._legendConfig = {
-      label: function (d, i) {
-        var l = this$1._drawLabel(d, i);
-        return l instanceof Array ? l.join(", ") : l;
-      },
+      label: legendLabel.bind(this),
       shapeConfig: {
         labelConfig: {
           fontColor: undefined,
@@ -33469,7 +32729,15 @@ var Viz = (function (BaseClass) {
 
     this._zoom = false;
     this._zoomBehavior = zoom();
-    this._zoomBrush = false;
+    this._zoomBrush = brush();
+    this._zoomBrushHandleSize = 1;
+    this._zoomBrushHandleStyle = {
+      fill: "#444"
+    };
+    this._zoomBrushSelectionStyle = {
+      "fill": "#777",
+      "stroke-width": 0
+    };
     this._zoomControlStyle = {
       "background": "rgba(255, 255, 255, 0.75)",
       "border": "1px solid rgba(0, 0, 0, 0.75)",
@@ -33483,11 +32751,18 @@ var Viz = (function (BaseClass) {
       "text-align": "center",
       "width": "20px"
     };
+    this._zoomControlStyleActive = {
+      background: "rgba(0, 0, 0, 0.75)",
+      color: "rgba(255, 255, 255, 0.75)",
+      opacity: 1
+    };
     this._zoomControlStyleHover = {
       cursor: "pointer",
       opacity: 1
     };
     this._zoomFactor = 2;
+    this._zoomMax = 16;
+    this._zoomPadding = 20;
     this._zoomPan = true;
     this._zoomScroll = true;
 
@@ -33566,17 +32841,34 @@ var Viz = (function (BaseClass) {
 
     this._shapes = [];
 
-    // // Draws a rectangle showing the available space for a visualization.
-    // const tester = this._select.selectAll(".tester").data([0]);
-    // console.log(this._margin);
-    // tester.enter().append("rect")
-    //     .attr("class", "tester")
-    //     .attr("fill", "#ccc")
-    //   .merge(tester)
+    // Draws a container and zoomGroup to test functionality.
+    // this._container = this._select.selectAll("svg.d3plus-viz").data([0]);
+    //
+    // this._container = this._container.enter().append("svg")
+    //     .attr("class", "d3plus-viz")
     //     .attr("width", this._width - this._margin.left - this._margin.right)
     //     .attr("height", this._height - this._margin.top - this._margin.bottom)
     //     .attr("x", this._margin.left)
-    //     .attr("y", this._margin.top);
+    //     .attr("y", this._margin.top)
+    //     .style("background-color", "transparent")
+    //   .merge(this._container);
+    //
+    // this._zoomGroup = this._container.selectAll("g.d3plus-viz-zoomGroup").data([0]);
+    // const enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
+    //   .merge(this._zoomGroup);
+    //
+    // this._zoomGroup = enter.merge(this._zoomGroup);
+    //
+    // this._shapes.push(new Rect()
+    //   .config(this._shapeConfig)
+    //   .data([
+    //     {id: 1, text: "My Label", x: 100, y: 100, width: 100, height: 100},
+    //     {id: 2, text: "My Label", x: 300, y: 100, width: 100, height: 100}
+    //   ])
+    //   .label(d => d.text)
+    //   .select(this._zoomGroup.node())
+    //   .on(this._on)
+    //   .render());
 
   };
 
@@ -34297,7 +33589,37 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc An object containing CSS key/value pairs that is used to style each zoom control button (`.zoom-in`, `.zoom-out`, and `.zoom-reset`). Passing `false` will remove all default styling.
+      @desc The pixel stroke-width of the zoom brush area.
+      @param {Number} *value* = 1
+      @chainable
+  */
+  Viz.prototype.zoomBrushHandleSize = function zoomBrushHandleSize (_) {
+    return arguments.length ? (this._zoomBrushHandleSize = _, this) : this._zoomBrushHandleSize;
+  };
+
+  /**
+      @memberof Viz
+      @desc An object containing CSS key/value pairs that is used to style the outer handle area of the zoom brush. Passing `false` will remove all default styling.
+      @param {Object|Boolean} *value*
+      @chainable
+  */
+  Viz.prototype.zoomBrushHandleStyle = function zoomBrushHandleStyle (_) {
+    return arguments.length ? (this._zoomBrushHandleStyle = _, this) : this._zoomBrushHandleStyle;
+  };
+
+  /**
+      @memberof Viz
+      @desc An object containing CSS key/value pairs that is used to style the inner selection area of the zoom brush. Passing `false` will remove all default styling.
+      @param {Object|Boolean} *value*
+      @chainable
+  */
+  Viz.prototype.zoomBrushSelectionStyle = function zoomBrushSelectionStyle (_) {
+    return arguments.length ? (this._zoomBrushSelectionStyle = _, this) : this._zoomBrushSelectionStyle;
+  };
+
+  /**
+      @memberof Viz
+      @desc An object containing CSS key/value pairs that is used to style each zoom control button (`.zoom-in`, `.zoom-out`, `.zoom-reset`, and `.zoom-brush`). Passing `false` will remove all default styling.
       @param {Object|Boolean} *value*
       @chainable
   */
@@ -34307,7 +33629,17 @@ function value(d) {
 
   /**
       @memberof Viz
-      @desc An object containing CSS key/value pairs that is used to style each zoom control button on hover (`.zoom-in`, `.zoom-out`, and `.zoom-reset`). Passing `false` will remove all default styling.
+      @desc An object containing CSS key/value pairs that is used to style each zoom control button when active (`.zoom-in`, `.zoom-out`, `.zoom-reset`, and `.zoom-brush`). Passing `false` will remove all default styling.
+      @param {Object|Boolean} *value*
+      @chainable
+  */
+  Viz.prototype.zoomControlStyleActive = function zoomControlStyleActive (_) {
+    return arguments.length ? (this._zoomControlStyleActive = _, this) : this._zoomControlStyleActive;
+  };
+
+  /**
+      @memberof Viz
+      @desc An object containing CSS key/value pairs that is used to style each zoom control button on hover (`.zoom-in`, `.zoom-out`, `.zoom-reset`, and `.zoom-brush`). Passing `false` will remove all default styling.
       @param {Object|Boolean} *value*
       @chainable
   */
@@ -34323,6 +33655,46 @@ function value(d) {
   */
   Viz.prototype.zoomFactor = function zoomFactor (_) {
     return arguments.length ? (this._zoomFactor = _, this) : this._zoomFactor;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, sets the max zoom scale to the specified number and returns the current class instance. If *value* is not specified, returns the current max zoom scale.
+      @param {Number} *value* = 16
+      @chainable
+  */
+  Viz.prototype.zoomMax = function zoomMax (_) {
+    return arguments.length ? (this._zoomMax = _, this) : this._zoomMax;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, toggles panning to the specified boolean and returns the current class instance. If *value* is not specified, returns the current panning value.
+      @param {Boolean} *value* = true
+      @chainable
+  */
+  Viz.prototype.zoomPan = function zoomPan (_) {
+    return arguments.length ? (this._zoomPan = _, this) : this._zoomPan;
+  };
+
+  /**
+      @memberof Viz
+      @desc A pixel value to be used to pad all sides of a zoomed area.
+      @param {Number} *value* = 20
+      @chainable
+  */
+  Viz.prototype.zoomPadding = function zoomPadding (_) {
+    return arguments.length ? (this._zoomPadding = _, this) : this._zoomPadding;
+  };
+
+  /**
+      @memberof Viz
+      @desc If *value* is specified, toggles scroll zooming to the specified boolean and returns the current class instance. If *value* is not specified, returns the current scroll zooming value.
+      @param {Boolean} [*value* = true]
+      @chainable
+  */
+  Viz.prototype.zoomScroll = function zoomScroll (_) {
+    return arguments.length ? (this._zoomScroll = _, this) : this._zoomScroll;
   };
 
   return Viz;
@@ -34412,8 +33784,9 @@ var Geomap = (function (Viz) {
       Renders map tiles based on the current zoom level.
       @private
   */
-  Geomap.prototype._renderTiles = function _renderTiles (transform) {
+  Geomap.prototype._renderTiles = function _renderTiles (transform, duration) {
     var this$1 = this;
+    if ( duration === void 0 ) duration = 0;
 
 
     var tileData = [];
@@ -34425,26 +33798,32 @@ var Geomap = (function (Viz) {
         .translate(transform.apply(this._projection.translate()))
         ();
 
-      this._tileGroup.attr("transform", ("scale(" + (tileData.scale) + ")translate(" + (tileData.translate) + ")"));
+      this._tileGroup.transition().duration(duration).attr("transform", transform);
 
     }
 
     var images = this._tileGroup.selectAll("image.tile")
         .data(tileData, function (d) { return ((d.x) + "-" + (d.y) + "-" + (d.z)); });
 
-    images.exit().remove();
+    images.exit().transition().duration(duration)
+      .attr("opacity", 0).remove();
+
+    var scale = tileData.scale / transform.k;
 
     images.enter().append("image")
-      .attr("class", "tile")
-      .attr("xlink:href", function (d) { return this$1._tileUrl
-        .replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0])
-        .replace("{z}", d.z)
-        .replace("{x}", d.x)
-        .replace("{y}", d.y); })
-      .attr("width", 1)
-      .attr("height", 1)
-      .attr("x", function (d) { return d.x; })
-      .attr("y", function (d) { return d.y; });
+        .attr("class", "tile")
+        .attr("opacity", 0)
+        .attr("xlink:href", function (d) { return this$1._tileUrl
+          .replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0])
+          .replace("{z}", d.z)
+          .replace("{x}", d.x)
+          .replace("{y}", d.y); })
+        .attr("width", scale)
+        .attr("height", scale)
+        .attr("x", function (d) { return d.x * scale + tileData.translate[0] * scale - transform.x / transform.k; })
+        .attr("y", function (d) { return d.y * scale + tileData.translate[1] * scale - transform.y / transform.k; })
+      .transition().duration(duration)
+        .attr("opacity", 1);
 
   };
 
@@ -34641,7 +34020,7 @@ var Geomap = (function (Viz) {
 
       this._zoomBehavior
         .extent([[0, 0], [width, height]])
-        .scaleExtent([1, 16])
+        .scaleExtent([1, this._zoomMax])
         .translateExtent([[0, 0], [width, height]]);
 
       this._zoomSet = true;

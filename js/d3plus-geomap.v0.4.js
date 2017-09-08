@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.13
+  d3plus-geomap v0.4.14
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -153,8 +153,9 @@ var Geomap = (function (Viz$$1) {
       Renders map tiles based on the current zoom level.
       @private
   */
-  Geomap.prototype._renderTiles = function _renderTiles (transform) {
+  Geomap.prototype._renderTiles = function _renderTiles (transform, duration) {
     var this$1 = this;
+    if ( duration === void 0 ) duration = 0;
 
 
     var tileData = [];
@@ -166,26 +167,32 @@ var Geomap = (function (Viz$$1) {
         .translate(transform.apply(this._projection.translate()))
         ();
 
-      this._tileGroup.attr("transform", ("scale(" + (tileData.scale) + ")translate(" + (tileData.translate) + ")"));
+      this._tileGroup.transition().duration(duration).attr("transform", transform);
 
     }
 
     var images = this._tileGroup.selectAll("image.tile")
         .data(tileData, function (d) { return ((d.x) + "-" + (d.y) + "-" + (d.z)); });
 
-    images.exit().remove();
+    images.exit().transition().duration(duration)
+      .attr("opacity", 0).remove();
+
+    var scale = tileData.scale / transform.k;
 
     images.enter().append("image")
-      .attr("class", "tile")
-      .attr("xlink:href", function (d) { return this$1._tileUrl
-        .replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0])
-        .replace("{z}", d.z)
-        .replace("{x}", d.x)
-        .replace("{y}", d.y); })
-      .attr("width", 1)
-      .attr("height", 1)
-      .attr("x", function (d) { return d.x; })
-      .attr("y", function (d) { return d.y; });
+        .attr("class", "tile")
+        .attr("opacity", 0)
+        .attr("xlink:href", function (d) { return this$1._tileUrl
+          .replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0])
+          .replace("{z}", d.z)
+          .replace("{x}", d.x)
+          .replace("{y}", d.y); })
+        .attr("width", scale)
+        .attr("height", scale)
+        .attr("x", function (d) { return d.x * scale + tileData.translate[0] * scale - transform.x / transform.k; })
+        .attr("y", function (d) { return d.y * scale + tileData.translate[1] * scale - transform.y / transform.k; })
+      .transition().duration(duration)
+        .attr("opacity", 1);
 
   };
 
@@ -382,7 +389,7 @@ var Geomap = (function (Viz$$1) {
 
       this._zoomBehavior
         .extent([[0, 0], [width, height]])
-        .scaleExtent([1, 16])
+        .scaleExtent([1, this._zoomMax])
         .translateExtent([[0, 0], [width, height]]);
 
       this._zoomSet = true;
