@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.7
+  d3plus-viz v0.10.8
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -895,7 +895,7 @@ var zoomControls = function() {
     .call(this._zoomBrush);
 
   zoomEvents.bind(this)();
-  if (this._renderTiles) { this._renderTiles(d3Zoom.zoomTransform(this._container.node())); }
+  if (this._renderTiles) { this._renderTiles(d3Zoom.zoomTransform(this._container.node()), 0); }
 
 };
 
@@ -950,7 +950,7 @@ function zoomed(transform, duration) {
     else { this._zoomGroup.transition().duration(duration).attr("transform", transform || d3Selection.event.transform); }
   }
 
-  if (this._renderTiles) { this._renderTiles(d3Zoom.zoomTransform(this._container.node())); }
+  if (this._renderTiles) { this._renderTiles(d3Zoom.zoomTransform(this._container.node()), duration); }
 
 }
 
