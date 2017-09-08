@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.13.6
+  d3plus-shape v0.13.7
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -8271,15 +8271,15 @@ var Shape = (function (BaseClass) {
 
         if (select(this).classed("d3plus-textBox")) { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
-          while (d.__d3plusShape__ || d.__d3plus__) {
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
             i = d.i;
             d = d.data;
           }
         }
         else { i = that._data.indexOf(d); }
 
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
+        var parent = this.parentNode;
+        if (d && d.parentNode) { parent = d.parentNode; }
 
         var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
         if (group !== this.parentNode) {
@@ -8388,15 +8388,15 @@ var Shape = (function (BaseClass) {
 
         if (select(this).classed("d3plus-textBox")) { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
-          while (d.__d3plusShape__ || d.__d3plus__) {
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
             i = d.i;
             d = d.data;
           }
         }
         else { i = that._data.indexOf(d); }
 
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
+        var parent = this.parentNode;
+        if (d && d.parentNode) { parent = d.parentNode; }
 
         var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
 
