@@ -2,8 +2,8 @@
 title: Simple Choropleth Map
 width: 990
 height: 400
-time: 1501024813145
-date: July 25, 2017
+time: 1504896435940
+date: September 08, 2017
 ---
 
 # Simple Choropleth Map
@@ -30,7 +30,7 @@ Additionally, Topojson files may include small geographies that negatively impac
 
 ```js
 chart
-  .topojson("http://d3plus.org/topojson/states.json")
+  .topojson("https://d3plus.org/topojson/states.json")
   .fitFilter(function(d) {
     return ["02", "15", "43", "60", "66", "69", "78"].indexOf(d.id) < 0;
   });
