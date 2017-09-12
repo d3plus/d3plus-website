@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.13.8
+  d3plus-shape v0.13.9
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -781,6 +781,10 @@ var Shape = (function (BaseClass$$1) {
     this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
         if (d3Selection.select(this).classed("d3plus-textBox")) { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
           while (d && (d.__d3plusShape__ || d.__d3plus__)) {
@@ -789,10 +793,6 @@ var Shape = (function (BaseClass$$1) {
           }
         }
         else { i = that._data.indexOf(d); }
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
 
         var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
         if (group !== this.parentNode) {
@@ -899,6 +899,10 @@ var Shape = (function (BaseClass$$1) {
       .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
         if (d3Selection.select(this).classed("d3plus-textBox")) { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
           while (d && (d.__d3plusShape__ || d.__d3plus__)) {
@@ -907,10 +911,6 @@ var Shape = (function (BaseClass$$1) {
           }
         }
         else { i = that._data.indexOf(d); }
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
 
         var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
         if (group !== this.parentNode) { group.appendChild(this); }
