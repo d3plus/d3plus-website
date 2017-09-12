@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.8
+  d3plus-viz v0.10.9
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -11471,8 +11471,9 @@ var Shape = (function (BaseClass) {
         }
         else { i = that._data.indexOf(d); }
 
-        var parent = this.parentNode;
-        if (d && d.parentNode) { parent = d.parentNode; }
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
 
         var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
         if (group !== this.parentNode) {
@@ -11588,11 +11589,11 @@ var Shape = (function (BaseClass) {
         }
         else { i = that._data.indexOf(d); }
 
-        var parent = this.parentNode;
-        if (d && d.parentNode) { parent = d.parentNode; }
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
 
         var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
-
         if (group !== this.parentNode) { group.appendChild(this); }
 
       });
@@ -16215,10 +16216,14 @@ var Axis = (function (BaseClass) {
     var margin = this._margin = {top: 0, right: 0, bottom: 0, left: 0};
 
     if (this._title) {
+      var ref$1 = this._titleConfig;
+      var fontFamily = ref$1.fontFamily;
+      var fontSize = ref$1.fontSize;
+      var lineHeight = ref$1.lineHeight;
       var titleWrap = textWrap()
-        .fontFamily(this._titleConfig.fontFamily)
-        .fontSize(this._titleConfig.fontSize)
-        .lineHeight(this._titleConfig.lineHeight)
+        .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
+        .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
+        .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
         .width(this._size)
         .height(this[("_" + height)] - this._tickSize - p);
       var lines = titleWrap(this._title).lines.length;
@@ -30772,13 +30777,15 @@ var Viz = (function (BaseClass) {
     //
     // this._shapes.push(new Rect()
     //   .config(this._shapeConfig)
-    //   .data([
-    //     {id: 1, text: "My Label", x: 100, y: 100, width: 100, height: 100},
-    //     {id: 2, text: "My Label", x: 300, y: 100, width: 100, height: 100}
-    //   ])
-    //   .label(d => d.text)
+    //   .data(this._filteredData)
+    //   .label("Test Label")
     //   .select(this._zoomGroup.node())
     //   .on(this._on)
+    //   .id(d => d.group)
+    //   .x(d => d.value * 10 + 200)
+    //   .y(d => d.value * 10 + 200)
+    //   .width(100)
+    //   .height(100)
     //   .render());
 
   };
