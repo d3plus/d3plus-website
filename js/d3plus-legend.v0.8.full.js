@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.11
+  d3plus-legend v0.8.12
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -352,7 +352,7 @@ function ascendingComparator(f) {
 }
 
 var ascendingBisect = bisector(ascending);
-var bisectRight$1 = ascendingBisect.right;
+var bisectRight = ascendingBisect.right;
 
 var number = function(x) {
   return x === null ? NaN : +x;
@@ -415,14 +415,15 @@ var e5 = Math.sqrt(10);
 var e2 = Math.sqrt(2);
 
 var ticks = function(start, stop, count) {
-  var reverse = stop < start,
+  var reverse,
       i = -1,
       n,
       ticks,
       step;
 
-  if (reverse) { n = start, start = stop, stop = n; }
-
+  stop = +stop, start = +start, count = +count;
+  if (start === stop && count > 0) { return [start]; }
+  if (reverse = stop < start) { n = start, start = stop, stop = n; }
   if ((step = tickIncrement(start, stop, count)) === 0 || !isFinite(step)) { return []; }
 
   if (step > 0) {
@@ -1810,7 +1811,7 @@ function polymap(domain, range, deinterpolate, reinterpolate) {
   }
 
   return function(x) {
-    var i = bisectRight$1(domain, x, 1, j) - 1;
+    var i = bisectRight(domain, x, 1, j) - 1;
     return r[i](d[i](x));
   };
 }
@@ -2154,7 +2155,7 @@ var formatLocale = function(locale) {
   };
 };
 
-var locale$1;
+var locale;
 var format;
 var formatPrefix;
 
@@ -2166,10 +2167,10 @@ defaultLocale({
 });
 
 function defaultLocale(definition) {
-  locale$1 = formatLocale(definition);
-  format = locale$1.format;
-  formatPrefix = locale$1.formatPrefix;
-  return locale$1;
+  locale = formatLocale(definition);
+  format = locale.format;
+  formatPrefix = locale.formatPrefix;
+  return locale;
 }
 
 var precisionFixed = function(step) {
@@ -2489,7 +2490,7 @@ function quantile$$1() {
   }
 
   function scale(x) {
-    if (!isNaN(x = +x)) { return range[bisectRight$1(thresholds, x)]; }
+    if (!isNaN(x = +x)) { return range[bisectRight(thresholds, x)]; }
   }
 
   scale.invertExtent = function(y) {
@@ -2533,7 +2534,7 @@ function quantize$1() {
       range = [0, 1];
 
   function scale(x) {
-    if (x <= x) { return range[bisectRight$1(domain, x, 0, n)]; }
+    if (x <= x) { return range[bisectRight(domain, x, 0, n)]; }
   }
 
   function rescale() {
@@ -2574,7 +2575,7 @@ function threshold$1() {
       n = 1;
 
   function scale(x) {
-    if (x <= x) { return range[bisectRight$1(domain, x, 0, n)]; }
+    if (x <= x) { return range[bisectRight(domain, x, 0, n)]; }
   }
 
   scale.domain = function(_) {
@@ -3399,7 +3400,7 @@ function formatLiteralPercent() {
   return "%";
 }
 
-var locale$2;
+var locale$1;
 var timeFormat;
 
 var utcFormat;
@@ -3417,11 +3418,11 @@ defaultLocale$1({
 });
 
 function defaultLocale$1(definition) {
-  locale$2 = formatLocale$1(definition);
-  timeFormat = locale$2.format;
-  utcFormat = locale$2.utcFormat;
-  utcParse = locale$2.utcParse;
-  return locale$2;
+  locale$1 = formatLocale$1(definition);
+  timeFormat = locale$1.format;
+  utcFormat = locale$1.utcFormat;
+  utcParse = locale$1.utcParse;
+  return locale$1;
 }
 
 var isoSpecifier = "%Y-%m-%dT%H:%M:%S.%LZ";
@@ -6732,7 +6733,7 @@ function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-var LanguageUtil$1 = function () {
+var LanguageUtil = function () {
   function LanguageUtil(options) {
     _classCallCheck$5(this, LanguageUtil);
 
@@ -7197,7 +7198,7 @@ function remove$1(arr, what) {
   }
 }
 
-var Connector$1 = function (_EventEmitter) {
+var Connector = function (_EventEmitter) {
   _inherits$3(Connector, _EventEmitter);
 
   function Connector(backend, store, services) {
@@ -7467,7 +7468,7 @@ function _possibleConstructorReturn$4(self, call) { if (!self) { throw new Refer
 
 function _inherits$4(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults$4(subClass, superClass); } }
 
-var Connector$2 = function (_EventEmitter) {
+var Connector$1 = function (_EventEmitter) {
   _inherits$4(Connector, _EventEmitter);
 
   function Connector(cache, store, services) {
@@ -7678,7 +7679,7 @@ var I18n = function (_EventEmitter) {
         baseLogger.init(null, this.options);
       }
 
-      var lu = new LanguageUtil$1(this.options);
+      var lu = new LanguageUtil(this.options);
       this.store = new ResourceStore(this.options.resources, this.options);
 
       var s = this.services;
@@ -7691,7 +7692,7 @@ var I18n = function (_EventEmitter) {
       s.pluralResolver = new PluralResolver(lu, { prepend: this.options.pluralSeparator, compatibilityJSON: this.options.compatibilityJSON, simplifyPluralSuffix: this.options.simplifyPluralSuffix });
       s.interpolator = new Interpolator(this.options);
 
-      s.backendConnector = new Connector$1(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
+      s.backendConnector = new Connector(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
       // pipe events from backendConnector
       s.backendConnector.on('*', function (event) {
         var arguments$1 = arguments;
@@ -7707,7 +7708,7 @@ var I18n = function (_EventEmitter) {
         s.cacheConnector.save();
       });
 
-      s.cacheConnector = new Connector$2(createClassOnDemand(this.modules.cache), s.resourceStore, s, this.options);
+      s.cacheConnector = new Connector$1(createClassOnDemand(this.modules.cache), s.resourceStore, s, this.options);
       // pipe events from backendConnector
       s.cacheConnector.on('*', function (event) {
         var arguments$1 = arguments;
@@ -8067,7 +8068,7 @@ merge([
     @example <caption>returns this</caption>
 {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
 */
-function objectMerge$1(objects, aggs) {
+function objectMerge(objects, aggs) {
   if ( aggs === void 0 ) aggs = {};
 
 
@@ -8091,7 +8092,7 @@ function objectMerge$1(objects, aggs) {
         if (value.length === 1) { value = value[0]; }
       }
       else if (types.indexOf(Number) >= 0) { value = sum(values); }
-      else if (types.indexOf(Object) >= 0) { value = objectMerge$1(values.filter(function (v) { return v; })); }
+      else if (types.indexOf(Object) >= 0) { value = objectMerge(values.filter(function (v) { return v; })); }
       else {
         value = Array.from(new Set(values.filter(function (v) { return v !== void 0; })));
         if (value.length === 1) { value = value[0]; }
@@ -9816,13 +9817,16 @@ var Shape = (function (BaseClass) {
     this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
+        if (!d) { d = {}; }
         if (!d.parentNode) { d.parentNode = this.parentNode; }
         var parent = d.parentNode;
 
-        if (this.tagName === "text") { d = d.data; }
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
-          i = d.i;
-          d = d.data;
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
         }
         else { i = that._data.indexOf(d); }
 
@@ -9931,13 +9935,16 @@ var Shape = (function (BaseClass) {
       .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
+        if (!d) { d = {}; }
         if (!d.parentNode) { d.parentNode = this.parentNode; }
         var parent = d.parentNode;
 
-        if (this.tagName === "text") { d = d.data; }
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
-          i = d.i;
-          d = d.data;
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
         }
         else { i = that._data.indexOf(d); }
 
@@ -13420,7 +13427,7 @@ var Area = (function (Shape$$1) {
 
     var areas = nest().key(this._id).entries(data).map(function (d) {
 
-      d.data = objectMerge$1(d.values);
+      d.data = objectMerge(d.values);
       d.i = data.indexOf(d.values[0]);
 
       var x = extent(d.values.map(this$1._x)
@@ -13933,7 +13940,7 @@ var Line = (function (Shape$$1) {
 
     var lines = nest().key(this._id).entries(data).map(function (d) {
 
-      d.data = objectMerge$1(d.values);
+      d.data = objectMerge(d.values);
       d.i = data.indexOf(d.values[0]);
 
       var x = extent(d.values, this$1._x);
@@ -14564,10 +14571,14 @@ var Axis = (function (BaseClass) {
     var margin = this._margin = {top: 0, right: 0, bottom: 0, left: 0};
 
     if (this._title) {
+      var ref$1 = this._titleConfig;
+      var fontFamily = ref$1.fontFamily;
+      var fontSize = ref$1.fontSize;
+      var lineHeight = ref$1.lineHeight;
       var titleWrap = textWrap()
-        .fontFamily(this._titleConfig.fontFamily)
-        .fontSize(this._titleConfig.fontSize)
-        .lineHeight(this._titleConfig.lineHeight)
+        .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
+        .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
+        .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
         .width(this._size)
         .height(this[("_" + height)] - this._tickSize - p);
       var lines = titleWrap(this._title).lines.length;
@@ -15325,7 +15336,7 @@ var ColorScale = (function (BaseClass) {
     }
     else {
 
-      var step = (domain[1] - domain[0]) / colors.length;
+      var step = (domain[1] - domain[0]) / (colors.length - 1);
       var buckets = range(domain[0], domain[1] + step / 2, step);
 
       if (this._scale === "buckets") { ticks = buckets; }
