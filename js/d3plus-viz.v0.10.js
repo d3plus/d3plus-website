@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.9
+  d3plus-viz v0.10.10
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -276,7 +276,7 @@ var drawColorScale = function(data) {
     update: transform
   }).node();
 
-  if (showColorScale) {
+  if (this._colorScale && data) {
 
     var scaleData = data.filter(function (d, i) {
       var c = this$1._colorScale(d, i);
@@ -298,10 +298,14 @@ var drawColorScale = function(data) {
       .config(this._colorScaleConfig)
       .render();
 
-    var scaleBounds = this._colorScaleClass.outerBounds();
-    if (this._colorScalePosition && !this._colorScaleConfig.select && scaleBounds.height) {
-      if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
-      else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
+    if (showColorScale) {
+
+      var scaleBounds = this._colorScaleClass.outerBounds();
+      if (this._colorScalePosition && !this._colorScaleConfig.select && scaleBounds.height) {
+        if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
+        else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
+      }
+
     }
 
   }
@@ -1187,9 +1191,17 @@ var Viz = (function (BaseClass$$1) {
     this._shape = d3plusCommon.constant("Rect");
     this._shapeConfig = {
       fill: function (d, i) {
+        while (d.__d3plus__ && d.data) {
+          d = d.data;
+          i = d.i;
+        }
         if (this$1._colorScale) {
           var c$1 = this$1._colorScale(d, i);
-          if (c$1 !== undefined && c$1 !== null) { return this$1._colorScaleClass._colorScale(c$1); }
+          if (c$1 !== undefined && c$1 !== null) {
+            var scale = this$1._colorScaleClass._colorScale;
+            if (!scale.domain().length) { return scale.range()[scale.range().length - 1]; }
+            return scale(c$1);
+          }
         }
         var c = this$1._color(d, i);
         if (d3Color.color(c)) { return c; }
