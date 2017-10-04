@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.35
+  d3plus-axis v0.3.36
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -259,7 +259,7 @@ var Axis = (function (BaseClass$$1) {
       @private
   */
   Axis.prototype._getTicks = function _getTicks () {
-    var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
+    var tickScale = scales.scaleSqrt().domain([10, 400]).range([10, 50]);
 
     var ticks = [];
     if (this._d3ScaleNegative) {
@@ -292,7 +292,7 @@ var Axis = (function (BaseClass$$1) {
     var opposite = ref.opposite;
     var offset = this._margin[opposite],
           position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
-          scale = last ? this._lastScale || this._d3Scale : this._d3Scale,
+          scale = last ? this._lastScale || this._getPosition.bind(this) : this._getPosition.bind(this),
           size = ["top", "left"].includes(this._orient) ? offset : -offset,
           xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
           xPos = function (d) { return scale(d.id) + xDiff; };
@@ -390,10 +390,6 @@ var Axis = (function (BaseClass$$1) {
         var percentScale = scales.scaleLog().domain([1, domain[1]]).range([0, 1]);
         var leftPercentage = percentScale(Math.abs(domain[0]));
         var zero = leftPercentage / (leftPercentage + 1) * (range$1[1] - range$1[0]);
-        console.log(domain);
-        console.log(range$1);
-        console.log(leftPercentage);
-        console.log(zero);
         this._d3Scale
           .domain([1, domain[1]])
           .range([range$1[0] + zero, range$1[1]]);
@@ -705,7 +701,7 @@ var Axis = (function (BaseClass$$1) {
       .config(this._titleConfig)
       .render();
 
-    this._lastScale = this._d3Scale;
+    this._lastScale = this._getPosition.bind(this);
 
     if (callback) { setTimeout(callback, this._duration + 100); }
 
