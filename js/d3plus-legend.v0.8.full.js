@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.12
+  d3plus-legend v0.8.13
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -14489,17 +14489,80 @@ var Axis = (function (BaseClass) {
     var x = ref.x;
     var y = ref.y;
     var opposite = ref.opposite;
-    var domain = this._d3Scale.domain(),
+    var domain = this._getDomain(),
           offset = this._margin[opposite],
           position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
 
     bar
       .call(attrize, this._barConfig)
-      .attr((x + "1"), this._d3Scale(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
-      .attr((x + "2"), this._d3Scale(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
+      .attr((x + "1"), this._getPosition(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
+      .attr((x + "2"), this._getPosition(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
       .attr((y + "1"), position)
       .attr((y + "2"), position);
 
+  };
+
+  /**
+      @memberof Axis
+      @desc Returns the scale's domain, taking into account negative and positive log scales.
+      @private
+  */
+  Axis.prototype._getDomain = function _getDomain () {
+
+    var ticks = [];
+    if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.domain(); }
+    if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.domain()); }
+
+    return [ticks[0], ticks[ticks.length - 1]];
+
+  };
+
+  /**
+      @memberof Axis
+      @desc Returns a value's scale position, taking into account negative and positive log scales.
+      @param {Number|String} *d*
+      @private
+  */
+  Axis.prototype._getPosition = function _getPosition (d) {
+    return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : this._d3Scale(d);
+  };
+
+  /**
+      @memberof Axis
+      @desc Returns the scale's range, taking into account negative and positive log scales.
+      @private
+  */
+  Axis.prototype._getRange = function _getRange () {
+
+    var ticks = [];
+    if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.range(); }
+    if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.range()); }
+
+    return [ticks[0], ticks[ticks.length - 1]];
+
+  };
+
+  /**
+      @memberof Axis
+      @desc Returns the scale's ticks, taking into account negative and positive log scales.
+      @private
+  */
+  Axis.prototype._getTicks = function _getTicks () {
+    var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
+
+    var ticks = [];
+    if (this._d3ScaleNegative) {
+      var negativeRange = this._d3ScaleNegative.range();
+      var size = negativeRange[1] - negativeRange[0];
+      ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
+    }
+    if (this._d3Scale) {
+      var positiveRange = this._d3Scale.range();
+      var size$1 = positiveRange[1] - positiveRange[0];
+      ticks = ticks.concat(this._d3Scale.ticks(Math.floor(size$1 / tickScale(size$1))));
+    }
+
+    return ticks;
   };
 
   /**
@@ -14595,26 +14658,68 @@ var Axis = (function (BaseClass) {
     if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
     if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
 
-    var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
+    this._d3ScaleNegative = null;
+    if (this._scale === "log") {
+      var domain = this._d3Scale.domain();
+      if (domain[0] === 0) { domain[0] = 1; }
+      if (domain[domain.length - 1] === 0) { domain[domain.length - 1] = -1; }
+      var range$1 = this._d3Scale.range();
+      if (domain[domain.length - 1] < 0) {
+        this._d3ScaleNegative = this._d3Scale.copy()
+          .domain(domain)
+          .range(range$1);
+        this._d3Scale = null;
+      }
+      else if (domain[0] > 0) {
+        this._d3Scale
+          .domain(domain)
+          .range(range$1);
+      }
+      else {
+        var percentScale = log().domain([1, domain[1]]).range([0, 1]);
+        var leftPercentage = percentScale(Math.abs(domain[0]));
+        var zero = leftPercentage / (leftPercentage + 1) * (range$1[1] - range$1[0]);
+        console.log(domain);
+        console.log(range$1);
+        console.log(leftPercentage);
+        console.log(zero);
+        this._d3Scale
+          .domain([1, domain[1]])
+          .range([range$1[0] + zero, range$1[1]]);
+        this._d3ScaleNegative = this._d3Scale.copy()
+          .domain([domain[0], -1])
+          .range([range$1[0], range$1[0] + zero]);
+      }
+    }
 
     var ticks = this._ticks
       ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
-      : this._d3Scale.ticks
-        ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+      : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
+        ? this._getTicks()
         : this._domain;
 
     var labels = this._labels
       ? this._scale === "time" ? this._labels.map(date$2) : this._labels
-      : this._d3Scale.ticks
-        ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+      : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
+        ? this._getTicks()
         : ticks;
 
     ticks = ticks.slice();
     labels = labels.slice();
 
-    var tickFormat = this._tickFormat ? this._tickFormat : this._d3Scale.tickFormat
-      ? this._d3Scale.tickFormat(labels.length - 1)
-      : function (d) { return d; };
+    if (this._scale === "log") { labels = labels.filter(function (t) { return Math.abs(t).toString().charAt(0) === "1" && (this$1._d3Scale ? t !== -1 : t !== 1); }); }
+
+    var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+    var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
+      if (this$1._scale === "log") {
+        var p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
+        var t = Math.abs(d).toString().charAt(0);
+        var n = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
+        if (t !== "1") { n = t + " x " + n; }
+        return d < 0 ? ("-" + n) : n;
+      }
+      return this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+    };
 
     if (this._scale === "time") {
       ticks = ticks.map(Number);
@@ -14624,8 +14729,8 @@ var Axis = (function (BaseClass) {
       labels = labels.filter(function (label) { return ticks.includes(label); });
     }
 
-    ticks = ticks.sort(function (a, b) { return this$1._d3Scale(a) - this$1._d3Scale(b); });
-    labels = labels.sort(function (a, b) { return this$1._d3Scale(a) - this$1._d3Scale(b); });
+    ticks = ticks.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
+    labels = labels.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
 
     var tickSize = this._shape === "Circle" ? this._shapeConfig.r
       : this._shape === "Rect" ? this._shapeConfig[width]
@@ -14638,7 +14743,7 @@ var Axis = (function (BaseClass) {
     ticks.forEach(function (d, i) {
       var s = tickGet({id: d, tick: true}, i);
       if (this$1._shape === "Circle") { s *= 2; }
-      var t = this$1._d3Scale(d);
+      var t = this$1._getPosition(d);
       if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
       else { pixels.push(false); }
     });
@@ -14665,7 +14770,7 @@ var Axis = (function (BaseClass) {
     else if (labels.length > 1) {
       this._space = 0;
       for (var i = 0; i < labels.length - 1; i++) {
-        var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
+        var s = this$1._getPosition(labels[i + 1]) - this$1._getPosition(labels[i]);
         if (s > this$1._space) { this$1._space = s; }
       }
     }
@@ -14702,7 +14807,7 @@ var Axis = (function (BaseClass) {
     textData.forEach(function (d, i) {
       if (i) {
         var prev = textData[i - 1];
-        if (!prev.offset && this$1._d3Scale(d.d) - d[width] / 2 < this$1._d3Scale(prev.d) + prev[width] / 2) {
+        if (!prev.offset && this$1._getPosition(d.d) - d[width] / 2 < this$1._getPosition(prev.d) + prev[width] / 2) {
           d.offset = prev[height] + this$1._padding;
         }
       }
@@ -14726,7 +14831,7 @@ var Axis = (function (BaseClass) {
       var first = textData[0],
             last = textData[textData.length - 1];
 
-      var firstB = min([this._d3Scale(first.d) - first[width] / 2, range$$1[0] - wBuff]);
+      var firstB = min([this._getPosition(first.d) - first[width] / 2, range$$1[0] - wBuff]);
       if (firstB < range$$1[0]) {
         var d = range$$1[0] - firstB;
         if (this._range === void 0 || this._range[0] === void 0) {
@@ -14738,7 +14843,7 @@ var Axis = (function (BaseClass) {
         }
       }
 
-      var lastB = max([this._d3Scale(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
+      var lastB = max([this._getPosition(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
       if (lastB > range$$1[lastI]) {
         var d$1 = lastB - range$$1[lastI];
         if (this._range === void 0 || this._range[lastI] === void 0) {
@@ -14752,8 +14857,17 @@ var Axis = (function (BaseClass) {
 
       if (range$$1.length > 2) { range$$1 = range(this._domain.length).map(function (d) { return this$1._size * (d / (range$$1.length - 1)) + range$$1[0]; }); }
       range$$1 = range$$1.map(Math.round);
-      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
-      else { this._d3Scale.range(range$$1); }
+      if (this._d3ScaleNegative) {
+        var negativeRange = this._d3ScaleNegative.range();
+        this._d3ScaleNegative[this._d3ScaleNegative.rangeRound ? "rangeRound" : "range"]([range$$1[0], this._d3Scale ? negativeRange[1] : range$$1[1]]);
+        if (this._d3Scale) {
+          var positiveRange = this._d3Scale.range();
+          this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"]([positiveRange[0], range$$1[1]]);
+        }
+      }
+      else {
+        this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](range$$1);
+      }
 
     }
 
@@ -14763,7 +14877,7 @@ var Axis = (function (BaseClass) {
     else if (labels.length > 1) {
       this._space = 0;
       for (var i$1 = 0; i$1 < labels.length - 1; i$1++) {
-        var s$1 = this$1._d3Scale(labels[i$1 + 1]) - this$1._d3Scale(labels[i$1]);
+        var s$1 = this$1._getPosition(labels[i$1 + 1]) - this$1._getPosition(labels[i$1]);
         if (s$1 > this$1._space) { this$1._space = s$1; }
       }
     }
@@ -14834,7 +14948,7 @@ var Axis = (function (BaseClass) {
           size: ticks.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false,
           tick: ticks.includes(d)
-        }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
+        }, obj[x] = this$1._getPosition(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
         var obj;
       });
 
@@ -15383,8 +15497,8 @@ var ColorScale = (function (BaseClass) {
       .align("start")
       .render();
 
-    var axisScale = this._axisTest._d3Scale;
-    var scaleRange = axisScale.range();
+    var axisScale = this._axisTest._getPosition.bind(this._axisTest);
+    var scaleRange = this._axisTest._getRange();
 
     var defs = this._group.selectAll("defs").data([0]);
     var defsEnter = defs.enter().append("defs");

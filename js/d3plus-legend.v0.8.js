@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.12
+  d3plus-legend v0.8.13
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -468,8 +468,8 @@ var ColorScale = (function (BaseClass$$1) {
       .align("start")
       .render();
 
-    var axisScale = this._axisTest._d3Scale;
-    var scaleRange = axisScale.range();
+    var axisScale = this._axisTest._getPosition.bind(this._axisTest);
+    var scaleRange = this._axisTest._getRange();
 
     var defs = this._group.selectAll("defs").data([0]);
     var defsEnter = defs.enter().append("defs");
