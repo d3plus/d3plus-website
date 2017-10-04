@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.24
+  d3plus-plot v0.5.25
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -455,13 +455,15 @@ var Plot = (function (Viz$$1) {
         y = scales[("scale" + yScale)]().domain(domains.y.reverse()).range(d3Array.range(0, height + 1, height / (domains.y.length - 1)));
 
     var shapeData = d3Collection.nest().key(function (d) { return d.shape; }).entries(data);
-    shapeData.forEach(function (d) {
-      if (this$1._buffer[d.key]) {
-        var res = this$1._buffer[d.key].bind(this$1)(d.values, x, y, this$1._shapeConfig[d.key]);
-        x = res[0];
-        y = res[1];
-      }
-    });
+    if (this._xConfig.scale !== "log" && this._yConfig.scale !== "log") {
+      shapeData.forEach(function (d) {
+        if (this$1._buffer[d.key]) {
+          var res = this$1._buffer[d.key].bind(this$1)(d.values, x, y, this$1._shapeConfig[d.key]);
+          if (this$1._xConfig.scale !== "log") { x = res[0]; }
+          if (this$1._yConfig.scale !== "log") { y = res[1]; }
+        }
+      });
+    }
     xDomain = x.domain();
     yDomain = y.domain();
 
@@ -503,13 +505,19 @@ var Plot = (function (Viz$$1) {
       .config(this._xConfig)
       .render();
 
-    var xOffset = d3Array.max([yWidth, this._xTest._d3Scale.range()[0]]);
+    var xOffset = d3Array.max([yWidth, this._xTest._getRange()[0]]);
 
     this._xTest
       .range([xOffset, undefined])
       .render();
 
     var xGroup = d3plusCommon.elem("g.d3plus-plot-x-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
+
+    var xTrans = xOffset > yWidth ? xOffset - yWidth : 0;
+    var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top) + ")";
+    var yGroup = d3plusCommon.elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: yTransform}, update: {transform: yTransform}});
+
+    var x2Group = d3plusCommon.elem("g.d3plus-plot-x2-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
 
     this._xAxis
       .domain(xDomain)
@@ -523,7 +531,11 @@ var Plot = (function (Viz$$1) {
       .config(this._xConfig)
       .render();
 
-    x = this._xAxis._d3Scale;
+    x = function (d) {
+      if (this$1._xConfig.scale === "log" && d === 0) { d = xDomain[0] < 0 ? -1 : 1; }
+      return this$1._xAxis._getPosition.bind(this$1._xAxis)(d);
+    };
+    var xRange = this._xAxis._getRange();
 
     this._x2Axis
       .config(xC)
@@ -533,18 +545,14 @@ var Plot = (function (Viz$$1) {
       .labels([])
       .range([xOffset, undefined])
       .scale(xScale.toLowerCase())
-      .select(xGroup.node())
+      .select(x2Group.node())
       .ticks([])
-      .width(x.range()[x.range().length - 1] + this._xAxis.padding())
+      .width(xRange[xRange.length - 1] + this._xAxis.padding())
       .title(false)
       .tickSize(0)
       .barConfig({"stroke-width": this._discrete ? 0 : this._xAxis.barConfig()["stroke-width"]})
       .config(this._x2Config)
       .render();
-
-    var xTrans = xOffset > yWidth ? xOffset - yWidth : 0;
-    var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top) + ")";
-    var yGroup = d3plusCommon.elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: yTransform}, update: {transform: yTransform}});
 
     this._yAxis
       .domain(yDomain)
@@ -553,7 +561,7 @@ var Plot = (function (Viz$$1) {
       .scale(yScale.toLowerCase())
       .select(yGroup.node())
       .ticks(yTicks)
-      .width(x.range()[x.range().length - 1] + this._xAxis.padding())
+      .width(xRange[xRange.length - 1] + this._xAxis.padding())
       .config(yC)
       .config(this._yConfig)
       .render();
@@ -568,14 +576,17 @@ var Plot = (function (Viz$$1) {
       .scale(yScale.toLowerCase())
       .select(yGroup.node())
       .ticks([])
-      .width(x.range()[x.range().length - 1] + this._xAxis.padding())
+      .width(xRange[xRange.length - 1] + this._xAxis.padding())
       .title(false)
       .tickSize(0)
       .barConfig({"stroke-width": this._discrete ? 0 : this._yAxis.barConfig()["stroke-width"]})
       .config(this._y2Config)
       .render();
 
-    y = this._yAxis._d3Scale;
+    y = function (d) {
+      if (this$1._yConfig.scale === "log" && d === 0) { d = yDomain[0] < 0 ? -1 : 1; }
+      return this$1._yAxis._getPosition.bind(this$1._yAxis)(d);
+    };
 
     var yOffset = this._xAxis.barConfig()["stroke-width"];
     if (yOffset) { yOffset /= 2; }

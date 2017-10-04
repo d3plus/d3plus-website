@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.24
+  d3plus-plot v0.5.25
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -4059,7 +4059,7 @@ function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-var LanguageUtil$1 = function () {
+var LanguageUtil = function () {
   function LanguageUtil(options) {
     _classCallCheck$5(this, LanguageUtil);
 
@@ -4524,7 +4524,7 @@ function remove$1(arr, what) {
   }
 }
 
-var Connector$1 = function (_EventEmitter) {
+var Connector = function (_EventEmitter) {
   _inherits$3(Connector, _EventEmitter);
 
   function Connector(backend, store, services) {
@@ -4794,7 +4794,7 @@ function _possibleConstructorReturn$4(self, call) { if (!self) { throw new Refer
 
 function _inherits$4(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) { Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : _defaults$4(subClass, superClass); } }
 
-var Connector$2 = function (_EventEmitter) {
+var Connector$1 = function (_EventEmitter) {
   _inherits$4(Connector, _EventEmitter);
 
   function Connector(cache, store, services) {
@@ -5005,7 +5005,7 @@ var I18n = function (_EventEmitter) {
         baseLogger.init(null, this.options);
       }
 
-      var lu = new LanguageUtil$1(this.options);
+      var lu = new LanguageUtil(this.options);
       this.store = new ResourceStore(this.options.resources, this.options);
 
       var s = this.services;
@@ -5018,7 +5018,7 @@ var I18n = function (_EventEmitter) {
       s.pluralResolver = new PluralResolver(lu, { prepend: this.options.pluralSeparator, compatibilityJSON: this.options.compatibilityJSON, simplifyPluralSuffix: this.options.simplifyPluralSuffix });
       s.interpolator = new Interpolator(this.options);
 
-      s.backendConnector = new Connector$1(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
+      s.backendConnector = new Connector(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
       // pipe events from backendConnector
       s.backendConnector.on('*', function (event) {
         var arguments$1 = arguments;
@@ -5034,7 +5034,7 @@ var I18n = function (_EventEmitter) {
         s.cacheConnector.save();
       });
 
-      s.cacheConnector = new Connector$2(createClassOnDemand(this.modules.cache), s.resourceStore, s, this.options);
+      s.cacheConnector = new Connector$1(createClassOnDemand(this.modules.cache), s.resourceStore, s, this.options);
       // pipe events from backendConnector
       s.cacheConnector.on('*', function (event) {
         var arguments$1 = arguments;
@@ -5367,7 +5367,7 @@ var esES = {
 };
 
 var namespace$1 = "d3plus";
-var locale$1 = i18next$1.init({
+var locale = i18next$1.init({
   fallbackLng: "en-US",
   defaultNS: namespace$1,
   fallbackNS: namespace$1,
@@ -5418,7 +5418,7 @@ function ascendingComparator(f) {
 }
 
 var ascendingBisect = bisector(ascending$1);
-var bisectRight$1 = ascendingBisect.right;
+var bisectRight = ascendingBisect.right;
 
 var number = function(x) {
   return x === null ? NaN : +x;
@@ -5832,7 +5832,7 @@ merge([
     @example <caption>returns this</caption>
 {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
 */
-function objectMerge$1(objects, aggs) {
+function objectMerge(objects, aggs) {
   if ( aggs === void 0 ) aggs = {};
 
 
@@ -5856,7 +5856,7 @@ function objectMerge$1(objects, aggs) {
         if (value.length === 1) { value = value[0]; }
       }
       else if (types.indexOf(Number) >= 0) { value = sum(values); }
-      else if (types.indexOf(Object) >= 0) { value = objectMerge$1(values.filter(function (v) { return v; })); }
+      else if (types.indexOf(Object) >= 0) { value = objectMerge(values.filter(function (v) { return v; })); }
       else {
         value = Array.from(new Set(values.filter(function (v) { return v !== void 0; })));
         if (value.length === 1) { value = value[0]; }
@@ -6098,7 +6098,7 @@ function polymap(domain, range, deinterpolate, reinterpolate) {
   }
 
   return function(x) {
-    var i = bisectRight$1(domain, x, 1, j) - 1;
+    var i = bisectRight(domain, x, 1, j) - 1;
     return r[i](d[i](x));
   };
 }
@@ -6442,7 +6442,7 @@ var formatLocale = function(locale) {
   };
 };
 
-var locale$2;
+var locale$1;
 var format;
 var formatPrefix;
 
@@ -6454,10 +6454,10 @@ defaultLocale({
 });
 
 function defaultLocale(definition) {
-  locale$2 = formatLocale(definition);
-  format = locale$2.format;
-  formatPrefix = locale$2.formatPrefix;
-  return locale$2;
+  locale$1 = formatLocale(definition);
+  format = locale$1.format;
+  formatPrefix = locale$1.formatPrefix;
+  return locale$1;
 }
 
 var precisionFixed = function(step) {
@@ -6777,7 +6777,7 @@ function quantile$$1() {
   }
 
   function scale(x) {
-    if (!isNaN(x = +x)) { return range[bisectRight$1(thresholds, x)]; }
+    if (!isNaN(x = +x)) { return range[bisectRight(thresholds, x)]; }
   }
 
   scale.invertExtent = function(y) {
@@ -6821,7 +6821,7 @@ function quantize$1() {
       range = [0, 1];
 
   function scale(x) {
-    if (x <= x) { return range[bisectRight$1(domain, x, 0, n)]; }
+    if (x <= x) { return range[bisectRight(domain, x, 0, n)]; }
   }
 
   function rescale() {
@@ -6862,7 +6862,7 @@ function threshold$1() {
       n = 1;
 
   function scale(x) {
-    if (x <= x) { return range[bisectRight$1(domain, x, 0, n)]; }
+    if (x <= x) { return range[bisectRight(domain, x, 0, n)]; }
   }
 
   scale.domain = function(_) {
@@ -7687,7 +7687,7 @@ function formatLiteralPercent() {
   return "%";
 }
 
-var locale$3;
+var locale$2;
 var timeFormat;
 
 var utcFormat;
@@ -7705,11 +7705,11 @@ defaultLocale$1({
 });
 
 function defaultLocale$1(definition) {
-  locale$3 = formatLocale$1(definition);
-  timeFormat = locale$3.format;
-  utcFormat = locale$3.utcFormat;
-  utcParse = locale$3.utcParse;
-  return locale$3;
+  locale$2 = formatLocale$1(definition);
+  timeFormat = locale$2.format;
+  utcFormat = locale$2.utcFormat;
+  utcParse = locale$2.utcParse;
+  return locale$2;
 }
 
 var isoSpecifier = "%Y-%m-%dT%H:%M:%S.%LZ";
@@ -10349,7 +10349,7 @@ var colorLighter = function(c, i) {
     @param {String|Array} text Can be either a single string or an array of strings to analyze.
     @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
 */
-var measure = function(text, style) {
+var textWidth = function(text, style) {
 
   style = Object.assign({
     "font-size": 10,
@@ -10413,10 +10413,10 @@ var proportional;
 var fontExists = function (font) {
 
   if (!dejavu) {
-    dejavu = measure(alpha, {"font-family": "DejaVuSans", "font-size": height});
-    macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
-    monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
-    proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
+    dejavu = textWidth(alpha, {"font-family": "DejaVuSans", "font-size": height});
+    macos = textWidth(alpha, {"font-family": "-apple-system", "font-size": height});
+    monospace = textWidth(alpha, {"font-family": "monospace", "font-size": height});
+    proportional = textWidth(alpha, {"font-family": "sans-serif", "font-size": height});
   }
 
   if (!(font instanceof Array)) { font = font.split(","); }
@@ -10426,7 +10426,7 @@ var fontExists = function (font) {
     var fam = font[i];
     if (checked[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
     else if (checked[fam] === false) { continue; }
-    var width = measure(alpha, {"font-family": fam, "font-size": height});
+    var width = textWidth(alpha, {"font-family": fam, "font-size": height});
     checked[fam] = width !== monospace;
     if (checked[fam]) { checked[fam] = width !== proportional; }
     if (macos && checked[fam]) { checked[fam] = width !== macos; }
@@ -10568,7 +10568,7 @@ var textSplit = function(sentence) {
     @function textWrap
     @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
 */
-var wrap = function() {
+var textWrap = function() {
 
   var fontFamily = "sans-serif",
       fontSize = 10,
@@ -10604,8 +10604,8 @@ var wrap = function() {
         widthProg = 0;
 
     var lineData = [],
-          sizes = measure(words, style),
-          space = measure(" ", style);
+          sizes = textWidth(words, style),
+          space = textWidth(" ", style);
 
     for (var i = 0; i < words.length; i++) {
       var word = words[i];
@@ -10635,7 +10635,7 @@ var wrap = function() {
     return {
       lines: lineData,
       sentence: sentence, truncated: truncated,
-      widths: measure(lineData, style),
+      widths: textWidth(lineData, style),
       words: words
     };
 
@@ -10799,7 +10799,7 @@ var TextBox = (function (BaseClass) {
       var h = this$1._height(d, i),
             w = this$1._width(d, i);
 
-      var wrapper = wrap()
+      var wrapper = textWrap()
         .fontFamily(style["font-family"])
         .fontSize(fS)
         .fontWeight(style["font-weight"])
@@ -10857,7 +10857,7 @@ var TextBox = (function (BaseClass) {
 
         if (resize) {
 
-          sizes = measure(words, style);
+          sizes = textWidth(words, style);
 
           var areaMod = 1.165 + w / h * 0.1,
                 boxArea = w * h,
@@ -11758,6 +11758,10 @@ var Shape = (function (BaseClass) {
     this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
         if (select(this).classed("d3plus-textBox")) { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
           while (d && (d.__d3plusShape__ || d.__d3plus__)) {
@@ -11766,10 +11770,6 @@ var Shape = (function (BaseClass) {
           }
         }
         else { i = that._data.indexOf(d); }
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
 
         var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
         if (group !== this.parentNode) {
@@ -11876,6 +11876,10 @@ var Shape = (function (BaseClass) {
       .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
 
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
         if (select(this).classed("d3plus-textBox")) { d = d.data; }
         if (d.__d3plusShape__ || d.__d3plus__) {
           while (d && (d.__d3plusShape__ || d.__d3plus__)) {
@@ -11884,10 +11888,6 @@ var Shape = (function (BaseClass) {
           }
         }
         else { i = that._data.indexOf(d); }
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
 
         var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
         if (group !== this.parentNode) { group.appendChild(this); }
@@ -13306,7 +13306,7 @@ var Area = (function (Shape$$1) {
 
     var areas = nest().key(this._id).entries(data).map(function (d) {
 
-      d.data = objectMerge$1(d.values);
+      d.data = objectMerge(d.values);
       d.i = data.indexOf(d.values[0]);
 
       var x = extent(d.values.map(this$1._x)
@@ -13819,7 +13819,7 @@ var Line = (function (Shape$$1) {
 
     var lines = nest().key(this._id).entries(data).map(function (d) {
 
-      d.data = objectMerge$1(d.values);
+      d.data = objectMerge(d.values);
       d.i = data.indexOf(d.values[0]);
 
       var x = extent(d.values, this$1._x);
@@ -14238,886 +14238,6 @@ var shapes = Object.freeze({
 });
 
 /**
-    @function textWidth
-    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
-    @param {String|Array} text Can be either a single string or an array of strings to analyze.
-    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
-*/
-var measure$1 = function(text, style) {
-
-  style = Object.assign({
-    "font-size": 10,
-    "font-family": "sans-serif",
-    "font-style": "normal",
-    "font-weight": 400,
-    "font-variant": "normal"
-  }, style);
-
-  var context = document.createElement("canvas").getContext("2d");
-
-  var font = [];
-  font.push(style["font-style"]);
-  font.push(style["font-variant"]);
-  font.push(style["font-weight"]);
-  font.push(typeof style["font-size"] === "string" ? style["font-size"] : ((style["font-size"]) + "px"));
-  // let s = `${style["font-size"]}px`;
-  // if ("line-height" in style) s += `/${style["line-height"]}px`;
-  // font.push(s);
-  font.push(style["font-family"]);
-
-  context.font = font.join(" ");
-
-  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-  return context.measureText(text).width;
-
-};
-
-/**
-    @function trim
-    @desc Cross-browser implementation of [trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim).
-    @param {String} str
-*/
-function trim$1(str) {
-  return str.replace(/^\s+|\s+$/g, "");
-}
-
-/**
-    @function trimRight
-    @desc Cross-browser implementation of [trimRight](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/TrimRight).
-    @param {String} str
-*/
-function trimRight$1(str) {
-  return str.replace(/\s+$/, "");
-}
-
-var alpha$1 = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
-var checked$1 = {};
-var height$1 = 32;
-
-var dejavu$1;
-var macos$1;
-var monospace$1;
-var proportional$1;
-
-/**
-    @function fontExists
-    @desc Given either a single font-family or a list of fonts, returns the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
-    @param {String|Array} font Can be either a valid CSS font-family string (single or comma-separated names) or an Array of string names.
-*/
-var fontExists$2 = function (font) {
-
-  if (!dejavu$1) {
-    dejavu$1 = measure$1(alpha$1, {"font-family": "DejaVuSans", "font-size": height$1});
-    macos$1 = measure$1(alpha$1, {"font-family": "-apple-system", "font-size": height$1});
-    monospace$1 = measure$1(alpha$1, {"font-family": "monospace", "font-size": height$1});
-    proportional$1 = measure$1(alpha$1, {"font-family": "sans-serif", "font-size": height$1});
-  }
-
-  if (!(font instanceof Array)) { font = font.split(","); }
-  font = font.map(function (f) { return trim$1(f); });
-
-  for (var i = 0; i < font.length; i++) {
-    var fam = font[i];
-    if (checked$1[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
-    else if (checked$1[fam] === false) { continue; }
-    var width = measure$1(alpha$1, {"font-family": fam, "font-size": height$1});
-    checked$1[fam] = width !== monospace$1;
-    if (checked$1[fam]) { checked$1[fam] = width !== proportional$1; }
-    if (macos$1 && checked$1[fam]) { checked$1[fam] = width !== macos$1; }
-    if (dejavu$1 && checked$1[fam]) { checked$1[fam] = width !== dejavu$1; }
-    if (checked$1[fam]) { return fam; }
-  }
-
-  return false;
-
-};
-
-/**
-    @function rtl
-    @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
-*/
-var detectRTL$1 = function () { return select("html").attr("dir") === "rtl" ||
-  select("body").attr("dir") === "rtl" ||
-  select("html").style("direction") === "rtl" ||
-  select("body").style("direction") === "rtl"; };
-
-/**
-    @function stringify
-    @desc Coerces value into a String.
-    @param {String} value
-*/
-var stringify$1 = function(value) {
-  if (value === void 0) { value = "undefined"; }
-  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
-  return value;
-};
-
-// great unicode list: http://asecuritysite.com/coding/asc2
-
-// scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
-// and http://www.fileformat.info/info/unicode/category/Mn/list.htm
-// JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
-var a$2 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
-var b$1 = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
-var combiningMarks$1 = a$2.concat(b$1);
-
-var splitChars$1 = ["-",  "/",  ";",  ":",  "&",
-  "u0E2F",  // thai character pairannoi
-  "u0EAF",  // lao ellipsis
-  "u0EC6",  // lao ko la (word repetition)
-  "u0ECC",  // lao cancellation mark
-  "u104A",  // myanmar sign little section
-  "u104B",  // myanmar sign section
-  "u104C",  // myanmar symbol locative
-  "u104D",  // myanmar symbol completed
-  "u104E",  // myanmar symbol aforementioned
-  "u104F",  // myanmar symbol genitive
-  "u2013",  // en dash
-  "u2014",  // em dash
-  "u2027",  // simplified chinese hyphenation point
-  "u3000",  // simplified chinese ideographic space
-  "u3001",  // simplified chinese ideographic comma
-  "u3002",  // simplified chinese ideographic full stop
-  "uFF0C",  // full-width comma
-  "uFF5E"   // wave dash
-];
-
-var prefixChars$1 = ["'",  "<",  "(",  "{",  "[",
-  "u00AB",  // left-pointing double angle quotation mark
-  "u300A",  // left double angle bracket
-  "u3008"  // left angle bracket
-];
-
-var suffixChars$1 = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
-  "u00BB",  // right-pointing double angle quotation mark
-  "u300B",  // right double angle bracket
-  "u3009"  // right angle bracket
-].concat(splitChars$1);
-
-var burmeseRange$1 = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-var japaneseRange$1 = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff0b\uff0d-\uff5d\uff5f-\uff9f\u3400-\u4dbf";
-var chineseRange$1 = "\u3400-\u9FBF";
-var laoRange$1 = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
-
-var noSpaceRange$1 = burmeseRange$1 + chineseRange$1 + laoRange$1;
-
-var splitWords$1 = new RegExp(("(\\" + (splitChars$1.join("|\\")) + ")*[^\\s|\\" + (splitChars$1.join("|\\")) + "]*(\\" + (splitChars$1.join("|\\")) + ")*"), "g");
-var japaneseChars$1 = new RegExp(("[" + japaneseRange$1 + "]"));
-var noSpaceLanguage$1 = new RegExp(("[" + noSpaceRange$1 + "]"));
-var splitAllChars$1 = new RegExp(("(\\" + (prefixChars$1.join("|\\")) + ")*[" + noSpaceRange$1 + "](\\" + (suffixChars$1.join("|\\")) + "|\\" + (combiningMarks$1.join("|\\")) + ")*|[a-z0-9]+"), "gi");
-
-/**
-    @function textSplit
-    @desc Splits a given sentence into an array of words.
-    @param {String} sentence
-*/
-var textSplit$1 = function(sentence) {
-  if (!noSpaceLanguage$1.test(sentence)) { return stringify$1(sentence).match(splitWords$1).filter(function (w) { return w.length; }); }
-  return merge$1(stringify$1(sentence).match(splitWords$1).map(function (d) {
-    if (!japaneseChars$1.test(d) && noSpaceLanguage$1.test(d)) { return d.match(splitAllChars$1); }
-    return [d];
-  }));
-};
-
-/**
-    @function textWrap
-    @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
-*/
-var wrap$1 = function() {
-
-  var fontFamily = "sans-serif",
-      fontSize = 10,
-      fontWeight = 400,
-      height = 200,
-      lineHeight,
-      overflow = false,
-      split = textSplit$1,
-      width = 200;
-
-  /**
-      The inner return object and wraps the text and returns the line data array.
-      @private
-  */
-  function textWrap(sentence) {
-
-    sentence = stringify$1(sentence);
-
-    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.4); }
-
-    var words = split(sentence);
-
-    var style = {
-      "font-family": fontFamily,
-      "font-size": fontSize,
-      "font-weight": fontWeight,
-      "line-height": lineHeight
-    };
-
-    var line = 1,
-        textProg = "",
-        truncated = false,
-        widthProg = 0;
-
-    var lineData = [],
-          sizes = measure$1(words, style),
-          space = measure$1(" ", style);
-
-    for (var i = 0; i < words.length; i++) {
-      var word = words[i];
-      var wordWidth = sizes[words.indexOf(word)];
-      word += sentence.slice(textProg.length + word.length).match("^( |\n)*", "g")[0];
-      if (textProg.slice(-1) === "\n" || widthProg + wordWidth > width) {
-        if (!i && !overflow) {
-          truncated = true;
-          break;
-        }
-        lineData[line - 1] = trimRight$1(lineData[line - 1]);
-        line++;
-        if (lineHeight * line > height || wordWidth > width && !overflow) {
-          truncated = true;
-          break;
-        }
-        widthProg = 0;
-        lineData.push(word);
-      }
-      else if (!i) { lineData[0] = word; }
-      else { lineData[line - 1] += word; }
-      textProg += word;
-      widthProg += wordWidth;
-      widthProg += word.match(/[\s]*$/g)[0].length * space;
-    }
-
-    return {
-      lines: lineData,
-      sentence: sentence, truncated: truncated,
-      widths: measure$1(lineData, style),
-      words: words
-    };
-
-  }
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value* = "sans-serif"]
-  */
-  textWrap.fontFamily = function(_) {
-    return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
-      @param {Function|Number} [*value* = 10]
-  */
-  textWrap.fontSize = function(_) {
-    return arguments.length ? (fontSize = _, textWrap) : fontSize;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  textWrap.fontWeight = function(_) {
-    return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets height limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.height = function(_) {
-    return arguments.length ? (height = _, textWrap) : height;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textWrap.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  textWrap.lineHeight = function(_) {
-    return arguments.length ? (lineHeight = _, textWrap) : lineHeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
-      @param {Boolean} [*value* = false]
-  */
-  textWrap.overflow = function(_) {
-    return arguments.length ? (overflow = _, textWrap) : overflow;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
-      @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to textWrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
-  */
-  textWrap.split = function(_) {
-    return arguments.length ? (split = _, textWrap) : split;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets width limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.width = function(_) {
-    return arguments.length ? (width = _, textWrap) : width;
-  };
-
-  return textWrap;
-
-};
-
-/**
-    @external BaseClass
-    @see https://github.com/d3plus/d3plus-common#BaseClass
-*/
-
-/**
-    @class TextBox
-    @extends external:BaseClass
-    @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
-*/
-var TextBox$2 = (function (BaseClass) {
-  function TextBox() {
-
-    BaseClass.call(this);
-
-    this._delay = 0;
-    this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
-    this._fontColor = constant("black");
-    this._fontFamily = constant(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
-    this._fontMax = constant(50);
-    this._fontMin = constant(8);
-    this._fontResize = constant(false);
-    this._fontSize = constant(10);
-    this._fontWeight = constant(400);
-    this._height = accessor("height", 200);
-    this._id = function (d, i) { return d.id || ("" + i); };
-    this._on = {};
-    this._overflow = constant(false);
-    this._pointerEvents = constant("auto");
-    this._rotate = constant(0);
-    this._split = textSplit$1;
-    this._text = accessor("text");
-    this._textAnchor = constant("start");
-    this._verticalAlign = constant("top");
-    this._width = accessor("width", 200);
-    this._x = accessor("x", 0);
-    this._y = accessor("y", 0);
-
-  }
-
-  if ( BaseClass ) TextBox.__proto__ = BaseClass;
-  TextBox.prototype = Object.create( BaseClass && BaseClass.prototype );
-  TextBox.prototype.constructor = TextBox;
-
-  /**
-      @memberof TextBox
-      @desc Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
-      @param {Function} [*callback* = undefined]
-  */
-  TextBox.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
-    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.4; }; }
-    var that = this;
-
-    var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
-
-      var t = this$1._text(d, i);
-      if (t === void 0) { return arr; }
-
-      var resize = this$1._fontResize(d, i);
-
-      var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
-          lH = resize ? fS * 1.4 : this$1._lineHeight(d, i),
-          line = 1,
-          lineData = [],
-          sizes,
-          wrapResults;
-
-      var style = {
-        "font-family": fontExists$2(this$1._fontFamily(d, i)),
-        "font-size": fS,
-        "font-weight": this$1._fontWeight(d, i),
-        "line-height": lH
-      };
-
-      var h = this$1._height(d, i),
-            w = this$1._width(d, i);
-
-      var wrapper = wrap$1()
-        .fontFamily(style["font-family"])
-        .fontSize(fS)
-        .fontWeight(style["font-weight"])
-        .lineHeight(lH)
-        .height(h)
-        .overflow(this$1._overflow(d, i))
-        .width(w);
-
-      var fMax = this$1._fontMax(d, i),
-            fMin = this$1._fontMin(d, i),
-            vA = this$1._verticalAlign(d, i),
-            words = this$1._split(t, i);
-
-      /**
-          Figures out the lineData to be used for wrapping.
-          @private
-      */
-      function checkSize() {
-
-        if (fS < fMin) {
-          lineData = [];
-          return;
-        }
-        else if (fS > fMax) { fS = fMax; }
-
-        if (resize) {
-          lH = fS * 1.4;
-          wrapper
-            .fontSize(fS)
-            .lineHeight(lH);
-          style["font-size"] = fS;
-          style["line-height"] = lH;
-        }
-
-        wrapResults = wrapper(t);
-        lineData = wrapResults.lines.filter(function (l) { return l !== ""; });
-        line = lineData.length;
-
-        if (wrapResults.truncated) {
-
-          if (resize) {
-            fS--;
-            if (fS < fMin) { lineData = []; }
-            else { checkSize(); }
-          }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
-
-        }
-
-
-      }
-
-      if (w > fMin && (h > lH || resize && h > fMin * 1.4)) {
-
-        if (resize) {
-
-          sizes = measure$1(words, style);
-
-          var areaMod = 1.165 + w / h * 0.1,
-                boxArea = w * h,
-                maxWidth = max(sizes),
-                textArea = sum(sizes, function (d) { return d * lH; }) * areaMod;
-
-          if (maxWidth > w || textArea > boxArea) {
-            var areaRatio = Math.sqrt(boxArea / textArea),
-                  widthRatio = w / maxWidth;
-            var sizeRatio = min([areaRatio, widthRatio]);
-            fS = Math.floor(fS * sizeRatio);
-          }
-
-          var heightMax = Math.floor(h * 0.8);
-          if (fS > heightMax) { fS = heightMax; }
-
-        }
-
-        checkSize();
-
-      }
-
-      if (lineData.length) {
-
-        var tH = line * lH;
-        var yP = vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH;
-        yP -= lH * 0.1;
-
-        arr.push({
-          data: d,
-          i: i,
-          lines: lineData,
-          fC: this$1._fontColor(d, i),
-          fF: style["font-family"],
-          fW: style["font-weight"],
-          id: this$1._id(d, i),
-          tA: this$1._textAnchor(d, i),
-          widths: wrapResults.widths,
-          fS: fS, lH: lH, w: w, h: h, x: this$1._x(d, i), y: this$1._y(d, i) + yP
-        });
-
-      }
-
-      return arr;
-
-    }, []), this._id);
-
-    var t = transition().duration(this._duration);
-
-    if (this._duration === 0) {
-
-      boxes.exit().remove();
-
-    }
-    else {
-
-      boxes.exit().transition().delay(this._duration).remove();
-
-      boxes.exit().selectAll("text").transition(t)
-        .attr("opacity", 0);
-
-    }
-
-    function rotate(text) {
-      text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + ", " + (d.x + d.w / 2) + ", " + (d.y + d.h / 2) + ")translate(" + (d.x) + ", " + (d.y) + ")"); });
-    }
-
-    var update = boxes.enter().append("g")
-        .attr("class", "d3plus-textBox")
-        .attr("id", function (d) { return ("d3plus-textBox-" + (d.id)); })
-        .call(rotate)
-      .merge(boxes);
-
-    var rtl = detectRTL$1();
-
-    update
-      .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
-      .each(function(d) {
-
-        /**
-            Styles to apply to each <text> element.
-            @private
-        */
-        function textStyle(text) {
-          text
-            .text(function (t) { return trimRight$1(t); })
-            .attr("dir", rtl ? "rtl" : "ltr")
-            .attr("fill", d.fC)
-            .attr("text-anchor", d.tA)
-            .attr("font-family", d.fF)
-            .style("font-family", d.fF)
-            .attr("font-size", ((d.fS) + "px"))
-            .style("font-size", ((d.fS) + "px"))
-            .attr("font-weight", d.fW)
-            .style("font-weight", d.fW)
-            .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
-            .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
-        }
-
-        var texts = select(this).selectAll("text").data(d.lines);
-
-        if (that._duration === 0) {
-
-          texts.call(textStyle);
-
-          texts.exit().remove();
-
-          texts.enter().append("text")
-            .attr("dominant-baseline", "alphabetic")
-            .style("baseline-shift", "0%")
-            .attr("unicode-bidi", "bidi-override")
-            .call(textStyle);
-
-        }
-        else {
-
-          texts.transition(t).call(textStyle);
-
-          texts.exit().transition(t)
-            .attr("opacity", 0).remove();
-
-          texts.enter().append("text")
-              .attr("dominant-baseline", "alphabetic")
-              .style("baseline-shift", "0%")
-              .attr("opacity", 0)
-              .call(textStyle)
-            .merge(texts).transition(t).delay(that._delay)
-              .call(textStyle)
-              .attr("opacity", 1);
-
-        }
-
-      })
-      .transition(t).call(rotate);
-
-    var events = Object.keys(this._on),
-          on = events.reduce(function (obj, e) {
-            obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
-            return obj;
-          }, {});
-    for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
-
-    if (callback) { setTimeout(callback, this._duration + 100); }
-
-    return this;
-
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
-      @param {Array} [*data* = []]
-  */
-  TextBox.prototype.data = function data (_) {
-    return arguments.length ? (this._data = _, this) : this._data;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the animation delay to the specified number in milliseconds.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.delay = function delay (_) {
-    return arguments.length ? (this._delay = _, this) : this._delay;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the animation duration to the specified number in milliseconds.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.duration = function duration (_) {
-    return arguments.length ? (this._duration = _, this) : this._duration;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
-}
-  */
-  TextBox.prototype.ellipsis = function ellipsis (_) {
-    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant(_), this) : this._ellipsis;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|String} [*value* = "black"]
-  */
-  TextBox.prototype.fontColor = function fontColor (_) {
-    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant(_), this) : this._fontColor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
-      @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
-  */
-  TextBox.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant(_), this) : this._fontFamily;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the maximum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
-      @param {Function|Number} [*value* = 50]
-  */
-  TextBox.prototype.fontMax = function fontMax (_) {
-    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant(_), this) : this._fontMax;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the minimum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
-      @param {Function|Number} [*value* = 8]
-  */
-  TextBox.prototype.fontMin = function fontMin (_) {
-    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant(_), this) : this._fontMin;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.fontResize = function fontResize (_) {
-    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant(_), this) : this._fontResize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font size to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|Number} [*value* = 10]
-  */
-  TextBox.prototype.fontSize = function fontSize (_) {
-    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant(_), this) : this._fontSize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  TextBox.prototype.fontWeight = function fontWeight (_) {
-    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant(_), this) : this._fontWeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the height for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.height || 200;
-}
-  */
-  TextBox.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant(_), this) : this._height;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Defines the unique id for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d, i) {
-  return d.id || i + "";
-}
-  */
-  TextBox.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant(_), this) : this._id;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the line height to the specified accessor function or static number, which is 1.4 times the [font size](#textBox.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  TextBox.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant(_), this) : this._lineHeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the text overflow to the specified accessor function or static boolean.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.overflow = function overflow (_) {
-    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant(_), this) : this._overflow;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the pointer-events to the specified accessor function or static string.
-      @param {Function|String} [*value* = "auto"]
-  */
-  TextBox.prototype.pointerEvents = function pointerEvents (_) {
-    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant(_), this) : this._pointerEvents;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the rotate percentage for each box to the specified accessor function or static string.
-      @param {Function|Number} [*value* = 0]
-  */
-  TextBox.prototype.rotate = function rotate (_) {
-    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant(_), this) : this._rotate;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
-      @param {String|HTMLElement} [*selector*]
-  */
-  TextBox.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = select(_), this) : this._select;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
-      @param {Function} [*value*]
-  */
-  TextBox.prototype.split = function split (_) {
-    return arguments.length ? (this._split = _, this) : this._split;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the text for each box to the specified accessor function or static string.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.text;
-}
-  */
-  TextBox.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant(_), this) : this._text;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
-      @param {Function|String} [*value* = "start"]
-  */
-  TextBox.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant(_), this) : this._textAnchor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
-      @param {Function|String} [*value* = "top"]
-  */
-  TextBox.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant(_), this) : this._verticalAlign;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the width for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.width || 200;
-}
-  */
-  TextBox.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant(_), this) : this._width;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.x || 0;
-}
-  */
-  TextBox.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant(_), this) : this._x;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.y || 0;
-}
-  */
-  TextBox.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant(_), this) : this._y;
-  };
-
-  return TextBox;
-}(BaseClass));
-
-/**
     @function date
     @summary Parses numbers and strings to valid Javascript Date objects.
     @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
@@ -15204,11 +14324,11 @@ var Axis = (function (BaseClass) {
       labelBounds: function (d) { return d.labelBounds; },
       labelConfig: {
         fontColor: "#000",
-        fontFamily: new TextBox$2().fontFamily(),
+        fontFamily: new TextBox().fontFamily(),
         fontResize: false,
         fontSize: constant(10),
         textAnchor: function () {
-          var rtl$$1 = detectRTL$1();
+          var rtl$$1 = detectRTL();
           return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
           : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
           : "middle";
@@ -15222,7 +14342,7 @@ var Axis = (function (BaseClass) {
       width: function (d) { return d.tick ? 8 : 0; }
     };
     this._tickSize = 5;
-    this._titleClass = new TextBox$2();
+    this._titleClass = new TextBox();
     this._titleConfig = {
       fontSize: 12,
       textAnchor: "middle"
@@ -15248,17 +14368,80 @@ var Axis = (function (BaseClass) {
     var x = ref.x;
     var y = ref.y;
     var opposite = ref.opposite;
-    var domain = this._d3Scale.domain(),
+    var domain = this._getDomain(),
           offset = this._margin[opposite],
           position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
 
     bar
       .call(attrize, this._barConfig)
-      .attr((x + "1"), this._d3Scale(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
-      .attr((x + "2"), this._d3Scale(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
+      .attr((x + "1"), this._getPosition(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
+      .attr((x + "2"), this._getPosition(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
       .attr((y + "1"), position)
       .attr((y + "2"), position);
 
+  };
+
+  /**
+      @memberof Axis
+      @desc Returns the scale's domain, taking into account negative and positive log scales.
+      @private
+  */
+  Axis.prototype._getDomain = function _getDomain () {
+
+    var ticks = [];
+    if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.domain(); }
+    if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.domain()); }
+
+    return [ticks[0], ticks[ticks.length - 1]];
+
+  };
+
+  /**
+      @memberof Axis
+      @desc Returns a value's scale position, taking into account negative and positive log scales.
+      @param {Number|String} *d*
+      @private
+  */
+  Axis.prototype._getPosition = function _getPosition (d) {
+    return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : this._d3Scale(d);
+  };
+
+  /**
+      @memberof Axis
+      @desc Returns the scale's range, taking into account negative and positive log scales.
+      @private
+  */
+  Axis.prototype._getRange = function _getRange () {
+
+    var ticks = [];
+    if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.range(); }
+    if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.range()); }
+
+    return [ticks[0], ticks[ticks.length - 1]];
+
+  };
+
+  /**
+      @memberof Axis
+      @desc Returns the scale's ticks, taking into account negative and positive log scales.
+      @private
+  */
+  Axis.prototype._getTicks = function _getTicks () {
+    var tickScale = sqrt().domain([10, 400]).range([10, 50]);
+
+    var ticks = [];
+    if (this._d3ScaleNegative) {
+      var negativeRange = this._d3ScaleNegative.range();
+      var size = negativeRange[1] - negativeRange[0];
+      ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
+    }
+    if (this._d3Scale) {
+      var positiveRange = this._d3Scale.range();
+      var size$1 = positiveRange[1] - positiveRange[0];
+      ticks = ticks.concat(this._d3Scale.ticks(Math.floor(size$1 / tickScale(size$1))));
+    }
+
+    return ticks;
   };
 
   /**
@@ -15277,7 +14460,7 @@ var Axis = (function (BaseClass) {
     var opposite = ref.opposite;
     var offset = this._margin[opposite],
           position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
-          scale = last ? this._lastScale || this._d3Scale : this._d3Scale,
+          scale = last ? this._lastScale || this._getPosition.bind(this) : this._getPosition.bind(this),
           size = ["top", "left"].includes(this._orient) ? offset : -offset,
           xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
           xPos = function (d) { return scale(d.id) + xDiff; };
@@ -15330,10 +14513,14 @@ var Axis = (function (BaseClass) {
     var margin = this._margin = {top: 0, right: 0, bottom: 0, left: 0};
 
     if (this._title) {
-      var titleWrap = wrap$1()
-        .fontFamily(this._titleConfig.fontFamily)
-        .fontSize(this._titleConfig.fontSize)
-        .lineHeight(this._titleConfig.lineHeight)
+      var ref$1 = this._titleConfig;
+      var fontFamily = ref$1.fontFamily;
+      var fontSize = ref$1.fontSize;
+      var lineHeight = ref$1.lineHeight;
+      var titleWrap = textWrap()
+        .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
+        .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
+        .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
         .width(this._size)
         .height(this[("_" + height)] - this._tickSize - p);
       var lines = titleWrap(this._title).lines.length;
@@ -15350,26 +14537,64 @@ var Axis = (function (BaseClass) {
     if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
     if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
 
-    var tickScale = sqrt().domain([10, 400]).range([10, this._gridSize === 0 ? 50 : 75]);
+    this._d3ScaleNegative = null;
+    if (this._scale === "log") {
+      var domain = this._d3Scale.domain();
+      if (domain[0] === 0) { domain[0] = 1; }
+      if (domain[domain.length - 1] === 0) { domain[domain.length - 1] = -1; }
+      var range$1 = this._d3Scale.range();
+      if (domain[domain.length - 1] < 0) {
+        this._d3ScaleNegative = this._d3Scale.copy()
+          .domain(domain)
+          .range(range$1);
+        this._d3Scale = null;
+      }
+      else if (domain[0] > 0) {
+        this._d3Scale
+          .domain(domain)
+          .range(range$1);
+      }
+      else {
+        var percentScale = log().domain([1, domain[1]]).range([0, 1]);
+        var leftPercentage = percentScale(Math.abs(domain[0]));
+        var zero = leftPercentage / (leftPercentage + 1) * (range$1[1] - range$1[0]);
+        this._d3Scale
+          .domain([1, domain[1]])
+          .range([range$1[0] + zero, range$1[1]]);
+        this._d3ScaleNegative = this._d3Scale.copy()
+          .domain([domain[0], -1])
+          .range([range$1[0], range$1[0] + zero]);
+      }
+    }
 
     var ticks = this._ticks
       ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
-      : this._d3Scale.ticks
-        ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+      : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
+        ? this._getTicks()
         : this._domain;
 
     var labels = this._labels
       ? this._scale === "time" ? this._labels.map(date$2) : this._labels
-      : this._d3Scale.ticks
-        ? this._d3Scale.ticks(Math.floor(this._size / tickScale(this._size)))
+      : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
+        ? this._getTicks()
         : ticks;
 
     ticks = ticks.slice();
     labels = labels.slice();
 
-    var tickFormat = this._tickFormat ? this._tickFormat : this._d3Scale.tickFormat
-      ? this._d3Scale.tickFormat(labels.length - 1)
-      : function (d) { return d; };
+    if (this._scale === "log") { labels = labels.filter(function (t) { return Math.abs(t).toString().charAt(0) === "1" && (this$1._d3Scale ? t !== -1 : t !== 1); }); }
+
+    var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+    var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
+      if (this$1._scale === "log") {
+        var p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
+        var t = Math.abs(d).toString().charAt(0);
+        var n = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
+        if (t !== "1") { n = t + " x " + n; }
+        return d < 0 ? ("-" + n) : n;
+      }
+      return this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+    };
 
     if (this._scale === "time") {
       ticks = ticks.map(Number);
@@ -15379,8 +14604,8 @@ var Axis = (function (BaseClass) {
       labels = labels.filter(function (label) { return ticks.includes(label); });
     }
 
-    ticks = ticks.sort(function (a, b) { return this$1._d3Scale(a) - this$1._d3Scale(b); });
-    labels = labels.sort(function (a, b) { return this$1._d3Scale(a) - this$1._d3Scale(b); });
+    ticks = ticks.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
+    labels = labels.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
 
     var tickSize = this._shape === "Circle" ? this._shapeConfig.r
       : this._shape === "Rect" ? this._shapeConfig[width]
@@ -15393,7 +14618,7 @@ var Axis = (function (BaseClass) {
     ticks.forEach(function (d, i) {
       var s = tickGet({id: d, tick: true}, i);
       if (this$1._shape === "Circle") { s *= 2; }
-      var t = this$1._d3Scale(d);
+      var t = this$1._getPosition(d);
       if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
       else { pixels.push(false); }
     });
@@ -15420,7 +14645,7 @@ var Axis = (function (BaseClass) {
     else if (labels.length > 1) {
       this._space = 0;
       for (var i = 0; i < labels.length - 1; i++) {
-        var s = this$1._d3Scale(labels[i + 1]) - this$1._d3Scale(labels[i]);
+        var s = this$1._getPosition(labels[i + 1]) - this$1._getPosition(labels[i]);
         if (s > this$1._space) { this$1._space = s; }
       }
     }
@@ -15432,7 +14657,7 @@ var Axis = (function (BaseClass) {
       var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
             s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-      var wrap = wrap$1()
+      var wrap = textWrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
@@ -15444,7 +14669,7 @@ var Axis = (function (BaseClass) {
       res.d = d;
       res.fS = s;
       res.width = res.lines.length
-        ? Math.ceil(max(res.lines.map(function (line) { return measure$1(line, {"font-family": f, "font-size": s}); }))) + s / 4
+        ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
         : 0;
       res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
       res.offset = 0;
@@ -15457,7 +14682,7 @@ var Axis = (function (BaseClass) {
     textData.forEach(function (d, i) {
       if (i) {
         var prev = textData[i - 1];
-        if (!prev.offset && this$1._d3Scale(d.d) - d[width] / 2 < this$1._d3Scale(prev.d) + prev[width] / 2) {
+        if (!prev.offset && this$1._getPosition(d.d) - d[width] / 2 < this$1._getPosition(prev.d) + prev[width] / 2) {
           d.offset = prev[height] + this$1._padding;
         }
       }
@@ -15481,7 +14706,7 @@ var Axis = (function (BaseClass) {
       var first = textData[0],
             last = textData[textData.length - 1];
 
-      var firstB = min([this._d3Scale(first.d) - first[width] / 2, range$$1[0] - wBuff]);
+      var firstB = min([this._getPosition(first.d) - first[width] / 2, range$$1[0] - wBuff]);
       if (firstB < range$$1[0]) {
         var d = range$$1[0] - firstB;
         if (this._range === void 0 || this._range[0] === void 0) {
@@ -15493,7 +14718,7 @@ var Axis = (function (BaseClass) {
         }
       }
 
-      var lastB = max([this._d3Scale(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
+      var lastB = max([this._getPosition(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
       if (lastB > range$$1[lastI]) {
         var d$1 = lastB - range$$1[lastI];
         if (this._range === void 0 || this._range[lastI] === void 0) {
@@ -15507,8 +14732,17 @@ var Axis = (function (BaseClass) {
 
       if (range$$1.length > 2) { range$$1 = range(this._domain.length).map(function (d) { return this$1._size * (d / (range$$1.length - 1)) + range$$1[0]; }); }
       range$$1 = range$$1.map(Math.round);
-      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
-      else { this._d3Scale.range(range$$1); }
+      if (this._d3ScaleNegative) {
+        var negativeRange = this._d3ScaleNegative.range();
+        this._d3ScaleNegative[this._d3ScaleNegative.rangeRound ? "rangeRound" : "range"]([range$$1[0], this._d3Scale ? negativeRange[1] : range$$1[1]]);
+        if (this._d3Scale) {
+          var positiveRange = this._d3Scale.range();
+          this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"]([positiveRange[0], range$$1[1]]);
+        }
+      }
+      else {
+        this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](range$$1);
+      }
 
     }
 
@@ -15518,7 +14752,7 @@ var Axis = (function (BaseClass) {
     else if (labels.length > 1) {
       this._space = 0;
       for (var i$1 = 0; i$1 < labels.length - 1; i$1++) {
-        var s$1 = this$1._d3Scale(labels[i$1 + 1]) - this$1._d3Scale(labels[i$1]);
+        var s$1 = this$1._getPosition(labels[i$1 + 1]) - this$1._getPosition(labels[i$1]);
         if (s$1 > this$1._space) { this$1._space = s$1; }
       }
     }
@@ -15589,7 +14823,7 @@ var Axis = (function (BaseClass) {
           size: ticks.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false,
           tick: ticks.includes(d)
-        }, obj[x] = this$1._d3Scale(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
+        }, obj[x] = this$1._getPosition(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
         var obj;
       });
 
@@ -15635,7 +14869,7 @@ var Axis = (function (BaseClass) {
       .config(this._titleConfig)
       .render();
 
-    this._lastScale = this._d3Scale;
+    this._lastScale = this._getPosition.bind(this);
 
     if (callback) { setTimeout(callback, this._duration + 100); }
 
@@ -16385,6 +15619,157 @@ var load = function(path, formatter, key, callback) {
 
 };
 
+var extent$1 = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      min,
+      max;
+
+  if (valueof == null) {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = values[i]) != null && value >= value) {
+        min = max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = values[i]) != null) {
+            if (min > value) { min = value; }
+            if (max < value) { max = value; }
+          }
+        }
+      }
+    }
+  }
+
+  else {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = valueof(values[i], i, values)) != null && value >= value) {
+        min = max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = valueof(values[i], i, values)) != null) {
+            if (min > value) { min = value; }
+            if (max < value) { max = value; }
+          }
+        }
+      }
+    }
+  }
+
+  return [min, max];
+};
+
+var max$2 = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      max;
+
+  if (valueof == null) {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = values[i]) != null && value >= value) {
+        max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = values[i]) != null && value > max) {
+            max = value;
+          }
+        }
+      }
+    }
+  }
+
+  else {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = valueof(values[i], i, values)) != null && value >= value) {
+        max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = valueof(values[i], i, values)) != null && value > max) {
+            max = value;
+          }
+        }
+      }
+    }
+  }
+
+  return max;
+};
+
+var arrayMerge = function(arrays) {
+  var n = arrays.length,
+      m,
+      i = -1,
+      j = 0,
+      merged,
+      array;
+
+  while (++i < n) { j += arrays[i].length; }
+  merged = new Array(j);
+
+  while (--n >= 0) {
+    array = arrays[n];
+    m = array.length;
+    while (--m >= 0) {
+      merged[--j] = array[m];
+    }
+  }
+
+  return merged;
+};
+
+var min$2 = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      min;
+
+  if (valueof == null) {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = values[i]) != null && value >= value) {
+        min = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = values[i]) != null && min > value) {
+            min = value;
+          }
+        }
+      }
+    }
+  }
+
+  else {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = valueof(values[i], i, values)) != null && value >= value) {
+        min = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = valueof(values[i], i, values)) != null && min > value) {
+            min = value;
+          }
+        }
+      }
+    }
+  }
+
+  return min;
+};
+
+var sum$2 = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      sum = 0;
+
+  if (valueof == null) {
+    while (++i < n) {
+      if (value = +values[i]) { sum += value; } // Note: zero and null are equivalent.
+    }
+  }
+
+  else {
+    while (++i < n) {
+      if (value = +valueof(values[i], i, values)) { sum += value; }
+    }
+  }
+
+  return sum;
+};
+
 var noevent = function() {
   event$1.preventDefault();
   event$1.stopImmediatePropagation();
@@ -16434,7 +15819,7 @@ DragEvent.prototype.on = function() {
   return value === this._ ? this : value;
 };
 
-var constant$7 = function(x) {
+var constant$8 = function(x) {
   return function() {
     return x;
   };
@@ -16962,11 +16347,11 @@ function brush$1(dim) {
   }
 
   brush.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$7([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$8([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
   };
 
   brush.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$7(!!_), brush) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$8(!!_), brush) : filter;
   };
 
   brush.handleSize = function(_) {
@@ -16981,7 +16366,7 @@ function brush$1(dim) {
   return brush;
 }
 
-var slice$3 = [].slice;
+var slice$4 = [].slice;
 
 var noabort = {};
 
@@ -17003,7 +16388,7 @@ Queue.prototype = queue.prototype = {
     if (typeof callback !== "function") { throw new Error("invalid callback"); }
     if (this._call) { throw new Error("defer after await"); }
     if (this._error != null) { return this; }
-    var t = slice$3.call(arguments, 1);
+    var t = slice$4.call(arguments, 1);
     t.push(callback);
     ++this._waiting, this._tasks.push(t);
     poke$1(this);
@@ -17103,7 +16488,7 @@ function queue(concurrency) {
   return new Queue(concurrency);
 }
 
-var constant$8 = function(x) {
+var constant$9 = function(x) {
   return function() {
     return x;
   };
@@ -17158,12 +16543,12 @@ Transform.prototype = {
   }
 };
 
-var identity$5 = new Transform(1, 0, 0);
+var identity$6 = new Transform(1, 0, 0);
 
 transform.prototype = Transform.prototype;
 
 function transform(node) {
-  return node.__zoom || identity$5;
+  return node.__zoom || identity$6;
 }
 
 function nopropagation$2() {
@@ -17194,14 +16579,14 @@ function defaultExtent$1() {
 }
 
 function defaultTransform() {
-  return this.__zoom || identity$5;
+  return this.__zoom || identity$6;
 }
 
 function defaultWheelDelta() {
   return -event$1.deltaY * (event$1.deltaMode ? 120 : 1) / 500;
 }
 
-function touchable$1() {
+function defaultTouchable$1() {
   return "ontouchstart" in this;
 }
 
@@ -17209,6 +16594,7 @@ var zoom = function() {
   var filter = defaultFilter$2,
       extent = defaultExtent$1,
       wheelDelta = defaultWheelDelta,
+      touchable = defaultTouchable$1,
       k0 = 0,
       k1 = Infinity,
       x0 = -k1,
@@ -17231,7 +16617,7 @@ var zoom = function() {
         .on("wheel.zoom", wheeled)
         .on("mousedown.zoom", mousedowned)
         .on("dblclick.zoom", dblclicked)
-      .filter(touchable$1)
+      .filter(touchable)
         .on("touchstart.zoom", touchstarted)
         .on("touchmove.zoom", touchmoved)
         .on("touchend.zoom touchcancel.zoom", touchended)
@@ -17287,7 +16673,7 @@ var zoom = function() {
       var e = extent.apply(this, arguments),
           t = this.__zoom,
           p = centroid(e);
-      return constrain(identity$5.translate(p[0], p[1]).scale(t.k).translate(
+      return constrain(identity$6.translate(p[0], p[1]).scale(t.k).translate(
         typeof x === "function" ? -x.apply(this, arguments) : -x,
         typeof y === "function" ? -y.apply(this, arguments) : -y
       ), e);
@@ -17550,15 +16936,19 @@ var zoom = function() {
   }
 
   zoom.wheelDelta = function(_) {
-    return arguments.length ? (wheelDelta = typeof _ === "function" ? _ : constant$8(+_), zoom) : wheelDelta;
+    return arguments.length ? (wheelDelta = typeof _ === "function" ? _ : constant$9(+_), zoom) : wheelDelta;
   };
 
   zoom.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$8(!!_), zoom) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$9(!!_), zoom) : filter;
+  };
+
+  zoom.touchable = function(_) {
+    return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$9(!!_), zoom) : touchable;
   };
 
   zoom.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$8([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), zoom) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$9([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), zoom) : extent;
   };
 
   zoom.scaleExtent = function(_) {
@@ -18526,6 +17916,136 @@ var ckmeans = function(data, nClusters) {
 
 };
 
+var extent$2 = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      min,
+      max;
+
+  if (valueof == null) {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = values[i]) != null && value >= value) {
+        min = max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = values[i]) != null) {
+            if (min > value) { min = value; }
+            if (max < value) { max = value; }
+          }
+        }
+      }
+    }
+  }
+
+  else {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = valueof(values[i], i, values)) != null && value >= value) {
+        min = max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = valueof(values[i], i, values)) != null) {
+            if (min > value) { min = value; }
+            if (max < value) { max = value; }
+          }
+        }
+      }
+    }
+  }
+
+  return [min, max];
+};
+
+var range$2 = function(start, stop, step) {
+  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+
+  var i = -1,
+      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
+      range = new Array(n);
+
+  while (++i < n) {
+    range[i] = start + i * step;
+  }
+
+  return range;
+};
+
+var max$3 = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      max;
+
+  if (valueof == null) {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = values[i]) != null && value >= value) {
+        max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = values[i]) != null && value > max) {
+            max = value;
+          }
+        }
+      }
+    }
+  }
+
+  else {
+    while (++i < n) { // Find the first comparable value.
+      if ((value = valueof(values[i], i, values)) != null && value >= value) {
+        max = value;
+        while (++i < n) { // Compare the remaining values.
+          if ((value = valueof(values[i], i, values)) != null && value > max) {
+            max = value;
+          }
+        }
+      }
+    }
+  }
+
+  return max;
+};
+
+var merge$2 = function(arrays) {
+  var n = arrays.length,
+      m,
+      i = -1,
+      j = 0,
+      merged,
+      array;
+
+  while (++i < n) { j += arrays[i].length; }
+  merged = new Array(j);
+
+  while (--n >= 0) {
+    array = arrays[n];
+    m = array.length;
+    while (--m >= 0) {
+      merged[--j] = array[m];
+    }
+  }
+
+  return merged;
+};
+
+var sum$3 = function(values, valueof) {
+  var n = values.length,
+      i = -1,
+      value,
+      sum = 0;
+
+  if (valueof == null) {
+    while (++i < n) {
+      if (value = +values[i]) { sum += value; } // Note: zero and null are equivalent.
+    }
+  }
+
+  else {
+    while (++i < n) {
+      if (value = +valueof(values[i], i, values)) { sum += value; }
+    }
+  }
+
+  return sum;
+};
+
 /**
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
@@ -18592,7 +18112,7 @@ var ColorScale = (function (BaseClass) {
     // Shape <g> Group
     this._group = elem("g.d3plus-ColorScale", {parent: this._select});
 
-    var domain = extent(this._data, this._value);
+    var domain = extent$2(this._data, this._value);
     var colors = this._color, ticks;
 
     if (!(colors instanceof Array)) {
@@ -18614,7 +18134,7 @@ var ColorScale = (function (BaseClass) {
       if (data.length <= colors.length) {
 
         var ts = linear$2()
-          .domain(range(0, data.length - 1))
+          .domain(range$2(0, data.length - 1))
           .interpolate(interpolateHsl)
           .range(colors);
 
@@ -18623,7 +18143,7 @@ var ColorScale = (function (BaseClass) {
 
       var jenks = ckmeans(data, colors.length);
 
-      ticks = merge$1(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
+      ticks = merge$2(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
 
       this._colorScale = threshold$1()
         .domain(ticks)
@@ -18632,8 +18152,8 @@ var ColorScale = (function (BaseClass) {
     }
     else {
 
-      var step = (domain[1] - domain[0]) / colors.length;
-      var buckets = range(domain[0], domain[1] + step / 2, step);
+      var step = (domain[1] - domain[0]) / (colors.length - 1);
+      var buckets = range$2(domain[0], domain[1] + step / 2, step);
 
       if (this._scale === "buckets") { ticks = buckets; }
 
@@ -18679,8 +18199,8 @@ var ColorScale = (function (BaseClass) {
       .align("start")
       .render();
 
-    var axisScale = this._axisTest._d3Scale;
-    var scaleRange = axisScale.range();
+    var axisScale = this._axisTest._getPosition.bind(this._axisTest);
+    var scaleRange = this._axisTest._getRange();
 
     var defs = this._group.selectAll("defs").data([0]);
     var defsEnter = defs.enter().append("defs");
@@ -18877,925 +18397,6 @@ function value(d) {
 }(BaseClass));
 
 /**
-    @function textWidth
-    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
-    @param {String|Array} text Can be either a single string or an array of strings to analyze.
-    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
-*/
-var measure$2 = function(text, style) {
-
-  style = Object.assign({
-    "font-size": 10,
-    "font-family": "sans-serif",
-    "font-style": "normal",
-    "font-weight": 400,
-    "font-variant": "normal"
-  }, style);
-
-  var context = document.createElement("canvas").getContext("2d");
-
-  var font = [];
-  font.push(style["font-style"]);
-  font.push(style["font-variant"]);
-  font.push(style["font-weight"]);
-  font.push(typeof style["font-size"] === "string" ? style["font-size"] : ((style["font-size"]) + "px"));
-  // let s = `${style["font-size"]}px`;
-  // if ("line-height" in style) s += `/${style["line-height"]}px`;
-  // font.push(s);
-  font.push(style["font-family"]);
-
-  context.font = font.join(" ");
-
-  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-  return context.measureText(text).width;
-
-};
-
-/**
-    @function trim
-    @desc Cross-browser implementation of [trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim).
-    @param {String} str
-*/
-function trim$2(str) {
-  return str.replace(/^\s+|\s+$/g, "");
-}
-
-/**
-    @function trimRight
-    @desc Cross-browser implementation of [trimRight](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/TrimRight).
-    @param {String} str
-*/
-function trimRight$2(str) {
-  return str.replace(/\s+$/, "");
-}
-
-var alpha$2 = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
-var checked$2 = {};
-var height$2 = 32;
-
-var dejavu$2;
-var macos$2;
-var monospace$2;
-var proportional$2;
-
-/**
-    @function fontExists
-    @desc Given either a single font-family or a list of fonts, returns the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
-    @param {String|Array} font Can be either a valid CSS font-family string (single or comma-separated names) or an Array of string names.
-*/
-var fontExists$4 = function (font) {
-
-  if (!dejavu$2) {
-    dejavu$2 = measure$2(alpha$2, {"font-family": "DejaVuSans", "font-size": height$2});
-    macos$2 = measure$2(alpha$2, {"font-family": "-apple-system", "font-size": height$2});
-    monospace$2 = measure$2(alpha$2, {"font-family": "monospace", "font-size": height$2});
-    proportional$2 = measure$2(alpha$2, {"font-family": "sans-serif", "font-size": height$2});
-  }
-
-  if (!(font instanceof Array)) { font = font.split(","); }
-  font = font.map(function (f) { return trim$2(f); });
-
-  for (var i = 0; i < font.length; i++) {
-    var fam = font[i];
-    if (checked$2[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
-    else if (checked$2[fam] === false) { continue; }
-    var width = measure$2(alpha$2, {"font-family": fam, "font-size": height$2});
-    checked$2[fam] = width !== monospace$2;
-    if (checked$2[fam]) { checked$2[fam] = width !== proportional$2; }
-    if (macos$2 && checked$2[fam]) { checked$2[fam] = width !== macos$2; }
-    if (dejavu$2 && checked$2[fam]) { checked$2[fam] = width !== dejavu$2; }
-    if (checked$2[fam]) { return fam; }
-  }
-
-  return false;
-
-};
-
-/**
-    @function rtl
-    @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
-*/
-var detectRTL$2 = function () { return select("html").attr("dir") === "rtl" ||
-  select("body").attr("dir") === "rtl" ||
-  select("html").style("direction") === "rtl" ||
-  select("body").style("direction") === "rtl"; };
-
-/**
-    @function stringify
-    @desc Coerces value into a String.
-    @param {String} value
-*/
-var stringify$2 = function(value) {
-  if (value === void 0) { value = "undefined"; }
-  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
-  return value;
-};
-
-// great unicode list: http://asecuritysite.com/coding/asc2
-
-var diacritics$2 = [
-  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
-  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
-  [/[\337]/g, "B"],
-  [/[\307]/g, "C"], [/[\347]/g, "c"],
-  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
-  [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
-  [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
-  [/[\321]/g, "N"], [/[\361]/g, "n"],
-  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
-  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
-  [/[\327]/g, "x"],
-  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
-];
-
-/**
-    @function strip
-    @desc Removes all non ASCII characters from a string.
-    @param {String} value
-*/
-var strip$2 = function(value) {
-
-  return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
-
-    if (char === " ") { return "-"; }
-
-    var ret = false;
-    for (var d = 0; d < diacritics$2.length; d++) {
-      if (new RegExp(diacritics$2[d][0]).test(char)) {
-        ret = diacritics$2[d][1];
-        break;
-      }
-    }
-
-    return ret || "";
-
-  });
-};
-
-// scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
-// and http://www.fileformat.info/info/unicode/category/Mn/list.htm
-// JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
-var a$3 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
-var b$2 = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
-var combiningMarks$2 = a$3.concat(b$2);
-
-var splitChars$2 = ["-",  "/",  ";",  ":",  "&",
-  "u0E2F",  // thai character pairannoi
-  "u0EAF",  // lao ellipsis
-  "u0EC6",  // lao ko la (word repetition)
-  "u0ECC",  // lao cancellation mark
-  "u104A",  // myanmar sign little section
-  "u104B",  // myanmar sign section
-  "u104C",  // myanmar symbol locative
-  "u104D",  // myanmar symbol completed
-  "u104E",  // myanmar symbol aforementioned
-  "u104F",  // myanmar symbol genitive
-  "u2013",  // en dash
-  "u2014",  // em dash
-  "u2027",  // simplified chinese hyphenation point
-  "u3000",  // simplified chinese ideographic space
-  "u3001",  // simplified chinese ideographic comma
-  "u3002",  // simplified chinese ideographic full stop
-  "uFF0C",  // full-width comma
-  "uFF5E"   // wave dash
-];
-
-var prefixChars$2 = ["'",  "<",  "(",  "{",  "[",
-  "u00AB",  // left-pointing double angle quotation mark
-  "u300A",  // left double angle bracket
-  "u3008"  // left angle bracket
-];
-
-var suffixChars$2 = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
-  "u00BB",  // right-pointing double angle quotation mark
-  "u300B",  // right double angle bracket
-  "u3009"  // right angle bracket
-].concat(splitChars$2);
-
-var burmeseRange$2 = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-var japaneseRange$2 = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff0b\uff0d-\uff5d\uff5f-\uff9f\u3400-\u4dbf";
-var chineseRange$2 = "\u3400-\u9FBF";
-var laoRange$2 = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
-
-var noSpaceRange$2 = burmeseRange$2 + chineseRange$2 + laoRange$2;
-
-var splitWords$2 = new RegExp(("(\\" + (splitChars$2.join("|\\")) + ")*[^\\s|\\" + (splitChars$2.join("|\\")) + "]*(\\" + (splitChars$2.join("|\\")) + ")*"), "g");
-var japaneseChars$2 = new RegExp(("[" + japaneseRange$2 + "]"));
-var noSpaceLanguage$2 = new RegExp(("[" + noSpaceRange$2 + "]"));
-var splitAllChars$2 = new RegExp(("(\\" + (prefixChars$2.join("|\\")) + ")*[" + noSpaceRange$2 + "](\\" + (suffixChars$2.join("|\\")) + "|\\" + (combiningMarks$2.join("|\\")) + ")*|[a-z0-9]+"), "gi");
-
-/**
-    @function textSplit
-    @desc Splits a given sentence into an array of words.
-    @param {String} sentence
-*/
-var textSplit$2 = function(sentence) {
-  if (!noSpaceLanguage$2.test(sentence)) { return stringify$2(sentence).match(splitWords$2).filter(function (w) { return w.length; }); }
-  return merge$1(stringify$2(sentence).match(splitWords$2).map(function (d) {
-    if (!japaneseChars$2.test(d) && noSpaceLanguage$2.test(d)) { return d.match(splitAllChars$2); }
-    return [d];
-  }));
-};
-
-/**
-    @function textWrap
-    @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
-*/
-var wrap$2 = function() {
-
-  var fontFamily = "sans-serif",
-      fontSize = 10,
-      fontWeight = 400,
-      height = 200,
-      lineHeight,
-      overflow = false,
-      split = textSplit$2,
-      width = 200;
-
-  /**
-      The inner return object and wraps the text and returns the line data array.
-      @private
-  */
-  function textWrap(sentence) {
-
-    sentence = stringify$2(sentence);
-
-    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.4); }
-
-    var words = split(sentence);
-
-    var style = {
-      "font-family": fontFamily,
-      "font-size": fontSize,
-      "font-weight": fontWeight,
-      "line-height": lineHeight
-    };
-
-    var line = 1,
-        textProg = "",
-        truncated = false,
-        widthProg = 0;
-
-    var lineData = [],
-          sizes = measure$2(words, style),
-          space = measure$2(" ", style);
-
-    for (var i = 0; i < words.length; i++) {
-      var word = words[i];
-      var wordWidth = sizes[words.indexOf(word)];
-      word += sentence.slice(textProg.length + word.length).match("^( |\n)*", "g")[0];
-      if (textProg.slice(-1) === "\n" || widthProg + wordWidth > width) {
-        if (!i && !overflow) {
-          truncated = true;
-          break;
-        }
-        lineData[line - 1] = trimRight$2(lineData[line - 1]);
-        line++;
-        if (lineHeight * line > height || wordWidth > width && !overflow) {
-          truncated = true;
-          break;
-        }
-        widthProg = 0;
-        lineData.push(word);
-      }
-      else if (!i) { lineData[0] = word; }
-      else { lineData[line - 1] += word; }
-      textProg += word;
-      widthProg += wordWidth;
-      widthProg += word.match(/[\s]*$/g)[0].length * space;
-    }
-
-    return {
-      lines: lineData,
-      sentence: sentence, truncated: truncated,
-      widths: measure$2(lineData, style),
-      words: words
-    };
-
-  }
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value* = "sans-serif"]
-  */
-  textWrap.fontFamily = function(_) {
-    return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
-      @param {Function|Number} [*value* = 10]
-  */
-  textWrap.fontSize = function(_) {
-    return arguments.length ? (fontSize = _, textWrap) : fontSize;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  textWrap.fontWeight = function(_) {
-    return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets height limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.height = function(_) {
-    return arguments.length ? (height = _, textWrap) : height;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textWrap.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  textWrap.lineHeight = function(_) {
-    return arguments.length ? (lineHeight = _, textWrap) : lineHeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
-      @param {Boolean} [*value* = false]
-  */
-  textWrap.overflow = function(_) {
-    return arguments.length ? (overflow = _, textWrap) : overflow;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
-      @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to textWrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
-  */
-  textWrap.split = function(_) {
-    return arguments.length ? (split = _, textWrap) : split;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets width limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.width = function(_) {
-    return arguments.length ? (width = _, textWrap) : width;
-  };
-
-  return textWrap;
-
-};
-
-/**
-    @external BaseClass
-    @see https://github.com/d3plus/d3plus-common#BaseClass
-*/
-
-/**
-    @class TextBox
-    @extends external:BaseClass
-    @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
-*/
-var TextBox$4 = (function (BaseClass) {
-  function TextBox() {
-
-    BaseClass.call(this);
-
-    this._delay = 0;
-    this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
-    this._fontColor = constant("black");
-    this._fontFamily = constant(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
-    this._fontMax = constant(50);
-    this._fontMin = constant(8);
-    this._fontResize = constant(false);
-    this._fontSize = constant(10);
-    this._fontWeight = constant(400);
-    this._height = accessor("height", 200);
-    this._id = function (d, i) { return d.id || ("" + i); };
-    this._on = {};
-    this._overflow = constant(false);
-    this._pointerEvents = constant("auto");
-    this._rotate = constant(0);
-    this._split = textSplit$2;
-    this._text = accessor("text");
-    this._textAnchor = constant("start");
-    this._verticalAlign = constant("top");
-    this._width = accessor("width", 200);
-    this._x = accessor("x", 0);
-    this._y = accessor("y", 0);
-
-  }
-
-  if ( BaseClass ) TextBox.__proto__ = BaseClass;
-  TextBox.prototype = Object.create( BaseClass && BaseClass.prototype );
-  TextBox.prototype.constructor = TextBox;
-
-  /**
-      @memberof TextBox
-      @desc Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
-      @param {Function} [*callback* = undefined]
-  */
-  TextBox.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
-    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.4; }; }
-    var that = this;
-
-    var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
-
-      var t = this$1._text(d, i);
-      if (t === void 0) { return arr; }
-
-      var resize = this$1._fontResize(d, i);
-
-      var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
-          lH = resize ? fS * 1.4 : this$1._lineHeight(d, i),
-          line = 1,
-          lineData = [],
-          sizes,
-          wrapResults;
-
-      var style = {
-        "font-family": fontExists$4(this$1._fontFamily(d, i)),
-        "font-size": fS,
-        "font-weight": this$1._fontWeight(d, i),
-        "line-height": lH
-      };
-
-      var h = this$1._height(d, i),
-            w = this$1._width(d, i);
-
-      var wrapper = wrap$2()
-        .fontFamily(style["font-family"])
-        .fontSize(fS)
-        .fontWeight(style["font-weight"])
-        .lineHeight(lH)
-        .height(h)
-        .overflow(this$1._overflow(d, i))
-        .width(w);
-
-      var fMax = this$1._fontMax(d, i),
-            fMin = this$1._fontMin(d, i),
-            vA = this$1._verticalAlign(d, i),
-            words = this$1._split(t, i);
-
-      /**
-          Figures out the lineData to be used for wrapping.
-          @private
-      */
-      function checkSize() {
-
-        if (fS < fMin) {
-          lineData = [];
-          return;
-        }
-        else if (fS > fMax) { fS = fMax; }
-
-        if (resize) {
-          lH = fS * 1.4;
-          wrapper
-            .fontSize(fS)
-            .lineHeight(lH);
-          style["font-size"] = fS;
-          style["line-height"] = lH;
-        }
-
-        wrapResults = wrapper(t);
-        lineData = wrapResults.lines.filter(function (l) { return l !== ""; });
-        line = lineData.length;
-
-        if (wrapResults.truncated) {
-
-          if (resize) {
-            fS--;
-            if (fS < fMin) { lineData = []; }
-            else { checkSize(); }
-          }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
-
-        }
-
-
-      }
-
-      if (w > fMin && (h > lH || resize && h > fMin * 1.4)) {
-
-        if (resize) {
-
-          sizes = measure$2(words, style);
-
-          var areaMod = 1.165 + w / h * 0.1,
-                boxArea = w * h,
-                maxWidth = max(sizes),
-                textArea = sum(sizes, function (d) { return d * lH; }) * areaMod;
-
-          if (maxWidth > w || textArea > boxArea) {
-            var areaRatio = Math.sqrt(boxArea / textArea),
-                  widthRatio = w / maxWidth;
-            var sizeRatio = min([areaRatio, widthRatio]);
-            fS = Math.floor(fS * sizeRatio);
-          }
-
-          var heightMax = Math.floor(h * 0.8);
-          if (fS > heightMax) { fS = heightMax; }
-
-        }
-
-        checkSize();
-
-      }
-
-      if (lineData.length) {
-
-        var tH = line * lH;
-        var yP = vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH;
-        yP -= lH * 0.1;
-
-        arr.push({
-          data: d,
-          i: i,
-          lines: lineData,
-          fC: this$1._fontColor(d, i),
-          fF: style["font-family"],
-          fW: style["font-weight"],
-          id: this$1._id(d, i),
-          tA: this$1._textAnchor(d, i),
-          widths: wrapResults.widths,
-          fS: fS, lH: lH, w: w, h: h, x: this$1._x(d, i), y: this$1._y(d, i) + yP
-        });
-
-      }
-
-      return arr;
-
-    }, []), this._id);
-
-    var t = transition().duration(this._duration);
-
-    if (this._duration === 0) {
-
-      boxes.exit().remove();
-
-    }
-    else {
-
-      boxes.exit().transition().delay(this._duration).remove();
-
-      boxes.exit().selectAll("text").transition(t)
-        .attr("opacity", 0);
-
-    }
-
-    function rotate(text) {
-      text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + ", " + (d.x + d.w / 2) + ", " + (d.y + d.h / 2) + ")translate(" + (d.x) + ", " + (d.y) + ")"); });
-    }
-
-    var update = boxes.enter().append("g")
-        .attr("class", "d3plus-textBox")
-        .attr("id", function (d) { return ("d3plus-textBox-" + (strip$2(d.id))); })
-        .call(rotate)
-      .merge(boxes);
-
-    var rtl = detectRTL$2();
-
-    update
-      .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
-      .each(function(d) {
-
-        /**
-            Styles to apply to each <text> element.
-            @private
-        */
-        function textStyle(text) {
-          text
-            .text(function (t) { return trimRight$2(t); })
-            .attr("dir", rtl ? "rtl" : "ltr")
-            .attr("fill", d.fC)
-            .attr("text-anchor", d.tA)
-            .attr("font-family", d.fF)
-            .style("font-family", d.fF)
-            .attr("font-size", ((d.fS) + "px"))
-            .style("font-size", ((d.fS) + "px"))
-            .attr("font-weight", d.fW)
-            .style("font-weight", d.fW)
-            .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
-            .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
-        }
-
-        var texts = select(this).selectAll("text").data(d.lines);
-
-        if (that._duration === 0) {
-
-          texts.call(textStyle);
-
-          texts.exit().remove();
-
-          texts.enter().append("text")
-            .attr("dominant-baseline", "alphabetic")
-            .style("baseline-shift", "0%")
-            .attr("unicode-bidi", "bidi-override")
-            .call(textStyle);
-
-        }
-        else {
-
-          texts.transition(t).call(textStyle);
-
-          texts.exit().transition(t)
-            .attr("opacity", 0).remove();
-
-          texts.enter().append("text")
-              .attr("dominant-baseline", "alphabetic")
-              .style("baseline-shift", "0%")
-              .attr("opacity", 0)
-              .call(textStyle)
-            .merge(texts).transition(t).delay(that._delay)
-              .call(textStyle)
-              .attr("opacity", 1);
-
-        }
-
-      })
-      .transition(t).call(rotate);
-
-    var events = Object.keys(this._on),
-          on = events.reduce(function (obj, e) {
-            obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
-            return obj;
-          }, {});
-    for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
-
-    if (callback) { setTimeout(callback, this._duration + 100); }
-
-    return this;
-
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
-      @param {Array} [*data* = []]
-  */
-  TextBox.prototype.data = function data (_) {
-    return arguments.length ? (this._data = _, this) : this._data;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the animation delay to the specified number in milliseconds.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.delay = function delay (_) {
-    return arguments.length ? (this._delay = _, this) : this._delay;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the animation duration to the specified number in milliseconds.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.duration = function duration (_) {
-    return arguments.length ? (this._duration = _, this) : this._duration;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
-}
-  */
-  TextBox.prototype.ellipsis = function ellipsis (_) {
-    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant(_), this) : this._ellipsis;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|String} [*value* = "black"]
-  */
-  TextBox.prototype.fontColor = function fontColor (_) {
-    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant(_), this) : this._fontColor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
-      @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
-  */
-  TextBox.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant(_), this) : this._fontFamily;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the maximum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
-      @param {Function|Number} [*value* = 50]
-  */
-  TextBox.prototype.fontMax = function fontMax (_) {
-    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant(_), this) : this._fontMax;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the minimum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
-      @param {Function|Number} [*value* = 8]
-  */
-  TextBox.prototype.fontMin = function fontMin (_) {
-    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant(_), this) : this._fontMin;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.fontResize = function fontResize (_) {
-    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant(_), this) : this._fontResize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font size to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|Number} [*value* = 10]
-  */
-  TextBox.prototype.fontSize = function fontSize (_) {
-    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant(_), this) : this._fontSize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  TextBox.prototype.fontWeight = function fontWeight (_) {
-    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant(_), this) : this._fontWeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the height for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.height || 200;
-}
-  */
-  TextBox.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant(_), this) : this._height;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Defines the unique id for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d, i) {
-  return d.id || i + "";
-}
-  */
-  TextBox.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant(_), this) : this._id;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the line height to the specified accessor function or static number, which is 1.4 times the [font size](#textBox.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  TextBox.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant(_), this) : this._lineHeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the text overflow to the specified accessor function or static boolean.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.overflow = function overflow (_) {
-    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant(_), this) : this._overflow;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the pointer-events to the specified accessor function or static string.
-      @param {Function|String} [*value* = "auto"]
-  */
-  TextBox.prototype.pointerEvents = function pointerEvents (_) {
-    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant(_), this) : this._pointerEvents;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the rotate percentage for each box to the specified accessor function or static string.
-      @param {Function|Number} [*value* = 0]
-  */
-  TextBox.prototype.rotate = function rotate (_) {
-    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant(_), this) : this._rotate;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
-      @param {String|HTMLElement} [*selector*]
-  */
-  TextBox.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = select(_), this) : this._select;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
-      @param {Function} [*value*]
-  */
-  TextBox.prototype.split = function split (_) {
-    return arguments.length ? (this._split = _, this) : this._split;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the text for each box to the specified accessor function or static string.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.text;
-}
-  */
-  TextBox.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant(_), this) : this._text;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
-      @param {Function|String} [*value* = "start"]
-  */
-  TextBox.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant(_), this) : this._textAnchor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
-      @param {Function|String} [*value* = "top"]
-  */
-  TextBox.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant(_), this) : this._verticalAlign;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the width for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.width || 200;
-}
-  */
-  TextBox.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant(_), this) : this._width;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.x || 0;
-}
-  */
-  TextBox.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant(_), this) : this._x;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.y || 0;
-}
-  */
-  TextBox.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant(_), this) : this._y;
-  };
-
-  return TextBox;
-}(BaseClass));
-
-/**
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
@@ -19829,7 +18430,7 @@ var Legend = (function (BaseClass) {
       height: constant(10),
       hitArea: function (dd, i) {
         var d = this$1._lineData[i],
-              h = max([d.height, d.shapeHeight]);
+              h = max$3([d.height, d.shapeHeight]);
         return {width: d.width + d.shapeWidth, height: h, x: -d.shapeWidth / 2, y: -h / 2};
       },
       labelBounds: function (dd, i, s) {
@@ -19839,7 +18440,7 @@ var Legend = (function (BaseClass) {
       },
       labelConfig: {
         fontColor: constant("#444"),
-        fontFamily: new TextBox$4().fontFamily(),
+        fontFamily: new TextBox().fontFamily(),
         fontResize: false,
         fontSize: constant(10)
       },
@@ -19859,10 +18460,10 @@ var Legend = (function (BaseClass) {
       y: function (d, i) {
         var ld = this$1._lineData[i];
         return ld.y + this$1._titleHeight + this$1._outerBounds.y +
-               max(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return this$1._fetchConfig("height", l, x); }))) / 2;
+               max$3(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return this$1._fetchConfig("height", l, x); }))) / 2;
       }
     };
-    this._titleClass = new TextBox$4();
+    this._titleClass = new TextBox();
     this._titleConfig = {};
     this._verticalAlign = "middle";
     this._width = 400;
@@ -19880,13 +18481,13 @@ var Legend = (function (BaseClass) {
   };
 
   Legend.prototype._rowHeight = function _rowHeight (row) {
-    return max(row.map(function (d) { return d.height; }).concat(row.map(function (d) { return d.shapeHeight; }))) + this._padding;
+    return max$3(row.map(function (d) { return d.height; }).concat(row.map(function (d) { return d.shapeHeight; }))) + this._padding;
   };
 
   Legend.prototype._rowWidth = function _rowWidth (row) {
     var this$1 = this;
 
-    return sum(row.map(function (d, i) {
+    return sum$3(row.map(function (d, i) {
       var p = this$1._padding * (i === row.length - 1 ? 0 : d.width ? 2 : 1);
       return d.shapeWidth + d.width + p;
     }));
@@ -19916,7 +18517,7 @@ var Legend = (function (BaseClass) {
       var lH = lH = this._titleConfig.lineHeight || this._titleClass.lineHeight();
       lH = lH ? lH() : s * 1.4;
 
-      var res = wrap$2()
+      var res = textWrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lH)
@@ -19956,7 +18557,7 @@ var Legend = (function (BaseClass) {
       var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
             w = this$1._width;
 
-      res = Object.assign(res, wrap$2()
+      res = Object.assign(res, textWrap()
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(lh)
@@ -19964,7 +18565,7 @@ var Legend = (function (BaseClass) {
         .height(h)
         (label));
 
-      res.width = Math.ceil(max(res.lines.map(function (t) { return measure$2(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
+      res.width = Math.ceil(max$3(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
       res.height = Math.ceil(res.lines.length * (lh + 1));
       res.og = {height: res.height, width: res.width};
       res.f = f;
@@ -19982,7 +18583,7 @@ var Legend = (function (BaseClass) {
     if (this._direction === "column" || spaceNeeded > availableWidth) {
       var lines = 1, newRows = [];
 
-      var maxLines = max(this._lineData.map(function (d) { return d.words.length; }));
+      var maxLines = max$3(this._lineData.map(function (d) { return d.words.length; }));
       this._wrapLines = function() {
         var this$1 = this;
 
@@ -20001,9 +18602,9 @@ var Legend = (function (BaseClass) {
           var loop = function ( x ) {
             var label = wrappable[x];
             var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
-            var res = wrap$2().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+            var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
             if (!res.truncated) {
-              label.width = Math.ceil(max(res.lines.map(function (t) { return measure$2(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+              label.width = Math.ceil(max$3(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
               label.height = res.lines.length * (label.lh + 1);
             }
             else {
@@ -20034,7 +18635,7 @@ var Legend = (function (BaseClass) {
         for (var i = 0; i < this._lineData.length; i++) {
           var d = this$1._lineData[i],
                 w = d.width + this$1._padding * (d.width ? 2 : 1) + d.shapeWidth;
-          if (sum(newRows.map(function (row) { return max(row, function (d) { return max([d.height, d.shapeHeight]); }); })) > availableHeight) {
+          if (sum$3(newRows.map(function (row) { return max$3(row, function (d) { return max$3([d.height, d.shapeHeight]); }); })) > availableHeight) {
             newRows = [];
             break;
           }
@@ -20061,8 +18662,8 @@ var Legend = (function (BaseClass) {
 
       this._wrapRows();
 
-      if (!newRows.length || sum(newRows, this._rowHeight.bind(this)) + this._padding > availableHeight) {
-        spaceNeeded = sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding; })) - this._padding;
+      if (!newRows.length || sum$3(newRows, this._rowHeight.bind(this)) + this._padding > availableHeight) {
+        spaceNeeded = sum$3(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding; })) - this._padding;
         for (var i = 0; i < this._lineData.length; i++) {
           this$1._lineData[i].width = 0;
           this$1._lineData[i].height = 0;
@@ -20070,19 +18671,19 @@ var Legend = (function (BaseClass) {
         this._wrapRows();
       }
 
-      if (newRows.length && sum(newRows, this._rowHeight.bind(this)) + this._padding < availableHeight) {
+      if (newRows.length && sum$3(newRows, this._rowHeight.bind(this)) + this._padding < availableHeight) {
         newRows.forEach(function (row, i) {
           row.forEach(function (d) {
             if (i) {
-              d.y = sum(newRows.slice(0, i), this$1._rowHeight.bind(this$1));
+              d.y = sum$3(newRows.slice(0, i), this$1._rowHeight.bind(this$1));
             }
           });
         });
-        spaceNeeded = max(newRows, this._rowWidth.bind(this));
+        spaceNeeded = max$3(newRows, this._rowWidth.bind(this));
       }
     }
 
-    var innerHeight = max(this._lineData, function (d, i) { return max([d.height, this$1._fetchConfig("height", d.data, i)]) + d.y; }) + this._titleHeight,
+    var innerHeight = max$3(this._lineData, function (d, i) { return max$3([d.height, this$1._fetchConfig("height", d.data, i)]) + d.y; }) + this._titleHeight,
           innerWidth = spaceNeeded;
 
     this._outerBounds.width = innerWidth;
@@ -20339,925 +18940,6 @@ function value(d) {
   };
 
   return Legend;
-}(BaseClass));
-
-/**
-    @function textWidth
-    @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
-    @param {String|Array} text Can be either a single string or an array of strings to analyze.
-    @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
-*/
-var measure$3 = function(text, style) {
-
-  style = Object.assign({
-    "font-size": 10,
-    "font-family": "sans-serif",
-    "font-style": "normal",
-    "font-weight": 400,
-    "font-variant": "normal"
-  }, style);
-
-  var context = document.createElement("canvas").getContext("2d");
-
-  var font = [];
-  font.push(style["font-style"]);
-  font.push(style["font-variant"]);
-  font.push(style["font-weight"]);
-  font.push(typeof style["font-size"] === "string" ? style["font-size"] : ((style["font-size"]) + "px"));
-  // let s = `${style["font-size"]}px`;
-  // if ("line-height" in style) s += `/${style["line-height"]}px`;
-  // font.push(s);
-  font.push(style["font-family"]);
-
-  context.font = font.join(" ");
-
-  if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-  return context.measureText(text).width;
-
-};
-
-/**
-    @function trim
-    @desc Cross-browser implementation of [trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim).
-    @param {String} str
-*/
-function trim$3(str) {
-  return str.replace(/^\s+|\s+$/g, "");
-}
-
-/**
-    @function trimRight
-    @desc Cross-browser implementation of [trimRight](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/TrimRight).
-    @param {String} str
-*/
-function trimRight$3(str) {
-  return str.replace(/\s+$/, "");
-}
-
-var alpha$3 = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
-var checked$3 = {};
-var height$3 = 32;
-
-var dejavu$3;
-var macos$3;
-var monospace$3;
-var proportional$3;
-
-/**
-    @function fontExists
-    @desc Given either a single font-family or a list of fonts, returns the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
-    @param {String|Array} font Can be either a valid CSS font-family string (single or comma-separated names) or an Array of string names.
-*/
-var fontExists$6 = function (font) {
-
-  if (!dejavu$3) {
-    dejavu$3 = measure$3(alpha$3, {"font-family": "DejaVuSans", "font-size": height$3});
-    macos$3 = measure$3(alpha$3, {"font-family": "-apple-system", "font-size": height$3});
-    monospace$3 = measure$3(alpha$3, {"font-family": "monospace", "font-size": height$3});
-    proportional$3 = measure$3(alpha$3, {"font-family": "sans-serif", "font-size": height$3});
-  }
-
-  if (!(font instanceof Array)) { font = font.split(","); }
-  font = font.map(function (f) { return trim$3(f); });
-
-  for (var i = 0; i < font.length; i++) {
-    var fam = font[i];
-    if (checked$3[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
-    else if (checked$3[fam] === false) { continue; }
-    var width = measure$3(alpha$3, {"font-family": fam, "font-size": height$3});
-    checked$3[fam] = width !== monospace$3;
-    if (checked$3[fam]) { checked$3[fam] = width !== proportional$3; }
-    if (macos$3 && checked$3[fam]) { checked$3[fam] = width !== macos$3; }
-    if (dejavu$3 && checked$3[fam]) { checked$3[fam] = width !== dejavu$3; }
-    if (checked$3[fam]) { return fam; }
-  }
-
-  return false;
-
-};
-
-/**
-    @function rtl
-    @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
-*/
-var detectRTL$3 = function () { return select("html").attr("dir") === "rtl" ||
-  select("body").attr("dir") === "rtl" ||
-  select("html").style("direction") === "rtl" ||
-  select("body").style("direction") === "rtl"; };
-
-/**
-    @function stringify
-    @desc Coerces value into a String.
-    @param {String} value
-*/
-var stringify$3 = function(value) {
-  if (value === void 0) { value = "undefined"; }
-  else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
-  return value;
-};
-
-// great unicode list: http://asecuritysite.com/coding/asc2
-
-var diacritics$3 = [
-  [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
-  [/[\306]/g, "AE"], [/[\346]/g, "ae"],
-  [/[\337]/g, "B"],
-  [/[\307]/g, "C"], [/[\347]/g, "c"],
-  [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
-  [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
-  [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
-  [/[\321]/g, "N"], [/[\361]/g, "n"],
-  [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
-  [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
-  [/[\327]/g, "x"],
-  [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
-];
-
-/**
-    @function strip
-    @desc Removes all non ASCII characters from a string.
-    @param {String} value
-*/
-var strip$3 = function(value) {
-
-  return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
-
-    if (char === " ") { return "-"; }
-
-    var ret = false;
-    for (var d = 0; d < diacritics$3.length; d++) {
-      if (new RegExp(diacritics$3[d][0]).test(char)) {
-        ret = diacritics$3[d][1];
-        break;
-      }
-    }
-
-    return ret || "";
-
-  });
-};
-
-// scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
-// and http://www.fileformat.info/info/unicode/category/Mn/list.htm
-// JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
-var a$4 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
-var b$3 = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
-var combiningMarks$3 = a$4.concat(b$3);
-
-var splitChars$3 = ["-",  "/",  ";",  ":",  "&",
-  "u0E2F",  // thai character pairannoi
-  "u0EAF",  // lao ellipsis
-  "u0EC6",  // lao ko la (word repetition)
-  "u0ECC",  // lao cancellation mark
-  "u104A",  // myanmar sign little section
-  "u104B",  // myanmar sign section
-  "u104C",  // myanmar symbol locative
-  "u104D",  // myanmar symbol completed
-  "u104E",  // myanmar symbol aforementioned
-  "u104F",  // myanmar symbol genitive
-  "u2013",  // en dash
-  "u2014",  // em dash
-  "u2027",  // simplified chinese hyphenation point
-  "u3000",  // simplified chinese ideographic space
-  "u3001",  // simplified chinese ideographic comma
-  "u3002",  // simplified chinese ideographic full stop
-  "uFF0C",  // full-width comma
-  "uFF5E"   // wave dash
-];
-
-var prefixChars$3 = ["'",  "<",  "(",  "{",  "[",
-  "u00AB",  // left-pointing double angle quotation mark
-  "u300A",  // left double angle bracket
-  "u3008"  // left angle bracket
-];
-
-var suffixChars$3 = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
-  "u00BB",  // right-pointing double angle quotation mark
-  "u300B",  // right double angle bracket
-  "u3009"  // right angle bracket
-].concat(splitChars$3);
-
-var burmeseRange$3 = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-var japaneseRange$3 = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff0b\uff0d-\uff5d\uff5f-\uff9f\u3400-\u4dbf";
-var chineseRange$3 = "\u3400-\u9FBF";
-var laoRange$3 = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
-
-var noSpaceRange$3 = burmeseRange$3 + chineseRange$3 + laoRange$3;
-
-var splitWords$3 = new RegExp(("(\\" + (splitChars$3.join("|\\")) + ")*[^\\s|\\" + (splitChars$3.join("|\\")) + "]*(\\" + (splitChars$3.join("|\\")) + ")*"), "g");
-var japaneseChars$3 = new RegExp(("[" + japaneseRange$3 + "]"));
-var noSpaceLanguage$3 = new RegExp(("[" + noSpaceRange$3 + "]"));
-var splitAllChars$3 = new RegExp(("(\\" + (prefixChars$3.join("|\\")) + ")*[" + noSpaceRange$3 + "](\\" + (suffixChars$3.join("|\\")) + "|\\" + (combiningMarks$3.join("|\\")) + ")*|[a-z0-9]+"), "gi");
-
-/**
-    @function textSplit
-    @desc Splits a given sentence into an array of words.
-    @param {String} sentence
-*/
-var textSplit$3 = function(sentence) {
-  if (!noSpaceLanguage$3.test(sentence)) { return stringify$3(sentence).match(splitWords$3).filter(function (w) { return w.length; }); }
-  return merge$1(stringify$3(sentence).match(splitWords$3).map(function (d) {
-    if (!japaneseChars$3.test(d) && noSpaceLanguage$3.test(d)) { return d.match(splitAllChars$3); }
-    return [d];
-  }));
-};
-
-/**
-    @function textWrap
-    @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
-*/
-var wrap$3 = function() {
-
-  var fontFamily = "sans-serif",
-      fontSize = 10,
-      fontWeight = 400,
-      height = 200,
-      lineHeight,
-      overflow = false,
-      split = textSplit$3,
-      width = 200;
-
-  /**
-      The inner return object and wraps the text and returns the line data array.
-      @private
-  */
-  function textWrap(sentence) {
-
-    sentence = stringify$3(sentence);
-
-    if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.4); }
-
-    var words = split(sentence);
-
-    var style = {
-      "font-family": fontFamily,
-      "font-size": fontSize,
-      "font-weight": fontWeight,
-      "line-height": lineHeight
-    };
-
-    var line = 1,
-        textProg = "",
-        truncated = false,
-        widthProg = 0;
-
-    var lineData = [],
-          sizes = measure$3(words, style),
-          space = measure$3(" ", style);
-
-    for (var i = 0; i < words.length; i++) {
-      var word = words[i];
-      var wordWidth = sizes[words.indexOf(word)];
-      word += sentence.slice(textProg.length + word.length).match("^( |\n)*", "g")[0];
-      if (textProg.slice(-1) === "\n" || widthProg + wordWidth > width) {
-        if (!i && !overflow) {
-          truncated = true;
-          break;
-        }
-        lineData[line - 1] = trimRight$3(lineData[line - 1]);
-        line++;
-        if (lineHeight * line > height || wordWidth > width && !overflow) {
-          truncated = true;
-          break;
-        }
-        widthProg = 0;
-        lineData.push(word);
-      }
-      else if (!i) { lineData[0] = word; }
-      else { lineData[line - 1] += word; }
-      textProg += word;
-      widthProg += wordWidth;
-      widthProg += word.match(/[\s]*$/g)[0].length * space;
-    }
-
-    return {
-      lines: lineData,
-      sentence: sentence, truncated: truncated,
-      widths: measure$3(lineData, style),
-      words: words
-    };
-
-  }
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-      @param {Function|String} [*value* = "sans-serif"]
-  */
-  textWrap.fontFamily = function(_) {
-    return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
-      @param {Function|Number} [*value* = 10]
-  */
-  textWrap.fontSize = function(_) {
-    return arguments.length ? (fontSize = _, textWrap) : fontSize;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  textWrap.fontWeight = function(_) {
-    return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets height limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.height = function(_) {
-    return arguments.length ? (height = _, textWrap) : height;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textWrap.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  textWrap.lineHeight = function(_) {
-    return arguments.length ? (lineHeight = _, textWrap) : lineHeight;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
-      @param {Boolean} [*value* = false]
-  */
-  textWrap.overflow = function(_) {
-    return arguments.length ? (overflow = _, textWrap) : overflow;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
-      @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to textWrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
-  */
-  textWrap.split = function(_) {
-    return arguments.length ? (split = _, textWrap) : split;
-  };
-
-  /**
-      @memberof textWrap
-      @desc If *value* is specified, sets width limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-      @param {Number} [*value* = 200]
-  */
-  textWrap.width = function(_) {
-    return arguments.length ? (width = _, textWrap) : width;
-  };
-
-  return textWrap;
-
-};
-
-/**
-    @external BaseClass
-    @see https://github.com/d3plus/d3plus-common#BaseClass
-*/
-
-/**
-    @class TextBox
-    @extends external:BaseClass
-    @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
-*/
-var TextBox$6 = (function (BaseClass) {
-  function TextBox() {
-
-    BaseClass.call(this);
-
-    this._delay = 0;
-    this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
-    this._fontColor = constant("black");
-    this._fontFamily = constant(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
-    this._fontMax = constant(50);
-    this._fontMin = constant(8);
-    this._fontResize = constant(false);
-    this._fontSize = constant(10);
-    this._fontWeight = constant(400);
-    this._height = accessor("height", 200);
-    this._id = function (d, i) { return d.id || ("" + i); };
-    this._on = {};
-    this._overflow = constant(false);
-    this._pointerEvents = constant("auto");
-    this._rotate = constant(0);
-    this._split = textSplit$3;
-    this._text = accessor("text");
-    this._textAnchor = constant("start");
-    this._verticalAlign = constant("top");
-    this._width = accessor("width", 200);
-    this._x = accessor("x", 0);
-    this._y = accessor("y", 0);
-
-  }
-
-  if ( BaseClass ) TextBox.__proto__ = BaseClass;
-  TextBox.prototype = Object.create( BaseClass && BaseClass.prototype );
-  TextBox.prototype.constructor = TextBox;
-
-  /**
-      @memberof TextBox
-      @desc Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
-      @param {Function} [*callback* = undefined]
-  */
-  TextBox.prototype.render = function render (callback) {
-    var this$1 = this;
-
-
-    if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
-    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.4; }; }
-    var that = this;
-
-    var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
-
-      var t = this$1._text(d, i);
-      if (t === void 0) { return arr; }
-
-      var resize = this$1._fontResize(d, i);
-
-      var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
-          lH = resize ? fS * 1.4 : this$1._lineHeight(d, i),
-          line = 1,
-          lineData = [],
-          sizes,
-          wrapResults;
-
-      var style = {
-        "font-family": fontExists$6(this$1._fontFamily(d, i)),
-        "font-size": fS,
-        "font-weight": this$1._fontWeight(d, i),
-        "line-height": lH
-      };
-
-      var h = this$1._height(d, i),
-            w = this$1._width(d, i);
-
-      var wrapper = wrap$3()
-        .fontFamily(style["font-family"])
-        .fontSize(fS)
-        .fontWeight(style["font-weight"])
-        .lineHeight(lH)
-        .height(h)
-        .overflow(this$1._overflow(d, i))
-        .width(w);
-
-      var fMax = this$1._fontMax(d, i),
-            fMin = this$1._fontMin(d, i),
-            vA = this$1._verticalAlign(d, i),
-            words = this$1._split(t, i);
-
-      /**
-          Figures out the lineData to be used for wrapping.
-          @private
-      */
-      function checkSize() {
-
-        if (fS < fMin) {
-          lineData = [];
-          return;
-        }
-        else if (fS > fMax) { fS = fMax; }
-
-        if (resize) {
-          lH = fS * 1.4;
-          wrapper
-            .fontSize(fS)
-            .lineHeight(lH);
-          style["font-size"] = fS;
-          style["line-height"] = lH;
-        }
-
-        wrapResults = wrapper(t);
-        lineData = wrapResults.lines.filter(function (l) { return l !== ""; });
-        line = lineData.length;
-
-        if (wrapResults.truncated) {
-
-          if (resize) {
-            fS--;
-            if (fS < fMin) { lineData = []; }
-            else { checkSize(); }
-          }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
-
-        }
-
-
-      }
-
-      if (w > fMin && (h > lH || resize && h > fMin * 1.4)) {
-
-        if (resize) {
-
-          sizes = measure$3(words, style);
-
-          var areaMod = 1.165 + w / h * 0.1,
-                boxArea = w * h,
-                maxWidth = max(sizes),
-                textArea = sum(sizes, function (d) { return d * lH; }) * areaMod;
-
-          if (maxWidth > w || textArea > boxArea) {
-            var areaRatio = Math.sqrt(boxArea / textArea),
-                  widthRatio = w / maxWidth;
-            var sizeRatio = min([areaRatio, widthRatio]);
-            fS = Math.floor(fS * sizeRatio);
-          }
-
-          var heightMax = Math.floor(h * 0.8);
-          if (fS > heightMax) { fS = heightMax; }
-
-        }
-
-        checkSize();
-
-      }
-
-      if (lineData.length) {
-
-        var tH = line * lH;
-        var yP = vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH;
-        yP -= lH * 0.1;
-
-        arr.push({
-          data: d,
-          i: i,
-          lines: lineData,
-          fC: this$1._fontColor(d, i),
-          fF: style["font-family"],
-          fW: style["font-weight"],
-          id: this$1._id(d, i),
-          tA: this$1._textAnchor(d, i),
-          widths: wrapResults.widths,
-          fS: fS, lH: lH, w: w, h: h, x: this$1._x(d, i), y: this$1._y(d, i) + yP
-        });
-
-      }
-
-      return arr;
-
-    }, []), this._id);
-
-    var t = transition().duration(this._duration);
-
-    if (this._duration === 0) {
-
-      boxes.exit().remove();
-
-    }
-    else {
-
-      boxes.exit().transition().delay(this._duration).remove();
-
-      boxes.exit().selectAll("text").transition(t)
-        .attr("opacity", 0);
-
-    }
-
-    function rotate(text) {
-      text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + ", " + (d.x + d.w / 2) + ", " + (d.y + d.h / 2) + ")translate(" + (d.x) + ", " + (d.y) + ")"); });
-    }
-
-    var update = boxes.enter().append("g")
-        .attr("class", "d3plus-textBox")
-        .attr("id", function (d) { return ("d3plus-textBox-" + (strip$3(d.id))); })
-        .call(rotate)
-      .merge(boxes);
-
-    var rtl = detectRTL$3();
-
-    update
-      .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
-      .each(function(d) {
-
-        /**
-            Styles to apply to each <text> element.
-            @private
-        */
-        function textStyle(text) {
-          text
-            .text(function (t) { return trimRight$3(t); })
-            .attr("dir", rtl ? "rtl" : "ltr")
-            .attr("fill", d.fC)
-            .attr("text-anchor", d.tA)
-            .attr("font-family", d.fF)
-            .style("font-family", d.fF)
-            .attr("font-size", ((d.fS) + "px"))
-            .style("font-size", ((d.fS) + "px"))
-            .attr("font-weight", d.fW)
-            .style("font-weight", d.fW)
-            .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
-            .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
-        }
-
-        var texts = select(this).selectAll("text").data(d.lines);
-
-        if (that._duration === 0) {
-
-          texts.call(textStyle);
-
-          texts.exit().remove();
-
-          texts.enter().append("text")
-            .attr("dominant-baseline", "alphabetic")
-            .style("baseline-shift", "0%")
-            .attr("unicode-bidi", "bidi-override")
-            .call(textStyle);
-
-        }
-        else {
-
-          texts.transition(t).call(textStyle);
-
-          texts.exit().transition(t)
-            .attr("opacity", 0).remove();
-
-          texts.enter().append("text")
-              .attr("dominant-baseline", "alphabetic")
-              .style("baseline-shift", "0%")
-              .attr("opacity", 0)
-              .call(textStyle)
-            .merge(texts).transition(t).delay(that._delay)
-              .call(textStyle)
-              .attr("opacity", 1);
-
-        }
-
-      })
-      .transition(t).call(rotate);
-
-    var events = Object.keys(this._on),
-          on = events.reduce(function (obj, e) {
-            obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
-            return obj;
-          }, {});
-    for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
-
-    if (callback) { setTimeout(callback, this._duration + 100); }
-
-    return this;
-
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
-      @param {Array} [*data* = []]
-  */
-  TextBox.prototype.data = function data (_) {
-    return arguments.length ? (this._data = _, this) : this._data;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the animation delay to the specified number in milliseconds.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.delay = function delay (_) {
-    return arguments.length ? (this._delay = _, this) : this._delay;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the animation duration to the specified number in milliseconds.
-      @param {Number} [*value* = 0]
-  */
-  TextBox.prototype.duration = function duration (_) {
-    return arguments.length ? (this._duration = _, this) : this._duration;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
-}
-  */
-  TextBox.prototype.ellipsis = function ellipsis (_) {
-    return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant(_), this) : this._ellipsis;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|String} [*value* = "black"]
-  */
-  TextBox.prototype.fontColor = function fontColor (_) {
-    return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant(_), this) : this._fontColor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
-      @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
-  */
-  TextBox.prototype.fontFamily = function fontFamily (_) {
-    return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant(_), this) : this._fontFamily;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the maximum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
-      @param {Function|Number} [*value* = 50]
-  */
-  TextBox.prototype.fontMax = function fontMax (_) {
-    return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant(_), this) : this._fontMax;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the minimum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
-      @param {Function|Number} [*value* = 8]
-  */
-  TextBox.prototype.fontMin = function fontMin (_) {
-    return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant(_), this) : this._fontMin;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.fontResize = function fontResize (_) {
-    return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant(_), this) : this._fontResize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font size to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|Number} [*value* = 10]
-  */
-  TextBox.prototype.fontSize = function fontSize (_) {
-    return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant(_), this) : this._fontSize;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
-      @param {Function|Number|String} [*value* = 400]
-  */
-  TextBox.prototype.fontWeight = function fontWeight (_) {
-    return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant(_), this) : this._fontWeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the height for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.height || 200;
-}
-  */
-  TextBox.prototype.height = function height (_) {
-    return arguments.length ? (this._height = typeof _ === "function" ? _ : constant(_), this) : this._height;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Defines the unique id for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d, i) {
-  return d.id || i + "";
-}
-  */
-  TextBox.prototype.id = function id (_) {
-    return arguments.length ? (this._id = typeof _ === "function" ? _ : constant(_), this) : this._id;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the line height to the specified accessor function or static number, which is 1.4 times the [font size](#textBox.fontSize) by default.
-      @param {Function|Number} [*value*]
-  */
-  TextBox.prototype.lineHeight = function lineHeight (_) {
-    return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant(_), this) : this._lineHeight;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the text overflow to the specified accessor function or static boolean.
-      @param {Function|Boolean} [*value* = false]
-  */
-  TextBox.prototype.overflow = function overflow (_) {
-    return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant(_), this) : this._overflow;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the pointer-events to the specified accessor function or static string.
-      @param {Function|String} [*value* = "auto"]
-  */
-  TextBox.prototype.pointerEvents = function pointerEvents (_) {
-    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant(_), this) : this._pointerEvents;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the rotate percentage for each box to the specified accessor function or static string.
-      @param {Function|Number} [*value* = 0]
-  */
-  TextBox.prototype.rotate = function rotate (_) {
-    return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant(_), this) : this._rotate;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
-      @param {String|HTMLElement} [*selector*]
-  */
-  TextBox.prototype.select = function select$1 (_) {
-    return arguments.length ? (this._select = select(_), this) : this._select;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
-      @param {Function} [*value*]
-  */
-  TextBox.prototype.split = function split (_) {
-    return arguments.length ? (this._split = _, this) : this._split;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the text for each box to the specified accessor function or static string.
-      @param {Function|String} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.text;
-}
-  */
-  TextBox.prototype.text = function text (_) {
-    return arguments.length ? (this._text = typeof _ === "function" ? _ : constant(_), this) : this._text;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
-      @param {Function|String} [*value* = "start"]
-  */
-  TextBox.prototype.textAnchor = function textAnchor (_) {
-    return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant(_), this) : this._textAnchor;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
-      @param {Function|String} [*value* = "top"]
-  */
-  TextBox.prototype.verticalAlign = function verticalAlign (_) {
-    return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant(_), this) : this._verticalAlign;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the width for each box to the specified accessor function or static number.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.width || 200;
-}
-  */
-  TextBox.prototype.width = function width (_) {
-    return arguments.length ? (this._width = typeof _ === "function" ? _ : constant(_), this) : this._width;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.x || 0;
-}
-  */
-  TextBox.prototype.x = function x (_) {
-    return arguments.length ? (this._x = typeof _ === "function" ? _ : constant(_), this) : this._x;
-  };
-
-  /**
-      @memberof TextBox
-      @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
-      @param {Function|Number} [*value*]
-      @example <caption>default accessor</caption>
-function(d) {
-  return d.y || 0;
-}
-  */
-  TextBox.prototype.y = function y (_) {
-    return arguments.length ? (this._y = typeof _ === "function" ? _ : constant(_), this) : this._y;
-  };
-
-  return TextBox;
 }(BaseClass));
 
 /**
@@ -22145,7 +19827,7 @@ var drawBack = function() {
   }).node();
 
   this._backClass
-    .data(visible ? [{text: locale$1.t("Back", {lng: this._locale}), x: this._padding * 2, y: 0}] : [])
+    .data(visible ? [{text: locale.t("Back", {lng: this._locale}), x: this._padding * 2, y: 0}] : [])
     .select(backGroup)
     .config(this._backConfig)
     .render();
@@ -22180,7 +19862,7 @@ var drawColorScale = function(data) {
     update: transform
   }).node();
 
-  if (showColorScale) {
+  if (this._colorScale && data) {
 
     var scaleData = data.filter(function (d, i) {
       var c = this$1._colorScale(d, i);
@@ -22202,10 +19884,14 @@ var drawColorScale = function(data) {
       .config(this._colorScaleConfig)
       .render();
 
-    var scaleBounds = this._colorScaleClass.outerBounds();
-    if (this._colorScalePosition && !this._colorScaleConfig.select && scaleBounds.height) {
-      if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
-      else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
+    if (showColorScale) {
+
+      var scaleBounds = this._colorScaleClass.outerBounds();
+      if (this._colorScalePosition && !this._colorScaleConfig.select && scaleBounds.height) {
+        if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
+        else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
+      }
+
     }
 
   }
@@ -32139,7 +29825,44 @@ var
 	, canvas_proto = HTMLCanvasElement && HTMLCanvasElement.prototype
 	, is_base64_regex = /\s*;\s*base64\s*(?:;|$)/i
 	, to_data_url = "toDataURL"
-	, base64_ranks;
+	, base64_ranks
+	, decode_base64 = function(base64) {
+		var
+			  len = base64.length
+			, buffer = new Uint8Array(len / 4 * 3 | 0)
+			, i = 0
+			, outptr = 0
+			, last = [0, 0]
+			, state = 0
+			, save = 0
+			, rank
+			, code
+			, undef;
+		while (len--) {
+			code = base64.charCodeAt(i++);
+			rank = base64_ranks[code-43];
+			if (rank !== 255 && rank !== undef) {
+				last[1] = last[0];
+				last[0] = code;
+				save = (save << 6) | rank;
+				state++;
+				if (state === 4) {
+					buffer[outptr++] = save >>> 16;
+					if (last[1] !== 61 /* padding character */) {
+						buffer[outptr++] = save >>> 8;
+					}
+					if (last[0] !== 61 /* padding character */) {
+						buffer[outptr++] = save;
+					}
+					state = 0;
+				}
+			}
+		}
+		// 2/3 chance there's going to be some null bytes at the end, but that
+		// doesn't really matter with most image formats.
+		// If it somehow matters for you, truncate the buffer up outptr.
+		return buffer;
+	};
 if (Uint8Array) {
 	base64_ranks = new Uint8Array([
 		  62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1
@@ -32149,7 +29872,57 @@ if (Uint8Array) {
 		, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
 	]);
 }
+if (HTMLCanvasElement && (!canvas_proto.toBlob || !canvas_proto.toBlobHD)) {
+	if (!canvas_proto.toBlob)
+	{ canvas_proto.toBlob = function(callback, type /*, ...args*/) {
+		  if (!type) {
+			type = "image/png";
+		} if (this.mozGetAsFile) {
+			callback(this.mozGetAsFile("canvas", type));
+			return;
+		} if (this.msToBlob && /^\s*image\/png\s*(?:$|;)/i.test(type)) {
+			callback(this.msToBlob());
+			return;
+		}
 
+		var
+			  args = Array.prototype.slice.call(arguments, 1)
+			, dataURI = this[to_data_url].apply(this, args)
+			, header_end = dataURI.indexOf(",")
+			, data = dataURI.substring(header_end + 1)
+			, is_base64 = is_base64_regex.test(dataURI.substring(0, header_end))
+			, blob;
+		if (Blob.fake) {
+			// no reason to decode a data: URI that's just going to become a data URI again
+			blob = new Blob;
+			if (is_base64) {
+				blob.encoding = "base64";
+			} else {
+				blob.encoding = "URI";
+			}
+			blob.data = data;
+			blob.size = data.length;
+		} else if (Uint8Array) {
+			if (is_base64) {
+				blob = new Blob([decode_base64(data)], {type: type});
+			} else {
+				blob = new Blob([decodeURIComponent(data)], {type: type});
+			}
+		}
+		callback(blob);
+	}; }
+
+	if (!canvas_proto.toBlobHD && canvas_proto.toDataURLHD) {
+		canvas_proto.toBlobHD = function() {
+			to_data_url = "toDataURLHD";
+			var blob = this.toBlob();
+			to_data_url = "toDataURL";
+			return blob;
+		};
+	} else {
+		canvas_proto.toBlobHD = canvas_proto.toBlob;
+	}
+}
 }(typeof self !== "undefined" && self || typeof window !== "undefined" && window || commonjsGlobal.content || commonjsGlobal));
 
 var FileSaver = createCommonjsModule(function (module) {
@@ -32605,7 +30378,7 @@ var drawLegend = function(data) {
 
     nest()
       .key(fill)
-      .rollup(function (leaves) { return legendData.push(objectMerge$1(leaves, this$1._aggs)); })
+      .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
       .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
 
     this._legendClass
@@ -32656,7 +30429,7 @@ var drawTimeline = function(data) {
   if (timelinePossible) {
 
     var timeline = this._timelineClass
-      .domain(extent(ticks))
+      .domain(extent$1(ticks))
       .duration(this._duration)
       .height(this._height - this._margin.bottom)
       .select(timelineGroup)
@@ -32665,7 +30438,7 @@ var drawTimeline = function(data) {
 
     if (this._timelineSelection === void 0) {
 
-      var dates = extent(data.map(this._time).map(date$2));
+      var dates = extent$1(data.map(this._time).map(date$2));
       this._timelineSelection = dates[0] === dates[1] ? dates[0] : dates;
       timeline.selection(this._timelineSelection);
 
@@ -32721,8 +30494,8 @@ var drawTotal = function(data) {
   if ( data === void 0 ) data = [];
 
 
-  var total = typeof this._total === "function" ? sum(data.map(this._total))
-    : this._total === true && this._size ? sum(data.map(this._size)) : false;
+  var total = typeof this._total === "function" ? sum$2(data.map(this._total))
+    : this._total === true && this._size ? sum$2(data.map(this._size)) : false;
 
   var group = elem("g.d3plus-viz-total", {
     enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
@@ -32734,7 +30507,7 @@ var drawTotal = function(data) {
   var visible = typeof total === "number";
 
   this._totalClass
-    .data(visible ? [{text: ((locale$1.t("Total", {lng: this._locale})) + ": " + total)}] : [])
+    .data(visible ? [{text: ((locale.t("Total", {lng: this._locale})) + ": " + total)}] : [])
     .select(group)
     .width(this._width - this._margin.left - this._margin.right)
     .config(this._totalConfig)
@@ -32864,7 +30637,7 @@ var mouseenter = function(d, i) {
 
   this.hover(function (h, x) {
     var ids = this$1._ids(h, x);
-    var index = min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
+    var index = min$2([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
     return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
   });
 
@@ -32897,7 +30670,7 @@ var mousemoveLegend = function(d) {
     this._select.style("cursor", "pointer");
     this._tooltipClass.data([d])
       .footer(this._drawDepth < this._groupBy.length - 1
-        ? locale$1.t("Click to Expand", {lng: this._locale}) : "")
+        ? locale.t("Click to Expand", {lng: this._locale}) : "")
       .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
       .translate(mouse(select("html").node()))
       .config(this._tooltipConfig)
@@ -32920,7 +30693,7 @@ var mousemoveShape = function(d) {
     this._select.style("cursor", "pointer");
     this._tooltipClass.data([d])
       .footer(this._drawDepth < this._groupBy.length - 1
-        ? locale$1.t("Click to Expand", {lng: this._locale}) : "")
+        ? locale.t("Click to Expand", {lng: this._locale}) : "")
       .title(this._drawLabel)
       .translate(mouse(select("html").node()))
       .config(this._tooltipConfig)
@@ -33228,7 +31001,7 @@ var Viz = (function (BaseClass) {
     BaseClass.call(this);
 
     this._aggs = {};
-    this._backClass = new TextBox$6()
+    this._backClass = new TextBox()
       .on("click", function () {
         if (this$1._history.length) { this$1.config(this$1._history.pop()).render(); }
         else { this$1.depth(this$1._drawDepth - 1).filter(false).render(); }
@@ -33301,9 +31074,17 @@ var Viz = (function (BaseClass) {
     this._shape = constant("Rect");
     this._shapeConfig = {
       fill: function (d, i) {
+        while (d.__d3plus__ && d.data) {
+          d = d.data;
+          i = d.i;
+        }
         if (this$1._colorScale) {
           var c$1 = this$1._colorScale(d, i);
-          if (c$1 !== undefined && c$1 !== null) { return this$1._colorScaleClass._colorScale(c$1); }
+          if (c$1 !== undefined && c$1 !== null) {
+            var scale = this$1._colorScaleClass._colorScale;
+            if (!scale.domain().length) { return scale.range()[scale.range().length - 1]; }
+            return scale(c$1);
+          }
         }
         var c = this$1._color(d, i);
         if (color(c)) { return c; }
@@ -33333,7 +31114,7 @@ var Viz = (function (BaseClass) {
       });
     this._timelineConfig = {};
 
-    this._titleClass = new TextBox$6();
+    this._titleClass = new TextBox();
     this._titleConfig = {
       fontSize: 12,
       resize: false,
@@ -33350,7 +31131,7 @@ var Viz = (function (BaseClass) {
       }
     };
 
-    this._totalClass = new TextBox$6();
+    this._totalClass = new TextBox();
     this._totalConfig = {
       fontSize: 10,
       resize: false,
@@ -33441,7 +31222,7 @@ var Viz = (function (BaseClass) {
         this._timeFilter = function () { return true; };
       }
       else {
-        var latestTime = +max(dates);
+        var latestTime = +max$2(dates);
         this._timeFilter = function (d, i) { return +date$2(this$1._time(d, i)) === latestTime; };
       }
 
@@ -33457,7 +31238,7 @@ var Viz = (function (BaseClass) {
       var dataNest = nest();
       for (var i$1 = 0; i$1 <= this._drawDepth; i$1++) { dataNest.key(this$1._groupBy[i$1]); }
       if (this._discrete && ("_" + (this._discrete)) in this) { dataNest.key(this[("_" + (this._discrete))]); }
-      dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge$1(leaves, this$1._aggs)); }).entries(flatData);
+      dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
 
     }
 
@@ -33491,13 +31272,15 @@ var Viz = (function (BaseClass) {
     //
     // this._shapes.push(new Rect()
     //   .config(this._shapeConfig)
-    //   .data([
-    //     {id: 1, text: "My Label", x: 100, y: 100, width: 100, height: 100},
-    //     {id: 2, text: "My Label", x: 300, y: 100, width: 100, height: 100}
-    //   ])
-    //   .label(d => d.text)
+    //   .data(this._filteredData)
+    //   .label("Test Label")
     //   .select(this._zoomGroup.node())
     //   .on(this._on)
+    //   .id(d => d.group)
+    //   .x(d => d.value * 10 + 200)
+    //   .y(d => d.value * 10 + 200)
+    //   .width(100)
+    //   .height(100)
     //   .render());
 
   };
@@ -33930,7 +31713,7 @@ function value(d) {
     var hoverFunction = this._hover = _;
     if (typeof _ === "function") {
 
-      var shapeData = merge$1(this._shapes.map(function (s) { return s.data(); }));
+      var shapeData = arrayMerge(this._shapes.map(function (s) { return s.data(); }));
       shapeData = shapeData.concat(this._legendClass.data());
       var activeData = _ ? shapeData.filter(_) : [];
 
@@ -34716,13 +32499,15 @@ var Plot = (function (Viz) {
         y = scales[("scale" + yScale)]().domain(domains.y.reverse()).range(range(0, height + 1, height / (domains.y.length - 1)));
 
     var shapeData = nest().key(function (d) { return d.shape; }).entries(data);
-    shapeData.forEach(function (d) {
-      if (this$1._buffer[d.key]) {
-        var res = this$1._buffer[d.key].bind(this$1)(d.values, x, y, this$1._shapeConfig[d.key]);
-        x = res[0];
-        y = res[1];
-      }
-    });
+    if (this._xConfig.scale !== "log" && this._yConfig.scale !== "log") {
+      shapeData.forEach(function (d) {
+        if (this$1._buffer[d.key]) {
+          var res = this$1._buffer[d.key].bind(this$1)(d.values, x, y, this$1._shapeConfig[d.key]);
+          if (this$1._xConfig.scale !== "log") { x = res[0]; }
+          if (this$1._yConfig.scale !== "log") { y = res[1]; }
+        }
+      });
+    }
     xDomain = x.domain();
     yDomain = y.domain();
 
@@ -34764,13 +32549,19 @@ var Plot = (function (Viz) {
       .config(this._xConfig)
       .render();
 
-    var xOffset = max([yWidth, this._xTest._d3Scale.range()[0]]);
+    var xOffset = max([yWidth, this._xTest._getRange()[0]]);
 
     this._xTest
       .range([xOffset, undefined])
       .render();
 
     var xGroup = elem("g.d3plus-plot-x-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
+
+    var xTrans = xOffset > yWidth ? xOffset - yWidth : 0;
+    var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top) + ")";
+    var yGroup = elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: yTransform}, update: {transform: yTransform}});
+
+    var x2Group = elem("g.d3plus-plot-x2-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
 
     this._xAxis
       .domain(xDomain)
@@ -34784,7 +32575,11 @@ var Plot = (function (Viz) {
       .config(this._xConfig)
       .render();
 
-    x = this._xAxis._d3Scale;
+    x = function (d) {
+      if (this$1._xConfig.scale === "log" && d === 0) { d = xDomain[0] < 0 ? -1 : 1; }
+      return this$1._xAxis._getPosition.bind(this$1._xAxis)(d);
+    };
+    var xRange = this._xAxis._getRange();
 
     this._x2Axis
       .config(xC)
@@ -34794,18 +32589,14 @@ var Plot = (function (Viz) {
       .labels([])
       .range([xOffset, undefined])
       .scale(xScale.toLowerCase())
-      .select(xGroup.node())
+      .select(x2Group.node())
       .ticks([])
-      .width(x.range()[x.range().length - 1] + this._xAxis.padding())
+      .width(xRange[xRange.length - 1] + this._xAxis.padding())
       .title(false)
       .tickSize(0)
       .barConfig({"stroke-width": this._discrete ? 0 : this._xAxis.barConfig()["stroke-width"]})
       .config(this._x2Config)
       .render();
-
-    var xTrans = xOffset > yWidth ? xOffset - yWidth : 0;
-    var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top) + ")";
-    var yGroup = elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: yTransform}, update: {transform: yTransform}});
 
     this._yAxis
       .domain(yDomain)
@@ -34814,7 +32605,7 @@ var Plot = (function (Viz) {
       .scale(yScale.toLowerCase())
       .select(yGroup.node())
       .ticks(yTicks)
-      .width(x.range()[x.range().length - 1] + this._xAxis.padding())
+      .width(xRange[xRange.length - 1] + this._xAxis.padding())
       .config(yC)
       .config(this._yConfig)
       .render();
@@ -34829,14 +32620,17 @@ var Plot = (function (Viz) {
       .scale(yScale.toLowerCase())
       .select(yGroup.node())
       .ticks([])
-      .width(x.range()[x.range().length - 1] + this._xAxis.padding())
+      .width(xRange[xRange.length - 1] + this._xAxis.padding())
       .title(false)
       .tickSize(0)
       .barConfig({"stroke-width": this._discrete ? 0 : this._yAxis.barConfig()["stroke-width"]})
       .config(this._y2Config)
       .render();
 
-    y = this._yAxis._d3Scale;
+    y = function (d) {
+      if (this$1._yConfig.scale === "log" && d === 0) { d = yDomain[0] < 0 ? -1 : 1; }
+      return this$1._yAxis._getPosition.bind(this$1._yAxis)(d);
+    };
 
     var yOffset = this._xAxis.barConfig()["stroke-width"];
     if (yOffset) { yOffset /= 2; }
