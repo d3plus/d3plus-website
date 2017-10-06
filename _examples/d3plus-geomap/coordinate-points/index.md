@@ -1,12 +1,12 @@
 ---
 title: Coordinate Points on a Map
 width: 990
-height: 400
-time: 1507318185052
+height: 600
+time: 1507318252692
 date: October 06, 2017
 ---
 
-[delay]: 2000
+[height]: 600
 
 # Coordinate Points on a Map
 
