@@ -1,10 +1,12 @@
 ---
 title: Changing the Geo Map Tiles
 width: 990
-height: 400
-time: 1507318252692
+height: 550
+time: 1507318298099
 date: October 06, 2017
 ---
+
+[height]: 550
 
 # Changing the Geo Map Tiles
 
