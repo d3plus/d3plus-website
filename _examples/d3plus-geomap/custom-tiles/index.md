@@ -2,8 +2,8 @@
 title: Changing the Geo Map Tiles
 width: 990
 height: 400
-time: 1504896477232
-date: September 08, 2017
+time: 1507318019950
+date: October 06, 2017
 ---
 
 # Changing the Geo Map Tiles
@@ -17,7 +17,7 @@ new d3plus.Geomap()
   .tileUrl("https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png")
   .fitObject("https://d3plus.org/topojson/states.json")
   .fitFilter(function(d) {
-    return ["02", "15", "43", "60", "66", "69", "78"].indexOf(d.id) < 0;
+    return ["02", "15", "43", "60", "66", "69", "72", "78"].indexOf(d.id) < 0;
   })
   .render();
 ```

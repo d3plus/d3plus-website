@@ -2,8 +2,8 @@
 title: Choropleth w/ Custom Colors
 width: 990
 height: 400
-time: 1504896477232
-date: September 08, 2017
+time: 1507318019950
+date: October 06, 2017
 ---
 
 # Choropleth w/ Custom Colors
@@ -18,7 +18,7 @@ var chart = new d3plus.Geomap()
   .colorScale("population")
   .topojson("https://d3plus.org/topojson/states.json")
   .fitFilter(function(d) {
-    return ["02", "15", "43", "60", "66", "69", "78"].indexOf(d.id) < 0;
+    return ["02", "15", "43", "60", "66", "69", "72", "78"].indexOf(d.id) < 0;
   });
 ```
 

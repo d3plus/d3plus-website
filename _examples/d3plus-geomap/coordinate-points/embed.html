@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-geomap.v0.4.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  new d3plus.Geomap()
+    .data("https://d3plus.org/data/city_coords.json")
+    .groupBy("slug")
+    .colorScale("dma_code")
+    .colorScaleConfig({
+      color: ["red", "orange", "yellow", "green", "blue"]
+    })
+    .label(function(d) {
+      return d.city + ", " + d.region;
+    })
+    .point(function(d) {
+      return [d.longitude, d.latitude];
+    })
+    .render();
+
+</script>
+
+</html>
