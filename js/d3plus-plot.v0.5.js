@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.25
+  d3plus-plot v0.5.26
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -587,6 +587,7 @@ var Plot = (function (Viz$$1) {
       if (this$1._yConfig.scale === "log" && d === 0) { d = yDomain[0] < 0 ? -1 : 1; }
       return this$1._yAxis._getPosition.bind(this$1._yAxis)(d);
     };
+    var yRange = this._yAxis._getRange();
 
     var yOffset = this._xAxis.barConfig()["stroke-width"];
     if (yOffset) { yOffset /= 2; }
@@ -626,8 +627,8 @@ var Plot = (function (Viz$$1) {
 
         var space;
         var scale = this$1._discrete === "x" ? x : y;
-        var vals = scale.domain().filter(function (d) { return typeof d !== "string" || d.indexOf("d3plus-buffer-") < 0; });
-        var range$$1 = scale.range();
+        var vals = (this$1._discrete === "x" ? xDomain : yDomain).filter(function (d) { return typeof d !== "string" || d.indexOf("d3plus-buffer-") < 0; });
+        var range$$1 = this$1._discrete === "x" ? xRange : yRange;
         if (vals.length > 1) { space = scale(vals[1]) - scale(vals[0]); }
         else { space = range$$1[range$$1.length - 1] - range$$1[0]; }
         space -= this$1._groupPadding;
