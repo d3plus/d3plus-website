@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.1.10
+  d3plus-network v0.1.11
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -417,11 +417,14 @@ var Network = (function (Viz$$1) {
 1. The index of the node in the nodes array (as in [this](http://d3plus.org/examples/d3plus-network/getting-started/) example).
 2. The actual node *Object* itself.
 3. A *String* value matching the `id` of the node.
-      @param {Array} [*links* = []]
+
+The value passed should either be an *Array* of data or a *String* representing a filepath or URL to be loaded. An optional formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final links *Array*.
+      @param {Array|String} *links* = []
+      @param {Function} [*formatter*]
       @chainable
   */
-  Network.prototype.links = function links (_) {
-    return arguments.length ? (this._links = _, this) : this._links;
+  Network.prototype.links = function links (_, f) {
+    return arguments.length ? (this._queue.push([d3plusViz.dataLoad.bind(this), _, f, "links"]), this) : this._links;
   };
 
   /**
@@ -451,12 +454,15 @@ var Network = (function (Viz$$1) {
 
   /**
       @memberof Network
-      @desc If *nodes* is specified, sets the nodes array to the specified array and returns the current class instance. If *nodes* is not specified, returns the current nodes array.
-      @param {Array} [*nodes* = []]
+      @desc The list of nodes to be used for drawing the network. The value passed should either be an *Array* of data or a *String* representing a filepath or URL to be loaded.
+
+Additionally, a custom formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final node *Array*.
+      @param {Array|String} *nodes* = []
+      @param {Function} [*formatter*]
       @chainable
   */
-  Network.prototype.nodes = function nodes (_) {
-    return arguments.length ? (this._nodes = _, this) : this._nodes;
+  Network.prototype.nodes = function nodes (_, f) {
+    return arguments.length ? (this._queue.push([d3plusViz.dataLoad.bind(this), _, f, "nodes"]), this) : this._nodes;
   };
 
   /**
