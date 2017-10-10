@@ -1,16 +1,75 @@
 /*
-  d3plus-common v0.6.22
+  d3plus-common v0.6.23
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('i18next'), require('d3-array'), require('d3-collection')) :
 	typeof define === 'function' && define.amd ? define('d3plus-common', ['exports', 'd3-selection', 'd3-transition', 'i18next', 'd3-array', 'd3-collection'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Selection,global.d3Transition,global.i18next,global.d3Array,global.d3Collection));
+	(factory((global.d3plus = {}),global.d3Selection,global.d3Transition,global.i18next,global.d3Array,global.d3Collection));
 }(this, (function (exports,d3Selection,d3Transition,i18next,d3Array,d3Collection) { 'use strict';
 
-i18next = 'default' in i18next ? i18next['default'] : i18next;
+i18next = i18next && i18next.hasOwnProperty('default') ? i18next['default'] : i18next;
 
 /**
     @function accessor
