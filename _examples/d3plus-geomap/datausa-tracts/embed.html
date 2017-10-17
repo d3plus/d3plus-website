@@ -27,7 +27,6 @@
   
   new d3plus.Geomap()
     .data("https://api.datausa.io/api/?show=geo&required=income&sumlevel=tract&year=latest&where=geo:^14000US25")
-    .select("#viz")
     .colorScale("income")
     .colorScaleConfig({
       axisConfig: {

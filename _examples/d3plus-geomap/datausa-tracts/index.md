@@ -2,7 +2,7 @@
 title: Income by Census Tract
 width: 990
 height: 550
-time: 1508257754145
+time: 1508268818882
 date: October 17, 2017
 ---
 
@@ -22,7 +22,6 @@ function incomeFormat(n) {
 
 new d3plus.Geomap()
   .data("https://api.datausa.io/api/?show=geo&required=income&sumlevel=tract&year=latest&where=geo:^14000US25")
-  .select("#viz")
   .colorScale("income")
   .colorScaleConfig({
     axisConfig: {
