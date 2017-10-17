@@ -2,7 +2,7 @@
 title: Income by Census Tract
 width: 990
 height: 550
-time: 1508257736947
+time: 1508257754145
 date: October 17, 2017
 ---
 
