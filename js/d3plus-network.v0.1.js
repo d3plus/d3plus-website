@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.1.11
+  d3plus-network v0.1.12
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -247,6 +247,8 @@ var Network = (function (Viz$$1) {
       var d = data[id],
             n = nodes[id];
 
+      if (n === undefined) { return false; }
+
       return {
         __d3plus__: true,
         data: d || n,
@@ -258,7 +260,7 @@ var Network = (function (Viz$$1) {
         shape: d !== undefined && this$1._shape(d) !== undefined ? this$1._shape(d) : this$1._shape(n)
       };
 
-    });
+    }).filter(function (n) { return n; });
 
     var xExtent = d3Array.extent(nodes.map(function (n) { return n.fx; })),
           yExtent = d3Array.extent(nodes.map(function (n) { return n.fy; }));
