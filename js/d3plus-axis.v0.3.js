@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.37
+  d3plus-axis v0.3.38
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -505,6 +505,7 @@ var Axis = (function (BaseClass$$1) {
         : 0;
       res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
       res.offset = 0;
+      res.hidden = false;
       if (res.width % 2) { res.width++; }
 
       return res;
@@ -636,21 +637,26 @@ var Axis = (function (BaseClass$$1) {
       .map(function (d) {
         var data = textData.filter(function (td) { return td.d === d; });
         var dataIndex = data.length ? textData.indexOf(data[0]) : undefined;
-        var labelOffset = data.length ? data[0].offset : 0;
         var xPos = this$1._getPosition(d);
+
+        var labelOffset = data.length ? data[0].offset : 0;
 
         var labelWidth = labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
 
-        var prev = data.length && dataIndex > 0 ? textData.filter(function (td, ti) { return td.offset >= labelOffset && ti < dataIndex; }) : false;
+        var prev = data.length && dataIndex > 0 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti < dataIndex; }) : false;
         prev = prev.length ? prev[prev.length - 1] : false;
-        var next = data.length && dataIndex < textData.length - 1 ? textData.filter(function (td, ti) { return td.offset >= labelOffset && ti > dataIndex; }) : false;
+        var next = data.length && dataIndex < textData.length - 1 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti > dataIndex; }) : false;
         next = next.length ? next[0] : false;
+
+        var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth / 2);
+        if (data.length && data[0].width > space) {
+          data[0].hidden = true;
+          data[0].offset = labelOffset = 0;
+        }
 
         var offset = margin[opposite],
               size = (hBuff + labelOffset) * (flip ? -1 : 1),
               yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
-
-        var space = Math.min(prev ? (xPos - this$1._getPosition(prev.d)) * 2 : labelWidth, next ? (this$1._getPosition(next.d) - xPos) * 2 : labelWidth);
 
         return ( obj = {
           id: d,
