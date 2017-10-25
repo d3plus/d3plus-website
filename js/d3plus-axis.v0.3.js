@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.36
+  d3plus-axis v0.3.37
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -162,8 +162,8 @@ var Axis = (function (BaseClass$$1) {
         textAnchor: function () {
           var rtl$$1 = d3plusText.rtl();
           return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
-          : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
-          : "middle";
+            : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
+            : "middle";
         },
         verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
       },
@@ -223,8 +223,7 @@ var Axis = (function (BaseClass$$1) {
     var ticks = [];
     if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.domain(); }
     if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.domain()); }
-
-    return [ticks[0], ticks[ticks.length - 1]];
+    return ticks[0] > ticks[1] ? d3Array.extent(ticks).reverse() : d3Array.extent(ticks);
 
   };
 
@@ -248,8 +247,7 @@ var Axis = (function (BaseClass$$1) {
     var ticks = [];
     if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.range(); }
     if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.range()); }
-
-    return [ticks[0], ticks[ticks.length - 1]];
+    return ticks[0] > ticks[1] ? d3Array.extent(ticks).reverse() : d3Array.extent(ticks);
 
   };
 
@@ -375,26 +373,28 @@ var Axis = (function (BaseClass$$1) {
       if (domain[0] === 0) { domain[0] = 1; }
       if (domain[domain.length - 1] === 0) { domain[domain.length - 1] = -1; }
       var range$1 = this._d3Scale.range();
-      if (domain[domain.length - 1] < 0) {
+      if (domain[0] < 0 && domain[domain.length - 1] < 0) {
         this._d3ScaleNegative = this._d3Scale.copy()
           .domain(domain)
           .range(range$1);
         this._d3Scale = null;
       }
-      else if (domain[0] > 0) {
+      else if (domain[0] > 0 && domain[domain.length - 1] > 0) {
         this._d3Scale
           .domain(domain)
           .range(range$1);
       }
       else {
-        var percentScale = scales.scaleLog().domain([1, domain[1]]).range([0, 1]);
-        var leftPercentage = percentScale(Math.abs(domain[0]));
+        var percentScale = scales.scaleLog().domain([1, domain[domain[1] > 0 ? 1 : 0]]).range([0, 1]);
+        var leftPercentage = percentScale(Math.abs(domain[domain[1] < 0 ? 1 : 0]));
         var zero = leftPercentage / (leftPercentage + 1) * (range$1[1] - range$1[0]);
-        this._d3Scale
-          .domain([1, domain[1]])
+        if (domain[0] > 0) { zero = range$1[1] - range$1[0] - zero; }
+        this._d3ScaleNegative = this._d3Scale.copy();
+        (domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative)
+          .domain([Math.sign(domain[1]), domain[1]])
           .range([range$1[0] + zero, range$1[1]]);
-        this._d3ScaleNegative = this._d3Scale.copy()
-          .domain([domain[0], -1])
+        (domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale)
+          .domain([domain[0], Math.sign(domain[0])])
           .range([range$1[0], range$1[0] + zero]);
       }
     }
@@ -566,10 +566,18 @@ var Axis = (function (BaseClass$$1) {
       range$$1 = range$$1.map(Math.round);
       if (this._d3ScaleNegative) {
         var negativeRange = this._d3ScaleNegative.range();
-        this._d3ScaleNegative[this._d3ScaleNegative.rangeRound ? "rangeRound" : "range"]([range$$1[0], this._d3Scale ? negativeRange[1] : range$$1[1]]);
+        this._d3ScaleNegative[this._d3ScaleNegative.rangeRound ? "rangeRound" : "range"](
+          this._d3Scale && this._d3Scale.range()[0] < negativeRange[0]
+            ? [negativeRange[0], range$$1[1]]
+            : [range$$1[0], this._d3Scale ? negativeRange[1] : range$$1[1]]
+        );
         if (this._d3Scale) {
           var positiveRange = this._d3Scale.range();
-          this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"]([positiveRange[0], range$$1[1]]);
+          this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](
+            range$$1[0] < negativeRange[0]
+              ? [range$$1[0], positiveRange[1]]
+              : [positiveRange[0], range$$1[1]]
+          );
         }
       }
       else {
@@ -620,29 +628,29 @@ var Axis = (function (BaseClass$$1) {
         .attr("opacity", 1)
         .call(this._gridPosition.bind(this));
 
-    var labelHeight = d3Array.max(textData, function (t) { return t.height; }) || 0,
-          labelWidth = horizontal ? this._space : bounds.width - margin[this._position.opposite] - hBuff - margin[this._orient] + p;
+    var labelHeight = d3Array.max(textData, function (t) { return t.height; }) || 0;
 
     var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); });
 
     var tickData = ticks.concat(labelOnly)
-      .map(function (d, i, arr) {
+      .map(function (d) {
         var data = textData.filter(function (td) { return td.d === d; });
+        var dataIndex = data.length ? textData.indexOf(data[0]) : undefined;
         var labelOffset = data.length ? data[0].offset : 0;
-        var inline = false;
-        if (i) {
-          var prev = textData.filter(function (td) { return td.d === arr[i - 1]; });
-          if (prev.length && prev[0].offset === labelOffset) { inline = true; }
-        }
-        if (i < arr.length - 1) {
-          var next = textData.filter(function (td) { return td.d === arr[i + 1]; });
-          if (next.length && next[0].offset === labelOffset) { inline = true; }
-        }
-        var offset = margin[opposite],
-              position = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset,
-              size = (hBuff + labelOffset) * (flip ? -1 : 1);
+        var xPos = this$1._getPosition(d);
 
-        var space = inline ? labelWidth : labelWidth * 1.9;
+        var labelWidth = labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
+
+        var prev = data.length && dataIndex > 0 ? textData.filter(function (td, ti) { return td.offset >= labelOffset && ti < dataIndex; }) : false;
+        prev = prev.length ? prev[prev.length - 1] : false;
+        var next = data.length && dataIndex < textData.length - 1 ? textData.filter(function (td, ti) { return td.offset >= labelOffset && ti > dataIndex; }) : false;
+        next = next.length ? next[0] : false;
+
+        var offset = margin[opposite],
+              size = (hBuff + labelOffset) * (flip ? -1 : 1),
+              yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
+
+        var space = Math.min(prev ? (xPos - this$1._getPosition(prev.d)) * 2 : labelWidth, next ? (this$1._getPosition(next.d) - xPos) * 2 : labelWidth);
 
         return ( obj = {
           id: d,
@@ -655,7 +663,7 @@ var Axis = (function (BaseClass$$1) {
           size: ticks.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false,
           tick: ticks.includes(d)
-        }, obj[x] = this$1._getPosition(d) + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = position, obj );
+        }, obj[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = yPos, obj );
         var obj;
       });
 
