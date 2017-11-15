@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.14
+  d3plus-geomap v0.4.15
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -532,6 +532,17 @@ Additionally, a custom formatting function can be passed as a second argument to
   */
   Geomap.prototype.pointSizeMin = function pointSizeMin (_) {
     return arguments.length ? (this._pointSizeMin = _, this) : this._pointSizeMin;
+  };
+
+  /**
+      @memberof Geomap
+      @desc Sets the map projection used when displaying topojson and coordinate points. Any of the standard projections exported from [d3-geo](https://github.com/d3/d3-geo#projections) are accepted, whether as the string name (ie. "geoMercator") or the generator function itself. Map tiles are only usable when the projection is set to Mercator (which is also the default value).
+      @param {Function|String} *projection* = "geoMercator"
+      @chainable
+  */
+  Geomap.prototype.projection = function projection (_) {
+    if (_ !== "geoMercator") { this._tiles = false; }
+    return arguments.length ? (this._projection = typeof _ === "string" ? d3Geo[_]() : _, this) : this._projection;
   };
 
   /**
