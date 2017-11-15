@@ -1,5 +1,5 @@
 /*
-  d3plus-dev v0.4.20
+  d3plus-dev v0.4.21
   A collection of scripts for developing D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -64,10 +64,10 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-	typeof define === 'function' && define.amd ? define('d3plus-dev', ['exports'], factory) :
-	(factory((global.d3plus = {})));
-}(this, (function (exports) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-scale')) :
+	typeof define === 'function' && define.amd ? define('d3plus-dev', ['exports', 'd3-scale'], factory) :
+	(factory((global.d3plus = {}),global.d3Scale));
+}(this, (function (exports,d3Scale) { 'use strict';
 
 var pipe = "Ceci n'est pas une |";
 
@@ -75,6 +75,7 @@ var assign = function () { return Object.assign({}, {test: true}); };
 
 var includes = function () { return [0, 1, 2].includes(1); };
 
+exports.scaleOrdinal = d3Scale.scaleOrdinal;
 exports.pipe = pipe;
 exports.assign = assign;
 exports.includes = includes;
