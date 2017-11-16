@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.23
+  d3plus-common v0.6.24
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -64,12 +64,10 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('i18next'), require('d3-array'), require('d3-collection')) :
-	typeof define === 'function' && define.amd ? define('d3plus-common', ['exports', 'd3-selection', 'd3-transition', 'i18next', 'd3-array', 'd3-collection'], factory) :
-	(factory((global.d3plus = {}),global.d3Selection,global.d3Transition,global.i18next,global.d3Array,global.d3Collection));
-}(this, (function (exports,d3Selection,d3Transition,i18next,d3Array,d3Collection) { 'use strict';
-
-i18next = i18next && i18next.hasOwnProperty('default') ? i18next['default'] : i18next;
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3-array'), require('d3-collection')) :
+	typeof define === 'function' && define.amd ? define('d3plus-common', ['exports', 'd3-selection', 'd3-transition', 'd3-array', 'd3-collection'], factory) :
+	(factory((global.d3plus = {}),global.d3Selection,global.d3Transition,global.d3Array,global.d3Collection));
+}(this, (function (exports,d3Selection,d3Transition,d3Array,d3Collection) { 'use strict';
 
 /**
     @function accessor
@@ -385,39 +383,6 @@ var elem = function(selector, p) {
 
 };
 
-var Back = "Back";
-var Total = "Total";
-var array = {"lowercase":["a","an","and","as","at","but","by","for","from","if","in","into","near","nor","of","on","onto","or","per","that","the","to","with","via","vs","vs."],"uppercase":["CEO","CFO","CNC","COO","CPU","GDP","HVAC","ID","IT","R&D","TV","UI"]};
-var enUS = {
-	Back: Back,
-	Total: Total,
-	array: array
-};
-
-var Back$1 = "Atrás";
-var Total$1 = "Total";
-var array$1 = {"lowercase":["una","y","en","pero","en","de","o","el","la","los","las","para","a","con"],"uppercase":["CEO","CFO","CNC","COO","CPU","PIB","HVAC","ID","TI","I&D","TV","UI"]};
-var esES = {
-	Back: Back$1,
-	Total: Total$1,
-	array: array$1
-};
-
-var namespace = "d3plus";
-var locale = i18next.init({
-  fallbackLng: "en-US",
-  defaultNS: namespace,
-  fallbackNS: namespace,
-  initImmediate: false,
-  ns: namespace,
-  resources: {
-    "en-US": ( obj = {}, obj[namespace] = enUS, obj ),
-    "es-ES": ( obj$1 = {}, obj$1[namespace] = esES, obj$1 )
-  }
-});
-var obj;
-var obj$1;
-
 /**
     @function merge
     @desc Combines an Array of Objects together and returns a new Object.
@@ -501,7 +466,6 @@ exports.configPrep = configPrep;
 exports.constant = constant;
 exports.elem = elem;
 exports.isObject = isObject;
-exports.locale = locale;
 exports.merge = objectMerge;
 exports.prefix = prefix;
 exports.stylize = stylize;
