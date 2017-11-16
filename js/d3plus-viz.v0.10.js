@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.11
+  d3plus-viz v0.10.12
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -241,7 +241,7 @@ var drawBack = function() {
   }).node();
 
   this._backClass
-    .data(visible ? [{text: d3plusCommon.locale.t("Back", {lng: this._locale}), x: this._padding * 2, y: 0}] : [])
+    .data(visible ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
     .select(backGroup)
     .config(this._backConfig)
     .render();
@@ -624,7 +624,7 @@ var drawTotal = function(data) {
   var visible = typeof total === "number";
 
   this._totalClass
-    .data(visible ? [{text: ((d3plusCommon.locale.t("Total", {lng: this._locale})) + ": " + total)}] : [])
+    .data(visible ? [{text: ("Total: " + total)}] : [])
     .select(group)
     .width(this._width - this._margin.left - this._margin.right)
     .config(this._totalConfig)
@@ -786,8 +786,7 @@ var mousemoveLegend = function(d) {
   if (this._tooltip && d) {
     this._select.style("cursor", "pointer");
     this._tooltipClass.data([d])
-      .footer(this._drawDepth < this._groupBy.length - 1
-        ? d3plusCommon.locale.t("Click to Expand", {lng: this._locale}) : "")
+      .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
       .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
       .translate(d3Selection.mouse(d3Selection.select("html").node()))
       .config(this._tooltipConfig)
@@ -809,8 +808,7 @@ var mousemoveShape = function(d) {
   if (this._tooltip && d) {
     this._select.style("cursor", "pointer");
     this._tooltipClass.data([d])
-      .footer(this._drawDepth < this._groupBy.length - 1
-        ? d3plusCommon.locale.t("Click to Expand", {lng: this._locale}) : "")
+      .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
       .title(this._drawLabel)
       .translate(d3Selection.mouse(d3Selection.select("html").node()))
       .config(this._tooltipConfig)
@@ -1908,7 +1906,7 @@ function value(d) {
       @param {String} [*value* = "en-US"]
       @chainable
   */
-  Viz.prototype.locale = function locale$$1 (_) {
+  Viz.prototype.locale = function locale (_) {
     return arguments.length ? (this._locale = _, this) : this._locale;
   };
 
