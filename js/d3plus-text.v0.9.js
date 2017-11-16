@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.22
+  d3plus-text v0.9.23
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -997,26 +997,21 @@ function(d) {
   return TextBox;
 }(d3plusCommon.BaseClass));
 
+var lowercase = ["a", "an", "and", "as", "at", "but", "by", "for", "from", "if", "in", "into", "near", "nor", "of", "on", "onto", "or", "per", "that", "the", "to", "with", "via", "vs", "vs."];
+var uppercase = ["CEO", "CFO", "CNC", "COO", "CPU", "GDP", "HVAC", "ID", "IT", "R&D", "TV", "UI"];
+
 /**
     @function titleCase
     @desc Capitalizes the first letter of each word in a phrase/sentence.
     @param {String} str The string to apply the title case logic.
-    @param {Object} [opts] Optional parameters to apply.
-    @param {String} [opts.lng] The locale to use when looking up all lowercase or uppecase words.
 */
-var titleCase = function(str, opts) {
+var titleCase = function(str) {
 
   if (str === void 0) { return ""; }
 
-  opts = Object.assign({
-    lng: "en-US"
-  }, opts);
+  var smalls = lowercase.map(function (s) { return s.toLowerCase(); });
 
-  var lng = opts.lng;
-
-  var smalls = d3plusCommon.locale.t("array.lowercase", {lng: lng, returnObjects: true}).map(function (s) { return s.toLowerCase(); });
-
-  var bigs = d3plusCommon.locale.t("array.uppercase", {lng: lng, returnObjects: true});
+  var bigs = uppercase.slice();
   bigs = bigs.concat(bigs.map(function (b) { return (b + "s"); }));
   var biglow = bigs.map(function (b) { return b.toLowerCase(); });
 
