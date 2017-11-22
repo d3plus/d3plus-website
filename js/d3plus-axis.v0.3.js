@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.38
+  d3plus-axis v0.3.39
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -223,7 +223,9 @@ var Axis = (function (BaseClass$$1) {
     var ticks = [];
     if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.domain(); }
     if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.domain()); }
-    return ticks[0] > ticks[1] ? d3Array.extent(ticks).reverse() : d3Array.extent(ticks);
+
+    var domain = this._scale === "ordinal" ? ticks : d3Array.extent(ticks);
+    return ticks[0] > ticks[1] ? domain.reverse() : domain;
 
   };
 
@@ -600,11 +602,11 @@ var Axis = (function (BaseClass$$1) {
     else { this._space = this._size; }
 
     var tBuff = this._shape === "Line" ? 0 : hBuff;
-    var bounds = this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    var bounds = this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return Math.ceil(t[height]); }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
     var obj;
 
-    margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, tBuff]) : this[("_" + height)] - margin[this._orient] - bounds[height] - p * 2 - hBuff;
     margin[this._orient] += hBuff;
+    margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, tBuff]) : this[("_" + height)] - margin[this._orient] - bounds[height] - p;
     bounds[height] += margin[opposite] + margin[this._orient];
     bounds[y] = this._align === "start" ? this._padding
       : this._align === "end" ? this[("_" + height)] - bounds[height] - this._padding
@@ -641,14 +643,14 @@ var Axis = (function (BaseClass$$1) {
 
         var labelOffset = data.length ? data[0].offset : 0;
 
-        var labelWidth = labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
+        var labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
 
         var prev = data.length && dataIndex > 0 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti < dataIndex; }) : false;
         prev = prev.length ? prev[prev.length - 1] : false;
         var next = data.length && dataIndex < textData.length - 1 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti > dataIndex; }) : false;
         next = next.length ? next[0] : false;
 
-        var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth / 2);
+        var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth);
         if (data.length && data[0].width > space) {
           data[0].hidden = true;
           data[0].offset = labelOffset = 0;
@@ -661,10 +663,10 @@ var Axis = (function (BaseClass$$1) {
         return ( obj = {
           id: d,
           labelBounds: {
-            x: horizontal ? -space / 2 : this$1._orient === "left" ? -space - p + size : size + p,
-            y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -labelHeight / 2,
-            width: space,
-            height: labelHeight
+            x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
+            y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
+            width: horizontal ? space : labelWidth,
+            height: horizontal ? labelHeight : space
           },
           size: ticks.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false,
