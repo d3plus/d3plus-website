@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.27
+  d3plus-plot v0.5.28
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -29959,7 +29959,7 @@ var LineBuffer = function(data, x, y) {
 };
 
 function defaultSize(d) {
-  return this._sizeScaleD3(this._size(d));
+  return this._sizeScaleD3(this._size ? this._size(d) : null);
 }
 
 /**
