@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.26
+  d3plus-plot v0.5.27
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -83,8 +83,18 @@ var ordinalBuffer = function(domain) {
 
 };
 
-var BarBuffer = function(data, x, y) {
+/**
+    Adds a buffer to either side of the non-discrete axis.
+    @param {Array} data
+    @param {D3Scale} x
+    @param {D3Scale} y
+    @param {Object} [config]
+    @param {Number} [buffer = 10]
+    @private
+*/
+var BarBuffer = function(data, x, y, config, buffer) {
   var this$1 = this;
+  if ( buffer === void 0 ) buffer = 10;
 
 
   var oppScale = this._discrete === "x" ? y : x;
@@ -93,10 +103,29 @@ var BarBuffer = function(data, x, y) {
 
   if (this._discrete === "x") { oppDomain.reverse(); }
 
-  var vals = data.map(function (d) { return d[this$1._discrete === "x" ? "y" : "x"]; });
-  var b = oppScale.invert(oppScale(d3Array.max(vals)) + (this._discrete === "x" ? -10 : 10));
+  var negVals, posVals;
+  if (this._stacked) {
+    var groupedData = d3Collection.nest()
+      .key(function (d) { return d[this$1._discrete]; })
+      .entries(data)
+      .map(function (d) { return d.values.map(function (x) { return x[this$1._discrete === "x" ? "y" : "x"]; }); });
+    posVals = groupedData.map(function (arr) { return d3Array.sum(arr.filter(function (d) { return d > 0; })); });
+    negVals = groupedData.map(function (arr) { return d3Array.sum(arr.filter(function (d) { return d < 0; })); });
+  }
+  else {
+    posVals = data.map(function (d) { return d[this$1._discrete === "x" ? "y" : "x"]; });
+    negVals = posVals;
+  }
+  var bMax = oppScale(d3Array.max(posVals));
+  if (bMax !== oppScale(0)) { bMax += this._discrete === "x" ? -buffer : buffer; }
+  bMax = oppScale.invert(bMax);
 
-  if (b > oppDomain[1]) { oppDomain[1] = b; }
+  var bMin = oppScale(d3Array.min(negVals));
+  if (bMin !== oppScale(0)) { bMin += this._discrete === "x" ? buffer : -buffer; }
+  bMin = oppScale.invert(bMin);
+
+  if (bMax > oppDomain[1]) { oppDomain[1] = bMax; }
+  if (bMin < oppDomain[0]) { oppDomain[0] = bMin; }
 
   if (this._discrete === "x") { oppDomain.reverse(); }
 
@@ -109,7 +138,16 @@ var BarBuffer = function(data, x, y) {
 
 };
 
-var CircleBuffer = function(data, x, y, config) {
+/**
+    Adds a buffer to either side of the non-discrete axis.
+    @param {Array} data
+    @param {D3Scale} x
+    @param {D3Scale} y
+    @param {Object} [config]
+    @param {Number} [buffer] Defaults to the radius of the largest Circle.
+    @private
+*/
+var CircleBuffer = function(data, x, y, config, buffer) {
 
   var xD = x.domain().slice(),
       yD = y.domain().slice();
@@ -122,7 +160,7 @@ var CircleBuffer = function(data, x, y, config) {
 
   data.forEach(function (d) {
 
-    var s = config.r(d.data, d.i) * 2;
+    var s = buffer ? buffer : config.r(d.data, d.i) * 2;
 
     if (x.invert && x(d.x) - xR[0] < s) {
       var v = x.invert(x(d.x) - s);
@@ -217,6 +255,10 @@ var LineBuffer = function(data, x, y) {
 
 };
 
+function defaultSize(d) {
+  return this._sizeScaleD3(this._size(d));
+}
+
 /**
     @class Plot
     @extends Viz
@@ -228,6 +270,7 @@ var Plot = (function (Viz$$1) {
 
 
     Viz$$1.call(this);
+    this._annotations = [];
     this._barPadding = 0;
     this._buffer = {
       Bar: BarBuffer,
@@ -251,7 +294,7 @@ var Plot = (function (Viz$$1) {
         }
       },
       Circle: {
-        r: d3plusCommon.constant(5)
+        r: defaultSize.bind(this)
       },
       Line: {
         fill: d3plusCommon.constant("none"),
@@ -260,11 +303,14 @@ var Plot = (function (Viz$$1) {
         strokeWidth: d3plusCommon.constant(1)
       },
       Rect: {
-        height: d3plusCommon.constant(10),
-        width: d3plusCommon.constant(10)
+        height: function (d) { return defaultSize.bind(this$1)(d) * 2; },
+        width: function (d) { return defaultSize.bind(this$1)(d) * 2; }
       }
     });
-    this._stackOffset = d3Shape.stackOffsetNone;
+    this._sizeMax = 20;
+    this._sizeMin = 5;
+    this._sizeScale = "sqrt";
+    this._stackOffset = d3Shape.stackOffsetDiverging;
     this._stackOrder = d3Shape.stackOrderNone;
     this._x = d3plusCommon.accessor("x");
     this._xAxis = new d3plusAxis.AxisBottom().align("end");
@@ -321,6 +367,17 @@ var Plot = (function (Viz$$1) {
       x: this$1._x(d, i),
       y: this$1._y(d, i)
     }); });
+
+    if (this._size) {
+      var rExtent = d3Array.extent(data, function (d) { return this$1._size(d.data); });
+      this._sizeScaleD3 = function () { return this$1._sizeMin; };
+      this._sizeScaleD3 = scales[("scale" + (this._sizeScale.charAt(0).toUpperCase()) + (this._sizeScale.slice(1)))]()
+        .domain(rExtent)
+        .range([rExtent[0] === rExtent[1] ? this._sizeMax : d3Array.min([this._sizeMax / 2, this._sizeMin]), this._sizeMax]);
+    }
+    else {
+      this._sizeScaleD3 = function () { return this$1._sizeMin; };
+    }
 
     var height = this._height - this._margin.top - this._margin.bottom,
           opp = this._discrete ? this._discrete === "x" ? "y" : "x" : undefined,
@@ -408,7 +465,7 @@ var Plot = (function (Viz$$1) {
 
       domains = {};
       domains[this._discrete] = d3Array.extent(data, function (d) { return d[this$1._discrete]; });
-      domains[opp] = [d3Array.min(stackData.map(function (g) { return d3Array.min(g.map(function (p) { return p[1]; })); })), d3Array.max(stackData.map(function (g) { return d3Array.max(g.map(function (p) { return p[1]; })); }))];
+      domains[opp] = [d3Array.min(stackData.map(function (g) { return d3Array.min(g.map(function (p) { return p[0]; })); })), d3Array.max(stackData.map(function (g) { return d3Array.max(g.map(function (p) { return p[1]; })); }))];
 
     }
     else { domains = {x: d3Array.extent(data, function (d) { return d.x; }), y: d3Array.extent(data, function (d) { return d.y; })}; }
@@ -589,6 +646,22 @@ var Plot = (function (Viz$$1) {
     };
     var yRange = this._yAxis._getRange();
 
+    var annotationGroup = d3plusCommon.elem("g.d3plus-plot-annotations", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node();
+    this._annotations.forEach(function (annotation) {
+      new shapes[annotation.shape]()
+        .config(annotation)
+        .config({
+          x: function (d) { return x(d.x); },
+          x0: this$1._discrete === "x" ? function (d) { return x(d.x); } : x(0),
+          x1: this$1._discrete === "x" ? null : function (d) { return x(d.x); },
+          y: function (d) { return y(d.y); },
+          y0: this$1._discrete === "y" ? function (d) { return y(d.y); } : y(0) - yOffset,
+          y1: this$1._discrete === "y" ? null : function (d) { return y(d.y) - yOffset; }
+        })
+        .select(annotationGroup)
+        .render();
+    });
+
     var yOffset = this._xAxis.barConfig()["stroke-width"];
     if (yOffset) { yOffset /= 2; }
 
@@ -695,8 +768,19 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
+      @desc Allows drawing custom shapes to be used as annotations in the provided x/y plot. This method accepts custom config objects for the [Shape](http://d3plus.org/docs/#Shape) class, either a single config object or an array of config objects. Each config object requires an additional parameter, the "shape", which denotes which [Shape](http://d3plus.org/docs/#Shape) sub-class to use ([Rect](http://d3plus.org/docs/#Rect), [Line](http://d3plus.org/docs/#Line), etc). Annotations will be drawn underneath the data to be displayed.
+      @param {Array|Object} *annotations* = []
+      @chainable
+  */
+  Plot.prototype.annotations = function annotations (_) {
+    return arguments.length ? (this._annotations = _ instanceof Array ? _ : [_], this) : this._annotations;
+  };
+
+  /**
+      @memberof Plot
       @desc Sets the pixel space between each bar in a group of bars.
-      @param {Number} [*value* = 0]
+      @param {Number} *value* = 0
+      @chainable
   */
   Plot.prototype.barPadding = function barPadding (_) {
     return arguments.length ? (this._barPadding = _, this) : this._barPadding;
@@ -704,8 +788,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the baseline for the x/y plot and returns the current class instance. If *value* is not specified, returns the current baseline.
-      @param {Number} [*value*]
+      @desc Sets the baseline for the x/y plot. If *value* is not specified, returns the current baseline.
+      @param {Number} *value*
+      @chainable
   */
   Plot.prototype.baseline = function baseline (_) {
     return arguments.length ? (this._baseline = _, this) : this._baseline;
@@ -713,8 +798,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the discrete axis to the specified string and returns the current class instance. If *value* is not specified, returns the current discrete axis.
-      @param {String} [*value*]
+      @desc Sets the discrete axis to the specified string. If *value* is not specified, returns the current discrete axis.
+      @param {String} *value*
+      @chainable
   */
   Plot.prototype.discrete = function discrete (_) {
     return arguments.length ? (this._discrete = _, this) : this._discrete;
@@ -724,6 +810,7 @@ var Plot = (function (Viz$$1) {
       @memberof Plot
       @desc Sets the pixel space between groups of bars.
       @param {Number} [*value* = 5]
+      @chainable
   */
   Plot.prototype.groupPadding = function groupPadding (_) {
     return arguments.length ? (this._groupPadding = _, this) : this._groupPadding;
@@ -731,8 +818,49 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, toggles shape stacking and returns the current class instance. If *value* is not specified, returns the current stack value.
-      @param {Boolean} [*value* = false]
+      @desc Sets the size of bubbles to the given Number, data key, or function.
+      @param {Function|Number|String} *value* = 10
+      @chainable
+  */
+  Plot.prototype.size = function size (_) {
+    return arguments.length ? (this._size = typeof _ === "function" || !_ ? _ : d3plusCommon.accessor(_), this) : this._size;
+  };
+
+  /**
+      @memberof Plot
+      @desc Sets the size scale maximum to the specified number.
+      @param {Number} *value* = 20
+      @chainable
+  */
+  Plot.prototype.sizeMax = function sizeMax (_) {
+    return arguments.length ? (this._sizeMax = _, this) : this._sizeMax;
+  };
+
+  /**
+      @memberof Plot
+      @desc Sets the size scale minimum to the specified number.
+      @param {Number} *value* = 5
+      @chainable
+  */
+  Plot.prototype.sizeMin = function sizeMin (_) {
+    return arguments.length ? (this._sizeMin = _, this) : this._sizeMin;
+  };
+
+  /**
+      @memberof Plot
+      @desc Sets the size scale to the specified string.
+      @param {String} *value* = "sqrt"
+      @chainable
+  */
+  Plot.prototype.sizeScale = function sizeScale (_) {
+    return arguments.length ? (this._sizeScale = _, this) : this._sizeScale;
+  };
+
+  /**
+      @memberof Plot
+      @desc If *value* is specified, toggles shape stacking. If *value* is not specified, returns the current stack value.
+      @param {Boolean} *value* = false
+      @chainable
   */
   Plot.prototype.stacked = function stacked (_) {
     return arguments.length ? (this._stacked = _, this) : this._stacked;
@@ -740,8 +868,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the stack offset and returns the current class instance. If *value* is not specified, returns the current stack offset function.
-      @param {Function|String} [*value* = "descending"]
+      @desc Sets the stack offset. If *value* is not specified, returns the current stack offset function.
+      @param {Function|String} *value* = "descending"
+      @chainable
   */
   Plot.prototype.stackOffset = function stackOffset (_) {
     return arguments.length ? (this._stackOffset = typeof _ === "function" ? _ : d3Shape[("stackOffset" + (_.charAt(0).toUpperCase() + _.slice(1)))], this) : this._stackOffset;
@@ -749,8 +878,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the stack order and returns the current class instance. If *value* is not specified, returns the current stack order function.
-      @param {Function|String|Array} [*value* = "none"]
+      @desc Sets the stack order. If *value* is not specified, returns the current stack order function.
+      @param {Function|String|Array} *value* = "none"
+      @chainable
   */
   Plot.prototype.stackOrder = function stackOrder (_) {
     return arguments.length ? (this._stackOrder = typeof _ === "string" ? d3Shape[("stackOrder" + (_.charAt(0).toUpperCase() + _.slice(1)))] : _, this) : this._stackOrder;
@@ -758,8 +888,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current x accessor.
-      @param {Function|Number} [*value*]
+      @desc Sets the x accessor to the specified function or number. If *value* is not specified, returns the current x accessor.
+      @param {Function|Number} *value*
+      @chainable
   */
   Plot.prototype.x = function x (_) {
     if (arguments.length) {
@@ -780,8 +911,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the config method for the x-axis and returns the current class instance. If *value* is not specified, returns the current x-axis configuration.
-      @param {Object} [*value*]
+      @desc Sets the config method for the x-axis. If *value* is not specified, returns the current x-axis configuration.
+      @param {Object} *value*
+      @chainable
   */
   Plot.prototype.xConfig = function xConfig (_) {
     return arguments.length ? (this._xConfig = d3plusCommon.assign(this._xConfig, _), this) : this._xConfig;
@@ -789,8 +921,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the config method for the secondary x-axis and returns the current class instance. If *value* is not specified, returns the current secondary x-axis configuration.
-      @param {Object} [*value*]
+      @desc Sets the config method for the secondary x-axis. If *value* is not specified, returns the current secondary x-axis configuration.
+      @param {Object} *value*
+      @chainable
   */
   Plot.prototype.x2Config = function x2Config (_) {
     return arguments.length ? (this._x2Config = d3plusCommon.assign(this._x2Config, _), this) : this._x2Config;
@@ -798,8 +931,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the x domain to the specified array and returns the current class instance. If *value* is not specified, returns the current x domain. Additionally, if either value of the array is undefined, it will be calculated from the data.
-      @param {Array} [*value*]
+      @desc Sets the x domain to the specified array. If *value* is not specified, returns the current x domain. Additionally, if either value of the array is undefined, it will be calculated from the data.
+      @param {Array} *value*
+      @chainable
   */
   Plot.prototype.xDomain = function xDomain (_) {
     return arguments.length ? (this._xDomain = _, this) : this._xDomain;
@@ -808,7 +942,8 @@ var Plot = (function (Viz$$1) {
   /**
       @memberof Plot
       @desc Defines a custom sorting comparitor function to be used for discrete x axes.
-      @param {Function} [*value*]
+      @param {Function} *value*
+      @chainable
   */
   Plot.prototype.xSort = function xSort (_) {
     return arguments.length ? (this._xSort = _, this) : this._xSort;
@@ -816,8 +951,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current y accessor.
-      @param {Function|Number} [*value*]
+      @desc Sets the y accessor to the specified function or number. If *value* is not specified, returns the current y accessor.
+      @param {Function|Number} *value*
+      @chainable
   */
   Plot.prototype.y = function y (_) {
     if (arguments.length) {
@@ -838,10 +974,11 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the config method for the y-axis and returns the current class instance. If *value* is not specified, returns the current y-axis configuration.
+      @desc Sets the config method for the y-axis. If *value* is not specified, returns the current y-axis configuration.
 
 *Note:* If a "domain" array is passed to the y-axis config, it will be reversed.
-      @param {Object} [*value*]
+      @param {Object} *value*
+      @chainable
   */
   Plot.prototype.yConfig = function yConfig (_) {
     if (arguments.length) {
@@ -854,8 +991,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the config method for the secondary y-axis and returns the current class instance. If *value* is not specified, returns the current secondary y-axis configuration.
-      @param {Object} [*value*]
+      @desc Sets the config method for the secondary y-axis. If *value* is not specified, returns the current secondary y-axis configuration.
+      @param {Object} *value*
+      @chainable
   */
   Plot.prototype.y2Config = function y2Config (_) {
     return arguments.length ? (this._y2Config = d3plusCommon.assign(this._y2Config, _), this) : this._y2Config;
@@ -863,8 +1001,9 @@ var Plot = (function (Viz$$1) {
 
   /**
       @memberof Plot
-      @desc If *value* is specified, sets the y domain to the specified array and returns the current class instance. If *value* is not specified, returns the current y domain. Additionally, if either value of the array is undefined, it will be calculated from the data.
-      @param {Array} [*value*]
+      @desc Sets the y domain to the specified array. If *value* is not specified, returns the current y domain. Additionally, if either value of the array is undefined, it will be calculated from the data.
+      @param {Array} *value*
+      @chainable
   */
   Plot.prototype.yDomain = function yDomain (_) {
     return arguments.length ? (this._yDomain = _, this) : this._yDomain;
@@ -873,7 +1012,8 @@ var Plot = (function (Viz$$1) {
   /**
       @memberof Plot
       @desc Defines a custom sorting comparitor function to be used for discrete y axes.
-      @param {Function} [*value*]
+      @param {Function} *value*
+      @chainable
   */
   Plot.prototype.ySort = function ySort (_) {
     return arguments.length ? (this._ySort = _, this) : this._ySort;
