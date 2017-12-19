@@ -1,15 +1,15 @@
 ---
-title: Changing Styles of a Color Scale
+title: Changing Style of a Color Scale
 width: 400
 height: 200
-time: 1513703964572
+time: 1513704678899
 date: December 19, 2017
 ---
 
 [width]: 400
 [height]: 200
 
-# Changing Styles of a Color Scale
+# Changing Style of a Color Scale
 
 The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)).
 
