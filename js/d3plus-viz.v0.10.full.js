@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.12
+  d3plus-viz v0.10.13
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -558,7 +558,7 @@ var dsv = function(delimiter) {
       if (convert) { return convert(row, i - 1); }
       columns = row, convert = f ? customConverter(row, f) : objectConverter(row);
     });
-    rows.columns = columns;
+    rows.columns = columns || [];
     return rows;
   }
 
@@ -2526,7 +2526,7 @@ var interpolateRgb = (function rgbGamma(y) {
 var array$1 = function(a, b) {
   var nb = b ? b.length : 0,
       na = a ? Math.min(nb, a.length) : 0,
-      x = new Array(nb),
+      x = new Array(na),
       c = new Array(nb),
       i;
 
@@ -2979,12 +2979,12 @@ function nap() {
 function sleep(time) {
   if (frame) { return; } // Soonest alarm already set, or will be.
   if (timeout) { timeout = clearTimeout(timeout); }
-  var delay = time - clockNow;
+  var delay = time - clockNow; // Strictly less than if we recomputed clockNow.
   if (delay > 24) {
-    if (time < Infinity) { timeout = setTimeout(wake, delay); }
+    if (time < Infinity) { timeout = setTimeout(wake, time - clock.now() - clockSkew); }
     if (interval) { interval = clearInterval(interval); }
   } else {
-    if (!interval) { clockLast = clockNow, interval = setInterval(poke, pokeDelay); }
+    if (!interval) { clockLast = clock.now(), interval = setInterval(poke, pokeDelay); }
     frame = 1, setFrame(wake);
   }
 }
@@ -3030,20 +3030,20 @@ var schedule = function(node, name, id, index, group, timing) {
 };
 
 function init(node, id) {
-  var schedule = node.__transition;
-  if (!schedule || !(schedule = schedule[id]) || schedule.state > CREATED) { throw new Error("too late"); }
+  var schedule = get$1(node, id);
+  if (schedule.state > CREATED) { throw new Error("too late; already scheduled"); }
   return schedule;
 }
 
 function set$3(node, id) {
-  var schedule = node.__transition;
-  if (!schedule || !(schedule = schedule[id]) || schedule.state > STARTING) { throw new Error("too late"); }
+  var schedule = get$1(node, id);
+  if (schedule.state > STARTING) { throw new Error("too late; already started"); }
   return schedule;
 }
 
 function get$1(node, id) {
   var schedule = node.__transition;
-  if (!schedule || !(schedule = schedule[id])) { throw new Error("too late"); }
+  if (!schedule || !(schedule = schedule[id])) { throw new Error("transition not found"); }
   return schedule;
 }
 
@@ -4526,21 +4526,29 @@ function defaultWheelDelta() {
   return -event$1.deltaY * (event$1.deltaMode ? 120 : 1) / 500;
 }
 
-function defaultTouchable() {
+function defaultTouchable$1() {
   return "ontouchstart" in this;
+}
+
+function defaultConstrain(transform, extent, translateExtent) {
+  var dx0 = transform.invertX(extent[0][0]) - translateExtent[0][0],
+      dx1 = transform.invertX(extent[1][0]) - translateExtent[1][0],
+      dy0 = transform.invertY(extent[0][1]) - translateExtent[0][1],
+      dy1 = transform.invertY(extent[1][1]) - translateExtent[1][1];
+  return transform.translate(
+    dx1 > dx0 ? (dx0 + dx1) / 2 : Math.min(0, dx0) || Math.max(0, dx1),
+    dy1 > dy0 ? (dy0 + dy1) / 2 : Math.min(0, dy0) || Math.max(0, dy1)
+  );
 }
 
 var zoom = function() {
   var filter = defaultFilter$2,
       extent = defaultExtent$1,
+      constrain = defaultConstrain,
       wheelDelta = defaultWheelDelta,
-      touchable = defaultTouchable,
-      k0 = 0,
-      k1 = Infinity,
-      x0 = -k1,
-      x1 = k1,
-      y0 = x0,
-      y1 = x1,
+      touchable = defaultTouchable$1,
+      scaleExtent = [0, Infinity],
+      translateExtent = [[-Infinity, -Infinity], [Infinity, Infinity]],
       duration = 250,
       interpolate = interpolateZoom,
       gestures = [],
@@ -4595,7 +4603,7 @@ var zoom = function() {
           p0 = centroid(e),
           p1 = t0.invert(p0),
           k1 = typeof k === "function" ? k.apply(this, arguments) : k;
-      return constrain(translate(scale(t0, k1), p0, p1), e);
+      return constrain(translate(scale(t0, k1), p0, p1), e, translateExtent);
     });
   };
 
@@ -4604,7 +4612,7 @@ var zoom = function() {
       return constrain(this.__zoom.translate(
         typeof x === "function" ? x.apply(this, arguments) : x,
         typeof y === "function" ? y.apply(this, arguments) : y
-      ), extent.apply(this, arguments));
+      ), extent.apply(this, arguments), translateExtent);
     });
   };
 
@@ -4616,29 +4624,18 @@ var zoom = function() {
       return constrain(identity$2.translate(p[0], p[1]).scale(t.k).translate(
         typeof x === "function" ? -x.apply(this, arguments) : -x,
         typeof y === "function" ? -y.apply(this, arguments) : -y
-      ), e);
+      ), e, translateExtent);
     });
   };
 
   function scale(transform, k) {
-    k = Math.max(k0, Math.min(k1, k));
+    k = Math.max(scaleExtent[0], Math.min(scaleExtent[1], k));
     return k === transform.k ? transform : new Transform(k, transform.x, transform.y);
   }
 
   function translate(transform, p0, p1) {
     var x = p0[0] - p1[0] * transform.k, y = p0[1] - p1[1] * transform.k;
     return x === transform.x && y === transform.y ? transform : new Transform(transform.k, x, y);
-  }
-
-  function constrain(transform, extent) {
-    var dx0 = transform.invertX(extent[0][0]) - x0,
-        dx1 = transform.invertX(extent[1][0]) - x1,
-        dy0 = transform.invertY(extent[0][1]) - y0,
-        dy1 = transform.invertY(extent[1][1]) - y1;
-    return transform.translate(
-      dx1 > dx0 ? (dx0 + dx1) / 2 : Math.min(0, dx0) || Math.max(0, dx1),
-      dy1 > dy0 ? (dy0 + dy1) / 2 : Math.min(0, dy0) || Math.max(0, dy1)
-    );
   }
 
   function centroid(extent) {
@@ -4717,7 +4714,7 @@ var zoom = function() {
     if (!filter.apply(this, arguments)) { return; }
     var g = gesture(this, arguments),
         t = this.__zoom,
-        k = Math.max(k0, Math.min(k1, t.k * Math.pow(2, wheelDelta.apply(this, arguments)))),
+        k = Math.max(scaleExtent[0], Math.min(scaleExtent[1], t.k * Math.pow(2, wheelDelta.apply(this, arguments)))),
         p = mouse(this);
 
     // If the mouse is in the same location as before, reuse it.
@@ -4741,7 +4738,7 @@ var zoom = function() {
 
     noevent$2();
     g.wheel = setTimeout(wheelidled, wheelDelay);
-    g.zoom("mouse", constrain(translate(scale(t, k), g.mouse[0], g.mouse[1]), g.extent));
+    g.zoom("mouse", constrain(translate(scale(t, k), g.mouse[0], g.mouse[1]), g.extent, translateExtent));
 
     function wheelidled() {
       g.wheel = null;
@@ -4769,7 +4766,7 @@ var zoom = function() {
         var dx = event$1.clientX - x0, dy = event$1.clientY - y0;
         g.moved = dx * dx + dy * dy > clickDistance2;
       }
-      g.zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = mouse(g.that), g.mouse[1]), g.extent));
+      g.zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = mouse(g.that), g.mouse[1]), g.extent, translateExtent));
     }
 
     function mouseupped() {
@@ -4786,7 +4783,7 @@ var zoom = function() {
         p0 = mouse(this),
         p1 = t0.invert(p0),
         k1 = t0.k * (event$1.shiftKey ? 0.5 : 2),
-        t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, arguments));
+        t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, arguments), translateExtent);
 
     noevent$2();
     if (duration > 0) { select(this).transition().duration(duration).call(schedule, t1, p0); }
@@ -4854,7 +4851,7 @@ var zoom = function() {
     }
     else if (g.touch0) { p = g.touch0[0], l = g.touch0[1]; }
     else { return; }
-    g.zoom("touch", constrain(translate(t, p, l), g.extent));
+    g.zoom("touch", constrain(translate(t, p, l), g.extent, translateExtent));
   }
 
   function touchended() {
@@ -4892,11 +4889,15 @@ var zoom = function() {
   };
 
   zoom.scaleExtent = function(_) {
-    return arguments.length ? (k0 = +_[0], k1 = +_[1], zoom) : [k0, k1];
+    return arguments.length ? (scaleExtent[0] = +_[0], scaleExtent[1] = +_[1], zoom) : [scaleExtent[0], scaleExtent[1]];
   };
 
   zoom.translateExtent = function(_) {
-    return arguments.length ? (x0 = +_[0][0], x1 = +_[1][0], y0 = +_[0][1], y1 = +_[1][1], zoom) : [[x0, y0], [x1, y1]];
+    return arguments.length ? (translateExtent[0][0] = +_[0][0], translateExtent[1][0] = +_[1][0], translateExtent[0][1] = +_[0][1], translateExtent[1][1] = +_[1][1], zoom) : [[translateExtent[0][0], translateExtent[0][1]], [translateExtent[1][0], translateExtent[1][1]]];
+  };
+
+  zoom.constrain = function(_) {
+    return arguments.length ? (constrain = _, zoom) : constrain;
   };
 
   zoom.duration = function(_) {
@@ -6101,11 +6102,12 @@ function newInterval(floori, offseti, count, field) {
   };
 
   interval.range = function(start, stop, step) {
-    var range = [];
+    var range = [], previous;
     start = interval.ceil(start);
     step = step == null ? 1 : Math.floor(step);
     if (!(start < stop) || !(step > 0)) { return range; } // also handles Invalid Date
-    do { range.push(new Date(+start)); } while (offseti(start, step), floori(start), start < stop)
+    do { range.push(previous = new Date(+start)), offseti(start, step), floori(start); }
+    while (previous < start && start < stop);
     return range;
   };
 
@@ -6398,6 +6400,7 @@ function formatLocale$1(locale) {
     "c": null,
     "d": formatDayOfMonth,
     "e": formatDayOfMonth,
+    "f": formatMicroseconds,
     "H": formatHour24,
     "I": formatHour12,
     "j": formatDayOfYear,
@@ -6405,9 +6408,13 @@ function formatLocale$1(locale) {
     "m": formatMonthNumber,
     "M": formatMinutes,
     "p": formatPeriod,
+    "Q": formatUnixTimestamp,
+    "s": formatUnixTimestampSeconds,
     "S": formatSeconds,
+    "u": formatWeekdayNumberMonday,
     "U": formatWeekNumberSunday,
-    "w": formatWeekdayNumber,
+    "V": formatWeekNumberISO,
+    "w": formatWeekdayNumberSunday,
     "W": formatWeekNumberMonday,
     "x": null,
     "X": null,
@@ -6425,6 +6432,7 @@ function formatLocale$1(locale) {
     "c": null,
     "d": formatUTCDayOfMonth,
     "e": formatUTCDayOfMonth,
+    "f": formatUTCMicroseconds,
     "H": formatUTCHour24,
     "I": formatUTCHour12,
     "j": formatUTCDayOfYear,
@@ -6432,9 +6440,13 @@ function formatLocale$1(locale) {
     "m": formatUTCMonthNumber,
     "M": formatUTCMinutes,
     "p": formatUTCPeriod,
+    "Q": formatUnixTimestamp,
+    "s": formatUnixTimestampSeconds,
     "S": formatUTCSeconds,
+    "u": formatUTCWeekdayNumberMonday,
     "U": formatUTCWeekNumberSunday,
-    "w": formatUTCWeekdayNumber,
+    "V": formatUTCWeekNumberISO,
+    "w": formatUTCWeekdayNumberSunday,
     "W": formatUTCWeekNumberMonday,
     "x": null,
     "X": null,
@@ -6452,6 +6464,7 @@ function formatLocale$1(locale) {
     "c": parseLocaleDateTime,
     "d": parseDayOfMonth,
     "e": parseDayOfMonth,
+    "f": parseMicroseconds,
     "H": parseHour24,
     "I": parseHour24,
     "j": parseDayOfYear,
@@ -6459,9 +6472,13 @@ function formatLocale$1(locale) {
     "m": parseMonthNumber,
     "M": parseMinutes,
     "p": parsePeriod,
+    "Q": parseUnixTimestamp,
+    "s": parseUnixTimestampSeconds,
     "S": parseSeconds,
+    "u": parseWeekdayNumberMonday,
     "U": parseWeekNumberSunday,
-    "w": parseWeekdayNumber,
+    "V": parseWeekNumberISO,
+    "w": parseWeekdayNumberSunday,
     "W": parseWeekNumberMonday,
     "x": parseLocaleDate,
     "X": parseLocaleTime,
@@ -6510,16 +6527,38 @@ function formatLocale$1(locale) {
   function newParse(specifier, newDate) {
     return function(string) {
       var d = newYear(1900),
-          i = parseSpecifier(d, specifier, string += "", 0);
+          i = parseSpecifier(d, specifier, string += "", 0),
+          week, day$$1;
       if (i != string.length) { return null; }
+
+      // If a UNIX timestamp is specified, return it.
+      if ("Q" in d) { return new Date(d.Q); }
 
       // The am-pm flag is 0 for AM, and 1 for PM.
       if ("p" in d) { d.H = d.H % 12 + d.p * 12; }
 
       // Convert day-of-week and week-of-year to day-of-year.
-      if ("W" in d || "U" in d) {
-        if (!("w" in d)) { d.w = "W" in d ? 1 : 0; }
-        var day$$1 = "Z" in d ? utcDate(newYear(d.y)).getUTCDay() : newDate(newYear(d.y)).getDay();
+      if ("V" in d) {
+        if (d.V < 1 || d.V > 53) { return null; }
+        if (!("w" in d)) { d.w = 1; }
+        if ("Z" in d) {
+          week = utcDate(newYear(d.y)), day$$1 = week.getUTCDay();
+          week = day$$1 > 4 || day$$1 === 0 ? utcMonday.ceil(week) : utcMonday(week);
+          week = utcDay.offset(week, (d.V - 1) * 7);
+          d.y = week.getUTCFullYear();
+          d.m = week.getUTCMonth();
+          d.d = week.getUTCDate() + (d.w + 6) % 7;
+        } else {
+          week = newDate(newYear(d.y)), day$$1 = week.getDay();
+          week = day$$1 > 4 || day$$1 === 0 ? monday.ceil(week) : monday(week);
+          week = day.offset(week, (d.V - 1) * 7);
+          d.y = week.getFullYear();
+          d.m = week.getMonth();
+          d.d = week.getDate() + (d.w + 6) % 7;
+        }
+      } else if ("W" in d || "U" in d) {
+        if (!("w" in d)) { d.w = "u" in d ? d.u % 7 : "W" in d ? 1 : 0; }
+        day$$1 = "Z" in d ? utcDate(newYear(d.y)).getUTCDay() : newDate(newYear(d.y)).getDay();
         d.m = 0;
         d.d = "W" in d ? (d.w + 6) % 7 + d.W * 7 - (day$$1 + 5) % 7 : d.w + d.U * 7 - (day$$1 + 6) % 7;
       }
@@ -6663,7 +6702,7 @@ function formatLocale$1(locale) {
 var pads = {"-": "", "_": " ", "0": "0"};
 var numberRe = /^\s*\d+/;
 var percentRe = /^%/;
-var requoteRe = /[\\\^\$\*\+\?\|\[\]\(\)\.\{\}]/g;
+var requoteRe = /[\\^$*+?|[\]().{}]/g;
 
 function pad(value, fill, width) {
   var sign = value < 0 ? "-" : "",
@@ -6686,18 +6725,28 @@ function formatLookup(names) {
   return map;
 }
 
-function parseWeekdayNumber(d, string, i) {
+function parseWeekdayNumberSunday(d, string, i) {
   var n = numberRe.exec(string.slice(i, i + 1));
   return n ? (d.w = +n[0], i + n[0].length) : -1;
 }
 
+function parseWeekdayNumberMonday(d, string, i) {
+  var n = numberRe.exec(string.slice(i, i + 1));
+  return n ? (d.u = +n[0], i + n[0].length) : -1;
+}
+
 function parseWeekNumberSunday(d, string, i) {
-  var n = numberRe.exec(string.slice(i));
+  var n = numberRe.exec(string.slice(i, i + 2));
   return n ? (d.U = +n[0], i + n[0].length) : -1;
 }
 
+function parseWeekNumberISO(d, string, i) {
+  var n = numberRe.exec(string.slice(i, i + 2));
+  return n ? (d.V = +n[0], i + n[0].length) : -1;
+}
+
 function parseWeekNumberMonday(d, string, i) {
-  var n = numberRe.exec(string.slice(i));
+  var n = numberRe.exec(string.slice(i, i + 2));
   return n ? (d.W = +n[0], i + n[0].length) : -1;
 }
 
@@ -6712,7 +6761,7 @@ function parseYear(d, string, i) {
 }
 
 function parseZone(d, string, i) {
-  var n = /^(Z)|([+-]\d\d)(?:\:?(\d\d))?/.exec(string.slice(i, i + 6));
+  var n = /^(Z)|([+-]\d\d)(?::?(\d\d))?/.exec(string.slice(i, i + 6));
   return n ? (d.Z = n[1] ? 0 : -(n[2] + (n[3] || "00")), i + n[0].length) : -1;
 }
 
@@ -6751,9 +6800,24 @@ function parseMilliseconds(d, string, i) {
   return n ? (d.L = +n[0], i + n[0].length) : -1;
 }
 
+function parseMicroseconds(d, string, i) {
+  var n = numberRe.exec(string.slice(i, i + 6));
+  return n ? (d.L = Math.floor(n[0] / 1000), i + n[0].length) : -1;
+}
+
 function parseLiteralPercent(d, string, i) {
   var n = percentRe.exec(string.slice(i, i + 1));
   return n ? i + n[0].length : -1;
+}
+
+function parseUnixTimestamp(d, string, i) {
+  var n = numberRe.exec(string.slice(i));
+  return n ? (d.Q = +n[0], i + n[0].length) : -1;
+}
+
+function parseUnixTimestampSeconds(d, string, i) {
+  var n = numberRe.exec(string.slice(i));
+  return n ? (d.Q = (+n[0]) * 1000, i + n[0].length) : -1;
 }
 
 function formatDayOfMonth(d, p) {
@@ -6776,6 +6840,10 @@ function formatMilliseconds(d, p) {
   return pad(d.getMilliseconds(), p, 3);
 }
 
+function formatMicroseconds(d, p) {
+  return formatMilliseconds(d, p) + "000";
+}
+
 function formatMonthNumber(d, p) {
   return pad(d.getMonth() + 1, p, 2);
 }
@@ -6788,11 +6856,22 @@ function formatSeconds(d, p) {
   return pad(d.getSeconds(), p, 2);
 }
 
+function formatWeekdayNumberMonday(d) {
+  var day$$1 = d.getDay();
+  return day$$1 === 0 ? 7 : day$$1;
+}
+
 function formatWeekNumberSunday(d, p) {
   return pad(sunday.count(year(d), d), p, 2);
 }
 
-function formatWeekdayNumber(d) {
+function formatWeekNumberISO(d, p) {
+  var day$$1 = d.getDay();
+  d = (day$$1 >= 4 || day$$1 === 0) ? thursday(d) : thursday.ceil(d);
+  return pad(thursday.count(year(d), d) + (year(d).getDay() === 4), p, 2);
+}
+
+function formatWeekdayNumberSunday(d) {
   return d.getDay();
 }
 
@@ -6835,6 +6914,10 @@ function formatUTCMilliseconds(d, p) {
   return pad(d.getUTCMilliseconds(), p, 3);
 }
 
+function formatUTCMicroseconds(d, p) {
+  return formatUTCMilliseconds(d, p) + "000";
+}
+
 function formatUTCMonthNumber(d, p) {
   return pad(d.getUTCMonth() + 1, p, 2);
 }
@@ -6847,11 +6930,22 @@ function formatUTCSeconds(d, p) {
   return pad(d.getUTCSeconds(), p, 2);
 }
 
+function formatUTCWeekdayNumberMonday(d) {
+  var dow = d.getUTCDay();
+  return dow === 0 ? 7 : dow;
+}
+
 function formatUTCWeekNumberSunday(d, p) {
   return pad(utcSunday.count(utcYear(d), d), p, 2);
 }
 
-function formatUTCWeekdayNumber(d) {
+function formatUTCWeekNumberISO(d, p) {
+  var day$$1 = d.getUTCDay();
+  d = (day$$1 >= 4 || day$$1 === 0) ? utcThursday(d) : utcThursday.ceil(d);
+  return pad(utcThursday.count(utcYear(d), d) + (utcYear(d).getUTCDay() === 4), p, 2);
+}
+
+function formatUTCWeekdayNumberSunday(d) {
   return d.getUTCDay();
 }
 
@@ -6873,6 +6967,14 @@ function formatUTCZone() {
 
 function formatLiteralPercent() {
   return "%";
+}
+
+function formatUnixTimestamp(d) {
+  return +d;
+}
+
+function formatUnixTimestampSeconds(d) {
+  return Math.floor(+d / 1000);
 }
 
 var locale$2;
@@ -6997,7 +7099,7 @@ function calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1
         step = i[1];
         interval = i[0];
       } else {
-        step = tickStep(start, stop, interval);
+        step = Math.max(tickStep(start, stop, interval), 1);
         interval = millisecond$$1;
       }
     }
@@ -7280,6 +7382,33 @@ var uuid = function() {
 };
 
 /**
+    @constant RESET
+    @desc String constant used to reset an individual config property.
+*/
+var RESET = "D3PLUS-COMMON-RESET";
+
+/**
+    @desc Recursive function that resets nested Object configs.
+    @param {Object} obj
+    @param {Object} defaults
+    @private
+*/
+function nestedReset(obj, defaults) {
+  if (isObject(obj)) {
+    for (var nestedKey in obj) {
+      if ({}.hasOwnProperty.call(obj, nestedKey)) {
+        if (obj[nestedKey] === RESET) {
+          obj[nestedKey] = defaults[nestedKey];
+        }
+        else if (isObject(obj[nestedKey])) {
+          nestedReset(obj[nestedKey], defaults[nestedKey]);
+        }
+      }
+    }
+  }
+}
+
+/**
     @class BaseClass
     @summary An abstract class that contains some global methods and functionality.
 */
@@ -7297,14 +7426,36 @@ var BaseClass = function BaseClass() {
 BaseClass.prototype.config = function config (_) {
     var this$1 = this;
 
+  if (!this._configDefault) {
+    var config = {};
+    for (var k in this$1.__proto__) {
+      if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
+        var v = this$1[k]();
+        config[k] = isObject(v) ? assign({}, v) : v;
+      }
+    }
+    this._configDefault = config;
+  }
   if (arguments.length) {
-    for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
+    for (var k$1 in _) {
+      if ({}.hasOwnProperty.call(_, k$1) && k$1 in this$1) {
+        var v$1 = _[k$1];
+        if (v$1 === RESET) {
+          if (k$1 === "on") { this$1._on = this$1._configDefault[k$1]; }
+          else { this$1[k$1](this$1._configDefault[k$1]); }
+        }
+        else {
+          nestedReset(v$1, this$1._configDefault[k$1]);
+          this$1[k$1](v$1);
+        }
+      }
+    }
     return this;
   }
   else {
-    var config = {};
-    for (var k$1 in this$1.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
-    return config;
+    var config$1 = {};
+    for (var k$2 in this$1.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this$1[k$2](); } }
+    return config$1;
   }
 };
 
@@ -8994,9 +9145,9 @@ var Shape = (function (BaseClass) {
     elem
       .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plusShape__
     ? d.translate ? d.translate
-      : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
+    : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
     : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plusShape__ ? d.scale || this$1._scale(d.data, d.i)
-    : this$1._scale(d, i)) + ")"); });
+  : this$1._scale(d, i)) + ")"); });
   };
 
   /**
@@ -10084,6 +10235,25 @@ function extend$1(commandsToExtend, referenceCommands, excludeSegment) {
 }
 
 /**
+ * Normalize a path string prior to any processing.
+ * Removes trailing Z, reduces consecutive spaces to a single space,
+ * trims leading and trailing spaces, removes spaces following letters
+ * @param {String} pathString the `d` attribute for a path
+ * @return {String} The normalized path string.
+ */
+function normalizePathString(pathString) {
+  if (pathString == null) {
+    return '';
+  }
+
+  return pathString
+    .trim()
+    .replace(/[Z]/gi, '')
+    .replace(/\s+/, ' ')
+    .replace(/([MLCSTQAHV])\s*/gi, '$1');
+}
+
+/**
  * Interpolate from A to B by extending A and B during interpolation to have
  * the same number of points. This allows for a smooth transition when they
  * have a different number of points.
@@ -10094,12 +10264,12 @@ function extend$1(commandsToExtend, referenceCommands, excludeSegment) {
  * @param {String} b The `d` attribute for a path
  * @param {Function} excludeSegment a function that takes a start command object and
  *   end command object and returns true if the segment should be excluded from splitting.
- * @returns {Function} Interpolation functino that maps t ([0, 1]) to a path `d` string.
+ * @returns {Function} Interpolation function that maps t ([0, 1]) to a path `d` string.
  */
 function interpolatePath(a, b, excludeSegment) {
   // remove Z, remove spaces after letters as seen in IE
-  var aNormalized = a == null ? '' : a.replace(/[Z]/gi, '').replace(/([MLCSTQAHV])\s*/gi, '$1');
-  var bNormalized = b == null ? '' : b.replace(/[Z]/gi, '').replace(/([MLCSTQAHV])\s*/gi, '$1');
+  var aNormalized = normalizePathString(a);
+  var bNormalized = normalizePathString(b);
 
   // split so each command (e.g. L10,20 or M50,60) is its own entry in an array
   var aPoints = aNormalized === '' ? [] : aNormalized.split(/(?=[MLCSTQAHV])/gi);
@@ -12482,7 +12652,13 @@ var polygonRotate = function (poly, alpha, origin) {
     return poly.map(function (p) { return pointRotate(p, alpha, origin); });
 };
 
-// square distance from a point to a segment
+/**
+    @desc square distance from a point to a segment
+    @param {Array} point
+    @param {Array} segmentAnchor1
+    @param {Array} segmentAnchor2
+    @private
+*/
 function getSqSegDist(p, p1, p2) {
 
   var x = p1[0],
@@ -12513,9 +12689,13 @@ function getSqSegDist(p, p1, p2) {
   return dx * dx + dy * dy;
 
 }
-// rest of the code doesn't care about point format
 
-// basic distance-based simplification
+/**
+    @desc basic distance-based simplification
+    @param {Array} polygon
+    @param {Number} sqTolerance
+    @private
+*/
 function simplifyRadialDist(poly, sqTolerance) {
 
   var point,
@@ -12537,6 +12717,14 @@ function simplifyRadialDist(poly, sqTolerance) {
   return newPoints;
 }
 
+/**
+    @param {Array} polygon
+    @param {Number} first
+    @param {Number} last
+    @param {Number} sqTolerance
+    @param {Array} simplified
+    @private
+*/
 function simplifyDPStep(poly, first, last, sqTolerance, simplified) {
 
   var index, maxSqDist = sqTolerance;
@@ -12557,7 +12745,12 @@ function simplifyDPStep(poly, first, last, sqTolerance, simplified) {
   }
 }
 
-// simplification using Ramer-Douglas-Peucker algorithm
+/**
+    @desc simplification using Ramer-Douglas-Peucker algorithm
+    @param {Array} polygon
+    @param {Number} sqTolerance
+    @private
+*/
 function simplifyDouglasPeucker(poly, sqTolerance) {
   var last = poly.length - 1;
 
@@ -12652,17 +12845,17 @@ var largestRect = function(poly, options) {
 
   var angles = options.angle instanceof Array ? options.angle
     : typeof options.angle === "number" ? [options.angle]
-      : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
-        : [];
+    : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
+    : [];
 
   var aspectRatios = options.aspectRatio instanceof Array ? options.aspectRatio
     : typeof options.aspectRatio === "number" ? [options.aspectRatio]
-      : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
-        : [];
+    : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
+    : [];
 
   var origins = options.origin && options.origin instanceof Array
     ? options.origin[0] instanceof Array ? options.origin
-      : [options.origin] : [];
+    : [options.origin] : [];
 
   var area = Math.abs(polygonArea(poly)); // take absolute value of the signed area
   if (area === 0) {
@@ -13967,7 +14160,9 @@ var Axis = (function (BaseClass) {
     var ticks = [];
     if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.domain(); }
     if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.domain()); }
-    return ticks[0] > ticks[1] ? extent(ticks).reverse() : extent(ticks);
+
+    var domain = this._scale === "ordinal" ? ticks : extent(ticks);
+    return ticks[0] > ticks[1] ? domain.reverse() : domain;
 
   };
 
@@ -14344,11 +14539,11 @@ var Axis = (function (BaseClass) {
     else { this._space = this._size; }
 
     var tBuff = this._shape === "Line" ? 0 : hBuff;
-    var bounds = this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return t[height]; }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
+    var bounds = this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return Math.ceil(t[height]); }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
     var obj;
 
-    margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - margin[this._orient] - bounds[height] - p * 2 - hBuff;
     margin[this._orient] += hBuff;
+    margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - margin[this._orient] - bounds[height] - p;
     bounds[height] += margin[opposite] + margin[this._orient];
     bounds[y] = this._align === "start" ? this._padding
       : this._align === "end" ? this[("_" + height)] - bounds[height] - this._padding
@@ -14385,14 +14580,14 @@ var Axis = (function (BaseClass) {
 
         var labelOffset = data.length ? data[0].offset : 0;
 
-        var labelWidth = labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
+        var labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
 
         var prev = data.length && dataIndex > 0 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti < dataIndex; }) : false;
         prev = prev.length ? prev[prev.length - 1] : false;
         var next = data.length && dataIndex < textData.length - 1 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti > dataIndex; }) : false;
         next = next.length ? next[0] : false;
 
-        var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth / 2);
+        var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth);
         if (data.length && data[0].width > space) {
           data[0].hidden = true;
           data[0].offset = labelOffset = 0;
@@ -14405,10 +14600,10 @@ var Axis = (function (BaseClass) {
         return ( obj = {
           id: d,
           labelBounds: {
-            x: horizontal ? -space / 2 : this$1._orient === "left" ? -space - p + size : size + p,
-            y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -labelHeight / 2,
-            width: space,
-            height: labelHeight
+            x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
+            y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
+            width: horizontal ? space : labelWidth,
+            height: horizontal ? labelHeight : space
           },
           size: ticks.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false,
@@ -15584,136 +15779,6 @@ var ckmeans = function(data, nClusters) {
 
 };
 
-var extent$1 = function(values, valueof) {
-  var n = values.length,
-      i = -1,
-      value,
-      min,
-      max;
-
-  if (valueof == null) {
-    while (++i < n) { // Find the first comparable value.
-      if ((value = values[i]) != null && value >= value) {
-        min = max = value;
-        while (++i < n) { // Compare the remaining values.
-          if ((value = values[i]) != null) {
-            if (min > value) { min = value; }
-            if (max < value) { max = value; }
-          }
-        }
-      }
-    }
-  }
-
-  else {
-    while (++i < n) { // Find the first comparable value.
-      if ((value = valueof(values[i], i, values)) != null && value >= value) {
-        min = max = value;
-        while (++i < n) { // Compare the remaining values.
-          if ((value = valueof(values[i], i, values)) != null) {
-            if (min > value) { min = value; }
-            if (max < value) { max = value; }
-          }
-        }
-      }
-    }
-  }
-
-  return [min, max];
-};
-
-var range$1 = function(start, stop, step) {
-  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
-
-  var i = -1,
-      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-      range = new Array(n);
-
-  while (++i < n) {
-    range[i] = start + i * step;
-  }
-
-  return range;
-};
-
-var max$2 = function(values, valueof) {
-  var n = values.length,
-      i = -1,
-      value,
-      max;
-
-  if (valueof == null) {
-    while (++i < n) { // Find the first comparable value.
-      if ((value = values[i]) != null && value >= value) {
-        max = value;
-        while (++i < n) { // Compare the remaining values.
-          if ((value = values[i]) != null && value > max) {
-            max = value;
-          }
-        }
-      }
-    }
-  }
-
-  else {
-    while (++i < n) { // Find the first comparable value.
-      if ((value = valueof(values[i], i, values)) != null && value >= value) {
-        max = value;
-        while (++i < n) { // Compare the remaining values.
-          if ((value = valueof(values[i], i, values)) != null && value > max) {
-            max = value;
-          }
-        }
-      }
-    }
-  }
-
-  return max;
-};
-
-var merge$2 = function(arrays) {
-  var n = arrays.length,
-      m,
-      i = -1,
-      j = 0,
-      merged,
-      array;
-
-  while (++i < n) { j += arrays[i].length; }
-  merged = new Array(j);
-
-  while (--n >= 0) {
-    array = arrays[n];
-    m = array.length;
-    while (--m >= 0) {
-      merged[--j] = array[m];
-    }
-  }
-
-  return merged;
-};
-
-var sum$2 = function(values, valueof) {
-  var n = values.length,
-      i = -1,
-      value,
-      sum = 0;
-
-  if (valueof == null) {
-    while (++i < n) {
-      if (value = +values[i]) { sum += value; } // Note: zero and null are equivalent.
-    }
-  }
-
-  else {
-    while (++i < n) {
-      if (value = +valueof(values[i], i, values)) { sum += value; }
-    }
-  }
-
-  return sum;
-};
-
 /**
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
@@ -15780,7 +15845,7 @@ var ColorScale = (function (BaseClass) {
     // Shape <g> Group
     this._group = elem("g.d3plus-ColorScale", {parent: this._select});
 
-    var domain = extent$1(this._data, this._value);
+    var domain = extent(this._data, this._value);
     var colors = this._color, ticks;
 
     if (!(colors instanceof Array)) {
@@ -15802,7 +15867,7 @@ var ColorScale = (function (BaseClass) {
       if (data.length <= colors.length) {
 
         var ts = linear$2()
-          .domain(range$1(0, data.length - 1))
+          .domain(range(0, data.length - 1))
           .interpolate(interpolateHsl)
           .range(colors);
 
@@ -15811,7 +15876,7 @@ var ColorScale = (function (BaseClass) {
 
       var jenks = ckmeans(data, colors.length);
 
-      ticks = merge$2(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
+      ticks = merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
 
       this._colorScale = threshold$1()
         .domain(ticks)
@@ -15821,7 +15886,7 @@ var ColorScale = (function (BaseClass) {
     else {
 
       var step = (domain[1] - domain[0]) / (colors.length - 1);
-      var buckets = range$1(domain[0], domain[1] + step / 2, step);
+      var buckets = range(domain[0], domain[1] + step / 2, step);
 
       if (this._scale === "buckets") { ticks = buckets; }
 
@@ -15909,7 +15974,7 @@ var ColorScale = (function (BaseClass) {
 
   /**
       @memberof ColorScale
-      @desc If *value* is specified, sets the axis configuration of the ColorScale and returns the current class instance. If *value* is not specified, returns the current axis configuration.
+      @desc The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)). This method acts as a pass-through to the config method of the [Axis](http://d3plus.org/docs/#Axis). An example usage of this method can be seen [here](http://d3plus.org/examples/d3plus-legend/colorScale-dark/).
       @param {Object} [*value*]
       @chainable
   */
@@ -15999,7 +16064,7 @@ var ColorScale = (function (BaseClass) {
 
   /**
       @memberof ColorScale
-      @desc Provides access to the config method of the Rect class used to create the different rectangle color buckets.
+      @desc The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)). This method acts as a pass-through to the config method of the [Rect](http://d3plus.org/docs/#Rect). An example usage of this method can be seen [here](http://d3plus.org/examples/d3plus-legend/colorScale-dark/).
       @param {Object} [*value*]
       @chainable
   */
@@ -16092,13 +16157,14 @@ var Legend = (function (BaseClass) {
     this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
     this._padding = 5;
     this._shape = constant$7("Rect");
+    this._shapes = [];
     this._shapeConfig = {
       duration: this._duration,
       fill: accessor("color"),
       height: constant$7(10),
       hitArea: function (dd, i) {
         var d = this$1._lineData[i],
-              h = max$2([d.height, d.shapeHeight]);
+              h = max([d.height, d.shapeHeight]);
         return {width: d.width + d.shapeWidth, height: h, x: -d.shapeWidth / 2, y: -h / 2};
       },
       labelBounds: function (dd, i, s) {
@@ -16128,7 +16194,7 @@ var Legend = (function (BaseClass) {
       y: function (d, i) {
         var ld = this$1._lineData[i];
         return ld.y + this$1._titleHeight + this$1._outerBounds.y +
-               max$2(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return this$1._fetchConfig("height", l, x); }))) / 2;
+               max(this$1._lineData.filter(function (l) { return ld.y === l.y; }).map(function (l) { return l.height; }).concat(this$1._data.map(function (l, x) { return this$1._fetchConfig("height", l, x); }))) / 2;
       }
     };
     this._titleClass = new TextBox();
@@ -16149,13 +16215,13 @@ var Legend = (function (BaseClass) {
   };
 
   Legend.prototype._rowHeight = function _rowHeight (row) {
-    return max$2(row.map(function (d) { return d.height; }).concat(row.map(function (d) { return d.shapeHeight; }))) + this._padding;
+    return max(row.map(function (d) { return d.height; }).concat(row.map(function (d) { return d.shapeHeight; }))) + this._padding;
   };
 
   Legend.prototype._rowWidth = function _rowWidth (row) {
     var this$1 = this;
 
-    return sum$2(row.map(function (d, i) {
+    return sum(row.map(function (d, i) {
       var p = this$1._padding * (i === row.length - 1 ? 0 : d.width ? 2 : 1);
       return d.shapeWidth + d.width + p;
     }));
@@ -16233,7 +16299,7 @@ var Legend = (function (BaseClass) {
         .height(h)
         (label));
 
-      res.width = Math.ceil(max$2(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
+      res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
       res.height = Math.ceil(res.lines.length * (lh + 1));
       res.og = {height: res.height, width: res.width};
       res.f = f;
@@ -16251,7 +16317,7 @@ var Legend = (function (BaseClass) {
     if (this._direction === "column" || spaceNeeded > availableWidth) {
       var lines = 1, newRows = [];
 
-      var maxLines = max$2(this._lineData.map(function (d) { return d.words.length; }));
+      var maxLines = max(this._lineData.map(function (d) { return d.words.length; }));
       this._wrapLines = function() {
         var this$1 = this;
 
@@ -16272,7 +16338,7 @@ var Legend = (function (BaseClass) {
             var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
             var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
             if (!res.truncated) {
-              label.width = Math.ceil(max$2(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+              label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
               label.height = res.lines.length * (label.lh + 1);
             }
             else {
@@ -16303,7 +16369,7 @@ var Legend = (function (BaseClass) {
         for (var i = 0; i < this._lineData.length; i++) {
           var d = this$1._lineData[i],
                 w = d.width + this$1._padding * (d.width ? 2 : 1) + d.shapeWidth;
-          if (sum$2(newRows.map(function (row) { return max$2(row, function (d) { return max$2([d.height, d.shapeHeight]); }); })) > availableHeight) {
+          if (sum(newRows.map(function (row) { return max(row, function (d) { return max([d.height, d.shapeHeight]); }); })) > availableHeight) {
             newRows = [];
             break;
           }
@@ -16330,8 +16396,8 @@ var Legend = (function (BaseClass) {
 
       this._wrapRows();
 
-      if (!newRows.length || sum$2(newRows, this._rowHeight.bind(this)) + this._padding > availableHeight) {
-        spaceNeeded = sum$2(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding; })) - this._padding;
+      if (!newRows.length || sum(newRows, this._rowHeight.bind(this)) + this._padding > availableHeight) {
+        spaceNeeded = sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding; })) - this._padding;
         for (var i = 0; i < this._lineData.length; i++) {
           this$1._lineData[i].width = 0;
           this$1._lineData[i].height = 0;
@@ -16339,19 +16405,19 @@ var Legend = (function (BaseClass) {
         this._wrapRows();
       }
 
-      if (newRows.length && sum$2(newRows, this._rowHeight.bind(this)) + this._padding < availableHeight) {
+      if (newRows.length && sum(newRows, this._rowHeight.bind(this)) + this._padding < availableHeight) {
         newRows.forEach(function (row, i) {
           row.forEach(function (d) {
             if (i) {
-              d.y = sum$2(newRows.slice(0, i), this$1._rowHeight.bind(this$1));
+              d.y = sum(newRows.slice(0, i), this$1._rowHeight.bind(this$1));
             }
           });
         });
-        spaceNeeded = max$2(newRows, this._rowWidth.bind(this));
+        spaceNeeded = max(newRows, this._rowWidth.bind(this));
       }
     }
 
-    var innerHeight = max$2(this._lineData, function (d, i) { return max$2([d.height, this$1._fetchConfig("height", d.data, i)]) + d.y; }) + this._titleHeight,
+    var innerHeight = max(this._lineData, function (d, i) { return max([d.height, this$1._fetchConfig("height", d.data, i)]) + d.y; }) + this._titleHeight,
           innerWidth = spaceNeeded;
 
     this._outerBounds.width = innerWidth;
@@ -16665,9 +16731,9 @@ var Timeline = (function (Axis) {
     if (event$1.sourceEvent && event$1.sourceEvent.offsetX && event$1.selection !== null && (!this._brushing || this._snapping)) {
 
       var domain = (this._brushing ? event$1.selection
-                   : [event$1.selection[0], event$1.selection[0]])
-                   .map(this._d3Scale.invert)
-                   .map(Number);
+        : [event$1.selection[0], event$1.selection[0]])
+        .map(this._d3Scale.invert)
+        .map(Number);
 
       var ticks = this._availableTicks.map(Number);
       domain[0] = date$2(closest(domain[0], ticks));
@@ -16703,9 +16769,9 @@ var Timeline = (function (Axis) {
     if (!event$1.sourceEvent) { return; } // Only transition after input.
 
     var domain = (event$1.selection && this._brushing ? event$1.selection
-                 : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX])
-                 .map(this._d3Scale.invert)
-                 .map(Number);
+      : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX])
+      .map(this._d3Scale.invert)
+      .map(Number);
 
     var ticks = this._availableTicks.map(Number);
     domain[0] = date$2(closest(domain[0], ticks));
@@ -16742,9 +16808,9 @@ var Timeline = (function (Axis) {
     if (event$1.sourceEvent !== null && (!this._brushing || this._snapping)) {
 
       var domain = (event$1.selection && this._brushing ? event$1.selection
-                   : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX])
-                   .map(this._d3Scale.invert)
-                   .map(Number);
+        : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX])
+        .map(this._d3Scale.invert)
+        .map(Number);
 
       var ticks = this._availableTicks.map(Number);
       domain[0] = date$2(closest(domain[0], ticks));
@@ -16778,10 +16844,10 @@ var Timeline = (function (Axis) {
     var ref = this._position;
     var height = ref.height;
     var timelineHeight = this._shape === "Circle"
-                         ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) * 2 : this._shapeConfig.r
-                         : this._shape === "Rect"
-                         ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
-                         : this._tickSize;
+      ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) * 2 : this._shapeConfig.r
+      : this._shape === "Rect"
+        ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
+        : this._tickSize;
 
     this._brushGroup.selectAll(".overlay")
       .attr("cursor", this._brushing ? "crosshair" : "pointer");
@@ -16823,11 +16889,11 @@ var Timeline = (function (Axis) {
 
     var latest = this._availableTicks[this._availableTicks.length - 1];
     var selection = (this._selection === void 0 ? [latest, latest]
-                    : this._selection instanceof Array
-                    ? this._selection.slice()
-                    : [this._selection, this._selection])
-                    .map(date$2)
-                    .map(this._d3Scale);
+      : this._selection instanceof Array
+        ? this._selection.slice()
+        : [this._selection, this._selection])
+      .map(date$2)
+      .map(this._d3Scale);
 
     if (selection[0] === selection[1]) {
       selection[0] -= 0.1;
@@ -28075,12 +28141,33 @@ var drawLegend = function(data) {
 };
 
 /**
+    @function setTimeFilter
+    @desc Determines whether or not to update the timeFilter method of the Viz.
+    @param {Array|Date} The timeline selection given from the d3 brush.
+    @private
+*/
+function setTimeFilter(s) {
+  var this$1 = this;
+
+  if (JSON.stringify(s) !== JSON.stringify(this._timelineSelection)) {
+    this._timelineSelection = s;
+    if (!(s instanceof Array)) { s = [s, s]; }
+    s = s.map(Number);
+    this.timeFilter(function (d) {
+      var ms = date$2(this$1._time(d)).getTime();
+      return ms >= s[0] && ms <= s[1];
+    }).render();
+  }
+}
+
+/**
     @function _drawTimeline
     @desc Renders the timeline if this._time and this._timeline are not falsy and there are more than 1 tick available.
-    @param {Array} dara The filtered data array to be displayed.
+    @param {Array} data The filtered data array to be displayed.
     @private
 */
 var drawTimeline = function(data) {
+  var this$1 = this;
   if ( data === void 0 ) data = [];
 
 
@@ -28112,8 +28199,18 @@ var drawTimeline = function(data) {
 
     }
 
+    var config = this._timelineConfig;
+
     timeline
-      .config(this._timelineConfig)
+      .config(config)
+      .on("brush", function (s) {
+        setTimeFilter.bind(this$1)(s);
+        if (config.on && config.on.brush) { config.on.brush(s); }
+      })
+      .on("end", function (s) {
+        setTimeFilter.bind(this$1)(s);
+        if (config.on && config.on.end) { config.on.end(s); }
+      })
       .render();
 
     this._margin.bottom += timeline.outerBounds().height + timeline.padding() * 2;
@@ -28738,6 +28835,7 @@ var Viz = (function (BaseClass) {
     this._queue = [];
 
     this._shape = constant$7("Rect");
+    this._shapes = [];
     this._shapeConfig = {
       fill: function (d, i) {
         while (d.__d3plus__ && d.data) {
@@ -28757,27 +28855,21 @@ var Viz = (function (BaseClass) {
         return colorAssign(c);
       },
       labelConfig: {
-        fontColor: function (d, i) { return colorContrast(this$1._shapeConfig.fill(d, i)); }
+        fontColor: function (d, i) {
+          var c = typeof this$1._shapeConfig.fill === "function" ? this$1._shapeConfig.fill(d, i) : this$1._shapeConfig.fill;
+          return colorContrast(c);
+        }
       },
       opacity: constant$7(1),
-      stroke: function (d, i) { return color(this$1._shapeConfig.fill(d, i)).darker(); },
+      stroke: function (d, i) {
+        var c = typeof this$1._shapeConfig.fill === "function" ? this$1._shapeConfig.fill(d, i) : this$1._shapeConfig.fill;
+        return color(c).darker();
+      },
       strokeWidth: constant$7(0)
     };
 
     this._timeline = true;
-    this._timelineClass = new Timeline()
-      .align("end")
-      .on("brush", function (s) {
-        if (JSON.stringify(s) !== JSON.stringify(this$1._timelineSelection)) {
-          this$1._timelineSelection = s;
-          if (!(s instanceof Array)) { s = [s, s]; }
-          s = s.map(Number);
-          this$1.timeFilter(function (d) {
-            var ms = date$2(this$1._time(d)).getTime();
-            return ms >= s[0] && ms <= s[1];
-          }).render();
-        }
-      });
+    this._timelineClass = new Timeline().align("end");
     this._timelineConfig = {};
 
     this._titleClass = new TextBox();

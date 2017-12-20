@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.12
+  d3plus-viz v0.10.13
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -524,12 +524,33 @@ var drawLegend = function(data) {
 };
 
 /**
+    @function setTimeFilter
+    @desc Determines whether or not to update the timeFilter method of the Viz.
+    @param {Array|Date} The timeline selection given from the d3 brush.
+    @private
+*/
+function setTimeFilter(s) {
+  var this$1 = this;
+
+  if (JSON.stringify(s) !== JSON.stringify(this._timelineSelection)) {
+    this._timelineSelection = s;
+    if (!(s instanceof Array)) { s = [s, s]; }
+    s = s.map(Number);
+    this.timeFilter(function (d) {
+      var ms = d3plusAxis.date(this$1._time(d)).getTime();
+      return ms >= s[0] && ms <= s[1];
+    }).render();
+  }
+}
+
+/**
     @function _drawTimeline
     @desc Renders the timeline if this._time and this._timeline are not falsy and there are more than 1 tick available.
-    @param {Array} dara The filtered data array to be displayed.
+    @param {Array} data The filtered data array to be displayed.
     @private
 */
 var drawTimeline = function(data) {
+  var this$1 = this;
   if ( data === void 0 ) data = [];
 
 
@@ -561,8 +582,18 @@ var drawTimeline = function(data) {
 
     }
 
+    var config = this._timelineConfig;
+
     timeline
-      .config(this._timelineConfig)
+      .config(config)
+      .on("brush", function (s) {
+        setTimeFilter.bind(this$1)(s);
+        if (config.on && config.on.brush) { config.on.brush(s); }
+      })
+      .on("end", function (s) {
+        setTimeFilter.bind(this$1)(s);
+        if (config.on && config.on.end) { config.on.end(s); }
+      })
       .render();
 
     this._margin.bottom += timeline.outerBounds().height + timeline.padding() * 2;
@@ -1187,6 +1218,7 @@ var Viz = (function (BaseClass$$1) {
     this._queue = [];
 
     this._shape = d3plusCommon.constant("Rect");
+    this._shapes = [];
     this._shapeConfig = {
       fill: function (d, i) {
         while (d.__d3plus__ && d.data) {
@@ -1206,27 +1238,21 @@ var Viz = (function (BaseClass$$1) {
         return d3plusColor.colorAssign(c);
       },
       labelConfig: {
-        fontColor: function (d, i) { return d3plusColor.colorContrast(this$1._shapeConfig.fill(d, i)); }
+        fontColor: function (d, i) {
+          var c = typeof this$1._shapeConfig.fill === "function" ? this$1._shapeConfig.fill(d, i) : this$1._shapeConfig.fill;
+          return d3plusColor.colorContrast(c);
+        }
       },
       opacity: d3plusCommon.constant(1),
-      stroke: function (d, i) { return d3Color.color(this$1._shapeConfig.fill(d, i)).darker(); },
+      stroke: function (d, i) {
+        var c = typeof this$1._shapeConfig.fill === "function" ? this$1._shapeConfig.fill(d, i) : this$1._shapeConfig.fill;
+        return d3Color.color(c).darker();
+      },
       strokeWidth: d3plusCommon.constant(0)
     };
 
     this._timeline = true;
-    this._timelineClass = new d3plusTimeline.Timeline()
-      .align("end")
-      .on("brush", function (s) {
-        if (JSON.stringify(s) !== JSON.stringify(this$1._timelineSelection)) {
-          this$1._timelineSelection = s;
-          if (!(s instanceof Array)) { s = [s, s]; }
-          s = s.map(Number);
-          this$1.timeFilter(function (d) {
-            var ms = d3plusAxis.date(this$1._time(d)).getTime();
-            return ms >= s[0] && ms <= s[1];
-          }).render();
-        }
-      });
+    this._timelineClass = new d3plusTimeline.Timeline().align("end");
     this._timelineConfig = {};
 
     this._titleClass = new d3plusText.TextBox();
