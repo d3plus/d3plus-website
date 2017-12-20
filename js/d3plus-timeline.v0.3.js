@@ -1,13 +1,72 @@
 /*
-  d3plus-timeline v0.3.6
+  d3plus-timeline v0.3.7
   An easy-to-use javascript timeline.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-brush'), require('d3-selection'), require('d3plus-axis'), require('d3plus-common')) :
 	typeof define === 'function' && define.amd ? define('d3plus-timeline', ['exports', 'd3-brush', 'd3-selection', 'd3plus-axis', 'd3plus-common'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Brush,global.d3Selection,global.d3plusAxis,global.d3plusCommon));
+	(factory((global.d3plus = {}),global.d3Brush,global.d3Selection,global.d3plusAxis,global.d3plusCommon));
 }(this, (function (exports,d3Brush,d3Selection,d3plusAxis,d3plusCommon) { 'use strict';
 
 /**
@@ -65,9 +124,9 @@ var Timeline = (function (Axis$$1) {
     if (d3Selection.event.sourceEvent && d3Selection.event.sourceEvent.offsetX && d3Selection.event.selection !== null && (!this._brushing || this._snapping)) {
 
       var domain = (this._brushing ? d3Selection.event.selection
-                   : [d3Selection.event.selection[0], d3Selection.event.selection[0]])
-                   .map(this._d3Scale.invert)
-                   .map(Number);
+        : [d3Selection.event.selection[0], d3Selection.event.selection[0]])
+        .map(this._d3Scale.invert)
+        .map(Number);
 
       var ticks = this._availableTicks.map(Number);
       domain[0] = d3plusAxis.date(d3plusCommon.closest(domain[0], ticks));
@@ -103,9 +162,9 @@ var Timeline = (function (Axis$$1) {
     if (!d3Selection.event.sourceEvent) { return; } // Only transition after input.
 
     var domain = (d3Selection.event.selection && this._brushing ? d3Selection.event.selection
-                 : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX])
-                 .map(this._d3Scale.invert)
-                 .map(Number);
+      : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX])
+      .map(this._d3Scale.invert)
+      .map(Number);
 
     var ticks = this._availableTicks.map(Number);
     domain[0] = d3plusAxis.date(d3plusCommon.closest(domain[0], ticks));
@@ -142,9 +201,9 @@ var Timeline = (function (Axis$$1) {
     if (d3Selection.event.sourceEvent !== null && (!this._brushing || this._snapping)) {
 
       var domain = (d3Selection.event.selection && this._brushing ? d3Selection.event.selection
-                   : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX])
-                   .map(this._d3Scale.invert)
-                   .map(Number);
+        : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX])
+        .map(this._d3Scale.invert)
+        .map(Number);
 
       var ticks = this._availableTicks.map(Number);
       domain[0] = d3plusAxis.date(d3plusCommon.closest(domain[0], ticks));
@@ -178,10 +237,10 @@ var Timeline = (function (Axis$$1) {
     var ref = this._position;
     var height = ref.height;
     var timelineHeight = this._shape === "Circle"
-                         ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) * 2 : this._shapeConfig.r
-                         : this._shape === "Rect"
-                         ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
-                         : this._tickSize;
+      ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) * 2 : this._shapeConfig.r
+      : this._shape === "Rect"
+        ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
+        : this._tickSize;
 
     this._brushGroup.selectAll(".overlay")
       .attr("cursor", this._brushing ? "crosshair" : "pointer");
@@ -223,11 +282,11 @@ var Timeline = (function (Axis$$1) {
 
     var latest = this._availableTicks[this._availableTicks.length - 1];
     var selection = (this._selection === void 0 ? [latest, latest]
-                    : this._selection instanceof Array
-                    ? this._selection.slice()
-                    : [this._selection, this._selection])
-                    .map(d3plusAxis.date)
-                    .map(this._d3Scale);
+      : this._selection instanceof Array
+        ? this._selection.slice()
+        : [this._selection, this._selection])
+      .map(d3plusAxis.date)
+      .map(this._d3Scale);
 
     if (selection[0] === selection[1]) {
       selection[0] -= 0.1;
