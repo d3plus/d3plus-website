@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.24
+  d3plus-common v0.6.25
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -191,6 +191,12 @@ var uuid = function() {
 };
 
 /**
+    @constant RESET
+    @desc String constant used to reset an individual config property.
+*/
+var RESET = "D3PLUS-COMMON-RESET";
+
+/**
     @class BaseClass
     @summary An abstract class that contains some global methods and functionality.
 */
@@ -208,14 +214,27 @@ var BaseClass = function BaseClass() {
 BaseClass.prototype.config = function config (_) {
     var this$1 = this;
 
+  if (!this._configDefault) {
+    var config = {};
+    for (var k in this$1.__proto__) { if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) { config[k] = this$1[k](); } }
+    this._configDefault = config;
+  }
   if (arguments.length) {
-    for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
+    for (var k$1 in _) {
+      if ({}.hasOwnProperty.call(_, k$1) && k$1 in this$1) {
+        if (_[k$1] === RESET) {
+          if (k$1 === "on") { this$1._on = this$1._configDefault[k$1]; }
+          else { this$1[k$1](this$1._configDefault[k$1]); }
+        }
+        else { this$1[k$1](_[k$1]); }
+      }
+    }
     return this;
   }
   else {
-    var config = {};
-    for (var k$1 in this$1.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
-    return config;
+    var config$1 = {};
+    for (var k$2 in this$1.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this$1[k$2](); } }
+    return config$1;
   }
 };
 
@@ -468,6 +487,7 @@ exports.elem = elem;
 exports.isObject = isObject;
 exports.merge = objectMerge;
 exports.prefix = prefix;
+exports.RESET = RESET;
 exports.stylize = stylize;
 exports.uuid = uuid;
 
