@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.15
+  d3plus-geomap v0.4.16
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -127,7 +127,10 @@ var Geomap = (function (Viz$$1) {
           "mousemove.shape": function (d) { return !this$1._coordData.features.includes(d) ? this$1._on["mousemove.shape"].bind(this$1)(d) : null; },
           "mouseleave": function (d) { return !this$1._coordData.features.includes(d) ? this$1._on.mouseleave.bind(this$1)(d) : null; }
         },
-        stroke: function (d, i) { return d3Color.color(this$1._shapeConfig.Path.fill(d, i)).darker(); },
+        stroke: function (d, i) {
+          var c = typeof this$1._shapeConfig.Path.fill === "function" ? this$1._shapeConfig.Path.fill(d, i) : this$1._shapeConfig.Path.fill;
+          return d3Color.color(c).darker();
+        },
         strokeWidth: 1
       }
     });
