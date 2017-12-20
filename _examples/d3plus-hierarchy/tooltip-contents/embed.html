@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.3.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .tooltip-table {
+      width: 100%;
+    }
+    
+    .tooltip-table .data {
+      text-align: right;
+    }
+    
+    .tooltip-footer {
+      opacity: 0.5;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var data = [
+    {id: "alpha", value: 29, year: 2010},
+    {id: "beta",  value: 10, year: 2010},
+    {id: "gamma", value: 2,  year: 2010},
+    {id: "delta", value: 29, year: 2010},
+    {id: "eta",   value: 25, year: 2010}
+  ];
+  
+  new d3plus.Treemap()
+    .data(data)
+    .tooltipConfig({
+      body: function(d) {
+        var table = "<table class='tooltip-table'>";
+        table += "<tr><td class='title'>Year:</td><td class='data'>" + d.year + "</td></tr>";
+        table += "<tr><td class='title'>Value:</td><td class='data'>" + d.value + "</td></tr>";
+        table += "</table>";
+        return table;
+      },
+      footer: function(d) {
+        return "<sub class='tooltip-footer'>Data Collected in 2012</sub>";
+      },
+      title: function(d) {
+        var txt = d.id;
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();;
+      }
+    })
+    .render();
+
+</script>
+
+</html>
