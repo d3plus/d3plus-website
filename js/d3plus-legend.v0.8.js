@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.13
+  d3plus-legend v0.8.14
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -510,7 +510,7 @@ var ColorScale = (function (BaseClass$$1) {
 
   /**
       @memberof ColorScale
-      @desc If *value* is specified, sets the axis configuration of the ColorScale and returns the current class instance. If *value* is not specified, returns the current axis configuration.
+      @desc The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)). This method acts as a pass-through to the config method of the [Axis](http://d3plus.org/docs/#Axis). An example usage of this method can be seen [here](http://d3plus.org/examples/d3plus-legend/colorScale-dark/).
       @param {Object} [*value*]
       @chainable
   */
@@ -600,7 +600,7 @@ var ColorScale = (function (BaseClass$$1) {
 
   /**
       @memberof ColorScale
-      @desc Provides access to the config method of the Rect class used to create the different rectangle color buckets.
+      @desc The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)). This method acts as a pass-through to the config method of the [Rect](http://d3plus.org/docs/#Rect). An example usage of this method can be seen [here](http://d3plus.org/examples/d3plus-legend/colorScale-dark/).
       @param {Object} [*value*]
       @chainable
   */
@@ -693,6 +693,7 @@ var Legend = (function (BaseClass$$1) {
     this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
     this._padding = 5;
     this._shape = d3plusCommon.constant("Rect");
+    this._shapes = [];
     this._shapeConfig = {
       duration: this._duration,
       fill: d3plusCommon.accessor("color"),
