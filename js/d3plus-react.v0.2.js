@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.2.19
+  d3plus-react v0.2.20
   React components for d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -64,15 +64,13 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('prop-types'), require('d3plus-common'), require('d3plus-geomap'), require('d3plus-hierarchy'), require('d3plus-network'), require('d3plus-priestley')) :
-	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'prop-types', 'd3plus-common', 'd3plus-geomap', 'd3plus-hierarchy', 'd3plus-network', 'd3plus-priestley'], factory) :
-	(factory((global.d3plus = {}),global.d3plusPlot,global.React,global.PropTypes,global.d3plusCommon,global.d3plusGeomap,global.d3plusHierarchy,global.d3plusNetwork,global.d3plusPriestley));
-}(this, (function (exports,d3plusPlot,React,PropTypes,d3plusCommon,d3plusGeomap,d3plusHierarchy,d3plusNetwork,d3plusPriestley) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('prop-types'), require('d3plus-common'), require('d3plus-hierarchy'), require('d3plus-geomap'), require('d3plus-network'), require('d3plus-priestley')) :
+	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'prop-types', 'd3plus-common', 'd3plus-hierarchy', 'd3plus-geomap', 'd3plus-network', 'd3plus-priestley'], factory) :
+	(factory((global.d3plus = {}),global.d3plusPlot,global.React,global.PropTypes,global.d3plusCommon,global.d3plusHierarchy,global.d3plusGeomap,global.d3plusNetwork,global.d3plusPriestley));
+}(this, (function (exports,d3plusPlot,React,PropTypes,d3plusCommon,d3plusHierarchy,d3plusGeomap,d3plusNetwork,d3plusPriestley) { 'use strict';
 
 React = React && React.hasOwnProperty('default') ? React['default'] : React;
 PropTypes = PropTypes && PropTypes.hasOwnProperty('default') ? PropTypes['default'] : PropTypes;
-
-var typeLookup = {AreaPlot: d3plusPlot.AreaPlot, BarChart: d3plusPlot.BarChart, Donut: d3plusHierarchy.Donut, Geomap: d3plusGeomap.Geomap, LinePlot: d3plusPlot.LinePlot, Network: d3plusNetwork.Network, Pie: d3plusHierarchy.Pie, Plot: d3plusPlot.Plot, Priestley: d3plusPriestley.Priestley, StackedArea: d3plusPlot.StackedArea, Tree: d3plusHierarchy.Tree, Treemap: d3plusHierarchy.Treemap};
 
 /**
     @class Viz
@@ -92,7 +90,7 @@ var Viz = (function (superclass) {
 
     var ref = this.props;
     var type = ref.type;
-    var Constructor = typeof type === "string" ? typeLookup[type] : type;
+    var Constructor = type;
 
     var viz = new Constructor()
       .select(this.container);
@@ -141,13 +139,6 @@ var Viz = (function (superclass) {
 }(React.Component));
 
 Viz.contextTypes = {d3plus: PropTypes.object};
-
-/**
-    @memberof Viz
-    @param {Object} [config = {}] An object containing method/value pairs to be passed to the visualization's .config( ) method.
-    @param {Function} [dataFormat = d3plus.dataFold] A custom formatting function to be used when formatting data from an AJAX request. The function will be passed the raw data returned from the request, and is expected to return an array of values used for the data method.
-*/
-Viz.defaultProps = {type: d3plusHierarchy.Treemap};
 
 /**
     @class AreaPlot
@@ -365,7 +356,6 @@ exports.Priestley = Priestley$1;
 exports.StackedArea = StackedArea$1;
 exports.Tree = Tree$1;
 exports.Treemap = Treemap$1;
-exports.Viz = Viz;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
