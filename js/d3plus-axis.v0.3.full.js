@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.39
+  d3plus-axis v0.3.40
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -5503,6 +5503,12 @@ var uuid = function() {
 };
 
 /**
+    @constant RESET
+    @desc String constant used to reset an individual config property.
+*/
+var RESET = "D3PLUS-COMMON-RESET";
+
+/**
     @class BaseClass
     @summary An abstract class that contains some global methods and functionality.
 */
@@ -5520,14 +5526,27 @@ var BaseClass = function BaseClass() {
 BaseClass.prototype.config = function config (_) {
     var this$1 = this;
 
+  if (!this._configDefault) {
+    var config = {};
+    for (var k in this$1.__proto__) { if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) { config[k] = this$1[k](); } }
+    this._configDefault = config;
+  }
   if (arguments.length) {
-    for (var k in _) { if ({}.hasOwnProperty.call(_, k) && k in this$1) { this$1[k](_[k]); } }
+    for (var k$1 in _) {
+      if ({}.hasOwnProperty.call(_, k$1) && k$1 in this$1) {
+        if (_[k$1] === RESET) {
+          if (k$1 === "on") { this$1._on = this$1._configDefault[k$1]; }
+          else { this$1[k$1](this$1._configDefault[k$1]); }
+        }
+        else { this$1[k$1](_[k$1]); }
+      }
+    }
     return this;
   }
   else {
-    var config = {};
-    for (var k$1 in this$1.__proto__) { if (k$1.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$1)) { config[k$1] = this$1[k$1](); } }
-    return config;
+    var config$1 = {};
+    for (var k$2 in this$1.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this$1[k$2](); } }
+    return config$1;
   }
 };
 
@@ -7100,9 +7119,9 @@ var Shape = (function (BaseClass) {
     elem
       .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plusShape__
     ? d.translate ? d.translate
-      : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
+    : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
     : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plusShape__ ? d.scale || this$1._scale(d.data, d.i)
-    : this$1._scale(d, i)) + ")"); });
+  : this$1._scale(d, i)) + ")"); });
   };
 
   /**
@@ -10607,7 +10626,13 @@ var polygonRotate = function (poly, alpha, origin) {
     return poly.map(function (p) { return pointRotate(p, alpha, origin); });
 };
 
-// square distance from a point to a segment
+/**
+    @desc square distance from a point to a segment
+    @param {Array} point
+    @param {Array} segmentAnchor1
+    @param {Array} segmentAnchor2
+    @private
+*/
 function getSqSegDist(p, p1, p2) {
 
   var x = p1[0],
@@ -10638,9 +10663,13 @@ function getSqSegDist(p, p1, p2) {
   return dx * dx + dy * dy;
 
 }
-// rest of the code doesn't care about point format
 
-// basic distance-based simplification
+/**
+    @desc basic distance-based simplification
+    @param {Array} polygon
+    @param {Number} sqTolerance
+    @private
+*/
 function simplifyRadialDist(poly, sqTolerance) {
 
   var point,
@@ -10662,6 +10691,14 @@ function simplifyRadialDist(poly, sqTolerance) {
   return newPoints;
 }
 
+/**
+    @param {Array} polygon
+    @param {Number} first
+    @param {Number} last
+    @param {Number} sqTolerance
+    @param {Array} simplified
+    @private
+*/
 function simplifyDPStep(poly, first, last, sqTolerance, simplified) {
 
   var index, maxSqDist = sqTolerance;
@@ -10682,7 +10719,12 @@ function simplifyDPStep(poly, first, last, sqTolerance, simplified) {
   }
 }
 
-// simplification using Ramer-Douglas-Peucker algorithm
+/**
+    @desc simplification using Ramer-Douglas-Peucker algorithm
+    @param {Array} polygon
+    @param {Number} sqTolerance
+    @private
+*/
 function simplifyDouglasPeucker(poly, sqTolerance) {
   var last = poly.length - 1;
 
@@ -10777,17 +10819,17 @@ var largestRect = function(poly, options) {
 
   var angles = options.angle instanceof Array ? options.angle
     : typeof options.angle === "number" ? [options.angle]
-      : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
-        : [];
+    : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
+    : [];
 
   var aspectRatios = options.aspectRatio instanceof Array ? options.aspectRatio
     : typeof options.aspectRatio === "number" ? [options.aspectRatio]
-      : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
-        : [];
+    : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
+    : [];
 
   var origins = options.origin && options.origin instanceof Array
     ? options.origin[0] instanceof Array ? options.origin
-      : [options.origin] : [];
+    : [options.origin] : [];
 
   var area = Math.abs(polygonArea(poly)); // take absolute value of the signed area
   if (area === 0) {
