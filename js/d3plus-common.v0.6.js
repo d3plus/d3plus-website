@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.25
+  d3plus-common v0.6.26
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -197,6 +197,27 @@ var uuid = function() {
 var RESET = "D3PLUS-COMMON-RESET";
 
 /**
+    @desc Recursive function that resets nested Object configs.
+    @param {Object} obj
+    @param {Object} defaults
+    @private
+*/
+function nestedReset(obj, defaults) {
+  if (isObject(obj)) {
+    for (var nestedKey in obj) {
+      if ({}.hasOwnProperty.call(obj, nestedKey)) {
+        if (obj[nestedKey] === RESET) {
+          obj[nestedKey] = defaults[nestedKey];
+        }
+        else if (isObject(obj[nestedKey])) {
+          nestedReset(obj[nestedKey], defaults[nestedKey]);
+        }
+      }
+    }
+  }
+}
+
+/**
     @class BaseClass
     @summary An abstract class that contains some global methods and functionality.
 */
@@ -216,17 +237,26 @@ BaseClass.prototype.config = function config (_) {
 
   if (!this._configDefault) {
     var config = {};
-    for (var k in this$1.__proto__) { if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) { config[k] = this$1[k](); } }
+    for (var k in this$1.__proto__) {
+      if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
+        var v = this$1[k]();
+        config[k] = isObject(v) ? assign({}, v) : v;
+      }
+    }
     this._configDefault = config;
   }
   if (arguments.length) {
     for (var k$1 in _) {
       if ({}.hasOwnProperty.call(_, k$1) && k$1 in this$1) {
-        if (_[k$1] === RESET) {
+        var v$1 = _[k$1];
+        if (v$1 === RESET) {
           if (k$1 === "on") { this$1._on = this$1._configDefault[k$1]; }
           else { this$1[k$1](this$1._configDefault[k$1]); }
         }
-        else { this$1[k$1](_[k$1]); }
+        else {
+          nestedReset(v$1, this$1._configDefault[k$1]);
+          this$1[k$1](v$1);
+        }
       }
     }
     return this;
