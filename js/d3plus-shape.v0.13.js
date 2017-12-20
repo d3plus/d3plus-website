@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.13.9
+  d3plus-shape v0.13.10
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -503,9 +503,9 @@ var Shape = (function (BaseClass$$1) {
     elem$$1
       .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plusShape__
     ? d.translate ? d.translate
-      : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
+    : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
     : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plusShape__ ? d.scale || this$1._scale(d.data, d.i)
-    : this$1._scale(d, i)) + ")"); });
+  : this$1._scale(d, i)) + ")"); });
   };
 
   /**
@@ -1388,7 +1388,13 @@ var polygonRotate = function (poly, alpha, origin) {
     return poly.map(function (p) { return pointRotate(p, alpha, origin); });
 };
 
-// square distance from a point to a segment
+/**
+    @desc square distance from a point to a segment
+    @param {Array} point
+    @param {Array} segmentAnchor1
+    @param {Array} segmentAnchor2
+    @private
+*/
 function getSqSegDist(p, p1, p2) {
 
   var x = p1[0],
@@ -1419,9 +1425,13 @@ function getSqSegDist(p, p1, p2) {
   return dx * dx + dy * dy;
 
 }
-// rest of the code doesn't care about point format
 
-// basic distance-based simplification
+/**
+    @desc basic distance-based simplification
+    @param {Array} polygon
+    @param {Number} sqTolerance
+    @private
+*/
 function simplifyRadialDist(poly, sqTolerance) {
 
   var point,
@@ -1443,6 +1453,14 @@ function simplifyRadialDist(poly, sqTolerance) {
   return newPoints;
 }
 
+/**
+    @param {Array} polygon
+    @param {Number} first
+    @param {Number} last
+    @param {Number} sqTolerance
+    @param {Array} simplified
+    @private
+*/
 function simplifyDPStep(poly, first, last, sqTolerance, simplified) {
 
   var index, maxSqDist = sqTolerance;
@@ -1463,7 +1481,12 @@ function simplifyDPStep(poly, first, last, sqTolerance, simplified) {
   }
 }
 
-// simplification using Ramer-Douglas-Peucker algorithm
+/**
+    @desc simplification using Ramer-Douglas-Peucker algorithm
+    @param {Array} polygon
+    @param {Number} sqTolerance
+    @private
+*/
 function simplifyDouglasPeucker(poly, sqTolerance) {
   var last = poly.length - 1;
 
@@ -1558,17 +1581,17 @@ var largestRect = function(poly, options) {
 
   var angles = options.angle instanceof Array ? options.angle
     : typeof options.angle === "number" ? [options.angle]
-      : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
-        : [];
+    : typeof options.angle === "string" && !isNaN(options.angle) ? [Number(options.angle)]
+    : [];
 
   var aspectRatios = options.aspectRatio instanceof Array ? options.aspectRatio
     : typeof options.aspectRatio === "number" ? [options.aspectRatio]
-      : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
-        : [];
+    : typeof options.aspectRatio === "string" && !isNaN(options.aspectRatio) ? [Number(options.aspectRatio)]
+    : [];
 
   var origins = options.origin && options.origin instanceof Array
     ? options.origin[0] instanceof Array ? options.origin
-      : [options.origin] : [];
+    : [options.origin] : [];
 
   var area$$1 = Math.abs(d3Polygon.polygonArea(poly)); // take absolute value of the signed area
   if (area$$1 === 0) {
