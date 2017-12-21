@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.40
+  d3plus-axis v0.3.41
   Beautiful javascript scales and axes.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -75,7 +75,7 @@ if (!Array.prototype.includes) {
     @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
     @param {Number|String} *date*
 */
-var date = function(d) {
+function date(d) {
 
   // returns if already Date object
   if (d.constructor === Date) { return d; }
@@ -111,7 +111,7 @@ var date = function(d) {
   // parses string to Date object
   else { return new Date(s); }
 
-};
+}
 
 /**
     @external BaseClass
@@ -312,6 +312,7 @@ var Axis = (function (BaseClass$$1) {
   */
   Axis.prototype.render = function render (callback) {
     var this$1 = this;
+    var obj, obj$1;
 
 
     if (this._select === void 0) {
@@ -602,8 +603,7 @@ var Axis = (function (BaseClass$$1) {
     else { this._space = this._size; }
 
     var tBuff = this._shape === "Line" ? 0 : hBuff;
-    var bounds = this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return Math.ceil(t[height]); }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
-    var obj;
+    var bounds = this._outerBounds = ( obj = {}, obj[height] = (d3Array.max(textData, function (t) { return Math.ceil(t[height]); }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj);
 
     margin[this._orient] += hBuff;
     margin[opposite] = this._gridSize !== void 0 ? d3Array.max([this._gridSize, tBuff]) : this[("_" + height)] - margin[this._orient] - bounds[height] - p;
@@ -660,7 +660,7 @@ var Axis = (function (BaseClass$$1) {
               size = (hBuff + labelOffset) * (flip ? -1 : 1),
               yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
 
-        return ( obj = {
+        return ( obj$1 = {
           id: d,
           labelBounds: {
             x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
@@ -671,8 +671,7 @@ var Axis = (function (BaseClass$$1) {
           size: ticks.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false,
           tick: ticks.includes(d)
-        }, obj[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = yPos, obj );
-        var obj;
+        }, obj$1[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj$1[y] = yPos, obj$1);
       });
 
     if (this._shape === "Line") {
