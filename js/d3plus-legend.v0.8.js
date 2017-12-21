@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.14
+  d3plus-legend v0.8.15
   An easy to use javascript chart legend.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -275,7 +275,7 @@ ckmeans([-1, 2, -1, 2, 4, 5, 6, -1, 2, -1], 3);
 // The input, clustered into groups of similar numbers.
 //= [[-1, -1, -1, -1], [2, 2, 2], [4, 5, 6]]);
 */
-var ckmeans = function(data, nClusters) {
+function ckmeans(data, nClusters) {
 
   if (nClusters > data.length) {
     throw new Error("Cannot generate more classes than there are data values");
@@ -313,7 +313,7 @@ var ckmeans = function(data, nClusters) {
 
   return clusters;
 
-};
+}
 
 /**
     @external BaseClass
@@ -367,6 +367,7 @@ var ColorScale = (function (BaseClass$$1) {
   */
   ColorScale.prototype.render = function render (callback) {
     var this$1 = this;
+    var obj;
 
 
     if (this._select === void 0) { this.select(d3Selection.select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node()); }
@@ -497,10 +498,9 @@ var ColorScale = (function (BaseClass$$1) {
       .select(d3plusCommon.elem("g.d3plus-ColorScale-Rect", {parent: this._group}).node())
       .config(( obj = {
         fill: ticks ? function (d) { return this$1._colorScale(d); } : ("url(#gradient-" + (this._uuid) + ")")
-      }, obj[x] = ticks ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2, obj[width] = ticks ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._size, obj ))
+      }, obj[x] = ticks ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2, obj[width] = ticks ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._size, obj))
       .config(this._rectConfig)
       .render();
-    var obj;
 
     if (callback) { setTimeout(callback, this._duration + 100); }
 
