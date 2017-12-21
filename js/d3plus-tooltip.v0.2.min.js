@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.2.6
+  d3plus-tooltip v0.2.7
   A javascript-only tooltip.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
