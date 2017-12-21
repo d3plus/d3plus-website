@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.3.12
+  d3plus-hierarchy v0.3.13
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -238,7 +238,7 @@ var Donut = (function (Pie$$1) {
     @param {Array} *data* The data array to be nested.
     @param {Array} *keys* An array of key accessors that signify each nest level.
 */
-var nest$1 = function(data, keys) {
+function nest$1(data, keys) {
 
   if (!(keys instanceof Array)) { keys = [keys]; }
 
@@ -248,7 +248,7 @@ var nest$1 = function(data, keys) {
 
   return bubble(nestedData);
 
-};
+}
 
 /**
     Bubbles up values that do not nest to the furthest key.
@@ -312,6 +312,7 @@ var Tree = (function (Viz$$1) {
   */
   Tree.prototype._draw = function _draw (callback) {
     var this$1 = this;
+    var obj;
 
 
     Viz$$1.prototype._draw.call(this, callback);
@@ -446,8 +447,7 @@ var Tree = (function (Viz$$1) {
                 x = this$1._orient === "vertical" ? "x" : "y",
                 y = this$1._orient === "vertical" ? "y" : "x";
 
-          return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
-          var obj;
+          return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj);
 
         }
       })
