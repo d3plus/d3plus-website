@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.26
+  d3plus-common v0.6.27
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -81,19 +81,19 @@ function(d) {
   return d["id"];
 }
 */
-var accessor = function(key, def) {
+function accessor(key, def) {
   if (def === void 0) { return function (d) { return d[key]; }; }
   return function (d) { return d[key] === void 0 ? def : d[key]; };
-};
+}
 
 /**
     @function isObject
     @desc Detects if a variable is a javascript Object.
     @param {*} item
 */
-var isObject = function(item) {
+function isObject(item) {
   return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
-};
+}
 
 /**
     @function assign
@@ -167,11 +167,11 @@ function assign() {
     @param {D3selection} elem The D3 element to apply the styles to.
     @param {Object} attrs An object of key/value attr pairs.
 */
-var attrize = function(e, a) {
+function attrize(e, a) {
   if ( a === void 0 ) a = {};
 
   for (var k in a) { if ({}.hasOwnProperty.call(a, k)) { e.attr(k, a[k]); } }
-};
+}
 
 /**
     @function s
@@ -186,9 +186,9 @@ function s() {
     @function uuid
     @summary Returns a unique identifier.
 */
-var uuid = function() {
+function uuid() {
   return ("" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s()));
-};
+}
 
 /**
     @constant RESET
@@ -293,12 +293,12 @@ BaseClass.prototype.on = function on (_, f) {
     @param {Number} n The number value to use when searching the array.
     @param {Array} arr The array of values to test against.
 */
-var closest = function(n, arr) {
+function closest(n, arr) {
   if ( arr === void 0 ) arr = [];
 
   if (!arr || !(arr instanceof Array) || !arr.length) { return undefined; }
   return arr.reduce(function (prev, curr) { return Math.abs(curr - n) < Math.abs(prev - n) ? curr : prev; });
-};
+}
 
 /**
     @function configPrep
@@ -381,11 +381,11 @@ function() {
   return 42;
 }
 */
-var constant = function(value) {
+function constant(value) {
   return function constant() {
     return value;
   };
-};
+}
 
 /**
     @function elem
@@ -399,7 +399,7 @@ var constant = function(value) {
     @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
     @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
 */
-var elem = function(selector, p) {
+function elem(selector, p) {
 
   // overrides default params
   p = Object.assign({}, {
@@ -430,7 +430,7 @@ var elem = function(selector, p) {
 
   return update;
 
-};
+}
 
 /**
     @function merge
@@ -486,13 +486,13 @@ function objectMerge(objects, aggs) {
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
-var prefix = function() {
+function prefix() {
   if ("-webkit-transform" in document.body.style) { return "-webkit-"; }
   else if ("-moz-transform" in document.body.style) { return "-moz-"; }
   else if ("-ms-transform" in document.body.style) { return "-ms-"; }
   else if ("-o-transform" in document.body.style) { return "-o-"; }
   else { return ""; }
-};
+}
 
 /**
     @function stylize
@@ -500,11 +500,11 @@ var prefix = function() {
     @param {D3selection} elem The D3 element to apply the styles to.
     @param {Object} styles An object of key/value style pairs.
 */
-var stylize = function(e, s) {
+function stylize(e, s) {
   if ( s === void 0 ) s = {};
 
   for (var k in s) { if ({}.hasOwnProperty.call(s, k)) { e.style(k, s[k]); } }
-};
+}
 
 exports.accessor = accessor;
 exports.assign = assign;
