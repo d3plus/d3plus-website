@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.2
+  d3plus-export v0.3.3
   Export methods for transforming and downloading SVG.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -77,7 +77,7 @@ canvg = canvg && canvg.hasOwnProperty('default') ? canvg['default'] : canvg;
     @desc Adds SVG default attributes to a d3 selection in order to redner it properly.
     @param {Selection} selection
 */
-var svgPresets = function(selection) {
+function svgPresets(selection) {
 
   // sets "stroke-width" attribute to `0` if not defined
   var strokeWidth = selection.attr("stroke-width");
@@ -88,7 +88,7 @@ var svgPresets = function(selection) {
   var fillOpacity = selection.attr("fill-opacity");
   selection.attr("fill-opacity", transparent ? 0 : fillOpacity);
 
-};
+}
 
 var defaultOptions = {
   background: false,
@@ -148,7 +148,7 @@ function parseTransform(elem) {
     @param {Number} [options.scale = 1] Scale for the final file.
     @param {Number} [options.width] Pixel width for the final output. If a width value has not been passed, it will be inferred from the sizing of the first DOM element passed.
 */
-var dom2canvas = function(elem, options) {
+function dom2canvas(elem, options) {
 
   if (!elem) { return; }
   if (!(elem instanceof Array)) { elem = [elem]; }
@@ -514,7 +514,7 @@ var dom2canvas = function(elem, options) {
 
   }
 
-};
+}
 
 // import {default as JsPDF} from "jspdf";
 
@@ -532,7 +532,7 @@ var defaultOptions$1 = {
     @param {String} [options.type = "png"] File type of the saved document. Accepted values are `"png"` and `"jpg"`.
     @param {Object} [renderOptions] Custom options to be passed to the dom2canvas function.
 */
-var saveElement = function(elem, options, renderOptions) {
+function saveElement(elem, options, renderOptions) {
   if ( options === void 0 ) options = {};
   if ( renderOptions === void 0 ) renderOptions = {};
 
@@ -593,7 +593,7 @@ var saveElement = function(elem, options, renderOptions) {
 
   }}));
 
-};
+}
 
 exports.dom2canvas = dom2canvas;
 exports.saveElement = saveElement;
