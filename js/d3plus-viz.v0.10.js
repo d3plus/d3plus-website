@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.13
+  d3plus-viz v0.10.14
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -78,12 +78,12 @@ lrucache = lrucache && lrucache.hasOwnProperty('default') ? lrucache['default'] 
   @param {String} [data = "data"] The key used for the flat data array inside of the JSON object.
   @param {String} [headers = "headers"] The key used for the flat headers array inside of the JSON object.
 */
-var fold = function (json$$1, data, headers) {
+function fold (json$$1, data, headers) {
     if ( data === void 0 ) data = "data";
     if ( headers === void 0 ) headers = "headers";
 
     return json$$1[data].map(function (data) { return json$$1[headers].reduce(function (obj, header, i) { return (obj[header] = data[i], obj); }, {}); });
-};
+}
 
 /**
   @function dataLoad
@@ -93,7 +93,7 @@ var fold = function (json$$1, data, headers) {
   @param {String} [key] The key in the `this` context to save the resulting data to.
   @param {Function} [callback] A function that is called when the final data is loaded. It is passed 2 variables, any error present and the data loaded.
 */
-var load = function(path, formatter, key, callback) {
+function load(path, formatter, key, callback) {
   var this$1 = this;
 
 
@@ -135,7 +135,7 @@ var load = function(path, formatter, key, callback) {
 
   }
 
-};
+}
 
 /**
     @class Message
@@ -230,7 +230,7 @@ Message.prototype.render = function render (ref) {
     @desc Draws a back button if there are states in this._history.
     @private
 */
-var drawBack = function() {
+function drawBack() {
 
   var visible = this._history.length;
 
@@ -248,7 +248,7 @@ var drawBack = function() {
 
   this._margin.top += visible ? this._backClass.fontSize()() + this._padding : 0;
 
-};
+}
 
 /**
     @function _drawColorScale
@@ -256,7 +256,7 @@ var drawBack = function() {
     @param {Array} data The filtered data array to be displayed.
     @private
 */
-var drawColorScale = function(data) {
+function drawColorScale(data) {
   var this$1 = this;
   if ( data === void 0 ) data = [];
 
@@ -310,7 +310,7 @@ var drawColorScale = function(data) {
 
   }
 
-};
+}
 
 var formTypes = {Button: d3plusForm.Button, Radio: d3plusForm.Radio, Select: d3plusForm.Select};
 
@@ -320,7 +320,7 @@ var formTypes = {Button: d3plusForm.Button, Radio: d3plusForm.Radio, Select: d3p
     @param {Array} dara The filtered data array to be displayed.
     @private
 */
-var drawControls = function() {
+function drawControls() {
   var this$1 = this;
 
 
@@ -436,7 +436,7 @@ var drawControls = function() {
 
   for (var a = 0; a < areas.length; a++) loop( a );
 
-};
+}
 
 /**
     @function legendLabel
@@ -454,7 +454,7 @@ function legendLabel(d, i) {
     @param {Array} data The filtered data array to be displayed.
     @private
 */
-var drawLegend = function(data) {
+function drawLegend(data) {
   var this$1 = this;
   if ( data === void 0 ) data = [];
 
@@ -521,7 +521,7 @@ var drawLegend = function(data) {
 
   }
 
-};
+}
 
 /**
     @function setTimeFilter
@@ -549,7 +549,7 @@ function setTimeFilter(s) {
     @param {Array} data The filtered data array to be displayed.
     @private
 */
-var drawTimeline = function(data) {
+function drawTimeline(data) {
   var this$1 = this;
   if ( data === void 0 ) data = [];
 
@@ -600,7 +600,7 @@ var drawTimeline = function(data) {
 
   }
 
-};
+}
 
 /**
     @function _drawTitle
@@ -608,7 +608,7 @@ var drawTimeline = function(data) {
     @param {Array} [*data*] The currently filtered dataset.
     @private
 */
-var drawTitle = function(data) {
+function drawTitle(data) {
   if ( data === void 0 ) data = [];
 
 
@@ -630,7 +630,7 @@ var drawTitle = function(data) {
 
   this._margin.top += text$$1 ? group.getBBox().height + this._padding : 0;
 
-};
+}
 
 /**
     @function _drawTotal
@@ -638,7 +638,7 @@ var drawTitle = function(data) {
     @param {Array} [*data*] The currently filtered dataset.
     @private
 */
-var drawTotal = function(data) {
+function drawTotal(data) {
   if ( data === void 0 ) data = [];
 
 
@@ -663,7 +663,7 @@ var drawTotal = function(data) {
 
   this._margin.top += visible ? group.getBBox().height + this._padding : 0;
 
-};
+}
 
 /**
   @desc Given an HTMLElement and a "width" or "height" string, this function returns the current calculated size for the DOM element.
@@ -709,9 +709,9 @@ function _elementSize(element, s) {
     @param {HTMLElement} elem The HTMLElement to find dimensions for.
     @private
 */
-var getSize = function(elem$$1) {
+function getSize(elem$$1) {
   return [_elementSize(elem$$1, "width"), _elementSize(elem$$1, "height")];
-};
+}
 
 /**
   @desc Returns a *Boolean* denoting whether or not a given DOM element is visible in the current window.
@@ -719,7 +719,7 @@ var getSize = function(elem$$1) {
   @param {Number} [buffer = 0] A pixel offset from the edge of the top and bottom of the screen. If a positive value, the element will be deemed visible when it is that many pixels away from entering the viewport. If negative, the element will have to enter the viewport by that many pixels before being deemed visible.
   @private
 */
-var inViewport = function(elem$$1, buffer) {
+function inViewport(elem$$1, buffer) {
   if ( buffer === void 0 ) buffer = 0;
 
 
@@ -737,7 +737,7 @@ var inViewport = function(elem$$1, buffer) {
   return pageY + window.innerHeight > top + buffer && pageY + buffer < top + height &&
          pageX + window.innerWidth > left + buffer && pageX + buffer < left + width;
 
-};
+}
 
 /**
     @desc On click event for all shapes in a Viz.
@@ -745,7 +745,7 @@ var inViewport = function(elem$$1, buffer) {
     @param {Number} *i* The index of the data object being interacted with.
     @private
 */
-var click = function(d, i) {
+function click(d, i) {
 
   this._select.style("cursor", "auto");
   
@@ -769,7 +769,7 @@ var click = function(d, i) {
 
   }
 
-};
+}
 
 /**
     @desc On mouseenter event for all shapes in a Viz.
@@ -777,7 +777,7 @@ var click = function(d, i) {
     @param {Number} *i* The index of the data object being interacted with.
     @private
 */
-var mouseenter = function(d, i) {
+function mouseenter(d, i) {
   var this$1 = this;
 
 
@@ -789,7 +789,7 @@ var mouseenter = function(d, i) {
     return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
   });
 
-};
+}
 
 /**
     @desc On mouseleave event for all shapes in a Viz.
@@ -797,13 +797,13 @@ var mouseenter = function(d, i) {
     @param {Number} *i* The index of the data object being interacted with.
     @private
 */
-var mouseleave = function() {
+function mouseleave() {
 
   this.hover(false);
   this._select.style("cursor", "auto");
   if (this._tooltip) { this._tooltipClass.data([]).render(); }
 
-};
+}
 
 /**
     @desc Tooltip logic for a specified data point.
@@ -812,7 +812,7 @@ var mouseleave = function() {
     @param {Object} [*config*] Optional configuration methods for the Tooltip class.
     @private
 */
-var mousemoveLegend = function(d) {
+function mousemoveLegend(d) {
 
   if (this._tooltip && d) {
     this._select.style("cursor", "pointer");
@@ -825,7 +825,7 @@ var mousemoveLegend = function(d) {
       .render();
   }
 
-};
+}
 
 /**
     @desc Tooltip logic for a specified data point.
@@ -834,7 +834,7 @@ var mousemoveLegend = function(d) {
     @param {Object} [*config*] Optional configuration methods for the Tooltip class.
     @private
 */
-var mousemoveShape = function(d) {
+function mousemoveShape(d) {
 
   if (this._tooltip && d) {
     this._select.style("cursor", "pointer");
@@ -846,7 +846,7 @@ var mousemoveShape = function(d) {
       .render();
   }
 
-};
+}
 
 var brushing = false;
 
@@ -855,7 +855,7 @@ var brushing = false;
     @desc Sets up initial zoom events and controls.
     @private
 */
-var zoomControls = function() {
+function zoomControls() {
 
   if (!this._container || !this._zoomGroup) { return; }
 
@@ -930,7 +930,7 @@ var zoomControls = function() {
   zoomEvents.bind(this)();
   if (this._renderTiles) { this._renderTiles(d3Zoom.zoomTransform(this._container.node()), 0); }
 
-};
+}
 
 /**
     @name zoomEvents
