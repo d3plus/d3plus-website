@@ -1,13 +1,72 @@
 /*
-  d3plus-color v0.6.1
+  d3plus-color v0.6.2
   Color functions that extent the ability of d3-color.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
 */
+
+if (typeof Object.assign !== "function") {
+  Object.defineProperty(Object, "assign", {
+    value: function assign(target) {
+      "use strict";
+      if (target === null) {
+        throw new TypeError("Cannot convert undefined or null to object");
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource !== null) {
+          for (var nextKey in nextSource) {
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    },
+    writable: true,
+    configurable: true
+  });
+}
+
+if (!Array.prototype.includes) {
+  Object.defineProperty(Array.prototype, "includes", {
+    value: function includes(searchElement, fromIndex) {
+
+      var o = Object(this);
+
+      var len = o.length >>> 0;
+
+      if (len === 0) return false;
+
+      var n = fromIndex | 0;
+
+      var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+
+      function sameValueZero(x, y) {
+        return x === y || typeof x === "number" && typeof y === "number" && isNaN(x) && isNaN(y);
+      }
+
+      while (k < len) {
+        if (sameValueZero(o[k], searchElement)) {
+          return true;
+        }
+        k++;
+      }
+
+      return false;
+    }
+  });
+}
+
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-color'), require('d3-scale')) :
 	typeof define === 'function' && define.amd ? define('d3plus-color', ['exports', 'd3-color', 'd3-scale'], factory) :
-	(factory((global.d3plus = global.d3plus || {}),global.d3Color,global.d3Scale));
+	(factory((global.d3plus = {}),global.d3Color,global.d3Scale));
 }(this, (function (exports,d3Color,d3Scale) { 'use strict';
 
 /**
@@ -19,7 +78,7 @@
     @param {String} [o2 = 1] Value from 0 to 1 of the first color's opacity.
     @returns {String}
 */
-var add = function(c1, c2, o1, o2) {
+function add(c1, c2, o1, o2) {
   if ( o1 === void 0 ) o1 = 1;
   if ( o2 === void 0 ) o2 = 1;
 
@@ -30,14 +89,14 @@ var add = function(c1, c2, o1, o2) {
   var h = (Math.min(c1.h, c2.h) + d / 2) % 360;
   var l = c1.l + (c2.l * o2 - c1.l * o1) / 2,
         s = c1.s + (c2.s * o2 - c1.s * o1) / 2;
-      // a = o1 + (o2 - o1) / 2;
+  // a = o1 + (o2 - o1) / 2;
   if (h < 0) { h += 360; }
   return d3Color.hsl(("hsl(" + h + "," + (s * 100) + "%," + (l * 100) + "%)")).toString();
   // return hsl(`hsl(${h},${s * 100}%,${l * 100}%,${a})`).toString();
-};
+}
 
 /**
-    @module {Object} colorDefaults
+    @namespace {Object} colorDefaults
     @desc A set of default color values used when assigning colors based on data.
       *
       * | Name | Default | Description |
@@ -47,7 +106,7 @@ var add = function(c1, c2, o1, o2) {
       * | missing | #cccccc | Used in the [assign](#assign) function when the value passed is `null` or `undefined`. |
       * | off | #b22200 | Used in the [assign](#assign) function when the value passed is `false`. |
       * | on | #224f20 | Used in the [assign](#assign) function when the value passed is `true`. |
-      * | scale | `scale.ordinal().range([ "#b22200", "#eace3f", "#282f6b", "#b35c1e", "#224f20", "#5f487c", "#759143", "#419391", "#993c88", "#e89c89", "#ffee8d", "#afd5e8", "#f7ba77", "#a5c697", "#c5b5e5", "#d1d392", "#bbefd0", "#e099cf"])` | An ordinal scale used in the [assign](#assign) function for non-valid color strings and numbers. |
+      * | scale | #b22200, #eace3f, #282f6b, #b35c1e, #224f20, #5f487c, #759143, #419391, #993c88, #e89c89, #ffee8d, #afd5e8, #f7ba77, #a5c697, #c5b5e5, #d1d392, #bbefd0, #e099cf | An ordinal scale used in the [assign](#assign) function for non-valid color strings and numbers. |
 */
 var defaults = {
   dark: "#444444",
@@ -80,7 +139,7 @@ function getColor(k, u) {
     @param {Object} [u = defaults] An object containing overrides of the default colors.
     @returns {String}
 */
-var assign = function(c, u) {
+function assign(c, u) {
   if ( u === void 0 ) u = {};
 
 
@@ -97,7 +156,7 @@ var assign = function(c, u) {
 
   return c.toString();
 
-};
+}
 
 /**
     @function colorContrast
@@ -106,13 +165,13 @@ var assign = function(c, u) {
     @param {Object} [u = defaults] An object containing overrides of the default colors.
     @returns {String}
 */
-var contrast = function(c, u) {
+function contrast(c, u) {
   if ( u === void 0 ) u = {};
 
   c = d3Color.rgb(c);
   var yiq = (c.r * 299 + c.g * 587 + c.b * 114) / 1000;
   return yiq >= 128 ? getColor("dark", u) : getColor("light", u);
-};
+}
 
 /**
     @function colorLegible
@@ -120,14 +179,14 @@ var contrast = function(c, u) {
     @param {String} c A valid CSS color string.
     @returns {String}
 */
-var legible = function(c) {
+function legible(c) {
   c = d3Color.hsl(c);
   if (c.l > 0.45) {
     if (c.s > 0.8) { c.s = 0.8; }
     c.l = 0.45;
   }
   return c.toString();
-};
+}
 
 /**
     @function colorLighter
@@ -136,7 +195,7 @@ var legible = function(c) {
     @param {String} [i = 0.5] A value from 0 to 1 dictating the strength of the function.
     @returns {String}
 */
-var lighter = function(c, i) {
+function lighter(c, i) {
   if ( i === void 0 ) i = 0.5;
 
   c = d3Color.hsl(c);
@@ -144,7 +203,7 @@ var lighter = function(c, i) {
   c.l += i;
   c.s -= i;
   return c.toString();
-};
+}
 
 /**
     @function colorSubtract
@@ -155,7 +214,7 @@ var lighter = function(c, i) {
     @param {String} [o2 = 1] Value from 0 to 1 of the first color's opacity.
     @returns {String}
 */
-var subtract = function(c1, c2, o1, o2) {
+function subtract(c1, c2, o1, o2) {
   if ( o1 === void 0 ) o1 = 1;
   if ( o2 === void 0 ) o2 = 1;
 
@@ -166,11 +225,11 @@ var subtract = function(c1, c2, o1, o2) {
   var h = (c1.h - d) % 360;
   var l = c1.l - (c2.l * o2 - c1.l * o1) / 2,
         s = c1.s - (c2.s * o2 - c1.s * o1) / 2;
-      // a = o1 - (o2 - o1) / 2;
+  // a = o1 - (o2 - o1) / 2;
   if (h < 0) { h += 360; }
   return d3Color.hsl(("hsl(" + h + "," + (s * 100) + "%," + (l * 100) + "%)")).toString();
   // return hsl(`hsl(${h},${s * 100}%,${l * 100}%,${a})`).toString();
-};
+}
 
 exports.colorAdd = add;
 exports.colorAssign = assign;
