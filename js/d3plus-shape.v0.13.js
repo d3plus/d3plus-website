@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.13.10
+  d3plus-shape v0.13.11
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -292,14 +292,14 @@ Image.prototype.y = function y (_) {
     @param {Array} p2 The second point, which should always be an `[x, y]` formatted Array.
     @returns {Number}
 */
-var pointDistanceSquared = function (p1, p2) {
+function pointDistanceSquared (p1, p2) {
 
   var dx = p2[0] - p1[0],
         dy = p2[1] - p1[1];
 
   return dx * dx + dy * dy;
 
-};
+}
 
 /**
     @function pointDistance
@@ -308,7 +308,7 @@ var pointDistanceSquared = function (p1, p2) {
     @param {Array} p2 The second point, which should always be an `[x, y]` formatted Array.
     @returns {Number}
 */
-var pointDistance = function (p1, p2) { return Math.sqrt(pointDistanceSquared(p1, p2)); };
+function pointDistance (p1, p2) { return Math.sqrt(pointDistanceSquared(p1, p2)); }
 
 /**
     @external BaseClass
@@ -1205,7 +1205,7 @@ function(d) {
     @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
     @returns {Boolean}
 */
-var lineIntersection = function(p1, q1, p2, q2) {
+function lineIntersection(p1, q1, p2, q2) {
 
   // allow for some margins due to numerical errors
   var eps = 1e-9;
@@ -1228,7 +1228,7 @@ var lineIntersection = function(p1, q1, p2, q2) {
 
   return [px, py];
 
-};
+}
 
 /**
     @function segmentBoxContains
@@ -1238,7 +1238,7 @@ var lineIntersection = function(p1, q1, p2, q2) {
     @param {Array} p The point to be checked, which should always be an `[x, y]` formatted Array.
     @returns {Boolean}
 */
-var segmentBoxContains = function(s1, s2, p) {
+function segmentBoxContains(s1, s2, p) {
 
   var eps = 1e-9;
   var px = p[0];
@@ -1247,7 +1247,7 @@ var segmentBoxContains = function(s1, s2, p) {
   return !(px < Math.min(s1[0], s2[0]) - eps || px > Math.max(s1[0], s2[0]) + eps ||
            py < Math.min(s1[1], s2[1]) - eps || py > Math.max(s1[1], s2[1]) + eps);
 
-};
+}
 
 /**
     @function segmentsIntersect
@@ -1258,13 +1258,13 @@ var segmentBoxContains = function(s1, s2, p) {
     @param {Array} q2 The second point of the second line segment, which should always be an `[x, y]` formatted Array.
     @returns {Boolean}
 */
-var segmentsIntersect = function(p1, q1, p2, q2) {
+function segmentsIntersect(p1, q1, p2, q2) {
 
   var p = lineIntersection(p1, q1, p2, q2);
   if (!p) { return false; }
   return segmentBoxContains(p1, q1, p) && segmentBoxContains(p2, q2, p);
 
-};
+}
 
 /**
     @function polygonInside
@@ -1273,7 +1273,7 @@ var segmentsIntersect = function(p1, q1, p2, q2) {
     @param {Array} polyB An Array of `[x, y]` points to be used as the containing polygon.
     @returns {Boolean}
 */
-var polygonInside = function(polyA, polyB) {
+function polygonInside(polyA, polyB) {
 
   var iA = -1;
   var nA = polyA.length;
@@ -1296,7 +1296,7 @@ var polygonInside = function(polyA, polyB) {
 
   return d3Polygon.polygonContains(polyB, polyA[0]);
 
-};
+}
 
 /**
     @function polygonRayCast
@@ -1306,7 +1306,7 @@ var polygonInside = function(polyA, polyB) {
     @param {Number} [alpha = 0] The angle in radians of the ray.
     @returns {Array} An array containing two values, the closest point on the left and the closest point on the right. If either point cannot be found, that value will be `null`.
 */
-var polygonRayCast = function(poly, origin, alpha) {
+function polygonRayCast(poly, origin, alpha) {
   if ( alpha === void 0 ) alpha = 0;
 
 
@@ -1348,7 +1348,7 @@ var polygonRayCast = function(poly, origin, alpha) {
 
   return [closestPointLeft, closestPointRight];
 
-};
+}
 
 /**
     @function pointRotate
@@ -1358,7 +1358,7 @@ var polygonRayCast = function(poly, origin, alpha) {
     @param {Array} [origin = [0, 0]] The origin point of the rotation, which should always be an `[x, y]` formatted Array.
     @returns {Boolean}
 */
-var pointRotate = function(p, alpha, origin) {
+function pointRotate(p, alpha, origin) {
   if ( origin === void 0 ) origin = [0, 0];
 
 
@@ -1372,7 +1372,7 @@ var pointRotate = function(p, alpha, origin) {
     sinAlpha * xshifted + cosAlpha * yshifted + origin[1]
   ];
 
-};
+}
 
 /**
     @function polygonRotate
@@ -1382,11 +1382,11 @@ var pointRotate = function(p, alpha, origin) {
     @param {Array} [origin = [0, 0]] The origin point of the rotation, which should be an `[x, y]` formatted Array.
     @returns {Boolean}
 */
-var polygonRotate = function (poly, alpha, origin) {
+function polygonRotate (poly, alpha, origin) {
     if ( origin === void 0 ) origin = [0, 0];
 
     return poly.map(function (p) { return pointRotate(p, alpha, origin); });
-};
+}
 
 /**
     @desc square distance from a point to a segment
@@ -1506,7 +1506,7 @@ function simplifyDouglasPeucker(poly, sqTolerance) {
     @param {Boolean} [highestQuality = false] Excludes distance-based preprocessing step which leads to highest quality simplification but runs ~10-20 times slower.
 
 */
-var simplify = function (poly, tolerance, highestQuality) {
+function simplify (poly, tolerance, highestQuality) {
   if ( tolerance === void 0 ) tolerance = 1;
   if ( highestQuality === void 0 ) highestQuality = false;
 
@@ -1520,7 +1520,7 @@ var simplify = function (poly, tolerance, highestQuality) {
 
   return poly;
 
-};
+}
 
 // Algorithm constants
 var aspectRatioStep = 0.5; // step size for the aspect ratio
@@ -1555,7 +1555,7 @@ var angleStep = 5; // step size for angles (in degrees); has linear impact on ru
     @param {Array} [options.origin] The center point of the rectangle. If specified, the rectangle will be fixed at that point, otherwise the algorithm optimizes across all possible points. The given value can be either a two dimensional array specifying the x and y coordinate of the origin or an array of two dimensional points specifying multiple possible center points of the rectangle.
     @return {LargestRect}
 */
-var largestRect = function(poly, options) {
+function largestRect(poly, options) {
   if ( options === void 0 ) options = {};
 
 
@@ -1741,7 +1741,7 @@ var largestRect = function(poly, options) {
 
   return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
 
-};
+}
 
 /**
     @class Area
@@ -2430,7 +2430,7 @@ var pi$1 = Math.PI;
     @param {Number} distance The pixel distance away from the origin.
     @returns {String} [shape = "circle"] The type of shape, which can be either "circle" or "square".
 */
-var shapeEdgePoint = function (angle, distance, shape) {
+function shapeEdgePoint (angle, distance, shape) {
   if ( shape === void 0 ) shape = "circle";
 
 
@@ -2476,7 +2476,7 @@ var shapeEdgePoint = function (angle, distance, shape) {
   }
   else { return null; }
 
-};
+}
 
 var pi = Math.PI;
 
@@ -2487,7 +2487,7 @@ var pi = Math.PI;
     @param {Number} [segmentLength = 20] The lenght of line segments when converting curves line segments. Higher values lower computation time, but will result in curves that are more rigid.
     @returns {Array}
 */
-var path2polygon = function (path, segmentLength) {
+function path2polygon (path, segmentLength) {
   if ( segmentLength === void 0 ) segmentLength = 20;
 
 
@@ -2526,7 +2526,7 @@ var path2polygon = function (path, segmentLength) {
 
   return poly;
 
-};
+}
 
 /**
     @class Path
