@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.16
+  d3plus-geomap v0.4.17
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -615,7 +615,7 @@ If not specified, the first key in the *Array* returned from using `Object.keys`
       @chainable
   */
   Geomap.prototype.topojsonId = function topojsonId (_) {
-    return arguments.length ? (this._topojsonId = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this, this) : this._topojsonId;
+    return arguments.length ? (this._topojsonId = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._topojsonId;
   };
 
   return Geomap;
