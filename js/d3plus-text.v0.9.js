@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.23
+  d3plus-text v0.9.24
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -75,7 +75,7 @@ if (!Array.prototype.includes) {
     @param {String|Array} text Can be either a single string or an array of strings to analyze.
     @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
 */
-var measure = function(text, style) {
+function measure(text, style) {
 
   style = Object.assign({
     "font-size": 10,
@@ -102,7 +102,7 @@ var measure = function(text, style) {
   if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
   return context.measureText(text).width;
 
-};
+}
 
 /**
     @function trim
@@ -177,21 +177,21 @@ var fontExists = function (font) {
     @function rtl
     @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
 */
-var detectRTL = function () { return d3Selection.select("html").attr("dir") === "rtl" ||
+function detectRTL () { return d3Selection.select("html").attr("dir") === "rtl" ||
   d3Selection.select("body").attr("dir") === "rtl" ||
   d3Selection.select("html").style("direction") === "rtl" ||
-  d3Selection.select("body").style("direction") === "rtl"; };
+  d3Selection.select("body").style("direction") === "rtl"; }
 
 /**
     @function stringify
     @desc Coerces value into a String.
     @param {String} value
 */
-var stringify = function(value) {
+function stringify(value) {
   if (value === void 0) { value = "undefined"; }
   else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
   return value;
-};
+}
 
 // great unicode list: http://asecuritysite.com/coding/asc2
 
@@ -215,7 +215,7 @@ var diacritics = [
     @desc Removes all non ASCII characters from a string.
     @param {String} value
 */
-var strip = function(value) {
+function strip(value) {
 
   return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
 
@@ -232,7 +232,7 @@ var strip = function(value) {
     return ret || "";
 
   });
-};
+}
 
 // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
 // and http://www.fileformat.info/info/unicode/category/Mn/list.htm
@@ -291,19 +291,19 @@ var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSp
     @desc Splits a given sentence into an array of words.
     @param {String} sentence
 */
-var textSplit = function(sentence) {
+function textSplit(sentence) {
   if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
   return d3Array.merge(stringify(sentence).match(splitWords).map(function (d) {
     if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
     return [d];
   }));
-};
+}
 
 /**
     @function textWrap
     @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
 */
-var wrap = function() {
+function wrap() {
 
   var fontFamily = "sans-serif",
       fontSize = 10,
@@ -450,7 +450,7 @@ var wrap = function() {
 
   return textWrap;
 
-};
+}
 
 /**
     @external BaseClass
@@ -1005,7 +1005,7 @@ var uppercase = ["CEO", "CFO", "CNC", "COO", "CPU", "GDP", "HVAC", "ID", "IT", "
     @desc Capitalizes the first letter of each word in a phrase/sentence.
     @param {String} str The string to apply the title case logic.
 */
-var titleCase = function(str) {
+function titleCase(str) {
 
   if (str === void 0) { return ""; }
 
@@ -1032,7 +1032,7 @@ var titleCase = function(str) {
     return ret;
   }, "");
 
-};
+}
 
 exports.fontExists = fontExists;
 exports.rtl = detectRTL;
