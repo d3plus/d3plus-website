@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.28
+  d3plus-plot v0.5.29
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -69,7 +69,7 @@ if (!Array.prototype.includes) {
 	(factory((global.d3plus = {}),global.d3plusCommon,global.d3Array,global.d3Collection,global.scales,global.d3Shape,global.d3plusAxis,global.d3plusColor,global.shapes,global.d3plusViz));
 }(this, (function (exports,d3plusCommon,d3Array,d3Collection,scales,d3Shape,d3plusAxis,d3plusColor,shapes,d3plusViz) { 'use strict';
 
-var ordinalBuffer = function(domain) {
+function ordinalBuffer(domain) {
 
   if (domain.includes("d3plus-buffer-start")) { return domain; }
 
@@ -81,7 +81,7 @@ var ordinalBuffer = function(domain) {
 
   return newDomain;
 
-};
+}
 
 /**
     Adds a buffer to either side of the non-discrete axis.
@@ -92,7 +92,7 @@ var ordinalBuffer = function(domain) {
     @param {Number} [buffer = 10]
     @private
 */
-var BarBuffer = function(data, x, y, config, buffer) {
+function BarBuffer(data, x, y, config, buffer) {
   var this$1 = this;
   if ( buffer === void 0 ) buffer = 10;
 
@@ -136,7 +136,7 @@ var BarBuffer = function(data, x, y, config, buffer) {
 
   return [x, y];
 
-};
+}
 
 /**
     Adds a buffer to either side of the non-discrete axis.
@@ -147,7 +147,7 @@ var BarBuffer = function(data, x, y, config, buffer) {
     @param {Number} [buffer] Defaults to the radius of the largest Circle.
     @private
 */
-var CircleBuffer = function(data, x, y, config, buffer) {
+function CircleBuffer(data, x, y, config, buffer) {
 
   var xD = x.domain().slice(),
       yD = y.domain().slice();
@@ -187,9 +187,9 @@ var CircleBuffer = function(data, x, y, config, buffer) {
 
   return [x, y];
 
-};
+}
 
-var RectBuffer = function(data, x, y, config) {
+function RectBuffer(data, x, y, config) {
 
   var xD = x.domain().slice(),
       yD = y.domain().slice();
@@ -230,9 +230,9 @@ var RectBuffer = function(data, x, y, config) {
 
   return [x, y];
 
-};
+}
 
-var LineBuffer = function(data, x, y) {
+function LineBuffer(data, x, y) {
   var this$1 = this;
 
 
@@ -253,7 +253,7 @@ var LineBuffer = function(data, x, y) {
 
   return [x, y];
 
-};
+}
 
 function defaultSize(d) {
   return this._sizeScaleD3(this._size ? this._size(d) : null);
