@@ -1,5 +1,5 @@
 /*
-  d3plus-dev v0.5.3
+  d3plus-dev v0.5.4
   A collection of scripts for developing D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -64,12 +64,12 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-scale'), require('d3plus-text')) :
-	typeof define === 'function' && define.amd ? define('d3plus-dev', ['exports', 'd3-scale', 'd3plus-text'], factory) :
-	(factory((global.d3plus = {}),global.d3Scale,global.d3plusText));
-}(this, (function (exports,d3Scale,d3plusText) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-scale'), require('d3plus-common')) :
+	typeof define === 'function' && define.amd ? define('d3plus-dev', ['exports', 'd3-scale', 'd3plus-common'], factory) :
+	(factory((global.d3plus = {}),global.d3Scale,global.d3plusCommon));
+}(this, (function (exports,d3Scale,d3plusCommon) { 'use strict';
 
-var _import = d3plusText.strip("împort");
+var _import = d3plusCommon.uuid();
 
 var string = "Ceci n'est pas une |";
 
