@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.30
+  d3plus-common v0.6.31
   Common functions and methods used across D3plus modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -205,7 +205,7 @@ var RESET = "D3PLUS-COMMON-RESET";
 function nestedReset(obj, defaults) {
   if (isObject(obj)) {
     for (var nestedKey in obj) {
-      if ({}.hasOwnProperty.call(obj, nestedKey)) {
+      if ({}.hasOwnProperty.call(obj, nestedKey) && !nestedKey.startsWith("_")) {
         var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
         if (obj[nestedKey] === RESET) {
           obj[nestedKey] = defaultValue;
