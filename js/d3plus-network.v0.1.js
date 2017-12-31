@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.1.13
+  d3plus-network v0.1.14
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -86,6 +86,7 @@ var Network = (function (Viz$$1) {
 
 
     Viz$$1.call(this);
+    this._labelCutoff = 100;
     this._links = [];
     this._nodes = [];
     this._on["click.shape"] = function (d, i) {
@@ -104,6 +105,8 @@ var Network = (function (Viz$$1) {
 
         }
         else {
+
+          this$1.hover(false);
 
           var id = this$1._nodeGroupBy && this$1._nodeGroupBy[this$1._drawDepth](d, i) ? this$1._nodeGroupBy[this$1._drawDepth](d, i) : this$1._id(d, i),
                 links = this$1._linkLookup[id],
@@ -156,6 +159,8 @@ var Network = (function (Viz$$1) {
         }
         else {
 
+          this$1.hover(false);
+
           var nodes = ids.map(function (id) { return this$1._nodeLookup[id]; });
 
           var filterIds = [id];
@@ -196,9 +201,13 @@ var Network = (function (Viz$$1) {
     this._shape = d3plusCommon.constant("Circle");
     this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       labelConfig: {
+        duration: 0,
+        fontMin: 1,
+        fontResize: true,
         textAnchor: "middle",
         verticalAlign: "middle"
       },
+      labelPadding: 0,
       Path: {
         fill: "none",
         label: false,
@@ -391,13 +400,11 @@ var Network = (function (Viz$$1) {
       .config(this._shapeConfig.Path)
       .d(function (d) { return ("M" + (d.source.x) + "," + (d.source.y) + " " + (d.target.x) + "," + (d.target.y)); })
       .data(links)
-      // .duration(0)
       .select(d3plusCommon.elem("g.d3plus-network-links", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node())
       .render());
 
     var shapeConfig = {
-      // duration: 0,
-      label: function (d) { return this$1._drawLabel(d.data || d.node, d.i); },
+      label: function (d) { return nodes.length <= this$1._labelCutoff || (this$1._hover && this$1._hover(d) || this$1._active && this$1._active(d)) ? this$1._drawLabel(d.data || d.node, d.i) : false; },
       select: d3plusCommon.elem("g.d3plus-network-nodes", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node()
     };
 
@@ -405,12 +412,23 @@ var Network = (function (Viz$$1) {
       this$1._shapes.push(new shapes[d.key]()
         .config(d3plusCommon.configPrep.bind(this$1)(this$1._shapeConfig, "shape", d.key))
         .config(shapeConfig)
+        .config(shapeConfig[d.key] || {})
         .data(d.values)
         .render());
     });
 
     return this;
 
+  };
+
+  /**
+      @memberof Network
+      @desc Defines the maximum number of nodes that allow all labels to be shown. When the number of nodes is over this amount, labels will only be shown on hover and click.
+      @param {Number} *value* = 100
+      @chainable
+  */
+  Network.prototype.labelCutoff = function labelCutoff (_) {
+    return arguments.length ? (this._labelCutoff = _, this) : this._labelCutoff;
   };
 
   /**

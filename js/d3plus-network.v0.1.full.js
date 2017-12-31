@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.1.13
+  d3plus-network v0.1.14
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -6213,12 +6213,13 @@ var RESET = "D3PLUS-COMMON-RESET";
 function nestedReset(obj, defaults) {
   if (isObject(obj)) {
     for (var nestedKey in obj) {
-      if ({}.hasOwnProperty.call(obj, nestedKey)) {
+      if ({}.hasOwnProperty.call(obj, nestedKey) && !nestedKey.startsWith("_")) {
+        var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
         if (obj[nestedKey] === RESET) {
-          obj[nestedKey] = defaults[nestedKey];
+          obj[nestedKey] = defaultValue;
         }
         else if (isObject(obj[nestedKey])) {
-          nestedReset(obj[nestedKey], defaults[nestedKey]);
+          nestedReset(obj[nestedKey], defaultValue);
         }
       }
     }
@@ -7787,15 +7788,16 @@ var Shape = (function (BaseClass) {
 
     BaseClass.call(this);
 
-    this._activeOpacity = 0.75;
+    this._activeOpacity = 0.25;
     this._activeStyle = {
-      "stroke": function (d, i) { return color(this$1._stroke(d, i)).darker(2); },
+      "stroke": "#d74b03",
       "stroke-width": function (d, i) {
-        var s = this$1._strokeWidth(d, i);
-        return s ? s * 2 : 1;
+        var s = this$1._strokeWidth(d, i) || 1;
+        return s * 3;
       }
     };
     this._backgroundImage = constant$6(false);
+    this._backgroundImageClass = new Image$1();
     this._data = [];
     this._duration = 600;
     this._fill = constant$6("black");
@@ -7804,6 +7806,7 @@ var Shape = (function (BaseClass) {
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = constant$6(false);
+    this._labelClass = new TextBox();
     this._labelConfig = {
       fontColor: function (d, i) { return colorContrast(this$1._fill(d, i)); },
       fontSize: 12
@@ -8038,7 +8041,7 @@ var Shape = (function (BaseClass) {
 
       });
 
-    return new Image$1()
+    return this._backgroundImageClass
       .data(imageData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -8115,7 +8118,7 @@ var Shape = (function (BaseClass) {
 
       });
 
-    return new TextBox()
+    return this._labelClass
       .data(labelData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -8232,10 +8235,13 @@ var Shape = (function (BaseClass) {
   */
   Shape.prototype.active = function active (_) {
 
-    if (!arguments.length || _ === void 0) { return this._active; }
+    if (!arguments.length || _ === undefined) { return this._active; }
     this._active = _;
 
     var that = this;
+
+    this._renderImage();
+    this._renderLabels();
 
     this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
@@ -8264,6 +8270,9 @@ var Shape = (function (BaseClass) {
 
       });
 
+    this._renderImage();
+    this._renderLabels();
+
     this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
       .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
 
@@ -8273,12 +8282,22 @@ var Shape = (function (BaseClass) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the active opacity to the specified function and returns the current class instance.
-      @param {Number} [*value* = 0.75]
+      @desc When shapes are active, this is the opacity of any shape that is not active.
+      @param {Number} *value* = 0.25
       @chainable
   */
   Shape.prototype.activeOpacity = function activeOpacity (_) {
     return arguments.length ? (this._activeOpacity = _, this) : this._activeOpacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc The style to apply to active shapes.
+      @param {Object} *value*
+      @chainable
+  */
+  Shape.prototype.activeStyle = function activeStyle (_) {
+    return arguments.length ? (this._activeStyle = assign({}, this._activeStyle, _), this) : this._activeStyle;
   };
 
   /**
@@ -8354,6 +8373,9 @@ var Shape = (function (BaseClass) {
 
     var that = this;
 
+    this._renderImage();
+    this._renderLabels();
+
     this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
       .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
@@ -8375,6 +8397,9 @@ var Shape = (function (BaseClass) {
         if (group !== this.parentNode) { group.appendChild(this); }
 
       });
+
+    this._renderImage();
+    this._renderLabels();
 
     this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
       .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
@@ -12292,6 +12317,11 @@ function(d) {
 var Circle = (function (Shape$$1) {
   function Circle() {
     Shape$$1.call(this, "circle");
+    this._labelBounds = function (d, i, s) { return ({width: s.r * 1.5, height: s.r * 1.5, x: -s.r * 0.75, y: -s.r * 0.75}); };
+    this._labelConfig = assign(this._labelConfig, {
+      textAnchor: "middle",
+      verticalAlign: "middle"
+    });
     this._name = "Circle";
     this._r = accessor("r");
   }
@@ -29926,6 +29956,7 @@ var Network = (function (Viz) {
 
 
     Viz.call(this);
+    this._labelCutoff = 100;
     this._links = [];
     this._nodes = [];
     this._on["click.shape"] = function (d, i) {
@@ -29944,6 +29975,8 @@ var Network = (function (Viz) {
 
         }
         else {
+
+          this$1.hover(false);
 
           var id = this$1._nodeGroupBy && this$1._nodeGroupBy[this$1._drawDepth](d, i) ? this$1._nodeGroupBy[this$1._drawDepth](d, i) : this$1._id(d, i),
                 links = this$1._linkLookup[id],
@@ -29996,6 +30029,8 @@ var Network = (function (Viz) {
         }
         else {
 
+          this$1.hover(false);
+
           var nodes = ids.map(function (id) { return this$1._nodeLookup[id]; });
 
           var filterIds = [id];
@@ -30036,9 +30071,13 @@ var Network = (function (Viz) {
     this._shape = constant$6("Circle");
     this._shapeConfig = assign(this._shapeConfig, {
       labelConfig: {
+        duration: 0,
+        fontMin: 1,
+        fontResize: true,
         textAnchor: "middle",
         verticalAlign: "middle"
       },
+      labelPadding: 0,
       Path: {
         fill: "none",
         label: false,
@@ -30231,13 +30270,11 @@ var Network = (function (Viz) {
       .config(this._shapeConfig.Path)
       .d(function (d) { return ("M" + (d.source.x) + "," + (d.source.y) + " " + (d.target.x) + "," + (d.target.y)); })
       .data(links)
-      // .duration(0)
       .select(elem("g.d3plus-network-links", {parent: parent, transition: transition, enter: {transform: transform$$1}, update: {transform: transform$$1}}).node())
       .render());
 
     var shapeConfig = {
-      // duration: 0,
-      label: function (d) { return this$1._drawLabel(d.data || d.node, d.i); },
+      label: function (d) { return nodes.length <= this$1._labelCutoff || (this$1._hover && this$1._hover(d) || this$1._active && this$1._active(d)) ? this$1._drawLabel(d.data || d.node, d.i) : false; },
       select: elem("g.d3plus-network-nodes", {parent: parent, transition: transition, enter: {transform: transform$$1}, update: {transform: transform$$1}}).node()
     };
 
@@ -30245,12 +30282,23 @@ var Network = (function (Viz) {
       this$1._shapes.push(new shapes[d.key]()
         .config(configPrep.bind(this$1)(this$1._shapeConfig, "shape", d.key))
         .config(shapeConfig)
+        .config(shapeConfig[d.key] || {})
         .data(d.values)
         .render());
     });
 
     return this;
 
+  };
+
+  /**
+      @memberof Network
+      @desc Defines the maximum number of nodes that allow all labels to be shown. When the number of nodes is over this amount, labels will only be shown on hover and click.
+      @param {Number} *value* = 100
+      @chainable
+  */
+  Network.prototype.labelCutoff = function labelCutoff (_) {
+    return arguments.length ? (this._labelCutoff = _, this) : this._labelCutoff;
   };
 
   /**
