@@ -2,8 +2,8 @@
 title: Simple Network Graph
 width: 990
 height: 400
-time: 1504199539674
-date: August 31, 2017
+time: 1514742465993
+date: December 31, 2017
 ---
 
 # Simple Network Graph
@@ -22,6 +22,7 @@ var nodes = [
 ```
 
 The `source` and `target` keys in each link need to map to the nodes in one of three ways:
+
 1. The index of the node in the nodes array (as in this example).
 2. The actual node *Object* itself.
 3. A *String* value matching the `id` of the node.
