@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.13.12
+  d3plus-shape v0.13.13
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -337,6 +337,7 @@ var Shape = (function (BaseClass$$1) {
       }
     };
     this._backgroundImage = d3plusCommon.constant(false);
+    this._backgroundImageClass = new Image();
     this._data = [];
     this._duration = 600;
     this._fill = d3plusCommon.constant("black");
@@ -345,6 +346,7 @@ var Shape = (function (BaseClass$$1) {
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = d3plusCommon.constant(false);
+    this._labelClass = new d3plusText.TextBox();
     this._labelConfig = {
       fontColor: function (d, i) { return d3plusColor.colorContrast(this$1._fill(d, i)); },
       fontSize: 12
@@ -579,7 +581,7 @@ var Shape = (function (BaseClass$$1) {
 
       });
 
-    return new Image()
+    return this._backgroundImageClass
       .data(imageData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -656,7 +658,7 @@ var Shape = (function (BaseClass$$1) {
 
       });
 
-    return new d3plusText.TextBox()
+    return this._labelClass
       .data(labelData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -773,10 +775,13 @@ var Shape = (function (BaseClass$$1) {
   */
   Shape.prototype.active = function active (_) {
 
-    if (!arguments.length || _ === void 0) { return this._active; }
+    if (!arguments.length || _ === undefined) { return this._active; }
     this._active = _;
 
     var that = this;
+
+    this._renderImage();
+    this._renderLabels();
 
     this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
@@ -804,6 +809,9 @@ var Shape = (function (BaseClass$$1) {
         }
 
       });
+
+    this._renderImage();
+    this._renderLabels();
 
     this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
       .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
@@ -895,6 +903,9 @@ var Shape = (function (BaseClass$$1) {
 
     var that = this;
 
+    this._renderImage();
+    this._renderLabels();
+
     this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
       .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
       .each(function(d, i) {
@@ -916,6 +927,9 @@ var Shape = (function (BaseClass$$1) {
         if (group !== this.parentNode) { group.appendChild(this); }
 
       });
+
+    this._renderImage();
+    this._renderLabels();
 
     this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
       .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
