@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.13.13
+  d3plus-shape v0.13.14
   Fancy SVG shapes for visualizations
   Copyright (c) 2017 D3plus - https://d3plus.org
   @license MIT
@@ -6035,12 +6035,12 @@ var Shape = (function (BaseClass) {
 
     BaseClass.call(this);
 
-    this._activeOpacity = 0.75;
+    this._activeOpacity = 0.25;
     this._activeStyle = {
-      "stroke": function (d, i) { return color(this$1._stroke(d, i)).darker(2); },
+      "stroke": "#d74b03",
       "stroke-width": function (d, i) {
-        var s = this$1._strokeWidth(d, i);
-        return s ? s * 2 : 1;
+        var s = this$1._strokeWidth(d, i) || 1;
+        return s * 3;
       }
     };
     this._backgroundImage = constant$2(false);
@@ -6529,12 +6529,22 @@ var Shape = (function (BaseClass) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the active opacity to the specified function and returns the current class instance.
-      @param {Number} [*value* = 0.75]
+      @desc When shapes are active, this is the opacity of any shape that is not active.
+      @param {Number} *value* = 0.25
       @chainable
   */
   Shape.prototype.activeOpacity = function activeOpacity (_) {
     return arguments.length ? (this._activeOpacity = _, this) : this._activeOpacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc The style to apply to active shapes.
+      @param {Object} *value*
+      @chainable
+  */
+  Shape.prototype.activeStyle = function activeStyle (_) {
+    return arguments.length ? (this._activeStyle = assign({}, this._activeStyle, _), this) : this._activeStyle;
   };
 
   /**
