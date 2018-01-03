@@ -5,7 +5,7 @@ kind: function
 
   <a name="largestRect"></a>
 
-### d3plus.**largestRect**(poly, [options]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/largestRect.js#L26)
+### d3plus.**largestRect**(poly, [options]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/geom/largestRect.js#L28)
 
 An angle of zero means that the longer side of the polygon (the width) will be aligned with the x axis. An angle of 90 and/or -90 means that the longer side of the polygon (the width) will be aligned with the y axis. The value can be a number between -90 and 90 specifying the angle of rotation of the polygon, a string which is parsed to a number, or an array of numbers specifying the possible rotations of the polygon.
 
@@ -26,5 +26,6 @@ This is a global function.
 | [options.minWidth] | <code>Number</code> | <code>0</code> | The minimum width of the rectangle. |
 | [options.tolerance] | <code>Number</code> | <code>0.02</code> | The simplification tolerance factor, between 0 and 1. A larger tolerance corresponds to more extensive simplification. |
 | [options.origin] | <code>Array</code> |  | The center point of the rectangle. If specified, the rectangle will be fixed at that point, otherwise the algorithm optimizes across all possible points. The given value can be either a two dimensional array specifying the x and y coordinate of the origin or an array of two dimensional points specifying multiple possible center points of the rectangle. |
+| [options.cache] | <code>Boolean</code> |  | Whether or not to cache the result, which would be used in subsequent calculations to preserve consistency and speed up calculation time. |
 
 
