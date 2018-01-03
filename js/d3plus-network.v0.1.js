@@ -1,7 +1,7 @@
 /*
-  d3plus-network v0.1.14
+  d3plus-network v0.1.15
   Javascript network visualizations built upon d3 modules.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -388,7 +388,14 @@ var Network = (function (Viz$$1) {
       .merge(hitArea)
         .attr("width", width)
         .attr("height", height)
-        .attr("fill", "transparent");
+        .attr("fill", "transparent")
+        .on("click", function () {
+          if (this$1._focus) {
+            this$1.active(false);
+            this$1._focus = undefined;
+            this$1._zoomToBounds(null);
+          }
+        });
 
     this._zoomGroup = this._container.selectAll("g.d3plus-network-zoomGroup").data([0]);
     var parent = this._zoomGroup = this._zoomGroup.enter().append("g")
