@@ -1,7 +1,7 @@
 /*
-  d3plus-viz v0.10.14
+  d3plus-viz v0.10.15
   Abstract ES6 class that drives d3plus visualizations.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -1620,21 +1620,21 @@ var Viz = (function (BaseClass$$1) {
   /**
       @memberof Viz
       @desc Defines the main color to be used for each data point in a visualization. Can be either an accessor function or a string key to reference in each data point. If a color value is returned, it will be used as is. If a string is returned, a unique color will be assigned based on the string.
-      @param {Function|String} [*value*]
+      @param {Function|String|False} [*value*]
       @chainable
   */
   Viz.prototype.color = function color$$1 (_) {
-    return arguments.length ? (this._color = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._color;
+    return arguments.length ? (this._color = !_ || typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._color;
   };
 
   /**
       @memberof Viz
       @desc Defines the value to be used for a color scale. Can be either an accessor function or a string key to reference in each data point.
-      @param {Function|String} [*value*]
+      @param {Function|String|False} [*value*]
       @chainable
   */
   Viz.prototype.colorScale = function colorScale (_) {
-    return arguments.length ? (this._colorScale = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._colorScale;
+    return arguments.length ? (this._colorScale = !_ || typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._colorScale;
   };
 
   /**

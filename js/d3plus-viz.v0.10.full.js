@@ -1,7 +1,7 @@
 /*
-  d3plus-viz v0.10.14
+  d3plus-viz v0.10.15
   Abstract ES6 class that drives d3plus visualizations.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -7406,12 +7406,13 @@ var RESET = "D3PLUS-COMMON-RESET";
 function nestedReset(obj, defaults) {
   if (isObject(obj)) {
     for (var nestedKey in obj) {
-      if ({}.hasOwnProperty.call(obj, nestedKey)) {
+      if ({}.hasOwnProperty.call(obj, nestedKey) && !nestedKey.startsWith("_")) {
+        var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
         if (obj[nestedKey] === RESET) {
-          obj[nestedKey] = defaults[nestedKey];
+          obj[nestedKey] = defaultValue;
         }
         else if (isObject(obj[nestedKey])) {
-          nestedReset(obj[nestedKey], defaults[nestedKey]);
+          nestedReset(obj[nestedKey], defaultValue);
         }
       }
     }
@@ -8409,7 +8410,7 @@ var TextBox = (function (BaseClass) {
 
     this._delay = 0;
     this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
+    this._ellipsis = function (text, line) { return line ? ((text.replace(/\.|,$/g, "")) + "...") : ""; };
     this._fontColor = constant$7("black");
     this._fontFamily = constant$7(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
     this._fontMax = constant$7(50);
@@ -8520,8 +8521,8 @@ var TextBox = (function (BaseClass) {
             if (fS < fMin) { lineData = []; }
             else { checkSize(); }
           }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
+          else if (line < 1) { lineData = [that._ellipsis("", line)]; }
+          else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
 
         }
 
@@ -8710,11 +8711,11 @@ var TextBox = (function (BaseClass) {
 
   /**
       @memberof TextBox
-      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
+      @desc Sets the function that handles what to do when a line is truncated. It should return the new value for the line, and is passed 2 arguments: the String of text for the line in question, and the number of the line. By default, an ellipsis is added to the end of any line except if it is the first word that cannot fit (in that case, an empty string is returned).
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
+function(text, line) {
+  return line ? text.replace(/\.|,$/g, "") + "..." : "";
 }
   */
   TextBox.prototype.ellipsis = function ellipsis (_) {
@@ -8980,15 +8981,16 @@ var Shape = (function (BaseClass) {
 
     BaseClass.call(this);
 
-    this._activeOpacity = 0.75;
+    this._activeOpacity = 0.25;
     this._activeStyle = {
-      "stroke": function (d, i) { return color(this$1._stroke(d, i)).darker(2); },
+      "stroke": "#444444",
       "stroke-width": function (d, i) {
-        var s = this$1._strokeWidth(d, i);
-        return s ? s * 2 : 1;
+        var s = this$1._strokeWidth(d, i) || 1;
+        return s * 3;
       }
     };
     this._backgroundImage = constant$7(false);
+    this._backgroundImageClass = new Image$1();
     this._data = [];
     this._duration = 600;
     this._fill = constant$7("black");
@@ -8997,6 +8999,7 @@ var Shape = (function (BaseClass) {
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = constant$7(false);
+    this._labelClass = new TextBox();
     this._labelConfig = {
       fontColor: function (d, i) { return colorContrast(this$1._fill(d, i)); },
       fontSize: 12
@@ -9172,6 +9175,89 @@ var Shape = (function (BaseClass) {
 
   /**
       @memberof Shape
+      @desc Modifies existing shapes to show active status.
+      @private
+  */
+  Shape.prototype._renderActive = function _renderActive () {
+
+    var that = this;
+
+    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !that._active || typeof that._active !== "function" || !that._active(d, i) ? parent : that._activeGroup.node();
+        if (group !== this.parentNode) {
+          group.appendChild(this);
+          if (this.className.baseVal.includes("d3plus-Shape")) {
+            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
+            else { select(this).call(that._applyActive.bind(that)); }
+          }
+        }
+
+      });
+
+    this._renderImage();
+    this._renderLabels();
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Modifies existing shapes to show hover status.
+      @private
+  */
+  Shape.prototype._renderHover = function _renderHover () {
+
+    var that = this;
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
+      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !that._hover || typeof that._hover !== "function" || !that._hover(d, i) ? parent : that._hoverGroup.node();
+        if (group !== this.parentNode) { group.appendChild(this); }
+
+      });
+
+    this._renderImage();
+    this._renderLabels();
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+  };
+
+  /**
+      @memberof Shape
       @desc Adds background image to each shape group.
       @private
   */
@@ -9231,7 +9317,7 @@ var Shape = (function (BaseClass) {
 
       });
 
-    return new Image$1()
+    this._backgroundImageClass
       .data(imageData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -9308,7 +9394,7 @@ var Shape = (function (BaseClass) {
 
       });
 
-    return new TextBox()
+    this._labelClass
       .data(labelData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -9409,9 +9495,12 @@ var Shape = (function (BaseClass) {
     hitAreas.exit().remove();
 
     this._applyEvents(this._hitArea ? hitUpdates : enterUpdate);
-    this.active(this._active);
 
-    if (callback) { setTimeout(callback, this._duration + 100); }
+    setTimeout(function () {
+      if (this$1._active) { this$1._renderActive(); }
+      else if (this$1._hover) { this$1._renderHover(); }
+      if (callback) { callback(); }
+    }, this._duration + 100);
 
     return this;
 
@@ -9425,53 +9514,35 @@ var Shape = (function (BaseClass) {
   */
   Shape.prototype.active = function active (_) {
 
-    if (!arguments.length || _ === void 0) { return this._active; }
+    if (!arguments.length || _ === undefined) { return this._active; }
     this._active = _;
-
-    var that = this;
-
-    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
-      .each(function(d, i) {
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
-
-        if (select(this).classed("d3plus-textBox")) { d = d.data; }
-        if (d.__d3plusShape__ || d.__d3plus__) {
-          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
-            i = d.i;
-            d = d.data;
-          }
-        }
-        else { i = that._data.indexOf(d); }
-
-        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
-        if (group !== this.parentNode) {
-          group.appendChild(this);
-          if (this.className.baseVal.includes("d3plus-Shape")) {
-            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
-            else { select(this).call(that._applyActive.bind(that)); }
-          }
-        }
-
-      });
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
-      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
-
+    if (this._group) {
+      this._renderImage();
+      this._renderLabels();
+      this._renderActive();
+    }
     return this;
 
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the active opacity to the specified function and returns the current class instance.
-      @param {Number} [*value* = 0.75]
+      @desc When shapes are active, this is the opacity of any shape that is not active.
+      @param {Number} *value* = 0.25
       @chainable
   */
   Shape.prototype.activeOpacity = function activeOpacity (_) {
     return arguments.length ? (this._activeOpacity = _, this) : this._activeOpacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc The style to apply to active shapes.
+      @param {Object} *value*
+      @chainable
+  */
+  Shape.prototype.activeStyle = function activeStyle (_) {
+    return arguments.length ? (this._activeStyle = assign({}, this._activeStyle, _), this) : this._activeStyle;
   };
 
   /**
@@ -9544,35 +9615,13 @@ var Shape = (function (BaseClass) {
 
     if (!arguments.length || _ === void 0) { return this._hover; }
     this._hover = _;
-
-    var that = this;
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
-      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
-      .each(function(d, i) {
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
-
-        if (select(this).classed("d3plus-textBox")) { d = d.data; }
-        if (d.__d3plusShape__ || d.__d3plus__) {
-          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
-            i = d.i;
-            d = d.data;
-          }
-        }
-        else { i = that._data.indexOf(d); }
-
-        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
-        if (group !== this.parentNode) { group.appendChild(this); }
-
-      });
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
-      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
-
+    if (this._group) {
+      this._renderImage();
+      this._renderLabels();
+      this._renderHover();
+    }
     return this;
+
   };
 
   /**
@@ -12800,6 +12849,8 @@ function simplify (poly, tolerance, highestQuality) {
 var aspectRatioStep = 0.5; // step size for the aspect ratio
 var angleStep = 5; // step size for angles (in degrees); has linear impact on running time
 
+var polyCache = {};
+
 /**
     @typedef {Object} LargestRect
     @desc The returned Object of the largestRect function.
@@ -12827,6 +12878,7 @@ var angleStep = 5; // step size for angles (in degrees); has linear impact on ru
     @param {Number} [options.minWidth = 0] The minimum width of the rectangle.
     @param {Number} [options.tolerance = 0.02] The simplification tolerance factor, between 0 and 1. A larger tolerance corresponds to more extensive simplification.
     @param {Array} [options.origin] The center point of the rectangle. If specified, the rectangle will be fixed at that point, otherwise the algorithm optimizes across all possible points. The given value can be either a two dimensional array specifying the x and y coordinate of the origin or an array of two dimensional points specifying multiple possible center points of the rectangle.
+    @param {Boolean} [options.cache] Whether or not to cache the result, which would be used in subsequent calculations to preserve consistency and speed up calculation time.
     @return {LargestRect}
 */
 function largestRect(poly, options) {
@@ -12844,6 +12896,7 @@ function largestRect(poly, options) {
   // User's input normalization
   options = Object.assign({
     angle: range(-90, 90 + angleStep, angleStep),
+    cache: true,
     maxAspectRatio: 15,
     minAspectRatio: 1,
     minHeight: 0,
@@ -12866,6 +12919,18 @@ function largestRect(poly, options) {
   var origins = options.origin && options.origin instanceof Array
     ? options.origin[0] instanceof Array ? options.origin
     : [options.origin] : [];
+
+  var cacheString;
+  if (options.cache) {
+    cacheString = merge(poly).join(",");
+    cacheString += "-" + (options.minAspectRatio);
+    cacheString += "-" + (options.maxAspectRatio);
+    cacheString += "-" + (options.minHeight);
+    cacheString += "-" + (options.minWidth);
+    cacheString += "-" + (angles.join(","));
+    cacheString += "-" + (origins.join(","));
+    if (polyCache[cacheString]) { return polyCache[cacheString]; }
+  }
 
   var area = Math.abs(polygonArea(poly)); // take absolute value of the signed area
   if (area === 0) {
@@ -13011,6 +13076,10 @@ function largestRect(poly, options) {
 
     }
 
+  }
+
+  if (options.cache) {
+    polyCache[cacheString] = maxRect;
   }
 
   return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
@@ -13485,6 +13554,11 @@ function(d) {
 var Circle = (function (Shape$$1) {
   function Circle() {
     Shape$$1.call(this, "circle");
+    this._labelBounds = function (d, i, s) { return ({width: s.r * 1.5, height: s.r * 1.5, x: -s.r * 0.75, y: -s.r * 0.75}); };
+    this._labelConfig = assign(this._labelConfig, {
+      textAnchor: "middle",
+      verticalAlign: "middle"
+    });
     this._name = "Circle";
     this._r = accessor("r");
   }
@@ -29251,21 +29325,21 @@ var Viz = (function (BaseClass) {
   /**
       @memberof Viz
       @desc Defines the main color to be used for each data point in a visualization. Can be either an accessor function or a string key to reference in each data point. If a color value is returned, it will be used as is. If a string is returned, a unique color will be assigned based on the string.
-      @param {Function|String} [*value*]
+      @param {Function|String|False} [*value*]
       @chainable
   */
   Viz.prototype.color = function color (_) {
-    return arguments.length ? (this._color = typeof _ === "function" ? _ : accessor(_), this) : this._color;
+    return arguments.length ? (this._color = !_ || typeof _ === "function" ? _ : accessor(_), this) : this._color;
   };
 
   /**
       @memberof Viz
       @desc Defines the value to be used for a color scale. Can be either an accessor function or a string key to reference in each data point.
-      @param {Function|String} [*value*]
+      @param {Function|String|False} [*value*]
       @chainable
   */
   Viz.prototype.colorScale = function colorScale (_) {
-    return arguments.length ? (this._colorScale = typeof _ === "function" ? _ : accessor(_), this) : this._colorScale;
+    return arguments.length ? (this._colorScale = !_ || typeof _ === "function" ? _ : accessor(_), this) : this._colorScale;
   };
 
   /**
