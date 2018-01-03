@@ -1,7 +1,7 @@
 /*
-  d3plus-shape v0.13.14
+  d3plus-shape v0.13.15
   Fancy SVG shapes for visualizations
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -5464,7 +5464,7 @@ var TextBox = (function (BaseClass) {
 
     this._delay = 0;
     this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
+    this._ellipsis = function (text, line) { return line ? ((text.replace(/\.|,$/g, "")) + "...") : ""; };
     this._fontColor = constant$2("black");
     this._fontFamily = constant$2(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
     this._fontMax = constant$2(50);
@@ -5575,8 +5575,8 @@ var TextBox = (function (BaseClass) {
             if (fS < fMin) { lineData = []; }
             else { checkSize(); }
           }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
+          else if (line < 1) { lineData = [that._ellipsis("", line)]; }
+          else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
 
         }
 
@@ -5765,11 +5765,11 @@ var TextBox = (function (BaseClass) {
 
   /**
       @memberof TextBox
-      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
+      @desc Sets the function that handles what to do when a line is truncated. It should return the new value for the line, and is passed 2 arguments: the String of text for the line in question, and the number of the line. By default, an ellipsis is added to the end of any line except if it is the first word that cannot fit (in that case, an empty string is returned).
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
+function(text, line) {
+  return line ? text.replace(/\.|,$/g, "") + "..." : "";
 }
   */
   TextBox.prototype.ellipsis = function ellipsis (_) {
@@ -6037,7 +6037,7 @@ var Shape = (function (BaseClass) {
 
     this._activeOpacity = 0.25;
     this._activeStyle = {
-      "stroke": "#d74b03",
+      "stroke": "#444444",
       "stroke-width": function (d, i) {
         var s = this$1._strokeWidth(d, i) || 1;
         return s * 3;
@@ -6229,6 +6229,89 @@ var Shape = (function (BaseClass) {
 
   /**
       @memberof Shape
+      @desc Modifies existing shapes to show active status.
+      @private
+  */
+  Shape.prototype._renderActive = function _renderActive () {
+
+    var that = this;
+
+    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !that._active || typeof that._active !== "function" || !that._active(d, i) ? parent : that._activeGroup.node();
+        if (group !== this.parentNode) {
+          group.appendChild(this);
+          if (this.className.baseVal.includes("d3plus-Shape")) {
+            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
+            else { select(this).call(that._applyActive.bind(that)); }
+          }
+        }
+
+      });
+
+    this._renderImage();
+    this._renderLabels();
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Modifies existing shapes to show hover status.
+      @private
+  */
+  Shape.prototype._renderHover = function _renderHover () {
+
+    var that = this;
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
+      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !that._hover || typeof that._hover !== "function" || !that._hover(d, i) ? parent : that._hoverGroup.node();
+        if (group !== this.parentNode) { group.appendChild(this); }
+
+      });
+
+    this._renderImage();
+    this._renderLabels();
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+  };
+
+  /**
+      @memberof Shape
       @desc Adds background image to each shape group.
       @private
   */
@@ -6288,7 +6371,7 @@ var Shape = (function (BaseClass) {
 
       });
 
-    return this._backgroundImageClass
+    this._backgroundImageClass
       .data(imageData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -6365,7 +6448,7 @@ var Shape = (function (BaseClass) {
 
       });
 
-    return this._labelClass
+    this._labelClass
       .data(labelData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -6466,9 +6549,12 @@ var Shape = (function (BaseClass) {
     hitAreas.exit().remove();
 
     this._applyEvents(this._hitArea ? hitUpdates : enterUpdate);
-    this.active(this._active);
 
-    if (callback) { setTimeout(callback, this._duration + 100); }
+    setTimeout(function () {
+      if (this$1._active) { this$1._renderActive(); }
+      else if (this$1._hover) { this$1._renderHover(); }
+      if (callback) { callback(); }
+    }, this._duration + 100);
 
     return this;
 
@@ -6484,45 +6570,11 @@ var Shape = (function (BaseClass) {
 
     if (!arguments.length || _ === undefined) { return this._active; }
     this._active = _;
-
-    var that = this;
-
-    this._renderImage();
-    this._renderLabels();
-
-    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
-      .each(function(d, i) {
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
-
-        if (select(this).classed("d3plus-textBox")) { d = d.data; }
-        if (d.__d3plusShape__ || d.__d3plus__) {
-          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
-            i = d.i;
-            d = d.data;
-          }
-        }
-        else { i = that._data.indexOf(d); }
-
-        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
-        if (group !== this.parentNode) {
-          group.appendChild(this);
-          if (this.className.baseVal.includes("d3plus-Shape")) {
-            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
-            else { select(this).call(that._applyActive.bind(that)); }
-          }
-        }
-
-      });
-
-    this._renderImage();
-    this._renderLabels();
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
-      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
-
+    if (this._group) {
+      this._renderImage();
+      this._renderLabels();
+      this._renderActive();
+    }
     return this;
 
   };
@@ -6617,41 +6669,13 @@ var Shape = (function (BaseClass) {
 
     if (!arguments.length || _ === void 0) { return this._hover; }
     this._hover = _;
-
-    var that = this;
-
-    this._renderImage();
-    this._renderLabels();
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
-      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
-      .each(function(d, i) {
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
-
-        if (select(this).classed("d3plus-textBox")) { d = d.data; }
-        if (d.__d3plusShape__ || d.__d3plus__) {
-          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
-            i = d.i;
-            d = d.data;
-          }
-        }
-        else { i = that._data.indexOf(d); }
-
-        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
-        if (group !== this.parentNode) { group.appendChild(this); }
-
-      });
-
-    this._renderImage();
-    this._renderLabels();
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
-      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
-
+    if (this._group) {
+      this._renderImage();
+      this._renderLabels();
+      this._renderHover();
+    }
     return this;
+
   };
 
   /**
@@ -9879,6 +9903,8 @@ function simplify (poly, tolerance, highestQuality) {
 var aspectRatioStep = 0.5; // step size for the aspect ratio
 var angleStep = 5; // step size for angles (in degrees); has linear impact on running time
 
+var polyCache = {};
+
 /**
     @typedef {Object} LargestRect
     @desc The returned Object of the largestRect function.
@@ -9906,6 +9932,7 @@ var angleStep = 5; // step size for angles (in degrees); has linear impact on ru
     @param {Number} [options.minWidth = 0] The minimum width of the rectangle.
     @param {Number} [options.tolerance = 0.02] The simplification tolerance factor, between 0 and 1. A larger tolerance corresponds to more extensive simplification.
     @param {Array} [options.origin] The center point of the rectangle. If specified, the rectangle will be fixed at that point, otherwise the algorithm optimizes across all possible points. The given value can be either a two dimensional array specifying the x and y coordinate of the origin or an array of two dimensional points specifying multiple possible center points of the rectangle.
+    @param {Boolean} [options.cache] Whether or not to cache the result, which would be used in subsequent calculations to preserve consistency and speed up calculation time.
     @return {LargestRect}
 */
 function largestRect(poly, options) {
@@ -9923,6 +9950,7 @@ function largestRect(poly, options) {
   // User's input normalization
   options = Object.assign({
     angle: range(-90, 90 + angleStep, angleStep),
+    cache: true,
     maxAspectRatio: 15,
     minAspectRatio: 1,
     minHeight: 0,
@@ -9945,6 +9973,18 @@ function largestRect(poly, options) {
   var origins = options.origin && options.origin instanceof Array
     ? options.origin[0] instanceof Array ? options.origin
     : [options.origin] : [];
+
+  var cacheString;
+  if (options.cache) {
+    cacheString = merge$1(poly).join(",");
+    cacheString += "-" + (options.minAspectRatio);
+    cacheString += "-" + (options.maxAspectRatio);
+    cacheString += "-" + (options.minHeight);
+    cacheString += "-" + (options.minWidth);
+    cacheString += "-" + (angles.join(","));
+    cacheString += "-" + (origins.join(","));
+    if (polyCache[cacheString]) { return polyCache[cacheString]; }
+  }
 
   var area = Math.abs(polygonArea(poly)); // take absolute value of the signed area
   if (area === 0) {
@@ -10090,6 +10130,10 @@ function largestRect(poly, options) {
 
     }
 
+  }
+
+  if (options.cache) {
+    polyCache[cacheString] = maxRect;
   }
 
   return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
