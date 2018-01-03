@@ -1,7 +1,7 @@
 /*
-  d3plus-text v0.9.24
+  d3plus-text v0.9.25
   A smart SVG text box with line wrapping and automatic font size scaling.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -3092,12 +3092,13 @@ var RESET = "D3PLUS-COMMON-RESET";
 function nestedReset(obj, defaults) {
   if (isObject(obj)) {
     for (var nestedKey in obj) {
-      if ({}.hasOwnProperty.call(obj, nestedKey)) {
+      if ({}.hasOwnProperty.call(obj, nestedKey) && !nestedKey.startsWith("_")) {
+        var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
         if (obj[nestedKey] === RESET) {
-          obj[nestedKey] = defaults[nestedKey];
+          obj[nestedKey] = defaultValue;
         }
         else if (isObject(obj[nestedKey])) {
-          nestedReset(obj[nestedKey], defaults[nestedKey]);
+          nestedReset(obj[nestedKey], defaultValue);
         }
       }
     }
@@ -3577,7 +3578,7 @@ var TextBox = (function (BaseClass) {
 
     this._delay = 0;
     this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
+    this._ellipsis = function (text, line) { return line ? ((text.replace(/\.|,$/g, "")) + "...") : ""; };
     this._fontColor = constant$3("black");
     this._fontFamily = constant$3(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
     this._fontMax = constant$3(50);
@@ -3688,8 +3689,8 @@ var TextBox = (function (BaseClass) {
             if (fS < fMin) { lineData = []; }
             else { checkSize(); }
           }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
+          else if (line < 1) { lineData = [that._ellipsis("", line)]; }
+          else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
 
         }
 
@@ -3878,11 +3879,11 @@ var TextBox = (function (BaseClass) {
 
   /**
       @memberof TextBox
-      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
+      @desc Sets the function that handles what to do when a line is truncated. It should return the new value for the line, and is passed 2 arguments: the String of text for the line in question, and the number of the line. By default, an ellipsis is added to the end of any line except if it is the first word that cannot fit (in that case, an empty string is returned).
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
+function(text, line) {
+  return line ? text.replace(/\.|,$/g, "") + "..." : "";
 }
   */
   TextBox.prototype.ellipsis = function ellipsis (_) {
