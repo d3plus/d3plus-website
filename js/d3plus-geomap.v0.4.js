@@ -1,7 +1,7 @@
 /*
-  d3plus-geomap v0.4.17
+  d3plus-geomap v0.4.18
   A reusable geo map built on D3 and Topojson
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
