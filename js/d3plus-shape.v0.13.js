@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.13.15
+  d3plus-shape v0.13.16
   Fancy SVG shapes for visualizations
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -695,7 +695,7 @@ var Shape = (function (BaseClass$$1) {
 
         var labels = this$1._label(d, i);
 
-        if (this$1._labelBounds && labels !== false && labels !== undefined) {
+        if (this$1._labelBounds && labels !== false && labels !== undefined && labels !== null) {
 
           var bounds = this$1._labelBounds(d, i, this$1._aes(datum, i));
 
