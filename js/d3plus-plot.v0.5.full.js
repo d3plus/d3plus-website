@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.5.31
+  d3plus-plot v0.5.32
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -31128,7 +31128,9 @@ var Plot = (function (Viz) {
     this._xConfig = {
       title: "X Axis"
     };
-    this._x2Config = {};
+    this._x2Config = {
+      padding: 0
+    };
     this._y = accessor("y");
     this._yAxis = new AxisLeft().align("start");
     this._y2Axis = new AxisRight().align("end");
@@ -31191,7 +31193,6 @@ var Plot = (function (Viz) {
     var height = this._height - this._margin.top - this._margin.bottom,
           opp = this._discrete ? this._discrete === "x" ? "y" : "x" : undefined,
           parent = this._select,
-          transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")",
           transition = this._transition,
           width = this._width - this._margin.left - this._margin.right;
 
@@ -31377,13 +31378,14 @@ var Plot = (function (Viz) {
       .range([xOffset, undefined])
       .render();
 
+    var topOffset = this._yTest.shapeConfig().labelConfig.fontSize() / 2;
+    var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + topOffset) + ")";
+
     var xGroup = elem("g.d3plus-plot-x-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
 
     var xTrans = xOffset > yWidth ? xOffset - yWidth : 0;
-    var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top) + ")";
+    var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top + topOffset) + ")";
     var yGroup = elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: yTransform}, update: {transform: yTransform}});
-
-    var x2Group = elem("g.d3plus-plot-x2-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
 
     this._xAxis
       .domain(xDomain)
@@ -31411,9 +31413,9 @@ var Plot = (function (Viz) {
       .labels([])
       .range([xOffset, undefined])
       .scale(xScale.toLowerCase())
-      .select(x2Group.node())
+      .select(xGroup.node())
       .ticks([])
-      .width(xRange[xRange.length - 1] + this._xAxis.padding())
+      .width(xRange[xRange.length - 1])
       .title(false)
       .tickSize(0)
       .barConfig({"stroke-width": this._discrete ? 0 : this._xAxis.barConfig()["stroke-width"]})
@@ -31427,7 +31429,7 @@ var Plot = (function (Viz) {
       .scale(yScale.toLowerCase())
       .select(yGroup.node())
       .ticks(yTicks)
-      .width(xRange[xRange.length - 1] + this._xAxis.padding())
+      .width(xRange[xRange.length - 1])
       .config(yC)
       .config(this._yConfig)
       .render();
