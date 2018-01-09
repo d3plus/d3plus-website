@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.18
+  d3plus-geomap v0.4.19
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -544,7 +544,7 @@ Additionally, a custom formatting function can be passed as a second argument to
       @chainable
   */
   Geomap.prototype.projection = function projection (_) {
-    if (_ !== "geoMercator") { this._tiles = false; }
+    if (arguments.length && _ !== "geoMercator") { this._tiles = false; }
     return arguments.length ? (this._projection = typeof _ === "string" ? d3Geo[_]() : _, this) : this._projection;
   };
 
