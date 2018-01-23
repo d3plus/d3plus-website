@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.2.24
+  d3plus-react v0.2.25
   React components for d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -132,13 +132,16 @@ var Viz = (function (superclass) {
   Viz.prototype.render = function render () {
     var this$1 = this;
 
-    return React.createElement('div', {className: "viz", ref: function (container) { return this$1.container = container; }});
+    var ref = this.props;
+    var className = ref.className;
+    return React.createElement('div', {className: className, ref: function (container) { return this$1.container = container; }});
   };
 
   return Viz;
 }(React.Component));
 
 Viz.contextTypes = {d3plus: PropTypes.object};
+Viz.defaultProps = {className: "viz"};
 
 /**
     @class AreaPlot
