@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.2.25
+  d3plus-react v0.2.26
   React components for d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -69,7 +69,7 @@ if (!Array.prototype.includes) {
 	(factory((global.d3plus = {}),global.d3plusPlot,global.React,global.PropTypes,global.d3plusCommon,global.d3plusHierarchy,global.d3plusGeomap,global.d3plusNetwork,global.d3plusPriestley));
 }(this, (function (exports,d3plusPlot,React,PropTypes,d3plusCommon,d3plusHierarchy,d3plusGeomap,d3plusNetwork,d3plusPriestley) { 'use strict';
 
-React = React && React.hasOwnProperty('default') ? React['default'] : React;
+var React__default = 'default' in React ? React['default'] : React;
 PropTypes = PropTypes && PropTypes.hasOwnProperty('default') ? PropTypes['default'] : PropTypes;
 
 /**
@@ -77,25 +77,34 @@ PropTypes = PropTypes && PropTypes.hasOwnProperty('default') ? PropTypes['defaul
     @extends React.Component
     @desc Creates SVG paths and coordinate points based on an array of data. See [this example](https://d3plus.org/examples/d3plus-geomap/getting-started/) for help getting started using the geomap generator.
 */
-var Viz = (function (superclass) {
+var Viz = (function (Component$$1) {
   function Viz () {
-    superclass.apply(this, arguments);
+    Component$$1.apply(this, arguments);
   }
 
-  if ( superclass ) Viz.__proto__ = superclass;
-  Viz.prototype = Object.create( superclass && superclass.prototype );
+  if ( Component$$1 ) Viz.__proto__ = Component$$1;
+  Viz.prototype = Object.create( Component$$1 && Component$$1.prototype );
   Viz.prototype.constructor = Viz;
 
   Viz.prototype.componentDidMount = function componentDidMount () {
-
     var ref = this.props;
-    var type = ref.type;
-    var Constructor = type;
+    var config = ref.config;
+    var dataFormat = ref.dataFormat;
+    var Constructor = ref.type;
+    var globalConfig = this.context.d3plus || {};
 
     var viz = new Constructor()
       .select(this.container);
 
-    this.setState({viz: viz});
+    if (dataFormat && config.data) {
+      viz.config(d3plusCommon.assign({}, globalConfig, config, {data: []}))
+        .data(config.data, dataFormat);
+    }
+    else {
+      viz.config(d3plusCommon.assign({}, globalConfig, config));
+    }
+
+    this.viz = viz.render();
   };
 
   /**
@@ -103,24 +112,25 @@ var Viz = (function (superclass) {
       @desc Updates visualization config on component update.
       @private
   */
-  Viz.prototype.componentDidUpdate = function componentDidUpdate () {
+  Viz.prototype.componentDidUpdate = function componentDidUpdate (prevProps) {
 
-    var ref = this.context;
-    var d3plus = ref.d3plus;
-    var ref$1 = this.props;
-    var config = ref$1.config;
-    var dataFormat = ref$1.dataFormat;
-    var ref$2 = this.state;
-    var viz = ref$2.viz;
+    var globalConfig = this.context.d3plus || {};
+    var ref = this.props;
+    var config = ref.config;
+    var forceUpdate = ref.forceUpdate;
+    var ref$1 = this;
+    var viz = ref$1.viz;
+    var c = d3plusCommon.assign({}, globalConfig, config);
+    var c2 = d3plusCommon.assign({}, globalConfig, prevProps.config);
 
-    if (dataFormat && config.data) {
-      viz
-        .config(d3plusCommon.assign({}, d3plus || {}, config, {data: []}))
-        .data(config.data, dataFormat);
+    var same = forceUpdate ? false : JSON.stringify(c) === JSON.stringify(c2);
+
+    if (!same) {
+
+      if (typeof c.data === "string" && c.data === c2.data) { delete c.data; }
+      viz.config(c).render();
+
     }
-    else { viz.config(d3plusCommon.assign({}, d3plus || {}, config)); }
-
-    viz.render();
 
   };
 
@@ -134,14 +144,17 @@ var Viz = (function (superclass) {
 
     var ref = this.props;
     var className = ref.className;
-    return React.createElement('div', {className: className, ref: function (container) { return this$1.container = container; }});
+    return React__default.createElement('div', {className: className, ref: function (container) { return this$1.container = container; }});
   };
 
   return Viz;
 }(React.Component));
 
 Viz.contextTypes = {d3plus: PropTypes.object};
-Viz.defaultProps = {className: "viz"};
+Viz.defaultProps = {
+  className: "viz",
+  forceUpdate: false
+};
 
 /**
     @class AreaPlot
