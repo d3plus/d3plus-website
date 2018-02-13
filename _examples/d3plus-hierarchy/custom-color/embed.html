@@ -32,7 +32,11 @@
   new d3plus.Treemap()
     .data(data)
     .groupBy(["parent", "id"])
-    .shapeConfig({fill: function(d) { return d.color; }})
+    .shapeConfig({
+      fill: function(d) {
+        return d.color;
+      }
+    })
     .render();
 
 </script>

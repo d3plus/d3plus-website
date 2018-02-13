@@ -2,8 +2,8 @@
 title: Defining Custom Colors for a Visualization
 width: 990
 height: 400
-time: 1504201076080
-date: August 31, 2017
+time: 1518542667845
+date: February 13, 2018
 ---
 
 # Defining Custom Colors for a Visualization
@@ -26,6 +26,10 @@ Given the new `"color"` variable present in each data point, we can tell the [Tr
 new d3plus.Treemap()
   .data(data)
   .groupBy(["parent", "id"])
-  .shapeConfig({fill: function(d) { return d.color; }})
+  .shapeConfig({
+    fill: function(d) {
+      return d.color;
+    }
+  })
   .render();
 ```
