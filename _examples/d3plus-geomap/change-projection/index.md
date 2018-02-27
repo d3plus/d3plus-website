@@ -2,7 +2,7 @@
 title: Changing Map Projections
 width: 990
 height: 550
-time: 1519770281581
+time: 1519770361711
 date: February 27, 2018
 ---
 
@@ -17,7 +17,7 @@ var popData = [{id: "01", population: 4830620}, {id: "02", population: 733375}, 
 
 var chart = new d3plus.Geomap()
   .data(popData)
-  .colorScale("population");
+  .colorScale("population")
   .topojson("https://d3plus.org/topojson/states.json")
   .fitFilter(function(d) {
     return ["02", "15", "43", "60", "66", "69", "72", "78"].indexOf(d.id) < 0;
