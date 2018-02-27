@@ -1,7 +1,7 @@
 /*
-  d3plus-common v0.6.31
+  d3plus-common v0.6.32
   Common functions and methods used across D3plus modules.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -427,130 +427,6 @@ function creator(name) {
       : creatorInherit)(fullname);
 }
 
-var matcher = function(selector) {
-  return function() {
-    return this.matches(selector);
-  };
-};
-
-if (typeof document !== "undefined") {
-  var element = document.documentElement;
-  if (!element.matches) {
-    var vendorMatches = element.webkitMatchesSelector
-        || element.msMatchesSelector
-        || element.mozMatchesSelector
-        || element.oMatchesSelector;
-    matcher = function(selector) {
-      return function() {
-        return vendorMatches.call(this, selector);
-      };
-    };
-  }
-}
-
-var matcher$1 = matcher;
-
-var filterEvents = {};
-
-
-
-if (typeof document !== "undefined") {
-  var element$1 = document.documentElement;
-  if (!("onmouseenter" in element$1)) {
-    filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
-  }
-}
-
-function filterContextListener(listener, index, group) {
-  listener = contextListener(listener, index, group);
-  return function(event) {
-    var related = event.relatedTarget;
-    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
-      listener.call(this, event);
-    }
-  };
-}
-
-function contextListener(listener, index, group) {
-  return function(event1) {
-    try {
-      listener.call(this, this.__data__, index, group);
-    } finally {
-      
-    }
-  };
-}
-
-function parseTypenames(typenames) {
-  return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf(".");
-    if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
-    return {type: t, name: name};
-  });
-}
-
-function onRemove(typename) {
-  return function() {
-    var this$1 = this;
-
-    var on = this.__on;
-    if (!on) { return; }
-    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
-      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-      } else {
-        on[++i] = o;
-      }
-    }
-    if (++i) { on.length = i; }
-    else { delete this.__on; }
-  };
-}
-
-function onAdd(typename, value, capture) {
-  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
-  return function(d, i, group) {
-    var this$1 = this;
-
-    var on = this.__on, o, listener = wrap(value, i, group);
-    if (on) { for (var j = 0, m = on.length; j < m; ++j) {
-      if ((o = on[j]).type === typename.type && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
-        o.value = value;
-        return;
-      }
-    } }
-    this.addEventListener(typename.type, listener, capture);
-    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
-    if (!on) { this.__on = [o]; }
-    else { on.push(o); }
-  };
-}
-
-function selection_on(typename, value, capture) {
-  var this$1 = this;
-
-  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
-
-  if (arguments.length < 2) {
-    var on = this.node().__on;
-    if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
-      for (i = 0, o = on[j]; i < n; ++i) {
-        if ((t = typenames[i]).type === o.type && t.name === o.name) {
-          return o.value;
-        }
-      }
-    } }
-    return;
-  }
-
-  on = value ? onAdd : onRemove;
-  if (capture == null) { capture = false; }
-  for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
-  return this;
-}
-
 function none() {}
 
 function selector(selector) {
@@ -598,6 +474,29 @@ function selection_selectAll(select) {
 
   return new Selection(subgroups, parents);
 }
+
+var matcher = function(selector) {
+  return function() {
+    return this.matches(selector);
+  };
+};
+
+if (typeof document !== "undefined") {
+  var element = document.documentElement;
+  if (!element.matches) {
+    var vendorMatches = element.webkitMatchesSelector
+        || element.msMatchesSelector
+        || element.mozMatchesSelector
+        || element.oMatchesSelector;
+    matcher = function(selector) {
+      return function() {
+        return vendorMatches.call(this, selector);
+      };
+    };
+  }
+}
+
+var matcher$1 = matcher;
 
 function selection_filter(match) {
   if (typeof match !== "function") { match = matcher$1(match); }
@@ -746,7 +645,7 @@ function selection_data(value, key) {
     for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
       if (previous = enterGroup[i0]) {
         if (i0 >= i1) { i1 = i0 + 1; }
-        while (!(next = updateGroup[i1]) && ++i1 < dataLength){  }
+        while (!(next = updateGroup[i1]) && ++i1 < dataLength){ }
         previous._next = next || null;
       }
     }
@@ -1159,10 +1058,120 @@ function selection_remove() {
   return this.each(remove);
 }
 
+function selection_cloneShallow() {
+  return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
+}
+
+function selection_cloneDeep() {
+  return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
+}
+
+function selection_clone(deep) {
+  return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
+}
+
 function selection_datum(value) {
   return arguments.length
       ? this.property("__data__", value)
       : this.node().__data__;
+}
+
+var filterEvents = {};
+
+if (typeof document !== "undefined") {
+  var element$1 = document.documentElement;
+  if (!("onmouseenter" in element$1)) {
+    filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
+  }
+}
+
+function filterContextListener(listener, index, group) {
+  listener = contextListener(listener, index, group);
+  return function(event) {
+    var related = event.relatedTarget;
+    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
+      listener.call(this, event);
+    }
+  };
+}
+
+function contextListener(listener, index, group) {
+  return function(event1) {
+    try {
+      listener.call(this, this.__data__, index, group);
+    } finally {
+    }
+  };
+}
+
+function parseTypenames(typenames) {
+  return typenames.trim().split(/^|\s+/).map(function(t) {
+    var name = "", i = t.indexOf(".");
+    if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
+    return {type: t, name: name};
+  });
+}
+
+function onRemove(typename) {
+  return function() {
+    var this$1 = this;
+
+    var on = this.__on;
+    if (!on) { return; }
+    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
+      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
+        this$1.removeEventListener(o.type, o.listener, o.capture);
+      } else {
+        on[++i] = o;
+      }
+    }
+    if (++i) { on.length = i; }
+    else { delete this.__on; }
+  };
+}
+
+function onAdd(typename, value, capture) {
+  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
+  return function(d, i, group) {
+    var this$1 = this;
+
+    var on = this.__on, o, listener = wrap(value, i, group);
+    if (on) { for (var j = 0, m = on.length; j < m; ++j) {
+      if ((o = on[j]).type === typename.type && o.name === typename.name) {
+        this$1.removeEventListener(o.type, o.listener, o.capture);
+        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
+        o.value = value;
+        return;
+      }
+    } }
+    this.addEventListener(typename.type, listener, capture);
+    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
+    if (!on) { this.__on = [o]; }
+    else { on.push(o); }
+  };
+}
+
+function selection_on(typename, value, capture) {
+  var this$1 = this;
+
+  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
+
+  if (arguments.length < 2) {
+    var on = this.node().__on;
+    if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
+      for (i = 0, o = on[j]; i < n; ++i) {
+        if ((t = typenames[i]).type === o.type && t.name === o.name) {
+          return o.value;
+        }
+      }
+    } }
+    return;
+  }
+
+  on = value ? onAdd : onRemove;
+  if (capture == null) { capture = false; }
+  for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
+  return this;
 }
 
 function dispatchEvent(node, type, params) {
@@ -1237,6 +1246,7 @@ Selection.prototype = selection.prototype = {
   append: selection_append,
   insert: selection_insert,
   remove: selection_remove,
+  clone: selection_clone,
   datum: selection_datum,
   on: selection_on,
   dispatch: selection_dispatch
@@ -1284,7 +1294,7 @@ Dispatch.prototype = dispatch.prototype = {
 
     // If no callback was specified, return the callback of the given type and name.
     if (arguments.length < 2) {
-      while (++i < n) { if ((t = (typename = T[i]).type) && (t = get$1(_[t], typename.name))) { return t; } }
+      while (++i < n) { if ((t = (typename = T[i]).type) && (t = get(_[t], typename.name))) { return t; } }
       return;
     }
 
@@ -1292,8 +1302,8 @@ Dispatch.prototype = dispatch.prototype = {
     // Otherwise, if a null callback was specified, remove callbacks of the given name.
     if (callback != null && typeof callback !== "function") { throw new Error("invalid callback: " + callback); }
     while (++i < n) {
-      if (t = (typename = T[i]).type) { _[t] = set$1(_[t], typename.name, callback); }
-      else if (callback == null) { for (t in _) { _[t] = set$1(_[t], typename.name, null); } }
+      if (t = (typename = T[i]).type) { _[t] = set(_[t], typename.name, callback); }
+      else if (callback == null) { for (t in _) { _[t] = set(_[t], typename.name, null); } }
     }
 
     return this;
@@ -1316,7 +1326,7 @@ Dispatch.prototype = dispatch.prototype = {
   }
 };
 
-function get$1(type, name) {
+function get(type, name) {
   for (var i = 0, n = type.length, c; i < n; ++i) {
     if ((c = type[i]).name === name) {
       return c.value;
@@ -1324,7 +1334,7 @@ function get$1(type, name) {
   }
 }
 
-function set$1(type, name, callback) {
+function set(type, name, callback) {
   for (var i = 0, n = type.length; i < n; ++i) {
     if (type[i].name === name) {
       type[i] = noop, type = type.slice(0, i).concat(type.slice(i + 1));
@@ -1335,17 +1345,17 @@ function set$1(type, name, callback) {
   return type;
 }
 
-var frame = 0;
-var timeout = 0;
-var interval = 0;
-var pokeDelay = 1000;
-var taskHead;
-var taskTail;
-var clockLast = 0;
-var clockNow = 0;
-var clockSkew = 0;
-var clock = typeof performance === "object" && performance.now ? performance : Date;
-var setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
+var frame = 0, // is an animation frame pending?
+    timeout = 0, // is a timeout pending?
+    interval = 0, // are any timers active?
+    pokeDelay = 1000, // how frequently we check for clock skew
+    taskHead,
+    taskTail,
+    clockLast = 0,
+    clockNow = 0,
+    clockSkew = 0,
+    clock = typeof performance === "object" && performance.now ? performance : Date,
+    setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
 
 function now() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
@@ -1471,7 +1481,7 @@ function schedule(node, name, id, index, group, timing) {
   var schedules = node.__transition;
   if (!schedules) { node.__transition = {}; }
   else if (id in schedules) { return; }
-  create(node, id, {
+  create$1(node, id, {
     name: name,
     index: index, // For context during callback.
     group: group, // For context during callback.
@@ -1487,24 +1497,24 @@ function schedule(node, name, id, index, group, timing) {
 }
 
 function init(node, id) {
-  var schedule = get(node, id);
+  var schedule = get$1(node, id);
   if (schedule.state > CREATED) { throw new Error("too late; already scheduled"); }
   return schedule;
 }
 
-function set(node, id) {
-  var schedule = get(node, id);
+function set$1(node, id) {
+  var schedule = get$1(node, id);
   if (schedule.state > STARTING) { throw new Error("too late; already started"); }
   return schedule;
 }
 
-function get(node, id) {
+function get$1(node, id) {
   var schedule = node.__transition;
   if (!schedule || !(schedule = schedule[id])) { throw new Error("transition not found"); }
   return schedule;
 }
 
-function create(node, id, self) {
+function create$1(node, id, self) {
   var schedules = node.__transition,
       tween;
 
@@ -1654,17 +1664,17 @@ function Color() {}
 var darker = 0.7;
 var brighter = 1 / darker;
 
-var reI = "\\s*([+-]?\\d+)\\s*";
-var reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*";
-var reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*";
-var reHex3 = /^#([0-9a-f]{3})$/;
-var reHex6 = /^#([0-9a-f]{6})$/;
-var reRgbInteger = new RegExp("^rgb\\(" + [reI, reI, reI] + "\\)$");
-var reRgbPercent = new RegExp("^rgb\\(" + [reP, reP, reP] + "\\)$");
-var reRgbaInteger = new RegExp("^rgba\\(" + [reI, reI, reI, reN] + "\\)$");
-var reRgbaPercent = new RegExp("^rgba\\(" + [reP, reP, reP, reN] + "\\)$");
-var reHslPercent = new RegExp("^hsl\\(" + [reN, reP, reP] + "\\)$");
-var reHslaPercent = new RegExp("^hsla\\(" + [reN, reP, reP, reN] + "\\)$");
+var reI = "\\s*([+-]?\\d+)\\s*",
+    reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
+    reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
+    reHex3 = /^#([0-9a-f]{3})$/,
+    reHex6 = /^#([0-9a-f]{6})$/,
+    reRgbInteger = new RegExp("^rgb\\(" + [reI, reI, reI] + "\\)$"),
+    reRgbPercent = new RegExp("^rgb\\(" + [reP, reP, reP] + "\\)$"),
+    reRgbaInteger = new RegExp("^rgba\\(" + [reI, reI, reI, reN] + "\\)$"),
+    reRgbaPercent = new RegExp("^rgba\\(" + [reP, reP, reP, reN] + "\\)$"),
+    reHslPercent = new RegExp("^hsl\\(" + [reN, reP, reP] + "\\)$"),
+    reHslaPercent = new RegExp("^hsla\\(" + [reN, reP, reP, reN] + "\\)$");
 
 var named = {
   aliceblue: 0xf0f8ff,
@@ -1981,14 +1991,14 @@ function hsl2rgb(h, m1, m2) {
 var deg2rad = Math.PI / 180;
 var rad2deg = 180 / Math.PI;
 
-var Kn = 18;
-var Xn = 0.950470;
-var Yn = 1;
-var Zn = 1.088830;
-var t0 = 4 / 29;
-var t1 = 6 / 29;
-var t2 = 3 * t1 * t1;
-var t3 = t1 * t1 * t1;
+var Kn = 18,
+    Xn = 0.950470, // D65 standard referent
+    Yn = 1,
+    Zn = 1.088830,
+    t0 = 4 / 29,
+    t1 = 6 / 29,
+    t2 = 3 * t1 * t1,
+    t3 = t1 * t1 * t1;
 
 function labConvert(o) {
   if (o instanceof Lab) { return new Lab(o.l, o.a, o.b, o.opacity); }
@@ -2086,14 +2096,14 @@ define(Hcl, hcl, extend(Color, {
   }
 }));
 
-var A = -0.14861;
-var B = +1.78277;
-var C = -0.29227;
-var D = -0.90649;
-var E = +1.97294;
-var ED = E * D;
-var EB = E * B;
-var BC_DA = B * C - D * A;
+var A = -0.14861,
+    B = +1.78277,
+    C = -0.29227,
+    D = -0.90649,
+    E = +1.97294,
+    ED = E * D,
+    EB = E * B,
+    BC_DA = B * C - D * A;
 
 function cubehelixConvert(o) {
   if (o instanceof Cubehelix) { return new Cubehelix(o.h, o.s, o.l, o.opacity); }
@@ -2162,8 +2172,6 @@ function exponential(a, b, y) {
   };
 }
 
-
-
 function gamma(y) {
   return (y = +y) === 1 ? nogamma : function(a, b) {
     return b - a ? exponential(a, b, y) : constant$2(isNaN(a) ? b : a);
@@ -2203,8 +2211,8 @@ function interpolateNumber(a, b) {
   };
 }
 
-var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g;
-var reB = new RegExp(reA.source, "g");
+var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g,
+    reB = new RegExp(reA.source, "g");
 
 function zero(b) {
   return function() {
@@ -2293,10 +2301,10 @@ function decompose(a, b, c, d, e, f) {
   };
 }
 
-var cssNode;
-var cssRoot;
-var cssView;
-var svgNode;
+var cssNode,
+    cssRoot,
+    cssView,
+    svgNode;
 
 function parseCss(value) {
   if (value === "none") { return identity; }
@@ -2383,7 +2391,7 @@ var rho = Math.SQRT2;
 function tweenRemove(id, name) {
   var tween0, tween1;
   return function() {
-    var schedule$$1 = set(this, id),
+    var schedule$$1 = set$1(this, id),
         tween = schedule$$1.tween;
 
     // If this node shared tween with the previous node,
@@ -2408,7 +2416,7 @@ function tweenFunction(id, name, value) {
   var tween0, tween1;
   if (typeof value !== "function") { throw new Error; }
   return function() {
-    var schedule$$1 = set(this, id),
+    var schedule$$1 = set$1(this, id),
         tween = schedule$$1.tween;
 
     // If this node shared tween with the previous node,
@@ -2435,7 +2443,7 @@ function transition_tween(name, value) {
   name += "";
 
   if (arguments.length < 2) {
-    var tween = get(this.node(), id).tween;
+    var tween = get$1(this.node(), id).tween;
     for (var i = 0, n = tween.length, t; i < n; ++i) {
       if ((t = tween[i]).name === name) {
         return t.value;
@@ -2451,12 +2459,12 @@ function tweenValue(transition, name, value) {
   var id = transition._id;
 
   transition.each(function() {
-    var schedule$$1 = set(this, id);
+    var schedule$$1 = set$1(this, id);
     (schedule$$1.value || (schedule$$1.value = {}))[name] = value.apply(this, arguments);
   });
 
   return function(node) {
-    return get(node, id).value[name];
+    return get$1(node, id).value[name];
   };
 }
 
@@ -2502,12 +2510,12 @@ function attrConstantNS$1(fullname, interpolate$$1, value1) {
   };
 }
 
-function attrFunction$1(name, interpolate$$1, value) {
+function attrFunction$1(name, interpolate$$1, value$$1) {
   var value00,
       value10,
       interpolate0;
   return function() {
-    var value0, value1 = value(this);
+    var value0, value1 = value$$1(this);
     if (value1 == null) { return void this.removeAttribute(name); }
     value0 = this.getAttribute(name);
     return value0 === value1 ? null
@@ -2516,12 +2524,12 @@ function attrFunction$1(name, interpolate$$1, value) {
   };
 }
 
-function attrFunctionNS$1(fullname, interpolate$$1, value) {
+function attrFunctionNS$1(fullname, interpolate$$1, value$$1) {
   var value00,
       value10,
       interpolate0;
   return function() {
-    var value0, value1 = value(this);
+    var value0, value1 = value$$1(this);
     if (value1 == null) { return void this.removeAttributeNS(fullname.space, fullname.local); }
     value0 = this.getAttributeNS(fullname.space, fullname.local);
     return value0 === value1 ? null
@@ -2530,12 +2538,12 @@ function attrFunctionNS$1(fullname, interpolate$$1, value) {
   };
 }
 
-function transition_attr(name, value) {
+function transition_attr(name, value$$1) {
   var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate;
-  return this.attrTween(name, typeof value === "function"
-      ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
-      : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
-      : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value + ""));
+  return this.attrTween(name, typeof value$$1 === "function"
+      ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value$$1))
+      : value$$1 == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
+      : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value$$1 + ""));
 }
 
 function attrTweenNS(fullname, value) {
@@ -2588,18 +2596,18 @@ function transition_delay(value) {
       ? this.each((typeof value === "function"
           ? delayFunction
           : delayConstant)(id, value))
-      : get(this.node(), id).delay;
+      : get$1(this.node(), id).delay;
 }
 
 function durationFunction(id, value) {
   return function() {
-    set(this, id).duration = +value.apply(this, arguments);
+    set$1(this, id).duration = +value.apply(this, arguments);
   };
 }
 
 function durationConstant(id, value) {
   return value = +value, function() {
-    set(this, id).duration = value;
+    set$1(this, id).duration = value;
   };
 }
 
@@ -2610,13 +2618,13 @@ function transition_duration(value) {
       ? this.each((typeof value === "function"
           ? durationFunction
           : durationConstant)(id, value))
-      : get(this.node(), id).duration;
+      : get$1(this.node(), id).duration;
 }
 
 function easeConstant(id, value) {
   if (typeof value !== "function") { throw new Error; }
   return function() {
-    set(this, id).ease = value;
+    set$1(this, id).ease = value;
   };
 }
 
@@ -2625,7 +2633,7 @@ function transition_ease(value) {
 
   return arguments.length
       ? this.each(easeConstant(id, value))
-      : get(this.node(), id).ease;
+      : get$1(this.node(), id).ease;
 }
 
 function transition_filter(match) {
@@ -2669,7 +2677,7 @@ function start(name) {
 }
 
 function onFunction(id, name, listener) {
-  var on0, on1, sit = start(name) ? init : set;
+  var on0, on1, sit = start(name) ? init : set$1;
   return function() {
     var schedule$$1 = sit(this, id),
         on = schedule$$1.on;
@@ -2687,7 +2695,7 @@ function transition_on(name, listener) {
   var id = this._id;
 
   return arguments.length < 2
-      ? get(this.node(), id).on.on(name)
+      ? get$1(this.node(), id).on.on(name)
       : this.each(onFunction(id, name, listener));
 }
 
@@ -2705,18 +2713,18 @@ function transition_remove() {
   return this.on("end.remove", removeFunction(this._id));
 }
 
-function transition_select(select) {
+function transition_select(select$$1) {
   var name = this._name,
       id = this._id;
 
-  if (typeof select !== "function") { select = selector(select); }
+  if (typeof select$$1 !== "function") { select$$1 = selector(select$$1); }
 
   for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
+      if ((node = group[i]) && (subnode = select$$1.call(node, node.__data__, i, group))) {
         if ("__data__" in node) { subnode.__data__ = node.__data__; }
         subgroup[i] = subnode;
-        schedule(subgroup[i], name, id, i, subgroup, get(node, id));
+        schedule(subgroup[i], name, id, i, subgroup, get$1(node, id));
       }
     }
   }
@@ -2724,16 +2732,16 @@ function transition_select(select) {
   return new Transition(subgroups, this._parents, name, id);
 }
 
-function transition_selectAll(select) {
+function transition_selectAll(select$$1) {
   var name = this._name,
       id = this._id;
 
-  if (typeof select !== "function") { select = selectorAll(select); }
+  if (typeof select$$1 !== "function") { select$$1 = selectorAll(select$$1); }
 
   for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        for (var children = select.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
+        for (var children = select$$1.call(node, node.__data__, i, group), child, inherit = get$1(node, id), k = 0, l = children.length; k < l; ++k) {
           if (child = children[k]) {
             schedule(child, name, id, k, children, inherit);
           }
@@ -2783,13 +2791,13 @@ function styleConstant$1(name, interpolate$$1, value1) {
   };
 }
 
-function styleFunction$1(name, interpolate$$1, value) {
+function styleFunction$1(name, interpolate$$1, value$$1) {
   var value00,
       value10,
       interpolate0;
   return function() {
     var value0 = styleValue(this, name),
-        value1 = value(this);
+        value1 = value$$1(this);
     if (value1 == null) { value1 = (this.style.removeProperty(name), styleValue(this, name)); }
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
@@ -2797,14 +2805,14 @@ function styleFunction$1(name, interpolate$$1, value) {
   };
 }
 
-function transition_style(name, value, priority) {
+function transition_style(name, value$$1, priority) {
   var i = (name += "") === "transform" ? interpolateTransformCss : interpolate;
-  return value == null ? this
+  return value$$1 == null ? this
           .styleTween(name, styleRemove$1(name, i))
           .on("end.style." + name, styleRemoveEnd(name))
-      : this.styleTween(name, typeof value === "function"
-          ? styleFunction$1(name, i, tweenValue(this, "style." + name, value))
-          : styleConstant$1(name, i, value + ""), priority);
+      : this.styleTween(name, typeof value$$1 === "function"
+          ? styleFunction$1(name, i, tweenValue(this, "style." + name, value$$1))
+          : styleConstant$1(name, i, value$$1 + ""), priority);
 }
 
 function styleTween(name, value, priority) {
@@ -2853,7 +2861,7 @@ function transition_transition() {
   for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        var inherit = get(node, id0);
+        var inherit = get$1(node, id0);
         schedule(node, name, id1, i, group, {
           time: inherit.time + inherit.delay + inherit.duration,
           delay: 0,
@@ -2974,7 +2982,7 @@ selection.prototype.transition = selection_transition;
     @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
     @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
 */
-function elem(selector, p) {
+function elem(selector$$1, p) {
 
   // overrides default params
   p = Object.assign({}, {
@@ -2986,11 +2994,11 @@ function elem(selector, p) {
     update: {}
   }, p);
 
-  var className = (/\.([^#]+)/g).exec(selector),
-        id = (/#([^\.]+)/g).exec(selector),
-        tag = (/^([^.^#]+)/g).exec(selector)[1];
+  var className = (/\.([^#]+)/g).exec(selector$$1),
+        id = (/#([^\.]+)/g).exec(selector$$1),
+        tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
 
-  var elem = p.parent.selectAll(selector.includes(":") ? selector.split(":")[1] : selector)
+  var elem = p.parent.selectAll(selector$$1.includes(":") ? selector$$1.split(":")[1] : selector$$1)
     .data(p.condition ? [null] : []);
 
   var enter = elem.enter().append(tag).call(attrize, p.enter);
@@ -3239,25 +3247,25 @@ function objectMerge(objects, aggs) {
         newObject = {};
 
   availableKeys.forEach(function (k) {
-    var values = objects.map(function (o) { return o[k]; });
+    var values$$1 = objects.map(function (o) { return o[k]; });
     var value;
-    if (aggs[k]) { value = aggs[k](values); }
+    if (aggs[k]) { value = aggs[k](values$$1); }
     else {
-      var types = values.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
+      var types = values$$1.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
       if (!types.length) { value = undefined; }
       else if (types.indexOf(Array) >= 0) {
-        value = merge(values.map(function (v) { return v instanceof Array ? v : [v]; }));
+        value = merge(values$$1.map(function (v) { return v instanceof Array ? v : [v]; }));
         value = Array.from(new Set(value));
         if (value.length === 1) { value = value[0]; }
       }
       else if (types.indexOf(String) >= 0) {
-        value = Array.from(new Set(values));
+        value = Array.from(new Set(values$$1));
         if (value.length === 1) { value = value[0]; }
       }
-      else if (types.indexOf(Number) >= 0) { value = sum(values); }
-      else if (types.indexOf(Object) >= 0) { value = objectMerge(values.filter(function (v) { return v; })); }
+      else if (types.indexOf(Number) >= 0) { value = sum(values$$1); }
+      else if (types.indexOf(Object) >= 0) { value = objectMerge(values$$1.filter(function (v) { return v; })); }
       else {
-        value = Array.from(new Set(values.filter(function (v) { return v !== void 0; })));
+        value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
         if (value.length === 1) { value = value[0]; }
       }
     }
@@ -3266,6 +3274,30 @@ function objectMerge(objects, aggs) {
 
   return newObject;
 
+}
+
+/**
+ @function parseSides
+ @desc Converts a string of directional CSS shorthand values into an object with the values expanded.
+ @param {String} sides The CSS shorthand string to expand.
+ */
+function parseSides(sides) {
+  var values = sides.split(/\s+/);
+
+  if (values.length === 1) { values = [values[0], values[0], values[0], values[0]]; }
+  else if (values.length === 2) { values = values.concat(values); }
+  else if (values.length === 3) { values.push(values[1]); }
+
+  return [
+    "top",
+    "right",
+    "bottom",
+    "left"
+  ].reduce(function (acc, direction, i) {
+    var value = parseFloat(values[i]);
+    acc[direction] = value || 0;
+    return acc;
+  }, {});
 }
 
 /**
@@ -3302,6 +3334,7 @@ exports.constant = constant;
 exports.elem = elem;
 exports.isObject = isObject;
 exports.merge = objectMerge;
+exports.parseSides = parseSides;
 exports.prefix = prefix$1;
 exports.RESET = RESET;
 exports.stylize = stylize;

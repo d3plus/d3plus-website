@@ -1,7 +1,7 @@
 /*
-  d3plus-common v0.6.31
+  d3plus-common v0.6.32
   Common functions and methods used across D3plus modules.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -484,6 +484,30 @@ function objectMerge(objects, aggs) {
 }
 
 /**
+ @function parseSides
+ @desc Converts a string of directional CSS shorthand values into an object with the values expanded.
+ @param {String} sides The CSS shorthand string to expand.
+ */
+function parseSides(sides) {
+  var values = sides.split(/\s+/);
+
+  if (values.length === 1) { values = [values[0], values[0], values[0], values[0]]; }
+  else if (values.length === 2) { values = values.concat(values); }
+  else if (values.length === 3) { values.push(values[1]); }
+
+  return [
+    "top",
+    "right",
+    "bottom",
+    "left"
+  ].reduce(function (acc, direction, i) {
+    var value = parseFloat(values[i]);
+    acc[direction] = value || 0;
+    return acc;
+  }, {});
+}
+
+/**
     @function prefix
     @desc Returns the appropriate CSS vendor prefix, given the current browser.
 */
@@ -517,6 +541,7 @@ exports.constant = constant;
 exports.elem = elem;
 exports.isObject = isObject;
 exports.merge = objectMerge;
+exports.parseSides = parseSides;
 exports.prefix = prefix;
 exports.RESET = RESET;
 exports.stylize = stylize;
