@@ -2,7 +2,7 @@
 title: Changing Map Projections
 width: 990
 height: 550
-time: 1519770361711
+time: 1519770389584
 date: February 27, 2018
 ---
 
@@ -29,6 +29,7 @@ We can provide the name of our custom projection to the [projection](http://d3pl
 ```js
 chart
   .projection("geoAlbersUsa")
+  .ocean("transparent")
   .render();
 ```
 
