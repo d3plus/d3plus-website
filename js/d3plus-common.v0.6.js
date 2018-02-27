@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.32
+  d3plus-common v0.6.33
   Common functions and methods used across D3plus modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -486,10 +486,12 @@ function objectMerge(objects, aggs) {
 /**
  @function parseSides
  @desc Converts a string of directional CSS shorthand values into an object with the values expanded.
- @param {String} sides The CSS shorthand string to expand.
+ @param {String|Number} sides The CSS shorthand string to expand.
  */
 function parseSides(sides) {
-  var values = sides.split(/\s+/);
+  var values;
+  if (typeof sides === "number") { values = [sides]; }
+  else { values = sides.split(/\s+/); }
 
   if (values.length === 1) { values = [values[0], values[0], values[0], values[0]]; }
   else if (values.length === 2) { values = values.concat(values); }
