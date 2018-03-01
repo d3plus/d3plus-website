@@ -1,5 +1,5 @@
 /*
-  d3plus-dev v0.6.1
+  d3plus-dev v0.6.2
   A collection of scripts for developing D3plus modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -67,7 +67,7 @@ if (!Array.prototype.includes) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define('d3plus-dev', ['exports'], factory) :
 	(factory((global.d3plus = {})));
-}(this, (function (exports) { 'use strict';
+}(this, (function (exports) {
 
 function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
