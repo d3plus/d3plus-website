@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.2.26
+  d3plus-react v0.2.27
   React components for d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -64,10 +64,10 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-plot'), require('react'), require('prop-types'), require('d3plus-common'), require('d3plus-hierarchy'), require('d3plus-geomap'), require('d3plus-network'), require('d3plus-priestley')) :
-	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'd3plus-plot', 'react', 'prop-types', 'd3plus-common', 'd3plus-hierarchy', 'd3plus-geomap', 'd3plus-network', 'd3plus-priestley'], factory) :
-	(factory((global.d3plus = {}),global.d3plusPlot,global.React,global.PropTypes,global.d3plusCommon,global.d3plusHierarchy,global.d3plusGeomap,global.d3plusNetwork,global.d3plusPriestley));
-}(this, (function (exports,d3plusPlot,React,PropTypes,d3plusCommon,d3plusHierarchy,d3plusGeomap,d3plusNetwork,d3plusPriestley) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('react'), require('prop-types'), require('d3plus-common'), require('d3plus-plot'), require('d3plus-hierarchy'), require('d3plus-geomap'), require('d3plus-network'), require('d3plus-priestley')) :
+	typeof define === 'function' && define.amd ? define('d3plus-react', ['exports', 'react', 'prop-types', 'd3plus-common', 'd3plus-plot', 'd3plus-hierarchy', 'd3plus-geomap', 'd3plus-network', 'd3plus-priestley'], factory) :
+	(factory((global.d3plus = {}),global.React,global.PropTypes,global.d3plusCommon,global.d3plusPlot,global.d3plusHierarchy,global.d3plusGeomap,global.d3plusNetwork,global.d3plusPriestley));
+}(this, (function (exports,React,PropTypes,d3plusCommon,d3plusPlot,d3plusHierarchy,d3plusGeomap,d3plusNetwork,d3plusPriestley) { 'use strict';
 
 var React__default = 'default' in React ? React['default'] : React;
 PropTypes = PropTypes && PropTypes.hasOwnProperty('default') ? PropTypes['default'] : PropTypes;
@@ -77,13 +77,13 @@ PropTypes = PropTypes && PropTypes.hasOwnProperty('default') ? PropTypes['defaul
     @extends React.Component
     @desc Creates SVG paths and coordinate points based on an array of data. See [this example](https://d3plus.org/examples/d3plus-geomap/getting-started/) for help getting started using the geomap generator.
 */
-var Viz = (function (Component$$1) {
+var Viz = (function (Component) {
   function Viz () {
-    Component$$1.apply(this, arguments);
+    Component.apply(this, arguments);
   }
 
-  if ( Component$$1 ) Viz.__proto__ = Component$$1;
-  Viz.prototype = Object.create( Component$$1 && Component$$1.prototype );
+  if ( Component ) Viz.__proto__ = Component;
+  Viz.prototype = Object.create( Component && Component.prototype );
   Viz.prototype.constructor = Viz;
 
   Viz.prototype.componentDidMount = function componentDidMount () {
@@ -160,218 +160,218 @@ Viz.defaultProps = {
     @class AreaPlot
     @extends Viz
 */
-var AreaPlot$1 = (function (Shell$$1) {
-    function AreaPlot$$1 () {
-        Shell$$1.apply(this, arguments);
-    }if ( Shell$$1 ) AreaPlot$$1.__proto__ = Shell$$1;
-    AreaPlot$$1.prototype = Object.create( Shell$$1 && Shell$$1.prototype );
-    AreaPlot$$1.prototype.constructor = AreaPlot$$1;
+var AreaPlot = (function (Shell) {
+    function AreaPlot () {
+        Shell.apply(this, arguments);
+    }if ( Shell ) AreaPlot.__proto__ = Shell;
+    AreaPlot.prototype = Object.create( Shell && Shell.prototype );
+    AreaPlot.prototype.constructor = AreaPlot;
 
     
 
-    return AreaPlot$$1;
+    return AreaPlot;
 }(Viz));
-AreaPlot$1.defaultProps = {type: d3plusPlot.AreaPlot};
+AreaPlot.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPlot.AreaPlot});
 
 /**
     @class BarChart
     @extends Viz
 */
-var BarChart$1 = (function (Shell) {
-    function BarChart$$1 () {
+var BarChart = (function (Shell) {
+    function BarChart () {
         Shell.apply(this, arguments);
-    }if ( Shell ) BarChart$$1.__proto__ = Shell;
-    BarChart$$1.prototype = Object.create( Shell && Shell.prototype );
-    BarChart$$1.prototype.constructor = BarChart$$1;
+    }if ( Shell ) BarChart.__proto__ = Shell;
+    BarChart.prototype = Object.create( Shell && Shell.prototype );
+    BarChart.prototype.constructor = BarChart;
 
     
 
-    return BarChart$$1;
+    return BarChart;
 }(Viz));
-BarChart$1.defaultProps = {type: d3plusPlot.BarChart};
+BarChart.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPlot.BarChart});
 
 /**
     @class Donut
     @extends Viz
 */
-var Donut$1 = (function (Shell) {
-    function Donut$$1 () {
+var Donut = (function (Shell) {
+    function Donut () {
         Shell.apply(this, arguments);
-    }if ( Shell ) Donut$$1.__proto__ = Shell;
-    Donut$$1.prototype = Object.create( Shell && Shell.prototype );
-    Donut$$1.prototype.constructor = Donut$$1;
+    }if ( Shell ) Donut.__proto__ = Shell;
+    Donut.prototype = Object.create( Shell && Shell.prototype );
+    Donut.prototype.constructor = Donut;
 
     
 
-    return Donut$$1;
+    return Donut;
 }(Viz));
-Donut$1.defaultProps = {type: d3plusHierarchy.Donut};
+Donut.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusHierarchy.Donut});
 
 /**
     @class Geomap
     @extends Viz
 */
-var Geomap$1 = (function (Shell) {
-    function Geomap$$1 () {
+var Geomap = (function (Shell) {
+    function Geomap () {
         Shell.apply(this, arguments);
-    }if ( Shell ) Geomap$$1.__proto__ = Shell;
-    Geomap$$1.prototype = Object.create( Shell && Shell.prototype );
-    Geomap$$1.prototype.constructor = Geomap$$1;
+    }if ( Shell ) Geomap.__proto__ = Shell;
+    Geomap.prototype = Object.create( Shell && Shell.prototype );
+    Geomap.prototype.constructor = Geomap;
 
     
 
-    return Geomap$$1;
+    return Geomap;
 }(Viz));
-Geomap$1.defaultProps = {type: d3plusGeomap.Geomap};
+Geomap.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusGeomap.Geomap});
 
 /**
     @class LinePlot
     @extends Viz
 */
-var LinePlot$1 = (function (Shell) {
-    function LinePlot$$1 () {
+var LinePlot = (function (Shell) {
+    function LinePlot () {
         Shell.apply(this, arguments);
-    }if ( Shell ) LinePlot$$1.__proto__ = Shell;
-    LinePlot$$1.prototype = Object.create( Shell && Shell.prototype );
-    LinePlot$$1.prototype.constructor = LinePlot$$1;
+    }if ( Shell ) LinePlot.__proto__ = Shell;
+    LinePlot.prototype = Object.create( Shell && Shell.prototype );
+    LinePlot.prototype.constructor = LinePlot;
 
     
 
-    return LinePlot$$1;
+    return LinePlot;
 }(Viz));
-LinePlot$1.defaultProps = {type: d3plusPlot.LinePlot};
+LinePlot.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPlot.LinePlot});
 
 /**
     @class Network
     @extends Viz
 */
-var Network$1 = (function (Shell) {
-    function Network$$1 () {
+var Network = (function (Shell) {
+    function Network () {
         Shell.apply(this, arguments);
-    }if ( Shell ) Network$$1.__proto__ = Shell;
-    Network$$1.prototype = Object.create( Shell && Shell.prototype );
-    Network$$1.prototype.constructor = Network$$1;
+    }if ( Shell ) Network.__proto__ = Shell;
+    Network.prototype = Object.create( Shell && Shell.prototype );
+    Network.prototype.constructor = Network;
 
     
 
-    return Network$$1;
+    return Network;
 }(Viz));
-Network$1.defaultProps = {type: d3plusNetwork.Network};
+Network.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusNetwork.Network});
 
 /**
     @class Pie
     @extends Viz
 */
-var Pie$1 = (function (Shell) {
-    function Pie$$1 () {
+var Pie = (function (Shell) {
+    function Pie () {
         Shell.apply(this, arguments);
-    }if ( Shell ) Pie$$1.__proto__ = Shell;
-    Pie$$1.prototype = Object.create( Shell && Shell.prototype );
-    Pie$$1.prototype.constructor = Pie$$1;
+    }if ( Shell ) Pie.__proto__ = Shell;
+    Pie.prototype = Object.create( Shell && Shell.prototype );
+    Pie.prototype.constructor = Pie;
 
     
 
-    return Pie$$1;
+    return Pie;
 }(Viz));
-Pie$1.defaultProps = {type: d3plusHierarchy.Pie};
+Pie.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusHierarchy.Pie});
 
 /**
     @class Plot
     @extends Viz
 */
-var Plot$1 = (function (Shell) {
-    function Plot$$1 () {
+var Plot = (function (Shell) {
+    function Plot () {
         Shell.apply(this, arguments);
-    }if ( Shell ) Plot$$1.__proto__ = Shell;
-    Plot$$1.prototype = Object.create( Shell && Shell.prototype );
-    Plot$$1.prototype.constructor = Plot$$1;
+    }if ( Shell ) Plot.__proto__ = Shell;
+    Plot.prototype = Object.create( Shell && Shell.prototype );
+    Plot.prototype.constructor = Plot;
 
     
 
-    return Plot$$1;
+    return Plot;
 }(Viz));
-Plot$1.defaultProps = {type: d3plusPlot.Plot};
+Plot.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPlot.Plot});
 
 /**
     @class Priestley
     @extends Viz
 */
-var Priestley$1 = (function (Shell) {
-    function Priestley$$1 () {
+var Priestley = (function (Shell) {
+    function Priestley () {
         Shell.apply(this, arguments);
-    }if ( Shell ) Priestley$$1.__proto__ = Shell;
-    Priestley$$1.prototype = Object.create( Shell && Shell.prototype );
-    Priestley$$1.prototype.constructor = Priestley$$1;
+    }if ( Shell ) Priestley.__proto__ = Shell;
+    Priestley.prototype = Object.create( Shell && Shell.prototype );
+    Priestley.prototype.constructor = Priestley;
 
     
 
-    return Priestley$$1;
+    return Priestley;
 }(Viz));
-Priestley$1.defaultProps = {type: d3plusPriestley.Priestley};
+Priestley.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPriestley.Priestley});
 
 /**
     @class StackedArea
     @extends Viz
 */
-var StackedArea$1 = (function (Shell) {
-    function StackedArea$$1 () {
+var StackedArea = (function (Shell) {
+    function StackedArea () {
         Shell.apply(this, arguments);
-    }if ( Shell ) StackedArea$$1.__proto__ = Shell;
-    StackedArea$$1.prototype = Object.create( Shell && Shell.prototype );
-    StackedArea$$1.prototype.constructor = StackedArea$$1;
+    }if ( Shell ) StackedArea.__proto__ = Shell;
+    StackedArea.prototype = Object.create( Shell && Shell.prototype );
+    StackedArea.prototype.constructor = StackedArea;
 
     
 
-    return StackedArea$$1;
+    return StackedArea;
 }(Viz));
-StackedArea$1.defaultProps = {type: d3plusPlot.StackedArea};
+StackedArea.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPlot.StackedArea});
 
 /**
     @class Tree
     @extends Viz
 */
-var Tree$1 = (function (Shell) {
-    function Tree$$1 () {
+var Tree = (function (Shell) {
+    function Tree () {
         Shell.apply(this, arguments);
-    }if ( Shell ) Tree$$1.__proto__ = Shell;
-    Tree$$1.prototype = Object.create( Shell && Shell.prototype );
-    Tree$$1.prototype.constructor = Tree$$1;
+    }if ( Shell ) Tree.__proto__ = Shell;
+    Tree.prototype = Object.create( Shell && Shell.prototype );
+    Tree.prototype.constructor = Tree;
 
     
 
-    return Tree$$1;
+    return Tree;
 }(Viz));
-Tree$1.defaultProps = {type: d3plusHierarchy.Tree};
+Tree.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusHierarchy.Tree});
 
 /**
     @class Treemap
     @extends Viz
 */
-var Treemap$1 = (function (Shell) {
-    function Treemap$$1 () {
+var Treemap = (function (Shell) {
+    function Treemap () {
         Shell.apply(this, arguments);
-    }if ( Shell ) Treemap$$1.__proto__ = Shell;
-    Treemap$$1.prototype = Object.create( Shell && Shell.prototype );
-    Treemap$$1.prototype.constructor = Treemap$$1;
+    }if ( Shell ) Treemap.__proto__ = Shell;
+    Treemap.prototype = Object.create( Shell && Shell.prototype );
+    Treemap.prototype.constructor = Treemap;
 
     
 
-    return Treemap$$1;
+    return Treemap;
 }(Viz));
-Treemap$1.defaultProps = {type: d3plusHierarchy.Treemap};
+Treemap.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusHierarchy.Treemap});
 
-exports.AreaPlot = AreaPlot$1;
-exports.BarChart = BarChart$1;
-exports.Donut = Donut$1;
-exports.Geomap = Geomap$1;
-exports.LinePlot = LinePlot$1;
-exports.Network = Network$1;
-exports.Pie = Pie$1;
-exports.Plot = Plot$1;
-exports.Priestley = Priestley$1;
-exports.StackedArea = StackedArea$1;
-exports.Tree = Tree$1;
-exports.Treemap = Treemap$1;
+exports.AreaPlot = AreaPlot;
+exports.BarChart = BarChart;
+exports.Donut = Donut;
+exports.Geomap = Geomap;
+exports.LinePlot = LinePlot;
+exports.Network = Network;
+exports.Pie = Pie;
+exports.Plot = Plot;
+exports.Priestley = Priestley;
+exports.StackedArea = StackedArea;
+exports.Tree = Tree;
+exports.Treemap = Treemap;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
