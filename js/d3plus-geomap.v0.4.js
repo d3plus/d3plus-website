@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.4.19
+  d3plus-geomap v0.4.20
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -73,6 +73,7 @@ if (!Array.prototype.includes) {
     @external Viz
     @see https://github.com/d3plus/d3plus-viz#Viz
 */
+
 /**
     @name topo2feature
     @desc Converts a specific topojson object key into a feature ready for projection.
@@ -90,12 +91,12 @@ function topo2feature(topo, key) {
     @extends external:Viz
     @desc Creates a geographical map with zooming, panning, image tiles, and the ability to layer choropleth paths and coordinate points. See [this example](https://d3plus.org/examples/d3plus-geomap/getting-started/) for help getting started.
 */
-var Geomap = (function (Viz$$1) {
+var Geomap = (function (Viz) {
   function Geomap() {
     var this$1 = this;
 
 
-    Viz$$1.call(this);
+    Viz.call(this);
 
     this._fitObject = false;
     this._ocean = "#cdd1d3";
@@ -114,6 +115,7 @@ var Geomap = (function (Viz$$1) {
 
     this._shape = d3plusCommon.constant("Circle");
     this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
+      hoverOpacity: 1,
       Path: {
         fill: function (d) {
           if (this$1._colorScale && !this$1._coordData.features.includes(d)) {
@@ -148,8 +150,8 @@ var Geomap = (function (Viz$$1) {
 
   }
 
-  if ( Viz$$1 ) Geomap.__proto__ = Viz$$1;
-  Geomap.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
+  if ( Viz ) Geomap.__proto__ = Viz;
+  Geomap.prototype = Object.create( Viz && Viz.prototype );
   Geomap.prototype.constructor = Geomap;
 
   /**
@@ -207,7 +209,7 @@ var Geomap = (function (Viz$$1) {
     var this$1 = this;
 
 
-    Viz$$1.prototype._draw.call(this, callback);
+    Viz.prototype._draw.call(this, callback);
 
     var height = this._height - this._margin.top - this._margin.bottom,
           width = this._width - this._margin.left - this._margin.right;
@@ -271,12 +273,12 @@ var Geomap = (function (Viz$$1) {
         return obj;
       }, {});
 
-    var topoData = coordData.features.reduce(function (arr, feature$$1) {
-      var id = this$1._topojsonId(feature$$1);
+    var topoData = coordData.features.reduce(function (arr, feature) {
+      var id = this$1._topojsonId(feature);
       arr.push({
         __d3plus__: true,
         data: pathData[id],
-        feature: feature$$1,
+        feature: feature,
         id: id
       });
       return arr;
@@ -294,53 +296,56 @@ var Geomap = (function (Viz$$1) {
         type: "FeatureCollection",
         features: this._fitFilter ? fitData.features.filter(this._fitFilter) : fitData.features.slice()
       };
-
       extentBounds.features = extentBounds.features.reduce(function (arr, d) {
 
-        var reduced = {
-          type: d.type,
-          id: d.id,
-          geometry: {
-            coordinates: d.geometry.coordinates,
-            type: d.geometry.type
+        if (d.geometry) {
+
+          var reduced = {
+            type: d.type,
+            id: d.id,
+            geometry: {
+              coordinates: d.geometry.coordinates,
+              type: d.geometry.type
+            }
+          };
+
+          if (d.geometry.coordinates.length > 1) {
+
+            var areas = [],
+                  distances = [];
+
+            d.geometry.coordinates.forEach(function (c) {
+
+              reduced.geometry.coordinates = [c];
+              areas.push(path.area(reduced));
+
+            });
+
+            reduced.geometry.coordinates = [d.geometry.coordinates[areas.indexOf(d3Array.max(areas))]];
+            var center = path.centroid(reduced);
+
+            d.geometry.coordinates.forEach(function (c) {
+
+              reduced.geometry.coordinates = [c];
+              distances.push(d3plusShape.pointDistance(path.centroid(reduced), center));
+
+            });
+
+            var distCutoff = d3Array.quantile(areas.reduce(function (arr, dist, i) {
+              if (dist) { arr.push(areas[i] / dist); }
+              return arr;
+            }, []), 0.9);
+
+            reduced.geometry.coordinates = d.geometry.coordinates.filter(function (c, i) {
+              var dist = distances[i];
+              return dist === 0 || areas[i] / dist >= distCutoff;
+            });
+
           }
-        };
 
-        if (d.geometry.coordinates.length > 1) {
-
-          var areas = [],
-                distances = [];
-
-          d.geometry.coordinates.forEach(function (c) {
-
-            reduced.geometry.coordinates = [c];
-            areas.push(path.area(reduced));
-
-          });
-
-          reduced.geometry.coordinates = [d.geometry.coordinates[areas.indexOf(d3Array.max(areas))]];
-          var center = path.centroid(reduced);
-
-          d.geometry.coordinates.forEach(function (c) {
-
-            reduced.geometry.coordinates = [c];
-            distances.push(d3plusShape.pointDistance(path.centroid(reduced), center));
-
-          });
-
-          var distCutoff = d3Array.quantile(areas.reduce(function (arr, dist, i) {
-            if (dist) { arr.push(areas[i] / dist); }
-            return arr;
-          }, []), 0.9);
-
-          reduced.geometry.coordinates = d.geometry.coordinates.filter(function (c, i) {
-            var dist = distances[i];
-            return dist === 0 || areas[i] / dist >= distCutoff;
-          });
+          arr.push(reduced);
 
         }
-
-        arr.push(reduced);
         return arr;
 
       }, []);
