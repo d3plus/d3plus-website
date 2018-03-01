@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.10.15
+  d3plus-viz v0.10.16
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -64,10 +64,10 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-brush'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3-zoom'), require('lrucache'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-form'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip'), require('d3plus-export')) :
-	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-brush', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3-zoom', 'lrucache', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-form', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip', 'd3plus-export'], factory) :
-	(factory((global.d3plus = {}),global.d3Request,global.d3Array,global.d3Brush,global.d3Color,global.d3Collection,global.d3Queue,global.d3Selection,global.d3Transition,global.d3Zoom,global.lrucache,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.d3plusForm,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip,global.d3plusExport));
-}(this, (function (exports,d3Request,d3Array,d3Brush,d3Color,d3Collection,d3Queue,d3Selection,d3Transition,d3Zoom,lrucache,d3plusAxis,d3plusColor,d3plusCommon,d3plusForm,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip,d3plusExport) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-selection'), require('d3plus-common'), require('d3plus-export'), require('d3plus-form'), require('d3-collection'), require('d3-array'), require('d3plus-axis'), require('d3-zoom'), require('d3-brush'), require('d3-color'), require('d3-queue'), require('d3-transition'), require('lrucache'), require('d3plus-color'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
+	typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-selection', 'd3plus-common', 'd3plus-export', 'd3plus-form', 'd3-collection', 'd3-array', 'd3plus-axis', 'd3-zoom', 'd3-brush', 'd3-color', 'd3-queue', 'd3-transition', 'lrucache', 'd3plus-color', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
+	(factory((global.d3plus = {}),global.d3Request,global.d3Selection,global.d3plusCommon,global.d3plusExport,global.d3plusForm,global.d3Collection,global.d3Array,global.d3plusAxis,global.d3Zoom,global.d3Brush,global.d3Color,global.d3Queue,global.d3Transition,global.lrucache,global.d3plusColor,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
+}(this, (function (exports,d3Request,d3Selection,d3plusCommon,d3plusExport,d3plusForm,d3Collection,d3Array,d3plusAxis,d3Zoom,d3Brush,d3Color,d3Queue,d3Transition,lrucache,d3plusColor,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
 
 lrucache = lrucache && lrucache.hasOwnProperty('default') ? lrucache['default'] : lrucache;
 
@@ -78,11 +78,11 @@ lrucache = lrucache && lrucache.hasOwnProperty('default') ? lrucache['default'] 
   @param {String} [data = "data"] The key used for the flat data array inside of the JSON object.
   @param {String} [headers = "headers"] The key used for the flat headers array inside of the JSON object.
 */
-function fold (json$$1, data, headers) {
+function fold (json, data, headers) {
     if ( data === void 0 ) data = "data";
     if ( headers === void 0 ) headers = "headers";
 
-    return json$$1[data].map(function (data) { return json$$1[headers].reduce(function (obj, header, i) { return (obj[header] = data[i], obj); }, {}); });
+    return json[data].map(function (data) { return json[headers].reduce(function (obj, header, i) { return (obj[header] = data[i], obj); }, {}); });
 }
 
 /**
@@ -144,9 +144,9 @@ function load(path, formatter, key, callback) {
 */
 var Message = function Message () {};
 
-Message.prototype.exit = function exit (elem$$1, duration) {
+Message.prototype.exit = function exit (elem, duration) {
 
-  elem$$1
+  elem
     .transition().duration(duration).style("opacity", 0)
     .transition().remove();
 
@@ -386,15 +386,15 @@ function drawControls() {
 
         var on = {};
         if (control.on) {
-          var loop$2 = function ( event$$1 ) {
-            if ({}.hasOwnProperty.call(control.on, event$$1)) {
-              on[event$$1] = function() {
-                control.on[event$$1].bind(that)(this.value);
+          var loop$2 = function ( event ) {
+            if ({}.hasOwnProperty.call(control.on, event)) {
+              on[event] = function() {
+                control.on[event].bind(that)(this.value);
               };
             }
           };
 
-          for (var event$$1 in control.on) loop$2( event$$1 );
+          for (var event in control.on) loop$2( event );
 
         }
 
@@ -476,7 +476,7 @@ function drawLegend(data) {
 
     var legendData = [];
 
-    var color$$1 = function (d, i) {
+    var color = function (d, i) {
       var shape = this$1._shape(d, i);
       var attr = shape === "Line" ? "stroke" : "fill";
       var value = this$1._shapeConfig[shape] && this$1._shapeConfig[shape][attr]
@@ -491,7 +491,7 @@ function drawLegend(data) {
       return typeof value === "function" ? value(d, i) : value;
     };
 
-    var fill = function (d, i) { return ((color$$1(d, i)) + "_" + (opacity(d, i))); };
+    var fill = function (d, i) { return ((color(d, i)) + "_" + (opacity(d, i))); };
 
     d3Collection.nest()
       .key(fill)
@@ -510,7 +510,7 @@ function drawLegend(data) {
       .width(this._width - this._margin.left - this._margin.right)
       .shapeConfig(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "legend"))
       .config(this._legendConfig)
-      .shapeConfig({fill: color$$1, opacity: opacity})
+      .shapeConfig({fill: color, opacity: opacity})
       .render();
 
     var legendBounds = this._legendClass.outerBounds();
@@ -612,7 +612,7 @@ function drawTitle(data) {
   if ( data === void 0 ) data = [];
 
 
-  var text$$1 = this._title ? this._title(data) : false;
+  var text = this._title ? this._title(data) : false;
 
   var group = d3plusCommon.elem("g.d3plus-viz-title", {
     enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
@@ -622,13 +622,13 @@ function drawTitle(data) {
   }).node();
 
   this._titleClass
-    .data(text$$1 ? [{text: text$$1}] : [])
+    .data(text ? [{text: text}] : [])
     .select(group)
     .width(this._width - this._margin.left - this._margin.right)
     .config(this._titleConfig)
     .render();
 
-  this._margin.top += text$$1 ? group.getBBox().height + this._padding : 0;
+  this._margin.top += text ? group.getBBox().height + this._padding : 0;
 
 }
 
@@ -676,19 +676,19 @@ function _elementSize(element, s) {
   if (element.tagName === undefined || ["BODY", "HTML"].indexOf(element.tagName) >= 0) {
 
     var val  = window[("inner" + (s.charAt(0).toUpperCase() + s.slice(1)))];
-    var elem$$1 = d3Selection.select(element);
+    var elem = d3Selection.select(element);
 
     if (s === "width") {
-      val -= parseFloat(elem$$1.style("margin-left"), 10);
-      val -= parseFloat(elem$$1.style("margin-right"), 10);
-      val -= parseFloat(elem$$1.style("padding-left"), 10);
-      val -= parseFloat(elem$$1.style("padding-right"), 10);
+      val -= parseFloat(elem.style("margin-left"), 10);
+      val -= parseFloat(elem.style("margin-right"), 10);
+      val -= parseFloat(elem.style("padding-left"), 10);
+      val -= parseFloat(elem.style("padding-right"), 10);
     }
     else {
-      val -= parseFloat(elem$$1.style("margin-top"), 10);
-      val -= parseFloat(elem$$1.style("margin-bottom"), 10);
-      val -= parseFloat(elem$$1.style("padding-top"), 10);
-      val -= parseFloat(elem$$1.style("padding-bottom"), 10);
+      val -= parseFloat(elem.style("margin-top"), 10);
+      val -= parseFloat(elem.style("margin-bottom"), 10);
+      val -= parseFloat(elem.style("padding-top"), 10);
+      val -= parseFloat(elem.style("padding-bottom"), 10);
     }
 
     return val;
@@ -709,8 +709,8 @@ function _elementSize(element, s) {
     @param {HTMLElement} elem The HTMLElement to find dimensions for.
     @private
 */
-function getSize(elem$$1) {
-  return [_elementSize(elem$$1, "width"), _elementSize(elem$$1, "height")];
+function getSize(elem) {
+  return [_elementSize(elem, "width"), _elementSize(elem, "height")];
 }
 
 /**
@@ -719,7 +719,7 @@ function getSize(elem$$1) {
   @param {Number} [buffer = 0] A pixel offset from the edge of the top and bottom of the screen. If a positive value, the element will be deemed visible when it is that many pixels away from entering the viewport. If negative, the element will have to enter the viewport by that many pixels before being deemed visible.
   @private
 */
-function inViewport(elem$$1, buffer) {
+function inViewport(elem, buffer) {
   if ( buffer === void 0 ) buffer = 0;
 
 
@@ -728,7 +728,7 @@ function inViewport(elem$$1, buffer) {
         pageY = window.pageYOffset !== undefined ? window.pageYOffset
           : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 
-  var bounds = elem$$1.getBoundingClientRect();
+  var bounds = elem.getBoundingClientRect();
   var height = bounds.height,
         left = bounds.left + pageX,
         top = bounds.top + pageY,
@@ -937,11 +937,11 @@ function zoomControls() {
     @desc Handles adding/removing zoom event listeners.
     @private
 */
-function zoomEvents(brush$$1) {
-  if ( brush$$1 === void 0 ) brush$$1 = false;
+function zoomEvents(brush) {
+  if ( brush === void 0 ) brush = false;
 
 
-  brushing = brush$$1;
+  brushing = brush;
 
   if (brushing) { this._brushGroup.style("display", "inline"); }
   else { this._brushGroup.style("display", "none"); }
@@ -1133,18 +1133,17 @@ function brushStyle() {
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
 
-// import {Rect} from "d3plus-shape";
 /**
     @class Viz
     @extends external:BaseClass
     @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
 */
-var Viz = (function (BaseClass$$1) {
+var Viz = (function (BaseClass) {
   function Viz() {
     var this$1 = this;
 
 
-    BaseClass$$1.call(this);
+    BaseClass.call(this);
 
     this._aggs = {};
     this._backClass = new d3plusText.TextBox()
@@ -1157,7 +1156,7 @@ var Viz = (function (BaseClass$$1) {
       fontSize: 10,
       resize: false
     };
-    this._cache = false;
+    this._cache = true;
     this._color = function (d, i) { return this$1._groupBy[0](d, i); };
     this._colorScaleClass = new d3plusLegend.ColorScale();
     this._colorScaleConfig = {};
@@ -1193,7 +1192,7 @@ var Viz = (function (BaseClass$$1) {
     this._legendPosition = "bottom";
     this._locale = "en-US";
 
-    this._lrucache = lrucache(5);
+    this._lrucache = lrucache(10);
 
     this._message = true;
     this._messageClass = new Message();
@@ -1320,8 +1319,8 @@ var Viz = (function (BaseClass$$1) {
 
   }
 
-  if ( BaseClass$$1 ) Viz.__proto__ = BaseClass$$1;
-  Viz.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  if ( BaseClass ) Viz.__proto__ = BaseClass;
+  Viz.prototype = Object.create( BaseClass && BaseClass.prototype );
   Viz.prototype.constructor = Viz;
 
   /**
@@ -1581,8 +1580,11 @@ var Viz = (function (BaseClass$$1) {
   Viz.prototype.active = function active (_) {
 
     this._active = _;
-    this._shapes.forEach(function (s) { return s.active(_); });
-    if (this._legend) { this._legendClass.active(_); }
+
+    if (this._shapeConfig.activeOpacity !== 1) {
+      this._shapes.forEach(function (s) { return s.active(_); });
+      if (this._legend) { this._legendClass.active(_); }
+    }
 
     return this;
   };
@@ -1623,7 +1625,7 @@ var Viz = (function (BaseClass$$1) {
       @param {Function|String|False} [*value*]
       @chainable
   */
-  Viz.prototype.color = function color$$1 (_) {
+  Viz.prototype.color = function color (_) {
     return arguments.length ? (this._color = !_ || typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._color;
   };
 
@@ -1852,26 +1854,31 @@ function value(d) {
 
 
     var hoverFunction = this._hover = _;
-    if (typeof _ === "function") {
 
-      var shapeData = d3Array.merge(this._shapes.map(function (s) { return s.data(); }));
-      shapeData = shapeData.concat(this._legendClass.data());
-      var activeData = _ ? shapeData.filter(_) : [];
+    if (this._shapeConfig.hoverOpacity !== 1) {
 
-      var activeIds = [];
-      activeData.map(this._ids).forEach(function (ids) {
-        for (var x = 1; x <= ids.length; x++) {
-          activeIds.push(JSON.stringify(ids.slice(0, x)));
-        }
-      });
-      activeIds = activeIds.filter(function (id, i) { return activeIds.indexOf(id) === i; });
+      if (typeof _ === "function") {
 
-      if (activeIds.length) { hoverFunction = function (d, i) { return activeIds.includes(JSON.stringify(this$1._ids(d, i))); }; }
+        var shapeData = d3Array.merge(this._shapes.map(function (s) { return s.data(); }));
+        shapeData = shapeData.concat(this._legendClass.data());
+        var activeData = _ ? shapeData.filter(_) : [];
+
+        var activeIds = [];
+        activeData.map(this._ids).forEach(function (ids) {
+          for (var x = 1; x <= ids.length; x++) {
+            activeIds.push(JSON.stringify(ids.slice(0, x)));
+          }
+        });
+        activeIds = activeIds.filter(function (id, i) { return activeIds.indexOf(id) === i; });
+
+        if (activeIds.length) { hoverFunction = function (d, i) { return activeIds.includes(JSON.stringify(this$1._ids(d, i))); }; }
+
+      }
+
+      this._shapes.forEach(function (s) { return s.hover(hoverFunction); });
+      if (this._legend) { this._legendClass.hover(hoverFunction); }
 
     }
-
-    this._shapes.forEach(function (s) { return s.hover(hoverFunction); });
-    if (this._legend) { this._legendClass.hover(hoverFunction); }
 
     return this;
   };
@@ -2137,7 +2144,7 @@ function value(d) {
       @param {Boolean} *value* = false
       @chainable
   */
-  Viz.prototype.zoom = function zoom$$1 (_) {
+  Viz.prototype.zoom = function zoom (_) {
     return arguments.length ? (this._zoom = _, this) : this._zoom;
   };
 
