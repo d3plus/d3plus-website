@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.2.27
+  d3plus-react v0.2.28
   React components for d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -171,7 +171,7 @@ var AreaPlot = (function (Shell) {
 
     return AreaPlot;
 }(Viz));
-AreaPlot.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPlot.AreaPlot});
+AreaPlot.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusPlot.AreaPlot});
 
 /**
     @class BarChart
@@ -188,7 +188,7 @@ var BarChart = (function (Shell) {
 
     return BarChart;
 }(Viz));
-BarChart.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPlot.BarChart});
+BarChart.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusPlot.BarChart});
 
 /**
     @class Donut
@@ -205,7 +205,7 @@ var Donut = (function (Shell) {
 
     return Donut;
 }(Viz));
-Donut.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusHierarchy.Donut});
+Donut.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusHierarchy.Donut});
 
 /**
     @class Geomap
@@ -222,7 +222,7 @@ var Geomap = (function (Shell) {
 
     return Geomap;
 }(Viz));
-Geomap.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusGeomap.Geomap});
+Geomap.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusGeomap.Geomap});
 
 /**
     @class LinePlot
@@ -239,7 +239,7 @@ var LinePlot = (function (Shell) {
 
     return LinePlot;
 }(Viz));
-LinePlot.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPlot.LinePlot});
+LinePlot.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusPlot.LinePlot});
 
 /**
     @class Network
@@ -256,7 +256,7 @@ var Network = (function (Shell) {
 
     return Network;
 }(Viz));
-Network.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusNetwork.Network});
+Network.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusNetwork.Network});
 
 /**
     @class Pie
@@ -273,7 +273,7 @@ var Pie = (function (Shell) {
 
     return Pie;
 }(Viz));
-Pie.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusHierarchy.Pie});
+Pie.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusHierarchy.Pie});
 
 /**
     @class Plot
@@ -290,7 +290,7 @@ var Plot = (function (Shell) {
 
     return Plot;
 }(Viz));
-Plot.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPlot.Plot});
+Plot.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusPlot.Plot});
 
 /**
     @class Priestley
@@ -307,7 +307,7 @@ var Priestley = (function (Shell) {
 
     return Priestley;
 }(Viz));
-Priestley.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPriestley.Priestley});
+Priestley.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusPriestley.Priestley});
 
 /**
     @class StackedArea
@@ -324,7 +324,7 @@ var StackedArea = (function (Shell) {
 
     return StackedArea;
 }(Viz));
-StackedArea.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusPlot.StackedArea});
+StackedArea.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusPlot.StackedArea});
 
 /**
     @class Tree
@@ -341,7 +341,7 @@ var Tree = (function (Shell) {
 
     return Tree;
 }(Viz));
-Tree.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusHierarchy.Tree});
+Tree.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusHierarchy.Tree});
 
 /**
     @class Treemap
@@ -358,7 +358,7 @@ var Treemap = (function (Shell) {
 
     return Treemap;
 }(Viz));
-Treemap.defaultProps = Object.assign(Viz.defaultProps, {type: d3plusHierarchy.Treemap});
+Treemap.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusHierarchy.Treemap});
 
 exports.AreaPlot = AreaPlot;
 exports.BarChart = BarChart;
