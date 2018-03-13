@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.2.28
+  d3plus-react v0.2.29
   React components for d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -88,23 +88,11 @@ var Viz = (function (Component) {
 
   Viz.prototype.componentDidMount = function componentDidMount () {
     var ref = this.props;
-    var config = ref.config;
-    var dataFormat = ref.dataFormat;
     var Constructor = ref.type;
-    var globalConfig = this.context.d3plus || {};
 
-    var viz = new Constructor()
-      .select(this.container);
+    this.viz = new Constructor().select(this.container);
+    this.renderViz.bind(this)();
 
-    if (dataFormat && config.data) {
-      viz.config(d3plusCommon.assign({}, globalConfig, config, {data: []}))
-        .data(config.data, dataFormat);
-    }
-    else {
-      viz.config(d3plusCommon.assign({}, globalConfig, config));
-    }
-
-    this.viz = viz.render();
   };
 
   /**
@@ -118,19 +106,31 @@ var Viz = (function (Component) {
     var ref = this.props;
     var config = ref.config;
     var forceUpdate = ref.forceUpdate;
-    var ref$1 = this;
-    var viz = ref$1.viz;
     var c = d3plusCommon.assign({}, globalConfig, config);
     var c2 = d3plusCommon.assign({}, globalConfig, prevProps.config);
 
     var same = forceUpdate ? false : JSON.stringify(c) === JSON.stringify(c2);
+    if (!same) { this.renderViz.bind(this)(); }
 
-    if (!same) {
+  };
 
-      if (typeof c.data === "string" && c.data === c2.data) { delete c.data; }
-      viz.config(c).render();
+  /**
+      @memberof Viz
+      @desc Sets visualization config, accounting for dataFormat, and renders the visualization.
+      @private
+  */
+  Viz.prototype.renderViz = function renderViz () {
+    var ref = this;
+    var viz = ref.viz;
+    var ref$1 = this.props;
+    var config = ref$1.config;
+    var dataFormat = ref$1.dataFormat;
+    var globalConfig = this.context.d3plus || {};
+    var c = d3plusCommon.assign({}, globalConfig, config);
 
-    }
+    if (dataFormat && c.data) { viz.config(c).data(c.data, dataFormat); }
+    else { viz.config(c); }
+    viz.render();
 
   };
 
