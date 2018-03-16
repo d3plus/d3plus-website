@@ -26,7 +26,7 @@ Creates SVG lines based on an array of data.
 
 
 
-<a name="Line.render" href="#Line.render">#</a> Line.**render**([*callback*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Line.js#L78)
+<a name="Line.render" href="#Line.render">#</a> Line.**render**([*callback*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Line.js#L83)
 
 Draws the lines.
 
@@ -34,7 +34,7 @@ Draws the lines.
 This is a static method of [<code>Line</code>](#Line), and is chainable with other methods of this Class.
 
 
-<a name="Line.curve" href="#Line.curve">#</a> Line.**curve**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Line.js#L123)
+<a name="Line.curve" href="#Line.curve">#</a> Line.**curve**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Line.js#L128)
 
 If *value* is specified, sets the line curve to the specified string and returns the current class instance. If *value* is not specified, returns the current line curve.
 
@@ -42,7 +42,7 @@ If *value* is specified, sets the line curve to the specified string and returns
 This is a static method of [<code>Line</code>](#Line), and is chainable with other methods of this Class.
 
 
-<a name="Line.defined" href="#Line.defined">#</a> Line.**defined**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Line.js#L133)
+<a name="Line.defined" href="#Line.defined">#</a> Line.**defined**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Line.js#L138)
 
 If *value* is specified, sets the defined accessor to the specified function and returns the current class instance. If *value* is not specified, returns the current defined accessor.
 
