@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.3.0
+  d3plus-react v0.3.1
   React components for d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
