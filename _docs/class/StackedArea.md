@@ -20,7 +20,7 @@ Creates a stacked area plot based on an array of data.
 the equivalent of calling:
 
 ```js
-new d3plus.Area()
+new d3plus.AreaPlot()
   .stacked(true)
 ```
 

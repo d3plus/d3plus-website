@@ -13,7 +13,7 @@ This is a global class, and extends all of the methods and functionality of [<co
 
 <a name="new_BarChart_new" href="#new_BarChart_new">#</a> new **BarChart**()
 
-Creates a line plot based on an array of data.
+Creates a bar chart based on an array of data.
 
 
 
@@ -21,7 +21,8 @@ the equivalent of calling:
 
 ```js
 new d3plus.Plot()
+  .baseline(0)
   .discrete("x")
-  .shape("Line")
+  .shape("Bar")
 ```
 
