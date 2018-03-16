@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-plot.v0.6.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var data = [
+    {id: "alpha", alphaX: 4, alphaY:  7},
+    {id: "alpha", alphaX: 5, alphaY: 25},
+    {id: "alpha", alphaX: 6, alphaY: 13},
+    {id: "beta",  betaX: 28, betaY: 700},
+    {id: "beta",  betaX: 33, betaY:  850},
+    {id: "beta",  betaX: 56, betaY: 900}
+  ];
+
+  new d3plus.LinePlot()
+    .data(data)
+    .groupBy("id")
+    .x("alphaX")
+    .x2("betaX")
+    .y("alphaY")
+    .y2("betaY")
+    .render();
+
+</script>
+
+</html>
