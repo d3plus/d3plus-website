@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.14.0
+  d3plus-shape v0.14.1
   Fancy SVG shapes for visualizations
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -67,7 +67,7 @@ if (!Array.prototype.includes) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define('d3plus-shape', ['exports'], factory) :
 	(factory((global.d3plus = {})));
-}(this, (function (exports) { 'use strict';
+}(this, (function (exports) {
 
 var xhtml = "http://www.w3.org/1999/xhtml";
 
@@ -8652,16 +8652,19 @@ var Shape = (function (BaseClass$$1) {
 
     var hitEnter = hitAreas.enter().append(isLine ? "path" : "rect")
       .attr("class", function (d, i) { return ("d3plus-HitArea d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
-      .attr("fill", "transparent")
-      .attr("stroke", "transparent")
+      .attr("fill", "black")
+      .attr("stroke", "black")
+      .attr("pointer-events", "painted")
+      .attr("opacity", 0)
       .call(this._applyTransform.bind(this));
 
     var that = this;
 
     var hitUpdates = hitAreas.merge(hitEnter)
       .each(function(d) {
-        var h = that._hitArea(d, that._data.indexOf(d), that._aes(d, that._data.indexOf(d)));
-        return h && !(that._name === "Line" && parseFloat(that._strokeWidth()) > 10) ? select(this).call(attrize, h) : select(this).remove();
+        var i = that._data.indexOf(d);
+        var h = that._hitArea(d, i, that._aes(d, i));
+        return h && !(that._name === "Line" && parseFloat(that._strokeWidth(d, i)) > 10) ? select(this).call(attrize, h) : select(this).remove();
       });
 
     hitAreas.exit().remove();
@@ -10759,6 +10762,7 @@ var Line = (function (Shape$$1) {
     this._fill = constant$2("none");
     this._hitArea = constant$2({
       "d": function (d) { return this$1._path(d.values); },
+      "fill": "none",
       "stroke-width": 10,
       "transform": null
     });
