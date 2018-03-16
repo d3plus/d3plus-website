@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.6.0
+  d3plus-plot v0.6.1
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -317,8 +317,10 @@ function configPrep(config, type, nest) {
 
 
   var newConfig = {duration: this._duration, on: {}};
+  console.log(type, nest);
 
   var wrapFunction = function (func) { return function (d, i, s) {
+    console.log(d, i, s);
     while (d.__d3plus__) {
       i = d.i;
       d = d.data || d.feature;
@@ -361,13 +363,15 @@ function configPrep(config, type, nest) {
     }
 
   };
-
+  console.log("first");
   keyEval(newConfig, config);
+  console.log("second");
   if (this._on) { parseEvents(newConfig, this._on); }
   if (nest && config[nest]) {
     keyEval(newConfig, config[nest]);
     if (config[nest].on) { parseEvents(newConfig, config[nest].on); }
   }
+  console.log("third");
 
   return newConfig;
 
@@ -15105,16 +15109,19 @@ var Shape$1 = (function (BaseClass$$1) {
 
     var hitEnter = hitAreas.enter().append(isLine ? "path" : "rect")
       .attr("class", function (d, i) { return ("d3plus-HitArea d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
-      .attr("fill", "transparent")
-      .attr("stroke", "transparent")
+      .attr("fill", "black")
+      .attr("stroke", "black")
+      .attr("pointer-events", "painted")
+      .attr("opacity", 0)
       .call(this._applyTransform.bind(this));
 
     var that = this;
 
     var hitUpdates = hitAreas.merge(hitEnter)
       .each(function(d) {
-        var h = that._hitArea(d, that._data.indexOf(d), that._aes(d, that._data.indexOf(d)));
-        return h && !(that._name === "Line" && parseFloat(that._strokeWidth()) > 10) ? select(this).call(attrize, h) : select(this).remove();
+        var i = that._data.indexOf(d);
+        var h = that._hitArea(d, i, that._aes(d, i));
+        return h && !(that._name === "Line" && parseFloat(that._strokeWidth(d, i)) > 10) ? select(this).call(attrize, h) : select(this).remove();
       });
 
     hitAreas.exit().remove();
@@ -16655,6 +16662,7 @@ var Line$1 = (function (Shape) {
     this._fill = constant("none");
     this._hitArea = constant({
       "d": function (d) { return this$1._path(d.values); },
+      "fill": "none",
       "stroke-width": 10,
       "transform": null
     });
