@@ -2,13 +2,13 @@
 title: Secondary Axes
 width: 990
 height: 400
-time: 1521224313346
+time: 1521226630587
 date: March 16, 2018
 ---
 
 # Secondary Axes
 
-When x2 values exist in your data, or a `.x2` accessor is supplied, these values will be plotted on the secondary x-axis and when y2 values exist in your data or a `.y2` accessor is supplied, these values will be plotted on the secondary y-axis.
+When x2 values exist in your data or a `.x2` accessor is supplied, these values will be plotted on the secondary x-axis and when y2 values exist in your data or a `.y2` accessor is supplied, these values will be plotted on the secondary y-axis.
 
 ```js
 var data = [

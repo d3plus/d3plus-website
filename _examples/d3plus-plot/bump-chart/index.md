@@ -2,13 +2,13 @@
 title: Bump Chart
 width: 990
 height: 400
-time: 1521224153944
+time: 1521226630587
 date: March 16, 2018
 ---
 
 # Bump Chart
 
-Bump charts are used to visualize changes in rank over time. They are similar to line charts, but instead of graphing a measure on the y-axis they show rank.
+Bump charts are used to visualize changes in rank over time. They are similar to line charts, but instead of graphing some measure on the y-axis they show rank.
 
 When constructing data to be used with the [BumpChart](http://d3plus.org/docs/#BumpChart) class, the data provided for the y-axis must be an integer rank. Given this data array:
 
