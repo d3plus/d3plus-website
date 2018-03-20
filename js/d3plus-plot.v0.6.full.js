@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.6.1
+  d3plus-plot v0.6.2
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -36976,6 +36976,9 @@ var Plot = (function (Viz$$1) {
       Line: LineBuffer,
       Rect: RectBuffer
     };
+    this._confidenceConfig = {
+      fillOpacity: constant(0.5)
+    };
     this._groupPadding = 5;
     this._shape = constant("Circle");
     this._shapeConfig = assign(this._shapeConfig, {
@@ -37066,7 +37069,9 @@ var Plot = (function (Viz$$1) {
       data: d,
       group: stackGroup(d, i),
       i: i,
+      hci: this$1._confidence && this$1._confidence[1] && this$1._confidence[1](d, i),
       id: this$1._ids(d, i).slice(0, this$1._drawDepth + 1).join("_"),
+      lci: this$1._confidence && this$1._confidence[0] && this$1._confidence[0](d, i),
       shape: this$1._shape(d, i),
       x: this$1._x(d, i),
       x2: this$1._x2(d, i),
@@ -37185,11 +37190,27 @@ var Plot = (function (Viz$$1) {
 
     }
     else {
+      var xData = this._discrete === "x" ? data.map(function (d) { return d.x; }) : data.map(function (d) { return d.x; })
+        .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; })  : [])
+        .concat(this._confidence && this._confidence[1] ? data.map(function (d) { return d.hci; }) : []);
+
+      var x2Data = this._discrete === "x" ? data.map(function (d) { return d.x2; }) : data.map(function (d) { return d.x2; })
+        .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; })  : [])
+        .concat(this._confidence && this._confidence[1] ? data.map(function (d) { return d.hci; }) : []);
+
+      var yData = this._discrete === "y" ? data.map(function (d) { return d.y; }) : data.map(function (d) { return d.y; })
+        .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; })  : [])
+        .concat(this._confidence && this._confidence[1] ? data.map(function (d) { return d.hci; }) : []);
+
+      var y2Data = this._discrete === "y" ? data.map(function (d) { return d.y2; }) : data.map(function (d) { return d.y2; })
+        .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; })  : [])
+        .concat(this._confidence && this._confidence[1] ? data.map(function (d) { return d.hci; }) : []);
+
       domains = {
-        x: this._xSort ? Array.from(new Set(data.filter(function (d) { return d.x; }).sort(function (a, b) { return this$1._xSort(a.data, b.data); }).map(function (d) { return d.x; }))) : extent(data, function (d) { return d.x; }),
-        x2: this._x2Sort ? Array.from(new Set(data.filter(function (d) { return d.x2; }).sort(function (a, b) { return this$1._x2Sort(a.data, b.data); }).map(function (d) { return d.x2; }))) : extent(data, function (d) { return d.x2; }),
-        y: this._ySort ? Array.from(new Set(data.filter(function (d) { return d.y; }).sort(function (a, b) { return this$1._ySort(a.data, b.data); }).map(function (d) { return d.y; }))) : extent(data, function (d) { return d.y; }),
-        y2: this._y2Sort ? Array.from(new Set(data.filter(function (d) { return d.y2; }).sort(function (a, b) { return this$1._y2Sort(a.data, b.data); }).map(function (d) { return d.y2; }))) : extent(data, function (d) { return d.y2; })
+        x: this._xSort ? Array.from(new Set(data.filter(function (d) { return d.x; }).sort(function (a, b) { return this$1._xSort(a.data, b.data); }).map(function (d) { return d.x; }))) : extent(xData, function (d) { return d; }),
+        x2: this._x2Sort ? Array.from(new Set(data.filter(function (d) { return d.x2; }).sort(function (a, b) { return this$1._x2Sort(a.data, b.data); }).map(function (d) { return d.x2; }))) : extent(x2Data, function (d) { return d; }),
+        y: this._ySort ? Array.from(new Set(data.filter(function (d) { return d.y; }).sort(function (a, b) { return this$1._ySort(a.data, b.data); }).map(function (d) { return d.y; }))) : extent(yData, function (d) { return d; }),
+        y2: this._y2Sort ? Array.from(new Set(data.filter(function (d) { return d.y2; }).sort(function (a, b) { return this$1._y2Sort(a.data, b.data); }).map(function (d) { return d.y2; }))) : extent(y2Data, function (d) { return d; })
       };
     }
 
@@ -37207,8 +37228,8 @@ var Plot = (function (Viz$$1) {
     var x2Domain = this._x2Domain ? this._x2Domain.slice() : domains.x2,
         x2Scale = this._x2Sort ? "Ordinal" : "Linear";
 
-    if (x2Domain[0] === void 0) { x2Domain[0] = domains.x2[0]; }
-    if (x2Domain[1] === void 0) { x2Domain[1] = domains.x2[1]; }
+    if (x2Domain && x2Domain[0] === void 0) { x2Domain[0] = domains.x2[0]; }
+    if (x2Domain && x2Domain[1] === void 0) { x2Domain[1] = domains.x2[1]; }
 
     if (x2Time) {
       x2Domain = x2Domain.map(date$4);
@@ -37232,8 +37253,8 @@ var Plot = (function (Viz$$1) {
     var y2Domain = this._y2Domain ? this._y2Domain.slice() : domains.y2,
         y2Scale = this._y2Sort ? "Ordinal" : "Linear";
 
-    if (y2Domain[0] === void 0) { y2Domain[0] = domains.y2[0]; }
-    if (y2Domain[1] === void 0) { y2Domain[1] = domains.y2[1]; }
+    if (y2Domain && y2Domain[0] === void 0) { y2Domain[0] = domains.y2[0]; }
+    if (y2Domain && y2Domain[1] === void 0) { y2Domain[1] = domains.y2[1]; }
 
     if (yTime) {
       yDomain = yDomain.map(date$4);
@@ -37252,13 +37273,14 @@ var Plot = (function (Viz$$1) {
       y2Scale = "Time";
     }
 
-    domains = {x: xDomain, x2: x2Domain, y: yDomain, y2: y2Domain};
+
+    domains = {x: xDomain, x2: x2Domain || xDomain, y: yDomain, y2: y2Domain || yDomain};
 
     opps.forEach(function (opp) {
       if (opp && this$1._baseline !== void 0) {
         var b = this$1._baseline;
-        if (domains[opp][0] > b) { domains[opp][0] = b; }
-        else if (domains[opp][1] < b) { domains[opp][1] = b; }
+        if (domains[opp] && domains[opp][0] > b) { domains[opp][0] = b; }
+        else if (domains[opp] && domains[opp][1] < b) { domains[opp][1] = b; }
       }
     });
 
@@ -37574,6 +37596,19 @@ var Plot = (function (Viz$$1) {
         s.height(barSize);
 
       }
+      else if (d.key === "Line" && this$1._confidence) {
+
+        var areaConfig = Object.assign({}, shapeConfig);
+        var key = this$1._discrete === "x" ? "y" : "x";
+        var scaleFunction = this$1._discrete === "x" ? y : x;
+        areaConfig[(key + "0")] = function (d) { return scaleFunction(this$1._confidence[0] ? d.lci : d[key]); };
+        areaConfig[(key + "1")] = function (d) { return scaleFunction(this$1._confidence[1] ? d.hci : d[key]); };
+
+        var area$$1 = new Area$1().config(areaConfig).data(d.values);
+        var confidenceConfig = Object.assign(this$1._shapeConfig, this$1._confidenceConfig);
+        area$$1.config(configPrep.bind(this$1)(confidenceConfig, "shape", "Area")).render();
+        this$1._shapes.push(area$$1);
+      }
 
       var classEvents = events.filter(function (e) { return e.includes(("." + (d.key))); }),
             globalEvents = events.filter(function (e) { return !e.includes("."); }),
@@ -37631,6 +37666,43 @@ var Plot = (function (Viz$$1) {
   */
   Plot.prototype.baseline = function baseline (_) {
     return arguments.length ? (this._baseline = _, this) : this._baseline;
+  };
+
+  /**
+       @memberof Plot
+       @desc Sets the confidence to the specified array of lower and upper bounds.
+       @param {String[]|Function[]} *value*
+       @chainable
+       @example <caption>Can be called with accessor functions or static keys:</caption>
+       var data = {id: "alpha", value: 10, lci: 9, hci: 11};
+       ...
+       // Accessor functions
+       .confidence([function(d) { return d.lci }, function(d) { return d.hci }])
+
+       // Or static keys
+       .confidence(["lci", "hci"])
+   */
+  Plot.prototype.confidence = function confidence (_) {
+    if (arguments.length) {
+      this._confidence = [];
+      var lower = _[0];
+      this._confidence[0] = typeof lower === "function" || !lower ? lower : accessor(lower);
+      var upper = _[1];
+      this._confidence[1] = typeof upper === "function" || !upper ? upper : accessor(upper);
+
+      return this;
+    }
+    else { return this._confidence; }
+  };
+
+  /**
+       @memberof Plot
+       @desc If *value* is specified, sets the config method for each shape rendered as a confidence interval and returns the current class instance.
+       @param {Object} [*value*]
+       @chainable
+   */
+  Plot.prototype.confidenceConfig = function confidenceConfig (_) {
+    return arguments.length ? (this._confidenceConfig = assign(this._confidenceConfig, _), this) : this._confidenceConfig;
   };
 
   /**
