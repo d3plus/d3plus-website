@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.6.2
+  d3plus-plot v0.6.3
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -1467,8 +1467,8 @@ var BumpChart = (function (Plot$$1) {
         return this$1._drawLabel(d, d.i);
       }
     });
-    this.ySort(function (a, b) { return b.y - a.y; });
-    this.y2Sort(function (a, b) { return b.y - a.y; });
+    this.ySort(function (a, b) { return this$1._y(b) - this$1._y(a); });
+    this.y2Sort(function (a, b) { return this$1._y(b) - this$1._y(a); });
   }
 
   if ( Plot$$1 ) BumpChart.__proto__ = Plot$$1;
