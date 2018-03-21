@@ -1,7 +1,7 @@
 /*
-  d3plus-export v0.3.3
+  d3plus-export v0.3.4
   Export methods for transforming and downloading SVG.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -67,15 +67,13 @@ if (!Array.prototype.includes) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define('d3plus-export', ['exports'], factory) :
 	(factory((global.d3plus = {})));
-}(this, (function (exports) { 'use strict';
+}(this, (function (exports) {
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function commonjsRequire () {
 	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
 }
-
-
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
@@ -91,7 +89,6 @@ var html2canvas = createCommonjsModule(function (module, exports) {
 
 (function(f){{module.exports=f();}})(function(){var define;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof commonjsRequire=="function"&&commonjsRequire;if(!u&&a){ return a(o,!0); }if(i){ return i(o,!0); }var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND", f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r);}return n[o].exports}var i=typeof commonjsRequire=="function"&&commonjsRequire;for(var o=0;o<r.length;o++){ s(r[o]); }return s})({1:[function(_dereq_,module,exports){
 (function (global){
-/*! https://mths.be/punycode v1.4.0 by @mathias */
 (function(root) {
 
 	/** Detect free variables */
@@ -4867,8 +4864,7 @@ function _set_proto_(thiz,parent){
 }
 if(!(_set_proto_({},_set_proto_.prototype) instanceof _set_proto_)){
 	_set_proto_ = function(thiz,parent){
-		function p(){}
-		p.prototype = parent;
+		function p(){}		p.prototype = parent;
 		p = new p();
 		for(parent in thiz){
 			p[parent] = thiz[parent];
@@ -4918,8 +4914,7 @@ function _extends(Class,Super){
 		pt.__proto__ = ppt;
 	}
 	if(!(pt instanceof Super)){
-		function t(){}
-		t.prototype = Super.prototype;
+		function t(){}		t.prototype = Super.prototype;
 		t = new t();
 		copy(pt,t);
 		Class.prototype = pt = t;
@@ -4931,7 +4926,7 @@ function _extends(Class,Super){
 		pt.constructor = Class;
 	}
 }
-var htmlns = 'http://www.w3.org/1999/xhtml';
+var htmlns = 'http://www.w3.org/1999/xhtml' ;
 // Node Types
 var NodeType = {};
 var ELEMENT_NODE                = NodeType.ELEMENT_NODE                = 1;
@@ -4980,8 +4975,7 @@ function DOMException(code, message) {
 	error.code = code;
 	if(message) { this.message = this.message + ": " + message; }
 	return error;
-}
-DOMException.prototype = Error.prototype;
+}DOMException.prototype = Error.prototype;
 copy(ExceptionCode,DOMException);
 /**
  * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-536297177
@@ -4989,8 +4983,7 @@ copy(ExceptionCode,DOMException);
  * The items in the NodeList are accessible via an integral index, starting from 0.
  */
 function NodeList() {
-}
-NodeList.prototype = {
+}NodeList.prototype = {
 	/**
 	 * The number of nodes in the list. The range of valid child node indices is 0 to length-1 inclusive.
 	 * @standard level1
@@ -5045,7 +5038,6 @@ _extends(LiveNodeList,NodeList);
  */
 function NamedNodeMap() {
 }
-
 function _findNodeIndex(list,node){
 	var i = list.length;
 	while(i--){
@@ -5168,7 +5160,6 @@ function DOMImplementation(/* Object */ features) {
 		}
 	}
 }
-
 DOMImplementation.prototype = {
 	hasFeature: function(/* string */ feature, /* string */ version) {
 		var versions = this._features[feature.toLowerCase()];
@@ -5217,7 +5208,6 @@ DOMImplementation.prototype = {
 
 function Node$1() {
 }
-
 Node$1.prototype = {
 	firstChild : null,
 	lastChild : null,
@@ -5349,7 +5339,7 @@ function Document(){
 }
 function _onAddAttribute(doc,el,newAttr){
 	doc && doc._inc++;
-	var ns = newAttr.namespaceURI;
+	var ns = newAttr.namespaceURI ;
 	if(ns == 'http://www.w3.org/2000/xmlns/'){
 		//update namespace
 		el._nsMap[newAttr.prefix?newAttr.localName:''] = newAttr.value;
@@ -5357,7 +5347,7 @@ function _onAddAttribute(doc,el,newAttr){
 }
 function _onRemoveAttribute(doc,el,newAttr,remove){
 	doc && doc._inc++;
-	var ns = newAttr.namespaceURI;
+	var ns = newAttr.namespaceURI ;
 	if(ns == 'http://www.w3.org/2000/xmlns/'){
 		//update namespace
 		delete el._nsMap[newAttr.prefix?newAttr.localName:''];
@@ -5622,8 +5612,7 @@ _extends(Document,Node$1);
 
 function Element$1() {
 	this._nsMap = {};
-}
-Element$1.prototype = {
+}Element$1.prototype = {
 	nodeType : ELEMENT_NODE,
 	hasAttribute : function(name){
 		return this.getAttributeNode(name)!=null;
@@ -5715,14 +5704,12 @@ Document.prototype.getElementsByTagNameNS = Element$1.prototype.getElementsByTag
 
 _extends(Element$1,Node$1);
 function Attr() {
-}
-Attr.prototype.nodeType = ATTRIBUTE_NODE;
+}Attr.prototype.nodeType = ATTRIBUTE_NODE;
 _extends(Attr,Node$1);
 
 
 function CharacterData() {
-}
-CharacterData.prototype = {
+}CharacterData.prototype = {
 	data : '',
 	substringData : function(offset, count) {
 		return this.data.substring(offset, offset+count);
@@ -5752,8 +5739,7 @@ CharacterData.prototype = {
 };
 _extends(CharacterData,Node$1);
 function Text() {
-}
-Text.prototype = {
+}Text.prototype = {
 	nodeName : "#text",
 	nodeType : TEXT_NODE,
 	splitText : function(offset) {
@@ -5771,16 +5757,14 @@ Text.prototype = {
 };
 _extends(Text,CharacterData);
 function Comment() {
-}
-Comment.prototype = {
+}Comment.prototype = {
 	nodeName : "#comment",
 	nodeType : COMMENT_NODE
 };
 _extends(Comment,CharacterData);
 
 function CDATASection() {
-}
-CDATASection.prototype = {
+}CDATASection.prototype = {
 	nodeName : "#cdata-section",
 	nodeType : CDATA_SECTION_NODE
 };
@@ -5788,28 +5772,23 @@ _extends(CDATASection,CharacterData);
 
 
 function DocumentType() {
-}
-DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
+}DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
 _extends(DocumentType,Node$1);
 
 function Notation() {
-}
-Notation.prototype.nodeType = NOTATION_NODE;
+}Notation.prototype.nodeType = NOTATION_NODE;
 _extends(Notation,Node$1);
 
 function Entity() {
-}
-Entity.prototype.nodeType = ENTITY_NODE;
+}Entity.prototype.nodeType = ENTITY_NODE;
 _extends(Entity,Node$1);
 
 function EntityReference() {
-}
-EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
+}EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
 _extends(EntityReference,Node$1);
 
 function DocumentFragment() {
-}
-DocumentFragment.prototype.nodeName =	"#document-fragment";
+}DocumentFragment.prototype.nodeName =	"#document-fragment";
 DocumentFragment.prototype.nodeType =	DOCUMENT_FRAGMENT_NODE;
 _extends(DocumentFragment,Node$1);
 
@@ -6070,7 +6049,7 @@ function cloneNode(doc,node,deep){
 		for(var i=0;i<len;i++){
 			node2.setAttributeNode(cloneNode(doc,attrs.item(i),true));
 		}
-		break;;
+		break;
 	case ATTRIBUTE_NODE:
 		deep = true;
 	}
@@ -6412,7 +6391,6 @@ function appendElement (hander,node) {
 	exports.DOMParser = DOMParser;
 //}
 });
-
 var domParser_1 = domParser.DOMImplementation;
 var domParser_2 = domParser.XMLSerializer;
 var domParser_3 = domParser.DOMParser;
@@ -9546,7 +9524,6 @@ function build(opts) {
 
 	return svg;
 }
-
 var canvgBrowser = canvg;
 
 var xhtml = "http://www.w3.org/1999/xhtml";
@@ -9586,130 +9563,6 @@ function creator(name) {
   return (fullname.local
       ? creatorFixed
       : creatorInherit)(fullname);
-}
-
-var matcher = function(selector) {
-  return function() {
-    return this.matches(selector);
-  };
-};
-
-if (typeof document !== "undefined") {
-  var element = document.documentElement;
-  if (!element.matches) {
-    var vendorMatches = element.webkitMatchesSelector
-        || element.msMatchesSelector
-        || element.mozMatchesSelector
-        || element.oMatchesSelector;
-    matcher = function(selector) {
-      return function() {
-        return vendorMatches.call(this, selector);
-      };
-    };
-  }
-}
-
-var matcher$1 = matcher;
-
-var filterEvents = {};
-
-
-
-if (typeof document !== "undefined") {
-  var element$1 = document.documentElement;
-  if (!("onmouseenter" in element$1)) {
-    filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
-  }
-}
-
-function filterContextListener(listener, index, group) {
-  listener = contextListener(listener, index, group);
-  return function(event) {
-    var related = event.relatedTarget;
-    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
-      listener.call(this, event);
-    }
-  };
-}
-
-function contextListener(listener, index, group) {
-  return function(event1) {
-    try {
-      listener.call(this, this.__data__, index, group);
-    } finally {
-      
-    }
-  };
-}
-
-function parseTypenames(typenames) {
-  return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf(".");
-    if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
-    return {type: t, name: name};
-  });
-}
-
-function onRemove(typename) {
-  return function() {
-    var this$1 = this;
-
-    var on = this.__on;
-    if (!on) { return; }
-    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
-      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-      } else {
-        on[++i] = o;
-      }
-    }
-    if (++i) { on.length = i; }
-    else { delete this.__on; }
-  };
-}
-
-function onAdd(typename, value, capture) {
-  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
-  return function(d, i, group) {
-    var this$1 = this;
-
-    var on = this.__on, o, listener = wrap(value, i, group);
-    if (on) { for (var j = 0, m = on.length; j < m; ++j) {
-      if ((o = on[j]).type === typename.type && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
-        o.value = value;
-        return;
-      }
-    } }
-    this.addEventListener(typename.type, listener, capture);
-    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
-    if (!on) { this.__on = [o]; }
-    else { on.push(o); }
-  };
-}
-
-function selection_on(typename, value, capture) {
-  var this$1 = this;
-
-  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
-
-  if (arguments.length < 2) {
-    var on = this.node().__on;
-    if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
-      for (i = 0, o = on[j]; i < n; ++i) {
-        if ((t = typenames[i]).type === o.type && t.name === o.name) {
-          return o.value;
-        }
-      }
-    } }
-    return;
-  }
-
-  on = value ? onAdd : onRemove;
-  if (capture == null) { capture = false; }
-  for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
-  return this;
 }
 
 function none() {}
@@ -9759,6 +9612,29 @@ function selection_selectAll(select) {
 
   return new Selection(subgroups, parents);
 }
+
+var matcher = function(selector) {
+  return function() {
+    return this.matches(selector);
+  };
+};
+
+if (typeof document !== "undefined") {
+  var element = document.documentElement;
+  if (!element.matches) {
+    var vendorMatches = element.webkitMatchesSelector
+        || element.msMatchesSelector
+        || element.mozMatchesSelector
+        || element.oMatchesSelector;
+    matcher = function(selector) {
+      return function() {
+        return vendorMatches.call(this, selector);
+      };
+    };
+  }
+}
+
+var matcher$1 = matcher;
 
 function selection_filter(match) {
   if (typeof match !== "function") { match = matcher$1(match); }
@@ -9907,7 +9783,7 @@ function selection_data(value, key) {
     for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
       if (previous = enterGroup[i0]) {
         if (i0 >= i1) { i1 = i0 + 1; }
-        while (!(next = updateGroup[i1]) && ++i1 < dataLength){  }
+        while (!(next = updateGroup[i1]) && ++i1 < dataLength){ }
         previous._next = next || null;
       }
     }
@@ -10320,10 +10196,120 @@ function selection_remove() {
   return this.each(remove);
 }
 
+function selection_cloneShallow() {
+  return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
+}
+
+function selection_cloneDeep() {
+  return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
+}
+
+function selection_clone(deep) {
+  return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
+}
+
 function selection_datum(value) {
   return arguments.length
       ? this.property("__data__", value)
       : this.node().__data__;
+}
+
+var filterEvents = {};
+
+if (typeof document !== "undefined") {
+  var element$1 = document.documentElement;
+  if (!("onmouseenter" in element$1)) {
+    filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
+  }
+}
+
+function filterContextListener(listener, index, group) {
+  listener = contextListener(listener, index, group);
+  return function(event) {
+    var related = event.relatedTarget;
+    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
+      listener.call(this, event);
+    }
+  };
+}
+
+function contextListener(listener, index, group) {
+  return function(event1) {
+    try {
+      listener.call(this, this.__data__, index, group);
+    } finally {
+    }
+  };
+}
+
+function parseTypenames(typenames) {
+  return typenames.trim().split(/^|\s+/).map(function(t) {
+    var name = "", i = t.indexOf(".");
+    if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
+    return {type: t, name: name};
+  });
+}
+
+function onRemove(typename) {
+  return function() {
+    var this$1 = this;
+
+    var on = this.__on;
+    if (!on) { return; }
+    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
+      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
+        this$1.removeEventListener(o.type, o.listener, o.capture);
+      } else {
+        on[++i] = o;
+      }
+    }
+    if (++i) { on.length = i; }
+    else { delete this.__on; }
+  };
+}
+
+function onAdd(typename, value, capture) {
+  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
+  return function(d, i, group) {
+    var this$1 = this;
+
+    var on = this.__on, o, listener = wrap(value, i, group);
+    if (on) { for (var j = 0, m = on.length; j < m; ++j) {
+      if ((o = on[j]).type === typename.type && o.name === typename.name) {
+        this$1.removeEventListener(o.type, o.listener, o.capture);
+        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
+        o.value = value;
+        return;
+      }
+    } }
+    this.addEventListener(typename.type, listener, capture);
+    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
+    if (!on) { this.__on = [o]; }
+    else { on.push(o); }
+  };
+}
+
+function selection_on(typename, value, capture) {
+  var this$1 = this;
+
+  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
+
+  if (arguments.length < 2) {
+    var on = this.node().__on;
+    if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
+      for (i = 0, o = on[j]; i < n; ++i) {
+        if ((t = typenames[i]).type === o.type && t.name === o.name) {
+          return o.value;
+        }
+      }
+    } }
+    return;
+  }
+
+  on = value ? onAdd : onRemove;
+  if (capture == null) { capture = false; }
+  for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
+  return this;
 }
 
 function dispatchEvent(node, type, params) {
@@ -10398,6 +10384,7 @@ Selection.prototype = selection.prototype = {
   append: selection_append,
   insert: selection_insert,
   remove: selection_remove,
+  clone: selection_clone,
   datum: selection_datum,
   on: selection_on,
   dispatch: selection_dispatch
@@ -10455,6 +10442,8 @@ var canvgOptions = {
     @private
 */
 function parseTransform(elem) {
+  var assign;
+
 
   var property = select(elem).attr("transform");
   var scale = 1, x = 0, y = 0;
@@ -10464,7 +10453,6 @@ function parseTransform(elem) {
     else { scale = 1; }
     var translate = property.match(/translate\(([^a-z]+)\)/i);
     if (translate) {
-      var assign;
       (assign = translate[1]
         .replace(", ", ",")
         .replace(/([^a-z]),*\s([^a-z])/gi, "$1,$2")
@@ -10525,11 +10513,11 @@ function dom2canvas(elem, options) {
 
   var context = canvas.getContext("2d");
   context.scale(options.scale * ratio, options.scale * ratio);
-  context.clearRect(0, 0, canvas.width / 2, canvas.height / 2);
+  context.clearRect(0, 0, canvas.width / ratio, canvas.height / ratio);
 
   if (options.background) {
     context.beginPath();
-    context.rect(0, 0, canvas.width / 2, canvas.height / 2);
+    context.rect(0, 0, canvas.width / ratio, canvas.height / ratio);
     context.fillStyle = options.background;
     context.fill();
   }
@@ -10893,7 +10881,8 @@ var
 			, save = 0
 			, rank
 			, code
-			, undef;
+			, undef
+		;
 		while (len--) {
 			code = base64.charCodeAt(i++);
 			rank = base64_ranks[code-43];
@@ -10918,7 +10907,8 @@ var
 		// doesn't really matter with most image formats.
 		// If it somehow matters for you, truncate the buffer up outptr.
 		return buffer;
-	};
+	}
+;
 if (Uint8Array) {
 	base64_ranks = new Uint8Array([
 		  62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1
@@ -10930,7 +10920,7 @@ if (Uint8Array) {
 }
 if (HTMLCanvasElement && (!canvas_proto.toBlob || !canvas_proto.toBlobHD)) {
 	if (!canvas_proto.toBlob)
-	{ canvas_proto.toBlob = function(callback, type /* ...args*/) {
+	{ canvas_proto.toBlob = function(callback, type /*, ...args*/) {
 		  if (!type) {
 			type = "image/png";
 		} if (this.mozGetAsFile) {
@@ -10947,7 +10937,8 @@ if (HTMLCanvasElement && (!canvas_proto.toBlob || !canvas_proto.toBlobHD)) {
 			, header_end = dataURI.indexOf(",")
 			, data = dataURI.substring(header_end + 1)
 			, is_base64 = is_base64_regex.test(dataURI.substring(0, header_end))
-			, blob;
+			, blob
+		;
 		if (Blob.fake) {
 			// no reason to decode a data: URI that's just going to become a data URI again
 			blob = new Blob;
@@ -10998,6 +10989,7 @@ var FileSaver = createCommonjsModule(function (module) {
 /*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
 
 var saveAs = saveAs || (function(view) {
+	// IE <10 is explicitly unsupported
 	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
 		return;
 	}
@@ -11101,7 +11093,8 @@ var saveAs = saveAs || (function(view) {
 					filesaver.readyState = filesaver.DONE;
 					dispatch_all();
 					revoke(object_url);
-				};
+				}
+			;
 			filesaver.readyState = filesaver.INIT;
 
 			if (can_use_save_link) {
@@ -11122,7 +11115,8 @@ var saveAs = saveAs || (function(view) {
 		, FS_proto = FileSaver.prototype
 		, saveAs = function(blob, name, no_auto_bom) {
 			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
-		};
+		}
+	;
 	// IE 10+ (native saveAs)
 	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
 		return function(blob, name, no_auto_bom) {
@@ -11167,10 +11161,7 @@ if ('object' !== "undefined" && module.exports) {
   });
 }
 });
-
 var FileSaver_1 = FileSaver.saveAs;
-
-// import {default as JsPDF} from "jspdf";
 
 var defaultOptions$1 = {
   filename: "download",

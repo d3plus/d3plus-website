@@ -1,7 +1,7 @@
 /*
-  d3plus-export v0.3.3
+  d3plus-export v0.3.4
   Export methods for transforming and downloading SVG.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -112,6 +112,8 @@ var canvgOptions = {
     @private
 */
 function parseTransform(elem) {
+  var assign;
+
 
   var property = d3Selection.select(elem).attr("transform");
   var scale = 1, x = 0, y = 0;
@@ -121,7 +123,6 @@ function parseTransform(elem) {
     else { scale = 1; }
     var translate = property.match(/translate\(([^a-z]+)\)/i);
     if (translate) {
-      var assign;
       (assign = translate[1]
         .replace(", ", ",")
         .replace(/([^a-z]),*\s([^a-z])/gi, "$1,$2")
@@ -182,11 +183,11 @@ function dom2canvas(elem, options) {
 
   var context = canvas.getContext("2d");
   context.scale(options.scale * ratio, options.scale * ratio);
-  context.clearRect(0, 0, canvas.width / 2, canvas.height / 2);
+  context.clearRect(0, 0, canvas.width / ratio, canvas.height / ratio);
 
   if (options.background) {
     context.beginPath();
-    context.rect(0, 0, canvas.width / 2, canvas.height / 2);
+    context.rect(0, 0, canvas.width / ratio, canvas.height / ratio);
     context.fillStyle = options.background;
     context.fill();
   }
@@ -515,8 +516,6 @@ function dom2canvas(elem, options) {
   }
 
 }
-
-// import {default as JsPDF} from "jspdf";
 
 var defaultOptions$1 = {
   filename: "download",
