@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.16
+  d3plus-legend v0.8.17
   An easy to use javascript chart legend.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -383,7 +383,7 @@ var ColorScale = (function (BaseClass) {
     this._group = d3plusCommon.elem("g.d3plus-ColorScale", {parent: this._select});
 
     var domain = d3Array.extent(this._data, this._value);
-    var colors = this._color, ticks;
+    var colors = this._color, labels, ticks;
 
     if (!(colors instanceof Array)) {
       colors = [
@@ -415,6 +415,12 @@ var ColorScale = (function (BaseClass) {
 
       ticks = d3Array.merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
 
+      var tickSet = new Set(ticks);
+
+      if (ticks.length !== tickSet.size) {
+        labels = Array.from(tickSet);
+      }
+
       this._colorScale = d3Scale.scaleThreshold()
         .domain(ticks)
         .range(["black"].concat(colors).concat(colors[colors.length - 1]));
@@ -437,7 +443,7 @@ var ColorScale = (function (BaseClass) {
       domain: horizontal ? domain : domain.reverse(),
       duration: this._duration,
       height: this._height,
-      labels: ticks,
+      labels: labels || ticks,
       orient: this._orient,
       padding: this._padding,
       ticks: ticks,
@@ -1009,7 +1015,7 @@ var Legend = (function (BaseClass) {
       this$1._shapes.push(new shapes[Shape]()
         .data(data.filter(function (d) { return d.shape === Shape; }))
         .duration(this$1._duration)
-        .labelPadding(0)
+        .labelConfig({padding: 0})
         .select(this$1._group.node())
         .verticalAlign("top")
         .config(d3plusCommon.assign({}, baseConfig, config))

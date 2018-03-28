@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.16
+  d3plus-legend v0.8.17
   An easy to use javascript chart legend.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -8620,884 +8620,14 @@ var fontExists = function (font) {
 
 };
 
-var xhtml$1 = "http://www.w3.org/1999/xhtml";
-
-var namespaces$1 = {
-  svg: "http://www.w3.org/2000/svg",
-  xhtml: xhtml$1,
-  xlink: "http://www.w3.org/1999/xlink",
-  xml: "http://www.w3.org/XML/1998/namespace",
-  xmlns: "http://www.w3.org/2000/xmlns/"
-};
-
-function namespace$1(name) {
-  var prefix = name += "", i = prefix.indexOf(":");
-  if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") { name = name.slice(i + 1); }
-  return namespaces$1.hasOwnProperty(prefix) ? {space: namespaces$1[prefix], local: name} : name;
-}
-
-function creatorInherit$1(name) {
-  return function() {
-    var document = this.ownerDocument,
-        uri = this.namespaceURI;
-    return uri === xhtml$1 && document.documentElement.namespaceURI === xhtml$1
-        ? document.createElement(name)
-        : document.createElementNS(uri, name);
-  };
-}
-
-function creatorFixed$1(fullname) {
-  return function() {
-    return this.ownerDocument.createElementNS(fullname.space, fullname.local);
-  };
-}
-
-function creator$1(name) {
-  var fullname = namespace$1(name);
-  return (fullname.local
-      ? creatorFixed$1
-      : creatorInherit$1)(fullname);
-}
-
-function none$3() {}
-
-function selector$1(selector) {
-  return selector == null ? none$3 : function() {
-    return this.querySelector(selector);
-  };
-}
-
-function selection_select$1(select) {
-  if (typeof select !== "function") { select = selector$1(select); }
-
-  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
-        if ("__data__" in node) { subnode.__data__ = node.__data__; }
-        subgroup[i] = subnode;
-      }
-    }
-  }
-
-  return new Selection$2(subgroups, this._parents);
-}
-
-function empty$1() {
-  return [];
-}
-
-function selectorAll$1(selector) {
-  return selector == null ? empty$1 : function() {
-    return this.querySelectorAll(selector);
-  };
-}
-
-function selection_selectAll$1(select) {
-  if (typeof select !== "function") { select = selectorAll$1(select); }
-
-  for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
-      if (node = group[i]) {
-        subgroups.push(select.call(node, node.__data__, i, group));
-        parents.push(node);
-      }
-    }
-  }
-
-  return new Selection$2(subgroups, parents);
-}
-
-var matcher$2 = function(selector) {
-  return function() {
-    return this.matches(selector);
-  };
-};
-
-if (typeof document !== "undefined") {
-  var element$2 = document.documentElement;
-  if (!element$2.matches) {
-    var vendorMatches$1 = element$2.webkitMatchesSelector
-        || element$2.msMatchesSelector
-        || element$2.mozMatchesSelector
-        || element$2.oMatchesSelector;
-    matcher$2 = function(selector) {
-      return function() {
-        return vendorMatches$1.call(this, selector);
-      };
-    };
-  }
-}
-
-var matcher$3 = matcher$2;
-
-function selection_filter$1(match) {
-  if (typeof match !== "function") { match = matcher$3(match); }
-
-  for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
-      if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
-        subgroup.push(node);
-      }
-    }
-  }
-
-  return new Selection$2(subgroups, this._parents);
-}
-
-function sparse$1(update) {
-  return new Array(update.length);
-}
-
-function selection_enter$1() {
-  return new Selection$2(this._enter || this._groups.map(sparse$1), this._parents);
-}
-
-function EnterNode$1(parent, datum) {
-  this.ownerDocument = parent.ownerDocument;
-  this.namespaceURI = parent.namespaceURI;
-  this._next = null;
-  this._parent = parent;
-  this.__data__ = datum;
-}
-
-EnterNode$1.prototype = {
-  constructor: EnterNode$1,
-  appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
-  insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
-  querySelector: function(selector) { return this._parent.querySelector(selector); },
-  querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
-};
-
-function constant$7(x) {
-  return function() {
-    return x;
-  };
-}
-
-var keyPrefix$1 = "$"; // Protect against keys like “__proto__”.
-
-function bindIndex$1(parent, group, enter, update, exit, data) {
-  var i = 0,
-      node,
-      groupLength = group.length,
-      dataLength = data.length;
-
-  // Put any non-null nodes that fit into update.
-  // Put any null nodes into enter.
-  // Put any remaining data into enter.
-  for (; i < dataLength; ++i) {
-    if (node = group[i]) {
-      node.__data__ = data[i];
-      update[i] = node;
-    } else {
-      enter[i] = new EnterNode$1(parent, data[i]);
-    }
-  }
-
-  // Put any non-null nodes that don’t fit into exit.
-  for (; i < groupLength; ++i) {
-    if (node = group[i]) {
-      exit[i] = node;
-    }
-  }
-}
-
-function bindKey$1(parent, group, enter, update, exit, data, key) {
-  var i,
-      node,
-      nodeByKeyValue = {},
-      groupLength = group.length,
-      dataLength = data.length,
-      keyValues = new Array(groupLength),
-      keyValue;
-
-  // Compute the key for each node.
-  // If multiple nodes have the same key, the duplicates are added to exit.
-  for (i = 0; i < groupLength; ++i) {
-    if (node = group[i]) {
-      keyValues[i] = keyValue = keyPrefix$1 + key.call(node, node.__data__, i, group);
-      if (keyValue in nodeByKeyValue) {
-        exit[i] = node;
-      } else {
-        nodeByKeyValue[keyValue] = node;
-      }
-    }
-  }
-
-  // Compute the key for each datum.
-  // If there a node associated with this key, join and add it to update.
-  // If there is not (or the key is a duplicate), add it to enter.
-  for (i = 0; i < dataLength; ++i) {
-    keyValue = keyPrefix$1 + key.call(parent, data[i], i, data);
-    if (node = nodeByKeyValue[keyValue]) {
-      update[i] = node;
-      node.__data__ = data[i];
-      nodeByKeyValue[keyValue] = null;
-    } else {
-      enter[i] = new EnterNode$1(parent, data[i]);
-    }
-  }
-
-  // Add any remaining nodes that were not bound to data to exit.
-  for (i = 0; i < groupLength; ++i) {
-    if ((node = group[i]) && (nodeByKeyValue[keyValues[i]] === node)) {
-      exit[i] = node;
-    }
-  }
-}
-
-function selection_data$1(value, key) {
-  if (!value) {
-    data = new Array(this.size()), j = -1;
-    this.each(function(d) { data[++j] = d; });
-    return data;
-  }
-
-  var bind = key ? bindKey$1 : bindIndex$1,
-      parents = this._parents,
-      groups = this._groups;
-
-  if (typeof value !== "function") { value = constant$7(value); }
-
-  for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
-    var parent = parents[j],
-        group = groups[j],
-        groupLength = group.length,
-        data = value.call(parent, parent && parent.__data__, j, parents),
-        dataLength = data.length,
-        enterGroup = enter[j] = new Array(dataLength),
-        updateGroup = update[j] = new Array(dataLength),
-        exitGroup = exit[j] = new Array(groupLength);
-
-    bind(parent, group, enterGroup, updateGroup, exitGroup, data, key);
-
-    // Now connect the enter nodes to their following update node, such that
-    // appendChild can insert the materialized enter node before this node,
-    // rather than at the end of the parent node.
-    for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
-      if (previous = enterGroup[i0]) {
-        if (i0 >= i1) { i1 = i0 + 1; }
-        while (!(next = updateGroup[i1]) && ++i1 < dataLength){ }
-        previous._next = next || null;
-      }
-    }
-  }
-
-  update = new Selection$2(update, parents);
-  update._enter = enter;
-  update._exit = exit;
-  return update;
-}
-
-function selection_exit$1() {
-  return new Selection$2(this._exit || this._groups.map(sparse$1), this._parents);
-}
-
-function selection_merge$1(selection) {
-
-  for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
-    for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
-      if (node = group0[i] || group1[i]) {
-        merge[i] = node;
-      }
-    }
-  }
-
-  for (; j < m0; ++j) {
-    merges[j] = groups0[j];
-  }
-
-  return new Selection$2(merges, this._parents);
-}
-
-function selection_order$1() {
-
-  for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
-    for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
-      if (node = group[i]) {
-        if (next && next !== node.nextSibling) { next.parentNode.insertBefore(node, next); }
-        next = node;
-      }
-    }
-  }
-
-  return this;
-}
-
-function selection_sort$1(compare) {
-  if (!compare) { compare = ascending$3; }
-
-  function compareNode(a, b) {
-    return a && b ? compare(a.__data__, b.__data__) : !a - !b;
-  }
-
-  for (var groups = this._groups, m = groups.length, sortgroups = new Array(m), j = 0; j < m; ++j) {
-    for (var group = groups[j], n = group.length, sortgroup = sortgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
-      if (node = group[i]) {
-        sortgroup[i] = node;
-      }
-    }
-    sortgroup.sort(compareNode);
-  }
-
-  return new Selection$2(sortgroups, this._parents).order();
-}
-
-function ascending$3(a, b) {
-  return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-}
-
-function selection_call$1() {
-  var callback = arguments[0];
-  arguments[0] = this;
-  callback.apply(null, arguments);
-  return this;
-}
-
-function selection_nodes$1() {
-  var nodes = new Array(this.size()), i = -1;
-  this.each(function() { nodes[++i] = this; });
-  return nodes;
-}
-
-function selection_node$1() {
-
-  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
-    for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
-      var node = group[i];
-      if (node) { return node; }
-    }
-  }
-
-  return null;
-}
-
-function selection_size$1() {
-  var size = 0;
-  this.each(function() { ++size; });
-  return size;
-}
-
-function selection_empty$1() {
-  return !this.node();
-}
-
-function selection_each$1(callback) {
-
-  for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
-    for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
-      if (node = group[i]) { callback.call(node, node.__data__, i, group); }
-    }
-  }
-
-  return this;
-}
-
-function attrRemove$2(name) {
-  return function() {
-    this.removeAttribute(name);
-  };
-}
-
-function attrRemoveNS$2(fullname) {
-  return function() {
-    this.removeAttributeNS(fullname.space, fullname.local);
-  };
-}
-
-function attrConstant$2(name, value) {
-  return function() {
-    this.setAttribute(name, value);
-  };
-}
-
-function attrConstantNS$2(fullname, value) {
-  return function() {
-    this.setAttributeNS(fullname.space, fullname.local, value);
-  };
-}
-
-function attrFunction$2(name, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) { this.removeAttribute(name); }
-    else { this.setAttribute(name, v); }
-  };
-}
-
-function attrFunctionNS$2(fullname, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) { this.removeAttributeNS(fullname.space, fullname.local); }
-    else { this.setAttributeNS(fullname.space, fullname.local, v); }
-  };
-}
-
-function selection_attr$1(name, value) {
-  var fullname = namespace$1(name);
-
-  if (arguments.length < 2) {
-    var node = this.node();
-    return fullname.local
-        ? node.getAttributeNS(fullname.space, fullname.local)
-        : node.getAttribute(fullname);
-  }
-
-  return this.each((value == null
-      ? (fullname.local ? attrRemoveNS$2 : attrRemove$2) : (typeof value === "function"
-      ? (fullname.local ? attrFunctionNS$2 : attrFunction$2)
-      : (fullname.local ? attrConstantNS$2 : attrConstant$2)))(fullname, value));
-}
-
-function defaultView$1(node) {
-  return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
-      || (node.document && node) // node is a Window
-      || node.defaultView; // node is a Document
-}
-
-function styleRemove$2(name) {
-  return function() {
-    this.style.removeProperty(name);
-  };
-}
-
-function styleConstant$2(name, value, priority) {
-  return function() {
-    this.style.setProperty(name, value, priority);
-  };
-}
-
-function styleFunction$2(name, value, priority) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) { this.style.removeProperty(name); }
-    else { this.style.setProperty(name, v, priority); }
-  };
-}
-
-function selection_style$1(name, value, priority) {
-  return arguments.length > 1
-      ? this.each((value == null
-            ? styleRemove$2 : typeof value === "function"
-            ? styleFunction$2
-            : styleConstant$2)(name, value, priority == null ? "" : priority))
-      : styleValue$1(this.node(), name);
-}
-
-function styleValue$1(node, name) {
-  return node.style.getPropertyValue(name)
-      || defaultView$1(node).getComputedStyle(node, null).getPropertyValue(name);
-}
-
-function propertyRemove$1(name) {
-  return function() {
-    delete this[name];
-  };
-}
-
-function propertyConstant$1(name, value) {
-  return function() {
-    this[name] = value;
-  };
-}
-
-function propertyFunction$1(name, value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    if (v == null) { delete this[name]; }
-    else { this[name] = v; }
-  };
-}
-
-function selection_property$1(name, value) {
-  return arguments.length > 1
-      ? this.each((value == null
-          ? propertyRemove$1 : typeof value === "function"
-          ? propertyFunction$1
-          : propertyConstant$1)(name, value))
-      : this.node()[name];
-}
-
-function classArray$1(string) {
-  return string.trim().split(/^|\s+/);
-}
-
-function classList$1(node) {
-  return node.classList || new ClassList$1(node);
-}
-
-function ClassList$1(node) {
-  this._node = node;
-  this._names = classArray$1(node.getAttribute("class") || "");
-}
-
-ClassList$1.prototype = {
-  add: function(name) {
-    var i = this._names.indexOf(name);
-    if (i < 0) {
-      this._names.push(name);
-      this._node.setAttribute("class", this._names.join(" "));
-    }
-  },
-  remove: function(name) {
-    var i = this._names.indexOf(name);
-    if (i >= 0) {
-      this._names.splice(i, 1);
-      this._node.setAttribute("class", this._names.join(" "));
-    }
-  },
-  contains: function(name) {
-    return this._names.indexOf(name) >= 0;
-  }
-};
-
-function classedAdd$1(node, names) {
-  var list = classList$1(node), i = -1, n = names.length;
-  while (++i < n) { list.add(names[i]); }
-}
-
-function classedRemove$1(node, names) {
-  var list = classList$1(node), i = -1, n = names.length;
-  while (++i < n) { list.remove(names[i]); }
-}
-
-function classedTrue$1(names) {
-  return function() {
-    classedAdd$1(this, names);
-  };
-}
-
-function classedFalse$1(names) {
-  return function() {
-    classedRemove$1(this, names);
-  };
-}
-
-function classedFunction$1(names, value) {
-  return function() {
-    (value.apply(this, arguments) ? classedAdd$1 : classedRemove$1)(this, names);
-  };
-}
-
-function selection_classed$1(name, value) {
-  var names = classArray$1(name + "");
-
-  if (arguments.length < 2) {
-    var list = classList$1(this.node()), i = -1, n = names.length;
-    while (++i < n) { if (!list.contains(names[i])) { return false; } }
-    return true;
-  }
-
-  return this.each((typeof value === "function"
-      ? classedFunction$1 : value
-      ? classedTrue$1
-      : classedFalse$1)(names, value));
-}
-
-function textRemove$1() {
-  this.textContent = "";
-}
-
-function textConstant$2(value) {
-  return function() {
-    this.textContent = value;
-  };
-}
-
-function textFunction$2(value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    this.textContent = v == null ? "" : v;
-  };
-}
-
-function selection_text$1(value) {
-  return arguments.length
-      ? this.each(value == null
-          ? textRemove$1 : (typeof value === "function"
-          ? textFunction$2
-          : textConstant$2)(value))
-      : this.node().textContent;
-}
-
-function htmlRemove$1() {
-  this.innerHTML = "";
-}
-
-function htmlConstant$1(value) {
-  return function() {
-    this.innerHTML = value;
-  };
-}
-
-function htmlFunction$1(value) {
-  return function() {
-    var v = value.apply(this, arguments);
-    this.innerHTML = v == null ? "" : v;
-  };
-}
-
-function selection_html$1(value) {
-  return arguments.length
-      ? this.each(value == null
-          ? htmlRemove$1 : (typeof value === "function"
-          ? htmlFunction$1
-          : htmlConstant$1)(value))
-      : this.node().innerHTML;
-}
-
-function raise$3() {
-  if (this.nextSibling) { this.parentNode.appendChild(this); }
-}
-
-function selection_raise$1() {
-  return this.each(raise$3);
-}
-
-function lower$1() {
-  if (this.previousSibling) { this.parentNode.insertBefore(this, this.parentNode.firstChild); }
-}
-
-function selection_lower$1() {
-  return this.each(lower$1);
-}
-
-function selection_append$1(name) {
-  var create = typeof name === "function" ? name : creator$1(name);
-  return this.select(function() {
-    return this.appendChild(create.apply(this, arguments));
-  });
-}
-
-function constantNull$1() {
-  return null;
-}
-
-function selection_insert$1(name, before) {
-  var create = typeof name === "function" ? name : creator$1(name),
-      select = before == null ? constantNull$1 : typeof before === "function" ? before : selector$1(before);
-  return this.select(function() {
-    return this.insertBefore(create.apply(this, arguments), select.apply(this, arguments) || null);
-  });
-}
-
-function remove$1() {
-  var parent = this.parentNode;
-  if (parent) { parent.removeChild(this); }
-}
-
-function selection_remove$1() {
-  return this.each(remove$1);
-}
-
-function selection_cloneShallow$1() {
-  return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
-}
-
-function selection_cloneDeep$1() {
-  return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
-}
-
-function selection_clone$1(deep) {
-  return this.select(deep ? selection_cloneDeep$1 : selection_cloneShallow$1);
-}
-
-function selection_datum$1(value) {
-  return arguments.length
-      ? this.property("__data__", value)
-      : this.node().__data__;
-}
-
-var filterEvents$1 = {};
-
-if (typeof document !== "undefined") {
-  var element$3 = document.documentElement;
-  if (!("onmouseenter" in element$3)) {
-    filterEvents$1 = {mouseenter: "mouseover", mouseleave: "mouseout"};
-  }
-}
-
-function filterContextListener$1(listener, index, group) {
-  listener = contextListener$1(listener, index, group);
-  return function(event) {
-    var related = event.relatedTarget;
-    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
-      listener.call(this, event);
-    }
-  };
-}
-
-function contextListener$1(listener, index, group) {
-  return function(event1) {
-    try {
-      listener.call(this, this.__data__, index, group);
-    } finally {
-    }
-  };
-}
-
-function parseTypenames$2(typenames) {
-  return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf(".");
-    if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
-    return {type: t, name: name};
-  });
-}
-
-function onRemove$1(typename) {
-  return function() {
-    var this$1 = this;
-
-    var on = this.__on;
-    if (!on) { return; }
-    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
-      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-      } else {
-        on[++i] = o;
-      }
-    }
-    if (++i) { on.length = i; }
-    else { delete this.__on; }
-  };
-}
-
-function onAdd$1(typename, value, capture) {
-  var wrap = filterEvents$1.hasOwnProperty(typename.type) ? filterContextListener$1 : contextListener$1;
-  return function(d, i, group) {
-    var this$1 = this;
-
-    var on = this.__on, o, listener = wrap(value, i, group);
-    if (on) { for (var j = 0, m = on.length; j < m; ++j) {
-      if ((o = on[j]).type === typename.type && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
-        o.value = value;
-        return;
-      }
-    } }
-    this.addEventListener(typename.type, listener, capture);
-    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
-    if (!on) { this.__on = [o]; }
-    else { on.push(o); }
-  };
-}
-
-function selection_on$1(typename, value, capture) {
-  var this$1 = this;
-
-  var typenames = parseTypenames$2(typename + ""), i, n = typenames.length, t;
-
-  if (arguments.length < 2) {
-    var on = this.node().__on;
-    if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
-      for (i = 0, o = on[j]; i < n; ++i) {
-        if ((t = typenames[i]).type === o.type && t.name === o.name) {
-          return o.value;
-        }
-      }
-    } }
-    return;
-  }
-
-  on = value ? onAdd$1 : onRemove$1;
-  if (capture == null) { capture = false; }
-  for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
-  return this;
-}
-
-function dispatchEvent$1(node, type, params) {
-  var window = defaultView$1(node),
-      event = window.CustomEvent;
-
-  if (typeof event === "function") {
-    event = new event(type, params);
-  } else {
-    event = window.document.createEvent("Event");
-    if (params) { event.initEvent(type, params.bubbles, params.cancelable), event.detail = params.detail; }
-    else { event.initEvent(type, false, false); }
-  }
-
-  node.dispatchEvent(event);
-}
-
-function dispatchConstant$1(type, params) {
-  return function() {
-    return dispatchEvent$1(this, type, params);
-  };
-}
-
-function dispatchFunction$1(type, params) {
-  return function() {
-    return dispatchEvent$1(this, type, params.apply(this, arguments));
-  };
-}
-
-function selection_dispatch$1(type, params) {
-  return this.each((typeof params === "function"
-      ? dispatchFunction$1
-      : dispatchConstant$1)(type, params));
-}
-
-var root$2 = [null];
-
-function Selection$2(groups, parents) {
-  this._groups = groups;
-  this._parents = parents;
-}
-
-function selection$1() {
-  return new Selection$2([[document.documentElement]], root$2);
-}
-
-Selection$2.prototype = selection$1.prototype = {
-  constructor: Selection$2,
-  select: selection_select$1,
-  selectAll: selection_selectAll$1,
-  filter: selection_filter$1,
-  data: selection_data$1,
-  enter: selection_enter$1,
-  exit: selection_exit$1,
-  merge: selection_merge$1,
-  order: selection_order$1,
-  sort: selection_sort$1,
-  call: selection_call$1,
-  nodes: selection_nodes$1,
-  node: selection_node$1,
-  size: selection_size$1,
-  empty: selection_empty$1,
-  each: selection_each$1,
-  attr: selection_attr$1,
-  style: selection_style$1,
-  property: selection_property$1,
-  classed: selection_classed$1,
-  text: selection_text$1,
-  html: selection_html$1,
-  raise: selection_raise$1,
-  lower: selection_lower$1,
-  append: selection_append$1,
-  insert: selection_insert$1,
-  remove: selection_remove$1,
-  clone: selection_clone$1,
-  datum: selection_datum$1,
-  on: selection_on$1,
-  dispatch: selection_dispatch$1
-};
-
-function select$1(selector) {
-  return typeof selector === "string"
-      ? new Selection$2([[document.querySelector(selector)]], [document.documentElement])
-      : new Selection$2([[selector]], root$2);
-}
-
 /**
     @function rtl
     @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
 */
-function detectRTL () { return select$1("html").attr("dir") === "rtl" ||
-  select$1("body").attr("dir") === "rtl" ||
-  select$1("html").style("direction") === "rtl" ||
-  select$1("body").style("direction") === "rtl"; }
+function detectRTL () { return select("html").attr("dir") === "rtl" ||
+  select("body").attr("dir") === "rtl" ||
+  select("html").style("direction") === "rtl" ||
+  select("body").style("direction") === "rtl"; }
 
 /**
     @function stringify
@@ -9825,7 +8955,7 @@ var TextBox = (function (BaseClass$$1) {
     var this$1 = this;
 
 
-    if (this._select === void 0) { this.select(select$1("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
+    if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
     if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.4; }; }
     var that = this;
 
@@ -10015,7 +9145,7 @@ var TextBox = (function (BaseClass$$1) {
             .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
         }
 
-        var texts = select$1(this).selectAll("text").data(d.lines);
+        var texts = select(this).selectAll("text").data(d.lines);
 
         if (that._duration === 0) {
 
@@ -10243,8 +9373,8 @@ function(d, i) {
       @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
       @param {String|HTMLElement} [*selector*]
   */
-  TextBox.prototype.select = function select$1$$1 (_) {
-    return arguments.length ? (this._select = select$1(_), this) : this._select;
+  TextBox.prototype.select = function select$1 (_) {
+    return arguments.length ? (this._select = select(_), this) : this._select;
   };
 
   /**
@@ -10768,7 +9898,7 @@ var Shape = (function (BaseClass$$1) {
                 height: b.height,
                 l: l,
                 id: ((this$1._id(d, i)) + "_" + l),
-                r: bounds.angle !== undefined ? bounds.angle : 0,
+                r: d.labelConfig && d.labelConfig.rotate ? d.labelConfig.rotate : bounds.angle !== undefined ? bounds.angle : 0,
                 text: labels[l],
                 width: b.width,
                 x: x + b.x,
@@ -13523,6 +12653,7 @@ var Axis = (function (BaseClass$$1) {
         fontFamily: new TextBox().fontFamily(),
         fontResize: false,
         fontSize: constant$4(10),
+        padding: 0,
         textAnchor: function () {
           var rtl$$1 = detectRTL();
           return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
@@ -13531,7 +12662,6 @@ var Axis = (function (BaseClass$$1) {
         },
         verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
       },
-      labelPadding: 0,
       r: function (d) { return d.tick ? 4 : 0; },
       stroke: "#000",
       strokeWidth: 1,
@@ -14500,7 +13630,7 @@ var ColorScale = (function (BaseClass$$1) {
     this._group = elem("g.d3plus-ColorScale", {parent: this._select});
 
     var domain = extent(this._data, this._value);
-    var colors = this._color, ticks$$1;
+    var colors = this._color, labels, ticks$$1;
 
     if (!(colors instanceof Array)) {
       colors = [
@@ -14532,6 +13662,12 @@ var ColorScale = (function (BaseClass$$1) {
 
       ticks$$1 = merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
 
+      var tickSet = new Set(ticks$$1);
+
+      if (ticks$$1.length !== tickSet.size) {
+        labels = Array.from(tickSet);
+      }
+
       this._colorScale = threshold$1()
         .domain(ticks$$1)
         .range(["black"].concat(colors).concat(colors[colors.length - 1]));
@@ -14554,7 +13690,7 @@ var ColorScale = (function (BaseClass$$1) {
       domain: horizontal ? domain : domain.reverse(),
       duration: this._duration,
       height: this._height,
-      labels: ticks$$1,
+      labels: labels || ticks$$1,
       orient: this._orient,
       padding: this._padding,
       ticks: ticks$$1,
@@ -15126,7 +14262,7 @@ var Legend = (function (BaseClass$$1) {
       this$1._shapes.push(new shapes[Shape$$1]()
         .data(data.filter(function (d) { return d.shape === Shape$$1; }))
         .duration(this$1._duration)
-        .labelPadding(0)
+        .labelConfig({padding: 0})
         .select(this$1._group.node())
         .verticalAlign("top")
         .config(assign({}, baseConfig, config))
