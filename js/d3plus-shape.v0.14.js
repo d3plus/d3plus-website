@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.14.1
+  d3plus-shape v0.14.2
   Fancy SVG shapes for visualizations
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -724,7 +724,7 @@ var Shape = (function (BaseClass) {
                 height: b.height,
                 l: l,
                 id: ((this$1._id(d, i)) + "_" + l),
-                r: bounds.angle !== undefined ? bounds.angle : 0,
+                r: d.labelConfig && d.labelConfig.rotate ? d.labelConfig.rotate : bounds.angle !== undefined ? bounds.angle : 0,
                 text: labels[l],
                 width: b.width,
                 x: x + b.x,
