@@ -1,7 +1,7 @@
 /*
-  d3plus-axis v0.3.41
+  d3plus-axis v0.3.42
   Beautiful javascript scales and axes.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -123,12 +123,12 @@ function date(d) {
     @extends external:BaseClass
     @desc Creates an SVG scale based on an array of data.
 */
-var Axis = (function (BaseClass$$1) {
+var Axis = (function (BaseClass) {
   function Axis() {
     var this$1 = this;
 
 
-    BaseClass$$1.call(this);
+    BaseClass.call(this);
 
     this._align = "middle";
     this._barConfig = {
@@ -160,9 +160,9 @@ var Axis = (function (BaseClass$$1) {
         fontResize: false,
         fontSize: d3plusCommon.constant(10),
         textAnchor: function () {
-          var rtl$$1 = d3plusText.rtl();
-          return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
-            : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
+          var rtl = d3plusText.rtl();
+          return this$1._orient === "left" ? rtl ? "start" : "end"
+            : this$1._orient === "right" ? rtl ? "end" : "start"
             : "middle";
         },
         verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
@@ -183,8 +183,8 @@ var Axis = (function (BaseClass$$1) {
 
   }
 
-  if ( BaseClass$$1 ) Axis.__proto__ = BaseClass$$1;
-  Axis.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  if ( BaseClass ) Axis.__proto__ = BaseClass;
+  Axis.prototype = Object.create( BaseClass && BaseClass.prototype );
   Axis.prototype.constructor = Axis;
 
   /**
@@ -312,7 +312,7 @@ var Axis = (function (BaseClass$$1) {
   */
   Axis.prototype.render = function render (callback) {
     var this$1 = this;
-    var obj, obj$1;
+    var obj;
 
 
     if (this._select === void 0) {
@@ -335,12 +335,12 @@ var Axis = (function (BaseClass$$1) {
           parent = this._select,
           t = d3Transition.transition().duration(this._duration);
 
-    var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
-    if (range$$1[0] === void 0) { range$$1[0] = p; }
-    if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
-    this._size = range$$1[1] - range$$1[0];
-    if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
-      range$$1 = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
+    var range = this._range ? this._range.slice() : [undefined, undefined];
+    if (range[0] === void 0) { range[0] = p; }
+    if (range[1] === void 0) { range[1] = this[("_" + width)] - p; }
+    this._size = range[1] - range[0];
+    if (this._scale === "ordinal" && this._domain.length > range.length) {
+      range = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range[0]; });
     }
 
     var margin = this._margin = {top: 0, right: 0, bottom: 0, left: 0};
@@ -363,8 +363,8 @@ var Axis = (function (BaseClass$$1) {
     this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
       .domain(this._scale === "time" ? this._domain.map(date) : this._domain);
 
-    if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
-    else { this._d3Scale.range(range$$1); }
+    if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range); }
+    else { this._d3Scale.range(range); }
 
     if (this._d3Scale.round) { this._d3Scale.round(true); }
     if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
@@ -535,57 +535,57 @@ var Axis = (function (BaseClass$$1) {
     }
 
     // Calculates new range, based on any text that may be overflowing.
-    var rangeOuter = range$$1.slice();
-    var lastI = range$$1.length - 1;
+    var rangeOuter = range.slice();
+    var lastI = range.length - 1;
     if (this._scale !== "band" && textData.length) {
 
       var first = textData[0],
             last = textData[textData.length - 1];
 
-      var firstB = d3Array.min([this._getPosition(first.d) - first[width] / 2, range$$1[0] - wBuff]);
-      if (firstB < range$$1[0]) {
-        var d = range$$1[0] - firstB;
+      var firstB = d3Array.min([this._getPosition(first.d) - first[width] / 2, range[0] - wBuff]);
+      if (firstB < range[0]) {
+        var d = range[0] - firstB;
         if (this._range === void 0 || this._range[0] === void 0) {
           this._size -= d;
-          range$$1[0] += d;
+          range[0] += d;
         }
         else if (this._range) {
           rangeOuter[0] -= d;
         }
       }
 
-      var lastB = d3Array.max([this._getPosition(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
-      if (lastB > range$$1[lastI]) {
-        var d$1 = lastB - range$$1[lastI];
+      var lastB = d3Array.max([this._getPosition(last.d) + last[width] / 2, range[lastI] + wBuff]);
+      if (lastB > range[lastI]) {
+        var d$1 = lastB - range[lastI];
         if (this._range === void 0 || this._range[lastI] === void 0) {
           this._size -= d$1;
-          range$$1[lastI] -= d$1;
+          range[lastI] -= d$1;
         }
         else if (this._range) {
           rangeOuter[lastI] += d$1;
         }
       }
 
-      if (range$$1.length > 2) { range$$1 = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (range$$1.length - 1)) + range$$1[0]; }); }
-      range$$1 = range$$1.map(Math.round);
+      if (range.length > 2) { range = d3Array.range(this._domain.length).map(function (d) { return this$1._size * (d / (range.length - 1)) + range[0]; }); }
+      range = range.map(Math.round);
       if (this._d3ScaleNegative) {
         var negativeRange = this._d3ScaleNegative.range();
         this._d3ScaleNegative[this._d3ScaleNegative.rangeRound ? "rangeRound" : "range"](
           this._d3Scale && this._d3Scale.range()[0] < negativeRange[0]
-            ? [negativeRange[0], range$$1[1]]
-            : [range$$1[0], this._d3Scale ? negativeRange[1] : range$$1[1]]
+            ? [negativeRange[0], range[1]]
+            : [range[0], this._d3Scale ? negativeRange[1] : range[1]]
         );
         if (this._d3Scale) {
           var positiveRange = this._d3Scale.range();
           this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](
-            range$$1[0] < negativeRange[0]
-              ? [range$$1[0], positiveRange[1]]
-              : [positiveRange[0], range$$1[1]]
+            range[0] < negativeRange[0]
+              ? [range[0], positiveRange[1]]
+              : [positiveRange[0], range[1]]
           );
         }
       }
       else {
-        this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](range$$1);
+        this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](range);
       }
 
     }
@@ -637,6 +637,8 @@ var Axis = (function (BaseClass$$1) {
 
     var tickData = ticks.concat(labelOnly)
       .map(function (d) {
+        var obj;
+
         var data = textData.filter(function (td) { return td.d === d; });
         var dataIndex = data.length ? textData.indexOf(data[0]) : undefined;
         var xPos = this$1._getPosition(d);
@@ -660,7 +662,7 @@ var Axis = (function (BaseClass$$1) {
               size = (hBuff + labelOffset) * (flip ? -1 : 1),
               yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
 
-        return ( obj$1 = {
+        return ( obj = {
           id: d,
           labelBounds: {
             x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
@@ -671,7 +673,7 @@ var Axis = (function (BaseClass$$1) {
           size: ticks.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false,
           tick: ticks.includes(d)
-        }, obj$1[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj$1[y] = yPos, obj$1);
+        }, obj[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = yPos, obj);
       });
 
     if (this._shape === "Line") {
@@ -887,7 +889,7 @@ var Axis = (function (BaseClass$$1) {
       @param {Array} [*value*]
       @chainable
   */
-  Axis.prototype.range = function range$$1 (_) {
+  Axis.prototype.range = function range (_) {
     return arguments.length ? (this._range = _, this) : this._range;
   };
 

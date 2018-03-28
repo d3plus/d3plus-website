@@ -1,7 +1,7 @@
 /*
-  d3plus-axis v0.3.41
+  d3plus-axis v0.3.42
   Beautiful javascript scales and axes.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -67,7 +67,7 @@ if (!Array.prototype.includes) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define('d3plus-axis', ['exports'], factory) :
 	(factory((global.d3plus = {})));
-}(this, (function (exports) { 'use strict';
+}(this, (function (exports) {
 
 function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
@@ -164,9 +164,9 @@ function range(start, stop, step) {
   return range;
 }
 
-var e10 = Math.sqrt(50);
-var e5 = Math.sqrt(10);
-var e2 = Math.sqrt(2);
+var e10 = Math.sqrt(50),
+    e5 = Math.sqrt(10),
+    e2 = Math.sqrt(2);
 
 function ticks(start, stop, count) {
   var reverse,
@@ -546,7 +546,7 @@ function keys(map) {
 
 var array$1 = Array.prototype;
 
-var map$3 = array$1.map;
+var map$2 = array$1.map;
 var slice$1 = array$1.slice;
 
 var implicit = {name: "implicit"};
@@ -708,17 +708,17 @@ function Color() {}
 var darker = 0.7;
 var brighter = 1 / darker;
 
-var reI = "\\s*([+-]?\\d+)\\s*";
-var reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*";
-var reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*";
-var reHex3 = /^#([0-9a-f]{3})$/;
-var reHex6 = /^#([0-9a-f]{6})$/;
-var reRgbInteger = new RegExp("^rgb\\(" + [reI, reI, reI] + "\\)$");
-var reRgbPercent = new RegExp("^rgb\\(" + [reP, reP, reP] + "\\)$");
-var reRgbaInteger = new RegExp("^rgba\\(" + [reI, reI, reI, reN] + "\\)$");
-var reRgbaPercent = new RegExp("^rgba\\(" + [reP, reP, reP, reN] + "\\)$");
-var reHslPercent = new RegExp("^hsl\\(" + [reN, reP, reP] + "\\)$");
-var reHslaPercent = new RegExp("^hsla\\(" + [reN, reP, reP, reN] + "\\)$");
+var reI = "\\s*([+-]?\\d+)\\s*",
+    reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
+    reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
+    reHex3 = /^#([0-9a-f]{3})$/,
+    reHex6 = /^#([0-9a-f]{6})$/,
+    reRgbInteger = new RegExp("^rgb\\(" + [reI, reI, reI] + "\\)$"),
+    reRgbPercent = new RegExp("^rgb\\(" + [reP, reP, reP] + "\\)$"),
+    reRgbaInteger = new RegExp("^rgba\\(" + [reI, reI, reI, reN] + "\\)$"),
+    reRgbaPercent = new RegExp("^rgba\\(" + [reP, reP, reP, reN] + "\\)$"),
+    reHslPercent = new RegExp("^hsl\\(" + [reN, reP, reP] + "\\)$"),
+    reHslaPercent = new RegExp("^hsla\\(" + [reN, reP, reP, reN] + "\\)$");
 
 var named = {
   aliceblue: 0xf0f8ff,
@@ -1035,14 +1035,14 @@ function hsl2rgb(h, m1, m2) {
 var deg2rad = Math.PI / 180;
 var rad2deg = 180 / Math.PI;
 
-var Kn = 18;
-var Xn = 0.950470;
-var Yn = 1;
-var Zn = 1.088830;
-var t0 = 4 / 29;
-var t1 = 6 / 29;
-var t2 = 3 * t1 * t1;
-var t3 = t1 * t1 * t1;
+var Kn = 18,
+    Xn = 0.950470, // D65 standard referent
+    Yn = 1,
+    Zn = 1.088830,
+    t0 = 4 / 29,
+    t1 = 6 / 29,
+    t2 = 3 * t1 * t1,
+    t3 = t1 * t1 * t1;
 
 function labConvert(o) {
   if (o instanceof Lab) { return new Lab(o.l, o.a, o.b, o.opacity); }
@@ -1140,14 +1140,14 @@ define(Hcl, hcl, extend(Color, {
   }
 }));
 
-var A = -0.14861;
-var B = +1.78277;
-var C = -0.29227;
-var D = -0.90649;
-var E = +1.97294;
-var ED = E * D;
-var EB = E * B;
-var BC_DA = B * C - D * A;
+var A = -0.14861,
+    B = +1.78277,
+    C = -0.29227,
+    D = -0.90649,
+    E = +1.97294,
+    ED = E * D,
+    EB = E * B,
+    BC_DA = B * C - D * A;
 
 function cubehelixConvert(o) {
   if (o instanceof Cubehelix) { return new Cubehelix(o.h, o.s, o.l, o.opacity); }
@@ -1204,7 +1204,7 @@ function constant$1(x) {
   };
 }
 
-function linear$1(a, d) {
+function linear(a, d) {
   return function(t) {
     return a + t * d;
   };
@@ -1218,7 +1218,7 @@ function exponential(a, b, y) {
 
 function hue(a, b) {
   var d = b - a;
-  return d ? linear$1(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$1(isNaN(a) ? b : a);
+  return d ? linear(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$1(isNaN(a) ? b : a);
 }
 
 function gamma(y) {
@@ -1229,7 +1229,7 @@ function gamma(y) {
 
 function nogamma(a, b) {
   var d = b - a;
-  return d ? linear$1(a, d) : constant$1(isNaN(a) ? b : a);
+  return d ? linear(a, d) : constant$1(isNaN(a) ? b : a);
 }
 
 var interpolateRgb = (function rgbGamma(y) {
@@ -1277,7 +1277,7 @@ function date(a, b) {
   };
 }
 
-function interpolateNumber(a, b) {
+function reinterpolate(a, b) {
   return a = +a, b -= a, function(t) {
     return a + b * t;
   };
@@ -1305,8 +1305,8 @@ function object(a, b) {
   };
 }
 
-var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g;
-var reB = new RegExp(reA.source, "g");
+var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g,
+    reB = new RegExp(reA.source, "g");
 
 function zero(b) {
   return function() {
@@ -1345,7 +1345,7 @@ function interpolateString(a, b) {
       else { s[++i] = bm; }
     } else { // interpolate non-matching numbers
       s[++i] = null;
-      q.push({i: i, x: interpolateNumber(am, bm)});
+      q.push({i: i, x: reinterpolate(am, bm)});
     }
     bi = reB.lastIndex;
   }
@@ -1371,13 +1371,13 @@ function interpolateString(a, b) {
 function interpolateValue(a, b) {
   var t = typeof b, c;
   return b == null || t === "boolean" ? constant$1(b)
-      : (t === "number" ? interpolateNumber
+      : (t === "number" ? reinterpolate
       : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
       : b instanceof color ? interpolateRgb
       : b instanceof Date ? date
       : Array.isArray(b) ? array$2
       : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object
-      : interpolateNumber)(a, b);
+      : reinterpolate)(a, b);
 }
 
 function interpolateRound(a, b) {
@@ -1388,7 +1388,7 @@ function interpolateRound(a, b) {
 
 var degrees = 180 / Math.PI;
 
-var identity$2 = {
+var identity$1 = {
   translateX: 0,
   translateY: 0,
   rotate: 0,
@@ -1413,13 +1413,13 @@ function decompose(a, b, c, d, e, f) {
   };
 }
 
-var cssNode;
-var cssRoot;
-var cssView;
-var svgNode;
+var cssNode,
+    cssRoot,
+    cssView,
+    svgNode;
 
 function parseCss(value) {
-  if (value === "none") { return identity$2; }
+  if (value === "none") { return identity$1; }
   if (!cssNode) { cssNode = document.createElement("DIV"), cssRoot = document.documentElement, cssView = document.defaultView; }
   cssNode.style.transform = value;
   value = cssView.getComputedStyle(cssRoot.appendChild(cssNode), null).getPropertyValue("transform");
@@ -1429,10 +1429,10 @@ function parseCss(value) {
 }
 
 function parseSvg(value) {
-  if (value == null) { return identity$2; }
+  if (value == null) { return identity$1; }
   if (!svgNode) { svgNode = document.createElementNS("http://www.w3.org/2000/svg", "g"); }
   svgNode.setAttribute("transform", value);
-  if (!(value = svgNode.transform.baseVal.consolidate())) { return identity$2; }
+  if (!(value = svgNode.transform.baseVal.consolidate())) { return identity$1; }
   value = value.matrix;
   return decompose(value.a, value.b, value.c, value.d, value.e, value.f);
 }
@@ -1446,7 +1446,7 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
   function translate(xa, ya, xb, yb, s, q) {
     if (xa !== xb || ya !== yb) {
       var i = s.push("translate(", null, pxComma, null, pxParen);
-      q.push({i: i - 4, x: interpolateNumber(xa, xb)}, {i: i - 2, x: interpolateNumber(ya, yb)});
+      q.push({i: i - 4, x: reinterpolate(xa, xb)}, {i: i - 2, x: reinterpolate(ya, yb)});
     } else if (xb || yb) {
       s.push("translate(" + xb + pxComma + yb + pxParen);
     }
@@ -1455,7 +1455,7 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
   function rotate(a, b, s, q) {
     if (a !== b) {
       if (a - b > 180) { b += 360; } else if (b - a > 180) { a += 360; } // shortest path
-      q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: interpolateNumber(a, b)});
+      q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: reinterpolate(a, b)});
     } else if (b) {
       s.push(pop(s) + "rotate(" + b + degParen);
     }
@@ -1463,7 +1463,7 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
 
   function skewX(a, b, s, q) {
     if (a !== b) {
-      q.push({i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: interpolateNumber(a, b)});
+      q.push({i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: reinterpolate(a, b)});
     } else if (b) {
       s.push(pop(s) + "skewX(" + b + degParen);
     }
@@ -1472,7 +1472,7 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
   function scale(xa, ya, xb, yb, s, q) {
     if (xa !== xb || ya !== yb) {
       var i = s.push(pop(s) + "scale(", null, ",", null, ")");
-      q.push({i: i - 4, x: interpolateNumber(xa, xb)}, {i: i - 2, x: interpolateNumber(ya, yb)});
+      q.push({i: i - 4, x: reinterpolate(xa, xb)}, {i: i - 2, x: reinterpolate(ya, yb)});
     } else if (xb !== 1 || yb !== 1) {
       s.push(pop(s) + "scale(" + xb + "," + yb + ")");
     }
@@ -1552,22 +1552,22 @@ function deinterpolateClamp(deinterpolate) {
   };
 }
 
-function reinterpolateClamp(reinterpolate) {
+function reinterpolateClamp(reinterpolate$$1) {
   return function(a, b) {
-    var r = reinterpolate(a = +a, b = +b);
+    var r = reinterpolate$$1(a = +a, b = +b);
     return function(t) { return t <= 0 ? a : t >= 1 ? b : r(t); };
   };
 }
 
-function bimap(domain, range, deinterpolate, reinterpolate) {
-  var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
-  if (d1 < d0) { d0 = deinterpolate(d1, d0), r0 = reinterpolate(r1, r0); }
-  else { d0 = deinterpolate(d0, d1), r0 = reinterpolate(r0, r1); }
+function bimap(domain, range$$1, deinterpolate, reinterpolate$$1) {
+  var d0 = domain[0], d1 = domain[1], r0 = range$$1[0], r1 = range$$1[1];
+  if (d1 < d0) { d0 = deinterpolate(d1, d0), r0 = reinterpolate$$1(r1, r0); }
+  else { d0 = deinterpolate(d0, d1), r0 = reinterpolate$$1(r0, r1); }
   return function(x) { return r0(d0(x)); };
 }
 
-function polymap(domain, range, deinterpolate, reinterpolate) {
-  var j = Math.min(domain.length, range.length) - 1,
+function polymap(domain, range$$1, deinterpolate, reinterpolate$$1) {
+  var j = Math.min(domain.length, range$$1.length) - 1,
       d = new Array(j),
       r = new Array(j),
       i = -1;
@@ -1575,12 +1575,12 @@ function polymap(domain, range, deinterpolate, reinterpolate) {
   // Reverse descending domains.
   if (domain[j] < domain[0]) {
     domain = domain.slice().reverse();
-    range = range.slice().reverse();
+    range$$1 = range$$1.slice().reverse();
   }
 
   while (++i < j) {
     d[i] = deinterpolate(domain[i], domain[i + 1]);
-    r[i] = reinterpolate(range[i], range[i + 1]);
+    r[i] = reinterpolate$$1(range$$1[i], range$$1[i + 1]);
   }
 
   return function(x) {
@@ -1599,9 +1599,9 @@ function copy(source, target) {
 
 // deinterpolate(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
 // reinterpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding domain value x in [a,b].
-function continuous(deinterpolate, reinterpolate) {
+function continuous(deinterpolate, reinterpolate$$1) {
   var domain = unit,
-      range = unit,
+      range$$1 = unit,
       interpolate$$1 = interpolateValue,
       clamp = false,
       piecewise,
@@ -1609,29 +1609,29 @@ function continuous(deinterpolate, reinterpolate) {
       input;
 
   function rescale() {
-    piecewise = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
+    piecewise = Math.min(domain.length, range$$1.length) > 2 ? polymap : bimap;
     output = input = null;
     return scale;
   }
 
   function scale(x) {
-    return (output || (output = piecewise(domain, range, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate$$1)))(+x);
+    return (output || (output = piecewise(domain, range$$1, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate$$1)))(+x);
   }
 
   scale.invert = function(y) {
-    return (input || (input = piecewise(range, domain, deinterpolateLinear, clamp ? reinterpolateClamp(reinterpolate) : reinterpolate)))(+y);
+    return (input || (input = piecewise(range$$1, domain, deinterpolateLinear, clamp ? reinterpolateClamp(reinterpolate$$1) : reinterpolate$$1)))(+y);
   };
 
   scale.domain = function(_) {
-    return arguments.length ? (domain = map$3.call(_, number$1), rescale()) : domain.slice();
+    return arguments.length ? (domain = map$2.call(_, number$1), rescale()) : domain.slice();
   };
 
   scale.range = function(_) {
-    return arguments.length ? (range = slice$1.call(_), rescale()) : range.slice();
+    return arguments.length ? (range$$1 = slice$1.call(_), rescale()) : range$$1.slice();
   };
 
   scale.rangeRound = function(_) {
-    return range = slice$1.call(_), interpolate$$1 = interpolateRound, rescale();
+    return range$$1 = slice$1.call(_), interpolate$$1 = interpolateRound, rescale();
   };
 
   scale.clamp = function(_) {
@@ -1803,17 +1803,17 @@ FormatSpecifier.prototype.toString = function() {
       + this.type;
 };
 
-function identity$3(x) {
+function identity$2(x) {
   return x;
 }
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 function formatLocale(locale) {
-  var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$3,
+  var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$2,
       currency = locale.currency,
       decimal = locale.decimal,
-      numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$3,
+      numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$2,
       percent = locale.percent || "%";
 
   function newFormat(specifier) {
@@ -1868,7 +1868,7 @@ function formatLocale(locale) {
 
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-        valueSuffix = valueSuffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + (valueNegative && sign === "(" ? ")" : "");
+        valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
         // Break the formatted value into the integer “value” part that can be
         // grouped, and fractional or exponential “suffix” part that is not.
@@ -2043,17 +2043,17 @@ function linearish(scale) {
   return scale;
 }
 
-function linear() {
-  var scale = continuous(deinterpolateLinear, interpolateNumber);
+function linear$1() {
+  var scale = continuous(deinterpolateLinear, reinterpolate);
 
   scale.copy = function() {
-    return copy(scale, linear());
+    return copy(scale, linear$1());
   };
 
   return linearish(scale);
 }
 
-function identity$1() {
+function identity$3() {
   var domain = [0, 1];
 
   function scale(x) {
@@ -2063,11 +2063,11 @@ function identity$1() {
   scale.invert = scale;
 
   scale.domain = scale.range = function(_) {
-    return arguments.length ? (domain = map$3.call(_, number$1), scale) : domain.slice();
+    return arguments.length ? (domain = map$2.call(_, number$1), scale) : domain.slice();
   };
 
   scale.copy = function() {
-    return identity$1().domain(domain);
+    return identity$3().domain(domain);
   };
 
   return linearish(scale);
@@ -2098,7 +2098,7 @@ function deinterpolate(a, b) {
       : constant$2(b);
 }
 
-function reinterpolate(a, b) {
+function reinterpolate$1(a, b) {
   return a < 0
       ? function(t) { return -Math.pow(-b, t) * Math.pow(-a, 1 - t); }
       : function(t) { return Math.pow(b, t) * Math.pow(a, 1 - t); };
@@ -2128,7 +2128,7 @@ function reflect(f) {
 }
 
 function log() {
-  var scale = continuous(deinterpolate, reinterpolate).domain([1, 10]),
+  var scale = continuous(deinterpolate, reinterpolate$1).domain([1, 10]),
       domain = scale.domain,
       base = 10,
       logs = logp(10),
@@ -2252,22 +2252,22 @@ function sqrt() {
 
 function quantile$$1() {
   var domain = [],
-      range = [],
+      range$$1 = [],
       thresholds = [];
 
   function rescale() {
-    var i = 0, n = Math.max(1, range.length);
+    var i = 0, n = Math.max(1, range$$1.length);
     thresholds = new Array(n - 1);
     while (++i < n) { thresholds[i - 1] = threshold(domain, i / n); }
     return scale;
   }
 
   function scale(x) {
-    if (!isNaN(x = +x)) { return range[bisectRight(thresholds, x)]; }
+    if (!isNaN(x = +x)) { return range$$1[bisectRight(thresholds, x)]; }
   }
 
   scale.invertExtent = function(y) {
-    var i = range.indexOf(y);
+    var i = range$$1.indexOf(y);
     return i < 0 ? [NaN, NaN] : [
       i > 0 ? thresholds[i - 1] : domain[0],
       i < thresholds.length ? thresholds[i] : domain[domain.length - 1]
@@ -2283,7 +2283,7 @@ function quantile$$1() {
   };
 
   scale.range = function(_) {
-    return arguments.length ? (range = slice$1.call(_), rescale()) : range.slice();
+    return arguments.length ? (range$$1 = slice$1.call(_), rescale()) : range$$1.slice();
   };
 
   scale.quantiles = function() {
@@ -2293,7 +2293,7 @@ function quantile$$1() {
   scale.copy = function() {
     return quantile$$1()
         .domain(domain)
-        .range(range);
+        .range(range$$1);
   };
 
   return scale;
@@ -2304,10 +2304,10 @@ function quantize$1() {
       x1 = 1,
       n = 1,
       domain = [0.5],
-      range = [0, 1];
+      range$$1 = [0, 1];
 
   function scale(x) {
-    if (x <= x) { return range[bisectRight(domain, x, 0, n)]; }
+    if (x <= x) { return range$$1[bisectRight(domain, x, 0, n)]; }
   }
 
   function rescale() {
@@ -2322,11 +2322,11 @@ function quantize$1() {
   };
 
   scale.range = function(_) {
-    return arguments.length ? (n = (range = slice$1.call(_)).length - 1, rescale()) : range.slice();
+    return arguments.length ? (n = (range$$1 = slice$1.call(_)).length - 1, rescale()) : range$$1.slice();
   };
 
   scale.invertExtent = function(y) {
-    var i = range.indexOf(y);
+    var i = range$$1.indexOf(y);
     return i < 0 ? [NaN, NaN]
         : i < 1 ? [x0, domain[0]]
         : i >= n ? [domain[n - 1], x1]
@@ -2336,7 +2336,7 @@ function quantize$1() {
   scale.copy = function() {
     return quantize$1()
         .domain([x0, x1])
-        .range(range);
+        .range(range$$1);
   };
 
   return linearish(scale);
@@ -2344,37 +2344,37 @@ function quantize$1() {
 
 function threshold$1() {
   var domain = [0.5],
-      range = [0, 1],
+      range$$1 = [0, 1],
       n = 1;
 
   function scale(x) {
-    if (x <= x) { return range[bisectRight(domain, x, 0, n)]; }
+    if (x <= x) { return range$$1[bisectRight(domain, x, 0, n)]; }
   }
 
   scale.domain = function(_) {
-    return arguments.length ? (domain = slice$1.call(_), n = Math.min(domain.length, range.length - 1), scale) : domain.slice();
+    return arguments.length ? (domain = slice$1.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : domain.slice();
   };
 
   scale.range = function(_) {
-    return arguments.length ? (range = slice$1.call(_), n = Math.min(domain.length, range.length - 1), scale) : range.slice();
+    return arguments.length ? (range$$1 = slice$1.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : range$$1.slice();
   };
 
   scale.invertExtent = function(y) {
-    var i = range.indexOf(y);
+    var i = range$$1.indexOf(y);
     return [domain[i - 1], domain[i]];
   };
 
   scale.copy = function() {
     return threshold$1()
         .domain(domain)
-        .range(range);
+        .range(range$$1);
   };
 
   return scale;
 }
 
-var t0$1 = new Date;
-var t1$1 = new Date;
+var t0$1 = new Date,
+    t1$1 = new Date;
 
 function newInterval(floori, offseti, count, field) {
 
@@ -2464,40 +2464,40 @@ millisecond.every = function(k) {
   });
 };
 
-var durationSecond$1 = 1e3;
-var durationMinute$1 = 6e4;
-var durationHour$1 = 36e5;
-var durationDay$1 = 864e5;
-var durationWeek$1 = 6048e5;
+var durationSecond = 1e3;
+var durationMinute = 6e4;
+var durationHour = 36e5;
+var durationDay = 864e5;
+var durationWeek = 6048e5;
 
 var second = newInterval(function(date) {
-  date.setTime(Math.floor(date / durationSecond$1) * durationSecond$1);
+  date.setTime(Math.floor(date / durationSecond) * durationSecond);
 }, function(date, step) {
-  date.setTime(+date + step * durationSecond$1);
+  date.setTime(+date + step * durationSecond);
 }, function(start, end) {
-  return (end - start) / durationSecond$1;
+  return (end - start) / durationSecond;
 }, function(date) {
   return date.getUTCSeconds();
 });
 
 var minute = newInterval(function(date) {
-  date.setTime(Math.floor(date / durationMinute$1) * durationMinute$1);
+  date.setTime(Math.floor(date / durationMinute) * durationMinute);
 }, function(date, step) {
-  date.setTime(+date + step * durationMinute$1);
+  date.setTime(+date + step * durationMinute);
 }, function(start, end) {
-  return (end - start) / durationMinute$1;
+  return (end - start) / durationMinute;
 }, function(date) {
   return date.getMinutes();
 });
 
 var hour = newInterval(function(date) {
-  var offset = date.getTimezoneOffset() * durationMinute$1 % durationHour$1;
-  if (offset < 0) { offset += durationHour$1; }
-  date.setTime(Math.floor((+date - offset) / durationHour$1) * durationHour$1 + offset);
+  var offset = date.getTimezoneOffset() * durationMinute % durationHour;
+  if (offset < 0) { offset += durationHour; }
+  date.setTime(Math.floor((+date - offset) / durationHour) * durationHour + offset);
 }, function(date, step) {
-  date.setTime(+date + step * durationHour$1);
+  date.setTime(+date + step * durationHour);
 }, function(start, end) {
-  return (end - start) / durationHour$1;
+  return (end - start) / durationHour;
 }, function(date) {
   return date.getHours();
 });
@@ -2507,7 +2507,7 @@ var day = newInterval(function(date) {
 }, function(date, step) {
   date.setDate(date.getDate() + step);
 }, function(start, end) {
-  return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$1) / durationDay$1;
+  return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationDay;
 }, function(date) {
   return date.getDate() - 1;
 });
@@ -2519,7 +2519,7 @@ function weekday(i) {
   }, function(date, step) {
     date.setDate(date.getDate() + step * 7);
   }, function(start, end) {
-    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$1) / durationWeek$1;
+    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationWeek;
   });
 }
 
@@ -2567,9 +2567,9 @@ year.every = function(k) {
 var utcMinute = newInterval(function(date) {
   date.setUTCSeconds(0, 0);
 }, function(date, step) {
-  date.setTime(+date + step * durationMinute$1);
+  date.setTime(+date + step * durationMinute);
 }, function(start, end) {
-  return (end - start) / durationMinute$1;
+  return (end - start) / durationMinute;
 }, function(date) {
   return date.getUTCMinutes();
 });
@@ -2577,9 +2577,9 @@ var utcMinute = newInterval(function(date) {
 var utcHour = newInterval(function(date) {
   date.setUTCMinutes(0, 0, 0);
 }, function(date, step) {
-  date.setTime(+date + step * durationHour$1);
+  date.setTime(+date + step * durationHour);
 }, function(start, end) {
-  return (end - start) / durationHour$1;
+  return (end - start) / durationHour;
 }, function(date) {
   return date.getUTCHours();
 });
@@ -2589,7 +2589,7 @@ var utcDay = newInterval(function(date) {
 }, function(date, step) {
   date.setUTCDate(date.getUTCDate() + step);
 }, function(start, end) {
-  return (end - start) / durationDay$1;
+  return (end - start) / durationDay;
 }, function(date) {
   return date.getUTCDate() - 1;
 });
@@ -2601,7 +2601,7 @@ function utcWeekday(i) {
   }, function(date, step) {
     date.setUTCDate(date.getUTCDate() + step * 7);
   }, function(start, end) {
-    return (end - start) / durationWeek$1;
+    return (end - start) / durationWeek;
   });
 }
 
@@ -2996,10 +2996,10 @@ function formatLocale$1(locale) {
   };
 }
 
-var pads = {"-": "", "_": " ", "0": "0"};
-var numberRe = /^\s*\d+/;
-var percentRe = /^%/;
-var requoteRe = /[\\^$*+?|[\]().{}]/g;
+var pads = {"-": "", "_": " ", "0": "0"},
+    numberRe = /^\s*\d+/, // note: ignores next directive
+    percentRe = /^%/,
+    requoteRe = /[\\^$*+?|[\]().{}]/g;
 
 function pad(value, fill, width) {
   var sign = value < 0 ? "-" : "",
@@ -3319,13 +3319,13 @@ var parseIso = +new Date("2000-01-01T00:00:00.000Z")
     ? parseIsoNative
     : utcParse(isoSpecifier);
 
-var durationSecond = 1000;
-var durationMinute = durationSecond * 60;
-var durationHour = durationMinute * 60;
-var durationDay = durationHour * 24;
-var durationWeek = durationDay * 7;
-var durationMonth = durationDay * 30;
-var durationYear = durationDay * 365;
+var durationSecond$1 = 1000,
+    durationMinute$1 = durationSecond$1 * 60,
+    durationHour$1 = durationMinute$1 * 60,
+    durationDay$1 = durationHour$1 * 24,
+    durationWeek$1 = durationDay$1 * 7,
+    durationMonth = durationDay$1 * 30,
+    durationYear = durationDay$1 * 365;
 
 function date$1(t) {
   return new Date(t);
@@ -3336,7 +3336,7 @@ function number$2(t) {
 }
 
 function calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1, millisecond$$1, format) {
-  var scale = continuous(deinterpolateLinear, interpolateNumber),
+  var scale = continuous(deinterpolateLinear, reinterpolate),
       invert = scale.invert,
       domain = scale.domain;
 
@@ -3350,34 +3350,34 @@ function calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1
       formatYear = format("%Y");
 
   var tickIntervals = [
-    [second$$1,  1,      durationSecond],
-    [second$$1,  5,  5 * durationSecond],
-    [second$$1, 15, 15 * durationSecond],
-    [second$$1, 30, 30 * durationSecond],
-    [minute$$1,  1,      durationMinute],
-    [minute$$1,  5,  5 * durationMinute],
-    [minute$$1, 15, 15 * durationMinute],
-    [minute$$1, 30, 30 * durationMinute],
-    [  hour$$1,  1,      durationHour  ],
-    [  hour$$1,  3,  3 * durationHour  ],
-    [  hour$$1,  6,  6 * durationHour  ],
-    [  hour$$1, 12, 12 * durationHour  ],
-    [   day$$1,  1,      durationDay   ],
-    [   day$$1,  2,  2 * durationDay   ],
-    [  week,  1,      durationWeek  ],
+    [second$$1,  1,      durationSecond$1],
+    [second$$1,  5,  5 * durationSecond$1],
+    [second$$1, 15, 15 * durationSecond$1],
+    [second$$1, 30, 30 * durationSecond$1],
+    [minute$$1,  1,      durationMinute$1],
+    [minute$$1,  5,  5 * durationMinute$1],
+    [minute$$1, 15, 15 * durationMinute$1],
+    [minute$$1, 30, 30 * durationMinute$1],
+    [  hour$$1,  1,      durationHour$1  ],
+    [  hour$$1,  3,  3 * durationHour$1  ],
+    [  hour$$1,  6,  6 * durationHour$1  ],
+    [  hour$$1, 12, 12 * durationHour$1  ],
+    [   day$$1,  1,      durationDay$1   ],
+    [   day$$1,  2,  2 * durationDay$1   ],
+    [  week,  1,      durationWeek$1  ],
     [ month$$1,  1,      durationMonth ],
     [ month$$1,  3,  3 * durationMonth ],
     [  year$$1,  1,      durationYear  ]
   ];
 
-  function tickFormat(date) {
-    return (second$$1(date) < date ? formatMillisecond
-        : minute$$1(date) < date ? formatSecond
-        : hour$$1(date) < date ? formatMinute
-        : day$$1(date) < date ? formatHour
-        : month$$1(date) < date ? (week(date) < date ? formatDay : formatWeek)
-        : year$$1(date) < date ? formatMonth
-        : formatYear)(date);
+  function tickFormat(date$$1) {
+    return (second$$1(date$$1) < date$$1 ? formatMillisecond
+        : minute$$1(date$$1) < date$$1 ? formatSecond
+        : hour$$1(date$$1) < date$$1 ? formatMinute
+        : day$$1(date$$1) < date$$1 ? formatHour
+        : month$$1(date$$1) < date$$1 ? (week(date$$1) < date$$1 ? formatDay : formatWeek)
+        : year$$1(date$$1) < date$$1 ? formatMonth
+        : formatYear)(date$$1);
   }
 
   function tickInterval(interval, start, stop, step) {
@@ -3410,7 +3410,7 @@ function calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1
   };
 
   scale.domain = function(_) {
-    return arguments.length ? domain(map$3.call(_, number$2)) : domain().map(date$1);
+    return arguments.length ? domain(map$2.call(_, number$2)) : domain().map(date$1);
   };
 
   scale.ticks = function(interval, step) {
@@ -3451,52 +3451,6 @@ function utcTime() {
   return calendar(utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, second, millisecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]);
 }
 
-function colors(s) {
-  return s.match(/.{6}/g).map(function(x) {
-    return "#" + x;
-  });
-}
-
-var category10 = colors("1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf");
-
-var category20b = colors("393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6");
-
-var category20c = colors("3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9");
-
-var category20 = colors("1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5");
-
-var cubehelix$3 = cubehelixLong(cubehelix(300, 0.5, 0.0), cubehelix(-240, 0.5, 1.0));
-
-var warm = cubehelixLong(cubehelix(-100, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
-
-var cool = cubehelixLong(cubehelix(260, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
-
-var rainbow = cubehelix();
-
-function rainbow$1(t) {
-  if (t < 0 || t > 1) { t -= Math.floor(t); }
-  var ts = Math.abs(t - 0.5);
-  rainbow.h = 360 * t - 100;
-  rainbow.s = 1.5 - 1.5 * ts;
-  rainbow.l = 0.8 - 0.9 * ts;
-  return rainbow + "";
-}
-
-function ramp(range) {
-  var n = range.length;
-  return function(t) {
-    return range[Math.max(0, Math.min(n - 1, Math.floor(t * n)))];
-  };
-}
-
-var viridis = ramp(colors("44015444025645045745055946075a46085c460a5d460b5e470d60470e6147106347116447136548146748166848176948186a481a6c481b6d481c6e481d6f481f70482071482173482374482475482576482677482878482979472a7a472c7a472d7b472e7c472f7d46307e46327e46337f463480453581453781453882443983443a83443b84433d84433e85423f854240864241864142874144874045884046883f47883f48893e49893e4a893e4c8a3d4d8a3d4e8a3c4f8a3c508b3b518b3b528b3a538b3a548c39558c39568c38588c38598c375a8c375b8d365c8d365d8d355e8d355f8d34608d34618d33628d33638d32648e32658e31668e31678e31688e30698e306a8e2f6b8e2f6c8e2e6d8e2e6e8e2e6f8e2d708e2d718e2c718e2c728e2c738e2b748e2b758e2a768e2a778e2a788e29798e297a8e297b8e287c8e287d8e277e8e277f8e27808e26818e26828e26828e25838e25848e25858e24868e24878e23888e23898e238a8d228b8d228c8d228d8d218e8d218f8d21908d21918c20928c20928c20938c1f948c1f958b1f968b1f978b1f988b1f998a1f9a8a1e9b8a1e9c891e9d891f9e891f9f881fa0881fa1881fa1871fa28720a38620a48621a58521a68522a78522a88423a98324aa8325ab8225ac8226ad8127ad8128ae8029af7f2ab07f2cb17e2db27d2eb37c2fb47c31b57b32b67a34b67935b77937b87838b9773aba763bbb753dbc743fbc7340bd7242be7144bf7046c06f48c16e4ac16d4cc26c4ec36b50c46a52c56954c56856c66758c7655ac8645cc8635ec96260ca6063cb5f65cb5e67cc5c69cd5b6ccd5a6ece5870cf5773d05675d05477d1537ad1517cd2507fd34e81d34d84d44b86d54989d5488bd6468ed64590d74393d74195d84098d83e9bd93c9dd93ba0da39a2da37a5db36a8db34aadc32addc30b0dd2fb2dd2db5de2bb8de29bade28bddf26c0df25c2df23c5e021c8e020cae11fcde11dd0e11cd2e21bd5e21ad8e219dae319dde318dfe318e2e418e5e419e7e419eae51aece51befe51cf1e51df4e61ef6e620f8e621fbe723fde725"));
-
-var magma = ramp(colors("00000401000501010601010802010902020b02020d03030f03031204041405041606051806051a07061c08071e0907200a08220b09240c09260d0a290e0b2b100b2d110c2f120d31130d34140e36150e38160f3b180f3d19103f1a10421c10441d11471e114920114b21114e22115024125325125527125829115a2a115c2c115f2d11612f116331116533106734106936106b38106c390f6e3b0f703d0f713f0f72400f74420f75440f764510774710784910784a10794c117a4e117b4f127b51127c52137c54137d56147d57157e59157e5a167e5c167f5d177f5f187f601880621980641a80651a80671b80681c816a1c816b1d816d1d816e1e81701f81721f817320817521817621817822817922827b23827c23827e24828025828125818326818426818627818827818928818b29818c29818e2a81902a81912b81932b80942c80962c80982d80992d809b2e7f9c2e7f9e2f7fa02f7fa1307ea3307ea5317ea6317da8327daa337dab337cad347cae347bb0357bb2357bb3367ab5367ab73779b83779ba3878bc3978bd3977bf3a77c03a76c23b75c43c75c53c74c73d73c83e73ca3e72cc3f71cd4071cf4070d0416fd2426fd3436ed5446dd6456cd8456cd9466bdb476adc4869de4968df4a68e04c67e24d66e34e65e44f64e55064e75263e85362e95462ea5661eb5760ec5860ed5a5fee5b5eef5d5ef05f5ef1605df2625df2645cf3655cf4675cf4695cf56b5cf66c5cf66e5cf7705cf7725cf8745cf8765cf9785df9795df97b5dfa7d5efa7f5efa815ffb835ffb8560fb8761fc8961fc8a62fc8c63fc8e64fc9065fd9266fd9467fd9668fd9869fd9a6afd9b6bfe9d6cfe9f6dfea16efea36ffea571fea772fea973feaa74feac76feae77feb078feb27afeb47bfeb67cfeb77efeb97ffebb81febd82febf84fec185fec287fec488fec68afec88cfeca8dfecc8ffecd90fecf92fed194fed395fed597fed799fed89afdda9cfddc9efddea0fde0a1fde2a3fde3a5fde5a7fde7a9fde9aafdebacfcecaefceeb0fcf0b2fcf2b4fcf4b6fcf6b8fcf7b9fcf9bbfcfbbdfcfdbf"));
-
-var inferno = ramp(colors("00000401000501010601010802010a02020c02020e03021004031204031405041706041907051b08051d09061f0a07220b07240c08260d08290e092b10092d110a30120a32140b34150b37160b39180c3c190c3e1b0c411c0c431e0c451f0c48210c4a230c4c240c4f260c51280b53290b552b0b572d0b592f0a5b310a5c320a5e340a5f3609613809623909633b09643d09653e0966400a67420a68440a68450a69470b6a490b6a4a0c6b4c0c6b4d0d6c4f0d6c510e6c520e6d540f6d550f6d57106e59106e5a116e5c126e5d126e5f136e61136e62146e64156e65156e67166e69166e6a176e6c186e6d186e6f196e71196e721a6e741a6e751b6e771c6d781c6d7a1d6d7c1d6d7d1e6d7f1e6c801f6c82206c84206b85216b87216b88226a8a226a8c23698d23698f24699025689225689326679526679727669827669a28659b29649d29649f2a63a02a63a22b62a32c61a52c60a62d60a82e5fa92e5eab2f5ead305dae305cb0315bb1325ab3325ab43359b63458b73557b93556ba3655bc3754bd3853bf3952c03a51c13a50c33b4fc43c4ec63d4dc73e4cc83f4bca404acb4149cc4248ce4347cf4446d04545d24644d34743d44842d54a41d74b3fd84c3ed94d3dda4e3cdb503bdd513ade5238df5337e05536e15635e25734e35933e45a31e55c30e65d2fe75e2ee8602de9612bea632aeb6429eb6628ec6726ed6925ee6a24ef6c23ef6e21f06f20f1711ff1731df2741cf3761bf37819f47918f57b17f57d15f67e14f68013f78212f78410f8850ff8870ef8890cf98b0bf98c0af98e09fa9008fa9207fa9407fb9606fb9706fb9906fb9b06fb9d07fc9f07fca108fca309fca50afca60cfca80dfcaa0ffcac11fcae12fcb014fcb216fcb418fbb61afbb81dfbba1ffbbc21fbbe23fac026fac228fac42afac62df9c72ff9c932f9cb35f8cd37f8cf3af7d13df7d340f6d543f6d746f5d949f5db4cf4dd4ff4df53f4e156f3e35af3e55df2e661f2e865f2ea69f1ec6df1ed71f1ef75f1f179f2f27df2f482f3f586f3f68af4f88ef5f992f6fa96f8fb9af9fc9dfafda1fcffa4"));
-
-var plasma = ramp(colors("0d088710078813078916078a19068c1b068d1d068e20068f2206902406912605912805922a05932c05942e05952f059631059733059735049837049938049a3a049a3c049b3e049c3f049c41049d43039e44039e46039f48039f4903a04b03a14c02a14e02a25002a25102a35302a35502a45601a45801a45901a55b01a55c01a65e01a66001a66100a76300a76400a76600a76700a86900a86a00a86c00a86e00a86f00a87100a87201a87401a87501a87701a87801a87a02a87b02a87d03a87e03a88004a88104a78305a78405a78606a68707a68808a68a09a58b0aa58d0ba58e0ca48f0da4910ea3920fa39410a29511a19613a19814a099159f9a169f9c179e9d189d9e199da01a9ca11b9ba21d9aa31e9aa51f99a62098a72197a82296aa2395ab2494ac2694ad2793ae2892b02991b12a90b22b8fb32c8eb42e8db52f8cb6308bb7318ab83289ba3388bb3488bc3587bd3786be3885bf3984c03a83c13b82c23c81c33d80c43e7fc5407ec6417dc7427cc8437bc9447aca457acb4679cc4778cc4977cd4a76ce4b75cf4c74d04d73d14e72d24f71d35171d45270d5536fd5546ed6556dd7566cd8576bd9586ada5a6ada5b69db5c68dc5d67dd5e66de5f65de6164df6263e06363e16462e26561e26660e3685fe4695ee56a5de56b5de66c5ce76e5be76f5ae87059e97158e97257ea7457eb7556eb7655ec7754ed7953ed7a52ee7b51ef7c51ef7e50f07f4ff0804ef1814df1834cf2844bf3854bf3874af48849f48948f58b47f58c46f68d45f68f44f79044f79143f79342f89441f89540f9973ff9983ef99a3efa9b3dfa9c3cfa9e3bfb9f3afba139fba238fca338fca537fca636fca835fca934fdab33fdac33fdae32fdaf31fdb130fdb22ffdb42ffdb52efeb72dfeb82cfeba2cfebb2bfebd2afebe2afec029fdc229fdc328fdc527fdc627fdc827fdca26fdcb26fccd25fcce25fcd025fcd225fbd324fbd524fbd724fad824fada24f9dc24f9dd25f8df25f8e125f7e225f7e425f6e626f6e826f5e926f5eb27f4ed27f3ee27f3f027f2f227f1f426f1f525f0f724f0f921"));
-
 function sequential(interpolator) {
   var x0 = 0,
       x1 = 1,
@@ -3531,8 +3485,8 @@ function sequential(interpolator) {
 var scales = Object.freeze({
 	scaleBand: band,
 	scalePoint: point,
-	scaleIdentity: identity$1,
-	scaleLinear: linear,
+	scaleIdentity: identity$3,
+	scaleLinear: linear$1,
 	scaleLog: log,
 	scaleOrdinal: ordinal,
 	scaleImplicit: implicit,
@@ -3543,18 +3497,6 @@ var scales = Object.freeze({
 	scaleThreshold: threshold$1,
 	scaleTime: time,
 	scaleUtc: utcTime,
-	schemeCategory10: category10,
-	schemeCategory20b: category20b,
-	schemeCategory20c: category20c,
-	schemeCategory20: category20,
-	interpolateCubehelixDefault: cubehelix$3,
-	interpolateRainbow: rainbow$1,
-	interpolateWarm: warm,
-	interpolateCool: cool,
-	interpolateViridis: viridis,
-	interpolateMagma: magma,
-	interpolateInferno: inferno,
-	interpolatePlasma: plasma,
 	scaleSequential: sequential
 });
 
@@ -3595,158 +3537,6 @@ function creator(name) {
   return (fullname.local
       ? creatorFixed
       : creatorInherit)(fullname);
-}
-
-var matcher = function(selector) {
-  return function() {
-    return this.matches(selector);
-  };
-};
-
-if (typeof document !== "undefined") {
-  var element = document.documentElement;
-  if (!element.matches) {
-    var vendorMatches = element.webkitMatchesSelector
-        || element.msMatchesSelector
-        || element.mozMatchesSelector
-        || element.oMatchesSelector;
-    matcher = function(selector) {
-      return function() {
-        return vendorMatches.call(this, selector);
-      };
-    };
-  }
-}
-
-var matcher$1 = matcher;
-
-var filterEvents = {};
-
-var event = null;
-
-if (typeof document !== "undefined") {
-  var element$1 = document.documentElement;
-  if (!("onmouseenter" in element$1)) {
-    filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
-  }
-}
-
-function filterContextListener(listener, index, group) {
-  listener = contextListener(listener, index, group);
-  return function(event) {
-    var related = event.relatedTarget;
-    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
-      listener.call(this, event);
-    }
-  };
-}
-
-function contextListener(listener, index, group) {
-  return function(event1) {
-    var event0 = event; // Events can be reentrant (e.g., focus).
-    event = event1;
-    try {
-      listener.call(this, this.__data__, index, group);
-    } finally {
-      event = event0;
-    }
-  };
-}
-
-function parseTypenames(typenames) {
-  return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf(".");
-    if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
-    return {type: t, name: name};
-  });
-}
-
-function onRemove(typename) {
-  return function() {
-    var this$1 = this;
-
-    var on = this.__on;
-    if (!on) { return; }
-    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
-      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-      } else {
-        on[++i] = o;
-      }
-    }
-    if (++i) { on.length = i; }
-    else { delete this.__on; }
-  };
-}
-
-function onAdd(typename, value, capture) {
-  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
-  return function(d, i, group) {
-    var this$1 = this;
-
-    var on = this.__on, o, listener = wrap(value, i, group);
-    if (on) { for (var j = 0, m = on.length; j < m; ++j) {
-      if ((o = on[j]).type === typename.type && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
-        o.value = value;
-        return;
-      }
-    } }
-    this.addEventListener(typename.type, listener, capture);
-    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
-    if (!on) { this.__on = [o]; }
-    else { on.push(o); }
-  };
-}
-
-function selection_on(typename, value, capture) {
-  var this$1 = this;
-
-  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
-
-  if (arguments.length < 2) {
-    var on = this.node().__on;
-    if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
-      for (i = 0, o = on[j]; i < n; ++i) {
-        if ((t = typenames[i]).type === o.type && t.name === o.name) {
-          return o.value;
-        }
-      }
-    } }
-    return;
-  }
-
-  on = value ? onAdd : onRemove;
-  if (capture == null) { capture = false; }
-  for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
-  return this;
-}
-
-function sourceEvent() {
-  var current = event, source;
-  while (source = current.sourceEvent) { current = source; }
-  return current;
-}
-
-function point$1(node, event) {
-  var svg = node.ownerSVGElement || node;
-
-  if (svg.createSVGPoint) {
-    var point = svg.createSVGPoint();
-    point.x = event.clientX, point.y = event.clientY;
-    point = point.matrixTransform(node.getScreenCTM().inverse());
-    return [point.x, point.y];
-  }
-
-  var rect = node.getBoundingClientRect();
-  return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
-}
-
-function mouse(node) {
-  var event = sourceEvent();
-  if (event.changedTouches) { event = event.changedTouches[0]; }
-  return point$1(node, event);
 }
 
 function none() {}
@@ -3796,6 +3586,29 @@ function selection_selectAll(select) {
 
   return new Selection(subgroups, parents);
 }
+
+var matcher = function(selector) {
+  return function() {
+    return this.matches(selector);
+  };
+};
+
+if (typeof document !== "undefined") {
+  var element = document.documentElement;
+  if (!element.matches) {
+    var vendorMatches = element.webkitMatchesSelector
+        || element.msMatchesSelector
+        || element.mozMatchesSelector
+        || element.oMatchesSelector;
+    matcher = function(selector) {
+      return function() {
+        return vendorMatches.call(this, selector);
+      };
+    };
+  }
+}
+
+var matcher$1 = matcher;
 
 function selection_filter(match) {
   if (typeof match !== "function") { match = matcher$1(match); }
@@ -3944,7 +3757,7 @@ function selection_data(value, key) {
     for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
       if (previous = enterGroup[i0]) {
         if (i0 >= i1) { i1 = i0 + 1; }
-        while (!(next = updateGroup[i1]) && ++i1 < dataLength){  }
+        while (!(next = updateGroup[i1]) && ++i1 < dataLength){ }
         previous._next = next || null;
       }
     }
@@ -4357,10 +4170,125 @@ function selection_remove() {
   return this.each(remove);
 }
 
+function selection_cloneShallow() {
+  return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
+}
+
+function selection_cloneDeep() {
+  return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
+}
+
+function selection_clone(deep) {
+  return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
+}
+
 function selection_datum(value) {
   return arguments.length
       ? this.property("__data__", value)
       : this.node().__data__;
+}
+
+var filterEvents = {};
+
+var event = null;
+
+if (typeof document !== "undefined") {
+  var element$1 = document.documentElement;
+  if (!("onmouseenter" in element$1)) {
+    filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
+  }
+}
+
+function filterContextListener(listener, index, group) {
+  listener = contextListener(listener, index, group);
+  return function(event) {
+    var related = event.relatedTarget;
+    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
+      listener.call(this, event);
+    }
+  };
+}
+
+function contextListener(listener, index, group) {
+  return function(event1) {
+    var event0 = event; // Events can be reentrant (e.g., focus).
+    event = event1;
+    try {
+      listener.call(this, this.__data__, index, group);
+    } finally {
+      event = event0;
+    }
+  };
+}
+
+function parseTypenames(typenames) {
+  return typenames.trim().split(/^|\s+/).map(function(t) {
+    var name = "", i = t.indexOf(".");
+    if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
+    return {type: t, name: name};
+  });
+}
+
+function onRemove(typename) {
+  return function() {
+    var this$1 = this;
+
+    var on = this.__on;
+    if (!on) { return; }
+    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
+      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
+        this$1.removeEventListener(o.type, o.listener, o.capture);
+      } else {
+        on[++i] = o;
+      }
+    }
+    if (++i) { on.length = i; }
+    else { delete this.__on; }
+  };
+}
+
+function onAdd(typename, value, capture) {
+  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
+  return function(d, i, group) {
+    var this$1 = this;
+
+    var on = this.__on, o, listener = wrap(value, i, group);
+    if (on) { for (var j = 0, m = on.length; j < m; ++j) {
+      if ((o = on[j]).type === typename.type && o.name === typename.name) {
+        this$1.removeEventListener(o.type, o.listener, o.capture);
+        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
+        o.value = value;
+        return;
+      }
+    } }
+    this.addEventListener(typename.type, listener, capture);
+    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
+    if (!on) { this.__on = [o]; }
+    else { on.push(o); }
+  };
+}
+
+function selection_on(typename, value, capture) {
+  var this$1 = this;
+
+  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
+
+  if (arguments.length < 2) {
+    var on = this.node().__on;
+    if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
+      for (i = 0, o = on[j]; i < n; ++i) {
+        if ((t = typenames[i]).type === o.type && t.name === o.name) {
+          return o.value;
+        }
+      }
+    } }
+    return;
+  }
+
+  on = value ? onAdd : onRemove;
+  if (capture == null) { capture = false; }
+  for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
+  return this;
 }
 
 function dispatchEvent(node, type, params) {
@@ -4435,6 +4363,7 @@ Selection.prototype = selection.prototype = {
   append: selection_append,
   insert: selection_insert,
   remove: selection_remove,
+  clone: selection_clone,
   datum: selection_datum,
   on: selection_on,
   dispatch: selection_dispatch
@@ -4444,6 +4373,32 @@ function select(selector) {
   return typeof selector === "string"
       ? new Selection([[document.querySelector(selector)]], [document.documentElement])
       : new Selection([[selector]], root);
+}
+
+function sourceEvent() {
+  var current = event, source;
+  while (source = current.sourceEvent) { current = source; }
+  return current;
+}
+
+function point$1(node, event) {
+  var svg = node.ownerSVGElement || node;
+
+  if (svg.createSVGPoint) {
+    var point = svg.createSVGPoint();
+    point.x = event.clientX, point.y = event.clientY;
+    point = point.matrixTransform(node.getScreenCTM().inverse());
+    return [point.x, point.y];
+  }
+
+  var rect = node.getBoundingClientRect();
+  return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
+}
+
+function mouse(node) {
+  var event = sourceEvent();
+  if (event.changedTouches) { event = event.changedTouches[0]; }
+  return point$1(node, event);
 }
 
 function selectAll(selector) {
@@ -4488,7 +4443,7 @@ Dispatch.prototype = dispatch.prototype = {
 
     // If no callback was specified, return the callback of the given type and name.
     if (arguments.length < 2) {
-      while (++i < n) { if ((t = (typename = T[i]).type) && (t = get$1(_[t], typename.name))) { return t; } }
+      while (++i < n) { if ((t = (typename = T[i]).type) && (t = get(_[t], typename.name))) { return t; } }
       return;
     }
 
@@ -4496,8 +4451,8 @@ Dispatch.prototype = dispatch.prototype = {
     // Otherwise, if a null callback was specified, remove callbacks of the given name.
     if (callback != null && typeof callback !== "function") { throw new Error("invalid callback: " + callback); }
     while (++i < n) {
-      if (t = (typename = T[i]).type) { _[t] = set$3(_[t], typename.name, callback); }
-      else if (callback == null) { for (t in _) { _[t] = set$3(_[t], typename.name, null); } }
+      if (t = (typename = T[i]).type) { _[t] = set$1(_[t], typename.name, callback); }
+      else if (callback == null) { for (t in _) { _[t] = set$1(_[t], typename.name, null); } }
     }
 
     return this;
@@ -4520,7 +4475,7 @@ Dispatch.prototype = dispatch.prototype = {
   }
 };
 
-function get$1(type, name) {
+function get(type, name) {
   for (var i = 0, n = type.length, c; i < n; ++i) {
     if ((c = type[i]).name === name) {
       return c.value;
@@ -4528,7 +4483,7 @@ function get$1(type, name) {
   }
 }
 
-function set$3(type, name, callback) {
+function set$1(type, name, callback) {
   for (var i = 0, n = type.length; i < n; ++i) {
     if (type[i].name === name) {
       type[i] = noop, type = type.slice(0, i).concat(type.slice(i + 1));
@@ -4539,17 +4494,17 @@ function set$3(type, name, callback) {
   return type;
 }
 
-var frame = 0;
-var timeout = 0;
-var interval = 0;
-var pokeDelay = 1000;
-var taskHead;
-var taskTail;
-var clockLast = 0;
-var clockNow = 0;
-var clockSkew = 0;
-var clock = typeof performance === "object" && performance.now ? performance : Date;
-var setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
+var frame = 0, // is an animation frame pending?
+    timeout = 0, // is a timeout pending?
+    interval = 0, // are any timers active?
+    pokeDelay = 1000, // how frequently we check for clock skew
+    taskHead,
+    taskTail,
+    clockLast = 0,
+    clockNow = 0,
+    clockSkew = 0,
+    clock = typeof performance === "object" && performance.now ? performance : Date,
+    setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
 
 function now() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
@@ -4675,7 +4630,7 @@ function schedule(node, name, id, index, group, timing) {
   var schedules = node.__transition;
   if (!schedules) { node.__transition = {}; }
   else if (id in schedules) { return; }
-  create(node, id, {
+  create$1(node, id, {
     name: name,
     index: index, // For context during callback.
     group: group, // For context during callback.
@@ -4691,24 +4646,24 @@ function schedule(node, name, id, index, group, timing) {
 }
 
 function init(node, id) {
-  var schedule = get(node, id);
+  var schedule = get$1(node, id);
   if (schedule.state > CREATED) { throw new Error("too late; already scheduled"); }
   return schedule;
 }
 
 function set$2(node, id) {
-  var schedule = get(node, id);
+  var schedule = get$1(node, id);
   if (schedule.state > STARTING) { throw new Error("too late; already started"); }
   return schedule;
 }
 
-function get(node, id) {
+function get$1(node, id) {
   var schedule = node.__transition;
   if (!schedule || !(schedule = schedule[id])) { throw new Error("transition not found"); }
   return schedule;
 }
 
-function create(node, id, self) {
+function create$1(node, id, self) {
   var schedules = node.__transition,
       tween;
 
@@ -4897,7 +4852,7 @@ function transition_tween(name, value) {
   name += "";
 
   if (arguments.length < 2) {
-    var tween = get(this.node(), id).tween;
+    var tween = get$1(this.node(), id).tween;
     for (var i = 0, n = tween.length, t; i < n; ++i) {
       if ((t = tween[i]).name === name) {
         return t.value;
@@ -4918,13 +4873,13 @@ function tweenValue(transition, name, value) {
   });
 
   return function(node) {
-    return get(node, id).value[name];
+    return get$1(node, id).value[name];
   };
 }
 
 function interpolate(a, b) {
   var c;
-  return (typeof b === "number" ? interpolateNumber
+  return (typeof b === "number" ? reinterpolate
       : b instanceof color ? interpolateRgb
       : (c = color(b)) ? (b = c, interpolateRgb)
       : interpolateString)(a, b);
@@ -5050,7 +5005,7 @@ function transition_delay(value) {
       ? this.each((typeof value === "function"
           ? delayFunction
           : delayConstant)(id, value))
-      : get(this.node(), id).delay;
+      : get$1(this.node(), id).delay;
 }
 
 function durationFunction(id, value) {
@@ -5072,7 +5027,7 @@ function transition_duration(value) {
       ? this.each((typeof value === "function"
           ? durationFunction
           : durationConstant)(id, value))
-      : get(this.node(), id).duration;
+      : get$1(this.node(), id).duration;
 }
 
 function easeConstant(id, value) {
@@ -5087,7 +5042,7 @@ function transition_ease(value) {
 
   return arguments.length
       ? this.each(easeConstant(id, value))
-      : get(this.node(), id).ease;
+      : get$1(this.node(), id).ease;
 }
 
 function transition_filter(match) {
@@ -5149,7 +5104,7 @@ function transition_on(name, listener) {
   var id = this._id;
 
   return arguments.length < 2
-      ? get(this.node(), id).on.on(name)
+      ? get$1(this.node(), id).on.on(name)
       : this.each(onFunction(id, name, listener));
 }
 
@@ -5167,18 +5122,18 @@ function transition_remove() {
   return this.on("end.remove", removeFunction(this._id));
 }
 
-function transition_select(select) {
+function transition_select(select$$1) {
   var name = this._name,
       id = this._id;
 
-  if (typeof select !== "function") { select = selector(select); }
+  if (typeof select$$1 !== "function") { select$$1 = selector(select$$1); }
 
   for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
+      if ((node = group[i]) && (subnode = select$$1.call(node, node.__data__, i, group))) {
         if ("__data__" in node) { subnode.__data__ = node.__data__; }
         subgroup[i] = subnode;
-        schedule(subgroup[i], name, id, i, subgroup, get(node, id));
+        schedule(subgroup[i], name, id, i, subgroup, get$1(node, id));
       }
     }
   }
@@ -5186,16 +5141,16 @@ function transition_select(select) {
   return new Transition(subgroups, this._parents, name, id);
 }
 
-function transition_selectAll(select) {
+function transition_selectAll(select$$1) {
   var name = this._name,
       id = this._id;
 
-  if (typeof select !== "function") { select = selectorAll(select); }
+  if (typeof select$$1 !== "function") { select$$1 = selectorAll(select$$1); }
 
   for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        for (var children = select.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
+        for (var children = select$$1.call(node, node.__data__, i, group), child, inherit = get$1(node, id), k = 0, l = children.length; k < l; ++k) {
           if (child = children[k]) {
             schedule(child, name, id, k, children, inherit);
           }
@@ -5315,7 +5270,7 @@ function transition_transition() {
   for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        var inherit = get(node, id0);
+        var inherit = get$1(node, id0);
         schedule(node, name, id1, i, group, {
           time: inherit.time + inherit.delay + inherit.duration,
           delay: 0,
@@ -5562,12 +5517,13 @@ var RESET = "D3PLUS-COMMON-RESET";
 function nestedReset(obj, defaults) {
   if (isObject(obj)) {
     for (var nestedKey in obj) {
-      if ({}.hasOwnProperty.call(obj, nestedKey)) {
+      if ({}.hasOwnProperty.call(obj, nestedKey) && !nestedKey.startsWith("_")) {
+        var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
         if (obj[nestedKey] === RESET) {
-          obj[nestedKey] = defaults[nestedKey];
+          obj[nestedKey] = defaultValue;
         }
         else if (isObject(obj[nestedKey])) {
-          nestedReset(obj[nestedKey], defaults[nestedKey]);
+          nestedReset(obj[nestedKey], defaultValue);
         }
       }
     }
@@ -5694,7 +5650,7 @@ function constant$4(value) {
     @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
     @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
 */
-function elem(selector, p) {
+function elem(selector$$1, p) {
 
   // overrides default params
   p = Object.assign({}, {
@@ -5706,11 +5662,11 @@ function elem(selector, p) {
     update: {}
   }, p);
 
-  var className = (/\.([^#]+)/g).exec(selector),
-        id = (/#([^\.]+)/g).exec(selector),
-        tag = (/^([^.^#]+)/g).exec(selector)[1];
+  var className = (/\.([^#]+)/g).exec(selector$$1),
+        id = (/#([^\.]+)/g).exec(selector$$1),
+        tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
 
-  var elem = p.parent.selectAll(selector.includes(":") ? selector.split(":")[1] : selector)
+  var elem = p.parent.selectAll(selector$$1.includes(":") ? selector$$1.split(":")[1] : selector$$1)
     .data(p.condition ? [null] : []);
 
   var enter = elem.enter().append(tag).call(attrize, p.enter);
@@ -5748,25 +5704,25 @@ function objectMerge(objects, aggs) {
         newObject = {};
 
   availableKeys.forEach(function (k) {
-    var values = objects.map(function (o) { return o[k]; });
+    var values$$1 = objects.map(function (o) { return o[k]; });
     var value;
-    if (aggs[k]) { value = aggs[k](values); }
+    if (aggs[k]) { value = aggs[k](values$$1); }
     else {
-      var types = values.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
+      var types = values$$1.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
       if (!types.length) { value = undefined; }
       else if (types.indexOf(Array) >= 0) {
-        value = merge(values.map(function (v) { return v instanceof Array ? v : [v]; }));
+        value = merge(values$$1.map(function (v) { return v instanceof Array ? v : [v]; }));
         value = Array.from(new Set(value));
         if (value.length === 1) { value = value[0]; }
       }
       else if (types.indexOf(String) >= 0) {
-        value = Array.from(new Set(values));
+        value = Array.from(new Set(values$$1));
         if (value.length === 1) { value = value[0]; }
       }
-      else if (types.indexOf(Number) >= 0) { value = sum(values); }
-      else if (types.indexOf(Object) >= 0) { value = objectMerge(values.filter(function (v) { return v; })); }
+      else if (types.indexOf(Number) >= 0) { value = sum(values$$1); }
+      else if (types.indexOf(Object) >= 0) { value = objectMerge(values$$1.filter(function (v) { return v; })); }
       else {
-        value = Array.from(new Set(values.filter(function (v) { return v !== void 0; })));
+        value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
         if (value.length === 1) { value = value[0]; }
       }
     }
@@ -5775,6 +5731,32 @@ function objectMerge(objects, aggs) {
 
   return newObject;
 
+}
+
+/**
+ @function parseSides
+ @desc Converts a string of directional CSS shorthand values into an object with the values expanded.
+ @param {String|Number} sides The CSS shorthand string to expand.
+ */
+function parseSides(sides) {
+  var values;
+  if (typeof sides === "number") { values = [sides]; }
+  else { values = sides.split(/\s+/); }
+
+  if (values.length === 1) { values = [values[0], values[0], values[0], values[0]]; }
+  else if (values.length === 2) { values = values.concat(values); }
+  else if (values.length === 3) { values.push(values[1]); }
+
+  return [
+    "top",
+    "right",
+    "bottom",
+    "left"
+  ].reduce(function (acc, direction, i) {
+    var value = parseFloat(values[i]);
+    acc[direction] = value || 0;
+    return acc;
+  }, {});
 }
 
 /**
@@ -6005,6 +5987,90 @@ Image.prototype.y = function y (_) {
   return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$4(_), this) : this._y;
 };
 
+var array$3 = Array.prototype;
+var slice$2 = array$3.slice;
+
+var implicit$1 = {name: "implicit"};
+
+function ordinal$1(range) {
+  var index = map$1(),
+      domain = [],
+      unknown = implicit$1;
+
+  range = range == null ? [] : slice$2.call(range);
+
+  function scale(d) {
+    var key = d + "", i = index.get(key);
+    if (!i) {
+      if (unknown !== implicit$1) { return unknown; }
+      index.set(key, i = domain.push(d));
+    }
+    return range[(i - 1) % range.length];
+  }
+
+  scale.domain = function(_) {
+    if (!arguments.length) { return domain.slice(); }
+    domain = [], index = map$1();
+    var i = -1, n = _.length, d, key;
+    while (++i < n) { if (!index.has(key = (d = _[i]) + "")) { index.set(key, domain.push(d)); } }
+    return scale;
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range = slice$2.call(_), scale) : range.slice();
+  };
+
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
+  };
+
+  scale.copy = function() {
+    return ordinal$1()
+        .domain(domain)
+        .range(range)
+        .unknown(unknown);
+  };
+
+  return scale;
+}
+
+function colors(s) {
+  return s.match(/.{6}/g).map(function(x) {
+    return "#" + x;
+  });
+}
+
+colors("1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf");
+
+colors("393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6");
+
+colors("3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9");
+
+colors("1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5");
+
+cubehelixLong(cubehelix(300, 0.5, 0.0), cubehelix(-240, 0.5, 1.0));
+
+var warm = cubehelixLong(cubehelix(-100, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
+
+var cool = cubehelixLong(cubehelix(260, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
+
+var rainbow = cubehelix();
+
+function ramp(range) {
+  var n = range.length;
+  return function(t) {
+    return range[Math.max(0, Math.min(n - 1, Math.floor(t * n)))];
+  };
+}
+
+ramp(colors("44015444025645045745055946075a46085c460a5d460b5e470d60470e6147106347116447136548146748166848176948186a481a6c481b6d481c6e481d6f481f70482071482173482374482475482576482677482878482979472a7a472c7a472d7b472e7c472f7d46307e46327e46337f463480453581453781453882443983443a83443b84433d84433e85423f854240864241864142874144874045884046883f47883f48893e49893e4a893e4c8a3d4d8a3d4e8a3c4f8a3c508b3b518b3b528b3a538b3a548c39558c39568c38588c38598c375a8c375b8d365c8d365d8d355e8d355f8d34608d34618d33628d33638d32648e32658e31668e31678e31688e30698e306a8e2f6b8e2f6c8e2e6d8e2e6e8e2e6f8e2d708e2d718e2c718e2c728e2c738e2b748e2b758e2a768e2a778e2a788e29798e297a8e297b8e287c8e287d8e277e8e277f8e27808e26818e26828e26828e25838e25848e25858e24868e24878e23888e23898e238a8d228b8d228c8d228d8d218e8d218f8d21908d21918c20928c20928c20938c1f948c1f958b1f968b1f978b1f988b1f998a1f9a8a1e9b8a1e9c891e9d891f9e891f9f881fa0881fa1881fa1871fa28720a38620a48621a58521a68522a78522a88423a98324aa8325ab8225ac8226ad8127ad8128ae8029af7f2ab07f2cb17e2db27d2eb37c2fb47c31b57b32b67a34b67935b77937b87838b9773aba763bbb753dbc743fbc7340bd7242be7144bf7046c06f48c16e4ac16d4cc26c4ec36b50c46a52c56954c56856c66758c7655ac8645cc8635ec96260ca6063cb5f65cb5e67cc5c69cd5b6ccd5a6ece5870cf5773d05675d05477d1537ad1517cd2507fd34e81d34d84d44b86d54989d5488bd6468ed64590d74393d74195d84098d83e9bd93c9dd93ba0da39a2da37a5db36a8db34aadc32addc30b0dd2fb2dd2db5de2bb8de29bade28bddf26c0df25c2df23c5e021c8e020cae11fcde11dd0e11cd2e21bd5e21ad8e219dae319dde318dfe318e2e418e5e419e7e419eae51aece51befe51cf1e51df4e61ef6e620f8e621fbe723fde725"));
+
+var magma = ramp(colors("00000401000501010601010802010902020b02020d03030f03031204041405041606051806051a07061c08071e0907200a08220b09240c09260d0a290e0b2b100b2d110c2f120d31130d34140e36150e38160f3b180f3d19103f1a10421c10441d11471e114920114b21114e22115024125325125527125829115a2a115c2c115f2d11612f116331116533106734106936106b38106c390f6e3b0f703d0f713f0f72400f74420f75440f764510774710784910784a10794c117a4e117b4f127b51127c52137c54137d56147d57157e59157e5a167e5c167f5d177f5f187f601880621980641a80651a80671b80681c816a1c816b1d816d1d816e1e81701f81721f817320817521817621817822817922827b23827c23827e24828025828125818326818426818627818827818928818b29818c29818e2a81902a81912b81932b80942c80962c80982d80992d809b2e7f9c2e7f9e2f7fa02f7fa1307ea3307ea5317ea6317da8327daa337dab337cad347cae347bb0357bb2357bb3367ab5367ab73779b83779ba3878bc3978bd3977bf3a77c03a76c23b75c43c75c53c74c73d73c83e73ca3e72cc3f71cd4071cf4070d0416fd2426fd3436ed5446dd6456cd8456cd9466bdb476adc4869de4968df4a68e04c67e24d66e34e65e44f64e55064e75263e85362e95462ea5661eb5760ec5860ed5a5fee5b5eef5d5ef05f5ef1605df2625df2645cf3655cf4675cf4695cf56b5cf66c5cf66e5cf7705cf7725cf8745cf8765cf9785df9795df97b5dfa7d5efa7f5efa815ffb835ffb8560fb8761fc8961fc8a62fc8c63fc8e64fc9065fd9266fd9467fd9668fd9869fd9a6afd9b6bfe9d6cfe9f6dfea16efea36ffea571fea772fea973feaa74feac76feae77feb078feb27afeb47bfeb67cfeb77efeb97ffebb81febd82febf84fec185fec287fec488fec68afec88cfeca8dfecc8ffecd90fecf92fed194fed395fed597fed799fed89afdda9cfddc9efddea0fde0a1fde2a3fde3a5fde5a7fde7a9fde9aafdebacfcecaefceeb0fcf0b2fcf2b4fcf4b6fcf6b8fcf7b9fcf9bbfcfbbdfcfdbf"));
+
+var inferno = ramp(colors("00000401000501010601010802010a02020c02020e03021004031204031405041706041907051b08051d09061f0a07220b07240c08260d08290e092b10092d110a30120a32140b34150b37160b39180c3c190c3e1b0c411c0c431e0c451f0c48210c4a230c4c240c4f260c51280b53290b552b0b572d0b592f0a5b310a5c320a5e340a5f3609613809623909633b09643d09653e0966400a67420a68440a68450a69470b6a490b6a4a0c6b4c0c6b4d0d6c4f0d6c510e6c520e6d540f6d550f6d57106e59106e5a116e5c126e5d126e5f136e61136e62146e64156e65156e67166e69166e6a176e6c186e6d186e6f196e71196e721a6e741a6e751b6e771c6d781c6d7a1d6d7c1d6d7d1e6d7f1e6c801f6c82206c84206b85216b87216b88226a8a226a8c23698d23698f24699025689225689326679526679727669827669a28659b29649d29649f2a63a02a63a22b62a32c61a52c60a62d60a82e5fa92e5eab2f5ead305dae305cb0315bb1325ab3325ab43359b63458b73557b93556ba3655bc3754bd3853bf3952c03a51c13a50c33b4fc43c4ec63d4dc73e4cc83f4bca404acb4149cc4248ce4347cf4446d04545d24644d34743d44842d54a41d74b3fd84c3ed94d3dda4e3cdb503bdd513ade5238df5337e05536e15635e25734e35933e45a31e55c30e65d2fe75e2ee8602de9612bea632aeb6429eb6628ec6726ed6925ee6a24ef6c23ef6e21f06f20f1711ff1731df2741cf3761bf37819f47918f57b17f57d15f67e14f68013f78212f78410f8850ff8870ef8890cf98b0bf98c0af98e09fa9008fa9207fa9407fb9606fb9706fb9906fb9b06fb9d07fc9f07fca108fca309fca50afca60cfca80dfcaa0ffcac11fcae12fcb014fcb216fcb418fbb61afbb81dfbba1ffbbc21fbbe23fac026fac228fac42afac62df9c72ff9c932f9cb35f8cd37f8cf3af7d13df7d340f6d543f6d746f5d949f5db4cf4dd4ff4df53f4e156f3e35af3e55df2e661f2e865f2ea69f1ec6df1ed71f1ef75f1f179f2f27df2f482f3f586f3f68af4f88ef5f992f6fa96f8fb9af9fc9dfafda1fcffa4"));
+
+var plasma = ramp(colors("0d088710078813078916078a19068c1b068d1d068e20068f2206902406912605912805922a05932c05942e05952f059631059733059735049837049938049a3a049a3c049b3e049c3f049c41049d43039e44039e46039f48039f4903a04b03a14c02a14e02a25002a25102a35302a35502a45601a45801a45901a55b01a55c01a65e01a66001a66100a76300a76400a76600a76700a86900a86a00a86c00a86e00a86f00a87100a87201a87401a87501a87701a87801a87a02a87b02a87d03a87e03a88004a88104a78305a78405a78606a68707a68808a68a09a58b0aa58d0ba58e0ca48f0da4910ea3920fa39410a29511a19613a19814a099159f9a169f9c179e9d189d9e199da01a9ca11b9ba21d9aa31e9aa51f99a62098a72197a82296aa2395ab2494ac2694ad2793ae2892b02991b12a90b22b8fb32c8eb42e8db52f8cb6308bb7318ab83289ba3388bb3488bc3587bd3786be3885bf3984c03a83c13b82c23c81c33d80c43e7fc5407ec6417dc7427cc8437bc9447aca457acb4679cc4778cc4977cd4a76ce4b75cf4c74d04d73d14e72d24f71d35171d45270d5536fd5546ed6556dd7566cd8576bd9586ada5a6ada5b69db5c68dc5d67dd5e66de5f65de6164df6263e06363e16462e26561e26660e3685fe4695ee56a5de56b5de66c5ce76e5be76f5ae87059e97158e97257ea7457eb7556eb7655ec7754ed7953ed7a52ee7b51ef7c51ef7e50f07f4ff0804ef1814df1834cf2844bf3854bf3874af48849f48948f58b47f58c46f68d45f68f44f79044f79143f79342f89441f89540f9973ff9983ef99a3efa9b3dfa9c3cfa9e3bfb9f3afba139fba238fca338fca537fca636fca835fca934fdab33fdac33fdae32fdaf31fdb130fdb22ffdb42ffdb52efeb72dfeb82cfeba2cfebb2bfebd2afebe2afec029fdc229fdc328fdc527fdc627fdc827fdca26fdcb26fccd25fcce25fcd025fcd225fbd324fbd524fbd724fad824fada24f9dc24f9dd25f8df25f8e125f7e225f7e425f6e626f6e826f5e926f5eb27f4ed27f3ee27f3f027f2f227f1f426f1f525f0f724f0f921"));
+
 /**
     @namespace {Object} colorDefaults
     @desc A set of default color values used when assigning colors based on data.
@@ -6024,7 +6090,7 @@ var defaults = {
   missing: "#cccccc",
   off: "#b22200",
   on: "#224f20",
-  scale: ordinal().range([
+  scale: ordinal$1().range([
     "#b22200", "#282f6b", "#eace3f", "#b35c1e", "#224f20", "#5f487c",
     "#759143", "#419391", "#993c88", "#e89c89", "#ffee8d", "#afd5e8",
     "#f7ba77", "#a5c697", "#c5b5e5", "#d1d392", "#bbefd0", "#e099cf"
@@ -6056,6 +6122,2068 @@ function colorContrast(c, u) {
   var yiq = (c.r * 299 + c.g * 587 + c.b * 114) / 1000;
   return yiq >= 128 ? getColor("dark", u) : getColor("light", u);
 }
+
+var pi$1 = Math.PI,
+    tau$1 = 2 * pi$1,
+    epsilon = 1e-6,
+    tauEpsilon = tau$1 - epsilon;
+
+function Path() {
+  this._x0 = this._y0 = // start of current subpath
+  this._x1 = this._y1 = null; // end of current subpath
+  this._ = "";
+}
+
+function path() {
+  return new Path;
+}
+
+Path.prototype = path.prototype = {
+  constructor: Path,
+  moveTo: function(x, y) {
+    this._ += "M" + (this._x0 = this._x1 = +x) + "," + (this._y0 = this._y1 = +y);
+  },
+  closePath: function() {
+    if (this._x1 !== null) {
+      this._x1 = this._x0, this._y1 = this._y0;
+      this._ += "Z";
+    }
+  },
+  lineTo: function(x, y) {
+    this._ += "L" + (this._x1 = +x) + "," + (this._y1 = +y);
+  },
+  quadraticCurveTo: function(x1, y1, x, y) {
+    this._ += "Q" + (+x1) + "," + (+y1) + "," + (this._x1 = +x) + "," + (this._y1 = +y);
+  },
+  bezierCurveTo: function(x1, y1, x2, y2, x, y) {
+    this._ += "C" + (+x1) + "," + (+y1) + "," + (+x2) + "," + (+y2) + "," + (this._x1 = +x) + "," + (this._y1 = +y);
+  },
+  arcTo: function(x1, y1, x2, y2, r) {
+    x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
+    var x0 = this._x1,
+        y0 = this._y1,
+        x21 = x2 - x1,
+        y21 = y2 - y1,
+        x01 = x0 - x1,
+        y01 = y0 - y1,
+        l01_2 = x01 * x01 + y01 * y01;
+
+    // Is the radius negative? Error.
+    if (r < 0) { throw new Error("negative radius: " + r); }
+
+    // Is this path empty? Move to (x1,y1).
+    if (this._x1 === null) {
+      this._ += "M" + (this._x1 = x1) + "," + (this._y1 = y1);
+    }
+
+    // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
+    else if (!(l01_2 > epsilon)) {}
+
+    // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
+    // Equivalently, is (x1,y1) coincident with (x2,y2)?
+    // Or, is the radius zero? Line to (x1,y1).
+    else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
+      this._ += "L" + (this._x1 = x1) + "," + (this._y1 = y1);
+    }
+
+    // Otherwise, draw an arc!
+    else {
+      var x20 = x2 - x0,
+          y20 = y2 - y0,
+          l21_2 = x21 * x21 + y21 * y21,
+          l20_2 = x20 * x20 + y20 * y20,
+          l21 = Math.sqrt(l21_2),
+          l01 = Math.sqrt(l01_2),
+          l = r * Math.tan((pi$1 - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
+          t01 = l / l01,
+          t21 = l / l21;
+
+      // If the start tangent is not coincident with (x0,y0), line to.
+      if (Math.abs(t01 - 1) > epsilon) {
+        this._ += "L" + (x1 + t01 * x01) + "," + (y1 + t01 * y01);
+      }
+
+      this._ += "A" + r + "," + r + ",0,0," + (+(y01 * x20 > x01 * y20)) + "," + (this._x1 = x1 + t21 * x21) + "," + (this._y1 = y1 + t21 * y21);
+    }
+  },
+  arc: function(x, y, r, a0, a1, ccw) {
+    x = +x, y = +y, r = +r;
+    var dx = r * Math.cos(a0),
+        dy = r * Math.sin(a0),
+        x0 = x + dx,
+        y0 = y + dy,
+        cw = 1 ^ ccw,
+        da = ccw ? a0 - a1 : a1 - a0;
+
+    // Is the radius negative? Error.
+    if (r < 0) { throw new Error("negative radius: " + r); }
+
+    // Is this path empty? Move to (x0,y0).
+    if (this._x1 === null) {
+      this._ += "M" + x0 + "," + y0;
+    }
+
+    // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
+    else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1 - y0) > epsilon) {
+      this._ += "L" + x0 + "," + y0;
+    }
+
+    // Is this arc empty? We’re done.
+    if (!r) { return; }
+
+    // Does the angle go the wrong way? Flip the direction.
+    if (da < 0) { da = da % tau$1 + tau$1; }
+
+    // Is this a complete circle? Draw two arcs to complete the circle.
+    if (da > tauEpsilon) {
+      this._ += "A" + r + "," + r + ",0,1," + cw + "," + (x - dx) + "," + (y - dy) + "A" + r + "," + r + ",0,1," + cw + "," + (this._x1 = x0) + "," + (this._y1 = y0);
+    }
+
+    // Is this arc non-empty? Draw an arc!
+    else if (da > epsilon) {
+      this._ += "A" + r + "," + r + ",0," + (+(da >= pi$1)) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
+    }
+  },
+  rect: function(x, y, w, h) {
+    this._ += "M" + (this._x0 = this._x1 = +x) + "," + (this._y0 = this._y1 = +y) + "h" + (+w) + "v" + (+h) + "h" + (-w) + "Z";
+  },
+  toString: function() {
+    return this._;
+  }
+};
+
+function constant$6(x) {
+  return function constant() {
+    return x;
+  };
+}
+
+var abs = Math.abs;
+var atan2 = Math.atan2;
+var cos = Math.cos;
+var max$1 = Math.max;
+var min$1 = Math.min;
+var sin = Math.sin;
+var sqrt$2 = Math.sqrt;
+
+var epsilon$1 = 1e-12;
+var pi$2 = Math.PI;
+var halfPi$1 = pi$2 / 2;
+var tau$2 = 2 * pi$2;
+
+function acos(x) {
+  return x > 1 ? 0 : x < -1 ? pi$2 : Math.acos(x);
+}
+
+function asin(x) {
+  return x >= 1 ? halfPi$1 : x <= -1 ? -halfPi$1 : Math.asin(x);
+}
+
+function arcInnerRadius(d) {
+  return d.innerRadius;
+}
+
+function arcOuterRadius(d) {
+  return d.outerRadius;
+}
+
+function arcStartAngle(d) {
+  return d.startAngle;
+}
+
+function arcEndAngle(d) {
+  return d.endAngle;
+}
+
+function arcPadAngle(d) {
+  return d && d.padAngle; // Note: optional!
+}
+
+function intersect(x0, y0, x1, y1, x2, y2, x3, y3) {
+  var x10 = x1 - x0, y10 = y1 - y0,
+      x32 = x3 - x2, y32 = y3 - y2,
+      t = (x32 * (y0 - y2) - y32 * (x0 - x2)) / (y32 * x10 - x32 * y10);
+  return [x0 + t * x10, y0 + t * y10];
+}
+
+// Compute perpendicular offset line of length rc.
+// http://mathworld.wolfram.com/Circle-LineIntersection.html
+function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
+  var x01 = x0 - x1,
+      y01 = y0 - y1,
+      lo = (cw ? rc : -rc) / sqrt$2(x01 * x01 + y01 * y01),
+      ox = lo * y01,
+      oy = -lo * x01,
+      x11 = x0 + ox,
+      y11 = y0 + oy,
+      x10 = x1 + ox,
+      y10 = y1 + oy,
+      x00 = (x11 + x10) / 2,
+      y00 = (y11 + y10) / 2,
+      dx = x10 - x11,
+      dy = y10 - y11,
+      d2 = dx * dx + dy * dy,
+      r = r1 - rc,
+      D = x11 * y10 - x10 * y11,
+      d = (dy < 0 ? -1 : 1) * sqrt$2(max$1(0, r * r * d2 - D * D)),
+      cx0 = (D * dy - dx * d) / d2,
+      cy0 = (-D * dx - dy * d) / d2,
+      cx1 = (D * dy + dx * d) / d2,
+      cy1 = (-D * dx + dy * d) / d2,
+      dx0 = cx0 - x00,
+      dy0 = cy0 - y00,
+      dx1 = cx1 - x00,
+      dy1 = cy1 - y00;
+
+  // Pick the closer of the two intersection points.
+  // TODO Is there a faster way to determine which intersection to use?
+  if (dx0 * dx0 + dy0 * dy0 > dx1 * dx1 + dy1 * dy1) { cx0 = cx1, cy0 = cy1; }
+
+  return {
+    cx: cx0,
+    cy: cy0,
+    x01: -ox,
+    y01: -oy,
+    x11: cx0 * (r1 / r - 1),
+    y11: cy0 * (r1 / r - 1)
+  };
+}
+
+function arc() {
+  var innerRadius = arcInnerRadius,
+      outerRadius = arcOuterRadius,
+      cornerRadius = constant$6(0),
+      padRadius = null,
+      startAngle = arcStartAngle,
+      endAngle = arcEndAngle,
+      padAngle = arcPadAngle,
+      context = null;
+
+  function arc() {
+    var buffer,
+        r,
+        r0 = +innerRadius.apply(this, arguments),
+        r1 = +outerRadius.apply(this, arguments),
+        a0 = startAngle.apply(this, arguments) - halfPi$1,
+        a1 = endAngle.apply(this, arguments) - halfPi$1,
+        da = abs(a1 - a0),
+        cw = a1 > a0;
+
+    if (!context) { context = buffer = path(); }
+
+    // Ensure that the outer radius is always larger than the inner radius.
+    if (r1 < r0) { r = r1, r1 = r0, r0 = r; }
+
+    // Is it a point?
+    if (!(r1 > epsilon$1)) { context.moveTo(0, 0); }
+
+    // Or is it a circle or annulus?
+    else if (da > tau$2 - epsilon$1) {
+      context.moveTo(r1 * cos(a0), r1 * sin(a0));
+      context.arc(0, 0, r1, a0, a1, !cw);
+      if (r0 > epsilon$1) {
+        context.moveTo(r0 * cos(a1), r0 * sin(a1));
+        context.arc(0, 0, r0, a1, a0, cw);
+      }
+    }
+
+    // Or is it a circular or annular sector?
+    else {
+      var a01 = a0,
+          a11 = a1,
+          a00 = a0,
+          a10 = a1,
+          da0 = da,
+          da1 = da,
+          ap = padAngle.apply(this, arguments) / 2,
+          rp = (ap > epsilon$1) && (padRadius ? +padRadius.apply(this, arguments) : sqrt$2(r0 * r0 + r1 * r1)),
+          rc = min$1(abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
+          rc0 = rc,
+          rc1 = rc,
+          t0,
+          t1;
+
+      // Apply padding? Note that since r1 ≥ r0, da1 ≥ da0.
+      if (rp > epsilon$1) {
+        var p0 = asin(rp / r0 * sin(ap)),
+            p1 = asin(rp / r1 * sin(ap));
+        if ((da0 -= p0 * 2) > epsilon$1) { p0 *= (cw ? 1 : -1), a00 += p0, a10 -= p0; }
+        else { da0 = 0, a00 = a10 = (a0 + a1) / 2; }
+        if ((da1 -= p1 * 2) > epsilon$1) { p1 *= (cw ? 1 : -1), a01 += p1, a11 -= p1; }
+        else { da1 = 0, a01 = a11 = (a0 + a1) / 2; }
+      }
+
+      var x01 = r1 * cos(a01),
+          y01 = r1 * sin(a01),
+          x10 = r0 * cos(a10),
+          y10 = r0 * sin(a10);
+
+      // Apply rounded corners?
+      if (rc > epsilon$1) {
+        var x11 = r1 * cos(a11),
+            y11 = r1 * sin(a11),
+            x00 = r0 * cos(a00),
+            y00 = r0 * sin(a00);
+
+        // Restrict the corner radius according to the sector angle.
+        if (da < pi$2) {
+          var oc = da0 > epsilon$1 ? intersect(x01, y01, x00, y00, x11, y11, x10, y10) : [x10, y10],
+              ax = x01 - oc[0],
+              ay = y01 - oc[1],
+              bx = x11 - oc[0],
+              by = y11 - oc[1],
+              kc = 1 / sin(acos((ax * bx + ay * by) / (sqrt$2(ax * ax + ay * ay) * sqrt$2(bx * bx + by * by))) / 2),
+              lc = sqrt$2(oc[0] * oc[0] + oc[1] * oc[1]);
+          rc0 = min$1(rc, (r0 - lc) / (kc - 1));
+          rc1 = min$1(rc, (r1 - lc) / (kc + 1));
+        }
+      }
+
+      // Is the sector collapsed to a line?
+      if (!(da1 > epsilon$1)) { context.moveTo(x01, y01); }
+
+      // Does the sector’s outer ring have rounded corners?
+      else if (rc1 > epsilon$1) {
+        t0 = cornerTangents(x00, y00, x01, y01, r1, rc1, cw);
+        t1 = cornerTangents(x11, y11, x10, y10, r1, rc1, cw);
+
+        context.moveTo(t0.cx + t0.x01, t0.cy + t0.y01);
+
+        // Have the corners merged?
+        if (rc1 < rc) { context.arc(t0.cx, t0.cy, rc1, atan2(t0.y01, t0.x01), atan2(t1.y01, t1.x01), !cw); }
+
+        // Otherwise, draw the two corners and the ring.
+        else {
+          context.arc(t0.cx, t0.cy, rc1, atan2(t0.y01, t0.x01), atan2(t0.y11, t0.x11), !cw);
+          context.arc(0, 0, r1, atan2(t0.cy + t0.y11, t0.cx + t0.x11), atan2(t1.cy + t1.y11, t1.cx + t1.x11), !cw);
+          context.arc(t1.cx, t1.cy, rc1, atan2(t1.y11, t1.x11), atan2(t1.y01, t1.x01), !cw);
+        }
+      }
+
+      // Or is the outer ring just a circular arc?
+      else { context.moveTo(x01, y01), context.arc(0, 0, r1, a01, a11, !cw); }
+
+      // Is there no inner ring, and it’s a circular sector?
+      // Or perhaps it’s an annular sector collapsed due to padding?
+      if (!(r0 > epsilon$1) || !(da0 > epsilon$1)) { context.lineTo(x10, y10); }
+
+      // Does the sector’s inner ring (or point) have rounded corners?
+      else if (rc0 > epsilon$1) {
+        t0 = cornerTangents(x10, y10, x11, y11, r0, -rc0, cw);
+        t1 = cornerTangents(x01, y01, x00, y00, r0, -rc0, cw);
+
+        context.lineTo(t0.cx + t0.x01, t0.cy + t0.y01);
+
+        // Have the corners merged?
+        if (rc0 < rc) { context.arc(t0.cx, t0.cy, rc0, atan2(t0.y01, t0.x01), atan2(t1.y01, t1.x01), !cw); }
+
+        // Otherwise, draw the two corners and the ring.
+        else {
+          context.arc(t0.cx, t0.cy, rc0, atan2(t0.y01, t0.x01), atan2(t0.y11, t0.x11), !cw);
+          context.arc(0, 0, r0, atan2(t0.cy + t0.y11, t0.cx + t0.x11), atan2(t1.cy + t1.y11, t1.cx + t1.x11), cw);
+          context.arc(t1.cx, t1.cy, rc0, atan2(t1.y11, t1.x11), atan2(t1.y01, t1.x01), !cw);
+        }
+      }
+
+      // Or is the inner ring just a circular arc?
+      else { context.arc(0, 0, r0, a10, a00, cw); }
+    }
+
+    context.closePath();
+
+    if (buffer) { return context = null, buffer + "" || null; }
+  }
+
+  arc.centroid = function() {
+    var r = (+innerRadius.apply(this, arguments) + +outerRadius.apply(this, arguments)) / 2,
+        a = (+startAngle.apply(this, arguments) + +endAngle.apply(this, arguments)) / 2 - pi$2 / 2;
+    return [cos(a) * r, sin(a) * r];
+  };
+
+  arc.innerRadius = function(_) {
+    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$6(+_), arc) : innerRadius;
+  };
+
+  arc.outerRadius = function(_) {
+    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$6(+_), arc) : outerRadius;
+  };
+
+  arc.cornerRadius = function(_) {
+    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$6(+_), arc) : cornerRadius;
+  };
+
+  arc.padRadius = function(_) {
+    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$6(+_), arc) : padRadius;
+  };
+
+  arc.startAngle = function(_) {
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$6(+_), arc) : startAngle;
+  };
+
+  arc.endAngle = function(_) {
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$6(+_), arc) : endAngle;
+  };
+
+  arc.padAngle = function(_) {
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$6(+_), arc) : padAngle;
+  };
+
+  arc.context = function(_) {
+    return arguments.length ? (context = _ == null ? null : _, arc) : context;
+  };
+
+  return arc;
+}
+
+function Linear(context) {
+  this._context = context;
+}
+
+Linear.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; // proceed
+      default: this._context.lineTo(x, y); break;
+    }
+  }
+};
+
+function curveLinear(context) {
+  return new Linear(context);
+}
+
+function x(p) {
+  return p[0];
+}
+
+function y(p) {
+  return p[1];
+}
+
+function line() {
+  var x$$1 = x,
+      y$$1 = y,
+      defined = constant$6(true),
+      context = null,
+      curve = curveLinear,
+      output = null;
+
+  function line(data) {
+    var i,
+        n = data.length,
+        d,
+        defined0 = false,
+        buffer;
+
+    if (context == null) { output = curve(buffer = path()); }
+
+    for (i = 0; i <= n; ++i) {
+      if (!(i < n && defined(d = data[i], i, data)) === defined0) {
+        if (defined0 = !defined0) { output.lineStart(); }
+        else { output.lineEnd(); }
+      }
+      if (defined0) { output.point(+x$$1(d, i, data), +y$$1(d, i, data)); }
+    }
+
+    if (buffer) { return output = null, buffer + "" || null; }
+  }
+
+  line.x = function(_) {
+    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$6(+_), line) : x$$1;
+  };
+
+  line.y = function(_) {
+    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$6(+_), line) : y$$1;
+  };
+
+  line.defined = function(_) {
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$6(!!_), line) : defined;
+  };
+
+  line.curve = function(_) {
+    return arguments.length ? (curve = _, context != null && (output = curve(context)), line) : curve;
+  };
+
+  line.context = function(_) {
+    return arguments.length ? (_ == null ? context = output = null : output = curve(context = _), line) : context;
+  };
+
+  return line;
+}
+
+function area() {
+  var x0 = x,
+      x1 = null,
+      y0 = constant$6(0),
+      y1 = y,
+      defined = constant$6(true),
+      context = null,
+      curve = curveLinear,
+      output = null;
+
+  function area(data) {
+    var i,
+        j,
+        k,
+        n = data.length,
+        d,
+        defined0 = false,
+        buffer,
+        x0z = new Array(n),
+        y0z = new Array(n);
+
+    if (context == null) { output = curve(buffer = path()); }
+
+    for (i = 0; i <= n; ++i) {
+      if (!(i < n && defined(d = data[i], i, data)) === defined0) {
+        if (defined0 = !defined0) {
+          j = i;
+          output.areaStart();
+          output.lineStart();
+        } else {
+          output.lineEnd();
+          output.lineStart();
+          for (k = i - 1; k >= j; --k) {
+            output.point(x0z[k], y0z[k]);
+          }
+          output.lineEnd();
+          output.areaEnd();
+        }
+      }
+      if (defined0) {
+        x0z[i] = +x0(d, i, data), y0z[i] = +y0(d, i, data);
+        output.point(x1 ? +x1(d, i, data) : x0z[i], y1 ? +y1(d, i, data) : y0z[i]);
+      }
+    }
+
+    if (buffer) { return output = null, buffer + "" || null; }
+  }
+
+  function arealine() {
+    return line().defined(defined).curve(curve).context(context);
+  }
+
+  area.x = function(_) {
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$6(+_), x1 = null, area) : x0;
+  };
+
+  area.x0 = function(_) {
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$6(+_), area) : x0;
+  };
+
+  area.x1 = function(_) {
+    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$6(+_), area) : x1;
+  };
+
+  area.y = function(_) {
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$6(+_), y1 = null, area) : y0;
+  };
+
+  area.y0 = function(_) {
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$6(+_), area) : y0;
+  };
+
+  area.y1 = function(_) {
+    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$6(+_), area) : y1;
+  };
+
+  area.lineX0 =
+  area.lineY0 = function() {
+    return arealine().x(x0).y(y0);
+  };
+
+  area.lineY1 = function() {
+    return arealine().x(x0).y(y1);
+  };
+
+  area.lineX1 = function() {
+    return arealine().x(x1).y(y0);
+  };
+
+  area.defined = function(_) {
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$6(!!_), area) : defined;
+  };
+
+  area.curve = function(_) {
+    return arguments.length ? (curve = _, context != null && (output = curve(context)), area) : curve;
+  };
+
+  area.context = function(_) {
+    return arguments.length ? (_ == null ? context = output = null : output = curve(context = _), area) : context;
+  };
+
+  return area;
+}
+
+function descending$1(a, b) {
+  return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
+}
+
+function identity$5(d) {
+  return d;
+}
+
+function pie() {
+  var value = identity$5,
+      sortValues = descending$1,
+      sort = null,
+      startAngle = constant$6(0),
+      endAngle = constant$6(tau$2),
+      padAngle = constant$6(0);
+
+  function pie(data) {
+    var i,
+        n = data.length,
+        j,
+        k,
+        sum = 0,
+        index = new Array(n),
+        arcs = new Array(n),
+        a0 = +startAngle.apply(this, arguments),
+        da = Math.min(tau$2, Math.max(-tau$2, endAngle.apply(this, arguments) - a0)),
+        a1,
+        p = Math.min(Math.abs(da) / n, padAngle.apply(this, arguments)),
+        pa = p * (da < 0 ? -1 : 1),
+        v;
+
+    for (i = 0; i < n; ++i) {
+      if ((v = arcs[index[i] = i] = +value(data[i], i, data)) > 0) {
+        sum += v;
+      }
+    }
+
+    // Optionally sort the arcs by previously-computed values or by data.
+    if (sortValues != null) { index.sort(function(i, j) { return sortValues(arcs[i], arcs[j]); }); }
+    else if (sort != null) { index.sort(function(i, j) { return sort(data[i], data[j]); }); }
+
+    // Compute the arcs! They are stored in the original data's order.
+    for (i = 0, k = sum ? (da - n * pa) / sum : 0; i < n; ++i, a0 = a1) {
+      j = index[i], v = arcs[j], a1 = a0 + (v > 0 ? v * k : 0) + pa, arcs[j] = {
+        data: data[j],
+        index: i,
+        value: v,
+        startAngle: a0,
+        endAngle: a1,
+        padAngle: p
+      };
+    }
+
+    return arcs;
+  }
+
+  pie.value = function(_) {
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$6(+_), pie) : value;
+  };
+
+  pie.sortValues = function(_) {
+    return arguments.length ? (sortValues = _, sort = null, pie) : sortValues;
+  };
+
+  pie.sort = function(_) {
+    return arguments.length ? (sort = _, sortValues = null, pie) : sort;
+  };
+
+  pie.startAngle = function(_) {
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$6(+_), pie) : startAngle;
+  };
+
+  pie.endAngle = function(_) {
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$6(+_), pie) : endAngle;
+  };
+
+  pie.padAngle = function(_) {
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$6(+_), pie) : padAngle;
+  };
+
+  return pie;
+}
+
+var curveRadialLinear = curveRadial(curveLinear);
+
+function Radial(curve) {
+  this._curve = curve;
+}
+
+Radial.prototype = {
+  areaStart: function() {
+    this._curve.areaStart();
+  },
+  areaEnd: function() {
+    this._curve.areaEnd();
+  },
+  lineStart: function() {
+    this._curve.lineStart();
+  },
+  lineEnd: function() {
+    this._curve.lineEnd();
+  },
+  point: function(a, r) {
+    this._curve.point(r * Math.sin(a), r * -Math.cos(a));
+  }
+};
+
+function curveRadial(curve) {
+
+  function radial(context) {
+    return new Radial(curve(context));
+  }
+
+  radial._curve = curve;
+
+  return radial;
+}
+
+function lineRadial(l) {
+  var c = l.curve;
+
+  l.angle = l.x, delete l.x;
+  l.radius = l.y, delete l.y;
+
+  l.curve = function(_) {
+    return arguments.length ? c(curveRadial(_)) : c()._curve;
+  };
+
+  return l;
+}
+
+function lineRadial$1() {
+  return lineRadial(line().curve(curveRadialLinear));
+}
+
+function areaRadial() {
+  var a = area().curve(curveRadialLinear),
+      c = a.curve,
+      x0 = a.lineX0,
+      x1 = a.lineX1,
+      y0 = a.lineY0,
+      y1 = a.lineY1;
+
+  a.angle = a.x, delete a.x;
+  a.startAngle = a.x0, delete a.x0;
+  a.endAngle = a.x1, delete a.x1;
+  a.radius = a.y, delete a.y;
+  a.innerRadius = a.y0, delete a.y0;
+  a.outerRadius = a.y1, delete a.y1;
+  a.lineStartAngle = function() { return lineRadial(x0()); }, delete a.lineX0;
+  a.lineEndAngle = function() { return lineRadial(x1()); }, delete a.lineX1;
+  a.lineInnerRadius = function() { return lineRadial(y0()); }, delete a.lineY0;
+  a.lineOuterRadius = function() { return lineRadial(y1()); }, delete a.lineY1;
+
+  a.curve = function(_) {
+    return arguments.length ? c(curveRadial(_)) : c()._curve;
+  };
+
+  return a;
+}
+
+function pointRadial(x, y) {
+  return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
+}
+
+var slice$3 = Array.prototype.slice;
+
+function linkSource(d) {
+  return d.source;
+}
+
+function linkTarget(d) {
+  return d.target;
+}
+
+function link(curve) {
+  var source = linkSource,
+      target = linkTarget,
+      x$$1 = x,
+      y$$1 = y,
+      context = null;
+
+  function link() {
+    var buffer, argv = slice$3.call(arguments), s = source.apply(this, argv), t = target.apply(this, argv);
+    if (!context) { context = buffer = path(); }
+    curve(context, +x$$1.apply(this, (argv[0] = s, argv)), +y$$1.apply(this, argv), +x$$1.apply(this, (argv[0] = t, argv)), +y$$1.apply(this, argv));
+    if (buffer) { return context = null, buffer + "" || null; }
+  }
+
+  link.source = function(_) {
+    return arguments.length ? (source = _, link) : source;
+  };
+
+  link.target = function(_) {
+    return arguments.length ? (target = _, link) : target;
+  };
+
+  link.x = function(_) {
+    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$6(+_), link) : x$$1;
+  };
+
+  link.y = function(_) {
+    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$6(+_), link) : y$$1;
+  };
+
+  link.context = function(_) {
+    return arguments.length ? (context = _ == null ? null : _, link) : context;
+  };
+
+  return link;
+}
+
+function curveHorizontal(context, x0, y0, x1, y1) {
+  context.moveTo(x0, y0);
+  context.bezierCurveTo(x0 = (x0 + x1) / 2, y0, x0, y1, x1, y1);
+}
+
+function curveVertical(context, x0, y0, x1, y1) {
+  context.moveTo(x0, y0);
+  context.bezierCurveTo(x0, y0 = (y0 + y1) / 2, x1, y0, x1, y1);
+}
+
+function curveRadial$1(context, x0, y0, x1, y1) {
+  var p0 = pointRadial(x0, y0),
+      p1 = pointRadial(x0, y0 = (y0 + y1) / 2),
+      p2 = pointRadial(x1, y0),
+      p3 = pointRadial(x1, y1);
+  context.moveTo(p0[0], p0[1]);
+  context.bezierCurveTo(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
+}
+
+function linkHorizontal() {
+  return link(curveHorizontal);
+}
+
+function linkVertical() {
+  return link(curveVertical);
+}
+
+function linkRadial() {
+  var l = link(curveRadial$1);
+  l.angle = l.x, delete l.x;
+  l.radius = l.y, delete l.y;
+  return l;
+}
+
+var circle = {
+  draw: function(context, size) {
+    var r = Math.sqrt(size / pi$2);
+    context.moveTo(r, 0);
+    context.arc(0, 0, r, 0, tau$2);
+  }
+};
+
+var cross$1 = {
+  draw: function(context, size) {
+    var r = Math.sqrt(size / 5) / 2;
+    context.moveTo(-3 * r, -r);
+    context.lineTo(-r, -r);
+    context.lineTo(-r, -3 * r);
+    context.lineTo(r, -3 * r);
+    context.lineTo(r, -r);
+    context.lineTo(3 * r, -r);
+    context.lineTo(3 * r, r);
+    context.lineTo(r, r);
+    context.lineTo(r, 3 * r);
+    context.lineTo(-r, 3 * r);
+    context.lineTo(-r, r);
+    context.lineTo(-3 * r, r);
+    context.closePath();
+  }
+};
+
+var tan30 = Math.sqrt(1 / 3),
+    tan30_2 = tan30 * 2;
+
+var diamond = {
+  draw: function(context, size) {
+    var y = Math.sqrt(size / tan30_2),
+        x = y * tan30;
+    context.moveTo(0, -y);
+    context.lineTo(x, 0);
+    context.lineTo(0, y);
+    context.lineTo(-x, 0);
+    context.closePath();
+  }
+};
+
+var ka = 0.89081309152928522810,
+    kr = Math.sin(pi$2 / 10) / Math.sin(7 * pi$2 / 10),
+    kx = Math.sin(tau$2 / 10) * kr,
+    ky = -Math.cos(tau$2 / 10) * kr;
+
+var star = {
+  draw: function(context, size) {
+    var r = Math.sqrt(size * ka),
+        x = kx * r,
+        y = ky * r;
+    context.moveTo(0, -r);
+    context.lineTo(x, y);
+    for (var i = 1; i < 5; ++i) {
+      var a = tau$2 * i / 5,
+          c = Math.cos(a),
+          s = Math.sin(a);
+      context.lineTo(s * r, -c * r);
+      context.lineTo(c * x - s * y, s * x + c * y);
+    }
+    context.closePath();
+  }
+};
+
+var square = {
+  draw: function(context, size) {
+    var w = Math.sqrt(size),
+        x = -w / 2;
+    context.rect(x, x, w, w);
+  }
+};
+
+var sqrt3 = Math.sqrt(3);
+
+var triangle = {
+  draw: function(context, size) {
+    var y = -Math.sqrt(size / (sqrt3 * 3));
+    context.moveTo(0, y * 2);
+    context.lineTo(-sqrt3 * y, -y);
+    context.lineTo(sqrt3 * y, -y);
+    context.closePath();
+  }
+};
+
+var c = -0.5,
+    s$1 = Math.sqrt(3) / 2,
+    k = 1 / Math.sqrt(12),
+    a = (k / 2 + 1) * 3;
+
+var wye = {
+  draw: function(context, size) {
+    var r = Math.sqrt(size / a),
+        x0 = r / 2,
+        y0 = r * k,
+        x1 = x0,
+        y1 = r * k + r,
+        x2 = -x1,
+        y2 = y1;
+    context.moveTo(x0, y0);
+    context.lineTo(x1, y1);
+    context.lineTo(x2, y2);
+    context.lineTo(c * x0 - s$1 * y0, s$1 * x0 + c * y0);
+    context.lineTo(c * x1 - s$1 * y1, s$1 * x1 + c * y1);
+    context.lineTo(c * x2 - s$1 * y2, s$1 * x2 + c * y2);
+    context.lineTo(c * x0 + s$1 * y0, c * y0 - s$1 * x0);
+    context.lineTo(c * x1 + s$1 * y1, c * y1 - s$1 * x1);
+    context.lineTo(c * x2 + s$1 * y2, c * y2 - s$1 * x2);
+    context.closePath();
+  }
+};
+
+var symbols = [
+  circle,
+  cross$1,
+  diamond,
+  square,
+  star,
+  triangle,
+  wye
+];
+
+function symbol() {
+  var type = constant$6(circle),
+      size = constant$6(64),
+      context = null;
+
+  function symbol() {
+    var buffer;
+    if (!context) { context = buffer = path(); }
+    type.apply(this, arguments).draw(context, +size.apply(this, arguments));
+    if (buffer) { return context = null, buffer + "" || null; }
+  }
+
+  symbol.type = function(_) {
+    return arguments.length ? (type = typeof _ === "function" ? _ : constant$6(_), symbol) : type;
+  };
+
+  symbol.size = function(_) {
+    return arguments.length ? (size = typeof _ === "function" ? _ : constant$6(+_), symbol) : size;
+  };
+
+  symbol.context = function(_) {
+    return arguments.length ? (context = _ == null ? null : _, symbol) : context;
+  };
+
+  return symbol;
+}
+
+function noop$1() {}
+
+function point$3(that, x, y) {
+  that._context.bezierCurveTo(
+    (2 * that._x0 + that._x1) / 3,
+    (2 * that._y0 + that._y1) / 3,
+    (that._x0 + 2 * that._x1) / 3,
+    (that._y0 + 2 * that._y1) / 3,
+    (that._x0 + 4 * that._x1 + x) / 6,
+    (that._y0 + 4 * that._y1 + y) / 6
+  );
+}
+
+function Basis(context) {
+  this._context = context;
+}
+
+Basis.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 =
+    this._y0 = this._y1 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 3: point$3(this, this._x1, this._y1); // proceed
+      case 2: this._context.lineTo(this._x1, this._y1); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // proceed
+      default: point$3(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = x;
+    this._y0 = this._y1, this._y1 = y;
+  }
+};
+
+function basis$2(context) {
+  return new Basis(context);
+}
+
+function BasisClosed(context) {
+  this._context = context;
+}
+
+BasisClosed.prototype = {
+  areaStart: noop$1,
+  areaEnd: noop$1,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x2, this._y2);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.moveTo((this._x2 + 2 * this._x3) / 3, (this._y2 + 2 * this._y3) / 3);
+        this._context.lineTo((this._x3 + 2 * this._x2) / 3, (this._y3 + 2 * this._y2) / 3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x2, this._y2);
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._x2 = x, this._y2 = y; break;
+      case 1: this._point = 2; this._x3 = x, this._y3 = y; break;
+      case 2: this._point = 3; this._x4 = x, this._y4 = y; this._context.moveTo((this._x0 + 4 * this._x1 + x) / 6, (this._y0 + 4 * this._y1 + y) / 6); break;
+      default: point$3(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = x;
+    this._y0 = this._y1, this._y1 = y;
+  }
+};
+
+function basisClosed$1(context) {
+  return new BasisClosed(context);
+}
+
+function BasisOpen(context) {
+  this._context = context;
+}
+
+BasisOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 =
+    this._y0 = this._y1 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) { this._context.closePath(); }
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; var x0 = (this._x0 + 4 * this._x1 + x) / 6, y0 = (this._y0 + 4 * this._y1 + y) / 6; this._line ? this._context.lineTo(x0, y0) : this._context.moveTo(x0, y0); break;
+      case 3: this._point = 4; // proceed
+      default: point$3(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = x;
+    this._y0 = this._y1, this._y1 = y;
+  }
+};
+
+function basisOpen(context) {
+  return new BasisOpen(context);
+}
+
+function Bundle(context, beta) {
+  this._basis = new Basis(context);
+  this._beta = beta;
+}
+
+Bundle.prototype = {
+  lineStart: function() {
+    this._x = [];
+    this._y = [];
+    this._basis.lineStart();
+  },
+  lineEnd: function() {
+    var this$1 = this;
+
+    var x = this._x,
+        y = this._y,
+        j = x.length - 1;
+
+    if (j > 0) {
+      var x0 = x[0],
+          y0 = y[0],
+          dx = x[j] - x0,
+          dy = y[j] - y0,
+          i = -1,
+          t;
+
+      while (++i <= j) {
+        t = i / j;
+        this$1._basis.point(
+          this$1._beta * x[i] + (1 - this$1._beta) * (x0 + t * dx),
+          this$1._beta * y[i] + (1 - this$1._beta) * (y0 + t * dy)
+        );
+      }
+    }
+
+    this._x = this._y = null;
+    this._basis.lineEnd();
+  },
+  point: function(x, y) {
+    this._x.push(+x);
+    this._y.push(+y);
+  }
+};
+
+var bundle = (function custom(beta) {
+
+  function bundle(context) {
+    return beta === 1 ? new Basis(context) : new Bundle(context, beta);
+  }
+
+  bundle.beta = function(beta) {
+    return custom(+beta);
+  };
+
+  return bundle;
+})(0.85);
+
+function point$4(that, x, y) {
+  that._context.bezierCurveTo(
+    that._x1 + that._k * (that._x2 - that._x0),
+    that._y1 + that._k * (that._y2 - that._y0),
+    that._x2 + that._k * (that._x1 - x),
+    that._y2 + that._k * (that._y1 - y),
+    that._x2,
+    that._y2
+  );
+}
+
+function Cardinal(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+Cardinal.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x2, this._y2); break;
+      case 3: point$4(this, this._x1, this._y1); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; this._x1 = x, this._y1 = y; break;
+      case 2: this._point = 3; // proceed
+      default: point$4(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+var cardinal = (function custom(tension) {
+
+  function cardinal(context) {
+    return new Cardinal(context, tension);
+  }
+
+  cardinal.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal;
+})(0);
+
+function CardinalClosed(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+CardinalClosed.prototype = {
+  areaStart: noop$1,
+  areaEnd: noop$1,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.lineTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        this.point(this._x5, this._y5);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
+      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
+      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
+      default: point$4(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+var cardinalClosed = (function custom(tension) {
+
+  function cardinal$$1(context) {
+    return new CardinalClosed(context, tension);
+  }
+
+  cardinal$$1.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal$$1;
+})(0);
+
+function CardinalOpen(context, tension) {
+  this._context = context;
+  this._k = (1 - tension) / 6;
+}
+
+CardinalOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) { this._context.closePath(); }
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+      case 3: this._point = 4; // proceed
+      default: point$4(this, x, y); break;
+    }
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+var cardinalOpen = (function custom(tension) {
+
+  function cardinal$$1(context) {
+    return new CardinalOpen(context, tension);
+  }
+
+  cardinal$$1.tension = function(tension) {
+    return custom(+tension);
+  };
+
+  return cardinal$$1;
+})(0);
+
+function point$5(that, x, y) {
+  var x1 = that._x1,
+      y1 = that._y1,
+      x2 = that._x2,
+      y2 = that._y2;
+
+  if (that._l01_a > epsilon$1) {
+    var a = 2 * that._l01_2a + 3 * that._l01_a * that._l12_a + that._l12_2a,
+        n = 3 * that._l01_a * (that._l01_a + that._l12_a);
+    x1 = (x1 * a - that._x0 * that._l12_2a + that._x2 * that._l01_2a) / n;
+    y1 = (y1 * a - that._y0 * that._l12_2a + that._y2 * that._l01_2a) / n;
+  }
+
+  if (that._l23_a > epsilon$1) {
+    var b = 2 * that._l23_2a + 3 * that._l23_a * that._l12_a + that._l12_2a,
+        m = 3 * that._l23_a * (that._l23_a + that._l12_a);
+    x2 = (x2 * b + that._x1 * that._l23_2a - x * that._l12_2a) / m;
+    y2 = (y2 * b + that._y1 * that._l23_2a - y * that._l12_2a) / m;
+  }
+
+  that._context.bezierCurveTo(x1, y1, x2, y2, that._x2, that._y2);
+}
+
+function CatmullRom(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRom.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x2, this._y2); break;
+      case 3: this.point(this._x2, this._y2); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; // proceed
+      default: point$5(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+var catmullRom = (function custom(alpha) {
+
+  function catmullRom(context) {
+    return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
+  }
+
+  catmullRom.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom;
+})(0.5);
+
+function CatmullRomClosed(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRomClosed.prototype = {
+  areaStart: noop$1,
+  areaEnd: noop$1,
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
+    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 1: {
+        this._context.moveTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 2: {
+        this._context.lineTo(this._x3, this._y3);
+        this._context.closePath();
+        break;
+      }
+      case 3: {
+        this.point(this._x3, this._y3);
+        this.point(this._x4, this._y4);
+        this.point(this._x5, this._y5);
+        break;
+      }
+    }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
+      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
+      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
+      default: point$5(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+var catmullRomClosed = (function custom(alpha) {
+
+  function catmullRom$$1(context) {
+    return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
+  }
+
+  catmullRom$$1.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom$$1;
+})(0.5);
+
+function CatmullRomOpen(context, alpha) {
+  this._context = context;
+  this._alpha = alpha;
+}
+
+CatmullRomOpen.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 = this._x2 =
+    this._y0 = this._y1 = this._y2 = NaN;
+    this._l01_a = this._l12_a = this._l23_a =
+    this._l01_2a = this._l12_2a = this._l23_2a =
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._line || (this._line !== 0 && this._point === 3)) { this._context.closePath(); }
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+
+    if (this._point) {
+      var x23 = this._x2 - x,
+          y23 = this._y2 - y;
+      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
+    }
+
+    switch (this._point) {
+      case 0: this._point = 1; break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
+      case 3: this._point = 4; // proceed
+      default: point$5(this, x, y); break;
+    }
+
+    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
+    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
+    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
+    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
+  }
+};
+
+var catmullRomOpen = (function custom(alpha) {
+
+  function catmullRom$$1(context) {
+    return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
+  }
+
+  catmullRom$$1.alpha = function(alpha) {
+    return custom(+alpha);
+  };
+
+  return catmullRom$$1;
+})(0.5);
+
+function LinearClosed(context) {
+  this._context = context;
+}
+
+LinearClosed.prototype = {
+  areaStart: noop$1,
+  areaEnd: noop$1,
+  lineStart: function() {
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (this._point) { this._context.closePath(); }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    if (this._point) { this._context.lineTo(x, y); }
+    else { this._point = 1, this._context.moveTo(x, y); }
+  }
+};
+
+function linearClosed(context) {
+  return new LinearClosed(context);
+}
+
+function sign(x) {
+  return x < 0 ? -1 : 1;
+}
+
+// Calculate the slopes of the tangents (Hermite-type interpolation) based on
+// the following paper: Steffen, M. 1990. A Simple Method for Monotonic
+// Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
+// NOV(II), P. 443, 1990.
+function slope3(that, x2, y2) {
+  var h0 = that._x1 - that._x0,
+      h1 = x2 - that._x1,
+      s0 = (that._y1 - that._y0) / (h0 || h1 < 0 && -0),
+      s1 = (y2 - that._y1) / (h1 || h0 < 0 && -0),
+      p = (s0 * h1 + s1 * h0) / (h0 + h1);
+  return (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
+}
+
+// Calculate a one-sided slope.
+function slope2(that, t) {
+  var h = that._x1 - that._x0;
+  return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t;
+}
+
+// According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
+// "you can express cubic Hermite interpolation in terms of cubic Bézier curves
+// with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
+function point$6(that, t0, t1) {
+  var x0 = that._x0,
+      y0 = that._y0,
+      x1 = that._x1,
+      y1 = that._y1,
+      dx = (x1 - x0) / 3;
+  that._context.bezierCurveTo(x0 + dx, y0 + dx * t0, x1 - dx, y1 - dx * t1, x1, y1);
+}
+
+function MonotoneX(context) {
+  this._context = context;
+}
+
+MonotoneX.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x0 = this._x1 =
+    this._y0 = this._y1 =
+    this._t0 = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    switch (this._point) {
+      case 2: this._context.lineTo(this._x1, this._y1); break;
+      case 3: point$6(this, this._t0, slope2(this, this._t0)); break;
+    }
+    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
+    this._line = 1 - this._line;
+  },
+  point: function(x, y) {
+    var t1 = NaN;
+
+    x = +x, y = +y;
+    if (x === this._x1 && y === this._y1) { return; } // Ignore coincident points.
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; break;
+      case 2: this._point = 3; point$6(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
+      default: point$6(this, this._t0, t1 = slope3(this, x, y)); break;
+    }
+
+    this._x0 = this._x1, this._x1 = x;
+    this._y0 = this._y1, this._y1 = y;
+    this._t0 = t1;
+  }
+};
+
+function MonotoneY(context) {
+  this._context = new ReflectContext(context);
+}
+
+(MonotoneY.prototype = Object.create(MonotoneX.prototype)).point = function(x, y) {
+  MonotoneX.prototype.point.call(this, y, x);
+};
+
+function ReflectContext(context) {
+  this._context = context;
+}
+
+ReflectContext.prototype = {
+  moveTo: function(x, y) { this._context.moveTo(y, x); },
+  closePath: function() { this._context.closePath(); },
+  lineTo: function(x, y) { this._context.lineTo(y, x); },
+  bezierCurveTo: function(x1, y1, x2, y2, x, y) { this._context.bezierCurveTo(y1, x1, y2, x2, y, x); }
+};
+
+function monotoneX(context) {
+  return new MonotoneX(context);
+}
+
+function monotoneY(context) {
+  return new MonotoneY(context);
+}
+
+function Natural(context) {
+  this._context = context;
+}
+
+Natural.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x = [];
+    this._y = [];
+  },
+  lineEnd: function() {
+    var this$1 = this;
+
+    var x = this._x,
+        y = this._y,
+        n = x.length;
+
+    if (n) {
+      this._line ? this._context.lineTo(x[0], y[0]) : this._context.moveTo(x[0], y[0]);
+      if (n === 2) {
+        this._context.lineTo(x[1], y[1]);
+      } else {
+        var px = controlPoints(x),
+            py = controlPoints(y);
+        for (var i0 = 0, i1 = 1; i1 < n; ++i0, ++i1) {
+          this$1._context.bezierCurveTo(px[0][i0], py[0][i0], px[1][i0], py[1][i0], x[i1], y[i1]);
+        }
+      }
+    }
+
+    if (this._line || (this._line !== 0 && n === 1)) { this._context.closePath(); }
+    this._line = 1 - this._line;
+    this._x = this._y = null;
+  },
+  point: function(x, y) {
+    this._x.push(+x);
+    this._y.push(+y);
+  }
+};
+
+// See https://www.particleincell.com/2012/bezier-splines/ for derivation.
+function controlPoints(x) {
+  var i,
+      n = x.length - 1,
+      m,
+      a = new Array(n),
+      b = new Array(n),
+      r = new Array(n);
+  a[0] = 0, b[0] = 2, r[0] = x[0] + 2 * x[1];
+  for (i = 1; i < n - 1; ++i) { a[i] = 1, b[i] = 4, r[i] = 4 * x[i] + 2 * x[i + 1]; }
+  a[n - 1] = 2, b[n - 1] = 7, r[n - 1] = 8 * x[n - 1] + x[n];
+  for (i = 1; i < n; ++i) { m = a[i] / b[i - 1], b[i] -= m, r[i] -= m * r[i - 1]; }
+  a[n - 1] = r[n - 1] / b[n - 1];
+  for (i = n - 2; i >= 0; --i) { a[i] = (r[i] - a[i + 1]) / b[i]; }
+  b[n - 1] = (x[n] + a[n - 1]) / 2;
+  for (i = 0; i < n - 1; ++i) { b[i] = 2 * x[i + 1] - a[i + 1]; }
+  return [a, b];
+}
+
+function natural(context) {
+  return new Natural(context);
+}
+
+function Step(context, t) {
+  this._context = context;
+  this._t = t;
+}
+
+Step.prototype = {
+  areaStart: function() {
+    this._line = 0;
+  },
+  areaEnd: function() {
+    this._line = NaN;
+  },
+  lineStart: function() {
+    this._x = this._y = NaN;
+    this._point = 0;
+  },
+  lineEnd: function() {
+    if (0 < this._t && this._t < 1 && this._point === 2) { this._context.lineTo(this._x, this._y); }
+    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
+    if (this._line >= 0) { this._t = 1 - this._t, this._line = 1 - this._line; }
+  },
+  point: function(x, y) {
+    x = +x, y = +y;
+    switch (this._point) {
+      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
+      case 1: this._point = 2; // proceed
+      default: {
+        if (this._t <= 0) {
+          this._context.lineTo(this._x, y);
+          this._context.lineTo(x, y);
+        } else {
+          var x1 = this._x * (1 - this._t) + x * this._t;
+          this._context.lineTo(x1, this._y);
+          this._context.lineTo(x1, y);
+        }
+        break;
+      }
+    }
+    this._x = x, this._y = y;
+  }
+};
+
+function step(context) {
+  return new Step(context, 0.5);
+}
+
+function stepBefore(context) {
+  return new Step(context, 0);
+}
+
+function stepAfter(context) {
+  return new Step(context, 1);
+}
+
+function none$1(series, order) {
+  if (!((n = series.length) > 1)) { return; }
+  for (var i = 1, j, s0, s1 = series[order[0]], n, m = s1.length; i < n; ++i) {
+    s0 = s1, s1 = series[order[i]];
+    for (j = 0; j < m; ++j) {
+      s1[j][1] += s1[j][0] = isNaN(s0[j][1]) ? s0[j][0] : s0[j][1];
+    }
+  }
+}
+
+function none$2(series) {
+  var n = series.length, o = new Array(n);
+  while (--n >= 0) { o[n] = n; }
+  return o;
+}
+
+function stackValue(d, key) {
+  return d[key];
+}
+
+function stack() {
+  var keys = constant$6([]),
+      order = none$2,
+      offset = none$1,
+      value = stackValue;
+
+  function stack(data) {
+    var kz = keys.apply(this, arguments),
+        i,
+        m = data.length,
+        n = kz.length,
+        sz = new Array(n),
+        oz;
+
+    for (i = 0; i < n; ++i) {
+      for (var ki = kz[i], si = sz[i] = new Array(m), j = 0, sij; j < m; ++j) {
+        si[j] = sij = [0, +value(data[j], ki, j, data)];
+        sij.data = data[j];
+      }
+      si.key = ki;
+    }
+
+    for (i = 0, oz = order(sz); i < n; ++i) {
+      sz[oz[i]].index = i;
+    }
+
+    offset(sz, oz);
+    return sz;
+  }
+
+  stack.keys = function(_) {
+    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$6(slice$3.call(_)), stack) : keys;
+  };
+
+  stack.value = function(_) {
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$6(+_), stack) : value;
+  };
+
+  stack.order = function(_) {
+    return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$6(slice$3.call(_)), stack) : order;
+  };
+
+  stack.offset = function(_) {
+    return arguments.length ? (offset = _ == null ? none$1 : _, stack) : offset;
+  };
+
+  return stack;
+}
+
+function expand(series, order) {
+  if (!((n = series.length) > 0)) { return; }
+  for (var i, n, j = 0, m = series[0].length, y; j < m; ++j) {
+    for (y = i = 0; i < n; ++i) { y += series[i][j][1] || 0; }
+    if (y) { for (i = 0; i < n; ++i) { series[i][j][1] /= y; } }
+  }
+  none$1(series, order);
+}
+
+function diverging(series, order) {
+  if (!((n = series.length) > 1)) { return; }
+  for (var i, j = 0, d, dy, yp, yn, n, m = series[order[0]].length; j < m; ++j) {
+    for (yp = yn = 0, i = 0; i < n; ++i) {
+      if ((dy = (d = series[order[i]][j])[1] - d[0]) >= 0) {
+        d[0] = yp, d[1] = yp += dy;
+      } else if (dy < 0) {
+        d[1] = yn, d[0] = yn += dy;
+      } else {
+        d[0] = yp;
+      }
+    }
+  }
+}
+
+function silhouette(series, order) {
+  if (!((n = series.length) > 0)) { return; }
+  for (var j = 0, s0 = series[order[0]], n, m = s0.length; j < m; ++j) {
+    for (var i = 0, y = 0; i < n; ++i) { y += series[i][j][1] || 0; }
+    s0[j][1] += s0[j][0] = -y / 2;
+  }
+  none$1(series, order);
+}
+
+function wiggle(series, order) {
+  if (!((n = series.length) > 0) || !((m = (s0 = series[order[0]]).length) > 0)) { return; }
+  for (var y = 0, j = 1, s0, m, n; j < m; ++j) {
+    for (var i = 0, s1 = 0, s2 = 0; i < n; ++i) {
+      var si = series[order[i]],
+          sij0 = si[j][1] || 0,
+          sij1 = si[j - 1][1] || 0,
+          s3 = (sij0 - sij1) / 2;
+      for (var k = 0; k < i; ++k) {
+        var sk = series[order[k]],
+            skj0 = sk[j][1] || 0,
+            skj1 = sk[j - 1][1] || 0;
+        s3 += skj0 - skj1;
+      }
+      s1 += sij0, s2 += s3 * sij0;
+    }
+    s0[j - 1][1] += s0[j - 1][0] = y;
+    if (s1) { y -= s2 / s1; }
+  }
+  s0[j - 1][1] += s0[j - 1][0] = y;
+  none$1(series, order);
+}
+
+function ascending$2(series) {
+  var sums = series.map(sum$1);
+  return none$2(series).sort(function(a, b) { return sums[a] - sums[b]; });
+}
+
+function sum$1(series) {
+  var s = 0, i = -1, n = series.length, v;
+  while (++i < n) { if (v = +series[i][1]) { s += v; } }
+  return s;
+}
+
+function descending$2(series) {
+  return ascending$2(series).reverse();
+}
+
+function insideOut(series) {
+  var n = series.length,
+      i,
+      j,
+      sums = series.map(sum$1),
+      order = none$2(series).sort(function(a, b) { return sums[b] - sums[a]; }),
+      top = 0,
+      bottom = 0,
+      tops = [],
+      bottoms = [];
+
+  for (i = 0; i < n; ++i) {
+    j = order[i];
+    if (top < bottom) {
+      top += sums[j];
+      tops.push(j);
+    } else {
+      bottom += sums[j];
+      bottoms.push(j);
+    }
+  }
+
+  return bottoms.reverse().concat(tops);
+}
+
+function reverse(series) {
+  return none$2(series).reverse();
+}
+
+
+
+var paths = Object.freeze({
+	arc: arc,
+	area: area,
+	line: line,
+	pie: pie,
+	areaRadial: areaRadial,
+	radialArea: areaRadial,
+	lineRadial: lineRadial$1,
+	radialLine: lineRadial$1,
+	pointRadial: pointRadial,
+	linkHorizontal: linkHorizontal,
+	linkVertical: linkVertical,
+	linkRadial: linkRadial,
+	symbol: symbol,
+	symbols: symbols,
+	symbolCircle: circle,
+	symbolCross: cross$1,
+	symbolDiamond: diamond,
+	symbolSquare: square,
+	symbolStar: star,
+	symbolTriangle: triangle,
+	symbolWye: wye,
+	curveBasisClosed: basisClosed$1,
+	curveBasisOpen: basisOpen,
+	curveBasis: basis$2,
+	curveBundle: bundle,
+	curveCardinalClosed: cardinalClosed,
+	curveCardinalOpen: cardinalOpen,
+	curveCardinal: cardinal,
+	curveCatmullRomClosed: catmullRomClosed,
+	curveCatmullRomOpen: catmullRomOpen,
+	curveCatmullRom: catmullRom,
+	curveLinearClosed: linearClosed,
+	curveLinear: curveLinear,
+	curveMonotoneX: monotoneX,
+	curveMonotoneY: monotoneY,
+	curveNatural: natural,
+	curveStep: step,
+	curveStepAfter: stepAfter,
+	curveStepBefore: stepBefore,
+	stack: stack,
+	stackOffsetExpand: expand,
+	stackOffsetDiverging: diverging,
+	stackOffsetNone: none$1,
+	stackOffsetSilhouette: silhouette,
+	stackOffsetWiggle: wiggle,
+	stackOrderAscending: ascending$2,
+	stackOrderDescending: descending$2,
+	stackOrderInsideOut: insideOut,
+	stackOrderNone: none$2,
+	stackOrderReverse: reverse
+});
 
 /**
     @function textWidth
@@ -6110,14 +8238,11 @@ function trimRight(str) {
   return str.replace(/\s+$/, "");
 }
 
-var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
-var checked = {};
-var height = 32;
+var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890",
+      checked = {},
+      height = 32;
 
-var dejavu;
-var macos;
-var monospace;
-var proportional;
+var dejavu, macos, monospace, proportional;
 
 /**
     @function fontExists
@@ -6216,9 +8341,10 @@ function strip(value) {
 // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
 // and http://www.fileformat.info/info/unicode/category/Mn/list.htm
 // JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
-var a = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
+// The following unicode characters combine to form new characters and should never be split from surrounding characters.
+var a$1 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
 var b = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
-var combiningMarks = a.concat(b);
+var combiningMarks = a$1.concat(b);
 
 var splitChars = ["-",  "/",  ";",  ":",  "&",
   "u0E2F",  // thai character pairannoi
@@ -6441,14 +8567,14 @@ function wrap() {
     @extends external:BaseClass
     @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
 */
-var TextBox = (function (BaseClass) {
+var TextBox = (function (BaseClass$$1) {
   function TextBox() {
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._delay = 0;
     this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
+    this._ellipsis = function (text, line) { return line ? ((text.replace(/\.|,$/g, "")) + "...") : ""; };
     this._fontColor = constant$4("black");
     this._fontFamily = constant$4(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
     this._fontMax = constant$4(50);
@@ -6460,6 +8586,7 @@ var TextBox = (function (BaseClass) {
     this._id = function (d, i) { return d.id || ("" + i); };
     this._on = {};
     this._overflow = constant$4(false);
+    this._padding = constant$4(0);
     this._pointerEvents = constant$4("auto");
     this._rotate = constant$4(0);
     this._split = textSplit;
@@ -6472,8 +8599,8 @@ var TextBox = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { TextBox.__proto__ = BaseClass; }
-  TextBox.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { TextBox.__proto__ = BaseClass$$1; }
+  TextBox.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   TextBox.prototype.constructor = TextBox;
 
   /**
@@ -6510,8 +8637,10 @@ var TextBox = (function (BaseClass) {
         "line-height": lH
       };
 
-      var h = this$1._height(d, i),
-            w = this$1._width(d, i);
+      var padding = parseSides(this$1._padding(d, i));
+
+      var h = this$1._height(d, i) - (padding.top + padding.bottom),
+            w = this$1._width(d, i) - (padding.left + padding.right);
 
       var wrapper = wrap()
         .fontFamily(style["font-family"])
@@ -6559,8 +8688,8 @@ var TextBox = (function (BaseClass) {
             if (fS < fMin) { lineData = []; }
             else { checkSize(); }
           }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
+          else if (line < 1) { lineData = [that._ellipsis("", line)]; }
+          else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
 
         }
 
@@ -6610,7 +8739,9 @@ var TextBox = (function (BaseClass) {
           id: this$1._id(d, i),
           tA: this$1._textAnchor(d, i),
           widths: wrapResults.widths,
-          fS: fS, lH: lH, w: w, h: h, x: this$1._x(d, i), y: this$1._y(d, i) + yP
+          fS: fS, lH: lH, w: w, h: h,
+          x: this$1._x(d, i) + padding.left,
+          y: this$1._y(d, i) + yP + padding.top
         });
 
       }
@@ -6749,11 +8880,11 @@ var TextBox = (function (BaseClass) {
 
   /**
       @memberof TextBox
-      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
+      @desc Sets the function that handles what to do when a line is truncated. It should return the new value for the line, and is passed 2 arguments: the String of text for the line in question, and the number of the line. By default, an ellipsis is added to the end of any line except if it is the first word that cannot fit (in that case, an empty string is returned).
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
+function(text, line) {
+  return line ? text.replace(/\.|,$/g, "") + "..." : "";
 }
   */
   TextBox.prototype.ellipsis = function ellipsis (_) {
@@ -6865,6 +8996,15 @@ function(d, i) {
   */
   TextBox.prototype.overflow = function overflow (_) {
     return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$4(_), this) : this._overflow;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the padding to the specified accessor function, CSS shorthand string, or static number, which is 0 by default.
+      @param {Function|Number|String} [*value*]
+  */
+  TextBox.prototype.padding = function padding (_) {
+    return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$4(_), this) : this._padding;
   };
 
   /**
@@ -7011,23 +9151,24 @@ function pointDistance (p1, p2) { return Math.sqrt(pointDistanceSquared(p1, p2))
     @extends external:BaseClass
     @desc An abstracted class for generating shapes.
 */
-var Shape = (function (BaseClass) {
+var Shape = (function (BaseClass$$1) {
   function Shape(tagName) {
     var this$1 = this;
     if ( tagName === void 0 ) { tagName = "g"; }
 
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
-    this._activeOpacity = 0.75;
+    this._activeOpacity = 0.25;
     this._activeStyle = {
-      "stroke": function (d, i) { return color(this$1._stroke(d, i)).darker(2); },
+      "stroke": "#444444",
       "stroke-width": function (d, i) {
-        var s = this$1._strokeWidth(d, i);
-        return s ? s * 2 : 1;
+        var s = this$1._strokeWidth(d, i) || 1;
+        return s * 3;
       }
     };
     this._backgroundImage = constant$4(false);
+    this._backgroundImageClass = new Image();
     this._data = [];
     this._duration = 600;
     this._fill = constant$4("black");
@@ -7036,13 +9177,15 @@ var Shape = (function (BaseClass) {
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = constant$4(false);
+    this._labelClass = new TextBox();
     this._labelConfig = {
       fontColor: function (d, i) { return colorContrast(this$1._fill(d, i)); },
-      fontSize: 12
+      fontSize: 12,
+      padding: 5
     };
-    this._labelPadding = constant$4(5);
     this._name = "Shape";
     this._opacity = constant$4(1);
+    this._pointerEvents = constant$4("visiblePainted");
     this._rx = constant$4(0);
     this._ry = constant$4(0);
     this._scale = constant$4(1);
@@ -7062,8 +9205,8 @@ var Shape = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { Shape.__proto__ = BaseClass; }
-  Shape.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { Shape.__proto__ = BaseClass$$1; }
+  Shape.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Shape.prototype.constructor = Shape;
 
   /**
@@ -7111,13 +9254,13 @@ var Shape = (function (BaseClass) {
       @param {HTMLElement} *elem*
       @private
   */
-  Shape.prototype._applyActive = function _applyActive (elem) {
+  Shape.prototype._applyActive = function _applyActive (elem$$1) {
     var this$1 = this;
 
 
     var that = this;
 
-    if (elem.size() && elem.node().tagName === "g") { elem = elem.selectAll("*"); }
+    if (elem$$1.size() && elem$$1.node().tagName === "g") { elem$$1 = elem$$1.selectAll("*"); }
 
     /**
         @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
@@ -7139,7 +9282,7 @@ var Shape = (function (BaseClass) {
       }
     }
 
-    elem.transition().duration(0).call(attrize, activeStyle);
+    elem$$1.transition().duration(0).call(attrize, activeStyle);
 
   };
 
@@ -7149,11 +9292,11 @@ var Shape = (function (BaseClass) {
       @param {HTMLElement} *elem*
       @private
   */
-  Shape.prototype._applyStyle = function _applyStyle (elem) {
+  Shape.prototype._applyStyle = function _applyStyle (elem$$1) {
 
     var that = this;
 
-    if (elem.size() && elem.node().tagName === "g") { elem = elem.selectAll("*"); }
+    if (elem$$1.size() && elem$$1.node().tagName === "g") { elem$$1 = elem$$1.selectAll("*"); }
 
     /**
         @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
@@ -7168,7 +9311,7 @@ var Shape = (function (BaseClass) {
           : this(d, i);
     }
 
-    elem
+    elem$$1
       .attr("fill", styleLogic.bind(this._fill))
       .attr("fill-opacity", styleLogic.bind(this._fillOpacity))
       .attr("rx", styleLogic.bind(this._rx))
@@ -7187,11 +9330,11 @@ var Shape = (function (BaseClass) {
       @param {HTMLElement} *elem*
       @private
   */
-  Shape.prototype._applyTransform = function _applyTransform (elem) {
+  Shape.prototype._applyTransform = function _applyTransform (elem$$1) {
     var this$1 = this;
 
 
-    elem
+    elem$$1
       .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plusShape__
     ? d.translate ? d.translate
     : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
@@ -7207,6 +9350,89 @@ var Shape = (function (BaseClass) {
   */
   Shape.prototype._nestWrapper = function _nestWrapper (method) {
     return function (d, i) { return method(d.__d3plusShape__ ? d.data : d, d.__d3plusShape__ ? d.i : i); };
+  };
+
+  /**
+      @memberof Shape
+      @desc Modifies existing shapes to show active status.
+      @private
+  */
+  Shape.prototype._renderActive = function _renderActive () {
+
+    var that = this;
+
+    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !that._active || typeof that._active !== "function" || !that._active(d, i) ? parent : that._activeGroup.node();
+        if (group !== this.parentNode) {
+          group.appendChild(this);
+          if (this.className.baseVal.includes("d3plus-Shape")) {
+            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
+            else { select(this).call(that._applyActive.bind(that)); }
+          }
+        }
+
+      });
+
+    this._renderImage();
+    this._renderLabels();
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Modifies existing shapes to show hover status.
+      @private
+  */
+  Shape.prototype._renderHover = function _renderHover () {
+
+    var that = this;
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
+      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !that._hover || typeof that._hover !== "function" || !that._hover(d, i) ? parent : that._hoverGroup.node();
+        if (group !== this.parentNode) { group.appendChild(this); }
+
+      });
+
+    this._renderImage();
+    this._renderLabels();
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
   };
 
   /**
@@ -7270,7 +9496,7 @@ var Shape = (function (BaseClass) {
 
       });
 
-    return new Image()
+    this._backgroundImageClass
       .data(imageData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -7301,7 +9527,7 @@ var Shape = (function (BaseClass) {
 
         var labels = this$1._label(d, i);
 
-        if (this$1._labelBounds && labels !== false && labels !== undefined) {
+        if (this$1._labelBounds && labels !== false && labels !== undefined && labels !== null) {
 
           var bounds = this$1._labelBounds(d, i, this$1._aes(datum, i));
 
@@ -7319,24 +9545,21 @@ var Shape = (function (BaseClass) {
               i = d.i;
             }
 
-            var padding = this$1._labelPadding(d, i);
-
             for (var l = 0; l < labels.length; l++) {
 
-              var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
-                    p = padding.constructor === Array ? padding[l] : padding;
+              var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds);
 
               labelData.push({
                 __d3plus__: true,
                 data: d,
-                height: b.height - p * 2,
+                height: b.height,
                 l: l,
                 id: ((this$1._id(d, i)) + "_" + l),
                 r: bounds.angle !== undefined ? bounds.angle : 0,
                 text: labels[l],
-                width: b.width - p * 2,
-                x: x + b.x + p,
-                y: y + b.y + p
+                width: b.width,
+                x: x + b.x,
+                y: y + b.y
               });
 
             }
@@ -7347,7 +9570,7 @@ var Shape = (function (BaseClass) {
 
       });
 
-    return new TextBox()
+    this._labelClass
       .data(labelData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -7414,7 +9637,7 @@ var Shape = (function (BaseClass) {
       .transition(this._transition)
       .attr("opacity", this._nestWrapper(this._opacity))
       .transition()
-      .attr("pointer-events", "all");
+      .attr("pointer-events", this._pointerEvents);
 
     // Makes the exit state of the group selection accessible.
     var exit = this._exit = update.exit();
@@ -7426,31 +9649,46 @@ var Shape = (function (BaseClass) {
     this._hoverGroup = elem(("g.d3plus-" + (this._name) + "-hover"), {parent: this._group});
     this._activeGroup = elem(("g.d3plus-" + (this._name) + "-active"), {parent: this._group});
 
-    var that = this;
-
     var hitAreas = this._group.selectAll(".d3plus-HitArea")
       .data(this._hitArea ? data : [], key);
 
-    hitAreas.order().transition(this._transition)
+    hitAreas.order()
       .call(this._applyTransform.bind(this));
 
-    var hitEnter = hitAreas.enter().append("rect")
+    var isLine = this._name === "Line";
+
+    isLine && this._path
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .defined(this._defined)
+      .x(this._x)
+      .y(this._y);
+
+    var hitEnter = hitAreas.enter().append(isLine ? "path" : "rect")
       .attr("class", function (d, i) { return ("d3plus-HitArea d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
-      .attr("fill", "transparent")
+      .attr("fill", "black")
+      .attr("stroke", "black")
+      .attr("pointer-events", "painted")
+      .attr("opacity", 0)
       .call(this._applyTransform.bind(this));
+
+    var that = this;
 
     var hitUpdates = hitAreas.merge(hitEnter)
       .each(function(d) {
-        var h = that._hitArea(d, that._data.indexOf(d), that._aes(d, that._data.indexOf(d)));
-        return h ? select(this).call(attrize, h) : select(this).remove();
+        var i = that._data.indexOf(d);
+        var h = that._hitArea(d, i, that._aes(d, i));
+        return h && !(that._name === "Line" && parseFloat(that._strokeWidth(d, i)) > 10) ? select(this).call(attrize, h) : select(this).remove();
       });
 
     hitAreas.exit().remove();
 
     this._applyEvents(this._hitArea ? hitUpdates : enterUpdate);
-    this.active(this._active);
 
-    if (callback) { setTimeout(callback, this._duration + 100); }
+    setTimeout(function () {
+      if (this$1._active) { this$1._renderActive(); }
+      else if (this$1._hover) { this$1._renderHover(); }
+      if (callback) { callback(); }
+    }, this._duration + 100);
 
     return this;
 
@@ -7462,55 +9700,37 @@ var Shape = (function (BaseClass) {
       @param {Function} [*value*]
       @chainable
   */
-  Shape.prototype.active = function active (_) {
+  Shape.prototype.active = function active$$1 (_) {
 
-    if (!arguments.length || _ === void 0) { return this._active; }
+    if (!arguments.length || _ === undefined) { return this._active; }
     this._active = _;
-
-    var that = this;
-
-    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
-      .each(function(d, i) {
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
-
-        if (select(this).classed("d3plus-textBox")) { d = d.data; }
-        if (d.__d3plusShape__ || d.__d3plus__) {
-          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
-            i = d.i;
-            d = d.data;
-          }
-        }
-        else { i = that._data.indexOf(d); }
-
-        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
-        if (group !== this.parentNode) {
-          group.appendChild(this);
-          if (this.className.baseVal.includes("d3plus-Shape")) {
-            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
-            else { select(this).call(that._applyActive.bind(that)); }
-          }
-        }
-
-      });
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
-      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
-
+    if (this._group) {
+      this._renderImage();
+      this._renderLabels();
+      this._renderActive();
+    }
     return this;
 
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the active opacity to the specified function and returns the current class instance.
-      @param {Number} [*value* = 0.75]
+      @desc When shapes are active, this is the opacity of any shape that is not active.
+      @param {Number} *value* = 0.25
       @chainable
   */
   Shape.prototype.activeOpacity = function activeOpacity (_) {
     return arguments.length ? (this._activeOpacity = _, this) : this._activeOpacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc The style to apply to active shapes.
+      @param {Object} *value*
+      @chainable
+  */
+  Shape.prototype.activeStyle = function activeStyle (_) {
+    return arguments.length ? (this._activeStyle = assign({}, this._activeStyle, _), this) : this._activeStyle;
   };
 
   /**
@@ -7583,35 +9803,13 @@ var Shape = (function (BaseClass) {
 
     if (!arguments.length || _ === void 0) { return this._hover; }
     this._hover = _;
-
-    var that = this;
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
-      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
-      .each(function(d, i) {
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
-
-        if (select(this).classed("d3plus-textBox")) { d = d.data; }
-        if (d.__d3plusShape__ || d.__d3plus__) {
-          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
-            i = d.i;
-            d = d.data;
-          }
-        }
-        else { i = that._data.indexOf(d); }
-
-        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
-        if (group !== this.parentNode) { group.appendChild(this); }
-
-      });
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
-      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
-
+    if (this._group) {
+      this._renderImage();
+      this._renderLabels();
+      this._renderHover();
+    }
     return this;
+
   };
 
   /**
@@ -7694,22 +9892,22 @@ function(d, i, shape) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance.
-      @param {Function|Number|Array} [*value* = 10]
-      @chainable
-  */
-  Shape.prototype.labelPadding = function labelPadding (_) {
-    return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : constant$4(_), this) : this._labelPadding;
-  };
-
-  /**
-      @memberof Shape
       @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance.
       @param {Number} [*value* = 1]
       @chainable
   */
   Shape.prototype.opacity = function opacity (_) {
     return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$4(_), this) : this._opacity;
+  };
+
+  /**
+       @memberof Shape
+       @desc If *value* is specified, sets the pointerEvents accessor to the specified function or string and returns the current class instance.
+       @param {String} [*value*]
+       @chainable
+   */
+  Shape.prototype.pointerEvents = function pointerEvents (_) {
+    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$4(_), this) : this._pointerEvents;
   };
 
   /**
@@ -8388,2068 +10586,6 @@ function interpolatePath(a, b, excludeSegment) {
   };
 }
 
-var pi$1 = Math.PI;
-var tau$1 = 2 * pi$1;
-var epsilon = 1e-6;
-var tauEpsilon = tau$1 - epsilon;
-
-function Path() {
-  this._x0 = this._y0 = // start of current subpath
-  this._x1 = this._y1 = null; // end of current subpath
-  this._ = "";
-}
-
-function path() {
-  return new Path;
-}
-
-Path.prototype = path.prototype = {
-  constructor: Path,
-  moveTo: function(x, y) {
-    this._ += "M" + (this._x0 = this._x1 = +x) + "," + (this._y0 = this._y1 = +y);
-  },
-  closePath: function() {
-    if (this._x1 !== null) {
-      this._x1 = this._x0, this._y1 = this._y0;
-      this._ += "Z";
-    }
-  },
-  lineTo: function(x, y) {
-    this._ += "L" + (this._x1 = +x) + "," + (this._y1 = +y);
-  },
-  quadraticCurveTo: function(x1, y1, x, y) {
-    this._ += "Q" + (+x1) + "," + (+y1) + "," + (this._x1 = +x) + "," + (this._y1 = +y);
-  },
-  bezierCurveTo: function(x1, y1, x2, y2, x, y) {
-    this._ += "C" + (+x1) + "," + (+y1) + "," + (+x2) + "," + (+y2) + "," + (this._x1 = +x) + "," + (this._y1 = +y);
-  },
-  arcTo: function(x1, y1, x2, y2, r) {
-    x1 = +x1, y1 = +y1, x2 = +x2, y2 = +y2, r = +r;
-    var x0 = this._x1,
-        y0 = this._y1,
-        x21 = x2 - x1,
-        y21 = y2 - y1,
-        x01 = x0 - x1,
-        y01 = y0 - y1,
-        l01_2 = x01 * x01 + y01 * y01;
-
-    // Is the radius negative? Error.
-    if (r < 0) { throw new Error("negative radius: " + r); }
-
-    // Is this path empty? Move to (x1,y1).
-    if (this._x1 === null) {
-      this._ += "M" + (this._x1 = x1) + "," + (this._y1 = y1);
-    }
-
-    // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
-    else if (!(l01_2 > epsilon)) {}
-
-    // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
-    // Equivalently, is (x1,y1) coincident with (x2,y2)?
-    // Or, is the radius zero? Line to (x1,y1).
-    else if (!(Math.abs(y01 * x21 - y21 * x01) > epsilon) || !r) {
-      this._ += "L" + (this._x1 = x1) + "," + (this._y1 = y1);
-    }
-
-    // Otherwise, draw an arc!
-    else {
-      var x20 = x2 - x0,
-          y20 = y2 - y0,
-          l21_2 = x21 * x21 + y21 * y21,
-          l20_2 = x20 * x20 + y20 * y20,
-          l21 = Math.sqrt(l21_2),
-          l01 = Math.sqrt(l01_2),
-          l = r * Math.tan((pi$1 - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
-          t01 = l / l01,
-          t21 = l / l21;
-
-      // If the start tangent is not coincident with (x0,y0), line to.
-      if (Math.abs(t01 - 1) > epsilon) {
-        this._ += "L" + (x1 + t01 * x01) + "," + (y1 + t01 * y01);
-      }
-
-      this._ += "A" + r + "," + r + ",0,0," + (+(y01 * x20 > x01 * y20)) + "," + (this._x1 = x1 + t21 * x21) + "," + (this._y1 = y1 + t21 * y21);
-    }
-  },
-  arc: function(x, y, r, a0, a1, ccw) {
-    x = +x, y = +y, r = +r;
-    var dx = r * Math.cos(a0),
-        dy = r * Math.sin(a0),
-        x0 = x + dx,
-        y0 = y + dy,
-        cw = 1 ^ ccw,
-        da = ccw ? a0 - a1 : a1 - a0;
-
-    // Is the radius negative? Error.
-    if (r < 0) { throw new Error("negative radius: " + r); }
-
-    // Is this path empty? Move to (x0,y0).
-    if (this._x1 === null) {
-      this._ += "M" + x0 + "," + y0;
-    }
-
-    // Or, is (x0,y0) not coincident with the previous point? Line to (x0,y0).
-    else if (Math.abs(this._x1 - x0) > epsilon || Math.abs(this._y1 - y0) > epsilon) {
-      this._ += "L" + x0 + "," + y0;
-    }
-
-    // Is this arc empty? We’re done.
-    if (!r) { return; }
-
-    // Does the angle go the wrong way? Flip the direction.
-    if (da < 0) { da = da % tau$1 + tau$1; }
-
-    // Is this a complete circle? Draw two arcs to complete the circle.
-    if (da > tauEpsilon) {
-      this._ += "A" + r + "," + r + ",0,1," + cw + "," + (x - dx) + "," + (y - dy) + "A" + r + "," + r + ",0,1," + cw + "," + (this._x1 = x0) + "," + (this._y1 = y0);
-    }
-
-    // Is this arc non-empty? Draw an arc!
-    else if (da > epsilon) {
-      this._ += "A" + r + "," + r + ",0," + (+(da >= pi$1)) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
-    }
-  },
-  rect: function(x, y, w, h) {
-    this._ += "M" + (this._x0 = this._x1 = +x) + "," + (this._y0 = this._y1 = +y) + "h" + (+w) + "v" + (+h) + "h" + (-w) + "Z";
-  },
-  toString: function() {
-    return this._;
-  }
-};
-
-function constant$5(x) {
-  return function constant() {
-    return x;
-  };
-}
-
-var abs = Math.abs;
-var atan2 = Math.atan2;
-var cos = Math.cos;
-var max$1 = Math.max;
-var min$1 = Math.min;
-var sin = Math.sin;
-var sqrt$1 = Math.sqrt;
-
-var epsilon$1 = 1e-12;
-var pi$2 = Math.PI;
-var halfPi$1 = pi$2 / 2;
-var tau$2 = 2 * pi$2;
-
-function acos(x) {
-  return x > 1 ? 0 : x < -1 ? pi$2 : Math.acos(x);
-}
-
-function asin(x) {
-  return x >= 1 ? halfPi$1 : x <= -1 ? -halfPi$1 : Math.asin(x);
-}
-
-function arcInnerRadius(d) {
-  return d.innerRadius;
-}
-
-function arcOuterRadius(d) {
-  return d.outerRadius;
-}
-
-function arcStartAngle(d) {
-  return d.startAngle;
-}
-
-function arcEndAngle(d) {
-  return d.endAngle;
-}
-
-function arcPadAngle(d) {
-  return d && d.padAngle; // Note: optional!
-}
-
-function intersect(x0, y0, x1, y1, x2, y2, x3, y3) {
-  var x10 = x1 - x0, y10 = y1 - y0,
-      x32 = x3 - x2, y32 = y3 - y2,
-      t = (x32 * (y0 - y2) - y32 * (x0 - x2)) / (y32 * x10 - x32 * y10);
-  return [x0 + t * x10, y0 + t * y10];
-}
-
-// Compute perpendicular offset line of length rc.
-// http://mathworld.wolfram.com/Circle-LineIntersection.html
-function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
-  var x01 = x0 - x1,
-      y01 = y0 - y1,
-      lo = (cw ? rc : -rc) / sqrt$1(x01 * x01 + y01 * y01),
-      ox = lo * y01,
-      oy = -lo * x01,
-      x11 = x0 + ox,
-      y11 = y0 + oy,
-      x10 = x1 + ox,
-      y10 = y1 + oy,
-      x00 = (x11 + x10) / 2,
-      y00 = (y11 + y10) / 2,
-      dx = x10 - x11,
-      dy = y10 - y11,
-      d2 = dx * dx + dy * dy,
-      r = r1 - rc,
-      D = x11 * y10 - x10 * y11,
-      d = (dy < 0 ? -1 : 1) * sqrt$1(max$1(0, r * r * d2 - D * D)),
-      cx0 = (D * dy - dx * d) / d2,
-      cy0 = (-D * dx - dy * d) / d2,
-      cx1 = (D * dy + dx * d) / d2,
-      cy1 = (-D * dx + dy * d) / d2,
-      dx0 = cx0 - x00,
-      dy0 = cy0 - y00,
-      dx1 = cx1 - x00,
-      dy1 = cy1 - y00;
-
-  // Pick the closer of the two intersection points.
-  // TODO Is there a faster way to determine which intersection to use?
-  if (dx0 * dx0 + dy0 * dy0 > dx1 * dx1 + dy1 * dy1) { cx0 = cx1, cy0 = cy1; }
-
-  return {
-    cx: cx0,
-    cy: cy0,
-    x01: -ox,
-    y01: -oy,
-    x11: cx0 * (r1 / r - 1),
-    y11: cy0 * (r1 / r - 1)
-  };
-}
-
-function arc() {
-  var innerRadius = arcInnerRadius,
-      outerRadius = arcOuterRadius,
-      cornerRadius = constant$5(0),
-      padRadius = null,
-      startAngle = arcStartAngle,
-      endAngle = arcEndAngle,
-      padAngle = arcPadAngle,
-      context = null;
-
-  function arc() {
-    var buffer,
-        r,
-        r0 = +innerRadius.apply(this, arguments),
-        r1 = +outerRadius.apply(this, arguments),
-        a0 = startAngle.apply(this, arguments) - halfPi$1,
-        a1 = endAngle.apply(this, arguments) - halfPi$1,
-        da = abs(a1 - a0),
-        cw = a1 > a0;
-
-    if (!context) { context = buffer = path(); }
-
-    // Ensure that the outer radius is always larger than the inner radius.
-    if (r1 < r0) { r = r1, r1 = r0, r0 = r; }
-
-    // Is it a point?
-    if (!(r1 > epsilon$1)) { context.moveTo(0, 0); }
-
-    // Or is it a circle or annulus?
-    else if (da > tau$2 - epsilon$1) {
-      context.moveTo(r1 * cos(a0), r1 * sin(a0));
-      context.arc(0, 0, r1, a0, a1, !cw);
-      if (r0 > epsilon$1) {
-        context.moveTo(r0 * cos(a1), r0 * sin(a1));
-        context.arc(0, 0, r0, a1, a0, cw);
-      }
-    }
-
-    // Or is it a circular or annular sector?
-    else {
-      var a01 = a0,
-          a11 = a1,
-          a00 = a0,
-          a10 = a1,
-          da0 = da,
-          da1 = da,
-          ap = padAngle.apply(this, arguments) / 2,
-          rp = (ap > epsilon$1) && (padRadius ? +padRadius.apply(this, arguments) : sqrt$1(r0 * r0 + r1 * r1)),
-          rc = min$1(abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
-          rc0 = rc,
-          rc1 = rc,
-          t0,
-          t1;
-
-      // Apply padding? Note that since r1 ≥ r0, da1 ≥ da0.
-      if (rp > epsilon$1) {
-        var p0 = asin(rp / r0 * sin(ap)),
-            p1 = asin(rp / r1 * sin(ap));
-        if ((da0 -= p0 * 2) > epsilon$1) { p0 *= (cw ? 1 : -1), a00 += p0, a10 -= p0; }
-        else { da0 = 0, a00 = a10 = (a0 + a1) / 2; }
-        if ((da1 -= p1 * 2) > epsilon$1) { p1 *= (cw ? 1 : -1), a01 += p1, a11 -= p1; }
-        else { da1 = 0, a01 = a11 = (a0 + a1) / 2; }
-      }
-
-      var x01 = r1 * cos(a01),
-          y01 = r1 * sin(a01),
-          x10 = r0 * cos(a10),
-          y10 = r0 * sin(a10);
-
-      // Apply rounded corners?
-      if (rc > epsilon$1) {
-        var x11 = r1 * cos(a11),
-            y11 = r1 * sin(a11),
-            x00 = r0 * cos(a00),
-            y00 = r0 * sin(a00);
-
-        // Restrict the corner radius according to the sector angle.
-        if (da < pi$2) {
-          var oc = da0 > epsilon$1 ? intersect(x01, y01, x00, y00, x11, y11, x10, y10) : [x10, y10],
-              ax = x01 - oc[0],
-              ay = y01 - oc[1],
-              bx = x11 - oc[0],
-              by = y11 - oc[1],
-              kc = 1 / sin(acos((ax * bx + ay * by) / (sqrt$1(ax * ax + ay * ay) * sqrt$1(bx * bx + by * by))) / 2),
-              lc = sqrt$1(oc[0] * oc[0] + oc[1] * oc[1]);
-          rc0 = min$1(rc, (r0 - lc) / (kc - 1));
-          rc1 = min$1(rc, (r1 - lc) / (kc + 1));
-        }
-      }
-
-      // Is the sector collapsed to a line?
-      if (!(da1 > epsilon$1)) { context.moveTo(x01, y01); }
-
-      // Does the sector’s outer ring have rounded corners?
-      else if (rc1 > epsilon$1) {
-        t0 = cornerTangents(x00, y00, x01, y01, r1, rc1, cw);
-        t1 = cornerTangents(x11, y11, x10, y10, r1, rc1, cw);
-
-        context.moveTo(t0.cx + t0.x01, t0.cy + t0.y01);
-
-        // Have the corners merged?
-        if (rc1 < rc) { context.arc(t0.cx, t0.cy, rc1, atan2(t0.y01, t0.x01), atan2(t1.y01, t1.x01), !cw); }
-
-        // Otherwise, draw the two corners and the ring.
-        else {
-          context.arc(t0.cx, t0.cy, rc1, atan2(t0.y01, t0.x01), atan2(t0.y11, t0.x11), !cw);
-          context.arc(0, 0, r1, atan2(t0.cy + t0.y11, t0.cx + t0.x11), atan2(t1.cy + t1.y11, t1.cx + t1.x11), !cw);
-          context.arc(t1.cx, t1.cy, rc1, atan2(t1.y11, t1.x11), atan2(t1.y01, t1.x01), !cw);
-        }
-      }
-
-      // Or is the outer ring just a circular arc?
-      else { context.moveTo(x01, y01), context.arc(0, 0, r1, a01, a11, !cw); }
-
-      // Is there no inner ring, and it’s a circular sector?
-      // Or perhaps it’s an annular sector collapsed due to padding?
-      if (!(r0 > epsilon$1) || !(da0 > epsilon$1)) { context.lineTo(x10, y10); }
-
-      // Does the sector’s inner ring (or point) have rounded corners?
-      else if (rc0 > epsilon$1) {
-        t0 = cornerTangents(x10, y10, x11, y11, r0, -rc0, cw);
-        t1 = cornerTangents(x01, y01, x00, y00, r0, -rc0, cw);
-
-        context.lineTo(t0.cx + t0.x01, t0.cy + t0.y01);
-
-        // Have the corners merged?
-        if (rc0 < rc) { context.arc(t0.cx, t0.cy, rc0, atan2(t0.y01, t0.x01), atan2(t1.y01, t1.x01), !cw); }
-
-        // Otherwise, draw the two corners and the ring.
-        else {
-          context.arc(t0.cx, t0.cy, rc0, atan2(t0.y01, t0.x01), atan2(t0.y11, t0.x11), !cw);
-          context.arc(0, 0, r0, atan2(t0.cy + t0.y11, t0.cx + t0.x11), atan2(t1.cy + t1.y11, t1.cx + t1.x11), cw);
-          context.arc(t1.cx, t1.cy, rc0, atan2(t1.y11, t1.x11), atan2(t1.y01, t1.x01), !cw);
-        }
-      }
-
-      // Or is the inner ring just a circular arc?
-      else { context.arc(0, 0, r0, a10, a00, cw); }
-    }
-
-    context.closePath();
-
-    if (buffer) { return context = null, buffer + "" || null; }
-  }
-
-  arc.centroid = function() {
-    var r = (+innerRadius.apply(this, arguments) + +outerRadius.apply(this, arguments)) / 2,
-        a = (+startAngle.apply(this, arguments) + +endAngle.apply(this, arguments)) / 2 - pi$2 / 2;
-    return [cos(a) * r, sin(a) * r];
-  };
-
-  arc.innerRadius = function(_) {
-    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$5(+_), arc) : innerRadius;
-  };
-
-  arc.outerRadius = function(_) {
-    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$5(+_), arc) : outerRadius;
-  };
-
-  arc.cornerRadius = function(_) {
-    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$5(+_), arc) : cornerRadius;
-  };
-
-  arc.padRadius = function(_) {
-    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$5(+_), arc) : padRadius;
-  };
-
-  arc.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$5(+_), arc) : startAngle;
-  };
-
-  arc.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$5(+_), arc) : endAngle;
-  };
-
-  arc.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$5(+_), arc) : padAngle;
-  };
-
-  arc.context = function(_) {
-    return arguments.length ? (context = _ == null ? null : _, arc) : context;
-  };
-
-  return arc;
-}
-
-function Linear(context) {
-  this._context = context;
-}
-
-Linear.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; // proceed
-      default: this._context.lineTo(x, y); break;
-    }
-  }
-};
-
-function curveLinear(context) {
-  return new Linear(context);
-}
-
-function x(p) {
-  return p[0];
-}
-
-function y(p) {
-  return p[1];
-}
-
-function line() {
-  var x$$1 = x,
-      y$$1 = y,
-      defined = constant$5(true),
-      context = null,
-      curve = curveLinear,
-      output = null;
-
-  function line(data) {
-    var i,
-        n = data.length,
-        d,
-        defined0 = false,
-        buffer;
-
-    if (context == null) { output = curve(buffer = path()); }
-
-    for (i = 0; i <= n; ++i) {
-      if (!(i < n && defined(d = data[i], i, data)) === defined0) {
-        if (defined0 = !defined0) { output.lineStart(); }
-        else { output.lineEnd(); }
-      }
-      if (defined0) { output.point(+x$$1(d, i, data), +y$$1(d, i, data)); }
-    }
-
-    if (buffer) { return output = null, buffer + "" || null; }
-  }
-
-  line.x = function(_) {
-    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$5(+_), line) : x$$1;
-  };
-
-  line.y = function(_) {
-    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$5(+_), line) : y$$1;
-  };
-
-  line.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$5(!!_), line) : defined;
-  };
-
-  line.curve = function(_) {
-    return arguments.length ? (curve = _, context != null && (output = curve(context)), line) : curve;
-  };
-
-  line.context = function(_) {
-    return arguments.length ? (_ == null ? context = output = null : output = curve(context = _), line) : context;
-  };
-
-  return line;
-}
-
-function area() {
-  var x0 = x,
-      x1 = null,
-      y0 = constant$5(0),
-      y1 = y,
-      defined = constant$5(true),
-      context = null,
-      curve = curveLinear,
-      output = null;
-
-  function area(data) {
-    var i,
-        j,
-        k,
-        n = data.length,
-        d,
-        defined0 = false,
-        buffer,
-        x0z = new Array(n),
-        y0z = new Array(n);
-
-    if (context == null) { output = curve(buffer = path()); }
-
-    for (i = 0; i <= n; ++i) {
-      if (!(i < n && defined(d = data[i], i, data)) === defined0) {
-        if (defined0 = !defined0) {
-          j = i;
-          output.areaStart();
-          output.lineStart();
-        } else {
-          output.lineEnd();
-          output.lineStart();
-          for (k = i - 1; k >= j; --k) {
-            output.point(x0z[k], y0z[k]);
-          }
-          output.lineEnd();
-          output.areaEnd();
-        }
-      }
-      if (defined0) {
-        x0z[i] = +x0(d, i, data), y0z[i] = +y0(d, i, data);
-        output.point(x1 ? +x1(d, i, data) : x0z[i], y1 ? +y1(d, i, data) : y0z[i]);
-      }
-    }
-
-    if (buffer) { return output = null, buffer + "" || null; }
-  }
-
-  function arealine() {
-    return line().defined(defined).curve(curve).context(context);
-  }
-
-  area.x = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$5(+_), x1 = null, area) : x0;
-  };
-
-  area.x0 = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$5(+_), area) : x0;
-  };
-
-  area.x1 = function(_) {
-    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$5(+_), area) : x1;
-  };
-
-  area.y = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$5(+_), y1 = null, area) : y0;
-  };
-
-  area.y0 = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$5(+_), area) : y0;
-  };
-
-  area.y1 = function(_) {
-    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$5(+_), area) : y1;
-  };
-
-  area.lineX0 =
-  area.lineY0 = function() {
-    return arealine().x(x0).y(y0);
-  };
-
-  area.lineY1 = function() {
-    return arealine().x(x0).y(y1);
-  };
-
-  area.lineX1 = function() {
-    return arealine().x(x1).y(y0);
-  };
-
-  area.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$5(!!_), area) : defined;
-  };
-
-  area.curve = function(_) {
-    return arguments.length ? (curve = _, context != null && (output = curve(context)), area) : curve;
-  };
-
-  area.context = function(_) {
-    return arguments.length ? (_ == null ? context = output = null : output = curve(context = _), area) : context;
-  };
-
-  return area;
-}
-
-function descending$1(a, b) {
-  return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
-}
-
-function identity$4(d) {
-  return d;
-}
-
-function pie() {
-  var value = identity$4,
-      sortValues = descending$1,
-      sort = null,
-      startAngle = constant$5(0),
-      endAngle = constant$5(tau$2),
-      padAngle = constant$5(0);
-
-  function pie(data) {
-    var i,
-        n = data.length,
-        j,
-        k,
-        sum = 0,
-        index = new Array(n),
-        arcs = new Array(n),
-        a0 = +startAngle.apply(this, arguments),
-        da = Math.min(tau$2, Math.max(-tau$2, endAngle.apply(this, arguments) - a0)),
-        a1,
-        p = Math.min(Math.abs(da) / n, padAngle.apply(this, arguments)),
-        pa = p * (da < 0 ? -1 : 1),
-        v;
-
-    for (i = 0; i < n; ++i) {
-      if ((v = arcs[index[i] = i] = +value(data[i], i, data)) > 0) {
-        sum += v;
-      }
-    }
-
-    // Optionally sort the arcs by previously-computed values or by data.
-    if (sortValues != null) { index.sort(function(i, j) { return sortValues(arcs[i], arcs[j]); }); }
-    else if (sort != null) { index.sort(function(i, j) { return sort(data[i], data[j]); }); }
-
-    // Compute the arcs! They are stored in the original data's order.
-    for (i = 0, k = sum ? (da - n * pa) / sum : 0; i < n; ++i, a0 = a1) {
-      j = index[i], v = arcs[j], a1 = a0 + (v > 0 ? v * k : 0) + pa, arcs[j] = {
-        data: data[j],
-        index: i,
-        value: v,
-        startAngle: a0,
-        endAngle: a1,
-        padAngle: p
-      };
-    }
-
-    return arcs;
-  }
-
-  pie.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$5(+_), pie) : value;
-  };
-
-  pie.sortValues = function(_) {
-    return arguments.length ? (sortValues = _, sort = null, pie) : sortValues;
-  };
-
-  pie.sort = function(_) {
-    return arguments.length ? (sort = _, sortValues = null, pie) : sort;
-  };
-
-  pie.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$5(+_), pie) : startAngle;
-  };
-
-  pie.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$5(+_), pie) : endAngle;
-  };
-
-  pie.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$5(+_), pie) : padAngle;
-  };
-
-  return pie;
-}
-
-var curveRadialLinear = curveRadial(curveLinear);
-
-function Radial(curve) {
-  this._curve = curve;
-}
-
-Radial.prototype = {
-  areaStart: function() {
-    this._curve.areaStart();
-  },
-  areaEnd: function() {
-    this._curve.areaEnd();
-  },
-  lineStart: function() {
-    this._curve.lineStart();
-  },
-  lineEnd: function() {
-    this._curve.lineEnd();
-  },
-  point: function(a, r) {
-    this._curve.point(r * Math.sin(a), r * -Math.cos(a));
-  }
-};
-
-function curveRadial(curve) {
-
-  function radial(context) {
-    return new Radial(curve(context));
-  }
-
-  radial._curve = curve;
-
-  return radial;
-}
-
-function lineRadial(l) {
-  var c = l.curve;
-
-  l.angle = l.x, delete l.x;
-  l.radius = l.y, delete l.y;
-
-  l.curve = function(_) {
-    return arguments.length ? c(curveRadial(_)) : c()._curve;
-  };
-
-  return l;
-}
-
-function lineRadial$1() {
-  return lineRadial(line().curve(curveRadialLinear));
-}
-
-function areaRadial() {
-  var a = area().curve(curveRadialLinear),
-      c = a.curve,
-      x0 = a.lineX0,
-      x1 = a.lineX1,
-      y0 = a.lineY0,
-      y1 = a.lineY1;
-
-  a.angle = a.x, delete a.x;
-  a.startAngle = a.x0, delete a.x0;
-  a.endAngle = a.x1, delete a.x1;
-  a.radius = a.y, delete a.y;
-  a.innerRadius = a.y0, delete a.y0;
-  a.outerRadius = a.y1, delete a.y1;
-  a.lineStartAngle = function() { return lineRadial(x0()); }, delete a.lineX0;
-  a.lineEndAngle = function() { return lineRadial(x1()); }, delete a.lineX1;
-  a.lineInnerRadius = function() { return lineRadial(y0()); }, delete a.lineY0;
-  a.lineOuterRadius = function() { return lineRadial(y1()); }, delete a.lineY1;
-
-  a.curve = function(_) {
-    return arguments.length ? c(curveRadial(_)) : c()._curve;
-  };
-
-  return a;
-}
-
-function pointRadial(x, y) {
-  return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
-}
-
-var slice$2 = Array.prototype.slice;
-
-function linkSource(d) {
-  return d.source;
-}
-
-function linkTarget(d) {
-  return d.target;
-}
-
-function link(curve) {
-  var source = linkSource,
-      target = linkTarget,
-      x$$1 = x,
-      y$$1 = y,
-      context = null;
-
-  function link() {
-    var buffer, argv = slice$2.call(arguments), s = source.apply(this, argv), t = target.apply(this, argv);
-    if (!context) { context = buffer = path(); }
-    curve(context, +x$$1.apply(this, (argv[0] = s, argv)), +y$$1.apply(this, argv), +x$$1.apply(this, (argv[0] = t, argv)), +y$$1.apply(this, argv));
-    if (buffer) { return context = null, buffer + "" || null; }
-  }
-
-  link.source = function(_) {
-    return arguments.length ? (source = _, link) : source;
-  };
-
-  link.target = function(_) {
-    return arguments.length ? (target = _, link) : target;
-  };
-
-  link.x = function(_) {
-    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$5(+_), link) : x$$1;
-  };
-
-  link.y = function(_) {
-    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$5(+_), link) : y$$1;
-  };
-
-  link.context = function(_) {
-    return arguments.length ? (context = _ == null ? null : _, link) : context;
-  };
-
-  return link;
-}
-
-function curveHorizontal(context, x0, y0, x1, y1) {
-  context.moveTo(x0, y0);
-  context.bezierCurveTo(x0 = (x0 + x1) / 2, y0, x0, y1, x1, y1);
-}
-
-function curveVertical(context, x0, y0, x1, y1) {
-  context.moveTo(x0, y0);
-  context.bezierCurveTo(x0, y0 = (y0 + y1) / 2, x1, y0, x1, y1);
-}
-
-function curveRadial$1(context, x0, y0, x1, y1) {
-  var p0 = pointRadial(x0, y0),
-      p1 = pointRadial(x0, y0 = (y0 + y1) / 2),
-      p2 = pointRadial(x1, y0),
-      p3 = pointRadial(x1, y1);
-  context.moveTo(p0[0], p0[1]);
-  context.bezierCurveTo(p1[0], p1[1], p2[0], p2[1], p3[0], p3[1]);
-}
-
-function linkHorizontal() {
-  return link(curveHorizontal);
-}
-
-function linkVertical() {
-  return link(curveVertical);
-}
-
-function linkRadial() {
-  var l = link(curveRadial$1);
-  l.angle = l.x, delete l.x;
-  l.radius = l.y, delete l.y;
-  return l;
-}
-
-var circle = {
-  draw: function(context, size) {
-    var r = Math.sqrt(size / pi$2);
-    context.moveTo(r, 0);
-    context.arc(0, 0, r, 0, tau$2);
-  }
-};
-
-var cross$1 = {
-  draw: function(context, size) {
-    var r = Math.sqrt(size / 5) / 2;
-    context.moveTo(-3 * r, -r);
-    context.lineTo(-r, -r);
-    context.lineTo(-r, -3 * r);
-    context.lineTo(r, -3 * r);
-    context.lineTo(r, -r);
-    context.lineTo(3 * r, -r);
-    context.lineTo(3 * r, r);
-    context.lineTo(r, r);
-    context.lineTo(r, 3 * r);
-    context.lineTo(-r, 3 * r);
-    context.lineTo(-r, r);
-    context.lineTo(-3 * r, r);
-    context.closePath();
-  }
-};
-
-var tan30 = Math.sqrt(1 / 3);
-var tan30_2 = tan30 * 2;
-
-var diamond = {
-  draw: function(context, size) {
-    var y = Math.sqrt(size / tan30_2),
-        x = y * tan30;
-    context.moveTo(0, -y);
-    context.lineTo(x, 0);
-    context.lineTo(0, y);
-    context.lineTo(-x, 0);
-    context.closePath();
-  }
-};
-
-var ka = 0.89081309152928522810;
-var kr = Math.sin(pi$2 / 10) / Math.sin(7 * pi$2 / 10);
-var kx = Math.sin(tau$2 / 10) * kr;
-var ky = -Math.cos(tau$2 / 10) * kr;
-
-var star = {
-  draw: function(context, size) {
-    var r = Math.sqrt(size * ka),
-        x = kx * r,
-        y = ky * r;
-    context.moveTo(0, -r);
-    context.lineTo(x, y);
-    for (var i = 1; i < 5; ++i) {
-      var a = tau$2 * i / 5,
-          c = Math.cos(a),
-          s = Math.sin(a);
-      context.lineTo(s * r, -c * r);
-      context.lineTo(c * x - s * y, s * x + c * y);
-    }
-    context.closePath();
-  }
-};
-
-var square = {
-  draw: function(context, size) {
-    var w = Math.sqrt(size),
-        x = -w / 2;
-    context.rect(x, x, w, w);
-  }
-};
-
-var sqrt3 = Math.sqrt(3);
-
-var triangle = {
-  draw: function(context, size) {
-    var y = -Math.sqrt(size / (sqrt3 * 3));
-    context.moveTo(0, y * 2);
-    context.lineTo(-sqrt3 * y, -y);
-    context.lineTo(sqrt3 * y, -y);
-    context.closePath();
-  }
-};
-
-var c = -0.5;
-var s$1 = Math.sqrt(3) / 2;
-var k = 1 / Math.sqrt(12);
-var a$1 = (k / 2 + 1) * 3;
-
-var wye = {
-  draw: function(context, size) {
-    var r = Math.sqrt(size / a$1),
-        x0 = r / 2,
-        y0 = r * k,
-        x1 = x0,
-        y1 = r * k + r,
-        x2 = -x1,
-        y2 = y1;
-    context.moveTo(x0, y0);
-    context.lineTo(x1, y1);
-    context.lineTo(x2, y2);
-    context.lineTo(c * x0 - s$1 * y0, s$1 * x0 + c * y0);
-    context.lineTo(c * x1 - s$1 * y1, s$1 * x1 + c * y1);
-    context.lineTo(c * x2 - s$1 * y2, s$1 * x2 + c * y2);
-    context.lineTo(c * x0 + s$1 * y0, c * y0 - s$1 * x0);
-    context.lineTo(c * x1 + s$1 * y1, c * y1 - s$1 * x1);
-    context.lineTo(c * x2 + s$1 * y2, c * y2 - s$1 * x2);
-    context.closePath();
-  }
-};
-
-var symbols = [
-  circle,
-  cross$1,
-  diamond,
-  square,
-  star,
-  triangle,
-  wye
-];
-
-function symbol() {
-  var type = constant$5(circle),
-      size = constant$5(64),
-      context = null;
-
-  function symbol() {
-    var buffer;
-    if (!context) { context = buffer = path(); }
-    type.apply(this, arguments).draw(context, +size.apply(this, arguments));
-    if (buffer) { return context = null, buffer + "" || null; }
-  }
-
-  symbol.type = function(_) {
-    return arguments.length ? (type = typeof _ === "function" ? _ : constant$5(_), symbol) : type;
-  };
-
-  symbol.size = function(_) {
-    return arguments.length ? (size = typeof _ === "function" ? _ : constant$5(+_), symbol) : size;
-  };
-
-  symbol.context = function(_) {
-    return arguments.length ? (context = _ == null ? null : _, symbol) : context;
-  };
-
-  return symbol;
-}
-
-function noop$1() {}
-
-function point$2(that, x, y) {
-  that._context.bezierCurveTo(
-    (2 * that._x0 + that._x1) / 3,
-    (2 * that._y0 + that._y1) / 3,
-    (that._x0 + 2 * that._x1) / 3,
-    (that._y0 + 2 * that._y1) / 3,
-    (that._x0 + 4 * that._x1 + x) / 6,
-    (that._y0 + 4 * that._y1 + y) / 6
-  );
-}
-
-function Basis(context) {
-  this._context = context;
-}
-
-Basis.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 =
-    this._y0 = this._y1 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 3: point$2(this, this._x1, this._y1); // proceed
-      case 2: this._context.lineTo(this._x1, this._y1); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._context.lineTo((5 * this._x0 + this._x1) / 6, (5 * this._y0 + this._y1) / 6); // proceed
-      default: point$2(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = x;
-    this._y0 = this._y1, this._y1 = y;
-  }
-};
-
-function basis$2(context) {
-  return new Basis(context);
-}
-
-function BasisClosed(context) {
-  this._context = context;
-}
-
-BasisClosed.prototype = {
-  areaStart: noop$1,
-  areaEnd: noop$1,
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 =
-    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 1: {
-        this._context.moveTo(this._x2, this._y2);
-        this._context.closePath();
-        break;
-      }
-      case 2: {
-        this._context.moveTo((this._x2 + 2 * this._x3) / 3, (this._y2 + 2 * this._y3) / 3);
-        this._context.lineTo((this._x3 + 2 * this._x2) / 3, (this._y3 + 2 * this._y2) / 3);
-        this._context.closePath();
-        break;
-      }
-      case 3: {
-        this.point(this._x2, this._y2);
-        this.point(this._x3, this._y3);
-        this.point(this._x4, this._y4);
-        break;
-      }
-    }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._x2 = x, this._y2 = y; break;
-      case 1: this._point = 2; this._x3 = x, this._y3 = y; break;
-      case 2: this._point = 3; this._x4 = x, this._y4 = y; this._context.moveTo((this._x0 + 4 * this._x1 + x) / 6, (this._y0 + 4 * this._y1 + y) / 6); break;
-      default: point$2(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = x;
-    this._y0 = this._y1, this._y1 = y;
-  }
-};
-
-function basisClosed$1(context) {
-  return new BasisClosed(context);
-}
-
-function BasisOpen(context) {
-  this._context = context;
-}
-
-BasisOpen.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 =
-    this._y0 = this._y1 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 3)) { this._context.closePath(); }
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; var x0 = (this._x0 + 4 * this._x1 + x) / 6, y0 = (this._y0 + 4 * this._y1 + y) / 6; this._line ? this._context.lineTo(x0, y0) : this._context.moveTo(x0, y0); break;
-      case 3: this._point = 4; // proceed
-      default: point$2(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = x;
-    this._y0 = this._y1, this._y1 = y;
-  }
-};
-
-function basisOpen(context) {
-  return new BasisOpen(context);
-}
-
-function Bundle(context, beta) {
-  this._basis = new Basis(context);
-  this._beta = beta;
-}
-
-Bundle.prototype = {
-  lineStart: function() {
-    this._x = [];
-    this._y = [];
-    this._basis.lineStart();
-  },
-  lineEnd: function() {
-    var this$1 = this;
-
-    var x = this._x,
-        y = this._y,
-        j = x.length - 1;
-
-    if (j > 0) {
-      var x0 = x[0],
-          y0 = y[0],
-          dx = x[j] - x0,
-          dy = y[j] - y0,
-          i = -1,
-          t;
-
-      while (++i <= j) {
-        t = i / j;
-        this$1._basis.point(
-          this$1._beta * x[i] + (1 - this$1._beta) * (x0 + t * dx),
-          this$1._beta * y[i] + (1 - this$1._beta) * (y0 + t * dy)
-        );
-      }
-    }
-
-    this._x = this._y = null;
-    this._basis.lineEnd();
-  },
-  point: function(x, y) {
-    this._x.push(+x);
-    this._y.push(+y);
-  }
-};
-
-var bundle = (function custom(beta) {
-
-  function bundle(context) {
-    return beta === 1 ? new Basis(context) : new Bundle(context, beta);
-  }
-
-  bundle.beta = function(beta) {
-    return custom(+beta);
-  };
-
-  return bundle;
-})(0.85);
-
-function point$3(that, x, y) {
-  that._context.bezierCurveTo(
-    that._x1 + that._k * (that._x2 - that._x0),
-    that._y1 + that._k * (that._y2 - that._y0),
-    that._x2 + that._k * (that._x1 - x),
-    that._y2 + that._k * (that._y1 - y),
-    that._x2,
-    that._y2
-  );
-}
-
-function Cardinal(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-Cardinal.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x2, this._y2); break;
-      case 3: point$3(this, this._x1, this._y1); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; this._x1 = x, this._y1 = y; break;
-      case 2: this._point = 3; // proceed
-      default: point$3(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-var cardinal = (function custom(tension) {
-
-  function cardinal(context) {
-    return new Cardinal(context, tension);
-  }
-
-  cardinal.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal;
-})(0);
-
-function CardinalClosed(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-CardinalClosed.prototype = {
-  areaStart: noop$1,
-  areaEnd: noop$1,
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
-    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 1: {
-        this._context.moveTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 2: {
-        this._context.lineTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 3: {
-        this.point(this._x3, this._y3);
-        this.point(this._x4, this._y4);
-        this.point(this._x5, this._y5);
-        break;
-      }
-    }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
-      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
-      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
-      default: point$3(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-var cardinalClosed = (function custom(tension) {
-
-  function cardinal$$1(context) {
-    return new CardinalClosed(context, tension);
-  }
-
-  cardinal$$1.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal$$1;
-})(0);
-
-function CardinalOpen(context, tension) {
-  this._context = context;
-  this._k = (1 - tension) / 6;
-}
-
-CardinalOpen.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 3)) { this._context.closePath(); }
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
-      case 3: this._point = 4; // proceed
-      default: point$3(this, x, y); break;
-    }
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-var cardinalOpen = (function custom(tension) {
-
-  function cardinal$$1(context) {
-    return new CardinalOpen(context, tension);
-  }
-
-  cardinal$$1.tension = function(tension) {
-    return custom(+tension);
-  };
-
-  return cardinal$$1;
-})(0);
-
-function point$4(that, x, y) {
-  var x1 = that._x1,
-      y1 = that._y1,
-      x2 = that._x2,
-      y2 = that._y2;
-
-  if (that._l01_a > epsilon$1) {
-    var a = 2 * that._l01_2a + 3 * that._l01_a * that._l12_a + that._l12_2a,
-        n = 3 * that._l01_a * (that._l01_a + that._l12_a);
-    x1 = (x1 * a - that._x0 * that._l12_2a + that._x2 * that._l01_2a) / n;
-    y1 = (y1 * a - that._y0 * that._l12_2a + that._y2 * that._l01_2a) / n;
-  }
-
-  if (that._l23_a > epsilon$1) {
-    var b = 2 * that._l23_2a + 3 * that._l23_a * that._l12_a + that._l12_2a,
-        m = 3 * that._l23_a * (that._l23_a + that._l12_a);
-    x2 = (x2 * b + that._x1 * that._l23_2a - x * that._l12_2a) / m;
-    y2 = (y2 * b + that._y1 * that._l23_2a - y * that._l12_2a) / m;
-  }
-
-  that._context.bezierCurveTo(x1, y1, x2, y2, that._x2, that._y2);
-}
-
-function CatmullRom(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRom.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x2, this._y2); break;
-      case 3: this.point(this._x2, this._y2); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
-    }
-
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; // proceed
-      default: point$4(this, x, y); break;
-    }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-var catmullRom = (function custom(alpha) {
-
-  function catmullRom(context) {
-    return alpha ? new CatmullRom(context, alpha) : new Cardinal(context, 0);
-  }
-
-  catmullRom.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom;
-})(0.5);
-
-function CatmullRomClosed(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRomClosed.prototype = {
-  areaStart: noop$1,
-  areaEnd: noop$1,
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 = this._x3 = this._x4 = this._x5 =
-    this._y0 = this._y1 = this._y2 = this._y3 = this._y4 = this._y5 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 1: {
-        this._context.moveTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 2: {
-        this._context.lineTo(this._x3, this._y3);
-        this._context.closePath();
-        break;
-      }
-      case 3: {
-        this.point(this._x3, this._y3);
-        this.point(this._x4, this._y4);
-        this.point(this._x5, this._y5);
-        break;
-      }
-    }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
-    }
-
-    switch (this._point) {
-      case 0: this._point = 1; this._x3 = x, this._y3 = y; break;
-      case 1: this._point = 2; this._context.moveTo(this._x4 = x, this._y4 = y); break;
-      case 2: this._point = 3; this._x5 = x, this._y5 = y; break;
-      default: point$4(this, x, y); break;
-    }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-var catmullRomClosed = (function custom(alpha) {
-
-  function catmullRom$$1(context) {
-    return alpha ? new CatmullRomClosed(context, alpha) : new CardinalClosed(context, 0);
-  }
-
-  catmullRom$$1.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom$$1;
-})(0.5);
-
-function CatmullRomOpen(context, alpha) {
-  this._context = context;
-  this._alpha = alpha;
-}
-
-CatmullRomOpen.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 = this._x2 =
-    this._y0 = this._y1 = this._y2 = NaN;
-    this._l01_a = this._l12_a = this._l23_a =
-    this._l01_2a = this._l12_2a = this._l23_2a =
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._line || (this._line !== 0 && this._point === 3)) { this._context.closePath(); }
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-
-    if (this._point) {
-      var x23 = this._x2 - x,
-          y23 = this._y2 - y;
-      this._l23_a = Math.sqrt(this._l23_2a = Math.pow(x23 * x23 + y23 * y23, this._alpha));
-    }
-
-    switch (this._point) {
-      case 0: this._point = 1; break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; this._line ? this._context.lineTo(this._x2, this._y2) : this._context.moveTo(this._x2, this._y2); break;
-      case 3: this._point = 4; // proceed
-      default: point$4(this, x, y); break;
-    }
-
-    this._l01_a = this._l12_a, this._l12_a = this._l23_a;
-    this._l01_2a = this._l12_2a, this._l12_2a = this._l23_2a;
-    this._x0 = this._x1, this._x1 = this._x2, this._x2 = x;
-    this._y0 = this._y1, this._y1 = this._y2, this._y2 = y;
-  }
-};
-
-var catmullRomOpen = (function custom(alpha) {
-
-  function catmullRom$$1(context) {
-    return alpha ? new CatmullRomOpen(context, alpha) : new CardinalOpen(context, 0);
-  }
-
-  catmullRom$$1.alpha = function(alpha) {
-    return custom(+alpha);
-  };
-
-  return catmullRom$$1;
-})(0.5);
-
-function LinearClosed(context) {
-  this._context = context;
-}
-
-LinearClosed.prototype = {
-  areaStart: noop$1,
-  areaEnd: noop$1,
-  lineStart: function() {
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (this._point) { this._context.closePath(); }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    if (this._point) { this._context.lineTo(x, y); }
-    else { this._point = 1, this._context.moveTo(x, y); }
-  }
-};
-
-function linearClosed(context) {
-  return new LinearClosed(context);
-}
-
-function sign(x) {
-  return x < 0 ? -1 : 1;
-}
-
-// Calculate the slopes of the tangents (Hermite-type interpolation) based on
-// the following paper: Steffen, M. 1990. A Simple Method for Monotonic
-// Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
-// NOV(II), P. 443, 1990.
-function slope3(that, x2, y2) {
-  var h0 = that._x1 - that._x0,
-      h1 = x2 - that._x1,
-      s0 = (that._y1 - that._y0) / (h0 || h1 < 0 && -0),
-      s1 = (y2 - that._y1) / (h1 || h0 < 0 && -0),
-      p = (s0 * h1 + s1 * h0) / (h0 + h1);
-  return (sign(s0) + sign(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
-}
-
-// Calculate a one-sided slope.
-function slope2(that, t) {
-  var h = that._x1 - that._x0;
-  return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t;
-}
-
-// According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
-// "you can express cubic Hermite interpolation in terms of cubic Bézier curves
-// with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
-function point$5(that, t0, t1) {
-  var x0 = that._x0,
-      y0 = that._y0,
-      x1 = that._x1,
-      y1 = that._y1,
-      dx = (x1 - x0) / 3;
-  that._context.bezierCurveTo(x0 + dx, y0 + dx * t0, x1 - dx, y1 - dx * t1, x1, y1);
-}
-
-function MonotoneX(context) {
-  this._context = context;
-}
-
-MonotoneX.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x0 = this._x1 =
-    this._y0 = this._y1 =
-    this._t0 = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    switch (this._point) {
-      case 2: this._context.lineTo(this._x1, this._y1); break;
-      case 3: point$5(this, this._t0, slope2(this, this._t0)); break;
-    }
-    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
-    this._line = 1 - this._line;
-  },
-  point: function(x, y) {
-    var t1 = NaN;
-
-    x = +x, y = +y;
-    if (x === this._x1 && y === this._y1) { return; } // Ignore coincident points.
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; break;
-      case 2: this._point = 3; point$5(this, slope2(this, t1 = slope3(this, x, y)), t1); break;
-      default: point$5(this, this._t0, t1 = slope3(this, x, y)); break;
-    }
-
-    this._x0 = this._x1, this._x1 = x;
-    this._y0 = this._y1, this._y1 = y;
-    this._t0 = t1;
-  }
-};
-
-function MonotoneY(context) {
-  this._context = new ReflectContext(context);
-}
-
-(MonotoneY.prototype = Object.create(MonotoneX.prototype)).point = function(x, y) {
-  MonotoneX.prototype.point.call(this, y, x);
-};
-
-function ReflectContext(context) {
-  this._context = context;
-}
-
-ReflectContext.prototype = {
-  moveTo: function(x, y) { this._context.moveTo(y, x); },
-  closePath: function() { this._context.closePath(); },
-  lineTo: function(x, y) { this._context.lineTo(y, x); },
-  bezierCurveTo: function(x1, y1, x2, y2, x, y) { this._context.bezierCurveTo(y1, x1, y2, x2, y, x); }
-};
-
-function monotoneX(context) {
-  return new MonotoneX(context);
-}
-
-function monotoneY(context) {
-  return new MonotoneY(context);
-}
-
-function Natural(context) {
-  this._context = context;
-}
-
-Natural.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x = [];
-    this._y = [];
-  },
-  lineEnd: function() {
-    var this$1 = this;
-
-    var x = this._x,
-        y = this._y,
-        n = x.length;
-
-    if (n) {
-      this._line ? this._context.lineTo(x[0], y[0]) : this._context.moveTo(x[0], y[0]);
-      if (n === 2) {
-        this._context.lineTo(x[1], y[1]);
-      } else {
-        var px = controlPoints(x),
-            py = controlPoints(y);
-        for (var i0 = 0, i1 = 1; i1 < n; ++i0, ++i1) {
-          this$1._context.bezierCurveTo(px[0][i0], py[0][i0], px[1][i0], py[1][i0], x[i1], y[i1]);
-        }
-      }
-    }
-
-    if (this._line || (this._line !== 0 && n === 1)) { this._context.closePath(); }
-    this._line = 1 - this._line;
-    this._x = this._y = null;
-  },
-  point: function(x, y) {
-    this._x.push(+x);
-    this._y.push(+y);
-  }
-};
-
-// See https://www.particleincell.com/2012/bezier-splines/ for derivation.
-function controlPoints(x) {
-  var i,
-      n = x.length - 1,
-      m,
-      a = new Array(n),
-      b = new Array(n),
-      r = new Array(n);
-  a[0] = 0, b[0] = 2, r[0] = x[0] + 2 * x[1];
-  for (i = 1; i < n - 1; ++i) { a[i] = 1, b[i] = 4, r[i] = 4 * x[i] + 2 * x[i + 1]; }
-  a[n - 1] = 2, b[n - 1] = 7, r[n - 1] = 8 * x[n - 1] + x[n];
-  for (i = 1; i < n; ++i) { m = a[i] / b[i - 1], b[i] -= m, r[i] -= m * r[i - 1]; }
-  a[n - 1] = r[n - 1] / b[n - 1];
-  for (i = n - 2; i >= 0; --i) { a[i] = (r[i] - a[i + 1]) / b[i]; }
-  b[n - 1] = (x[n] + a[n - 1]) / 2;
-  for (i = 0; i < n - 1; ++i) { b[i] = 2 * x[i + 1] - a[i + 1]; }
-  return [a, b];
-}
-
-function natural(context) {
-  return new Natural(context);
-}
-
-function Step(context, t) {
-  this._context = context;
-  this._t = t;
-}
-
-Step.prototype = {
-  areaStart: function() {
-    this._line = 0;
-  },
-  areaEnd: function() {
-    this._line = NaN;
-  },
-  lineStart: function() {
-    this._x = this._y = NaN;
-    this._point = 0;
-  },
-  lineEnd: function() {
-    if (0 < this._t && this._t < 1 && this._point === 2) { this._context.lineTo(this._x, this._y); }
-    if (this._line || (this._line !== 0 && this._point === 1)) { this._context.closePath(); }
-    if (this._line >= 0) { this._t = 1 - this._t, this._line = 1 - this._line; }
-  },
-  point: function(x, y) {
-    x = +x, y = +y;
-    switch (this._point) {
-      case 0: this._point = 1; this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y); break;
-      case 1: this._point = 2; // proceed
-      default: {
-        if (this._t <= 0) {
-          this._context.lineTo(this._x, y);
-          this._context.lineTo(x, y);
-        } else {
-          var x1 = this._x * (1 - this._t) + x * this._t;
-          this._context.lineTo(x1, this._y);
-          this._context.lineTo(x1, y);
-        }
-        break;
-      }
-    }
-    this._x = x, this._y = y;
-  }
-};
-
-function step(context) {
-  return new Step(context, 0.5);
-}
-
-function stepBefore(context) {
-  return new Step(context, 0);
-}
-
-function stepAfter(context) {
-  return new Step(context, 1);
-}
-
-function none$1(series, order) {
-  if (!((n = series.length) > 1)) { return; }
-  for (var i = 1, j, s0, s1 = series[order[0]], n, m = s1.length; i < n; ++i) {
-    s0 = s1, s1 = series[order[i]];
-    for (j = 0; j < m; ++j) {
-      s1[j][1] += s1[j][0] = isNaN(s0[j][1]) ? s0[j][0] : s0[j][1];
-    }
-  }
-}
-
-function none$2(series) {
-  var n = series.length, o = new Array(n);
-  while (--n >= 0) { o[n] = n; }
-  return o;
-}
-
-function stackValue(d, key) {
-  return d[key];
-}
-
-function stack() {
-  var keys = constant$5([]),
-      order = none$2,
-      offset = none$1,
-      value = stackValue;
-
-  function stack(data) {
-    var kz = keys.apply(this, arguments),
-        i,
-        m = data.length,
-        n = kz.length,
-        sz = new Array(n),
-        oz;
-
-    for (i = 0; i < n; ++i) {
-      for (var ki = kz[i], si = sz[i] = new Array(m), j = 0, sij; j < m; ++j) {
-        si[j] = sij = [0, +value(data[j], ki, j, data)];
-        sij.data = data[j];
-      }
-      si.key = ki;
-    }
-
-    for (i = 0, oz = order(sz); i < n; ++i) {
-      sz[oz[i]].index = i;
-    }
-
-    offset(sz, oz);
-    return sz;
-  }
-
-  stack.keys = function(_) {
-    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$5(slice$2.call(_)), stack) : keys;
-  };
-
-  stack.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$5(+_), stack) : value;
-  };
-
-  stack.order = function(_) {
-    return arguments.length ? (order = _ == null ? none$2 : typeof _ === "function" ? _ : constant$5(slice$2.call(_)), stack) : order;
-  };
-
-  stack.offset = function(_) {
-    return arguments.length ? (offset = _ == null ? none$1 : _, stack) : offset;
-  };
-
-  return stack;
-}
-
-function expand(series, order) {
-  if (!((n = series.length) > 0)) { return; }
-  for (var i, n, j = 0, m = series[0].length, y; j < m; ++j) {
-    for (y = i = 0; i < n; ++i) { y += series[i][j][1] || 0; }
-    if (y) { for (i = 0; i < n; ++i) { series[i][j][1] /= y; } }
-  }
-  none$1(series, order);
-}
-
-function diverging(series, order) {
-  if (!((n = series.length) > 1)) { return; }
-  for (var i, j = 0, d, dy, yp, yn, n, m = series[order[0]].length; j < m; ++j) {
-    for (yp = yn = 0, i = 0; i < n; ++i) {
-      if ((dy = (d = series[order[i]][j])[1] - d[0]) >= 0) {
-        d[0] = yp, d[1] = yp += dy;
-      } else if (dy < 0) {
-        d[1] = yn, d[0] = yn += dy;
-      } else {
-        d[0] = yp;
-      }
-    }
-  }
-}
-
-function silhouette(series, order) {
-  if (!((n = series.length) > 0)) { return; }
-  for (var j = 0, s0 = series[order[0]], n, m = s0.length; j < m; ++j) {
-    for (var i = 0, y = 0; i < n; ++i) { y += series[i][j][1] || 0; }
-    s0[j][1] += s0[j][0] = -y / 2;
-  }
-  none$1(series, order);
-}
-
-function wiggle(series, order) {
-  if (!((n = series.length) > 0) || !((m = (s0 = series[order[0]]).length) > 0)) { return; }
-  for (var y = 0, j = 1, s0, m, n; j < m; ++j) {
-    for (var i = 0, s1 = 0, s2 = 0; i < n; ++i) {
-      var si = series[order[i]],
-          sij0 = si[j][1] || 0,
-          sij1 = si[j - 1][1] || 0,
-          s3 = (sij0 - sij1) / 2;
-      for (var k = 0; k < i; ++k) {
-        var sk = series[order[k]],
-            skj0 = sk[j][1] || 0,
-            skj1 = sk[j - 1][1] || 0;
-        s3 += skj0 - skj1;
-      }
-      s1 += sij0, s2 += s3 * sij0;
-    }
-    s0[j - 1][1] += s0[j - 1][0] = y;
-    if (s1) { y -= s2 / s1; }
-  }
-  s0[j - 1][1] += s0[j - 1][0] = y;
-  none$1(series, order);
-}
-
-function ascending$2(series) {
-  var sums = series.map(sum$1);
-  return none$2(series).sort(function(a, b) { return sums[a] - sums[b]; });
-}
-
-function sum$1(series) {
-  var s = 0, i = -1, n = series.length, v;
-  while (++i < n) { if (v = +series[i][1]) { s += v; } }
-  return s;
-}
-
-function descending$2(series) {
-  return ascending$2(series).reverse();
-}
-
-function insideOut(series) {
-  var n = series.length,
-      i,
-      j,
-      sums = series.map(sum$1),
-      order = none$2(series).sort(function(a, b) { return sums[b] - sums[a]; }),
-      top = 0,
-      bottom = 0,
-      tops = [],
-      bottoms = [];
-
-  for (i = 0; i < n; ++i) {
-    j = order[i];
-    if (top < bottom) {
-      top += sums[j];
-      tops.push(j);
-    } else {
-      bottom += sums[j];
-      bottoms.push(j);
-    }
-  }
-
-  return bottoms.reverse().concat(tops);
-}
-
-function reverse(series) {
-  return none$2(series).reverse();
-}
-
-
-
-var paths = Object.freeze({
-	arc: arc,
-	area: area,
-	line: line,
-	pie: pie,
-	areaRadial: areaRadial,
-	radialArea: areaRadial,
-	lineRadial: lineRadial$1,
-	radialLine: lineRadial$1,
-	pointRadial: pointRadial,
-	linkHorizontal: linkHorizontal,
-	linkVertical: linkVertical,
-	linkRadial: linkRadial,
-	symbol: symbol,
-	symbols: symbols,
-	symbolCircle: circle,
-	symbolCross: cross$1,
-	symbolDiamond: diamond,
-	symbolSquare: square,
-	symbolStar: star,
-	symbolTriangle: triangle,
-	symbolWye: wye,
-	curveBasisClosed: basisClosed$1,
-	curveBasisOpen: basisOpen,
-	curveBasis: basis$2,
-	curveBundle: bundle,
-	curveCardinalClosed: cardinalClosed,
-	curveCardinalOpen: cardinalOpen,
-	curveCardinal: cardinal,
-	curveCatmullRomClosed: catmullRomClosed,
-	curveCatmullRomOpen: catmullRomOpen,
-	curveCatmullRom: catmullRom,
-	curveLinearClosed: linearClosed,
-	curveLinear: curveLinear,
-	curveMonotoneX: monotoneX,
-	curveMonotoneY: monotoneY,
-	curveNatural: natural,
-	curveStep: step,
-	curveStepAfter: stepAfter,
-	curveStepBefore: stepBefore,
-	stack: stack,
-	stackOffsetExpand: expand,
-	stackOffsetDiverging: diverging,
-	stackOffsetNone: none$1,
-	stackOffsetSilhouette: silhouette,
-	stackOffsetWiggle: wiggle,
-	stackOrderAscending: ascending$2,
-	stackOrderDescending: descending$2,
-	stackOrderInsideOut: insideOut,
-	stackOrderNone: none$2,
-	stackOrderReverse: reverse
-});
-
 function polygonArea(polygon) {
   var i = -1,
       n = polygon.length,
@@ -10488,9 +10624,6 @@ function polygonCentroid(polygon) {
 }
 
 // Returns the 2D cross product of AB and AC vectors, i.e., the z-component of
-// the 3D cross product in a quadrant I Cartesian coordinate system (+x is
-// right, +y is up). Returns a positive value if ABC is counter-clockwise,
-// negative if clockwise, and zero if the points are collinear.
 
 function polygonContains(polygon, point) {
   var n = polygon.length,
@@ -10839,6 +10972,8 @@ function simplify (poly, tolerance, highestQuality) {
 var aspectRatioStep = 0.5; // step size for the aspect ratio
 var angleStep = 5; // step size for angles (in degrees); has linear impact on running time
 
+var polyCache = {};
+
 /**
     @typedef {Object} LargestRect
     @desc The returned Object of the largestRect function.
@@ -10866,11 +11001,13 @@ var angleStep = 5; // step size for angles (in degrees); has linear impact on ru
     @param {Number} [options.minWidth = 0] The minimum width of the rectangle.
     @param {Number} [options.tolerance = 0.02] The simplification tolerance factor, between 0 and 1. A larger tolerance corresponds to more extensive simplification.
     @param {Array} [options.origin] The center point of the rectangle. If specified, the rectangle will be fixed at that point, otherwise the algorithm optimizes across all possible points. The given value can be either a two dimensional array specifying the x and y coordinate of the origin or an array of two dimensional points specifying multiple possible center points of the rectangle.
+    @param {Boolean} [options.cache] Whether or not to cache the result, which would be used in subsequent calculations to preserve consistency and speed up calculation time.
     @return {LargestRect}
 */
 function largestRect(poly, options) {
-  if ( options === void 0 ) { options = {}; }
+  var assign, assign$1;
 
+  if ( options === void 0 ) { options = {}; }
 
   if (poly.length < 3) {
     if (options.verbose) { console.error("polygon has to have at least 3 points", poly); }
@@ -10883,6 +11020,7 @@ function largestRect(poly, options) {
   // User's input normalization
   options = Object.assign({
     angle: range(-90, 90 + angleStep, angleStep),
+    cache: true,
     maxAspectRatio: 15,
     minAspectRatio: 1,
     minHeight: 0,
@@ -10906,6 +11044,18 @@ function largestRect(poly, options) {
     ? options.origin[0] instanceof Array ? options.origin
     : [options.origin] : [];
 
+  var cacheString;
+  if (options.cache) {
+    cacheString = merge(poly).join(",");
+    cacheString += "-" + (options.minAspectRatio);
+    cacheString += "-" + (options.maxAspectRatio);
+    cacheString += "-" + (options.minHeight);
+    cacheString += "-" + (options.minWidth);
+    cacheString += "-" + (angles.join(","));
+    cacheString += "-" + (origins.join(","));
+    if (polyCache[cacheString]) { return polyCache[cacheString]; }
+  }
+
   var area = Math.abs(polygonArea(poly)); // take absolute value of the signed area
   if (area === 0) {
     if (options.verbose) { console.error("polygon has 0 area", poly); }
@@ -10926,9 +11076,7 @@ function largestRect(poly, options) {
   if (options.events) { events.push({type: "simplify", poly: poly}); }
 
   // get the width of the bounding box of the simplified polygon
-  var assign;
   (assign = extent(poly, function (d) { return d[0]; }), minx = assign[0], maxx = assign[1]);
-  var assign$1;
   (assign$1 = extent(poly, function (d) { return d[1]; }), miny = assign$1[0], maxy = assign$1[1]);
   var ref$2 = [maxx - minx, maxy - miny];
   var boxWidth = ref$2[0];
@@ -11052,6 +11200,10 @@ function largestRect(poly, options) {
 
   }
 
+  if (options.cache) {
+    polyCache[cacheString] = maxRect;
+  }
+
   return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
 
 }
@@ -11103,9 +11255,9 @@ var Area = (function (Shape$$1) {
   Area.prototype._aes = function _aes (d) {
     var this$1 = this;
 
-    var values = d.values.slice().sort(function (a, b) { return this$1._y1 ? this$1._x(a) - this$1._x(b) : this$1._y(a) - this$1._y(b); });
-    var points1 = values.map(function (v, z) { return [this$1._x0(v, z), this$1._y0(v, z)]; });
-    var points2 = values.reverse().map(function (v, z) { return this$1._y1 ? [this$1._x(v, z), this$1._y1(v, z)] : [this$1._x1(v, z), this$1._y(v, z)]; });
+    var values$$1 = d.values.slice().sort(function (a, b) { return this$1._y1 ? this$1._x(a) - this$1._x(b) : this$1._y(a) - this$1._y(b); });
+    var points1 = values$$1.map(function (v, z) { return [this$1._x0(v, z), this$1._y0(v, z)]; });
+    var points2 = values$$1.reverse().map(function (v, z) { return this$1._y1 ? [this$1._x(v, z), this$1._y1(v, z)] : [this$1._x1(v, z), this$1._y(v, z)]; });
     var points = points1.concat(points2);
     if (points1[0][1] > points2[0][1]) { points = points.reverse(); }
     points.push(points[0]);
@@ -11379,10 +11531,10 @@ var Bar = (function (Shape$$1) {
       @param {D3Selection} *elem*
       @private
   */
-  Bar.prototype._applyPosition = function _applyPosition (elem) {
+  Bar.prototype._applyPosition = function _applyPosition (elem$$1) {
     var this$1 = this;
 
-    elem
+    elem$$1
       .attr("width", function (d, i) { return this$1._getWidth(d, i); })
       .attr("height", function (d, i) { return this$1._getHeight(d, i); })
       .attr("x", function (d, i) { return this$1._x1 !== null ? this$1._getX(d, i) : -this$1._getWidth(d, i) / 2; })
@@ -11524,6 +11676,11 @@ function(d) {
 var Circle = (function (Shape$$1) {
   function Circle() {
     Shape$$1.call(this, "circle");
+    this._labelBounds = function (d, i, s) { return ({width: s.r * 1.5, height: s.r * 1.5, x: -s.r * 0.75, y: -s.r * 0.75}); };
+    this._labelConfig = assign(this._labelConfig, {
+      textAnchor: "middle",
+      verticalAlign: "middle"
+    });
     this._name = "Circle";
     this._r = accessor("r");
   }
@@ -11537,10 +11694,10 @@ var Circle = (function (Shape$$1) {
       @desc Provides the default positioning to the <rect> elements.
       @private
   */
-  Circle.prototype._applyPosition = function _applyPosition (elem) {
+  Circle.prototype._applyPosition = function _applyPosition (elem$$1) {
     var this$1 = this;
 
-    elem
+    elem$$1
       .attr("r", function (d, i) { return this$1._r(d, i); })
       .attr("x", function (d, i) { return -this$1._r(d, i) / 2; })
       .attr("y", function (d, i) { return -this$1._r(d, i) / 2; });
@@ -11608,12 +11765,20 @@ function(d) {
 */
 var Line = (function (Shape$$1) {
   function Line() {
+    var this$1 = this;
+
 
     Shape$$1.call(this);
 
     this._curve = "linear";
     this._defined = function (d) { return d; };
     this._fill = constant$4("none");
+    this._hitArea = constant$4({
+      "d": function (d) { return this$1._path(d.values); },
+      "fill": "none",
+      "stroke-width": 10,
+      "transform": null
+    });
     this._name = "Line";
     this._path = line();
     this._stroke = constant$4("black");
@@ -11734,7 +11899,7 @@ var Line = (function (Shape$$1) {
   return Line;
 }(Shape));
 
-var pi$4 = Math.PI;
+var pi$3 = Math.PI;
 
 /**
     @function shapeEdgePoint
@@ -11747,38 +11912,38 @@ function shapeEdgePoint (angle, distance, shape) {
   if ( shape === void 0 ) { shape = "circle"; }
 
 
-  if (angle < 0) { angle = pi$4 * 2 + angle; }
+  if (angle < 0) { angle = pi$3 * 2 + angle; }
 
   if (shape === "square") {
 
-    var diagonal = 45 * (pi$4 / 180);
+    var diagonal = 45 * (pi$3 / 180);
     var x = 0, y = 0;
 
-    if (angle < pi$4 / 2) {
+    if (angle < pi$3 / 2) {
       var tan = Math.tan(angle);
       x += angle < diagonal ? distance : distance / tan;
       y += angle < diagonal ? tan * distance : distance;
     }
-    else if (angle <= pi$4) {
-      var tan$1 = Math.tan(pi$4 - angle);
-      x -= angle < pi$4 - diagonal ? distance / tan$1 : distance;
-      y += angle < pi$4 - diagonal ? distance : tan$1 * distance;
+    else if (angle <= pi$3) {
+      var tan$1 = Math.tan(pi$3 - angle);
+      x -= angle < pi$3 - diagonal ? distance / tan$1 : distance;
+      y += angle < pi$3 - diagonal ? distance : tan$1 * distance;
     }
-    else if (angle < diagonal + pi$4) {
+    else if (angle < diagonal + pi$3) {
       x -= distance;
-      y -= Math.tan(angle - pi$4) * distance;
+      y -= Math.tan(angle - pi$3) * distance;
     }
-    else if (angle < 3 * pi$4 / 2) {
-      x -= distance / Math.tan(angle - pi$4);
+    else if (angle < 3 * pi$3 / 2) {
+      x -= distance / Math.tan(angle - pi$3);
       y -= distance;
     }
-    else if (angle < 2 * pi$4 - diagonal) {
-      x += distance / Math.tan(2 * pi$4 - angle);
+    else if (angle < 2 * pi$3 - diagonal) {
+      x += distance / Math.tan(2 * pi$3 - angle);
       y -= distance;
     }
     else {
       x += distance;
-      y -= Math.tan(2 * pi$4 - angle) * distance;
+      y -= Math.tan(2 * pi$3 - angle) * distance;
     }
 
     return [x, y];
@@ -11791,7 +11956,7 @@ function shapeEdgePoint (angle, distance, shape) {
 
 }
 
-var pi$3 = Math.PI;
+var pi$4 = Math.PI;
 
 /**
     @function path2polygon
@@ -11821,10 +11986,10 @@ function path2polygon (path, segmentLength) {
             width = pointDistance(prev, last);
 
       var angle = Math.acos((radius * radius + radius * radius - width * width) / (2 * radius * radius));
-      if (points[2]) { angle = pi$3 * 2 - angle; }
+      if (points[2]) { angle = pi$4 * 2 - angle; }
 
-      var step = angle / (angle / (pi$3 * 2) * (radius * pi$3 * 2) / segmentLength);
-      var start = Math.atan2(-prev[1], -prev[0]) - pi$3;
+      var step = angle / (angle / (pi$4 * 2) * (radius * pi$4 * 2) / segmentLength);
+      var start = Math.atan2(-prev[1], -prev[0]) - pi$4;
       var i = step;
       while (i < angle) {
         poly.push(shapeEdgePoint(points[4] ? start + i : start - i, radius));
@@ -11988,10 +12153,10 @@ var Rect = (function (Shape$$1) {
       @param {D3Selection} *elem*
       @private
   */
-  Rect.prototype._applyPosition = function _applyPosition (elem) {
+  Rect.prototype._applyPosition = function _applyPosition (elem$$1) {
     var this$1 = this;
 
-    elem
+    elem$$1
       .attr("width", function (d, i) { return this$1._width(d, i); })
       .attr("height", function (d, i) { return this$1._height(d, i); })
       .attr("x", function (d, i) { return -this$1._width(d, i) / 2; })
@@ -12061,7 +12226,7 @@ var shapes = Object.freeze({
     @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
     @param {Number|String} *date*
 */
-function date$2(d) {
+function date$3(d) {
 
   // returns if already Date object
   if (d.constructor === Date) { return d; }
@@ -12109,12 +12274,12 @@ function date$2(d) {
     @extends external:BaseClass
     @desc Creates an SVG scale based on an array of data.
 */
-var Axis = (function (BaseClass) {
+var Axis = (function (BaseClass$$1) {
   function Axis() {
     var this$1 = this;
 
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._align = "middle";
     this._barConfig = {
@@ -12169,8 +12334,8 @@ var Axis = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) Axis.__proto__ = BaseClass;
-  Axis.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) Axis.__proto__ = BaseClass$$1;
+  Axis.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Axis.prototype.constructor = Axis;
 
   /**
@@ -12206,12 +12371,12 @@ var Axis = (function (BaseClass) {
   */
   Axis.prototype._getDomain = function _getDomain () {
 
-    var ticks = [];
-    if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.domain(); }
-    if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.domain()); }
+    var ticks$$1 = [];
+    if (this._d3ScaleNegative) { ticks$$1 = this._d3ScaleNegative.domain(); }
+    if (this._d3Scale) { ticks$$1 = ticks$$1.concat(this._d3Scale.domain()); }
 
-    var domain = this._scale === "ordinal" ? ticks : extent(ticks);
-    return ticks[0] > ticks[1] ? domain.reverse() : domain;
+    var domain = this._scale === "ordinal" ? ticks$$1 : extent(ticks$$1);
+    return ticks$$1[0] > ticks$$1[1] ? domain.reverse() : domain;
 
   };
 
@@ -12232,10 +12397,10 @@ var Axis = (function (BaseClass) {
   */
   Axis.prototype._getRange = function _getRange () {
 
-    var ticks = [];
-    if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.range(); }
-    if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.range()); }
-    return ticks[0] > ticks[1] ? extent(ticks).reverse() : extent(ticks);
+    var ticks$$1 = [];
+    if (this._d3ScaleNegative) { ticks$$1 = this._d3ScaleNegative.range(); }
+    if (this._d3Scale) { ticks$$1 = ticks$$1.concat(this._d3Scale.range()); }
+    return ticks$$1[0] > ticks$$1[1] ? extent(ticks$$1).reverse() : extent(ticks$$1);
 
   };
 
@@ -12247,19 +12412,19 @@ var Axis = (function (BaseClass) {
   Axis.prototype._getTicks = function _getTicks () {
     var tickScale = sqrt().domain([10, 400]).range([10, 50]);
 
-    var ticks = [];
+    var ticks$$1 = [];
     if (this._d3ScaleNegative) {
       var negativeRange = this._d3ScaleNegative.range();
       var size = negativeRange[1] - negativeRange[0];
-      ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
+      ticks$$1 = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
     }
     if (this._d3Scale) {
       var positiveRange = this._d3Scale.range();
       var size$1 = positiveRange[1] - positiveRange[0];
-      ticks = ticks.concat(this._d3Scale.ticks(Math.floor(size$1 / tickScale(size$1))));
+      ticks$$1 = ticks$$1.concat(this._d3Scale.ticks(Math.floor(size$1 / tickScale(size$1))));
     }
 
-    return ticks;
+    return ticks$$1;
   };
 
   /**
@@ -12298,7 +12463,7 @@ var Axis = (function (BaseClass) {
   */
   Axis.prototype.render = function render (callback) {
     var this$1 = this;
-    var obj, obj$1;
+    var obj;
 
 
     if (this._select === void 0) {
@@ -12347,7 +12512,7 @@ var Axis = (function (BaseClass) {
     }
 
     this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-      .domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
+      .domain(this._scale === "time" ? this._domain.map(date$3) : this._domain);
 
     if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
     else { this._d3Scale.range(range$$1); }
@@ -12388,19 +12553,19 @@ var Axis = (function (BaseClass) {
       }
     }
 
-    var ticks = this._ticks
-      ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
+    var ticks$$1 = this._ticks
+      ? this._scale === "time" ? this._ticks.map(date$3) : this._ticks
       : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
         ? this._getTicks()
         : this._domain;
 
     var labels = this._labels
-      ? this._scale === "time" ? this._labels.map(date$2) : this._labels
+      ? this._scale === "time" ? this._labels.map(date$3) : this._labels
       : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
         ? this._getTicks()
-        : ticks;
+        : ticks$$1;
 
-    ticks = ticks.slice();
+    ticks$$1 = ticks$$1.slice();
     labels = labels.slice();
 
     if (this._scale === "log") { labels = labels.filter(function (t) { return Math.abs(t).toString().charAt(0) === "1" && (this$1._d3Scale ? t !== -1 : t !== 1); }); }
@@ -12418,14 +12583,14 @@ var Axis = (function (BaseClass) {
     };
 
     if (this._scale === "time") {
-      ticks = ticks.map(Number);
+      ticks$$1 = ticks$$1.map(Number);
       labels = labels.map(Number);
     }
     else if (this._scale === "ordinal") {
-      labels = labels.filter(function (label) { return ticks.includes(label); });
+      labels = labels.filter(function (label) { return ticks$$1.includes(label); });
     }
 
-    ticks = ticks.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
+    ticks$$1 = ticks$$1.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
     labels = labels.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
 
     var tickSize = this._shape === "Circle" ? this._shapeConfig.r
@@ -12435,8 +12600,8 @@ var Axis = (function (BaseClass) {
     var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
 
     var pixels = [];
-    this._availableTicks = ticks;
-    ticks.forEach(function (d, i) {
+    this._availableTicks = ticks$$1;
+    ticks$$1.forEach(function (d, i) {
       var s = tickGet({id: d, tick: true}, i);
       if (this$1._shape === "Circle") { s *= 2; }
       var t = this$1._getPosition(d);
@@ -12444,9 +12609,9 @@ var Axis = (function (BaseClass) {
       else { pixels.push(false); }
     });
 
-    ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
+    ticks$$1 = ticks$$1.filter(function (d, i) { return pixels[i] !== false; });
 
-    this._visibleTicks = ticks;
+    this._visibleTicks = ticks$$1;
 
     var hBuff = this._shape === "Circle"
           ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
@@ -12455,9 +12620,9 @@ var Axis = (function (BaseClass) {
             : this._tickSize,
         wBuff = tickGet({tick: true});
 
-    if (typeof hBuff === "function") { hBuff = max(ticks.map(hBuff)); }
+    if (typeof hBuff === "function") { hBuff = max(ticks$$1.map(hBuff)); }
     if (this._shape === "Rect") { hBuff /= 2; }
-    if (typeof wBuff === "function") { wBuff = max(ticks.map(wBuff)); }
+    if (typeof wBuff === "function") { wBuff = max(ticks$$1.map(wBuff)); }
     if (this._shape !== "Circle") { wBuff /= 2; }
 
     if (this._scale === "band") {
@@ -12602,7 +12767,7 @@ var Axis = (function (BaseClass) {
     this._group = group;
 
     var grid = elem("g.grid", {parent: group}).selectAll("line")
-      .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
+      .data((this._gridSize !== 0 ? this._grid || ticks$$1 : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
 
     grid.exit().transition(t)
       .attr("opacity", 0)
@@ -12619,10 +12784,12 @@ var Axis = (function (BaseClass) {
 
     var labelHeight = max(textData, function (t) { return t.height; }) || 0;
 
-    var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); });
+    var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks$$1.includes(d); });
 
-    var tickData = ticks.concat(labelOnly)
+    var tickData = ticks$$1.concat(labelOnly)
       .map(function (d) {
+        var obj;
+
         var data = textData.filter(function (td) { return td.d === d; });
         var dataIndex = data.length ? textData.indexOf(data[0]) : undefined;
         var xPos = this$1._getPosition(d);
@@ -12646,7 +12813,7 @@ var Axis = (function (BaseClass) {
               size = (hBuff + labelOffset) * (flip ? -1 : 1),
               yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
 
-        return ( obj$1 = {
+        return ( obj = {
           id: d,
           labelBounds: {
             x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
@@ -12654,10 +12821,10 @@ var Axis = (function (BaseClass) {
             width: horizontal ? space : labelWidth,
             height: horizontal ? labelHeight : space
           },
-          size: ticks.includes(d) ? size : 0,
+          size: ticks$$1.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false,
-          tick: ticks.includes(d)
-        }, obj$1[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj$1[y] = yPos, obj$1);
+          tick: ticks$$1.includes(d)
+        }, obj[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = yPos, obj);
       });
 
     if (this._shape === "Line") {
@@ -12933,7 +13100,7 @@ var Axis = (function (BaseClass) {
       @param {Array} [*value*]
       @chainable
   */
-  Axis.prototype.ticks = function ticks (_) {
+  Axis.prototype.ticks = function ticks$$1 (_) {
     return arguments.length ? (this._ticks = _, this) : this._ticks;
   };
 
@@ -13057,7 +13224,7 @@ exports.AxisBottom = AxisBottom;
 exports.AxisLeft = AxisLeft;
 exports.AxisRight = AxisRight;
 exports.AxisTop = AxisTop;
-exports.date = date$2;
+exports.date = date$3;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
