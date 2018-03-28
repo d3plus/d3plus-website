@@ -2,8 +2,8 @@
 title: Images in Legends
 width: 400
 height: 200
-time: 1504214667283
-date: August 31, 2017
+time: 1522253021802
+date: March 28, 2018
 ---
 
 [width]: 400
