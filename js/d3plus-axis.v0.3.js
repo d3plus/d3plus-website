@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.42
+  d3plus-axis v0.3.43
   Beautiful javascript scales and axes.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -159,6 +159,7 @@ var Axis = (function (BaseClass) {
         fontFamily: new d3plusText.TextBox().fontFamily(),
         fontResize: false,
         fontSize: d3plusCommon.constant(10),
+        padding: 0,
         textAnchor: function () {
           var rtl = d3plusText.rtl();
           return this$1._orient === "left" ? rtl ? "start" : "end"
@@ -167,7 +168,6 @@ var Axis = (function (BaseClass) {
         },
         verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
       },
-      labelPadding: 0,
       r: function (d) { return d.tick ? 4 : 0; },
       stroke: "#000",
       strokeWidth: 1,
