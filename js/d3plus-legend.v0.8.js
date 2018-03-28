@@ -1,7 +1,7 @@
 /*
-  d3plus-legend v0.8.15
+  d3plus-legend v0.8.16
   An easy to use javascript chart legend.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -325,10 +325,10 @@ function ckmeans(data, nClusters) {
     @extends external:BaseClass
     @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
 */
-var ColorScale = (function (BaseClass$$1) {
+var ColorScale = (function (BaseClass) {
   function ColorScale() {
 
-    BaseClass$$1.call(this);
+    BaseClass.call(this);
 
     this._axisClass = new d3plusAxis.Axis();
     this._axisConfig = {
@@ -355,8 +355,8 @@ var ColorScale = (function (BaseClass$$1) {
 
   }
 
-  if ( BaseClass$$1 ) ColorScale.__proto__ = BaseClass$$1;
-  ColorScale.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  if ( BaseClass ) ColorScale.__proto__ = BaseClass;
+  ColorScale.prototype = Object.create( BaseClass && BaseClass.prototype );
   ColorScale.prototype.constructor = ColorScale;
 
   /**
@@ -675,12 +675,12 @@ function value(d) {
     @extends external:BaseClass
     @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
 */
-var Legend = (function (BaseClass$$1) {
+var Legend = (function (BaseClass) {
   function Legend() {
     var this$1 = this;
 
 
-    BaseClass$$1.call(this);
+    BaseClass.call(this);
 
     this._align = "center";
     this._data = [];
@@ -740,8 +740,8 @@ var Legend = (function (BaseClass$$1) {
 
   }
 
-  if ( BaseClass$$1 ) Legend.__proto__ = BaseClass$$1;
-  Legend.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+  if ( BaseClass ) Legend.__proto__ = BaseClass;
+  Legend.prototype = Object.create( BaseClass && BaseClass.prototype );
   Legend.prototype.constructor = Legend;
 
   Legend.prototype._fetchConfig = function _fetchConfig (key, d, i) {
