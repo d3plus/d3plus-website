@@ -1,7 +1,7 @@
 /*
-  d3plus-priestley v0.1.19
+  d3plus-priestley v0.1.20
   A reusable Priestley timeline built on D3.
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -79,10 +79,10 @@ if (!Array.prototype.includes) {
     @extends external:Viz
     @desc Creates a priestley timeline based on an array of data.
 */
-var Priestley = (function (Viz$$1) {
+var Priestley = (function (Viz) {
   function Priestley() {
 
-    Viz$$1.call(this);
+    Viz.call(this);
     this._axis = new d3plusAxis.Axis().align("end").orient("bottom");
     this._axisConfig = {scale: "time"};
     this._axisTest = new d3plusAxis.Axis().align("end").gridSize(0).orient("bottom");
@@ -91,8 +91,8 @@ var Priestley = (function (Viz$$1) {
 
   }
 
-  if ( Viz$$1 ) Priestley.__proto__ = Viz$$1;
-  Priestley.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
+  if ( Viz ) Priestley.__proto__ = Viz;
+  Priestley.prototype = Object.create( Viz && Viz.prototype );
   Priestley.prototype.constructor = Priestley;
 
   /**
@@ -104,7 +104,7 @@ var Priestley = (function (Viz$$1) {
     var this$1 = this;
 
 
-    Viz$$1.prototype.render.call(this, callback);
+    Viz.prototype.render.call(this, callback);
 
     if (!this._filteredData) { return this; }
 
