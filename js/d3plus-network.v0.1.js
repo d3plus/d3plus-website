@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.1.15
+  d3plus-network v0.1.16
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -74,18 +74,17 @@ if (!Array.prototype.includes) {
     @see https://github.com/d3plus/d3plus-viz#Viz
 */
 
-// import {forceSimulation} from "d3-force";
 /**
     @class Network
     @extends external:Viz
     @desc Creates a network visualization based on a defined set of nodes and edges. [Click here](http://d3plus.org/examples/d3plus-network/getting-started/) for help getting started using the Network class.
 */
-var Network = (function (Viz$$1) {
+var Network = (function (Viz) {
   function Network() {
     var this$1 = this;
 
 
-    Viz$$1.call(this);
+    Viz.call(this);
     this._labelCutoff = 100;
     this._links = [];
     this._nodes = [];
@@ -204,10 +203,10 @@ var Network = (function (Viz$$1) {
         duration: 0,
         fontMin: 1,
         fontResize: true,
+        labelPadding: 0,
         textAnchor: "middle",
         verticalAlign: "middle"
       },
-      labelPadding: 0,
       Path: {
         fill: "none",
         label: false,
@@ -222,8 +221,8 @@ var Network = (function (Viz$$1) {
 
   }
 
-  if ( Viz$$1 ) Network.__proto__ = Viz$$1;
-  Network.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
+  if ( Viz ) Network.__proto__ = Viz;
+  Network.prototype = Object.create( Viz && Viz.prototype );
   Network.prototype.constructor = Network;
 
   /**
@@ -234,7 +233,7 @@ var Network = (function (Viz$$1) {
     var this$1 = this;
 
 
-    Viz$$1.prototype._draw.call(this, callback);
+    Viz.prototype._draw.call(this, callback);
 
     var height = this._height - this._margin.top - this._margin.bottom,
           transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")",
