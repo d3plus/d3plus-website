@@ -1,7 +1,7 @@
 /*
-  d3plus-hierarchy v0.3.13
+  d3plus-hierarchy v0.3.14
   Nested, hierarchical, and cluster charts built on D3
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -67,7 +67,7 @@ if (!Array.prototype.includes) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define('d3plus-hierarchy', ['exports'], factory) :
 	(factory((global.d3plus = {})));
-}(this, (function (exports) { 'use strict';
+}(this, (function (exports) {
 
 function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
@@ -164,9 +164,9 @@ function range(start, stop, step) {
   return range;
 }
 
-var e10 = Math.sqrt(50);
-var e5 = Math.sqrt(10);
-var e2 = Math.sqrt(2);
+var e10 = Math.sqrt(50),
+    e5 = Math.sqrt(10),
+    e2 = Math.sqrt(2);
 
 function ticks(start, stop, count) {
   var reverse,
@@ -342,10 +342,10 @@ function sum(values, valueof) {
   return sum;
 }
 
-var pi = Math.PI;
-var tau = 2 * pi;
-var epsilon = 1e-6;
-var tauEpsilon = tau - epsilon;
+var pi = Math.PI,
+    tau = 2 * pi,
+    epsilon = 1e-6,
+    tauEpsilon = tau - epsilon;
 
 function Path() {
   this._x0 = this._y0 = // start of current subpath
@@ -1222,8 +1222,8 @@ var cross$1 = {
   }
 };
 
-var tan30 = Math.sqrt(1 / 3);
-var tan30_2 = tan30 * 2;
+var tan30 = Math.sqrt(1 / 3),
+    tan30_2 = tan30 * 2;
 
 var diamond = {
   draw: function(context, size) {
@@ -1237,10 +1237,10 @@ var diamond = {
   }
 };
 
-var ka = 0.89081309152928522810;
-var kr = Math.sin(pi$1 / 10) / Math.sin(7 * pi$1 / 10);
-var kx = Math.sin(tau$1 / 10) * kr;
-var ky = -Math.cos(tau$1 / 10) * kr;
+var ka = 0.89081309152928522810,
+    kr = Math.sin(pi$1 / 10) / Math.sin(7 * pi$1 / 10),
+    kx = Math.sin(tau$1 / 10) * kr,
+    ky = -Math.cos(tau$1 / 10) * kr;
 
 var star = {
   draw: function(context, size) {
@@ -1280,10 +1280,10 @@ var triangle = {
   }
 };
 
-var c = -0.5;
-var s = Math.sqrt(3) / 2;
-var k = 1 / Math.sqrt(12);
-var a = (k / 2 + 1) * 3;
+var c = -0.5,
+    s = Math.sqrt(3) / 2,
+    k = 1 / Math.sqrt(12),
+    a = (k / 2 + 1) * 3;
 
 var wye = {
   draw: function(context, size) {
@@ -2542,12 +2542,13 @@ var RESET = "D3PLUS-COMMON-RESET";
 function nestedReset(obj, defaults) {
   if (isObject(obj)) {
     for (var nestedKey in obj) {
-      if ({}.hasOwnProperty.call(obj, nestedKey)) {
+      if ({}.hasOwnProperty.call(obj, nestedKey) && !nestedKey.startsWith("_")) {
+        var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
         if (obj[nestedKey] === RESET) {
-          obj[nestedKey] = defaults[nestedKey];
+          obj[nestedKey] = defaultValue;
         }
         else if (isObject(obj[nestedKey])) {
-          nestedReset(obj[nestedKey], defaults[nestedKey]);
+          nestedReset(obj[nestedKey], defaultValue);
         }
       }
     }
@@ -2763,169 +2764,6 @@ function creator(name) {
       : creatorInherit)(fullname);
 }
 
-var matcher = function(selector) {
-  return function() {
-    return this.matches(selector);
-  };
-};
-
-if (typeof document !== "undefined") {
-  var element = document.documentElement;
-  if (!element.matches) {
-    var vendorMatches = element.webkitMatchesSelector
-        || element.msMatchesSelector
-        || element.mozMatchesSelector
-        || element.oMatchesSelector;
-    matcher = function(selector) {
-      return function() {
-        return vendorMatches.call(this, selector);
-      };
-    };
-  }
-}
-
-var matcher$1 = matcher;
-
-var filterEvents = {};
-
-var event$1 = null;
-
-if (typeof document !== "undefined") {
-  var element$1 = document.documentElement;
-  if (!("onmouseenter" in element$1)) {
-    filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
-  }
-}
-
-function filterContextListener(listener, index, group) {
-  listener = contextListener(listener, index, group);
-  return function(event) {
-    var related = event.relatedTarget;
-    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
-      listener.call(this, event);
-    }
-  };
-}
-
-function contextListener(listener, index, group) {
-  return function(event1) {
-    var event0 = event$1; // Events can be reentrant (e.g., focus).
-    event$1 = event1;
-    try {
-      listener.call(this, this.__data__, index, group);
-    } finally {
-      event$1 = event0;
-    }
-  };
-}
-
-function parseTypenames(typenames) {
-  return typenames.trim().split(/^|\s+/).map(function(t) {
-    var name = "", i = t.indexOf(".");
-    if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
-    return {type: t, name: name};
-  });
-}
-
-function onRemove(typename) {
-  return function() {
-    var this$1 = this;
-
-    var on = this.__on;
-    if (!on) { return; }
-    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
-      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-      } else {
-        on[++i] = o;
-      }
-    }
-    if (++i) { on.length = i; }
-    else { delete this.__on; }
-  };
-}
-
-function onAdd(typename, value, capture) {
-  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
-  return function(d, i, group) {
-    var this$1 = this;
-
-    var on = this.__on, o, listener = wrap(value, i, group);
-    if (on) { for (var j = 0, m = on.length; j < m; ++j) {
-      if ((o = on[j]).type === typename.type && o.name === typename.name) {
-        this$1.removeEventListener(o.type, o.listener, o.capture);
-        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
-        o.value = value;
-        return;
-      }
-    } }
-    this.addEventListener(typename.type, listener, capture);
-    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
-    if (!on) { this.__on = [o]; }
-    else { on.push(o); }
-  };
-}
-
-function selection_on(typename, value, capture) {
-  var this$1 = this;
-
-  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
-
-  if (arguments.length < 2) {
-    var on = this.node().__on;
-    if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
-      for (i = 0, o = on[j]; i < n; ++i) {
-        if ((t = typenames[i]).type === o.type && t.name === o.name) {
-          return o.value;
-        }
-      }
-    } }
-    return;
-  }
-
-  on = value ? onAdd : onRemove;
-  if (capture == null) { capture = false; }
-  for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
-  return this;
-}
-
-function customEvent(event1, listener, that, args) {
-  var event0 = event$1;
-  event1.sourceEvent = event$1;
-  event$1 = event1;
-  try {
-    return listener.apply(that, args);
-  } finally {
-    event$1 = event0;
-  }
-}
-
-function sourceEvent() {
-  var current = event$1, source;
-  while (source = current.sourceEvent) { current = source; }
-  return current;
-}
-
-function point$4(node, event) {
-  var svg = node.ownerSVGElement || node;
-
-  if (svg.createSVGPoint) {
-    var point = svg.createSVGPoint();
-    point.x = event.clientX, point.y = event.clientY;
-    point = point.matrixTransform(node.getScreenCTM().inverse());
-    return [point.x, point.y];
-  }
-
-  var rect = node.getBoundingClientRect();
-  return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
-}
-
-function mouse(node) {
-  var event = sourceEvent();
-  if (event.changedTouches) { event = event.changedTouches[0]; }
-  return point$4(node, event);
-}
-
 function none$2() {}
 
 function selector(selector) {
@@ -2973,6 +2811,29 @@ function selection_selectAll(select) {
 
   return new Selection(subgroups, parents);
 }
+
+var matcher = function(selector) {
+  return function() {
+    return this.matches(selector);
+  };
+};
+
+if (typeof document !== "undefined") {
+  var element = document.documentElement;
+  if (!element.matches) {
+    var vendorMatches = element.webkitMatchesSelector
+        || element.msMatchesSelector
+        || element.mozMatchesSelector
+        || element.oMatchesSelector;
+    matcher = function(selector) {
+      return function() {
+        return vendorMatches.call(this, selector);
+      };
+    };
+  }
+}
+
+var matcher$1 = matcher;
 
 function selection_filter(match) {
   if (typeof match !== "function") { match = matcher$1(match); }
@@ -3121,7 +2982,7 @@ function selection_data(value, key) {
     for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
       if (previous = enterGroup[i0]) {
         if (i0 >= i1) { i1 = i0 + 1; }
-        while (!(next = updateGroup[i1]) && ++i1 < dataLength){  }
+        while (!(next = updateGroup[i1]) && ++i1 < dataLength){ }
         previous._next = next || null;
       }
     }
@@ -3534,10 +3395,136 @@ function selection_remove() {
   return this.each(remove);
 }
 
+function selection_cloneShallow() {
+  return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
+}
+
+function selection_cloneDeep() {
+  return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
+}
+
+function selection_clone(deep) {
+  return this.select(deep ? selection_cloneDeep : selection_cloneShallow);
+}
+
 function selection_datum(value) {
   return arguments.length
       ? this.property("__data__", value)
       : this.node().__data__;
+}
+
+var filterEvents = {};
+
+var event$1 = null;
+
+if (typeof document !== "undefined") {
+  var element$1 = document.documentElement;
+  if (!("onmouseenter" in element$1)) {
+    filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
+  }
+}
+
+function filterContextListener(listener, index, group) {
+  listener = contextListener(listener, index, group);
+  return function(event) {
+    var related = event.relatedTarget;
+    if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
+      listener.call(this, event);
+    }
+  };
+}
+
+function contextListener(listener, index, group) {
+  return function(event1) {
+    var event0 = event$1; // Events can be reentrant (e.g., focus).
+    event$1 = event1;
+    try {
+      listener.call(this, this.__data__, index, group);
+    } finally {
+      event$1 = event0;
+    }
+  };
+}
+
+function parseTypenames(typenames) {
+  return typenames.trim().split(/^|\s+/).map(function(t) {
+    var name = "", i = t.indexOf(".");
+    if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
+    return {type: t, name: name};
+  });
+}
+
+function onRemove(typename) {
+  return function() {
+    var this$1 = this;
+
+    var on = this.__on;
+    if (!on) { return; }
+    for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
+      if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
+        this$1.removeEventListener(o.type, o.listener, o.capture);
+      } else {
+        on[++i] = o;
+      }
+    }
+    if (++i) { on.length = i; }
+    else { delete this.__on; }
+  };
+}
+
+function onAdd(typename, value, capture) {
+  var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
+  return function(d, i, group) {
+    var this$1 = this;
+
+    var on = this.__on, o, listener = wrap(value, i, group);
+    if (on) { for (var j = 0, m = on.length; j < m; ++j) {
+      if ((o = on[j]).type === typename.type && o.name === typename.name) {
+        this$1.removeEventListener(o.type, o.listener, o.capture);
+        this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
+        o.value = value;
+        return;
+      }
+    } }
+    this.addEventListener(typename.type, listener, capture);
+    o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
+    if (!on) { this.__on = [o]; }
+    else { on.push(o); }
+  };
+}
+
+function selection_on(typename, value, capture) {
+  var this$1 = this;
+
+  var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
+
+  if (arguments.length < 2) {
+    var on = this.node().__on;
+    if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
+      for (i = 0, o = on[j]; i < n; ++i) {
+        if ((t = typenames[i]).type === o.type && t.name === o.name) {
+          return o.value;
+        }
+      }
+    } }
+    return;
+  }
+
+  on = value ? onAdd : onRemove;
+  if (capture == null) { capture = false; }
+  for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
+  return this;
+}
+
+function customEvent(event1, listener, that, args) {
+  var event0 = event$1;
+  event1.sourceEvent = event$1;
+  event$1 = event1;
+  try {
+    return listener.apply(that, args);
+  } finally {
+    event$1 = event0;
+  }
 }
 
 function dispatchEvent(node, type, params) {
@@ -3612,6 +3599,7 @@ Selection.prototype = selection.prototype = {
   append: selection_append,
   insert: selection_insert,
   remove: selection_remove,
+  clone: selection_clone,
   datum: selection_datum,
   on: selection_on,
   dispatch: selection_dispatch
@@ -3621,6 +3609,32 @@ function select(selector) {
   return typeof selector === "string"
       ? new Selection([[document.querySelector(selector)]], [document.documentElement])
       : new Selection([[selector]], root);
+}
+
+function sourceEvent() {
+  var current = event$1, source;
+  while (source = current.sourceEvent) { current = source; }
+  return current;
+}
+
+function point$4(node, event) {
+  var svg = node.ownerSVGElement || node;
+
+  if (svg.createSVGPoint) {
+    var point = svg.createSVGPoint();
+    point.x = event.clientX, point.y = event.clientY;
+    point = point.matrixTransform(node.getScreenCTM().inverse());
+    return [point.x, point.y];
+  }
+
+  var rect = node.getBoundingClientRect();
+  return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
+}
+
+function mouse(node) {
+  var event = sourceEvent();
+  if (event.changedTouches) { event = event.changedTouches[0]; }
+  return point$4(node, event);
 }
 
 function selectAll(selector) {
@@ -3677,7 +3691,7 @@ Dispatch.prototype = dispatch.prototype = {
 
     // If no callback was specified, return the callback of the given type and name.
     if (arguments.length < 2) {
-      while (++i < n) { if ((t = (typename = T[i]).type) && (t = get$1(_[t], typename.name))) { return t; } }
+      while (++i < n) { if ((t = (typename = T[i]).type) && (t = get(_[t], typename.name))) { return t; } }
       return;
     }
 
@@ -3685,8 +3699,8 @@ Dispatch.prototype = dispatch.prototype = {
     // Otherwise, if a null callback was specified, remove callbacks of the given name.
     if (callback != null && typeof callback !== "function") { throw new Error("invalid callback: " + callback); }
     while (++i < n) {
-      if (t = (typename = T[i]).type) { _[t] = set$1(_[t], typename.name, callback); }
-      else if (callback == null) { for (t in _) { _[t] = set$1(_[t], typename.name, null); } }
+      if (t = (typename = T[i]).type) { _[t] = set(_[t], typename.name, callback); }
+      else if (callback == null) { for (t in _) { _[t] = set(_[t], typename.name, null); } }
     }
 
     return this;
@@ -3709,7 +3723,7 @@ Dispatch.prototype = dispatch.prototype = {
   }
 };
 
-function get$1(type, name) {
+function get(type, name) {
   for (var i = 0, n = type.length, c; i < n; ++i) {
     if ((c = type[i]).name === name) {
       return c.value;
@@ -3717,7 +3731,7 @@ function get$1(type, name) {
   }
 }
 
-function set$1(type, name, callback) {
+function set(type, name, callback) {
   for (var i = 0, n = type.length; i < n; ++i) {
     if (type[i].name === name) {
       type[i] = noop$1, type = type.slice(0, i).concat(type.slice(i + 1));
@@ -3728,17 +3742,17 @@ function set$1(type, name, callback) {
   return type;
 }
 
-var frame = 0;
-var timeout = 0;
-var interval = 0;
-var pokeDelay = 1000;
-var taskHead;
-var taskTail;
-var clockLast = 0;
-var clockNow = 0;
-var clockSkew = 0;
-var clock = typeof performance === "object" && performance.now ? performance : Date;
-var setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
+var frame = 0, // is an animation frame pending?
+    timeout = 0, // is a timeout pending?
+    interval = 0, // are any timers active?
+    pokeDelay = 1000, // how frequently we check for clock skew
+    taskHead,
+    taskTail,
+    clockLast = 0,
+    clockNow = 0,
+    clockSkew = 0,
+    clock = typeof performance === "object" && performance.now ? performance : Date,
+    setFrame = typeof window === "object" && window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : function(f) { setTimeout(f, 17); };
 
 function now() {
   return clockNow || (setFrame(clearNow), clockNow = clock.now() + clockSkew);
@@ -3864,7 +3878,7 @@ function schedule(node, name, id, index, group, timing) {
   var schedules = node.__transition;
   if (!schedules) { node.__transition = {}; }
   else if (id in schedules) { return; }
-  create(node, id, {
+  create$1(node, id, {
     name: name,
     index: index, // For context during callback.
     group: group, // For context during callback.
@@ -3880,24 +3894,24 @@ function schedule(node, name, id, index, group, timing) {
 }
 
 function init(node, id) {
-  var schedule = get(node, id);
+  var schedule = get$1(node, id);
   if (schedule.state > CREATED) { throw new Error("too late; already scheduled"); }
   return schedule;
 }
 
-function set(node, id) {
-  var schedule = get(node, id);
+function set$1(node, id) {
+  var schedule = get$1(node, id);
   if (schedule.state > STARTING) { throw new Error("too late; already started"); }
   return schedule;
 }
 
-function get(node, id) {
+function get$1(node, id) {
   var schedule = node.__transition;
   if (!schedule || !(schedule = schedule[id])) { throw new Error("transition not found"); }
   return schedule;
 }
 
-function create(node, id, self) {
+function create$1(node, id, self) {
   var schedules = node.__transition,
       tween;
 
@@ -4047,17 +4061,17 @@ function Color() {}
 var darker = 0.7;
 var brighter = 1 / darker;
 
-var reI = "\\s*([+-]?\\d+)\\s*";
-var reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*";
-var reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*";
-var reHex3 = /^#([0-9a-f]{3})$/;
-var reHex6 = /^#([0-9a-f]{6})$/;
-var reRgbInteger = new RegExp("^rgb\\(" + [reI, reI, reI] + "\\)$");
-var reRgbPercent = new RegExp("^rgb\\(" + [reP, reP, reP] + "\\)$");
-var reRgbaInteger = new RegExp("^rgba\\(" + [reI, reI, reI, reN] + "\\)$");
-var reRgbaPercent = new RegExp("^rgba\\(" + [reP, reP, reP, reN] + "\\)$");
-var reHslPercent = new RegExp("^hsl\\(" + [reN, reP, reP] + "\\)$");
-var reHslaPercent = new RegExp("^hsla\\(" + [reN, reP, reP, reN] + "\\)$");
+var reI = "\\s*([+-]?\\d+)\\s*",
+    reN = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
+    reP = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
+    reHex3 = /^#([0-9a-f]{3})$/,
+    reHex6 = /^#([0-9a-f]{6})$/,
+    reRgbInteger = new RegExp("^rgb\\(" + [reI, reI, reI] + "\\)$"),
+    reRgbPercent = new RegExp("^rgb\\(" + [reP, reP, reP] + "\\)$"),
+    reRgbaInteger = new RegExp("^rgba\\(" + [reI, reI, reI, reN] + "\\)$"),
+    reRgbaPercent = new RegExp("^rgba\\(" + [reP, reP, reP, reN] + "\\)$"),
+    reHslPercent = new RegExp("^hsl\\(" + [reN, reP, reP] + "\\)$"),
+    reHslaPercent = new RegExp("^hsla\\(" + [reN, reP, reP, reN] + "\\)$");
 
 var named = {
   aliceblue: 0xf0f8ff,
@@ -4374,14 +4388,14 @@ function hsl2rgb(h, m1, m2) {
 var deg2rad = Math.PI / 180;
 var rad2deg = 180 / Math.PI;
 
-var Kn = 18;
-var Xn = 0.950470;
-var Yn = 1;
-var Zn = 1.088830;
-var t0 = 4 / 29;
-var t1 = 6 / 29;
-var t2 = 3 * t1 * t1;
-var t3 = t1 * t1 * t1;
+var Kn = 18,
+    Xn = 0.950470, // D65 standard referent
+    Yn = 1,
+    Zn = 1.088830,
+    t0 = 4 / 29,
+    t1 = 6 / 29,
+    t2 = 3 * t1 * t1,
+    t3 = t1 * t1 * t1;
 
 function labConvert(o) {
   if (o instanceof Lab) { return new Lab(o.l, o.a, o.b, o.opacity); }
@@ -4479,14 +4493,14 @@ define(Hcl, hcl, extend(Color, {
   }
 }));
 
-var A = -0.14861;
-var B = +1.78277;
-var C = -0.29227;
-var D = -0.90649;
-var E = +1.97294;
-var ED = E * D;
-var EB = E * B;
-var BC_DA = B * C - D * A;
+var A = -0.14861,
+    B = +1.78277,
+    C = -0.29227,
+    D = -0.90649,
+    E = +1.97294,
+    ED = E * D,
+    EB = E * B,
+    BC_DA = B * C - D * A;
 
 function cubehelixConvert(o) {
   if (o instanceof Cubehelix) { return new Cubehelix(o.h, o.s, o.l, o.opacity); }
@@ -4600,7 +4614,7 @@ function array$1(a, b) {
       c = new Array(nb),
       i;
 
-  for (i = 0; i < na; ++i) { x[i] = interpolate(a[i], b[i]); }
+  for (i = 0; i < na; ++i) { x[i] = interpolateValue(a[i], b[i]); }
   for (; i < nb; ++i) { c[i] = b[i]; }
 
   return function(t) {
@@ -4632,7 +4646,7 @@ function object(a, b) {
 
   for (k in b) {
     if (k in a) {
-      i[k] = interpolate(a[k], b[k]);
+      i[k] = interpolateValue(a[k], b[k]);
     } else {
       c[k] = b[k];
     }
@@ -4644,8 +4658,8 @@ function object(a, b) {
   };
 }
 
-var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g;
-var reB = new RegExp(reA.source, "g");
+var reA = /[-+]?(?:\d+\.?\d*|\.?\d+)(?:[eE][-+]?\d+)?/g,
+    reB = new RegExp(reA.source, "g");
 
 function zero(b) {
   return function() {
@@ -4707,7 +4721,7 @@ function interpolateString(a, b) {
         });
 }
 
-function interpolate(a, b) {
+function interpolateValue(a, b) {
   var t = typeof b, c;
   return b == null || t === "boolean" ? constant$4(b)
       : (t === "number" ? reinterpolate
@@ -4752,10 +4766,10 @@ function decompose(a, b, c, d, e, f) {
   };
 }
 
-var cssNode;
-var cssRoot;
-var cssView;
-var svgNode;
+var cssNode,
+    cssRoot,
+    cssView,
+    svgNode;
 
 function parseCss(value) {
   if (value === "none") { return identity$2; }
@@ -4837,10 +4851,10 @@ function interpolateTransform(parse, pxComma, pxParen, degParen) {
 var interpolateTransformCss = interpolateTransform(parseCss, "px, ", "px)", "deg)");
 var interpolateTransformSvg = interpolateTransform(parseSvg, ", ", ")", ")");
 
-var rho = Math.SQRT2;
-var rho2 = 2;
-var rho4 = 4;
-var epsilon2 = 1e-12;
+var rho = Math.SQRT2,
+    rho2 = 2,
+    rho4 = 4,
+    epsilon2 = 1e-12;
 
 function cosh(x) {
   return ((x = Math.exp(x)) + 1 / x) / 2;
@@ -4950,7 +4964,7 @@ var cubehelixLong = cubehelix$1(nogamma);
 function tweenRemove(id, name) {
   var tween0, tween1;
   return function() {
-    var schedule$$1 = set(this, id),
+    var schedule$$1 = set$1(this, id),
         tween = schedule$$1.tween;
 
     // If this node shared tween with the previous node,
@@ -4975,7 +4989,7 @@ function tweenFunction(id, name, value) {
   var tween0, tween1;
   if (typeof value !== "function") { throw new Error; }
   return function() {
-    var schedule$$1 = set(this, id),
+    var schedule$$1 = set$1(this, id),
         tween = schedule$$1.tween;
 
     // If this node shared tween with the previous node,
@@ -5002,7 +5016,7 @@ function transition_tween(name, value) {
   name += "";
 
   if (arguments.length < 2) {
-    var tween = get(this.node(), id).tween;
+    var tween = get$1(this.node(), id).tween;
     for (var i = 0, n = tween.length, t; i < n; ++i) {
       if ((t = tween[i]).name === name) {
         return t.value;
@@ -5018,16 +5032,16 @@ function tweenValue(transition, name, value) {
   var id = transition._id;
 
   transition.each(function() {
-    var schedule$$1 = set(this, id);
+    var schedule$$1 = set$1(this, id);
     (schedule$$1.value || (schedule$$1.value = {}))[name] = value.apply(this, arguments);
   });
 
   return function(node) {
-    return get(node, id).value[name];
+    return get$1(node, id).value[name];
   };
 }
 
-function interpolate$1(a, b) {
+function interpolate(a, b) {
   var c;
   return (typeof b === "number" ? reinterpolate
       : b instanceof color ? interpolateRgb
@@ -5047,29 +5061,29 @@ function attrRemoveNS$1(fullname) {
   };
 }
 
-function attrConstant$1(name, interpolate, value1) {
+function attrConstant$1(name, interpolate$$1, value1) {
   var value00,
       interpolate0;
   return function() {
     var value0 = this.getAttribute(name);
     return value0 === value1 ? null
         : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate(value00 = value0, value1);
+        : interpolate0 = interpolate$$1(value00 = value0, value1);
   };
 }
 
-function attrConstantNS$1(fullname, interpolate, value1) {
+function attrConstantNS$1(fullname, interpolate$$1, value1) {
   var value00,
       interpolate0;
   return function() {
     var value0 = this.getAttributeNS(fullname.space, fullname.local);
     return value0 === value1 ? null
         : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate(value00 = value0, value1);
+        : interpolate0 = interpolate$$1(value00 = value0, value1);
   };
 }
 
-function attrFunction$1(name, interpolate, value) {
+function attrFunction$1(name, interpolate$$1, value) {
   var value00,
       value10,
       interpolate0;
@@ -5079,11 +5093,11 @@ function attrFunction$1(name, interpolate, value) {
     value0 = this.getAttribute(name);
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
   };
 }
 
-function attrFunctionNS$1(fullname, interpolate, value) {
+function attrFunctionNS$1(fullname, interpolate$$1, value) {
   var value00,
       value10,
       interpolate0;
@@ -5093,12 +5107,12 @@ function attrFunctionNS$1(fullname, interpolate, value) {
     value0 = this.getAttributeNS(fullname.space, fullname.local);
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
   };
 }
 
 function transition_attr(name, value) {
-  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate$1;
+  var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate;
   return this.attrTween(name, typeof value === "function"
       ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
       : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
@@ -5155,18 +5169,18 @@ function transition_delay(value) {
       ? this.each((typeof value === "function"
           ? delayFunction
           : delayConstant)(id, value))
-      : get(this.node(), id).delay;
+      : get$1(this.node(), id).delay;
 }
 
 function durationFunction(id, value) {
   return function() {
-    set(this, id).duration = +value.apply(this, arguments);
+    set$1(this, id).duration = +value.apply(this, arguments);
   };
 }
 
 function durationConstant(id, value) {
   return value = +value, function() {
-    set(this, id).duration = value;
+    set$1(this, id).duration = value;
   };
 }
 
@@ -5177,13 +5191,13 @@ function transition_duration(value) {
       ? this.each((typeof value === "function"
           ? durationFunction
           : durationConstant)(id, value))
-      : get(this.node(), id).duration;
+      : get$1(this.node(), id).duration;
 }
 
 function easeConstant(id, value) {
   if (typeof value !== "function") { throw new Error; }
   return function() {
-    set(this, id).ease = value;
+    set$1(this, id).ease = value;
   };
 }
 
@@ -5192,7 +5206,7 @@ function transition_ease(value) {
 
   return arguments.length
       ? this.each(easeConstant(id, value))
-      : get(this.node(), id).ease;
+      : get$1(this.node(), id).ease;
 }
 
 function transition_filter(match) {
@@ -5236,7 +5250,7 @@ function start(name) {
 }
 
 function onFunction(id, name, listener) {
-  var on0, on1, sit = start(name) ? init : set;
+  var on0, on1, sit = start(name) ? init : set$1;
   return function() {
     var schedule$$1 = sit(this, id),
         on = schedule$$1.on;
@@ -5254,7 +5268,7 @@ function transition_on(name, listener) {
   var id = this._id;
 
   return arguments.length < 2
-      ? get(this.node(), id).on.on(name)
+      ? get$1(this.node(), id).on.on(name)
       : this.each(onFunction(id, name, listener));
 }
 
@@ -5272,18 +5286,18 @@ function transition_remove() {
   return this.on("end.remove", removeFunction(this._id));
 }
 
-function transition_select(select) {
+function transition_select(select$$1) {
   var name = this._name,
       id = this._id;
 
-  if (typeof select !== "function") { select = selector(select); }
+  if (typeof select$$1 !== "function") { select$$1 = selector(select$$1); }
 
   for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-      if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
+      if ((node = group[i]) && (subnode = select$$1.call(node, node.__data__, i, group))) {
         if ("__data__" in node) { subnode.__data__ = node.__data__; }
         subgroup[i] = subnode;
-        schedule(subgroup[i], name, id, i, subgroup, get(node, id));
+        schedule(subgroup[i], name, id, i, subgroup, get$1(node, id));
       }
     }
   }
@@ -5291,16 +5305,16 @@ function transition_select(select) {
   return new Transition(subgroups, this._parents, name, id);
 }
 
-function transition_selectAll(select) {
+function transition_selectAll(select$$1) {
   var name = this._name,
       id = this._id;
 
-  if (typeof select !== "function") { select = selectorAll(select); }
+  if (typeof select$$1 !== "function") { select$$1 = selectorAll(select$$1); }
 
   for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        for (var children = select.call(node, node.__data__, i, group), child, inherit = get(node, id), k = 0, l = children.length; k < l; ++k) {
+        for (var children = select$$1.call(node, node.__data__, i, group), child, inherit = get$1(node, id), k = 0, l = children.length; k < l; ++k) {
           if (child = children[k]) {
             schedule(child, name, id, k, children, inherit);
           }
@@ -5320,7 +5334,7 @@ function transition_selection() {
   return new Selection$1(this._groups, this._parents);
 }
 
-function styleRemove$1(name, interpolate) {
+function styleRemove$1(name, interpolate$$1) {
   var value00,
       value10,
       interpolate0;
@@ -5329,7 +5343,7 @@ function styleRemove$1(name, interpolate) {
         value1 = (this.style.removeProperty(name), styleValue(this, name));
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
   };
 }
 
@@ -5339,18 +5353,18 @@ function styleRemoveEnd(name) {
   };
 }
 
-function styleConstant$1(name, interpolate, value1) {
+function styleConstant$1(name, interpolate$$1, value1) {
   var value00,
       interpolate0;
   return function() {
     var value0 = styleValue(this, name);
     return value0 === value1 ? null
         : value0 === value00 ? interpolate0
-        : interpolate0 = interpolate(value00 = value0, value1);
+        : interpolate0 = interpolate$$1(value00 = value0, value1);
   };
 }
 
-function styleFunction$1(name, interpolate, value) {
+function styleFunction$1(name, interpolate$$1, value) {
   var value00,
       value10,
       interpolate0;
@@ -5360,12 +5374,12 @@ function styleFunction$1(name, interpolate, value) {
     if (value1 == null) { value1 = (this.style.removeProperty(name), styleValue(this, name)); }
     return value0 === value1 ? null
         : value0 === value00 && value1 === value10 ? interpolate0
-        : interpolate0 = interpolate(value00 = value0, value10 = value1);
+        : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
   };
 }
 
 function transition_style(name, value, priority) {
-  var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$1;
+  var i = (name += "") === "transform" ? interpolateTransformCss : interpolate;
   return value == null ? this
           .styleTween(name, styleRemove$1(name, i))
           .on("end.style." + name, styleRemoveEnd(name))
@@ -5420,7 +5434,7 @@ function transition_transition() {
   for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
     for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
       if (node = group[i]) {
-        var inherit = get(node, id0);
+        var inherit = get$1(node, id0);
         schedule(node, name, id1, i, group, {
           time: inherit.time + inherit.delay + inherit.duration,
           delay: 0,
@@ -5541,7 +5555,7 @@ selection.prototype.transition = selection_transition;
     @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
     @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
 */
-function elem(selector, p) {
+function elem(selector$$1, p) {
 
   // overrides default params
   p = Object.assign({}, {
@@ -5553,11 +5567,11 @@ function elem(selector, p) {
     update: {}
   }, p);
 
-  var className = (/\.([^#]+)/g).exec(selector),
-        id = (/#([^\.]+)/g).exec(selector),
-        tag = (/^([^.^#]+)/g).exec(selector)[1];
+  var className = (/\.([^#]+)/g).exec(selector$$1),
+        id = (/#([^\.]+)/g).exec(selector$$1),
+        tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
 
-  var elem = p.parent.selectAll(selector.includes(":") ? selector.split(":")[1] : selector)
+  var elem = p.parent.selectAll(selector$$1.includes(":") ? selector$$1.split(":")[1] : selector$$1)
     .data(p.condition ? [null] : []);
 
   var enter = elem.enter().append(tag).call(attrize, p.enter);
@@ -5797,25 +5811,25 @@ function objectMerge(objects, aggs) {
         newObject = {};
 
   availableKeys.forEach(function (k) {
-    var values = objects.map(function (o) { return o[k]; });
+    var values$$1 = objects.map(function (o) { return o[k]; });
     var value;
-    if (aggs[k]) { value = aggs[k](values); }
+    if (aggs[k]) { value = aggs[k](values$$1); }
     else {
-      var types = values.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
+      var types = values$$1.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
       if (!types.length) { value = undefined; }
       else if (types.indexOf(Array) >= 0) {
-        value = merge(values.map(function (v) { return v instanceof Array ? v : [v]; }));
+        value = merge(values$$1.map(function (v) { return v instanceof Array ? v : [v]; }));
         value = Array.from(new Set(value));
         if (value.length === 1) { value = value[0]; }
       }
       else if (types.indexOf(String) >= 0) {
-        value = Array.from(new Set(values));
+        value = Array.from(new Set(values$$1));
         if (value.length === 1) { value = value[0]; }
       }
-      else if (types.indexOf(Number) >= 0) { value = sum(values); }
-      else if (types.indexOf(Object) >= 0) { value = objectMerge(values.filter(function (v) { return v; })); }
+      else if (types.indexOf(Number) >= 0) { value = sum(values$$1); }
+      else if (types.indexOf(Object) >= 0) { value = objectMerge(values$$1.filter(function (v) { return v; })); }
       else {
-        value = Array.from(new Set(values.filter(function (v) { return v !== void 0; })));
+        value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
         if (value.length === 1) { value = value[0]; }
       }
     }
@@ -5824,6 +5838,32 @@ function objectMerge(objects, aggs) {
 
   return newObject;
 
+}
+
+/**
+ @function parseSides
+ @desc Converts a string of directional CSS shorthand values into an object with the values expanded.
+ @param {String|Number} sides The CSS shorthand string to expand.
+ */
+function parseSides(sides) {
+  var values;
+  if (typeof sides === "number") { values = [sides]; }
+  else { values = sides.split(/\s+/); }
+
+  if (values.length === 1) { values = [values[0], values[0], values[0], values[0]]; }
+  else if (values.length === 2) { values = values.concat(values); }
+  else if (values.length === 3) { values.push(values[1]); }
+
+  return [
+    "top",
+    "right",
+    "bottom",
+    "left"
+  ].reduce(function (acc, direction, i) {
+    var value = parseFloat(values[i]);
+    acc[direction] = value || 0;
+    return acc;
+  }, {});
 }
 
 /**
@@ -6067,8 +6107,6 @@ Image$1.prototype.y = function y (_) {
 };
 
 var array$2 = Array.prototype;
-
-var map$3 = array$2.map;
 var slice$2 = array$2.slice;
 
 var implicit = {name: "implicit"};
@@ -6113,223 +6151,6 @@ function ordinal(range) {
   };
 
   return scale;
-}
-
-function band() {
-  var scale = ordinal().unknown(undefined),
-      domain = scale.domain,
-      ordinalRange = scale.range,
-      range$$1 = [0, 1],
-      step,
-      bandwidth,
-      round = false,
-      paddingInner = 0,
-      paddingOuter = 0,
-      align = 0.5;
-
-  delete scale.unknown;
-
-  function rescale() {
-    var n = domain().length,
-        reverse = range$$1[1] < range$$1[0],
-        start = range$$1[reverse - 0],
-        stop = range$$1[1 - reverse];
-    step = (stop - start) / Math.max(1, n - paddingInner + paddingOuter * 2);
-    if (round) { step = Math.floor(step); }
-    start += (stop - start - step * (n - paddingInner)) * align;
-    bandwidth = step * (1 - paddingInner);
-    if (round) { start = Math.round(start), bandwidth = Math.round(bandwidth); }
-    var values = range(n).map(function(i) { return start + step * i; });
-    return ordinalRange(reverse ? values.reverse() : values);
-  }
-
-  scale.domain = function(_) {
-    return arguments.length ? (domain(_), rescale()) : domain();
-  };
-
-  scale.range = function(_) {
-    return arguments.length ? (range$$1 = [+_[0], +_[1]], rescale()) : range$$1.slice();
-  };
-
-  scale.rangeRound = function(_) {
-    return range$$1 = [+_[0], +_[1]], round = true, rescale();
-  };
-
-  scale.bandwidth = function() {
-    return bandwidth;
-  };
-
-  scale.step = function() {
-    return step;
-  };
-
-  scale.round = function(_) {
-    return arguments.length ? (round = !!_, rescale()) : round;
-  };
-
-  scale.padding = function(_) {
-    return arguments.length ? (paddingInner = paddingOuter = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
-  };
-
-  scale.paddingInner = function(_) {
-    return arguments.length ? (paddingInner = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
-  };
-
-  scale.paddingOuter = function(_) {
-    return arguments.length ? (paddingOuter = Math.max(0, Math.min(1, _)), rescale()) : paddingOuter;
-  };
-
-  scale.align = function(_) {
-    return arguments.length ? (align = Math.max(0, Math.min(1, _)), rescale()) : align;
-  };
-
-  scale.copy = function() {
-    return band()
-        .domain(domain())
-        .range(range$$1)
-        .round(round)
-        .paddingInner(paddingInner)
-        .paddingOuter(paddingOuter)
-        .align(align);
-  };
-
-  return rescale();
-}
-
-function pointish(scale) {
-  var copy = scale.copy;
-
-  scale.padding = scale.paddingOuter;
-  delete scale.paddingInner;
-  delete scale.paddingOuter;
-
-  scale.copy = function() {
-    return pointish(copy());
-  };
-
-  return scale;
-}
-
-function point$5() {
-  return pointish(band().paddingInner(1));
-}
-
-function constant$5(x) {
-  return function() {
-    return x;
-  };
-}
-
-function number$1(x) {
-  return +x;
-}
-
-var unit = [0, 1];
-
-function deinterpolateLinear(a, b) {
-  return (b -= (a = +a))
-      ? function(x) { return (x - a) / b; }
-      : constant$5(b);
-}
-
-function deinterpolateClamp(deinterpolate) {
-  return function(a, b) {
-    var d = deinterpolate(a = +a, b = +b);
-    return function(x) { return x <= a ? 0 : x >= b ? 1 : d(x); };
-  };
-}
-
-function reinterpolateClamp(reinterpolate) {
-  return function(a, b) {
-    var r = reinterpolate(a = +a, b = +b);
-    return function(t) { return t <= 0 ? a : t >= 1 ? b : r(t); };
-  };
-}
-
-function bimap(domain, range, deinterpolate, reinterpolate) {
-  var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
-  if (d1 < d0) { d0 = deinterpolate(d1, d0), r0 = reinterpolate(r1, r0); }
-  else { d0 = deinterpolate(d0, d1), r0 = reinterpolate(r0, r1); }
-  return function(x) { return r0(d0(x)); };
-}
-
-function polymap(domain, range, deinterpolate, reinterpolate) {
-  var j = Math.min(domain.length, range.length) - 1,
-      d = new Array(j),
-      r = new Array(j),
-      i = -1;
-
-  // Reverse descending domains.
-  if (domain[j] < domain[0]) {
-    domain = domain.slice().reverse();
-    range = range.slice().reverse();
-  }
-
-  while (++i < j) {
-    d[i] = deinterpolate(domain[i], domain[i + 1]);
-    r[i] = reinterpolate(range[i], range[i + 1]);
-  }
-
-  return function(x) {
-    var i = bisectRight(domain, x, 1, j) - 1;
-    return r[i](d[i](x));
-  };
-}
-
-function copy(source, target) {
-  return target
-      .domain(source.domain())
-      .range(source.range())
-      .interpolate(source.interpolate())
-      .clamp(source.clamp());
-}
-
-// deinterpolate(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
-// reinterpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding domain value x in [a,b].
-function continuous(deinterpolate, reinterpolate) {
-  var domain = unit,
-      range = unit,
-      interpolate$$1 = interpolate,
-      clamp = false,
-      piecewise,
-      output,
-      input;
-
-  function rescale() {
-    piecewise = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
-    output = input = null;
-    return scale;
-  }
-
-  function scale(x) {
-    return (output || (output = piecewise(domain, range, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate$$1)))(+x);
-  }
-
-  scale.invert = function(y) {
-    return (input || (input = piecewise(range, domain, deinterpolateLinear, clamp ? reinterpolateClamp(reinterpolate) : reinterpolate)))(+y);
-  };
-
-  scale.domain = function(_) {
-    return arguments.length ? (domain = map$3.call(_, number$1), rescale()) : domain.slice();
-  };
-
-  scale.range = function(_) {
-    return arguments.length ? (range = slice$2.call(_), rescale()) : range.slice();
-  };
-
-  scale.rangeRound = function(_) {
-    return range = slice$2.call(_), interpolate$$1 = interpolateRound, rescale();
-  };
-
-  scale.clamp = function(_) {
-    return arguments.length ? (clamp = !!_, rescale()) : clamp;
-  };
-
-  scale.interpolate = function(_) {
-    return arguments.length ? (interpolate$$1 = _, rescale()) : interpolate$$1;
-  };
-
-  return rescale();
 }
 
 // Computes the decimal coefficient and exponent of the specified number x with
@@ -6490,17 +6311,17 @@ FormatSpecifier.prototype.toString = function() {
       + this.type;
 };
 
-function identity$4(x) {
+function identity$3(x) {
   return x;
 }
 
 var prefixes = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
 function formatLocale(locale) {
-  var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$4,
+  var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$3,
       currency = locale.currency,
       decimal = locale.decimal,
-      numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$4,
+      numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$3,
       percent = locale.percent || "%";
 
   function newFormat(specifier) {
@@ -6555,7 +6376,7 @@ function formatLocale(locale) {
 
         // Compute the prefix and suffix.
         valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
-        valueSuffix = valueSuffix + (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + (valueNegative && sign === "(" ? ")" : "");
+        valueSuffix = (type === "s" ? prefixes[8 + prefixExponent / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
 
         // Break the formatted value into the integer “value” part that can be
         // grouped, and fractional or exponential “suffix” part that is not.
@@ -6646,422 +6467,8 @@ function precisionRound(step, max) {
   return Math.max(0, exponent$1(max) - exponent$1(step)) + 1;
 }
 
-function tickFormat(domain, count, specifier) {
-  var start = domain[0],
-      stop = domain[domain.length - 1],
-      step = tickStep(start, stop, count == null ? 10 : count),
-      precision;
-  specifier = formatSpecifier(specifier == null ? ",f" : specifier);
-  switch (specifier.type) {
-    case "s": {
-      var value = Math.max(Math.abs(start), Math.abs(stop));
-      if (specifier.precision == null && !isNaN(precision = precisionPrefix(step, value))) { specifier.precision = precision; }
-      return formatPrefix(specifier, value);
-    }
-    case "":
-    case "e":
-    case "g":
-    case "p":
-    case "r": {
-      if (specifier.precision == null && !isNaN(precision = precisionRound(step, Math.max(Math.abs(start), Math.abs(stop))))) { specifier.precision = precision - (specifier.type === "e"); }
-      break;
-    }
-    case "f":
-    case "%": {
-      if (specifier.precision == null && !isNaN(precision = precisionFixed(step))) { specifier.precision = precision - (specifier.type === "%") * 2; }
-      break;
-    }
-  }
-  return format(specifier);
-}
-
-function linearish(scale) {
-  var domain = scale.domain;
-
-  scale.ticks = function(count) {
-    var d = domain();
-    return ticks(d[0], d[d.length - 1], count == null ? 10 : count);
-  };
-
-  scale.tickFormat = function(count, specifier) {
-    return tickFormat(domain(), count, specifier);
-  };
-
-  scale.nice = function(count) {
-    if (count == null) { count = 10; }
-
-    var d = domain(),
-        i0 = 0,
-        i1 = d.length - 1,
-        start = d[i0],
-        stop = d[i1],
-        step;
-
-    if (stop < start) {
-      step = start, start = stop, stop = step;
-      step = i0, i0 = i1, i1 = step;
-    }
-
-    step = tickIncrement(start, stop, count);
-
-    if (step > 0) {
-      start = Math.floor(start / step) * step;
-      stop = Math.ceil(stop / step) * step;
-      step = tickIncrement(start, stop, count);
-    } else if (step < 0) {
-      start = Math.ceil(start * step) / step;
-      stop = Math.floor(stop * step) / step;
-      step = tickIncrement(start, stop, count);
-    }
-
-    if (step > 0) {
-      d[i0] = Math.floor(start / step) * step;
-      d[i1] = Math.ceil(stop / step) * step;
-      domain(d);
-    } else if (step < 0) {
-      d[i0] = Math.ceil(start * step) / step;
-      d[i1] = Math.floor(stop * step) / step;
-      domain(d);
-    }
-
-    return scale;
-  };
-
-  return scale;
-}
-
-function linear$2() {
-  var scale = continuous(deinterpolateLinear, reinterpolate);
-
-  scale.copy = function() {
-    return copy(scale, linear$2());
-  };
-
-  return linearish(scale);
-}
-
-function identity$3() {
-  var domain = [0, 1];
-
-  function scale(x) {
-    return +x;
-  }
-
-  scale.invert = scale;
-
-  scale.domain = scale.range = function(_) {
-    return arguments.length ? (domain = map$3.call(_, number$1), scale) : domain.slice();
-  };
-
-  scale.copy = function() {
-    return identity$3().domain(domain);
-  };
-
-  return linearish(scale);
-}
-
-function nice(domain, interval) {
-  domain = domain.slice();
-
-  var i0 = 0,
-      i1 = domain.length - 1,
-      x0 = domain[i0],
-      x1 = domain[i1],
-      t;
-
-  if (x1 < x0) {
-    t = i0, i0 = i1, i1 = t;
-    t = x0, x0 = x1, x1 = t;
-  }
-
-  domain[i0] = interval.floor(x0);
-  domain[i1] = interval.ceil(x1);
-  return domain;
-}
-
-function deinterpolate(a, b) {
-  return (b = Math.log(b / a))
-      ? function(x) { return Math.log(x / a) / b; }
-      : constant$5(b);
-}
-
-function reinterpolate$1(a, b) {
-  return a < 0
-      ? function(t) { return -Math.pow(-b, t) * Math.pow(-a, 1 - t); }
-      : function(t) { return Math.pow(b, t) * Math.pow(a, 1 - t); };
-}
-
-function pow10(x) {
-  return isFinite(x) ? +("1e" + x) : x < 0 ? 0 : x;
-}
-
-function powp(base) {
-  return base === 10 ? pow10
-      : base === Math.E ? Math.exp
-      : function(x) { return Math.pow(base, x); };
-}
-
-function logp(base) {
-  return base === Math.E ? Math.log
-      : base === 10 && Math.log10
-      || base === 2 && Math.log2
-      || (base = Math.log(base), function(x) { return Math.log(x) / base; });
-}
-
-function reflect(f) {
-  return function(x) {
-    return -f(-x);
-  };
-}
-
-function log() {
-  var scale = continuous(deinterpolate, reinterpolate$1).domain([1, 10]),
-      domain = scale.domain,
-      base = 10,
-      logs = logp(10),
-      pows = powp(10);
-
-  function rescale() {
-    logs = logp(base), pows = powp(base);
-    if (domain()[0] < 0) { logs = reflect(logs), pows = reflect(pows); }
-    return scale;
-  }
-
-  scale.base = function(_) {
-    return arguments.length ? (base = +_, rescale()) : base;
-  };
-
-  scale.domain = function(_) {
-    return arguments.length ? (domain(_), rescale()) : domain();
-  };
-
-  scale.ticks = function(count) {
-    var d = domain(),
-        u = d[0],
-        v = d[d.length - 1],
-        r;
-
-    if (r = v < u) { i = u, u = v, v = i; }
-
-    var i = logs(u),
-        j = logs(v),
-        p,
-        k,
-        t,
-        n = count == null ? 10 : +count,
-        z = [];
-
-    if (!(base % 1) && j - i < n) {
-      i = Math.round(i) - 1, j = Math.round(j) + 1;
-      if (u > 0) { for (; i < j; ++i) {
-        for (k = 1, p = pows(i); k < base; ++k) {
-          t = p * k;
-          if (t < u) { continue; }
-          if (t > v) { break; }
-          z.push(t);
-        }
-      } } else { for (; i < j; ++i) {
-        for (k = base - 1, p = pows(i); k >= 1; --k) {
-          t = p * k;
-          if (t < u) { continue; }
-          if (t > v) { break; }
-          z.push(t);
-        }
-      } }
-    } else {
-      z = ticks(i, j, Math.min(j - i, n)).map(pows);
-    }
-
-    return r ? z.reverse() : z;
-  };
-
-  scale.tickFormat = function(count, specifier) {
-    if (specifier == null) { specifier = base === 10 ? ".0e" : ","; }
-    if (typeof specifier !== "function") { specifier = format(specifier); }
-    if (count === Infinity) { return specifier; }
-    if (count == null) { count = 10; }
-    var k = Math.max(1, base * count / scale.ticks().length); // TODO fast estimate?
-    return function(d) {
-      var i = d / pows(Math.round(logs(d)));
-      if (i * base < base - 0.5) { i *= base; }
-      return i <= k ? specifier(d) : "";
-    };
-  };
-
-  scale.nice = function() {
-    return domain(nice(domain(), {
-      floor: function(x) { return pows(Math.floor(logs(x))); },
-      ceil: function(x) { return pows(Math.ceil(logs(x))); }
-    }));
-  };
-
-  scale.copy = function() {
-    return copy(scale, log().base(base));
-  };
-
-  return scale;
-}
-
-function raise$1(x, exponent) {
-  return x < 0 ? -Math.pow(-x, exponent) : Math.pow(x, exponent);
-}
-
-function pow() {
-  var exponent = 1,
-      scale = continuous(deinterpolate, reinterpolate),
-      domain = scale.domain;
-
-  function deinterpolate(a, b) {
-    return (b = raise$1(b, exponent) - (a = raise$1(a, exponent)))
-        ? function(x) { return (raise$1(x, exponent) - a) / b; }
-        : constant$5(b);
-  }
-
-  function reinterpolate(a, b) {
-    b = raise$1(b, exponent) - (a = raise$1(a, exponent));
-    return function(t) { return raise$1(a + b * t, 1 / exponent); };
-  }
-
-  scale.exponent = function(_) {
-    return arguments.length ? (exponent = +_, domain(domain())) : exponent;
-  };
-
-  scale.copy = function() {
-    return copy(scale, pow().exponent(exponent));
-  };
-
-  return linearish(scale);
-}
-
-function sqrt$1() {
-  return pow().exponent(0.5);
-}
-
-function quantile$$1() {
-  var domain = [],
-      range = [],
-      thresholds = [];
-
-  function rescale() {
-    var i = 0, n = Math.max(1, range.length);
-    thresholds = new Array(n - 1);
-    while (++i < n) { thresholds[i - 1] = threshold(domain, i / n); }
-    return scale;
-  }
-
-  function scale(x) {
-    if (!isNaN(x = +x)) { return range[bisectRight(thresholds, x)]; }
-  }
-
-  scale.invertExtent = function(y) {
-    var i = range.indexOf(y);
-    return i < 0 ? [NaN, NaN] : [
-      i > 0 ? thresholds[i - 1] : domain[0],
-      i < thresholds.length ? thresholds[i] : domain[domain.length - 1]
-    ];
-  };
-
-  scale.domain = function(_) {
-    if (!arguments.length) { return domain.slice(); }
-    domain = [];
-    for (var i = 0, n = _.length, d; i < n; ++i) { if (d = _[i], d != null && !isNaN(d = +d)) { domain.push(d); } }
-    domain.sort(ascending);
-    return rescale();
-  };
-
-  scale.range = function(_) {
-    return arguments.length ? (range = slice$2.call(_), rescale()) : range.slice();
-  };
-
-  scale.quantiles = function() {
-    return thresholds.slice();
-  };
-
-  scale.copy = function() {
-    return quantile$$1()
-        .domain(domain)
-        .range(range);
-  };
-
-  return scale;
-}
-
-function quantize$1() {
-  var x0 = 0,
-      x1 = 1,
-      n = 1,
-      domain = [0.5],
-      range = [0, 1];
-
-  function scale(x) {
-    if (x <= x) { return range[bisectRight(domain, x, 0, n)]; }
-  }
-
-  function rescale() {
-    var i = -1;
-    domain = new Array(n);
-    while (++i < n) { domain[i] = ((i + 1) * x1 - (i - n) * x0) / (n + 1); }
-    return scale;
-  }
-
-  scale.domain = function(_) {
-    return arguments.length ? (x0 = +_[0], x1 = +_[1], rescale()) : [x0, x1];
-  };
-
-  scale.range = function(_) {
-    return arguments.length ? (n = (range = slice$2.call(_)).length - 1, rescale()) : range.slice();
-  };
-
-  scale.invertExtent = function(y) {
-    var i = range.indexOf(y);
-    return i < 0 ? [NaN, NaN]
-        : i < 1 ? [x0, domain[0]]
-        : i >= n ? [domain[n - 1], x1]
-        : [domain[i - 1], domain[i]];
-  };
-
-  scale.copy = function() {
-    return quantize$1()
-        .domain([x0, x1])
-        .range(range);
-  };
-
-  return linearish(scale);
-}
-
-function threshold$1() {
-  var domain = [0.5],
-      range = [0, 1],
-      n = 1;
-
-  function scale(x) {
-    if (x <= x) { return range[bisectRight(domain, x, 0, n)]; }
-  }
-
-  scale.domain = function(_) {
-    return arguments.length ? (domain = slice$2.call(_), n = Math.min(domain.length, range.length - 1), scale) : domain.slice();
-  };
-
-  scale.range = function(_) {
-    return arguments.length ? (range = slice$2.call(_), n = Math.min(domain.length, range.length - 1), scale) : range.slice();
-  };
-
-  scale.invertExtent = function(y) {
-    var i = range.indexOf(y);
-    return [domain[i - 1], domain[i]];
-  };
-
-  scale.copy = function() {
-    return threshold$1()
-        .domain(domain)
-        .range(range);
-  };
-
-  return scale;
-}
-
-var t0$1 = new Date;
-var t1$1 = new Date;
+var t0$1 = new Date,
+    t1$1 = new Date;
 
 function newInterval(floori, offseti, count, field) {
 
@@ -7151,40 +6558,40 @@ millisecond.every = function(k) {
   });
 };
 
-var durationSecond$1 = 1e3;
-var durationMinute$1 = 6e4;
-var durationHour$1 = 36e5;
-var durationDay$1 = 864e5;
-var durationWeek$1 = 6048e5;
+var durationSecond = 1e3;
+var durationMinute = 6e4;
+var durationHour = 36e5;
+var durationDay = 864e5;
+var durationWeek = 6048e5;
 
 var second = newInterval(function(date) {
-  date.setTime(Math.floor(date / durationSecond$1) * durationSecond$1);
+  date.setTime(Math.floor(date / durationSecond) * durationSecond);
 }, function(date, step) {
-  date.setTime(+date + step * durationSecond$1);
+  date.setTime(+date + step * durationSecond);
 }, function(start, end) {
-  return (end - start) / durationSecond$1;
+  return (end - start) / durationSecond;
 }, function(date) {
   return date.getUTCSeconds();
 });
 
 var minute = newInterval(function(date) {
-  date.setTime(Math.floor(date / durationMinute$1) * durationMinute$1);
+  date.setTime(Math.floor(date / durationMinute) * durationMinute);
 }, function(date, step) {
-  date.setTime(+date + step * durationMinute$1);
+  date.setTime(+date + step * durationMinute);
 }, function(start, end) {
-  return (end - start) / durationMinute$1;
+  return (end - start) / durationMinute;
 }, function(date) {
   return date.getMinutes();
 });
 
 var hour = newInterval(function(date) {
-  var offset = date.getTimezoneOffset() * durationMinute$1 % durationHour$1;
-  if (offset < 0) { offset += durationHour$1; }
-  date.setTime(Math.floor((+date - offset) / durationHour$1) * durationHour$1 + offset);
+  var offset = date.getTimezoneOffset() * durationMinute % durationHour;
+  if (offset < 0) { offset += durationHour; }
+  date.setTime(Math.floor((+date - offset) / durationHour) * durationHour + offset);
 }, function(date, step) {
-  date.setTime(+date + step * durationHour$1);
+  date.setTime(+date + step * durationHour);
 }, function(start, end) {
-  return (end - start) / durationHour$1;
+  return (end - start) / durationHour;
 }, function(date) {
   return date.getHours();
 });
@@ -7194,7 +6601,7 @@ var day = newInterval(function(date) {
 }, function(date, step) {
   date.setDate(date.getDate() + step);
 }, function(start, end) {
-  return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$1) / durationDay$1;
+  return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationDay;
 }, function(date) {
   return date.getDate() - 1;
 });
@@ -7206,7 +6613,7 @@ function weekday(i) {
   }, function(date, step) {
     date.setDate(date.getDate() + step * 7);
   }, function(start, end) {
-    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute$1) / durationWeek$1;
+    return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationWeek;
   });
 }
 
@@ -7254,9 +6661,9 @@ year.every = function(k) {
 var utcMinute = newInterval(function(date) {
   date.setUTCSeconds(0, 0);
 }, function(date, step) {
-  date.setTime(+date + step * durationMinute$1);
+  date.setTime(+date + step * durationMinute);
 }, function(start, end) {
-  return (end - start) / durationMinute$1;
+  return (end - start) / durationMinute;
 }, function(date) {
   return date.getUTCMinutes();
 });
@@ -7264,9 +6671,9 @@ var utcMinute = newInterval(function(date) {
 var utcHour = newInterval(function(date) {
   date.setUTCMinutes(0, 0, 0);
 }, function(date, step) {
-  date.setTime(+date + step * durationHour$1);
+  date.setTime(+date + step * durationHour);
 }, function(start, end) {
-  return (end - start) / durationHour$1;
+  return (end - start) / durationHour;
 }, function(date) {
   return date.getUTCHours();
 });
@@ -7276,7 +6683,7 @@ var utcDay = newInterval(function(date) {
 }, function(date, step) {
   date.setUTCDate(date.getUTCDate() + step);
 }, function(start, end) {
-  return (end - start) / durationDay$1;
+  return (end - start) / durationDay;
 }, function(date) {
   return date.getUTCDate() - 1;
 });
@@ -7288,7 +6695,7 @@ function utcWeekday(i) {
   }, function(date, step) {
     date.setUTCDate(date.getUTCDate() + step * 7);
   }, function(start, end) {
-    return (end - start) / durationWeek$1;
+    return (end - start) / durationWeek;
   });
 }
 
@@ -7683,10 +7090,10 @@ function formatLocale$1(locale) {
   };
 }
 
-var pads = {"-": "", "_": " ", "0": "0"};
-var numberRe = /^\s*\d+/;
-var percentRe = /^%/;
-var requoteRe = /[\\^$*+?|[\]().{}]/g;
+var pads = {"-": "", "_": " ", "0": "0"},
+    numberRe = /^\s*\d+/, // note: ignores next directive
+    percentRe = /^%/,
+    requoteRe = /[\\^$*+?|[\]().{}]/g;
 
 function pad(value, fill, width) {
   var sign = value < 0 ? "-" : "",
@@ -8006,168 +7413,27 @@ var parseIso = +new Date("2000-01-01T00:00:00.000Z")
     ? parseIsoNative
     : utcParse(isoSpecifier);
 
-var durationSecond = 1000;
-var durationMinute = durationSecond * 60;
-var durationHour = durationMinute * 60;
-var durationDay = durationHour * 24;
-var durationWeek = durationDay * 7;
-var durationMonth = durationDay * 30;
-var durationYear = durationDay * 365;
-
-function date$1(t) {
-  return new Date(t);
-}
-
-function number$2(t) {
-  return t instanceof Date ? +t : +new Date(+t);
-}
-
-function calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1, millisecond$$1, format) {
-  var scale = continuous(deinterpolateLinear, reinterpolate),
-      invert = scale.invert,
-      domain = scale.domain;
-
-  var formatMillisecond = format(".%L"),
-      formatSecond = format(":%S"),
-      formatMinute = format("%I:%M"),
-      formatHour = format("%I %p"),
-      formatDay = format("%a %d"),
-      formatWeek = format("%b %d"),
-      formatMonth = format("%B"),
-      formatYear = format("%Y");
-
-  var tickIntervals = [
-    [second$$1,  1,      durationSecond],
-    [second$$1,  5,  5 * durationSecond],
-    [second$$1, 15, 15 * durationSecond],
-    [second$$1, 30, 30 * durationSecond],
-    [minute$$1,  1,      durationMinute],
-    [minute$$1,  5,  5 * durationMinute],
-    [minute$$1, 15, 15 * durationMinute],
-    [minute$$1, 30, 30 * durationMinute],
-    [  hour$$1,  1,      durationHour  ],
-    [  hour$$1,  3,  3 * durationHour  ],
-    [  hour$$1,  6,  6 * durationHour  ],
-    [  hour$$1, 12, 12 * durationHour  ],
-    [   day$$1,  1,      durationDay   ],
-    [   day$$1,  2,  2 * durationDay   ],
-    [  week,  1,      durationWeek  ],
-    [ month$$1,  1,      durationMonth ],
-    [ month$$1,  3,  3 * durationMonth ],
-    [  year$$1,  1,      durationYear  ]
-  ];
-
-  function tickFormat(date) {
-    return (second$$1(date) < date ? formatMillisecond
-        : minute$$1(date) < date ? formatSecond
-        : hour$$1(date) < date ? formatMinute
-        : day$$1(date) < date ? formatHour
-        : month$$1(date) < date ? (week(date) < date ? formatDay : formatWeek)
-        : year$$1(date) < date ? formatMonth
-        : formatYear)(date);
-  }
-
-  function tickInterval(interval, start, stop, step) {
-    if (interval == null) { interval = 10; }
-
-    // If a desired tick count is specified, pick a reasonable tick interval
-    // based on the extent of the domain and a rough estimate of tick size.
-    // Otherwise, assume interval is already a time interval and use it.
-    if (typeof interval === "number") {
-      var target = Math.abs(stop - start) / interval,
-          i = bisector(function(i) { return i[2]; }).right(tickIntervals, target);
-      if (i === tickIntervals.length) {
-        step = tickStep(start / durationYear, stop / durationYear, interval);
-        interval = year$$1;
-      } else if (i) {
-        i = tickIntervals[target / tickIntervals[i - 1][2] < tickIntervals[i][2] / target ? i - 1 : i];
-        step = i[1];
-        interval = i[0];
-      } else {
-        step = Math.max(tickStep(start, stop, interval), 1);
-        interval = millisecond$$1;
-      }
-    }
-
-    return step == null ? interval : interval.every(step);
-  }
-
-  scale.invert = function(y) {
-    return new Date(invert(y));
-  };
-
-  scale.domain = function(_) {
-    return arguments.length ? domain(map$3.call(_, number$2)) : domain().map(date$1);
-  };
-
-  scale.ticks = function(interval, step) {
-    var d = domain(),
-        t0 = d[0],
-        t1 = d[d.length - 1],
-        r = t1 < t0,
-        t;
-    if (r) { t = t0, t0 = t1, t1 = t; }
-    t = tickInterval(interval, t0, t1, step);
-    t = t ? t.range(t0, t1 + 1) : []; // inclusive stop
-    return r ? t.reverse() : t;
-  };
-
-  scale.tickFormat = function(count, specifier) {
-    return specifier == null ? tickFormat : format(specifier);
-  };
-
-  scale.nice = function(interval, step) {
-    var d = domain();
-    return (interval = tickInterval(interval, d[0], d[d.length - 1], step))
-        ? domain(nice(d, interval))
-        : scale;
-  };
-
-  scale.copy = function() {
-    return copy(scale, calendar(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1, millisecond$$1, format));
-  };
-
-  return scale;
-}
-
-function time() {
-  return calendar(year, month, sunday, day, hour, minute, second, millisecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]);
-}
-
-function utcTime() {
-  return calendar(utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, second, millisecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]);
-}
-
 function colors(s) {
   return s.match(/.{6}/g).map(function(x) {
     return "#" + x;
   });
 }
 
-var category10 = colors("1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf");
+colors("1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf");
 
-var category20b = colors("393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6");
+colors("393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6");
 
-var category20c = colors("3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9");
+colors("3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9");
 
-var category20 = colors("1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5");
+colors("1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5");
 
-var cubehelix$3 = cubehelixLong(cubehelix(300, 0.5, 0.0), cubehelix(-240, 0.5, 1.0));
+cubehelixLong(cubehelix(300, 0.5, 0.0), cubehelix(-240, 0.5, 1.0));
 
 var warm = cubehelixLong(cubehelix(-100, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
 
 var cool = cubehelixLong(cubehelix(260, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
 
 var rainbow = cubehelix();
-
-function rainbow$1(t) {
-  if (t < 0 || t > 1) { t -= Math.floor(t); }
-  var ts = Math.abs(t - 0.5);
-  rainbow.h = 360 * t - 100;
-  rainbow.s = 1.5 - 1.5 * ts;
-  rainbow.l = 0.8 - 0.9 * ts;
-  return rainbow + "";
-}
 
 function ramp(range) {
   var n = range.length;
@@ -8176,74 +7442,13 @@ function ramp(range) {
   };
 }
 
-var viridis = ramp(colors("44015444025645045745055946075a46085c460a5d460b5e470d60470e6147106347116447136548146748166848176948186a481a6c481b6d481c6e481d6f481f70482071482173482374482475482576482677482878482979472a7a472c7a472d7b472e7c472f7d46307e46327e46337f463480453581453781453882443983443a83443b84433d84433e85423f854240864241864142874144874045884046883f47883f48893e49893e4a893e4c8a3d4d8a3d4e8a3c4f8a3c508b3b518b3b528b3a538b3a548c39558c39568c38588c38598c375a8c375b8d365c8d365d8d355e8d355f8d34608d34618d33628d33638d32648e32658e31668e31678e31688e30698e306a8e2f6b8e2f6c8e2e6d8e2e6e8e2e6f8e2d708e2d718e2c718e2c728e2c738e2b748e2b758e2a768e2a778e2a788e29798e297a8e297b8e287c8e287d8e277e8e277f8e27808e26818e26828e26828e25838e25848e25858e24868e24878e23888e23898e238a8d228b8d228c8d228d8d218e8d218f8d21908d21918c20928c20928c20938c1f948c1f958b1f968b1f978b1f988b1f998a1f9a8a1e9b8a1e9c891e9d891f9e891f9f881fa0881fa1881fa1871fa28720a38620a48621a58521a68522a78522a88423a98324aa8325ab8225ac8226ad8127ad8128ae8029af7f2ab07f2cb17e2db27d2eb37c2fb47c31b57b32b67a34b67935b77937b87838b9773aba763bbb753dbc743fbc7340bd7242be7144bf7046c06f48c16e4ac16d4cc26c4ec36b50c46a52c56954c56856c66758c7655ac8645cc8635ec96260ca6063cb5f65cb5e67cc5c69cd5b6ccd5a6ece5870cf5773d05675d05477d1537ad1517cd2507fd34e81d34d84d44b86d54989d5488bd6468ed64590d74393d74195d84098d83e9bd93c9dd93ba0da39a2da37a5db36a8db34aadc32addc30b0dd2fb2dd2db5de2bb8de29bade28bddf26c0df25c2df23c5e021c8e020cae11fcde11dd0e11cd2e21bd5e21ad8e219dae319dde318dfe318e2e418e5e419e7e419eae51aece51befe51cf1e51df4e61ef6e620f8e621fbe723fde725"));
+ramp(colors("44015444025645045745055946075a46085c460a5d460b5e470d60470e6147106347116447136548146748166848176948186a481a6c481b6d481c6e481d6f481f70482071482173482374482475482576482677482878482979472a7a472c7a472d7b472e7c472f7d46307e46327e46337f463480453581453781453882443983443a83443b84433d84433e85423f854240864241864142874144874045884046883f47883f48893e49893e4a893e4c8a3d4d8a3d4e8a3c4f8a3c508b3b518b3b528b3a538b3a548c39558c39568c38588c38598c375a8c375b8d365c8d365d8d355e8d355f8d34608d34618d33628d33638d32648e32658e31668e31678e31688e30698e306a8e2f6b8e2f6c8e2e6d8e2e6e8e2e6f8e2d708e2d718e2c718e2c728e2c738e2b748e2b758e2a768e2a778e2a788e29798e297a8e297b8e287c8e287d8e277e8e277f8e27808e26818e26828e26828e25838e25848e25858e24868e24878e23888e23898e238a8d228b8d228c8d228d8d218e8d218f8d21908d21918c20928c20928c20938c1f948c1f958b1f968b1f978b1f988b1f998a1f9a8a1e9b8a1e9c891e9d891f9e891f9f881fa0881fa1881fa1871fa28720a38620a48621a58521a68522a78522a88423a98324aa8325ab8225ac8226ad8127ad8128ae8029af7f2ab07f2cb17e2db27d2eb37c2fb47c31b57b32b67a34b67935b77937b87838b9773aba763bbb753dbc743fbc7340bd7242be7144bf7046c06f48c16e4ac16d4cc26c4ec36b50c46a52c56954c56856c66758c7655ac8645cc8635ec96260ca6063cb5f65cb5e67cc5c69cd5b6ccd5a6ece5870cf5773d05675d05477d1537ad1517cd2507fd34e81d34d84d44b86d54989d5488bd6468ed64590d74393d74195d84098d83e9bd93c9dd93ba0da39a2da37a5db36a8db34aadc32addc30b0dd2fb2dd2db5de2bb8de29bade28bddf26c0df25c2df23c5e021c8e020cae11fcde11dd0e11cd2e21bd5e21ad8e219dae319dde318dfe318e2e418e5e419e7e419eae51aece51befe51cf1e51df4e61ef6e620f8e621fbe723fde725"));
 
 var magma = ramp(colors("00000401000501010601010802010902020b02020d03030f03031204041405041606051806051a07061c08071e0907200a08220b09240c09260d0a290e0b2b100b2d110c2f120d31130d34140e36150e38160f3b180f3d19103f1a10421c10441d11471e114920114b21114e22115024125325125527125829115a2a115c2c115f2d11612f116331116533106734106936106b38106c390f6e3b0f703d0f713f0f72400f74420f75440f764510774710784910784a10794c117a4e117b4f127b51127c52137c54137d56147d57157e59157e5a167e5c167f5d177f5f187f601880621980641a80651a80671b80681c816a1c816b1d816d1d816e1e81701f81721f817320817521817621817822817922827b23827c23827e24828025828125818326818426818627818827818928818b29818c29818e2a81902a81912b81932b80942c80962c80982d80992d809b2e7f9c2e7f9e2f7fa02f7fa1307ea3307ea5317ea6317da8327daa337dab337cad347cae347bb0357bb2357bb3367ab5367ab73779b83779ba3878bc3978bd3977bf3a77c03a76c23b75c43c75c53c74c73d73c83e73ca3e72cc3f71cd4071cf4070d0416fd2426fd3436ed5446dd6456cd8456cd9466bdb476adc4869de4968df4a68e04c67e24d66e34e65e44f64e55064e75263e85362e95462ea5661eb5760ec5860ed5a5fee5b5eef5d5ef05f5ef1605df2625df2645cf3655cf4675cf4695cf56b5cf66c5cf66e5cf7705cf7725cf8745cf8765cf9785df9795df97b5dfa7d5efa7f5efa815ffb835ffb8560fb8761fc8961fc8a62fc8c63fc8e64fc9065fd9266fd9467fd9668fd9869fd9a6afd9b6bfe9d6cfe9f6dfea16efea36ffea571fea772fea973feaa74feac76feae77feb078feb27afeb47bfeb67cfeb77efeb97ffebb81febd82febf84fec185fec287fec488fec68afec88cfeca8dfecc8ffecd90fecf92fed194fed395fed597fed799fed89afdda9cfddc9efddea0fde0a1fde2a3fde3a5fde5a7fde7a9fde9aafdebacfcecaefceeb0fcf0b2fcf2b4fcf4b6fcf6b8fcf7b9fcf9bbfcfbbdfcfdbf"));
 
 var inferno = ramp(colors("00000401000501010601010802010a02020c02020e03021004031204031405041706041907051b08051d09061f0a07220b07240c08260d08290e092b10092d110a30120a32140b34150b37160b39180c3c190c3e1b0c411c0c431e0c451f0c48210c4a230c4c240c4f260c51280b53290b552b0b572d0b592f0a5b310a5c320a5e340a5f3609613809623909633b09643d09653e0966400a67420a68440a68450a69470b6a490b6a4a0c6b4c0c6b4d0d6c4f0d6c510e6c520e6d540f6d550f6d57106e59106e5a116e5c126e5d126e5f136e61136e62146e64156e65156e67166e69166e6a176e6c186e6d186e6f196e71196e721a6e741a6e751b6e771c6d781c6d7a1d6d7c1d6d7d1e6d7f1e6c801f6c82206c84206b85216b87216b88226a8a226a8c23698d23698f24699025689225689326679526679727669827669a28659b29649d29649f2a63a02a63a22b62a32c61a52c60a62d60a82e5fa92e5eab2f5ead305dae305cb0315bb1325ab3325ab43359b63458b73557b93556ba3655bc3754bd3853bf3952c03a51c13a50c33b4fc43c4ec63d4dc73e4cc83f4bca404acb4149cc4248ce4347cf4446d04545d24644d34743d44842d54a41d74b3fd84c3ed94d3dda4e3cdb503bdd513ade5238df5337e05536e15635e25734e35933e45a31e55c30e65d2fe75e2ee8602de9612bea632aeb6429eb6628ec6726ed6925ee6a24ef6c23ef6e21f06f20f1711ff1731df2741cf3761bf37819f47918f57b17f57d15f67e14f68013f78212f78410f8850ff8870ef8890cf98b0bf98c0af98e09fa9008fa9207fa9407fb9606fb9706fb9906fb9b06fb9d07fc9f07fca108fca309fca50afca60cfca80dfcaa0ffcac11fcae12fcb014fcb216fcb418fbb61afbb81dfbba1ffbbc21fbbe23fac026fac228fac42afac62df9c72ff9c932f9cb35f8cd37f8cf3af7d13df7d340f6d543f6d746f5d949f5db4cf4dd4ff4df53f4e156f3e35af3e55df2e661f2e865f2ea69f1ec6df1ed71f1ef75f1f179f2f27df2f482f3f586f3f68af4f88ef5f992f6fa96f8fb9af9fc9dfafda1fcffa4"));
 
 var plasma = ramp(colors("0d088710078813078916078a19068c1b068d1d068e20068f2206902406912605912805922a05932c05942e05952f059631059733059735049837049938049a3a049a3c049b3e049c3f049c41049d43039e44039e46039f48039f4903a04b03a14c02a14e02a25002a25102a35302a35502a45601a45801a45901a55b01a55c01a65e01a66001a66100a76300a76400a76600a76700a86900a86a00a86c00a86e00a86f00a87100a87201a87401a87501a87701a87801a87a02a87b02a87d03a87e03a88004a88104a78305a78405a78606a68707a68808a68a09a58b0aa58d0ba58e0ca48f0da4910ea3920fa39410a29511a19613a19814a099159f9a169f9c179e9d189d9e199da01a9ca11b9ba21d9aa31e9aa51f99a62098a72197a82296aa2395ab2494ac2694ad2793ae2892b02991b12a90b22b8fb32c8eb42e8db52f8cb6308bb7318ab83289ba3388bb3488bc3587bd3786be3885bf3984c03a83c13b82c23c81c33d80c43e7fc5407ec6417dc7427cc8437bc9447aca457acb4679cc4778cc4977cd4a76ce4b75cf4c74d04d73d14e72d24f71d35171d45270d5536fd5546ed6556dd7566cd8576bd9586ada5a6ada5b69db5c68dc5d67dd5e66de5f65de6164df6263e06363e16462e26561e26660e3685fe4695ee56a5de56b5de66c5ce76e5be76f5ae87059e97158e97257ea7457eb7556eb7655ec7754ed7953ed7a52ee7b51ef7c51ef7e50f07f4ff0804ef1814df1834cf2844bf3854bf3874af48849f48948f58b47f58c46f68d45f68f44f79044f79143f79342f89441f89540f9973ff9983ef99a3efa9b3dfa9c3cfa9e3bfb9f3afba139fba238fca338fca537fca636fca835fca934fdab33fdac33fdae32fdaf31fdb130fdb22ffdb42ffdb52efeb72dfeb82cfeba2cfebb2bfebd2afebe2afec029fdc229fdc328fdc527fdc627fdc827fdca26fdcb26fccd25fcce25fcd025fcd225fbd324fbd524fbd724fad824fada24f9dc24f9dd25f8df25f8e125f7e225f7e425f6e626f6e826f5e926f5eb27f4ed27f3ee27f3f027f2f227f1f426f1f525f0f724f0f921"));
-
-function sequential(interpolator) {
-  var x0 = 0,
-      x1 = 1,
-      clamp = false;
-
-  function scale(x) {
-    var t = (x - x0) / (x1 - x0);
-    return interpolator(clamp ? Math.max(0, Math.min(1, t)) : t);
-  }
-
-  scale.domain = function(_) {
-    return arguments.length ? (x0 = +_[0], x1 = +_[1], scale) : [x0, x1];
-  };
-
-  scale.clamp = function(_) {
-    return arguments.length ? (clamp = !!_, scale) : clamp;
-  };
-
-  scale.interpolator = function(_) {
-    return arguments.length ? (interpolator = _, scale) : interpolator;
-  };
-
-  scale.copy = function() {
-    return sequential(interpolator).domain([x0, x1]).clamp(clamp);
-  };
-
-  return linearish(scale);
-}
-
-
-
-var scales = Object.freeze({
-	scaleBand: band,
-	scalePoint: point$5,
-	scaleIdentity: identity$3,
-	scaleLinear: linear$2,
-	scaleLog: log,
-	scaleOrdinal: ordinal,
-	scaleImplicit: implicit,
-	scalePow: pow,
-	scaleSqrt: sqrt$1,
-	scaleQuantile: quantile$$1,
-	scaleQuantize: quantize$1,
-	scaleThreshold: threshold$1,
-	scaleTime: time,
-	scaleUtc: utcTime,
-	schemeCategory10: category10,
-	schemeCategory20b: category20b,
-	schemeCategory20c: category20c,
-	schemeCategory20: category20,
-	interpolateCubehelixDefault: cubehelix$3,
-	interpolateRainbow: rainbow$1,
-	interpolateWarm: warm,
-	interpolateCool: cool,
-	interpolateViridis: viridis,
-	interpolateMagma: magma,
-	interpolateInferno: inferno,
-	interpolatePlasma: plasma,
-	scaleSequential: sequential
-});
 
 /**
     @namespace {Object} colorDefaults
@@ -8393,14 +7598,11 @@ function trimRight(str) {
   return str.replace(/\s+$/, "");
 }
 
-var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890";
-var checked = {};
-var height = 32;
+var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890",
+      checked = {},
+      height = 32;
 
-var dejavu;
-var macos;
-var monospace;
-var proportional;
+var dejavu, macos, monospace, proportional;
 
 /**
     @function fontExists
@@ -8499,6 +7701,7 @@ function strip(value) {
 // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
 // and http://www.fileformat.info/info/unicode/category/Mn/list.htm
 // JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
+// The following unicode characters combine to form new characters and should never be split from surrounding characters.
 var a$1 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
 var b = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
 var combiningMarks = a$1.concat(b);
@@ -8724,14 +7927,14 @@ function textWrap() {
     @extends external:BaseClass
     @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
 */
-var TextBox = (function (BaseClass) {
+var TextBox = (function (BaseClass$$1) {
   function TextBox() {
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._delay = 0;
     this._duration = 0;
-    this._ellipsis = function (_) { return ((_.replace(/\.|,$/g, "")) + "..."); };
+    this._ellipsis = function (text, line) { return line ? ((text.replace(/\.|,$/g, "")) + "...") : ""; };
     this._fontColor = constant$2("black");
     this._fontFamily = constant$2(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
     this._fontMax = constant$2(50);
@@ -8743,6 +7946,7 @@ var TextBox = (function (BaseClass) {
     this._id = function (d, i) { return d.id || ("" + i); };
     this._on = {};
     this._overflow = constant$2(false);
+    this._padding = constant$2(0);
     this._pointerEvents = constant$2("auto");
     this._rotate = constant$2(0);
     this._split = textSplit;
@@ -8755,8 +7959,8 @@ var TextBox = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { TextBox.__proto__ = BaseClass; }
-  TextBox.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { TextBox.__proto__ = BaseClass$$1; }
+  TextBox.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   TextBox.prototype.constructor = TextBox;
 
   /**
@@ -8793,8 +7997,10 @@ var TextBox = (function (BaseClass) {
         "line-height": lH
       };
 
-      var h = this$1._height(d, i),
-            w = this$1._width(d, i);
+      var padding = parseSides(this$1._padding(d, i));
+
+      var h = this$1._height(d, i) - (padding.top + padding.bottom),
+            w = this$1._width(d, i) - (padding.left + padding.right);
 
       var wrapper = textWrap()
         .fontFamily(style["font-family"])
@@ -8842,8 +8048,8 @@ var TextBox = (function (BaseClass) {
             if (fS < fMin) { lineData = []; }
             else { checkSize(); }
           }
-          else if (line < 1) { lineData = [that._ellipsis("")]; }
-          else { lineData[line - 1] = that._ellipsis(lineData[line - 1]); }
+          else if (line < 1) { lineData = [that._ellipsis("", line)]; }
+          else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
 
         }
 
@@ -8893,7 +8099,9 @@ var TextBox = (function (BaseClass) {
           id: this$1._id(d, i),
           tA: this$1._textAnchor(d, i),
           widths: wrapResults.widths,
-          fS: fS, lH: lH, w: w, h: h, x: this$1._x(d, i), y: this$1._y(d, i) + yP
+          fS: fS, lH: lH, w: w, h: h,
+          x: this$1._x(d, i) + padding.left,
+          y: this$1._y(d, i) + yP + padding.top
         });
 
       }
@@ -9032,11 +8240,11 @@ var TextBox = (function (BaseClass) {
 
   /**
       @memberof TextBox
-      @desc Sets the ellipsis method to the specified function or string, which simply adds an ellipsis to the string by default.
+      @desc Sets the function that handles what to do when a line is truncated. It should return the new value for the line, and is passed 2 arguments: the String of text for the line in question, and the number of the line. By default, an ellipsis is added to the end of any line except if it is the first word that cannot fit (in that case, an empty string is returned).
       @param {Function|String} [*value*]
       @example <caption>default accessor</caption>
-function(d) {
-  return d + "...";
+function(text, line) {
+  return line ? text.replace(/\.|,$/g, "") + "..." : "";
 }
   */
   TextBox.prototype.ellipsis = function ellipsis (_) {
@@ -9148,6 +8356,15 @@ function(d, i) {
   */
   TextBox.prototype.overflow = function overflow (_) {
     return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$2(_), this) : this._overflow;
+  };
+
+  /**
+      @memberof TextBox
+      @desc Sets the padding to the specified accessor function, CSS shorthand string, or static number, which is 0 by default.
+      @param {Function|Number|String} [*value*]
+  */
+  TextBox.prototype.padding = function padding (_) {
+    return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$2(_), this) : this._padding;
   };
 
   /**
@@ -9294,23 +8511,24 @@ function pointDistance (p1, p2) { return Math.sqrt(pointDistanceSquared(p1, p2))
     @extends external:BaseClass
     @desc An abstracted class for generating shapes.
 */
-var Shape = (function (BaseClass) {
+var Shape = (function (BaseClass$$1) {
   function Shape(tagName) {
     var this$1 = this;
     if ( tagName === void 0 ) { tagName = "g"; }
 
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
-    this._activeOpacity = 0.75;
+    this._activeOpacity = 0.25;
     this._activeStyle = {
-      "stroke": function (d, i) { return color(this$1._stroke(d, i)).darker(2); },
+      "stroke": "#444444",
       "stroke-width": function (d, i) {
-        var s = this$1._strokeWidth(d, i);
-        return s ? s * 2 : 1;
+        var s = this$1._strokeWidth(d, i) || 1;
+        return s * 3;
       }
     };
     this._backgroundImage = constant$2(false);
+    this._backgroundImageClass = new Image$1();
     this._data = [];
     this._duration = 600;
     this._fill = constant$2("black");
@@ -9319,13 +8537,15 @@ var Shape = (function (BaseClass) {
     this._hoverOpacity = 0.5;
     this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
     this._label = constant$2(false);
+    this._labelClass = new TextBox();
     this._labelConfig = {
       fontColor: function (d, i) { return colorContrast(this$1._fill(d, i)); },
-      fontSize: 12
+      fontSize: 12,
+      padding: 5
     };
-    this._labelPadding = constant$2(5);
     this._name = "Shape";
     this._opacity = constant$2(1);
+    this._pointerEvents = constant$2("visiblePainted");
     this._rx = constant$2(0);
     this._ry = constant$2(0);
     this._scale = constant$2(1);
@@ -9345,8 +8565,8 @@ var Shape = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { Shape.__proto__ = BaseClass; }
-  Shape.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { Shape.__proto__ = BaseClass$$1; }
+  Shape.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Shape.prototype.constructor = Shape;
 
   /**
@@ -9394,13 +8614,13 @@ var Shape = (function (BaseClass) {
       @param {HTMLElement} *elem*
       @private
   */
-  Shape.prototype._applyActive = function _applyActive (elem) {
+  Shape.prototype._applyActive = function _applyActive (elem$$1) {
     var this$1 = this;
 
 
     var that = this;
 
-    if (elem.size() && elem.node().tagName === "g") { elem = elem.selectAll("*"); }
+    if (elem$$1.size() && elem$$1.node().tagName === "g") { elem$$1 = elem$$1.selectAll("*"); }
 
     /**
         @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
@@ -9422,7 +8642,7 @@ var Shape = (function (BaseClass) {
       }
     }
 
-    elem.transition().duration(0).call(attrize, activeStyle);
+    elem$$1.transition().duration(0).call(attrize, activeStyle);
 
   };
 
@@ -9432,11 +8652,11 @@ var Shape = (function (BaseClass) {
       @param {HTMLElement} *elem*
       @private
   */
-  Shape.prototype._applyStyle = function _applyStyle (elem) {
+  Shape.prototype._applyStyle = function _applyStyle (elem$$1) {
 
     var that = this;
 
-    if (elem.size() && elem.node().tagName === "g") { elem = elem.selectAll("*"); }
+    if (elem$$1.size() && elem$$1.node().tagName === "g") { elem$$1 = elem$$1.selectAll("*"); }
 
     /**
         @desc Determines whether a shape is a nested collection of data points, and uses the appropriate data and index for the given function context.
@@ -9451,7 +8671,7 @@ var Shape = (function (BaseClass) {
           : this(d, i);
     }
 
-    elem
+    elem$$1
       .attr("fill", styleLogic.bind(this._fill))
       .attr("fill-opacity", styleLogic.bind(this._fillOpacity))
       .attr("rx", styleLogic.bind(this._rx))
@@ -9470,11 +8690,11 @@ var Shape = (function (BaseClass) {
       @param {HTMLElement} *elem*
       @private
   */
-  Shape.prototype._applyTransform = function _applyTransform (elem) {
+  Shape.prototype._applyTransform = function _applyTransform (elem$$1) {
     var this$1 = this;
 
 
-    elem
+    elem$$1
       .attr("transform", function (d, i) { return ("\n        translate(" + (d.__d3plusShape__
     ? d.translate ? d.translate
     : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
@@ -9490,6 +8710,89 @@ var Shape = (function (BaseClass) {
   */
   Shape.prototype._nestWrapper = function _nestWrapper (method) {
     return function (d, i) { return method(d.__d3plusShape__ ? d.data : d, d.__d3plusShape__ ? d.i : i); };
+  };
+
+  /**
+      @memberof Shape
+      @desc Modifies existing shapes to show active status.
+      @private
+  */
+  Shape.prototype._renderActive = function _renderActive () {
+
+    var that = this;
+
+    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !that._active || typeof that._active !== "function" || !that._active(d, i) ? parent : that._activeGroup.node();
+        if (group !== this.parentNode) {
+          group.appendChild(this);
+          if (this.className.baseVal.includes("d3plus-Shape")) {
+            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
+            else { select(this).call(that._applyActive.bind(that)); }
+          }
+        }
+
+      });
+
+    this._renderImage();
+    this._renderLabels();
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
+  };
+
+  /**
+      @memberof Shape
+      @desc Modifies existing shapes to show hover status.
+      @private
+  */
+  Shape.prototype._renderHover = function _renderHover () {
+
+    var that = this;
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
+      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
+      .each(function(d, i) {
+
+        if (!d) { d = {}; }
+        if (!d.parentNode) { d.parentNode = this.parentNode; }
+        var parent = d.parentNode;
+
+        if (select(this).classed("d3plus-textBox")) { d = d.data; }
+        if (d.__d3plusShape__ || d.__d3plus__) {
+          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
+            i = d.i;
+            d = d.data;
+          }
+        }
+        else { i = that._data.indexOf(d); }
+
+        var group = !that._hover || typeof that._hover !== "function" || !that._hover(d, i) ? parent : that._hoverGroup.node();
+        if (group !== this.parentNode) { group.appendChild(this); }
+
+      });
+
+    this._renderImage();
+    this._renderLabels();
+
+    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
+      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
+
   };
 
   /**
@@ -9553,7 +8856,7 @@ var Shape = (function (BaseClass) {
 
       });
 
-    return new Image$1()
+    this._backgroundImageClass
       .data(imageData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -9584,7 +8887,7 @@ var Shape = (function (BaseClass) {
 
         var labels = this$1._label(d, i);
 
-        if (this$1._labelBounds && labels !== false && labels !== undefined) {
+        if (this$1._labelBounds && labels !== false && labels !== undefined && labels !== null) {
 
           var bounds = this$1._labelBounds(d, i, this$1._aes(datum, i));
 
@@ -9602,24 +8905,21 @@ var Shape = (function (BaseClass) {
               i = d.i;
             }
 
-            var padding = this$1._labelPadding(d, i);
-
             for (var l = 0; l < labels.length; l++) {
 
-              var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds),
-                    p = padding.constructor === Array ? padding[l] : padding;
+              var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds);
 
               labelData.push({
                 __d3plus__: true,
                 data: d,
-                height: b.height - p * 2,
+                height: b.height,
                 l: l,
                 id: ((this$1._id(d, i)) + "_" + l),
-                r: bounds.angle !== undefined ? bounds.angle : 0,
+                r: d.labelConfig && d.labelConfig.rotate ? d.labelConfig.rotate : bounds.angle !== undefined ? bounds.angle : 0,
                 text: labels[l],
-                width: b.width - p * 2,
-                x: x + b.x + p,
-                y: y + b.y + p
+                width: b.width,
+                x: x + b.x,
+                y: y + b.y
               });
 
             }
@@ -9630,7 +8930,7 @@ var Shape = (function (BaseClass) {
 
       });
 
-    return new TextBox()
+    this._labelClass
       .data(labelData)
       .duration(this._duration)
       .pointerEvents("none")
@@ -9697,7 +8997,7 @@ var Shape = (function (BaseClass) {
       .transition(this._transition)
       .attr("opacity", this._nestWrapper(this._opacity))
       .transition()
-      .attr("pointer-events", "all");
+      .attr("pointer-events", this._pointerEvents);
 
     // Makes the exit state of the group selection accessible.
     var exit = this._exit = update.exit();
@@ -9709,31 +9009,46 @@ var Shape = (function (BaseClass) {
     this._hoverGroup = elem(("g.d3plus-" + (this._name) + "-hover"), {parent: this._group});
     this._activeGroup = elem(("g.d3plus-" + (this._name) + "-active"), {parent: this._group});
 
-    var that = this;
-
     var hitAreas = this._group.selectAll(".d3plus-HitArea")
       .data(this._hitArea ? data : [], key);
 
-    hitAreas.order().transition(this._transition)
+    hitAreas.order()
       .call(this._applyTransform.bind(this));
 
-    var hitEnter = hitAreas.enter().append("rect")
+    var isLine = this._name === "Line";
+
+    isLine && this._path
+      .curve(paths[("curve" + (this._curve.charAt(0).toUpperCase()) + (this._curve.slice(1)))])
+      .defined(this._defined)
+      .x(this._x)
+      .y(this._y);
+
+    var hitEnter = hitAreas.enter().append(isLine ? "path" : "rect")
       .attr("class", function (d, i) { return ("d3plus-HitArea d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
-      .attr("fill", "transparent")
+      .attr("fill", "black")
+      .attr("stroke", "black")
+      .attr("pointer-events", "painted")
+      .attr("opacity", 0)
       .call(this._applyTransform.bind(this));
+
+    var that = this;
 
     var hitUpdates = hitAreas.merge(hitEnter)
       .each(function(d) {
-        var h = that._hitArea(d, that._data.indexOf(d), that._aes(d, that._data.indexOf(d)));
-        return h ? select(this).call(attrize, h) : select(this).remove();
+        var i = that._data.indexOf(d);
+        var h = that._hitArea(d, i, that._aes(d, i));
+        return h && !(that._name === "Line" && parseFloat(that._strokeWidth(d, i)) > 10) ? select(this).call(attrize, h) : select(this).remove();
       });
 
     hitAreas.exit().remove();
 
     this._applyEvents(this._hitArea ? hitUpdates : enterUpdate);
-    this.active(this._active);
 
-    if (callback) { setTimeout(callback, this._duration + 100); }
+    setTimeout(function () {
+      if (this$1._active) { this$1._renderActive(); }
+      else if (this$1._hover) { this$1._renderHover(); }
+      if (callback) { callback(); }
+    }, this._duration + 100);
 
     return this;
 
@@ -9745,55 +9060,37 @@ var Shape = (function (BaseClass) {
       @param {Function} [*value*]
       @chainable
   */
-  Shape.prototype.active = function active (_) {
+  Shape.prototype.active = function active$$1 (_) {
 
-    if (!arguments.length || _ === void 0) { return this._active; }
+    if (!arguments.length || _ === undefined) { return this._active; }
     this._active = _;
-
-    var that = this;
-
-    this._group.selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
-      .each(function(d, i) {
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
-
-        if (select(this).classed("d3plus-textBox")) { d = d.data; }
-        if (d.__d3plusShape__ || d.__d3plus__) {
-          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
-            i = d.i;
-            d = d.data;
-          }
-        }
-        else { i = that._data.indexOf(d); }
-
-        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._activeGroup.node();
-        if (group !== this.parentNode) {
-          group.appendChild(this);
-          if (this.className.baseVal.includes("d3plus-Shape")) {
-            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
-            else { select(this).call(that._applyActive.bind(that)); }
-          }
-        }
-
-      });
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
-      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
-
+    if (this._group) {
+      this._renderImage();
+      this._renderLabels();
+      this._renderActive();
+    }
     return this;
 
   };
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the active opacity to the specified function and returns the current class instance.
-      @param {Number} [*value* = 0.75]
+      @desc When shapes are active, this is the opacity of any shape that is not active.
+      @param {Number} *value* = 0.25
       @chainable
   */
   Shape.prototype.activeOpacity = function activeOpacity (_) {
     return arguments.length ? (this._activeOpacity = _, this) : this._activeOpacity;
+  };
+
+  /**
+      @memberof Shape
+      @desc The style to apply to active shapes.
+      @param {Object} *value*
+      @chainable
+  */
+  Shape.prototype.activeStyle = function activeStyle (_) {
+    return arguments.length ? (this._activeStyle = assign({}, this._activeStyle, _), this) : this._activeStyle;
   };
 
   /**
@@ -9866,35 +9163,13 @@ var Shape = (function (BaseClass) {
 
     if (!arguments.length || _ === void 0) { return this._hover; }
     this._hover = _;
-
-    var that = this;
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text, g.d3plus-" + (this._name) + "-hover"))
-      .selectAll(".d3plus-Shape, .d3plus-Image, .d3plus-textBox")
-      .each(function(d, i) {
-
-        if (!d) { d = {}; }
-        if (!d.parentNode) { d.parentNode = this.parentNode; }
-        var parent = d.parentNode;
-
-        if (select(this).classed("d3plus-textBox")) { d = d.data; }
-        if (d.__d3plusShape__ || d.__d3plus__) {
-          while (d && (d.__d3plusShape__ || d.__d3plus__)) {
-            i = d.i;
-            d = d.data;
-          }
-        }
-        else { i = that._data.indexOf(d); }
-
-        var group = !_ || typeof _ !== "function" || !_(d, i) ? parent : that._hoverGroup.node();
-        if (group !== this.parentNode) { group.appendChild(this); }
-
-      });
-
-    this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
-      .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
-
+    if (this._group) {
+      this._renderImage();
+      this._renderLabels();
+      this._renderHover();
+    }
     return this;
+
   };
 
   /**
@@ -9977,22 +9252,22 @@ function(d, i, shape) {
 
   /**
       @memberof Shape
-      @desc If *value* is specified, sets the label padding to the specified number and returns the current class instance.
-      @param {Function|Number|Array} [*value* = 10]
-      @chainable
-  */
-  Shape.prototype.labelPadding = function labelPadding (_) {
-    return arguments.length ? (this._labelPadding = typeof _ === "function" ? _ : constant$2(_), this) : this._labelPadding;
-  };
-
-  /**
-      @memberof Shape
       @desc If *value* is specified, sets the opacity accessor to the specified function or number and returns the current class instance.
       @param {Number} [*value* = 1]
       @chainable
   */
   Shape.prototype.opacity = function opacity (_) {
     return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$2(_), this) : this._opacity;
+  };
+
+  /**
+       @memberof Shape
+       @desc If *value* is specified, sets the pointerEvents accessor to the specified function or string and returns the current class instance.
+       @param {String} [*value*]
+       @chainable
+   */
+  Shape.prototype.pointerEvents = function pointerEvents (_) {
+    return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$2(_), this) : this._pointerEvents;
   };
 
   /**
@@ -10709,9 +9984,6 @@ function polygonCentroid(polygon) {
 }
 
 // Returns the 2D cross product of AB and AC vectors, i.e., the z-component of
-// the 3D cross product in a quadrant I Cartesian coordinate system (+x is
-// right, +y is up). Returns a positive value if ABC is counter-clockwise,
-// negative if clockwise, and zero if the points are collinear.
 
 function polygonContains(polygon, point) {
   var n = polygon.length,
@@ -11060,6 +10332,8 @@ function simplify (poly, tolerance, highestQuality) {
 var aspectRatioStep = 0.5; // step size for the aspect ratio
 var angleStep = 5; // step size for angles (in degrees); has linear impact on running time
 
+var polyCache = {};
+
 /**
     @typedef {Object} LargestRect
     @desc The returned Object of the largestRect function.
@@ -11087,11 +10361,13 @@ var angleStep = 5; // step size for angles (in degrees); has linear impact on ru
     @param {Number} [options.minWidth = 0] The minimum width of the rectangle.
     @param {Number} [options.tolerance = 0.02] The simplification tolerance factor, between 0 and 1. A larger tolerance corresponds to more extensive simplification.
     @param {Array} [options.origin] The center point of the rectangle. If specified, the rectangle will be fixed at that point, otherwise the algorithm optimizes across all possible points. The given value can be either a two dimensional array specifying the x and y coordinate of the origin or an array of two dimensional points specifying multiple possible center points of the rectangle.
+    @param {Boolean} [options.cache] Whether or not to cache the result, which would be used in subsequent calculations to preserve consistency and speed up calculation time.
     @return {LargestRect}
 */
 function largestRect(poly, options) {
-  if ( options === void 0 ) { options = {}; }
+  var assign, assign$1;
 
+  if ( options === void 0 ) { options = {}; }
 
   if (poly.length < 3) {
     if (options.verbose) { console.error("polygon has to have at least 3 points", poly); }
@@ -11104,6 +10380,7 @@ function largestRect(poly, options) {
   // User's input normalization
   options = Object.assign({
     angle: range(-90, 90 + angleStep, angleStep),
+    cache: true,
     maxAspectRatio: 15,
     minAspectRatio: 1,
     minHeight: 0,
@@ -11127,6 +10404,18 @@ function largestRect(poly, options) {
     ? options.origin[0] instanceof Array ? options.origin
     : [options.origin] : [];
 
+  var cacheString;
+  if (options.cache) {
+    cacheString = merge(poly).join(",");
+    cacheString += "-" + (options.minAspectRatio);
+    cacheString += "-" + (options.maxAspectRatio);
+    cacheString += "-" + (options.minHeight);
+    cacheString += "-" + (options.minWidth);
+    cacheString += "-" + (angles.join(","));
+    cacheString += "-" + (origins.join(","));
+    if (polyCache[cacheString]) { return polyCache[cacheString]; }
+  }
+
   var area = Math.abs(polygonArea(poly)); // take absolute value of the signed area
   if (area === 0) {
     if (options.verbose) { console.error("polygon has 0 area", poly); }
@@ -11147,9 +10436,7 @@ function largestRect(poly, options) {
   if (options.events) { events.push({type: "simplify", poly: poly}); }
 
   // get the width of the bounding box of the simplified polygon
-  var assign;
   (assign = extent(poly, function (d) { return d[0]; }), minx = assign[0], maxx = assign[1]);
-  var assign$1;
   (assign$1 = extent(poly, function (d) { return d[1]; }), miny = assign$1[0], maxy = assign$1[1]);
   var ref$2 = [maxx - minx, maxy - miny];
   var boxWidth = ref$2[0];
@@ -11273,6 +10560,10 @@ function largestRect(poly, options) {
 
   }
 
+  if (options.cache) {
+    polyCache[cacheString] = maxRect;
+  }
+
   return options.events ? Object.assign(maxRect || {}, {events: events}) : maxRect;
 
 }
@@ -11324,9 +10615,9 @@ var Area = (function (Shape$$1) {
   Area.prototype._aes = function _aes (d) {
     var this$1 = this;
 
-    var values = d.values.slice().sort(function (a, b) { return this$1._y1 ? this$1._x(a) - this$1._x(b) : this$1._y(a) - this$1._y(b); });
-    var points1 = values.map(function (v, z) { return [this$1._x0(v, z), this$1._y0(v, z)]; });
-    var points2 = values.reverse().map(function (v, z) { return this$1._y1 ? [this$1._x(v, z), this$1._y1(v, z)] : [this$1._x1(v, z), this$1._y(v, z)]; });
+    var values$$1 = d.values.slice().sort(function (a, b) { return this$1._y1 ? this$1._x(a) - this$1._x(b) : this$1._y(a) - this$1._y(b); });
+    var points1 = values$$1.map(function (v, z) { return [this$1._x0(v, z), this$1._y0(v, z)]; });
+    var points2 = values$$1.reverse().map(function (v, z) { return this$1._y1 ? [this$1._x(v, z), this$1._y1(v, z)] : [this$1._x1(v, z), this$1._y(v, z)]; });
     var points = points1.concat(points2);
     if (points1[0][1] > points2[0][1]) { points = points.reverse(); }
     points.push(points[0]);
@@ -11600,10 +10891,10 @@ var Bar = (function (Shape$$1) {
       @param {D3Selection} *elem*
       @private
   */
-  Bar.prototype._applyPosition = function _applyPosition (elem) {
+  Bar.prototype._applyPosition = function _applyPosition (elem$$1) {
     var this$1 = this;
 
-    elem
+    elem$$1
       .attr("width", function (d, i) { return this$1._getWidth(d, i); })
       .attr("height", function (d, i) { return this$1._getHeight(d, i); })
       .attr("x", function (d, i) { return this$1._x1 !== null ? this$1._getX(d, i) : -this$1._getWidth(d, i) / 2; })
@@ -11745,6 +11036,11 @@ function(d) {
 var Circle = (function (Shape$$1) {
   function Circle() {
     Shape$$1.call(this, "circle");
+    this._labelBounds = function (d, i, s) { return ({width: s.r * 1.5, height: s.r * 1.5, x: -s.r * 0.75, y: -s.r * 0.75}); };
+    this._labelConfig = assign(this._labelConfig, {
+      textAnchor: "middle",
+      verticalAlign: "middle"
+    });
     this._name = "Circle";
     this._r = accessor("r");
   }
@@ -11758,10 +11054,10 @@ var Circle = (function (Shape$$1) {
       @desc Provides the default positioning to the <rect> elements.
       @private
   */
-  Circle.prototype._applyPosition = function _applyPosition (elem) {
+  Circle.prototype._applyPosition = function _applyPosition (elem$$1) {
     var this$1 = this;
 
-    elem
+    elem$$1
       .attr("r", function (d, i) { return this$1._r(d, i); })
       .attr("x", function (d, i) { return -this$1._r(d, i) / 2; })
       .attr("y", function (d, i) { return -this$1._r(d, i) / 2; });
@@ -11829,12 +11125,20 @@ function(d) {
 */
 var Line = (function (Shape$$1) {
   function Line() {
+    var this$1 = this;
+
 
     Shape$$1.call(this);
 
     this._curve = "linear";
     this._defined = function (d) { return d; };
     this._fill = constant$2("none");
+    this._hitArea = constant$2({
+      "d": function (d) { return this$1._path(d.values); },
+      "fill": "none",
+      "stroke-width": 10,
+      "transform": null
+    });
     this._name = "Line";
     this._path = line();
     this._stroke = constant$2("black");
@@ -11955,7 +11259,7 @@ var Line = (function (Shape$$1) {
   return Line;
 }(Shape));
 
-var pi$4 = Math.PI;
+var pi$3 = Math.PI;
 
 /**
     @function shapeEdgePoint
@@ -11968,38 +11272,38 @@ function shapeEdgePoint (angle, distance, shape) {
   if ( shape === void 0 ) { shape = "circle"; }
 
 
-  if (angle < 0) { angle = pi$4 * 2 + angle; }
+  if (angle < 0) { angle = pi$3 * 2 + angle; }
 
   if (shape === "square") {
 
-    var diagonal = 45 * (pi$4 / 180);
+    var diagonal = 45 * (pi$3 / 180);
     var x = 0, y = 0;
 
-    if (angle < pi$4 / 2) {
+    if (angle < pi$3 / 2) {
       var tan = Math.tan(angle);
       x += angle < diagonal ? distance : distance / tan;
       y += angle < diagonal ? tan * distance : distance;
     }
-    else if (angle <= pi$4) {
-      var tan$1 = Math.tan(pi$4 - angle);
-      x -= angle < pi$4 - diagonal ? distance / tan$1 : distance;
-      y += angle < pi$4 - diagonal ? distance : tan$1 * distance;
+    else if (angle <= pi$3) {
+      var tan$1 = Math.tan(pi$3 - angle);
+      x -= angle < pi$3 - diagonal ? distance / tan$1 : distance;
+      y += angle < pi$3 - diagonal ? distance : tan$1 * distance;
     }
-    else if (angle < diagonal + pi$4) {
+    else if (angle < diagonal + pi$3) {
       x -= distance;
-      y -= Math.tan(angle - pi$4) * distance;
+      y -= Math.tan(angle - pi$3) * distance;
     }
-    else if (angle < 3 * pi$4 / 2) {
-      x -= distance / Math.tan(angle - pi$4);
+    else if (angle < 3 * pi$3 / 2) {
+      x -= distance / Math.tan(angle - pi$3);
       y -= distance;
     }
-    else if (angle < 2 * pi$4 - diagonal) {
-      x += distance / Math.tan(2 * pi$4 - angle);
+    else if (angle < 2 * pi$3 - diagonal) {
+      x += distance / Math.tan(2 * pi$3 - angle);
       y -= distance;
     }
     else {
       x += distance;
-      y -= Math.tan(2 * pi$4 - angle) * distance;
+      y -= Math.tan(2 * pi$3 - angle) * distance;
     }
 
     return [x, y];
@@ -12012,7 +11316,7 @@ function shapeEdgePoint (angle, distance, shape) {
 
 }
 
-var pi$3 = Math.PI;
+var pi$4 = Math.PI;
 
 /**
     @function path2polygon
@@ -12042,10 +11346,10 @@ function path2polygon (path, segmentLength) {
             width = pointDistance(prev, last);
 
       var angle = Math.acos((radius * radius + radius * radius - width * width) / (2 * radius * radius));
-      if (points[2]) { angle = pi$3 * 2 - angle; }
+      if (points[2]) { angle = pi$4 * 2 - angle; }
 
-      var step = angle / (angle / (pi$3 * 2) * (radius * pi$3 * 2) / segmentLength);
-      var start = Math.atan2(-prev[1], -prev[0]) - pi$3;
+      var step = angle / (angle / (pi$4 * 2) * (radius * pi$4 * 2) / segmentLength);
+      var start = Math.atan2(-prev[1], -prev[0]) - pi$4;
       var i = step;
       while (i < angle) {
         poly.push(shapeEdgePoint(points[4] ? start + i : start - i, radius));
@@ -12209,10 +11513,10 @@ var Rect = (function (Shape$$1) {
       @param {D3Selection} *elem*
       @private
   */
-  Rect.prototype._applyPosition = function _applyPosition (elem) {
+  Rect.prototype._applyPosition = function _applyPosition (elem$$1) {
     var this$1 = this;
 
-    elem
+    elem$$1
       .attr("width", function (d, i) { return this$1._width(d, i); })
       .attr("height", function (d, i) { return this$1._height(d, i); })
       .attr("x", function (d, i) { return -this$1._width(d, i) / 2; })
@@ -12458,11 +11762,11 @@ var text = type("text/plain", function(xhr) {
   return xhr.responseText;
 });
 
-var EOL = {};
-var EOF = {};
-var QUOTE = 34;
-var NEWLINE = 10;
-var RETURN = 13;
+var EOL = {},
+    EOF = {},
+    QUOTE = 34,
+    NEWLINE = 10,
+    RETURN = 13;
 
 function objectConverter(columns) {
   return new Function("d", "return {" + columns.map(function(name, i) {
@@ -12526,7 +11830,7 @@ function dsv(delimiter) {
       // Unescape quotes.
       var i, j = I, c;
       if (text.charCodeAt(j) === QUOTE) {
-        while (I++ < N && text.charCodeAt(I) !== QUOTE || text.charCodeAt(++I) === QUOTE){  }
+        while (I++ < N && text.charCodeAt(I) !== QUOTE || text.charCodeAt(++I) === QUOTE){ }
         if ((i = I) >= N) { eof = true; }
         else if ((c = text.charCodeAt(I++)) === NEWLINE) { eol = true; }
         else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) { ++I; } }
@@ -12586,9 +11890,9 @@ function dsv(delimiter) {
   };
 }
 
-var csv$1 = dsv(",");
+var csv = dsv(",");
 
-var csvParse = csv$1.parse;
+var csvParse = csv.parse;
 
 var tsv = dsv("\t");
 
@@ -12610,7 +11914,7 @@ function responseOf(parse, row) {
   };
 }
 
-var csv = dsv$1("text/csv", csvParse);
+var csv$1 = dsv$1("text/csv", csvParse);
 
 var tsv$1 = dsv$1("text/tab-separated-values", tsvParse);
 
@@ -12635,7 +11939,7 @@ function load(path, formatter, key, callback) {
   }
   else {
 
-    var parser = path.slice(path.length - 4) === ".csv" ? csv
+    var parser = path.slice(path.length - 4) === ".csv" ? csv$1
       : path.slice(path.length - 4) === ".tsv" ? tsv$1
       : path.slice(path.length - 4) === ".txt" ? text
       : json;
@@ -12673,9 +11977,9 @@ function noevent() {
 
 function dragDisable(view) {
   var root = view.document.documentElement,
-      selection = select(view).on("dragstart.drag", noevent, true);
+      selection$$1 = select(view).on("dragstart.drag", noevent, true);
   if ("onselectstart" in root) {
-    selection.on("selectstart.drag", noevent, true);
+    selection$$1.on("selectstart.drag", noevent, true);
   } else {
     root.__noselect = root.style.MozUserSelect;
     root.style.MozUserSelect = "none";
@@ -12684,13 +11988,13 @@ function dragDisable(view) {
 
 function yesdrag(view, noclick) {
   var root = view.document.documentElement,
-      selection = select(view).on("dragstart.drag", null);
+      selection$$1 = select(view).on("dragstart.drag", null);
   if (noclick) {
-    selection.on("click.drag", noevent, true);
-    setTimeout(function() { selection.on("click.drag", null); }, 0);
+    selection$$1.on("click.drag", noevent, true);
+    setTimeout(function() { selection$$1.on("click.drag", null); }, 0);
   }
   if ("onselectstart" in root) {
-    selection.on("selectstart.drag", null);
+    selection$$1.on("selectstart.drag", null);
   } else {
     root.style.MozUserSelect = root.__noselect;
     delete root.__noselect;
@@ -12718,10 +12022,10 @@ function noevent$1() {
   event$1.stopImmediatePropagation();
 }
 
-var MODE_DRAG = {name: "drag"};
-var MODE_SPACE = {name: "space"};
-var MODE_HANDLE = {name: "handle"};
-var MODE_CENTER = {name: "center"};
+var MODE_DRAG = {name: "drag"},
+    MODE_SPACE = {name: "space"},
+    MODE_HANDLE = {name: "handle"},
+    MODE_CENTER = {name: "center"};
 
 var X = {
   name: "x",
@@ -12806,7 +12110,7 @@ function type$1(t) {
 }
 
 // Ignore right-click, since that should open the context menu.
-function defaultFilter() {
+function defaultFilter$1() {
   return !event$1.button;
 }
 
@@ -12826,13 +12130,9 @@ function empty$1(extent) {
       || extent[0][1] === extent[1][1];
 }
 
-
-
 function brushX() {
   return brush$1(X);
 }
-
-
 
 function brush() {
   return brush$1(XY);
@@ -12840,7 +12140,7 @@ function brush() {
 
 function brush$1(dim) {
   var extent = defaultExtent,
-      filter = defaultFilter,
+      filter = defaultFilter$1,
       listeners = dispatch(brush, "start", "brush", "end"),
       handleSize = 6,
       touchending;
@@ -12892,7 +12192,7 @@ function brush$1(dim) {
         .on("mousedown.brush touchstart.brush", started);
   }
 
-  brush.move = function(group, selection) {
+  brush.move = function(group, selection$$1) {
     if (group.selection) {
       group
           .on("start.brush", function() { emitter(this, arguments).beforestart().start(); })
@@ -12902,8 +12202,8 @@ function brush$1(dim) {
                 state = that.__brush,
                 emit = emitter(that, arguments),
                 selection0 = state.selection,
-                selection1 = dim.input(typeof selection === "function" ? selection.apply(this, arguments) : selection, state.extent),
-                i = interpolate(selection0, selection1);
+                selection1 = dim.input(typeof selection$$1 === "function" ? selection$$1.apply(this, arguments) : selection$$1, state.extent),
+                i = interpolateValue(selection0, selection1);
 
             function tween(t) {
               state.selection = t === 1 && empty$1(selection1) ? null : i(t);
@@ -12919,7 +12219,7 @@ function brush$1(dim) {
             var that = this,
                 args = arguments,
                 state = that.__brush,
-                selection1 = dim.input(typeof selection === "function" ? selection.apply(that, args) : selection, state.extent),
+                selection1 = dim.input(typeof selection$$1 === "function" ? selection$$1.apply(that, args) : selection$$1, state.extent),
                 emit = emitter(that, args).beforestart();
 
             interrupt(that);
@@ -12932,22 +12232,22 @@ function brush$1(dim) {
 
   function redraw() {
     var group = select(this),
-        selection = local$1(this).selection;
+        selection$$1 = local$1(this).selection;
 
-    if (selection) {
+    if (selection$$1) {
       group.selectAll(".selection")
           .style("display", null)
-          .attr("x", selection[0][0])
-          .attr("y", selection[0][1])
-          .attr("width", selection[1][0] - selection[0][0])
-          .attr("height", selection[1][1] - selection[0][1]);
+          .attr("x", selection$$1[0][0])
+          .attr("y", selection$$1[0][1])
+          .attr("width", selection$$1[1][0] - selection$$1[0][0])
+          .attr("height", selection$$1[1][1] - selection$$1[0][1]);
 
       group.selectAll(".handle")
           .style("display", null)
-          .attr("x", function(d) { return d.type[d.type.length - 1] === "e" ? selection[1][0] - handleSize / 2 : selection[0][0] - handleSize / 2; })
-          .attr("y", function(d) { return d.type[0] === "s" ? selection[1][1] - handleSize / 2 : selection[0][1] - handleSize / 2; })
-          .attr("width", function(d) { return d.type === "n" || d.type === "s" ? selection[1][0] - selection[0][0] + handleSize : handleSize; })
-          .attr("height", function(d) { return d.type === "e" || d.type === "w" ? selection[1][1] - selection[0][1] + handleSize : handleSize; });
+          .attr("x", function(d) { return d.type[d.type.length - 1] === "e" ? selection$$1[1][0] - handleSize / 2 : selection$$1[0][0] - handleSize / 2; })
+          .attr("y", function(d) { return d.type[0] === "s" ? selection$$1[1][1] - handleSize / 2 : selection$$1[0][1] - handleSize / 2; })
+          .attr("width", function(d) { return d.type === "n" || d.type === "s" ? selection$$1[1][0] - selection$$1[0][0] + handleSize : handleSize; })
+          .attr("height", function(d) { return d.type === "e" || d.type === "w" ? selection$$1[1][1] - selection$$1[0][1] + handleSize : handleSize; });
     }
 
     else {
@@ -13005,7 +12305,7 @@ function brush$1(dim) {
         signY = dim === X ? null : signsY[type],
         state = local$1(that),
         extent = state.extent,
-        selection = state.selection,
+        selection$$1 = state.selection,
         W = extent[0][0], w0, w1,
         N = extent[0][1], n0, n1,
         E = extent[1][0], e0, e1,
@@ -13021,15 +12321,15 @@ function brush$1(dim) {
         emit = emitter(that, arguments).beforestart();
 
     if (type === "overlay") {
-      state.selection = selection = [
+      state.selection = selection$$1 = [
         [w0 = dim === Y ? W : point0[0], n0 = dim === X ? N : point0[1]],
         [e0 = dim === Y ? E : w0, s0 = dim === X ? S : n0]
       ];
     } else {
-      w0 = selection[0][0];
-      n0 = selection[0][1];
-      e0 = selection[1][0];
-      s0 = selection[1][1];
+      w0 = selection$$1[0][0];
+      n0 = selection$$1[0][1];
+      e0 = selection$$1[1][0];
+      s0 = selection$$1[1][1];
     }
 
     w1 = w0;
@@ -13115,14 +12415,14 @@ function brush$1(dim) {
         if (type in flipY) { overlay.attr("cursor", cursors[type = flipY[type]]); }
       }
 
-      if (state.selection) { selection = state.selection; } // May be set by brush.move!
-      if (lockX) { w1 = selection[0][0], e1 = selection[1][0]; }
-      if (lockY) { n1 = selection[0][1], s1 = selection[1][1]; }
+      if (state.selection) { selection$$1 = state.selection; } // May be set by brush.move!
+      if (lockX) { w1 = selection$$1[0][0], e1 = selection$$1[1][0]; }
+      if (lockY) { n1 = selection$$1[0][1], s1 = selection$$1[1][1]; }
 
-      if (selection[0][0] !== w1
-          || selection[0][1] !== n1
-          || selection[1][0] !== e1
-          || selection[1][1] !== s1) {
+      if (selection$$1[0][0] !== w1
+          || selection$$1[0][1] !== n1
+          || selection$$1[1][0] !== e1
+          || selection$$1[1][1] !== s1) {
         state.selection = [[w1, n1], [e1, s1]];
         redraw.call(that);
         emit.brush();
@@ -13142,8 +12442,8 @@ function brush$1(dim) {
       }
       group.attr("pointer-events", "all");
       overlay.attr("cursor", cursors.overlay);
-      if (state.selection) { selection = state.selection; } // May be set by brush.move (on start)!
-      if (empty$1(selection)) { state.selection = null, redraw.call(that); }
+      if (state.selection) { selection$$1 = state.selection; } // May be set by brush.move (on start)!
+      if (empty$1(selection$$1)) { state.selection = null, redraw.call(that); }
       emit.end();
     }
 
@@ -13468,12 +12768,12 @@ function defaultTouchable$1() {
   return "ontouchstart" in this;
 }
 
-function defaultConstrain(transform, extent, translateExtent) {
-  var dx0 = transform.invertX(extent[0][0]) - translateExtent[0][0],
-      dx1 = transform.invertX(extent[1][0]) - translateExtent[1][0],
-      dy0 = transform.invertY(extent[0][1]) - translateExtent[0][1],
-      dy1 = transform.invertY(extent[1][1]) - translateExtent[1][1];
-  return transform.translate(
+function defaultConstrain(transform$$1, extent, translateExtent) {
+  var dx0 = transform$$1.invertX(extent[0][0]) - translateExtent[0][0],
+      dx1 = transform$$1.invertX(extent[1][0]) - translateExtent[1][0],
+      dy0 = transform$$1.invertY(extent[0][1]) - translateExtent[0][1],
+      dy1 = transform$$1.invertY(extent[1][1]) - translateExtent[1][1];
+  return transform$$1.translate(
     dx1 > dx0 ? (dx0 + dx1) / 2 : Math.min(0, dx0) || Math.max(0, dx1),
     dy1 > dy0 ? (dy0 + dy1) / 2 : Math.min(0, dy0) || Math.max(0, dy1)
   );
@@ -13497,8 +12797,8 @@ function zoom() {
       wheelDelay = 150,
       clickDistance2 = 0;
 
-  function zoom(selection) {
-    selection
+  function zoom(selection$$1) {
+    selection$$1
         .property("__zoom", defaultTransform)
         .on("wheel.zoom", wheeled)
         .on("mousedown.zoom", mousedowned)
@@ -13511,31 +12811,31 @@ function zoom() {
         .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
   }
 
-  zoom.transform = function(collection, transform) {
-    var selection = collection.selection ? collection.selection() : collection;
-    selection.property("__zoom", defaultTransform);
-    if (collection !== selection) {
-      schedule(collection, transform);
+  zoom.transform = function(collection, transform$$1) {
+    var selection$$1 = collection.selection ? collection.selection() : collection;
+    selection$$1.property("__zoom", defaultTransform);
+    if (collection !== selection$$1) {
+      schedule(collection, transform$$1);
     } else {
-      selection.interrupt().each(function() {
+      selection$$1.interrupt().each(function() {
         gesture(this, arguments)
             .start()
-            .zoom(null, typeof transform === "function" ? transform.apply(this, arguments) : transform)
+            .zoom(null, typeof transform$$1 === "function" ? transform$$1.apply(this, arguments) : transform$$1)
             .end();
       });
     }
   };
 
-  zoom.scaleBy = function(selection, k) {
-    zoom.scaleTo(selection, function() {
+  zoom.scaleBy = function(selection$$1, k) {
+    zoom.scaleTo(selection$$1, function() {
       var k0 = this.__zoom.k,
           k1 = typeof k === "function" ? k.apply(this, arguments) : k;
       return k0 * k1;
     });
   };
 
-  zoom.scaleTo = function(selection, k) {
-    zoom.transform(selection, function() {
+  zoom.scaleTo = function(selection$$1, k) {
+    zoom.transform(selection$$1, function() {
       var e = extent.apply(this, arguments),
           t0 = this.__zoom,
           p0 = centroid(e),
@@ -13545,8 +12845,8 @@ function zoom() {
     });
   };
 
-  zoom.translateBy = function(selection, x, y) {
-    zoom.transform(selection, function() {
+  zoom.translateBy = function(selection$$1, x, y) {
+    zoom.transform(selection$$1, function() {
       return constrain(this.__zoom.translate(
         typeof x === "function" ? x.apply(this, arguments) : x,
         typeof y === "function" ? y.apply(this, arguments) : y
@@ -13554,8 +12854,8 @@ function zoom() {
     });
   };
 
-  zoom.translateTo = function(selection, x, y) {
-    zoom.transform(selection, function() {
+  zoom.translateTo = function(selection$$1, x, y) {
+    zoom.transform(selection$$1, function() {
       var e = extent.apply(this, arguments),
           t = this.__zoom,
           p = centroid(e);
@@ -13566,22 +12866,22 @@ function zoom() {
     });
   };
 
-  function scale(transform, k) {
+  function scale(transform$$1, k) {
     k = Math.max(scaleExtent[0], Math.min(scaleExtent[1], k));
-    return k === transform.k ? transform : new Transform(k, transform.x, transform.y);
+    return k === transform$$1.k ? transform$$1 : new Transform(k, transform$$1.x, transform$$1.y);
   }
 
-  function translate(transform, p0, p1) {
-    var x = p0[0] - p1[0] * transform.k, y = p0[1] - p1[1] * transform.k;
-    return x === transform.x && y === transform.y ? transform : new Transform(transform.k, x, y);
+  function translate(transform$$1, p0, p1) {
+    var x = p0[0] - p1[0] * transform$$1.k, y = p0[1] - p1[1] * transform$$1.k;
+    return x === transform$$1.x && y === transform$$1.y ? transform$$1 : new Transform(transform$$1.k, x, y);
   }
 
   function centroid(extent) {
     return [(+extent[0][0] + +extent[1][0]) / 2, (+extent[0][1] + +extent[1][1]) / 2];
   }
 
-  function schedule(transition, transform, center) {
-    transition
+  function schedule(transition$$1, transform$$1, center) {
+    transition$$1
         .on("start.zoom", function() { gesture(this, arguments).start(); })
         .on("interrupt.zoom end.zoom", function() { gesture(this, arguments).end(); })
         .tween("zoom", function() {
@@ -13592,7 +12892,7 @@ function zoom() {
               p = center || centroid(e),
               w = Math.max(e[1][0] - e[0][0], e[1][1] - e[0][1]),
               a = that.__zoom,
-              b = typeof transform === "function" ? transform.apply(that, args) : transform,
+              b = typeof transform$$1 === "function" ? transform$$1.apply(that, args) : transform$$1,
               i = interpolate(a.invert(p).concat(w / a.k), b.invert(p).concat(w / b.k));
           return function(t) {
             if (t === 1) { t = b; } // Avoid rounding error on end.
@@ -13627,11 +12927,11 @@ function zoom() {
       }
       return this;
     },
-    zoom: function(key, transform) {
-      if (this.mouse && key !== "mouse") { this.mouse[1] = transform.invert(this.mouse[0]); }
-      if (this.touch0 && key !== "touch") { this.touch0[1] = transform.invert(this.touch0[0]); }
-      if (this.touch1 && key !== "touch") { this.touch1[1] = transform.invert(this.touch1[0]); }
-      this.that.__zoom = transform;
+    zoom: function(key, transform$$1) {
+      if (this.mouse && key !== "mouse") { this.mouse[1] = transform$$1.invert(this.mouse[0]); }
+      if (this.touch0 && key !== "touch") { this.touch0[1] = transform$$1.invert(this.touch0[0]); }
+      if (this.touch1 && key !== "touch") { this.touch1[1] = transform$$1.invert(this.touch1[0]); }
+      this.that.__zoom = transform$$1;
       this.emit("zoom");
       return this;
     },
@@ -13733,13 +13033,13 @@ function zoom() {
 
     if (!filter.apply(this, arguments)) { return; }
     var g = gesture(this, arguments),
-        touches = event$1.changedTouches,
+        touches$$1 = event$1.changedTouches,
         started,
-        n = touches.length, i, t, p;
+        n = touches$$1.length, i, t, p;
 
     nopropagation$2();
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = touch(this$1, touches, t.identifier);
+      t = touches$$1[i], p = touch(this$1, touches$$1, t.identifier);
       p = [p, this$1.__zoom.invert(p), t.identifier];
       if (!g.touch0) { g.touch0 = p, started = true; }
       else if (!g.touch1) { g.touch1 = p; }
@@ -13767,13 +13067,13 @@ function zoom() {
     var this$1 = this;
 
     var g = gesture(this, arguments),
-        touches = event$1.changedTouches,
-        n = touches.length, i, t, p, l;
+        touches$$1 = event$1.changedTouches,
+        n = touches$$1.length, i, t, p, l;
 
     noevent$2();
     if (touchstarting) { touchstarting = clearTimeout(touchstarting); }
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = touch(this$1, touches, t.identifier);
+      t = touches$$1[i], p = touch(this$1, touches$$1, t.identifier);
       if (g.touch0 && g.touch0[2] === t.identifier) { g.touch0[0] = p; }
       else if (g.touch1 && g.touch1[2] === t.identifier) { g.touch1[0] = p; }
     }
@@ -13794,14 +13094,14 @@ function zoom() {
 
   function touchended() {
     var g = gesture(this, arguments),
-        touches = event$1.changedTouches,
-        n = touches.length, i, t;
+        touches$$1 = event$1.changedTouches,
+        n = touches$$1.length, i, t;
 
     nopropagation$2();
     if (touchending) { clearTimeout(touchending); }
     touchending = setTimeout(function() { touchending = null; }, touchDelay);
     for (i = 0; i < n; ++i) {
-      t = touches[i];
+      t = touches$$1[i];
       if (g.touch0 && g.touch0[2] === t.identifier) { delete g.touch0; }
       else if (g.touch1 && g.touch1[2] === t.identifier) { delete g.touch1; }
     }
@@ -13864,23 +13164,18 @@ function commonjsRequire () {
 	throw new Error('Dynamic requires are not currently supported by rollup-plugin-commonjs');
 }
 
-
-
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
 var lrucache = createCommonjsModule(function (module) {
-// **Github:** https://github.com/zensh/lrucache
-//
-// **License:** MIT
-
-/* global module, define */
 (function (root, factory) {
+
   {
     module.exports = factory();
   }
 }(typeof window === 'object' ? window : commonjsGlobal, function () {
+
   var undef = void 0;
 
   function LRUCache (capacity) {
@@ -14016,13 +13311,874 @@ var lrucache = createCommonjsModule(function (module) {
 }));
 });
 
+var array$3 = Array.prototype;
+
+var map$3 = array$3.map;
+var slice$4 = array$3.slice;
+
+var implicit$1 = {name: "implicit"};
+
+function ordinal$1(range) {
+  var index = map$1(),
+      domain = [],
+      unknown = implicit$1;
+
+  range = range == null ? [] : slice$4.call(range);
+
+  function scale(d) {
+    var key = d + "", i = index.get(key);
+    if (!i) {
+      if (unknown !== implicit$1) { return unknown; }
+      index.set(key, i = domain.push(d));
+    }
+    return range[(i - 1) % range.length];
+  }
+
+  scale.domain = function(_) {
+    if (!arguments.length) { return domain.slice(); }
+    domain = [], index = map$1();
+    var i = -1, n = _.length, d, key;
+    while (++i < n) { if (!index.has(key = (d = _[i]) + "")) { index.set(key, domain.push(d)); } }
+    return scale;
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range = slice$4.call(_), scale) : range.slice();
+  };
+
+  scale.unknown = function(_) {
+    return arguments.length ? (unknown = _, scale) : unknown;
+  };
+
+  scale.copy = function() {
+    return ordinal$1()
+        .domain(domain)
+        .range(range)
+        .unknown(unknown);
+  };
+
+  return scale;
+}
+
+function band$1() {
+  var scale = ordinal$1().unknown(undefined),
+      domain = scale.domain,
+      ordinalRange = scale.range,
+      range$$1 = [0, 1],
+      step,
+      bandwidth,
+      round = false,
+      paddingInner = 0,
+      paddingOuter = 0,
+      align = 0.5;
+
+  delete scale.unknown;
+
+  function rescale() {
+    var n = domain().length,
+        reverse = range$$1[1] < range$$1[0],
+        start = range$$1[reverse - 0],
+        stop = range$$1[1 - reverse];
+    step = (stop - start) / Math.max(1, n - paddingInner + paddingOuter * 2);
+    if (round) { step = Math.floor(step); }
+    start += (stop - start - step * (n - paddingInner)) * align;
+    bandwidth = step * (1 - paddingInner);
+    if (round) { start = Math.round(start), bandwidth = Math.round(bandwidth); }
+    var values = range(n).map(function(i) { return start + step * i; });
+    return ordinalRange(reverse ? values.reverse() : values);
+  }
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain(_), rescale()) : domain();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range$$1 = [+_[0], +_[1]], rescale()) : range$$1.slice();
+  };
+
+  scale.rangeRound = function(_) {
+    return range$$1 = [+_[0], +_[1]], round = true, rescale();
+  };
+
+  scale.bandwidth = function() {
+    return bandwidth;
+  };
+
+  scale.step = function() {
+    return step;
+  };
+
+  scale.round = function(_) {
+    return arguments.length ? (round = !!_, rescale()) : round;
+  };
+
+  scale.padding = function(_) {
+    return arguments.length ? (paddingInner = paddingOuter = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
+  };
+
+  scale.paddingInner = function(_) {
+    return arguments.length ? (paddingInner = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
+  };
+
+  scale.paddingOuter = function(_) {
+    return arguments.length ? (paddingOuter = Math.max(0, Math.min(1, _)), rescale()) : paddingOuter;
+  };
+
+  scale.align = function(_) {
+    return arguments.length ? (align = Math.max(0, Math.min(1, _)), rescale()) : align;
+  };
+
+  scale.copy = function() {
+    return band$1()
+        .domain(domain())
+        .range(range$$1)
+        .round(round)
+        .paddingInner(paddingInner)
+        .paddingOuter(paddingOuter)
+        .align(align);
+  };
+
+  return rescale();
+}
+
+function pointish$1(scale) {
+  var copy = scale.copy;
+
+  scale.padding = scale.paddingOuter;
+  delete scale.paddingInner;
+  delete scale.paddingOuter;
+
+  scale.copy = function() {
+    return pointish$1(copy());
+  };
+
+  return scale;
+}
+
+function point$6() {
+  return pointish$1(band$1().paddingInner(1));
+}
+
+function constant$9(x) {
+  return function() {
+    return x;
+  };
+}
+
+function number$3(x) {
+  return +x;
+}
+
+var unit$1 = [0, 1];
+
+function deinterpolateLinear$1(a, b) {
+  return (b -= (a = +a))
+      ? function(x) { return (x - a) / b; }
+      : constant$9(b);
+}
+
+function deinterpolateClamp$1(deinterpolate) {
+  return function(a, b) {
+    var d = deinterpolate(a = +a, b = +b);
+    return function(x) { return x <= a ? 0 : x >= b ? 1 : d(x); };
+  };
+}
+
+function reinterpolateClamp$1(reinterpolate$$1) {
+  return function(a, b) {
+    var r = reinterpolate$$1(a = +a, b = +b);
+    return function(t) { return t <= 0 ? a : t >= 1 ? b : r(t); };
+  };
+}
+
+function bimap$1(domain, range$$1, deinterpolate, reinterpolate$$1) {
+  var d0 = domain[0], d1 = domain[1], r0 = range$$1[0], r1 = range$$1[1];
+  if (d1 < d0) { d0 = deinterpolate(d1, d0), r0 = reinterpolate$$1(r1, r0); }
+  else { d0 = deinterpolate(d0, d1), r0 = reinterpolate$$1(r0, r1); }
+  return function(x) { return r0(d0(x)); };
+}
+
+function polymap$1(domain, range$$1, deinterpolate, reinterpolate$$1) {
+  var j = Math.min(domain.length, range$$1.length) - 1,
+      d = new Array(j),
+      r = new Array(j),
+      i = -1;
+
+  // Reverse descending domains.
+  if (domain[j] < domain[0]) {
+    domain = domain.slice().reverse();
+    range$$1 = range$$1.slice().reverse();
+  }
+
+  while (++i < j) {
+    d[i] = deinterpolate(domain[i], domain[i + 1]);
+    r[i] = reinterpolate$$1(range$$1[i], range$$1[i + 1]);
+  }
+
+  return function(x) {
+    var i = bisectRight(domain, x, 1, j) - 1;
+    return r[i](d[i](x));
+  };
+}
+
+function copy$1(source, target) {
+  return target
+      .domain(source.domain())
+      .range(source.range())
+      .interpolate(source.interpolate())
+      .clamp(source.clamp());
+}
+
+// deinterpolate(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
+// reinterpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding domain value x in [a,b].
+function continuous$1(deinterpolate, reinterpolate$$1) {
+  var domain = unit$1,
+      range$$1 = unit$1,
+      interpolate$$1 = interpolateValue,
+      clamp = false,
+      piecewise,
+      output,
+      input;
+
+  function rescale() {
+    piecewise = Math.min(domain.length, range$$1.length) > 2 ? polymap$1 : bimap$1;
+    output = input = null;
+    return scale;
+  }
+
+  function scale(x) {
+    return (output || (output = piecewise(domain, range$$1, clamp ? deinterpolateClamp$1(deinterpolate) : deinterpolate, interpolate$$1)))(+x);
+  }
+
+  scale.invert = function(y) {
+    return (input || (input = piecewise(range$$1, domain, deinterpolateLinear$1, clamp ? reinterpolateClamp$1(reinterpolate$$1) : reinterpolate$$1)))(+y);
+  };
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain = map$3.call(_, number$3), rescale()) : domain.slice();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range$$1 = slice$4.call(_), rescale()) : range$$1.slice();
+  };
+
+  scale.rangeRound = function(_) {
+    return range$$1 = slice$4.call(_), interpolate$$1 = interpolateRound, rescale();
+  };
+
+  scale.clamp = function(_) {
+    return arguments.length ? (clamp = !!_, rescale()) : clamp;
+  };
+
+  scale.interpolate = function(_) {
+    return arguments.length ? (interpolate$$1 = _, rescale()) : interpolate$$1;
+  };
+
+  return rescale();
+}
+
+function tickFormat$1(domain, count, specifier) {
+  var start = domain[0],
+      stop = domain[domain.length - 1],
+      step = tickStep(start, stop, count == null ? 10 : count),
+      precision;
+  specifier = formatSpecifier(specifier == null ? ",f" : specifier);
+  switch (specifier.type) {
+    case "s": {
+      var value = Math.max(Math.abs(start), Math.abs(stop));
+      if (specifier.precision == null && !isNaN(precision = precisionPrefix(step, value))) { specifier.precision = precision; }
+      return formatPrefix(specifier, value);
+    }
+    case "":
+    case "e":
+    case "g":
+    case "p":
+    case "r": {
+      if (specifier.precision == null && !isNaN(precision = precisionRound(step, Math.max(Math.abs(start), Math.abs(stop))))) { specifier.precision = precision - (specifier.type === "e"); }
+      break;
+    }
+    case "f":
+    case "%": {
+      if (specifier.precision == null && !isNaN(precision = precisionFixed(step))) { specifier.precision = precision - (specifier.type === "%") * 2; }
+      break;
+    }
+  }
+  return format(specifier);
+}
+
+function linearish$1(scale) {
+  var domain = scale.domain;
+
+  scale.ticks = function(count) {
+    var d = domain();
+    return ticks(d[0], d[d.length - 1], count == null ? 10 : count);
+  };
+
+  scale.tickFormat = function(count, specifier) {
+    return tickFormat$1(domain(), count, specifier);
+  };
+
+  scale.nice = function(count) {
+    if (count == null) { count = 10; }
+
+    var d = domain(),
+        i0 = 0,
+        i1 = d.length - 1,
+        start = d[i0],
+        stop = d[i1],
+        step;
+
+    if (stop < start) {
+      step = start, start = stop, stop = step;
+      step = i0, i0 = i1, i1 = step;
+    }
+
+    step = tickIncrement(start, stop, count);
+
+    if (step > 0) {
+      start = Math.floor(start / step) * step;
+      stop = Math.ceil(stop / step) * step;
+      step = tickIncrement(start, stop, count);
+    } else if (step < 0) {
+      start = Math.ceil(start * step) / step;
+      stop = Math.floor(stop * step) / step;
+      step = tickIncrement(start, stop, count);
+    }
+
+    if (step > 0) {
+      d[i0] = Math.floor(start / step) * step;
+      d[i1] = Math.ceil(stop / step) * step;
+      domain(d);
+    } else if (step < 0) {
+      d[i0] = Math.ceil(start * step) / step;
+      d[i1] = Math.floor(stop * step) / step;
+      domain(d);
+    }
+
+    return scale;
+  };
+
+  return scale;
+}
+
+function linear$3() {
+  var scale = continuous$1(deinterpolateLinear$1, reinterpolate);
+
+  scale.copy = function() {
+    return copy$1(scale, linear$3());
+  };
+
+  return linearish$1(scale);
+}
+
+function identity$6() {
+  var domain = [0, 1];
+
+  function scale(x) {
+    return +x;
+  }
+
+  scale.invert = scale;
+
+  scale.domain = scale.range = function(_) {
+    return arguments.length ? (domain = map$3.call(_, number$3), scale) : domain.slice();
+  };
+
+  scale.copy = function() {
+    return identity$6().domain(domain);
+  };
+
+  return linearish$1(scale);
+}
+
+function nice$1(domain, interval) {
+  domain = domain.slice();
+
+  var i0 = 0,
+      i1 = domain.length - 1,
+      x0 = domain[i0],
+      x1 = domain[i1],
+      t;
+
+  if (x1 < x0) {
+    t = i0, i0 = i1, i1 = t;
+    t = x0, x0 = x1, x1 = t;
+  }
+
+  domain[i0] = interval.floor(x0);
+  domain[i1] = interval.ceil(x1);
+  return domain;
+}
+
+function deinterpolate$1(a, b) {
+  return (b = Math.log(b / a))
+      ? function(x) { return Math.log(x / a) / b; }
+      : constant$9(b);
+}
+
+function reinterpolate$2(a, b) {
+  return a < 0
+      ? function(t) { return -Math.pow(-b, t) * Math.pow(-a, 1 - t); }
+      : function(t) { return Math.pow(b, t) * Math.pow(a, 1 - t); };
+}
+
+function pow10$1(x) {
+  return isFinite(x) ? +("1e" + x) : x < 0 ? 0 : x;
+}
+
+function powp$1(base) {
+  return base === 10 ? pow10$1
+      : base === Math.E ? Math.exp
+      : function(x) { return Math.pow(base, x); };
+}
+
+function logp$1(base) {
+  return base === Math.E ? Math.log
+      : base === 10 && Math.log10
+      || base === 2 && Math.log2
+      || (base = Math.log(base), function(x) { return Math.log(x) / base; });
+}
+
+function reflect$1(f) {
+  return function(x) {
+    return -f(-x);
+  };
+}
+
+function log$1() {
+  var scale = continuous$1(deinterpolate$1, reinterpolate$2).domain([1, 10]),
+      domain = scale.domain,
+      base = 10,
+      logs = logp$1(10),
+      pows = powp$1(10);
+
+  function rescale() {
+    logs = logp$1(base), pows = powp$1(base);
+    if (domain()[0] < 0) { logs = reflect$1(logs), pows = reflect$1(pows); }
+    return scale;
+  }
+
+  scale.base = function(_) {
+    return arguments.length ? (base = +_, rescale()) : base;
+  };
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain(_), rescale()) : domain();
+  };
+
+  scale.ticks = function(count) {
+    var d = domain(),
+        u = d[0],
+        v = d[d.length - 1],
+        r;
+
+    if (r = v < u) { i = u, u = v, v = i; }
+
+    var i = logs(u),
+        j = logs(v),
+        p,
+        k,
+        t,
+        n = count == null ? 10 : +count,
+        z = [];
+
+    if (!(base % 1) && j - i < n) {
+      i = Math.round(i) - 1, j = Math.round(j) + 1;
+      if (u > 0) { for (; i < j; ++i) {
+        for (k = 1, p = pows(i); k < base; ++k) {
+          t = p * k;
+          if (t < u) { continue; }
+          if (t > v) { break; }
+          z.push(t);
+        }
+      } } else { for (; i < j; ++i) {
+        for (k = base - 1, p = pows(i); k >= 1; --k) {
+          t = p * k;
+          if (t < u) { continue; }
+          if (t > v) { break; }
+          z.push(t);
+        }
+      } }
+    } else {
+      z = ticks(i, j, Math.min(j - i, n)).map(pows);
+    }
+
+    return r ? z.reverse() : z;
+  };
+
+  scale.tickFormat = function(count, specifier) {
+    if (specifier == null) { specifier = base === 10 ? ".0e" : ","; }
+    if (typeof specifier !== "function") { specifier = format(specifier); }
+    if (count === Infinity) { return specifier; }
+    if (count == null) { count = 10; }
+    var k = Math.max(1, base * count / scale.ticks().length); // TODO fast estimate?
+    return function(d) {
+      var i = d / pows(Math.round(logs(d)));
+      if (i * base < base - 0.5) { i *= base; }
+      return i <= k ? specifier(d) : "";
+    };
+  };
+
+  scale.nice = function() {
+    return domain(nice$1(domain(), {
+      floor: function(x) { return pows(Math.floor(logs(x))); },
+      ceil: function(x) { return pows(Math.ceil(logs(x))); }
+    }));
+  };
+
+  scale.copy = function() {
+    return copy$1(scale, log$1().base(base));
+  };
+
+  return scale;
+}
+
+function raise$2(x, exponent) {
+  return x < 0 ? -Math.pow(-x, exponent) : Math.pow(x, exponent);
+}
+
+function pow$1() {
+  var exponent = 1,
+      scale = continuous$1(deinterpolate, reinterpolate),
+      domain = scale.domain;
+
+  function deinterpolate(a, b) {
+    return (b = raise$2(b, exponent) - (a = raise$2(a, exponent)))
+        ? function(x) { return (raise$2(x, exponent) - a) / b; }
+        : constant$9(b);
+  }
+
+  function reinterpolate(a, b) {
+    b = raise$2(b, exponent) - (a = raise$2(a, exponent));
+    return function(t) { return raise$2(a + b * t, 1 / exponent); };
+  }
+
+  scale.exponent = function(_) {
+    return arguments.length ? (exponent = +_, domain(domain())) : exponent;
+  };
+
+  scale.copy = function() {
+    return copy$1(scale, pow$1().exponent(exponent));
+  };
+
+  return linearish$1(scale);
+}
+
+function sqrt$2() {
+  return pow$1().exponent(0.5);
+}
+
+function quantile$1() {
+  var domain = [],
+      range$$1 = [],
+      thresholds = [];
+
+  function rescale() {
+    var i = 0, n = Math.max(1, range$$1.length);
+    thresholds = new Array(n - 1);
+    while (++i < n) { thresholds[i - 1] = threshold(domain, i / n); }
+    return scale;
+  }
+
+  function scale(x) {
+    if (!isNaN(x = +x)) { return range$$1[bisectRight(thresholds, x)]; }
+  }
+
+  scale.invertExtent = function(y) {
+    var i = range$$1.indexOf(y);
+    return i < 0 ? [NaN, NaN] : [
+      i > 0 ? thresholds[i - 1] : domain[0],
+      i < thresholds.length ? thresholds[i] : domain[domain.length - 1]
+    ];
+  };
+
+  scale.domain = function(_) {
+    if (!arguments.length) { return domain.slice(); }
+    domain = [];
+    for (var i = 0, n = _.length, d; i < n; ++i) { if (d = _[i], d != null && !isNaN(d = +d)) { domain.push(d); } }
+    domain.sort(ascending);
+    return rescale();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range$$1 = slice$4.call(_), rescale()) : range$$1.slice();
+  };
+
+  scale.quantiles = function() {
+    return thresholds.slice();
+  };
+
+  scale.copy = function() {
+    return quantile$1()
+        .domain(domain)
+        .range(range$$1);
+  };
+
+  return scale;
+}
+
+function quantize$2() {
+  var x0 = 0,
+      x1 = 1,
+      n = 1,
+      domain = [0.5],
+      range$$1 = [0, 1];
+
+  function scale(x) {
+    if (x <= x) { return range$$1[bisectRight(domain, x, 0, n)]; }
+  }
+
+  function rescale() {
+    var i = -1;
+    domain = new Array(n);
+    while (++i < n) { domain[i] = ((i + 1) * x1 - (i - n) * x0) / (n + 1); }
+    return scale;
+  }
+
+  scale.domain = function(_) {
+    return arguments.length ? (x0 = +_[0], x1 = +_[1], rescale()) : [x0, x1];
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (n = (range$$1 = slice$4.call(_)).length - 1, rescale()) : range$$1.slice();
+  };
+
+  scale.invertExtent = function(y) {
+    var i = range$$1.indexOf(y);
+    return i < 0 ? [NaN, NaN]
+        : i < 1 ? [x0, domain[0]]
+        : i >= n ? [domain[n - 1], x1]
+        : [domain[i - 1], domain[i]];
+  };
+
+  scale.copy = function() {
+    return quantize$2()
+        .domain([x0, x1])
+        .range(range$$1);
+  };
+
+  return linearish$1(scale);
+}
+
+function threshold$2() {
+  var domain = [0.5],
+      range$$1 = [0, 1],
+      n = 1;
+
+  function scale(x) {
+    if (x <= x) { return range$$1[bisectRight(domain, x, 0, n)]; }
+  }
+
+  scale.domain = function(_) {
+    return arguments.length ? (domain = slice$4.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : domain.slice();
+  };
+
+  scale.range = function(_) {
+    return arguments.length ? (range$$1 = slice$4.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : range$$1.slice();
+  };
+
+  scale.invertExtent = function(y) {
+    var i = range$$1.indexOf(y);
+    return [domain[i - 1], domain[i]];
+  };
+
+  scale.copy = function() {
+    return threshold$2()
+        .domain(domain)
+        .range(range$$1);
+  };
+
+  return scale;
+}
+
+var durationSecond$2 = 1000,
+    durationMinute$2 = durationSecond$2 * 60,
+    durationHour$2 = durationMinute$2 * 60,
+    durationDay$2 = durationHour$2 * 24,
+    durationWeek$2 = durationDay$2 * 7,
+    durationMonth$1 = durationDay$2 * 30,
+    durationYear$1 = durationDay$2 * 365;
+
+function date$2(t) {
+  return new Date(t);
+}
+
+function number$4(t) {
+  return t instanceof Date ? +t : +new Date(+t);
+}
+
+function calendar$1(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1, millisecond$$1, format) {
+  var scale = continuous$1(deinterpolateLinear$1, reinterpolate),
+      invert = scale.invert,
+      domain = scale.domain;
+
+  var formatMillisecond = format(".%L"),
+      formatSecond = format(":%S"),
+      formatMinute = format("%I:%M"),
+      formatHour = format("%I %p"),
+      formatDay = format("%a %d"),
+      formatWeek = format("%b %d"),
+      formatMonth = format("%B"),
+      formatYear = format("%Y");
+
+  var tickIntervals = [
+    [second$$1,  1,      durationSecond$2],
+    [second$$1,  5,  5 * durationSecond$2],
+    [second$$1, 15, 15 * durationSecond$2],
+    [second$$1, 30, 30 * durationSecond$2],
+    [minute$$1,  1,      durationMinute$2],
+    [minute$$1,  5,  5 * durationMinute$2],
+    [minute$$1, 15, 15 * durationMinute$2],
+    [minute$$1, 30, 30 * durationMinute$2],
+    [  hour$$1,  1,      durationHour$2  ],
+    [  hour$$1,  3,  3 * durationHour$2  ],
+    [  hour$$1,  6,  6 * durationHour$2  ],
+    [  hour$$1, 12, 12 * durationHour$2  ],
+    [   day$$1,  1,      durationDay$2   ],
+    [   day$$1,  2,  2 * durationDay$2   ],
+    [  week,  1,      durationWeek$2  ],
+    [ month$$1,  1,      durationMonth$1 ],
+    [ month$$1,  3,  3 * durationMonth$1 ],
+    [  year$$1,  1,      durationYear$1  ]
+  ];
+
+  function tickFormat(date$$1) {
+    return (second$$1(date$$1) < date$$1 ? formatMillisecond
+        : minute$$1(date$$1) < date$$1 ? formatSecond
+        : hour$$1(date$$1) < date$$1 ? formatMinute
+        : day$$1(date$$1) < date$$1 ? formatHour
+        : month$$1(date$$1) < date$$1 ? (week(date$$1) < date$$1 ? formatDay : formatWeek)
+        : year$$1(date$$1) < date$$1 ? formatMonth
+        : formatYear)(date$$1);
+  }
+
+  function tickInterval(interval, start, stop, step) {
+    if (interval == null) { interval = 10; }
+
+    // If a desired tick count is specified, pick a reasonable tick interval
+    // based on the extent of the domain and a rough estimate of tick size.
+    // Otherwise, assume interval is already a time interval and use it.
+    if (typeof interval === "number") {
+      var target = Math.abs(stop - start) / interval,
+          i = bisector(function(i) { return i[2]; }).right(tickIntervals, target);
+      if (i === tickIntervals.length) {
+        step = tickStep(start / durationYear$1, stop / durationYear$1, interval);
+        interval = year$$1;
+      } else if (i) {
+        i = tickIntervals[target / tickIntervals[i - 1][2] < tickIntervals[i][2] / target ? i - 1 : i];
+        step = i[1];
+        interval = i[0];
+      } else {
+        step = Math.max(tickStep(start, stop, interval), 1);
+        interval = millisecond$$1;
+      }
+    }
+
+    return step == null ? interval : interval.every(step);
+  }
+
+  scale.invert = function(y) {
+    return new Date(invert(y));
+  };
+
+  scale.domain = function(_) {
+    return arguments.length ? domain(map$3.call(_, number$4)) : domain().map(date$2);
+  };
+
+  scale.ticks = function(interval, step) {
+    var d = domain(),
+        t0 = d[0],
+        t1 = d[d.length - 1],
+        r = t1 < t0,
+        t;
+    if (r) { t = t0, t0 = t1, t1 = t; }
+    t = tickInterval(interval, t0, t1, step);
+    t = t ? t.range(t0, t1 + 1) : []; // inclusive stop
+    return r ? t.reverse() : t;
+  };
+
+  scale.tickFormat = function(count, specifier) {
+    return specifier == null ? tickFormat : format(specifier);
+  };
+
+  scale.nice = function(interval, step) {
+    var d = domain();
+    return (interval = tickInterval(interval, d[0], d[d.length - 1], step))
+        ? domain(nice$1(d, interval))
+        : scale;
+  };
+
+  scale.copy = function() {
+    return copy$1(scale, calendar$1(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1, millisecond$$1, format));
+  };
+
+  return scale;
+}
+
+function time$1() {
+  return calendar$1(year, month, sunday, day, hour, minute, second, millisecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]);
+}
+
+function utcTime$1() {
+  return calendar$1(utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, second, millisecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]);
+}
+
+function sequential$1(interpolator) {
+  var x0 = 0,
+      x1 = 1,
+      clamp = false;
+
+  function scale(x) {
+    var t = (x - x0) / (x1 - x0);
+    return interpolator(clamp ? Math.max(0, Math.min(1, t)) : t);
+  }
+
+  scale.domain = function(_) {
+    return arguments.length ? (x0 = +_[0], x1 = +_[1], scale) : [x0, x1];
+  };
+
+  scale.clamp = function(_) {
+    return arguments.length ? (clamp = !!_, scale) : clamp;
+  };
+
+  scale.interpolator = function(_) {
+    return arguments.length ? (interpolator = _, scale) : interpolator;
+  };
+
+  scale.copy = function() {
+    return sequential$1(interpolator).domain([x0, x1]).clamp(clamp);
+  };
+
+  return linearish$1(scale);
+}
+
+
+
+var scales = Object.freeze({
+	scaleBand: band$1,
+	scalePoint: point$6,
+	scaleIdentity: identity$6,
+	scaleLinear: linear$3,
+	scaleLog: log$1,
+	scaleOrdinal: ordinal$1,
+	scaleImplicit: implicit$1,
+	scalePow: pow$1,
+	scaleSqrt: sqrt$2,
+	scaleQuantile: quantile$1,
+	scaleQuantize: quantize$2,
+	scaleThreshold: threshold$2,
+	scaleTime: time$1,
+	scaleUtc: utcTime$1,
+	scaleSequential: sequential$1
+});
+
 /**
     @function date
     @summary Parses numbers and strings to valid Javascript Date objects.
     @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
     @param {Number|String} *date*
 */
-function date$2(d) {
+function date$3(d) {
 
   // returns if already Date object
   if (d.constructor === Date) { return d; }
@@ -14070,12 +14226,12 @@ function date$2(d) {
     @extends external:BaseClass
     @desc Creates an SVG scale based on an array of data.
 */
-var Axis = (function (BaseClass) {
+var Axis = (function (BaseClass$$1) {
   function Axis() {
     var this$1 = this;
 
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._align = "middle";
     this._barConfig = {
@@ -14106,6 +14262,7 @@ var Axis = (function (BaseClass) {
         fontFamily: new TextBox().fontFamily(),
         fontResize: false,
         fontSize: constant$2(10),
+        padding: 0,
         textAnchor: function () {
           var rtl$$1 = detectRTL();
           return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
@@ -14114,7 +14271,6 @@ var Axis = (function (BaseClass) {
         },
         verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
       },
-      labelPadding: 0,
       r: function (d) { return d.tick ? 4 : 0; },
       stroke: "#000",
       strokeWidth: 1,
@@ -14130,8 +14286,8 @@ var Axis = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { Axis.__proto__ = BaseClass; }
-  Axis.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { Axis.__proto__ = BaseClass$$1; }
+  Axis.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Axis.prototype.constructor = Axis;
 
   /**
@@ -14167,12 +14323,12 @@ var Axis = (function (BaseClass) {
   */
   Axis.prototype._getDomain = function _getDomain () {
 
-    var ticks = [];
-    if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.domain(); }
-    if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.domain()); }
+    var ticks$$1 = [];
+    if (this._d3ScaleNegative) { ticks$$1 = this._d3ScaleNegative.domain(); }
+    if (this._d3Scale) { ticks$$1 = ticks$$1.concat(this._d3Scale.domain()); }
 
-    var domain = this._scale === "ordinal" ? ticks : extent(ticks);
-    return ticks[0] > ticks[1] ? domain.reverse() : domain;
+    var domain = this._scale === "ordinal" ? ticks$$1 : extent(ticks$$1);
+    return ticks$$1[0] > ticks$$1[1] ? domain.reverse() : domain;
 
   };
 
@@ -14193,10 +14349,10 @@ var Axis = (function (BaseClass) {
   */
   Axis.prototype._getRange = function _getRange () {
 
-    var ticks = [];
-    if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.range(); }
-    if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.range()); }
-    return ticks[0] > ticks[1] ? extent(ticks).reverse() : extent(ticks);
+    var ticks$$1 = [];
+    if (this._d3ScaleNegative) { ticks$$1 = this._d3ScaleNegative.range(); }
+    if (this._d3Scale) { ticks$$1 = ticks$$1.concat(this._d3Scale.range()); }
+    return ticks$$1[0] > ticks$$1[1] ? extent(ticks$$1).reverse() : extent(ticks$$1);
 
   };
 
@@ -14206,21 +14362,21 @@ var Axis = (function (BaseClass) {
       @private
   */
   Axis.prototype._getTicks = function _getTicks () {
-    var tickScale = sqrt$1().domain([10, 400]).range([10, 50]);
+    var tickScale = sqrt$2().domain([10, 400]).range([10, 50]);
 
-    var ticks = [];
+    var ticks$$1 = [];
     if (this._d3ScaleNegative) {
       var negativeRange = this._d3ScaleNegative.range();
       var size = negativeRange[1] - negativeRange[0];
-      ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
+      ticks$$1 = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
     }
     if (this._d3Scale) {
       var positiveRange = this._d3Scale.range();
       var size$1 = positiveRange[1] - positiveRange[0];
-      ticks = ticks.concat(this._d3Scale.ticks(Math.floor(size$1 / tickScale(size$1))));
+      ticks$$1 = ticks$$1.concat(this._d3Scale.ticks(Math.floor(size$1 / tickScale(size$1))));
     }
 
-    return ticks;
+    return ticks$$1;
   };
 
   /**
@@ -14259,7 +14415,7 @@ var Axis = (function (BaseClass) {
   */
   Axis.prototype.render = function render (callback) {
     var this$1 = this;
-    var obj, obj$1;
+    var obj;
 
 
     if (this._select === void 0) {
@@ -14308,7 +14464,7 @@ var Axis = (function (BaseClass) {
     }
 
     this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-      .domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
+      .domain(this._scale === "time" ? this._domain.map(date$3) : this._domain);
 
     if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
     else { this._d3Scale.range(range$$1); }
@@ -14335,7 +14491,7 @@ var Axis = (function (BaseClass) {
           .range(range$1);
       }
       else {
-        var percentScale = log().domain([1, domain[domain[1] > 0 ? 1 : 0]]).range([0, 1]);
+        var percentScale = log$1().domain([1, domain[domain[1] > 0 ? 1 : 0]]).range([0, 1]);
         var leftPercentage = percentScale(Math.abs(domain[domain[1] < 0 ? 1 : 0]));
         var zero = leftPercentage / (leftPercentage + 1) * (range$1[1] - range$1[0]);
         if (domain[0] > 0) { zero = range$1[1] - range$1[0] - zero; }
@@ -14349,19 +14505,19 @@ var Axis = (function (BaseClass) {
       }
     }
 
-    var ticks = this._ticks
-      ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
+    var ticks$$1 = this._ticks
+      ? this._scale === "time" ? this._ticks.map(date$3) : this._ticks
       : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
         ? this._getTicks()
         : this._domain;
 
     var labels = this._labels
-      ? this._scale === "time" ? this._labels.map(date$2) : this._labels
+      ? this._scale === "time" ? this._labels.map(date$3) : this._labels
       : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
         ? this._getTicks()
-        : ticks;
+        : ticks$$1;
 
-    ticks = ticks.slice();
+    ticks$$1 = ticks$$1.slice();
     labels = labels.slice();
 
     if (this._scale === "log") { labels = labels.filter(function (t) { return Math.abs(t).toString().charAt(0) === "1" && (this$1._d3Scale ? t !== -1 : t !== 1); }); }
@@ -14379,14 +14535,14 @@ var Axis = (function (BaseClass) {
     };
 
     if (this._scale === "time") {
-      ticks = ticks.map(Number);
+      ticks$$1 = ticks$$1.map(Number);
       labels = labels.map(Number);
     }
     else if (this._scale === "ordinal") {
-      labels = labels.filter(function (label) { return ticks.includes(label); });
+      labels = labels.filter(function (label) { return ticks$$1.includes(label); });
     }
 
-    ticks = ticks.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
+    ticks$$1 = ticks$$1.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
     labels = labels.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
 
     var tickSize = this._shape === "Circle" ? this._shapeConfig.r
@@ -14396,8 +14552,8 @@ var Axis = (function (BaseClass) {
     var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
 
     var pixels = [];
-    this._availableTicks = ticks;
-    ticks.forEach(function (d, i) {
+    this._availableTicks = ticks$$1;
+    ticks$$1.forEach(function (d, i) {
       var s = tickGet({id: d, tick: true}, i);
       if (this$1._shape === "Circle") { s *= 2; }
       var t = this$1._getPosition(d);
@@ -14405,9 +14561,9 @@ var Axis = (function (BaseClass) {
       else { pixels.push(false); }
     });
 
-    ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
+    ticks$$1 = ticks$$1.filter(function (d, i) { return pixels[i] !== false; });
 
-    this._visibleTicks = ticks;
+    this._visibleTicks = ticks$$1;
 
     var hBuff = this._shape === "Circle"
           ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
@@ -14416,9 +14572,9 @@ var Axis = (function (BaseClass) {
             : this._tickSize,
         wBuff = tickGet({tick: true});
 
-    if (typeof hBuff === "function") { hBuff = max(ticks.map(hBuff)); }
+    if (typeof hBuff === "function") { hBuff = max(ticks$$1.map(hBuff)); }
     if (this._shape === "Rect") { hBuff /= 2; }
-    if (typeof wBuff === "function") { wBuff = max(ticks.map(wBuff)); }
+    if (typeof wBuff === "function") { wBuff = max(ticks$$1.map(wBuff)); }
     if (this._shape !== "Circle") { wBuff /= 2; }
 
     if (this._scale === "band") {
@@ -14563,7 +14719,7 @@ var Axis = (function (BaseClass) {
     this._group = group;
 
     var grid = elem("g.grid", {parent: group}).selectAll("line")
-      .data((this._gridSize !== 0 ? this._grid || ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
+      .data((this._gridSize !== 0 ? this._grid || ticks$$1 : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
 
     grid.exit().transition(t)
       .attr("opacity", 0)
@@ -14580,10 +14736,12 @@ var Axis = (function (BaseClass) {
 
     var labelHeight = max(textData, function (t) { return t.height; }) || 0;
 
-    var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); });
+    var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks$$1.includes(d); });
 
-    var tickData = ticks.concat(labelOnly)
+    var tickData = ticks$$1.concat(labelOnly)
       .map(function (d) {
+        var obj;
+
         var data = textData.filter(function (td) { return td.d === d; });
         var dataIndex = data.length ? textData.indexOf(data[0]) : undefined;
         var xPos = this$1._getPosition(d);
@@ -14607,7 +14765,7 @@ var Axis = (function (BaseClass) {
               size = (hBuff + labelOffset) * (flip ? -1 : 1),
               yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
 
-        return ( obj$1 = {
+        return ( obj = {
           id: d,
           labelBounds: {
             x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
@@ -14615,10 +14773,10 @@ var Axis = (function (BaseClass) {
             width: horizontal ? space : labelWidth,
             height: horizontal ? labelHeight : space
           },
-          size: ticks.includes(d) ? size : 0,
+          size: ticks$$1.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false,
-          tick: ticks.includes(d)
-        }, obj$1[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj$1[y] = yPos, obj$1);
+          tick: ticks$$1.includes(d)
+        }, obj[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = yPos, obj);
       });
 
     if (this._shape === "Line") {
@@ -14894,7 +15052,7 @@ var Axis = (function (BaseClass) {
       @param {Array} [*value*]
       @chainable
   */
-  Axis.prototype.ticks = function ticks (_) {
+  Axis.prototype.ticks = function ticks$$1 (_) {
     return arguments.length ? (this._ticks = _, this) : this._ticks;
   };
 
@@ -15017,15 +15175,16 @@ var AxisTop = (function (Axis$$1) {
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
+
 /**
     @class Button
     @extends external:BaseClass
     @desc Creates a set of HTML radio input elements.
 */
-var Button = (function (BaseClass) {
+var Button = (function (BaseClass$$1) {
   function Button() {
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._buttonStyle = {
       "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
@@ -15038,8 +15197,8 @@ var Button = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { Button.__proto__ = BaseClass; }
-  Button.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { Button.__proto__ = BaseClass$$1; }
+  Button.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Button.prototype.constructor = Button;
 
   /**
@@ -15138,15 +15297,16 @@ var Button = (function (BaseClass) {
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
+
 /**
     @class Radio
     @extends external:BaseClass
     @desc Creates a set of HTML radio input elements.
 */
-var Radio = (function (BaseClass) {
+var Radio = (function (BaseClass$$1) {
   function Radio() {
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._labelStyle = {
       "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
@@ -15167,8 +15327,8 @@ var Radio = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { Radio.__proto__ = BaseClass; }
-  Radio.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { Radio.__proto__ = BaseClass$$1; }
+  Radio.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Radio.prototype.constructor = Radio;
 
   /**
@@ -15349,15 +15509,16 @@ var Radio = (function (BaseClass) {
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
+
 /**
     @class Select
     @extends external:BaseClass
     @desc Creates an HTML select element.
 */
-var Select = (function (BaseClass) {
+var Select = (function (BaseClass$$1) {
   function Select() {
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._labelStyle = {
       "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
@@ -15383,8 +15544,8 @@ var Select = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { Select.__proto__ = BaseClass; }
-  Select.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { Select.__proto__ = BaseClass$$1; }
+  Select.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Select.prototype.constructor = Select;
 
   /**
@@ -15396,7 +15557,7 @@ var Select = (function (BaseClass) {
     var this$1 = this;
 
 
-    if (this._container === void 0) { this.container(select("body").append("div").node()); }
+    if (this._container === void 0) { this.container(select$$1("body").append("div").node()); }
     var that = this;
 
     var container = this._container.selectAll(("div#d3plus-Form-" + (this._uuid))).data([0]);
@@ -15407,21 +15568,21 @@ var Select = (function (BaseClass) {
         .attr("class", "d3plus-Form d3plus-Form-Select")
       .merge(container);
 
-    var select = container.selectAll(("select#d3plus-Select-" + (this._uuid))).data([0]);
-    select = select.enter().append("select")
+    var select$$1 = container.selectAll(("select#d3plus-Select-" + (this._uuid))).data([0]);
+    select$$1 = select$$1.enter().append("select")
         .attr("id", ("d3plus-Select-" + (this._uuid)))
         .attr("class", "d3plus-Select")
-      .merge(select)
+      .merge(select$$1)
         .call(stylize, this._selectStyle)
         .on("change.d3plus", function() {
           that.selected(this.value);
         });
 
     for (var event in this$1._on) {
-      if ({}.hasOwnProperty.call(this$1._on, event)) { select.on(event, this$1._on[event]); }
+      if ({}.hasOwnProperty.call(this$1._on, event)) { select$$1.on(event, this$1._on[event]); }
     }
 
-    var options = select.selectAll("option")
+    var options = select$$1.selectAll("option")
       .data(this._options, function (d, i) { return this$1._value(d, i); });
 
     options.exit().remove();
@@ -15798,10 +15959,10 @@ function ckmeans(data, nClusters) {
     @extends external:BaseClass
     @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
 */
-var ColorScale = (function (BaseClass) {
+var ColorScale = (function (BaseClass$$1) {
   function ColorScale() {
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._axisClass = new Axis();
     this._axisConfig = {
@@ -15828,8 +15989,8 @@ var ColorScale = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { ColorScale.__proto__ = BaseClass; }
-  ColorScale.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { ColorScale.__proto__ = BaseClass$$1; }
+  ColorScale.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   ColorScale.prototype.constructor = ColorScale;
 
   /**
@@ -15856,7 +16017,7 @@ var ColorScale = (function (BaseClass) {
     this._group = elem("g.d3plus-ColorScale", {parent: this._select});
 
     var domain = extent(this._data, this._value);
-    var colors = this._color, ticks;
+    var colors = this._color, labels, ticks$$1;
 
     if (!(colors instanceof Array)) {
       colors = [
@@ -15876,7 +16037,7 @@ var ColorScale = (function (BaseClass) {
 
       if (data.length <= colors.length) {
 
-        var ts = linear$2()
+        var ts = linear$3()
           .domain(range(0, data.length - 1))
           .interpolate(interpolateHsl)
           .range(colors);
@@ -15886,10 +16047,16 @@ var ColorScale = (function (BaseClass) {
 
       var jenks = ckmeans(data, colors.length);
 
-      ticks = merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
+      ticks$$1 = merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
 
-      this._colorScale = threshold$1()
-        .domain(ticks)
+      var tickSet = new Set(ticks$$1);
+
+      if (ticks$$1.length !== tickSet.size) {
+        labels = Array.from(tickSet);
+      }
+
+      this._colorScale = threshold$2()
+        .domain(ticks$$1)
         .range(["black"].concat(colors).concat(colors[colors.length - 1]));
 
     }
@@ -15898,9 +16065,9 @@ var ColorScale = (function (BaseClass) {
       var step = (domain[1] - domain[0]) / (colors.length - 1);
       var buckets = range(domain[0], domain[1] + step / 2, step);
 
-      if (this._scale === "buckets") { ticks = buckets; }
+      if (this._scale === "buckets") { ticks$$1 = buckets; }
 
-      this._colorScale = linear$2()
+      this._colorScale = linear$3()
         .domain(buckets)
         .range(colors);
 
@@ -15910,10 +16077,10 @@ var ColorScale = (function (BaseClass) {
       domain: horizontal ? domain : domain.reverse(),
       duration: this._duration,
       height: this._height,
-      labels: ticks,
+      labels: labels || ticks$$1,
       orient: this._orient,
       padding: this._padding,
-      ticks: ticks,
+      ticks: ticks$$1,
       width: this._width
     }, this._axisConfig);
 
@@ -15961,17 +16128,17 @@ var ColorScale = (function (BaseClass) {
       .attr("stop-color", String);
 
     function bucketWidth(d, i) {
-      var w = Math.abs(axisScale(ticks[i + 1]) - axisScale(d));
+      var w = Math.abs(axisScale(ticks$$1[i + 1]) - axisScale(d));
       return w || 2;
     }
 
     this._rectClass
-      .data(ticks ? ticks.slice(0, ticks.length - 1) : [0])
+      .data(ticks$$1 ? ticks$$1.slice(0, ticks$$1.length - 1) : [0])
       .id(function (d, i) { return i; })
       .select(elem("g.d3plus-ColorScale-Rect", {parent: this._group}).node())
       .config(( obj = {
-        fill: ticks ? function (d) { return this$1._colorScale(d); } : ("url(#gradient-" + (this._uuid) + ")")
-      }, obj[x] = ticks ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2, obj[width] = ticks ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._size, obj))
+        fill: ticks$$1 ? function (d) { return this$1._colorScale(d); } : ("url(#gradient-" + (this._uuid) + ")")
+      }, obj[x] = ticks$$1 ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2, obj[width] = ticks$$1 ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._size, obj))
       .config(this._rectConfig)
       .render();
 
@@ -16148,12 +16315,12 @@ function value(d) {
     @extends external:BaseClass
     @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
 */
-var Legend = (function (BaseClass) {
+var Legend = (function (BaseClass$$1) {
   function Legend() {
     var this$1 = this;
 
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._align = "center";
     this._data = [];
@@ -16213,8 +16380,8 @@ var Legend = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { Legend.__proto__ = BaseClass; }
-  Legend.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { Legend.__proto__ = BaseClass$$1; }
+  Legend.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Legend.prototype.constructor = Legend;
 
   Legend.prototype._fetchConfig = function _fetchConfig (key, d, i) {
@@ -16477,12 +16644,12 @@ var Legend = (function (BaseClass) {
 
     // Legend Shapes
     this._shapes = [];
-    ["Circle", "Rect"].forEach(function (Shape) {
+    ["Circle", "Rect"].forEach(function (Shape$$1) {
 
-      this$1._shapes.push(new shapes[Shape]()
-        .data(data.filter(function (d) { return d.shape === Shape; }))
+      this$1._shapes.push(new shapes[Shape$$1]()
+        .data(data.filter(function (d) { return d.shape === Shape$$1; }))
         .duration(this$1._duration)
-        .labelPadding(0)
+        .labelConfig({padding: 0})
         .select(this$1._group.node())
         .verticalAlign("top")
         .config(assign({}, baseConfig, config))
@@ -16694,12 +16861,12 @@ function value(d) {
     @class Timeline
     @extends external:Axis
 */
-var Timeline = (function (Axis) {
+var Timeline = (function (Axis$$1) {
   function Timeline() {
     var this$1 = this;
 
 
-    Axis.call(this);
+    Axis$$1.call(this);
 
     this._brushing = true;
     this._brushFilter = function () { return !event$1.button && event$1.detail < 2; };
@@ -16720,14 +16887,14 @@ var Timeline = (function (Axis) {
     this._shape = "Rect";
     this._shapeConfig = Object.assign({}, this._shapeConfig, {
       height: function (d) { return d.tick ? 10 : 0; },
-      width: function (d) { return d.tick ? this$1._domain.map(function (t) { return date$2(t).getTime(); }).includes(d.id) ? 2 : 1 : 0; }
+      width: function (d) { return d.tick ? this$1._domain.map(function (t) { return date$3(t).getTime(); }).includes(d.id) ? 2 : 1 : 0; }
     });
     this._snapping = true;
 
   }
 
-  if ( Axis ) { Timeline.__proto__ = Axis; }
-  Timeline.prototype = Object.create( Axis && Axis.prototype );
+  if ( Axis$$1 ) { Timeline.__proto__ = Axis$$1; }
+  Timeline.prototype = Object.create( Axis$$1 && Axis$$1.prototype );
   Timeline.prototype.constructor = Timeline;
 
   /**
@@ -16745,8 +16912,8 @@ var Timeline = (function (Axis) {
         .map(Number);
 
       var ticks = this._availableTicks.map(Number);
-      domain[0] = date$2(closest(domain[0], ticks));
-      domain[1] = date$2(closest(domain[1], ticks));
+      domain[0] = date$3(closest(domain[0], ticks));
+      domain[1] = date$3(closest(domain[1], ticks));
 
       var single = +domain[0] === +domain[1];
 
@@ -16783,8 +16950,8 @@ var Timeline = (function (Axis) {
       .map(Number);
 
     var ticks = this._availableTicks.map(Number);
-    domain[0] = date$2(closest(domain[0], ticks));
-    domain[1] = date$2(closest(domain[1], ticks));
+    domain[0] = date$3(closest(domain[0], ticks));
+    domain[1] = date$3(closest(domain[1], ticks));
 
     var single = +domain[0] === +domain[1];
 
@@ -16822,8 +16989,8 @@ var Timeline = (function (Axis) {
         .map(Number);
 
       var ticks = this._availableTicks.map(Number);
-      domain[0] = date$2(closest(domain[0], ticks));
-      domain[1] = date$2(closest(domain[1], ticks));
+      domain[0] = date$3(closest(domain[0], ticks));
+      domain[1] = date$3(closest(domain[1], ticks));
 
       var single = +domain[0] === +domain[1];
 
@@ -16879,7 +17046,7 @@ var Timeline = (function (Axis) {
   */
   Timeline.prototype.render = function render (callback) {
 
-    Axis.prototype.render.call(this, callback);
+    Axis$$1.prototype.render.call(this, callback);
 
     var ref = this._position;
     var height = ref.height;
@@ -16888,7 +17055,7 @@ var Timeline = (function (Axis) {
     var offset = this._outerBounds[y],
           range = this._d3Scale.range();
 
-    var brush = this._brush = brushX()
+    var brush$$1 = this._brush = brushX()
       .extent([[range[0], offset], [range[1], offset + this._outerBounds[height]]])
       .filter(this._brushFilter)
       .handleSize(this._handleSize)
@@ -16897,21 +17064,21 @@ var Timeline = (function (Axis) {
       .on("end", this._brushEnd.bind(this));
 
     var latest = this._availableTicks[this._availableTicks.length - 1];
-    var selection = (this._selection === void 0 ? [latest, latest]
+    var selection$$1 = (this._selection === void 0 ? [latest, latest]
       : this._selection instanceof Array
         ? this._selection.slice()
         : [this._selection, this._selection])
-      .map(date$2)
+      .map(date$3)
       .map(this._d3Scale);
 
-    if (selection[0] === selection[1]) {
-      selection[0] -= 0.1;
-      selection[1] += 0.1;
+    if (selection$$1[0] === selection$$1[1]) {
+      selection$$1[0] -= 0.1;
+      selection$$1[1] += 0.1;
     }
 
     this._brushGroup = elem("g.brushGroup", {parent: this._group});
-    this._brushGroup.call(brush).transition(this._transition)
-      .call(brush.move, selection);
+    this._brushGroup.call(brush$$1).transition(this._transition)
+      .call(brush$$1.move, selection$$1);
 
     this._outerBounds.y -= this._handleSize / 2;
     this._outerBounds.height += this._handleSize / 2;
@@ -16991,7 +17158,7 @@ function() {
       @param {Array|Date|Number|String} [*value*]
       @chainable
   */
-  Timeline.prototype.selection = function selection (_) {
+  Timeline.prototype.selection = function selection$$1 (_) {
     return arguments.length ? (this._selection = _, this) : this._selection;
   };
 
@@ -17013,10 +17180,10 @@ function() {
     @extends BaseClass
     @desc Creates HTML tooltips in the body of a webpage.
 */
-var Tooltip = (function (BaseClass) {
+var Tooltip = (function (BaseClass$$1) {
   function Tooltip() {
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
     this._background = constant$2("rgba(255, 255, 255, 0.75)");
     this._body = accessor("body", "");
     this._bodyStyle = {
@@ -17069,8 +17236,8 @@ var Tooltip = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { Tooltip.__proto__ = BaseClass; }
-  Tooltip.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { Tooltip.__proto__ = BaseClass$$1; }
+  Tooltip.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Tooltip.prototype.constructor = Tooltip;
 
   /**
@@ -17473,9 +17640,9 @@ function value(d) {
 */
 var Message = function Message () {};
 
-Message.prototype.exit = function exit (elem, duration) {
+Message.prototype.exit = function exit (elem$$1, duration) {
 
-  elem
+  elem$$1
     .transition().duration(duration).style("opacity", 0)
     .transition().remove();
 
@@ -17651,7 +17818,6 @@ var html2canvas = createCommonjsModule(function (module, exports) {
 
 (function(f){{module.exports=f();}})(function(){var define;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof commonjsRequire=="function"&&commonjsRequire;if(!u&&a){ return a(o,!0); }if(i){ return i(o,!0); }var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND", f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r);}return n[o].exports}var i=typeof commonjsRequire=="function"&&commonjsRequire;for(var o=0;o<r.length;o++){ s(r[o]); }return s})({1:[function(_dereq_,module,exports){
 (function (global){
-/*! https://mths.be/punycode v1.4.0 by @mathias */
 (function(root) {
 
 	/** Detect free variables */
@@ -22427,8 +22593,7 @@ function _set_proto_(thiz,parent){
 }
 if(!(_set_proto_({},_set_proto_.prototype) instanceof _set_proto_)){
 	_set_proto_ = function(thiz,parent){
-		function p(){}
-		p.prototype = parent;
+		function p(){}		p.prototype = parent;
 		p = new p();
 		for(parent in thiz){
 			p[parent] = thiz[parent];
@@ -22462,7 +22627,7 @@ var sax = {
  * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
  */
 
-function copy$1(src,dest){
+function copy$2(src,dest){
 	for(var p in src){
 		dest[p] = src[p];
 	}
@@ -22478,10 +22643,9 @@ function _extends(Class,Super){
 		pt.__proto__ = ppt;
 	}
 	if(!(pt instanceof Super)){
-		function t(){}
-		t.prototype = Super.prototype;
+		function t(){}		t.prototype = Super.prototype;
 		t = new t();
-		copy$1(pt,t);
+		copy$2(pt,t);
 		Class.prototype = pt = t;
 	}
 	if(pt.constructor != Class){
@@ -22491,7 +22655,7 @@ function _extends(Class,Super){
 		pt.constructor = Class;
 	}
 }
-var htmlns = 'http://www.w3.org/1999/xhtml';
+var htmlns = 'http://www.w3.org/1999/xhtml' ;
 // Node Types
 var NodeType = {};
 var ELEMENT_NODE                = NodeType.ELEMENT_NODE                = 1;
@@ -22540,17 +22704,15 @@ function DOMException(code, message) {
 	error.code = code;
 	if(message) { this.message = this.message + ": " + message; }
 	return error;
-}
-DOMException.prototype = Error.prototype;
-copy$1(ExceptionCode,DOMException);
+}DOMException.prototype = Error.prototype;
+copy$2(ExceptionCode,DOMException);
 /**
  * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-536297177
  * The NodeList interface provides the abstraction of an ordered collection of nodes, without defining or constraining how this collection is implemented. NodeList objects in the DOM are live.
  * The items in the NodeList are accessible via an integral index, starting from 0.
  */
 function NodeList() {
-}
-NodeList.prototype = {
+}NodeList.prototype = {
 	/**
 	 * The number of nodes in the list. The range of valid child node indices is 0 to length-1 inclusive.
 	 * @standard level1
@@ -22587,7 +22749,7 @@ function _updateLiveList(list){
 		var ls = list._refresh(list._node);
 		//console.log(ls.length)
 		__set__(list,'length',ls.length);
-		copy$1(ls,list);
+		copy$2(ls,list);
 		list._inc = inc;
 	}
 }
@@ -22605,7 +22767,6 @@ _extends(LiveNodeList,NodeList);
  */
 function NamedNodeMap() {
 }
-
 function _findNodeIndex(list,node){
 	var i = list.length;
 	while(i--){
@@ -22728,7 +22889,6 @@ function DOMImplementation(/* Object */ features) {
 		}
 	}
 }
-
 DOMImplementation.prototype = {
 	hasFeature: function(/* string */ feature, /* string */ version) {
 		var versions = this._features[feature.toLowerCase()];
@@ -22777,7 +22937,6 @@ DOMImplementation.prototype = {
 
 function Node$1() {
 }
-
 Node$1.prototype = {
 	firstChild : null,
 	lastChild : null,
@@ -22885,8 +23044,8 @@ function _xmlEncoder(c){
 }
 
 
-copy$1(NodeType,Node$1);
-copy$1(NodeType,Node$1.prototype);
+copy$2(NodeType,Node$1);
+copy$2(NodeType,Node$1.prototype);
 
 /**
  * @param callback return true for continue,false for break
@@ -22909,7 +23068,7 @@ function Document(){
 }
 function _onAddAttribute(doc,el,newAttr){
 	doc && doc._inc++;
-	var ns = newAttr.namespaceURI;
+	var ns = newAttr.namespaceURI ;
 	if(ns == 'http://www.w3.org/2000/xmlns/'){
 		//update namespace
 		el._nsMap[newAttr.prefix?newAttr.localName:''] = newAttr.value;
@@ -22917,7 +23076,7 @@ function _onAddAttribute(doc,el,newAttr){
 }
 function _onRemoveAttribute(doc,el,newAttr,remove){
 	doc && doc._inc++;
-	var ns = newAttr.namespaceURI;
+	var ns = newAttr.namespaceURI ;
 	if(ns == 'http://www.w3.org/2000/xmlns/'){
 		//update namespace
 		delete el._nsMap[newAttr.prefix?newAttr.localName:''];
@@ -23182,8 +23341,7 @@ _extends(Document,Node$1);
 
 function Element$1() {
 	this._nsMap = {};
-}
-Element$1.prototype = {
+}Element$1.prototype = {
 	nodeType : ELEMENT_NODE,
 	hasAttribute : function(name){
 		return this.getAttributeNode(name)!=null;
@@ -23275,14 +23433,12 @@ Document.prototype.getElementsByTagNameNS = Element$1.prototype.getElementsByTag
 
 _extends(Element$1,Node$1);
 function Attr() {
-}
-Attr.prototype.nodeType = ATTRIBUTE_NODE;
+}Attr.prototype.nodeType = ATTRIBUTE_NODE;
 _extends(Attr,Node$1);
 
 
 function CharacterData() {
-}
-CharacterData.prototype = {
+}CharacterData.prototype = {
 	data : '',
 	substringData : function(offset, count) {
 		return this.data.substring(offset, offset+count);
@@ -23312,8 +23468,7 @@ CharacterData.prototype = {
 };
 _extends(CharacterData,Node$1);
 function Text() {
-}
-Text.prototype = {
+}Text.prototype = {
 	nodeName : "#text",
 	nodeType : TEXT_NODE,
 	splitText : function(offset) {
@@ -23331,16 +23486,14 @@ Text.prototype = {
 };
 _extends(Text,CharacterData);
 function Comment() {
-}
-Comment.prototype = {
+}Comment.prototype = {
 	nodeName : "#comment",
 	nodeType : COMMENT_NODE
 };
 _extends(Comment,CharacterData);
 
 function CDATASection() {
-}
-CDATASection.prototype = {
+}CDATASection.prototype = {
 	nodeName : "#cdata-section",
 	nodeType : CDATA_SECTION_NODE
 };
@@ -23348,28 +23501,23 @@ _extends(CDATASection,CharacterData);
 
 
 function DocumentType() {
-}
-DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
+}DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
 _extends(DocumentType,Node$1);
 
 function Notation() {
-}
-Notation.prototype.nodeType = NOTATION_NODE;
+}Notation.prototype.nodeType = NOTATION_NODE;
 _extends(Notation,Node$1);
 
 function Entity() {
-}
-Entity.prototype.nodeType = ENTITY_NODE;
+}Entity.prototype.nodeType = ENTITY_NODE;
 _extends(Entity,Node$1);
 
 function EntityReference() {
-}
-EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
+}EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
 _extends(EntityReference,Node$1);
 
 function DocumentFragment() {
-}
-DocumentFragment.prototype.nodeName =	"#document-fragment";
+}DocumentFragment.prototype.nodeName =	"#document-fragment";
 DocumentFragment.prototype.nodeType =	DOCUMENT_FRAGMENT_NODE;
 _extends(DocumentFragment,Node$1);
 
@@ -23630,7 +23778,7 @@ function cloneNode(doc,node,deep){
 		for(var i=0;i<len;i++){
 			node2.setAttributeNode(cloneNode(doc,attrs.item(i),true));
 		}
-		break;;
+		break;
 	case ATTRIBUTE_NODE:
 		deep = true;
 	}
@@ -23972,7 +24120,6 @@ function appendElement (hander,node) {
 	exports.DOMParser = DOMParser;
 //}
 });
-
 var domParser_1 = domParser.DOMImplementation;
 var domParser_2 = domParser.XMLSerializer;
 var domParser_3 = domParser.DOMParser;
@@ -27106,7 +27253,6 @@ function build(opts) {
 
 	return svg;
 }
-
 var canvgBrowser = canvg;
 
 /**
@@ -27149,6 +27295,8 @@ var canvgOptions = {
     @private
 */
 function parseTransform(elem) {
+  var assign;
+
 
   var property = select(elem).attr("transform");
   var scale = 1, x = 0, y = 0;
@@ -27158,7 +27306,6 @@ function parseTransform(elem) {
     else { scale = 1; }
     var translate = property.match(/translate\(([^a-z]+)\)/i);
     if (translate) {
-      var assign;
       (assign = translate[1]
         .replace(", ", ",")
         .replace(/([^a-z]),*\s([^a-z])/gi, "$1,$2")
@@ -27219,11 +27366,11 @@ function dom2canvas(elem, options) {
 
   var context = canvas.getContext("2d");
   context.scale(options.scale * ratio, options.scale * ratio);
-  context.clearRect(0, 0, canvas.width / 2, canvas.height / 2);
+  context.clearRect(0, 0, canvas.width / ratio, canvas.height / ratio);
 
   if (options.background) {
     context.beginPath();
-    context.rect(0, 0, canvas.width / 2, canvas.height / 2);
+    context.rect(0, 0, canvas.width / ratio, canvas.height / ratio);
     context.fillStyle = options.background;
     context.fill();
   }
@@ -27587,7 +27734,8 @@ var
 			, save = 0
 			, rank
 			, code
-			, undef;
+			, undef
+		;
 		while (len--) {
 			code = base64.charCodeAt(i++);
 			rank = base64_ranks[code-43];
@@ -27612,7 +27760,8 @@ var
 		// doesn't really matter with most image formats.
 		// If it somehow matters for you, truncate the buffer up outptr.
 		return buffer;
-	};
+	}
+;
 if (Uint8Array) {
 	base64_ranks = new Uint8Array([
 		  62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1
@@ -27624,7 +27773,7 @@ if (Uint8Array) {
 }
 if (HTMLCanvasElement && (!canvas_proto.toBlob || !canvas_proto.toBlobHD)) {
 	if (!canvas_proto.toBlob)
-	{ canvas_proto.toBlob = function(callback, type /* ...args*/) {
+	{ canvas_proto.toBlob = function(callback, type /*, ...args*/) {
 		  if (!type) {
 			type = "image/png";
 		} if (this.mozGetAsFile) {
@@ -27641,7 +27790,8 @@ if (HTMLCanvasElement && (!canvas_proto.toBlob || !canvas_proto.toBlobHD)) {
 			, header_end = dataURI.indexOf(",")
 			, data = dataURI.substring(header_end + 1)
 			, is_base64 = is_base64_regex.test(dataURI.substring(0, header_end))
-			, blob;
+			, blob
+		;
 		if (Blob.fake) {
 			// no reason to decode a data: URI that's just going to become a data URI again
 			blob = new Blob;
@@ -27692,6 +27842,7 @@ var FileSaver = createCommonjsModule(function (module) {
 /*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
 
 var saveAs = saveAs || (function(view) {
+	// IE <10 is explicitly unsupported
 	if (typeof view === "undefined" || typeof navigator !== "undefined" && /MSIE [1-9]\./.test(navigator.userAgent)) {
 		return;
 	}
@@ -27795,7 +27946,8 @@ var saveAs = saveAs || (function(view) {
 					filesaver.readyState = filesaver.DONE;
 					dispatch_all();
 					revoke(object_url);
-				};
+				}
+			;
 			filesaver.readyState = filesaver.INIT;
 
 			if (can_use_save_link) {
@@ -27816,7 +27968,8 @@ var saveAs = saveAs || (function(view) {
 		, FS_proto = FileSaver.prototype
 		, saveAs = function(blob, name, no_auto_bom) {
 			return new FileSaver(blob, name || blob.name || "download", no_auto_bom);
-		};
+		}
+	;
 	// IE 10+ (native saveAs)
 	if (typeof navigator !== "undefined" && navigator.msSaveOrOpenBlob) {
 		return function(blob, name, no_auto_bom) {
@@ -27861,10 +28014,7 @@ if ('object' !== "undefined" && module.exports) {
   });
 }
 });
-
 var FileSaver_1 = FileSaver.saveAs;
-
-// import {default as JsPDF} from "jspdf";
 
 var defaultOptions$1 = {
   filename: "download",
@@ -28168,7 +28318,7 @@ function setTimeFilter(s) {
     if (!(s instanceof Array)) { s = [s, s]; }
     s = s.map(Number);
     this.timeFilter(function (d) {
-      var ms = date$2(this$1._time(d)).getTime();
+      var ms = date$3(this$1._time(d)).getTime();
       return ms >= s[0] && ms <= s[1];
     }).render();
   }
@@ -28186,8 +28336,8 @@ function drawTimeline(data) {
 
 
   var timelinePossible = this._time && this._timeline;
-  var ticks = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$2) : [];
-  timelinePossible = timelinePossible && ticks.length > 1;
+  var ticks$$1 = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$3) : [];
+  timelinePossible = timelinePossible && ticks$$1.length > 1;
 
   var timelineGroup = elem("g.d3plus-viz-timeline", {
     condition: timelinePossible,
@@ -28198,16 +28348,16 @@ function drawTimeline(data) {
   if (timelinePossible) {
 
     var timeline = this._timelineClass
-      .domain(extent(ticks))
+      .domain(extent(ticks$$1))
       .duration(this._duration)
       .height(this._height - this._margin.bottom)
       .select(timelineGroup)
-      .ticks(ticks.sort(function (a, b) { return +a - +b; }))
+      .ticks(ticks$$1.sort(function (a, b) { return +a - +b; }))
       .width(this._width);
 
     if (this._timelineSelection === void 0) {
 
-      var dates = extent(data.map(this._time).map(date$2));
+      var dates = extent(data.map(this._time).map(date$3));
       this._timelineSelection = dates[0] === dates[1] ? dates[0] : dates;
       timeline.selection(this._timelineSelection);
 
@@ -28764,18 +28914,17 @@ function brushStyle() {
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
 
-// import {Rect} from "d3plus-shape";
 /**
     @class Viz
     @extends external:BaseClass
     @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
 */
-var Viz = (function (BaseClass) {
+var Viz = (function (BaseClass$$1) {
   function Viz() {
     var this$1 = this;
 
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._aggs = {};
     this._backClass = new TextBox()
@@ -28788,7 +28937,7 @@ var Viz = (function (BaseClass) {
       fontSize: 10,
       resize: false
     };
-    this._cache = false;
+    this._cache = true;
     this._color = function (d, i) { return this$1._groupBy[0](d, i); };
     this._colorScaleClass = new ColorScale();
     this._colorScaleConfig = {};
@@ -28824,7 +28973,7 @@ var Viz = (function (BaseClass) {
     this._legendPosition = "bottom";
     this._locale = "en-US";
 
-    this._lrucache = lrucache(5);
+    this._lrucache = lrucache(10);
 
     this._message = true;
     this._messageClass = new Message();
@@ -28951,8 +29100,8 @@ var Viz = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { Viz.__proto__ = BaseClass; }
-  Viz.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { Viz.__proto__ = BaseClass$$1; }
+  Viz.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Viz.prototype.constructor = Viz;
 
   /**
@@ -28987,7 +29136,7 @@ var Viz = (function (BaseClass) {
     // set the default timeFilter if it has not been specified
     if (this._time && this._timeFilter === void 0 && this._data.length) {
 
-      var dates = this._data.map(this._time).map(date$2);
+      var dates = this._data.map(this._time).map(date$3);
       var d = this._data[0], i = 0;
 
       if (this._discrete && ("_" + (this._discrete)) in this && this[("_" + (this._discrete))](d, i) === this._time(d, i)) {
@@ -28995,7 +29144,7 @@ var Viz = (function (BaseClass) {
       }
       else {
         var latestTime = +max(dates);
-        this._timeFilter = function (d, i) { return +date$2(this$1._time(d, i)) === latestTime; };
+        this._timeFilter = function (d, i) { return +date$3(this$1._time(d, i)) === latestTime; };
       }
 
     }
@@ -29010,6 +29159,7 @@ var Viz = (function (BaseClass) {
       var dataNest = nest();
       for (var i$1 = 0; i$1 <= this._drawDepth; i$1++) { dataNest.key(this$1._groupBy[i$1]); }
       if (this._discrete && ("_" + (this._discrete)) in this) { dataNest.key(this[("_" + (this._discrete))]); }
+      if (this._discrete && ("_" + (this._discrete) + "2") in this) { dataNest.key(this[("_" + (this._discrete) + "2")]); }
       dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
 
     }
@@ -29209,11 +29359,14 @@ var Viz = (function (BaseClass) {
       @param {Function} [*value*]
       @chainable
   */
-  Viz.prototype.active = function active (_) {
+  Viz.prototype.active = function active$$1 (_) {
 
     this._active = _;
-    this._shapes.forEach(function (s) { return s.active(_); });
-    if (this._legend) { this._legendClass.active(_); }
+
+    if (this._shapeConfig.activeOpacity !== 1) {
+      this._shapes.forEach(function (s) { return s.active(_); });
+      if (this._legend) { this._legendClass.active(_); }
+    }
 
     return this;
   };
@@ -29251,21 +29404,21 @@ var Viz = (function (BaseClass) {
   /**
       @memberof Viz
       @desc Defines the main color to be used for each data point in a visualization. Can be either an accessor function or a string key to reference in each data point. If a color value is returned, it will be used as is. If a string is returned, a unique color will be assigned based on the string.
-      @param {Function|String} [*value*]
+      @param {Function|String|False} [*value*]
       @chainable
   */
-  Viz.prototype.color = function color (_) {
-    return arguments.length ? (this._color = typeof _ === "function" ? _ : accessor(_), this) : this._color;
+  Viz.prototype.color = function color$$1 (_) {
+    return arguments.length ? (this._color = !_ || typeof _ === "function" ? _ : accessor(_), this) : this._color;
   };
 
   /**
       @memberof Viz
       @desc Defines the value to be used for a color scale. Can be either an accessor function or a string key to reference in each data point.
-      @param {Function|String} [*value*]
+      @param {Function|String|False} [*value*]
       @chainable
   */
   Viz.prototype.colorScale = function colorScale (_) {
-    return arguments.length ? (this._colorScale = typeof _ === "function" ? _ : accessor(_), this) : this._colorScale;
+    return arguments.length ? (this._colorScale = !_ || typeof _ === "function" ? _ : accessor(_), this) : this._colorScale;
   };
 
   /**
@@ -29483,26 +29636,31 @@ function value(d) {
 
 
     var hoverFunction = this._hover = _;
-    if (typeof _ === "function") {
 
-      var shapeData = merge(this._shapes.map(function (s) { return s.data(); }));
-      shapeData = shapeData.concat(this._legendClass.data());
-      var activeData = _ ? shapeData.filter(_) : [];
+    if (this._shapeConfig.hoverOpacity !== 1) {
 
-      var activeIds = [];
-      activeData.map(this._ids).forEach(function (ids) {
-        for (var x = 1; x <= ids.length; x++) {
-          activeIds.push(JSON.stringify(ids.slice(0, x)));
-        }
-      });
-      activeIds = activeIds.filter(function (id, i) { return activeIds.indexOf(id) === i; });
+      if (typeof _ === "function") {
 
-      if (activeIds.length) { hoverFunction = function (d, i) { return activeIds.includes(JSON.stringify(this$1._ids(d, i))); }; }
+        var shapeData = merge(this._shapes.map(function (s) { return s.data(); }));
+        shapeData = shapeData.concat(this._legendClass.data());
+        var activeData = _ ? shapeData.filter(_) : [];
+
+        var activeIds = [];
+        activeData.map(this._ids).forEach(function (ids) {
+          for (var x = 1; x <= ids.length; x++) {
+            activeIds.push(JSON.stringify(ids.slice(0, x)));
+          }
+        });
+        activeIds = activeIds.filter(function (id, i) { return activeIds.indexOf(id) === i; });
+
+        if (activeIds.length) { hoverFunction = function (d, i) { return activeIds.includes(JSON.stringify(this$1._ids(d, i))); }; }
+
+      }
+
+      this._shapes.forEach(function (s) { return s.hover(hoverFunction); });
+      if (this._legend) { this._legendClass.hover(hoverFunction); }
 
     }
-
-    this._shapes.forEach(function (s) { return s.hover(hoverFunction); });
-    if (this._legend) { this._legendClass.hover(hoverFunction); }
 
     return this;
   };
@@ -29768,7 +29926,7 @@ function value(d) {
       @param {Boolean} *value* = false
       @chainable
   */
-  Viz.prototype.zoom = function zoom (_) {
+  Viz.prototype.zoom = function zoom$$1 (_) {
     return arguments.length ? (this._zoom = _, this) : this._zoom;
   };
 
@@ -29890,10 +30048,10 @@ function value(d) {
     @extends Viz
     @desc Uses the [d3 pie layout](https://github.com/d3/d3-shape#pies) to creates SVG arcs based on an array of data.
 */
-var Pie = (function (Viz) {
+var Pie = (function (Viz$$1) {
   function Pie() {
 
-    Viz.call(this);
+    Viz$$1.call(this);
 
     this._shapeConfig = assign(this._shapeConfig, {
       Path: {
@@ -29910,8 +30068,8 @@ var Pie = (function (Viz) {
 
   }
 
-  if ( Viz ) Pie.__proto__ = Viz;
-  Pie.prototype = Object.create( Viz && Viz.prototype );
+  if ( Viz$$1 ) Pie.__proto__ = Viz$$1;
+  Pie.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
   Pie.prototype.constructor = Pie;
 
   /**
@@ -29922,7 +30080,7 @@ var Pie = (function (Viz) {
     var this$1 = this;
 
 
-    Viz.prototype._draw.call(this, callback);
+    Viz$$1.prototype._draw.call(this, callback);
 
     var height = this._height - this._margin.top - this._margin.bottom,
           width = this._width - this._margin.left - this._margin.right;
@@ -30262,7 +30420,7 @@ function constantZero() {
   return 0;
 }
 
-function constant$9(x) {
+function constant$10(x) {
   return function() {
     return x;
   };
@@ -30665,7 +30823,7 @@ function treemap() {
   };
 
   treemap.paddingInner = function(x) {
-    return arguments.length ? (paddingInner = typeof x === "function" ? x : constant$9(+x), treemap) : paddingInner;
+    return arguments.length ? (paddingInner = typeof x === "function" ? x : constant$10(+x), treemap) : paddingInner;
   };
 
   treemap.paddingOuter = function(x) {
@@ -30673,19 +30831,19 @@ function treemap() {
   };
 
   treemap.paddingTop = function(x) {
-    return arguments.length ? (paddingTop = typeof x === "function" ? x : constant$9(+x), treemap) : paddingTop;
+    return arguments.length ? (paddingTop = typeof x === "function" ? x : constant$10(+x), treemap) : paddingTop;
   };
 
   treemap.paddingRight = function(x) {
-    return arguments.length ? (paddingRight = typeof x === "function" ? x : constant$9(+x), treemap) : paddingRight;
+    return arguments.length ? (paddingRight = typeof x === "function" ? x : constant$10(+x), treemap) : paddingRight;
   };
 
   treemap.paddingBottom = function(x) {
-    return arguments.length ? (paddingBottom = typeof x === "function" ? x : constant$9(+x), treemap) : paddingBottom;
+    return arguments.length ? (paddingBottom = typeof x === "function" ? x : constant$10(+x), treemap) : paddingBottom;
   };
 
   treemap.paddingLeft = function(x) {
-    return arguments.length ? (paddingLeft = typeof x === "function" ? x : constant$9(+x), treemap) : paddingLeft;
+    return arguments.length ? (paddingLeft = typeof x === "function" ? x : constant$10(+x), treemap) : paddingLeft;
   };
 
   return treemap;
@@ -30697,12 +30855,12 @@ function treemap() {
     @param {Array} *data* The data array to be nested.
     @param {Array} *keys* An array of key accessors that signify each nest level.
 */
-function nest$1(data, keys) {
+function nest$1(data, keys$$1) {
 
-  if (!(keys instanceof Array)) { keys = [keys]; }
+  if (!(keys$$1 instanceof Array)) { keys$$1 = [keys$$1]; }
 
   var dataNest = nest();
-  for (var i = 0; i < keys.length; i++) { dataNest.key(keys[i]); }
+  for (var i = 0; i < keys$$1.length; i++) { dataNest.key(keys$$1[i]); }
   var nestedData = dataNest.entries(data);
 
   return bubble(nestedData);
@@ -30714,9 +30872,9 @@ function nest$1(data, keys) {
     @param {Array} *values* The "values" of a nest object.
     @private
 */
-function bubble(values) {
+function bubble(values$$1) {
 
-  return values.map(function (d) {
+  return values$$1.map(function (d) {
 
     if (d.key && d.values) {
       if (d.values[0].key === "undefined") { return d.values[0].values[0]; }
@@ -30734,10 +30892,10 @@ function bubble(values) {
     @extends Viz
     @desc Uses d3's [tree layout](https://github.com/d3/d3-hierarchy#tree) to create a tidy tree chart based on an array of data.
 */
-var Tree = (function (Viz) {
+var Tree = (function (Viz$$1) {
   function Tree() {
 
-    Viz.call(this);
+    Viz$$1.call(this);
 
     this._orient = "vertical";
     this._separation = function (a, b) { return a.parent === b.parent ? 1 : 2; };
@@ -30761,8 +30919,8 @@ var Tree = (function (Viz) {
 
   }
 
-  if ( Viz ) Tree.__proto__ = Viz;
-  Tree.prototype = Object.create( Viz && Viz.prototype );
+  if ( Viz$$1 ) Tree.__proto__ = Viz$$1;
+  Tree.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
   Tree.prototype.constructor = Tree;
 
   /**
@@ -30771,10 +30929,9 @@ var Tree = (function (Viz) {
   */
   Tree.prototype._draw = function _draw (callback) {
     var this$1 = this;
-    var obj;
 
 
-    Viz.prototype._draw.call(this, callback);
+    Viz$$1.prototype._draw.call(this, callback);
 
     var height = this._orient === "vertical"
             ? this._height - this._margin.top - this._margin.bottom
@@ -30828,7 +30985,7 @@ var Tree = (function (Viz) {
         return min([num, next - v.x, v.x - prev]);
       }, width); });
 
-    var yScale = linear$2()
+    var yScale = linear$3()
       .domain(yExtent)
       .range([rBufferRoot + this._labelHeight, height - rBufferEnd - this._labelHeight]);
 
@@ -30881,7 +31038,7 @@ var Tree = (function (Viz) {
         },
         labelConfig: {
           textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
-            : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
+          : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
           verticalAlign: function (d) { return this$1._orient === "vertical" ? d.data.depth === 1 ? "bottom" : "top" : "middle"; }
         },
         hitArea: function (d, i, s) {
@@ -30898,6 +31055,8 @@ var Tree = (function (Viz) {
 
         },
         labelBounds: function (d, i, s) {
+          var obj;
+
 
           var h = this$1._labelHeight,
                 height = this$1._orient === "vertical" ? "height" : "width",
@@ -30949,10 +31108,10 @@ function separation(a, b) {
     @extends Viz
     @desc Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout) to creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-hierarchy/getting-started/) for help getting started using the treemap generator.
 */
-var Treemap = (function (Viz) {
+var Treemap = (function (Viz$$1) {
   function Treemap() {
 
-    Viz.call(this);
+    Viz$$1.call(this);
 
     this._padding = 1;
     this._shapeConfig = assign({}, this._shapeConfig, {
@@ -30967,8 +31126,8 @@ var Treemap = (function (Viz) {
 
   }
 
-  if ( Viz ) Treemap.__proto__ = Viz;
-  Treemap.prototype = Object.create( Viz && Viz.prototype );
+  if ( Viz$$1 ) Treemap.__proto__ = Viz$$1;
+  Treemap.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
   Treemap.prototype.constructor = Treemap;
 
   /**
@@ -30979,7 +31138,7 @@ var Treemap = (function (Viz) {
     var this$1 = this;
 
 
-    Viz.prototype._draw.call(this, callback);
+    Viz$$1.prototype._draw.call(this, callback);
 
     var nestedData = nest();
     for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this$1._groupBy[i]); }

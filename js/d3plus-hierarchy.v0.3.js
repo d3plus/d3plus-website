@@ -1,7 +1,7 @@
 /*
-  d3plus-hierarchy v0.3.13
+  d3plus-hierarchy v0.3.14
   Nested, hierarchical, and cluster charts built on D3
-  Copyright (c) 2017 D3plus - https://d3plus.org
+  Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -64,20 +64,20 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-shape'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3-hierarchy'), require('d3-scale'), require('d3-collection')) :
-	typeof define === 'function' && define.amd ? define('d3plus-hierarchy', ['exports', 'd3-array', 'd3-shape', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3-hierarchy', 'd3-scale', 'd3-collection'], factory) :
-	(factory((global.d3plus = {}),global.d3Array,global.d3Shape,global.d3plusCommon,global.d3plusShape,global.d3plusViz,global.d3Hierarchy,global.d3Scale,global.d3Collection));
-}(this, (function (exports,d3Array,d3Shape,d3plusCommon,d3plusShape,d3plusViz,d3Hierarchy,d3Scale,d3Collection) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-shape'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3-collection'), require('d3-hierarchy'), require('d3-scale')) :
+	typeof define === 'function' && define.amd ? define('d3plus-hierarchy', ['exports', 'd3-array', 'd3-shape', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3-collection', 'd3-hierarchy', 'd3-scale'], factory) :
+	(factory((global.d3plus = {}),global.d3Array,global.d3Shape,global.d3plusCommon,global.d3plusShape,global.d3plusViz,global.d3Collection,global.d3Hierarchy,global.d3Scale));
+}(this, (function (exports,d3Array,d3Shape,d3plusCommon,d3plusShape,d3plusViz,d3Collection,d3Hierarchy,d3Scale) { 'use strict';
 
 /**
     @class Pie
     @extends Viz
     @desc Uses the [d3 pie layout](https://github.com/d3/d3-shape#pies) to creates SVG arcs based on an array of data.
 */
-var Pie = (function (Viz$$1) {
+var Pie = (function (Viz) {
   function Pie() {
 
-    Viz$$1.call(this);
+    Viz.call(this);
 
     this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
       Path: {
@@ -94,8 +94,8 @@ var Pie = (function (Viz$$1) {
 
   }
 
-  if ( Viz$$1 ) Pie.__proto__ = Viz$$1;
-  Pie.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
+  if ( Viz ) Pie.__proto__ = Viz;
+  Pie.prototype = Object.create( Viz && Viz.prototype );
   Pie.prototype.constructor = Pie;
 
   /**
@@ -106,7 +106,7 @@ var Pie = (function (Viz$$1) {
     var this$1 = this;
 
 
-    Viz$$1.prototype._draw.call(this, callback);
+    Viz.prototype._draw.call(this, callback);
 
     var height = this._height - this._margin.top - this._margin.bottom,
           width = this._width - this._margin.left - this._margin.right;
@@ -238,7 +238,7 @@ var Donut = (function (Pie$$1) {
     @param {Array} *data* The data array to be nested.
     @param {Array} *keys* An array of key accessors that signify each nest level.
 */
-function nest$1(data, keys) {
+function nest(data, keys) {
 
   if (!(keys instanceof Array)) { keys = [keys]; }
 
@@ -275,10 +275,10 @@ function bubble(values) {
     @extends Viz
     @desc Uses d3's [tree layout](https://github.com/d3/d3-hierarchy#tree) to create a tidy tree chart based on an array of data.
 */
-var Tree = (function (Viz$$1) {
+var Tree = (function (Viz) {
   function Tree() {
 
-    Viz$$1.call(this);
+    Viz.call(this);
 
     this._orient = "vertical";
     this._separation = function (a, b) { return a.parent === b.parent ? 1 : 2; };
@@ -302,8 +302,8 @@ var Tree = (function (Viz$$1) {
 
   }
 
-  if ( Viz$$1 ) Tree.__proto__ = Viz$$1;
-  Tree.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
+  if ( Viz ) Tree.__proto__ = Viz;
+  Tree.prototype = Object.create( Viz && Viz.prototype );
   Tree.prototype.constructor = Tree;
 
   /**
@@ -312,10 +312,9 @@ var Tree = (function (Viz$$1) {
   */
   Tree.prototype._draw = function _draw (callback) {
     var this$1 = this;
-    var obj;
 
 
-    Viz$$1.prototype._draw.call(this, callback);
+    Viz.prototype._draw.call(this, callback);
 
     var height = this._orient === "vertical"
             ? this._height - this._margin.top - this._margin.bottom
@@ -332,7 +331,7 @@ var Tree = (function (Viz$$1) {
       .size([width, height])
       (d3Hierarchy.hierarchy({
         key: "root",
-        values: nest$1(this._filteredData, this._groupBy.slice(0, this._drawDepth + 1))
+        values: nest(this._filteredData, this._groupBy.slice(0, this._drawDepth + 1))
       }, function (d) { return d.key && d.values ? d.values : null; }).sort(this._sort))
       .descendants()
       .filter(function (d) { return d.depth <= this$1._groupBy.length && d.parent; });
@@ -362,7 +361,7 @@ var Tree = (function (Viz$$1) {
       (yExtent[1] - rBufferRoot - rBufferEnd) / (this._groupBy.length + 1)
     ]);
 
-    this._labelWidths = nest$1(treeData, function (d) { return d.depth; })
+    this._labelWidths = nest(treeData, function (d) { return d.depth; })
       .map(function (d) { return d.values.reduce(function (num, v, i) {
         var next = i < d.values.length - 1 ? d.values[i + 1].x : width + this$1._margin[left],
               prev = i ? d.values[i - 1].x : this$1._margin[left];
@@ -422,7 +421,7 @@ var Tree = (function (Viz$$1) {
         },
         labelConfig: {
           textAnchor: function (d) { return this$1._orient === "vertical" ? "middle"
-            : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
+          : d.data.children && d.data.depth !== this$1._groupBy.length ? "end" : "start"; },
           verticalAlign: function (d) { return this$1._orient === "vertical" ? d.data.depth === 1 ? "bottom" : "top" : "middle"; }
         },
         hitArea: function (d, i, s) {
@@ -439,6 +438,8 @@ var Tree = (function (Viz$$1) {
 
         },
         labelBounds: function (d, i, s) {
+          var obj;
+
 
           var h = this$1._labelHeight,
                 height = this$1._orient === "vertical" ? "height" : "width",
@@ -490,10 +491,10 @@ function separation(a, b) {
     @extends Viz
     @desc Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout) to creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-hierarchy/getting-started/) for help getting started using the treemap generator.
 */
-var Treemap = (function (Viz$$1) {
+var Treemap = (function (Viz) {
   function Treemap() {
 
-    Viz$$1.call(this);
+    Viz.call(this);
 
     this._padding = 1;
     this._shapeConfig = d3plusCommon.assign({}, this._shapeConfig, {
@@ -508,8 +509,8 @@ var Treemap = (function (Viz$$1) {
 
   }
 
-  if ( Viz$$1 ) Treemap.__proto__ = Viz$$1;
-  Treemap.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
+  if ( Viz ) Treemap.__proto__ = Viz;
+  Treemap.prototype = Object.create( Viz && Viz.prototype );
   Treemap.prototype.constructor = Treemap;
 
   /**
@@ -520,7 +521,7 @@ var Treemap = (function (Viz$$1) {
     var this$1 = this;
 
 
-    Viz$$1.prototype._draw.call(this, callback);
+    Viz.prototype._draw.call(this, callback);
 
     var nestedData = d3Collection.nest();
     for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this$1._groupBy[i]); }
