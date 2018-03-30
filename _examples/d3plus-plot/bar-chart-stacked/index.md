@@ -2,7 +2,7 @@
 title: Stacked Bar Chart
 width: 990
 height: 400
-time: 1522434798273
+time: 1522434862045
 date: March 30, 2018
 ---
 
