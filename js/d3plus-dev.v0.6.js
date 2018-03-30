@@ -1,5 +1,5 @@
 /*
-  d3plus-dev v0.6.5
+  d3plus-dev v0.6.6
   A collection of scripts for developing D3plus modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -69,21 +69,21 @@ if (!Array.prototype.includes) {
 	(factory((global.d3plus = {}),global.d3plusCommon,global.d3Scale));
 }(this, (function (exports,d3plusCommon,d3Scale) { 'use strict';
 
-var _import = d3plusCommon.uuid();
+	var _import = d3plusCommon.uuid();
 
-var string = "Ceci n'est pas une |";
+	var string = "Ceci n'est pas une |";
 
-function assign () { return Object.assign({}, {test: true}); }
+	function assign () { return Object.assign({}, {test: true}); }
 
-function includes () { return [0, 1, 2].includes(1); }
+	function includes () { return [0, 1, 2].includes(1); }
 
-exports.scaleOrdinal = d3Scale.scaleOrdinal;
-exports.import = _import;
-exports.string = string;
-exports.assign = assign;
-exports.includes = includes;
+	exports.scaleOrdinal = d3Scale.scaleOrdinal;
+	exports.import = _import;
+	exports.string = string;
+	exports.assign = assign;
+	exports.includes = includes;
 
-Object.defineProperty(exports, '__esModule', { value: true });
+	Object.defineProperty(exports, '__esModule', { value: true });
 
 })));
 //# sourceMappingURL=d3plus-dev.js.map
