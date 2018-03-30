@@ -2,8 +2,8 @@
 title: Simple Priestley Diagram
 width: 990
 height: 400
-time: 1522335774504
-date: March 29, 2018
+time: 1522436230481
+date: March 30, 2018
 ---
 
 # Simple Priestley Diagram
