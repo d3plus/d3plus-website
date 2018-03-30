@@ -331,9 +331,8 @@ function configPrep(config, type, nest) {
     for (var event in on) {
 
       if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type))) {
-
-        newObj.on[event] = wrapFunction(on[event]);
-
+        var eventName = event.replace("click", "click touchstart");
+        newObj.on[eventName] = wrapFunction(on[event]);
       }
 
     }
@@ -15172,438 +15171,6 @@ var lrucache = createCommonjsModule(function (module) {
 });
 
 /**
-    @function accessor
-    @desc Wraps an object key in a simple accessor function.
-    @param {String} key The key to be returned from each Object passed to the function.
-    @param {*} [def] A default value to be returned if the key is not present.
-    @example <caption>this</caption>
-accessor("id");
-    @example <caption>returns this</caption>
-function(d) {
-  return d["id"];
-}
-*/
-function accessor$1(key, def) {
-  if (def === void 0) { return function (d) { return d[key]; }; }
-  return function (d) { return d[key] === void 0 ? def : d[key]; };
-}
-
-/**
-    @function isObject
-    @desc Detects if a variable is a javascript Object.
-    @param {*} item
-*/
-function isObject$1(item) {
-  return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
-}
-
-/**
-    @function assign
-    @desc A deeply recursive version of `Object.assign`.
-    @param {...Object} objects
-    @example <caption>this</caption>
-assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
-    @example <caption>returns this</caption>
-{id: "bar", deep: {group: "A", value: 20}}
-*/
-function assign$1() {
-  var arguments$1 = arguments;
-
-  var objects = [], len = arguments.length;
-  while ( len-- ) { objects[ len ] = arguments$1[ len ]; }
-
-
-  var target = objects[0];
-  var loop = function ( i ) {
-
-    var source = objects[i];
-
-    Object.keys(source).forEach(function (prop) {
-
-      var value = source[prop];
-
-      if (isObject$1(value)) {
-
-        if (target.hasOwnProperty(prop) && isObject$1(target[prop])) { target[prop] = assign$1({}, target[prop], value); }
-        else { target[prop] = value; }
-
-      }
-      else if (Array.isArray(value)) {
-
-        if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
-
-          var targetArray = target[prop];
-
-          value.forEach(function (sourceItem, itemIndex) {
-
-            if (itemIndex < targetArray.length) {
-              var targetItem = targetArray[itemIndex];
-
-              if (Object.is(targetItem, sourceItem)) { return; }
-
-              if (isObject$1(targetItem) && isObject$1(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
-                targetArray[itemIndex] = assign$1({}, targetItem, sourceItem);
-              }
-              else { targetArray[itemIndex] = sourceItem; }
-
-            }
-            else { targetArray.push(sourceItem); }
-
-          });
-        }
-        else { target[prop] = value; }
-
-      }
-      else { target[prop] = value; }
-
-    });
-  };
-
-  for (var i = 1; i < objects.length; i++) { loop( i ); }
-
-  return target;
-
-}
-
-/**
-    @function attrize
-    @desc Applies each key/value in an object as an attr.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} attrs An object of key/value attr pairs.
-*/
-function attrize$1(e, a) {
-  if ( a === void 0 ) { a = {}; }
-
-  for (var k in a) { if ({}.hasOwnProperty.call(a, k)) { e.attr(k, a[k]); } }
-}
-
-/**
-    @function s
-    @desc Returns 4 random characters, used for constructing unique identifiers.
-    @private
-*/
-function s$2() {
-  return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-}
-
-/**
-    @function uuid
-    @summary Returns a unique identifier.
-*/
-function uuid$1() {
-  return ("" + (s$2()) + (s$2()) + "-" + (s$2()) + "-" + (s$2()) + "-" + (s$2()) + "-" + (s$2()) + (s$2()) + (s$2()));
-}
-
-/**
-    @constant RESET
-    @desc String constant used to reset an individual config property.
-*/
-var RESET$1 = "D3PLUS-COMMON-RESET";
-
-/**
-    @desc Recursive function that resets nested Object configs.
-    @param {Object} obj
-    @param {Object} defaults
-    @private
-*/
-function nestedReset$1(obj, defaults) {
-  if (isObject$1(obj)) {
-    for (var nestedKey in obj) {
-      if ({}.hasOwnProperty.call(obj, nestedKey) && !nestedKey.startsWith("_")) {
-        var defaultValue = defaults && isObject$1(defaults) ? defaults[nestedKey] : undefined;
-        if (obj[nestedKey] === RESET$1) {
-          obj[nestedKey] = defaultValue;
-        }
-        else if (isObject$1(obj[nestedKey])) {
-          nestedReset$1(obj[nestedKey], defaultValue);
-        }
-      }
-    }
-  }
-}
-
-/**
-    @class BaseClass
-    @summary An abstract class that contains some global methods and functionality.
-*/
-var BaseClass$1 = function BaseClass() {
-  this._on = {};
-  this._uuid = uuid$1();
-};
-
-/**
-    @memberof BaseClass
-    @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
-    @param {Object} [*value*]
-    @chainable
-*/
-BaseClass$1.prototype.config = function config (_) {
-    var this$1 = this;
-
-  if (!this._configDefault) {
-    var config = {};
-    for (var k in this$1.__proto__) {
-      if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
-        var v = this$1[k]();
-        config[k] = isObject$1(v) ? assign$1({}, v) : v;
-      }
-    }
-    this._configDefault = config;
-  }
-  if (arguments.length) {
-    for (var k$1 in _) {
-      if ({}.hasOwnProperty.call(_, k$1) && k$1 in this$1) {
-        var v$1 = _[k$1];
-        if (v$1 === RESET$1) {
-          if (k$1 === "on") { this$1._on = this$1._configDefault[k$1]; }
-          else { this$1[k$1](this$1._configDefault[k$1]); }
-        }
-        else {
-          nestedReset$1(v$1, this$1._configDefault[k$1]);
-          this$1[k$1](v$1);
-        }
-      }
-    }
-    return this;
-  }
-  else {
-    var config$1 = {};
-    for (var k$2 in this$1.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this$1[k$2](); } }
-    return config$1;
-  }
-};
-
-/**
-    @memberof BaseClass
-    @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-    @param {String} [*typenames*]
-    @param {Function} [*listener*]
-    @chainable
-    @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
-new Plot
-.on("click.Shape", function(d) {
-  console.log("data for shape clicked:", d);
-})
-.on("click.Legend", function(d) {
-  console.log("data for legend clicked:", d);
-})
-*/
-BaseClass$1.prototype.on = function on (_, f) {
-  return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-};
-
-/**
-    @function closest
-    @desc Finds the closest numeric value in an array.
-    @param {Number} n The number value to use when searching the array.
-    @param {Array} arr The array of values to test against.
-*/
-
-/**
-    @function configPrep
-    @desc Preps a config object for d3plus data, and optionally bubbles up a specific nested type. When using this function, you must bind a d3plus class' `this` context.
-    @param {Object} [config = this._shapeConfig] The configuration object to parse.
-    @param {String} [type = "shape"] The event classifier to user for "on" events. For example, the default event type of "shape" will apply all events in the "on" config object with that key, like "click.shape" and "mouseleave.shape", in addition to any gloval events like "click" and "mouseleave".
-    @param {String} [nest] An optional nested key to bubble up to the parent config level.
-*/
-function configPrep$1(config, type, nest) {
-  if ( config === void 0 ) { config = this._shapeConfig; }
-  if ( type === void 0 ) { type = "shape"; }
-  if ( nest === void 0 ) { nest = false; }
-
-
-  var newConfig = {duration: this._duration, on: {}};
-
-  var wrapFunction = function (func) { return function (d, i, s) {
-    while (d.__d3plus__) {
-      i = d.i;
-      d = d.data || d.feature;
-    }
-    return func(d, i, s);
-  }; };
-
-  var parseEvents = function (newObj, on) {
-
-    for (var event in on) {
-
-      if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type))) {
-        var eventName = event.replace("click", "click touchstart");
-        newObj.on[eventName] = wrapFunction(on[event]);
-      }
-
-    }
-
-  };
-
-  var keyEval = function (newObj, obj) {
-
-    for (var key in obj) {
-
-      if ({}.hasOwnProperty.call(obj, key)) {
-
-        if (key === "on") { parseEvents(newObj, obj[key]); }
-        else if (typeof obj[key] === "function") {
-          newObj[key] = wrapFunction(obj[key]);
-        }
-        else if (typeof obj[key] === "object" && !(obj instanceof Array)) {
-          newObj[key] = {on: {}};
-          keyEval(newObj[key], obj[key]);
-        }
-        else { newObj[key] = obj[key]; }
-
-      }
-
-    }
-
-  };
-
-  keyEval(newConfig, config);
-  if (this._on) { parseEvents(newConfig, this._on); }
-  if (nest && config[nest]) {
-    keyEval(newConfig, config[nest]);
-    if (config[nest].on) { parseEvents(newConfig, config[nest].on); }
-  }
-
-  return newConfig;
-
-}
-
-/**
-    @function constant
-    @desc Wraps non-function variables in a simple return function.
-    @param {Array|Number|Object|String} value The value to be returned from the function.
-    @example <caption>this</caption>
-constant(42);
-    @example <caption>returns this</caption>
-function() {
-  return 42;
-}
-*/
-function constant$10(value) {
-  return function constant() {
-    return value;
-  };
-}
-
-/**
-    @function elem
-    @desc Manages the enter/update/exit pattern for a single DOM element.
-    @param {String} selector A D3 selector, which must include the tagname and a class and/or ID.
-    @param {Object} params Additional parameters.
-    @param {Boolean} [params.condition = true] Whether or not the element should be rendered (or removed).
-    @param {Object} [params.enter = {}] A collection of key/value pairs that map to attributes to be given on enter.
-    @param {Object} [params.exit = {}] A collection of key/value pairs that map to attributes to be given on exit.
-    @param {D3Selection} [params.parent = d3.select("body")] The parent element for this new element to be appended to.
-    @param {D3Transition} [params.transition = d3.transition().duration(0)] The transition to use when animated the different life cycle stages.
-    @param {Object} [params.update = {}] A collection of key/value pairs that map to attributes to be given on update.
-*/
-function elem$1(selector$$1, p) {
-
-  // overrides default params
-  p = Object.assign({}, {
-    condition: true,
-    enter: {},
-    exit: {},
-    parent: select("body"),
-    transition: transition().duration(0),
-    update: {}
-  }, p);
-
-  var className = (/\.([^#]+)/g).exec(selector$$1),
-        id = (/#([^\.]+)/g).exec(selector$$1),
-        tag = (/^([^.^#]+)/g).exec(selector$$1)[1];
-
-  var elem = p.parent.selectAll(selector$$1.includes(":") ? selector$$1.split(":")[1] : selector$$1)
-    .data(p.condition ? [null] : []);
-
-  var enter = elem.enter().append(tag).call(attrize$1, p.enter);
-
-  if (id) { enter.attr("id", id[1]); }
-  if (className) { enter.attr("class", className[1]); }
-
-  elem.exit().transition(p.transition).call(attrize$1, p.exit).remove();
-
-  var update = enter.merge(elem);
-  update.transition(p.transition).call(attrize$1, p.update);
-
-  return update;
-
-}
-
-/**
-    @function merge
-    @desc Combines an Array of Objects together and returns a new Object.
-    @param {Array} objects The Array of objects to be merged together.
-    @param {Object} aggs An object containing specific aggregation methods (functions) for each key type. By default, numbers are summed and strings are returned as an array of unique values.
-    @example <caption>this</caption>
-merge([
-  {id: "foo", group: "A", value: 10, links: [1, 2]},
-  {id: "bar", group: "A", value: 20, links: [1, 3]}
-]);
-    @example <caption>returns this</caption>
-{id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
-*/
-function objectMerge$1(objects, aggs) {
-  if ( aggs === void 0 ) { aggs = {}; }
-
-
-  var availableKeys = new Set(merge(objects.map(function (o) { return keys(o); }))),
-        newObject = {};
-
-  availableKeys.forEach(function (k) {
-    var values$$1 = objects.map(function (o) { return o[k]; });
-    var value;
-    if (aggs[k]) { value = aggs[k](values$$1); }
-    else {
-      var types = values$$1.map(function (v) { return v || v === false ? v.constructor : v; }).filter(function (v) { return v !== void 0; });
-      if (!types.length) { value = undefined; }
-      else if (types.indexOf(Array) >= 0) {
-        value = merge(values$$1.map(function (v) { return v instanceof Array ? v : [v]; }));
-        value = Array.from(new Set(value));
-        if (value.length === 1) { value = value[0]; }
-      }
-      else if (types.indexOf(String) >= 0) {
-        value = Array.from(new Set(values$$1));
-        if (value.length === 1) { value = value[0]; }
-      }
-      else if (types.indexOf(Number) >= 0) { value = sum(values$$1); }
-      else if (types.indexOf(Object) >= 0) { value = objectMerge$1(values$$1.filter(function (v) { return v; })); }
-      else {
-        value = Array.from(new Set(values$$1.filter(function (v) { return v !== void 0; })));
-        if (value.length === 1) { value = value[0]; }
-      }
-    }
-    newObject[k] = value;
-  });
-
-  return newObject;
-
-}
-
-/**
- @function parseSides
- @desc Converts a string of directional CSS shorthand values into an object with the values expanded.
- @param {String|Number} sides The CSS shorthand string to expand.
- */
-
-/**
-    @function prefix
-    @desc Returns the appropriate CSS vendor prefix, given the current browser.
-*/
-
-/**
-    @function stylize
-    @desc Applies each key/value in an object as a style.
-    @param {D3selection} elem The D3 element to apply the styles to.
-    @param {Object} styles An object of key/value style pairs.
-*/
-function stylize$1(e, s) {
-  if ( s === void 0 ) { s = {}; }
-
-  for (var k in s) { if ({}.hasOwnProperty.call(s, k)) { e.style(k, s[k]); } }
-}
-
-/**
     @external BaseClass
     @see https://github.com/d3plus/d3plus-common#BaseClass
 */
@@ -18079,9 +17646,9 @@ var Message = function Message() {
     @desc Removes the message from the page.
     @chainable
 */
-Message.prototype.exit = function exit (elem, duration) {
+Message.prototype.exit = function exit (elem$$1, duration) {
 
-  elem
+  elem$$1
     .transition().duration(duration).style("opacity", 0)
     .transition().remove();
 
@@ -18139,7 +17706,7 @@ Message.prototype.render = function render (ref) {
 
   this.mask.exit().call(this.exit, duration);
 
-  stylize$1(this.mask, {
+  stylize(this.mask, {
     "background-color": String,
     "bottom": "0px",
     "left": "0px",
@@ -18156,7 +17723,7 @@ Message.prototype.render = function render (ref) {
     .merge(this.elem)
     .html(String);
 
-  stylize$1(this.elem, style);
+  stylize(this.elem, style);
 
   if (callback) { setTimeout(callback, 100); }
 
@@ -18175,7 +17742,7 @@ function drawBack() {
 
   var visible = this._history.length;
 
-  var backGroup = elem$1("g.d3plus-viz-back", {
+  var backGroup = elem("g.d3plus-viz-back", {
     parent: this._select,
     transition: this._transition,
     update: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")}
@@ -18209,7 +17776,7 @@ function drawColorScale(data) {
 
   var showColorScale = this._colorScale && data && data.length > 1;
 
-  var scaleGroup = elem$1("g.d3plus-viz-colorScale", {
+  var scaleGroup = elem("g.d3plus-viz-colorScale", {
     condition: showColorScale && !this._colorScaleConfig.select,
     enter: transform,
     parent: this._select,
@@ -28588,7 +28155,7 @@ function drawControls() {
     transform.x = this$1._margin.left + (area === "right" ? transform.width : 0);
     transform.y = this$1._margin.top + (area === "bottom" ? transform.height : 0);
 
-    var foreign = elem$1(("foreignObject.d3plus-viz-controls-" + area), {
+    var foreign = elem(("foreignObject.d3plus-viz-controls-" + area), {
       condition: controls.length,
       enter: Object.assign({opacity: 0}, transform),
       exit: Object.assign({opacity: 0}, transform),
@@ -28687,7 +28254,7 @@ function drawLegend(data) {
 
   var transform = {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")};
 
-  var legendGroup = elem$1("g.d3plus-viz-legend", {
+  var legendGroup = elem("g.d3plus-viz-legend", {
     condition: this._legend && !this._legendConfig.select,
     enter: transform,
     parent: this._select,
@@ -28721,7 +28288,7 @@ function drawLegend(data) {
 
     nest()
       .key(fill)
-      .rollup(function (leaves) { return legendData.push(objectMerge$1(leaves, this$1._aggs)); })
+      .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
       .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
 
     this._legendClass
@@ -28734,7 +28301,7 @@ function drawLegend(data) {
       .select(legendGroup)
       .verticalAlign(!wide ? "middle" : position)
       .width(this._width - this._margin.left - this._margin.right)
-      .shapeConfig(configPrep$1.bind(this)(this._shapeConfig, "legend"))
+      .shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend"))
       .config(this._legendConfig)
       .shapeConfig({fill: color, opacity: opacity})
       .render();
@@ -28784,7 +28351,7 @@ function drawTimeline(data) {
   var ticks$$1 = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$3) : [];
   timelinePossible = timelinePossible && ticks$$1.length > 1;
 
-  var timelineGroup = elem$1("g.d3plus-viz-timeline", {
+  var timelineGroup = elem("g.d3plus-viz-timeline", {
     condition: timelinePossible,
     parent: this._select,
     transition: this._transition
@@ -28840,7 +28407,7 @@ function drawTitle(data) {
 
   var text = this._title ? this._title(data) : false;
 
-  var group = elem$1("g.d3plus-viz-title", {
+  var group = elem("g.d3plus-viz-title", {
     enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
     parent: this._select,
     transition: this._transition,
@@ -28871,7 +28438,7 @@ function drawTotal(data) {
   var total = typeof this._total === "function" ? sum(data.map(this._total))
     : this._total === true && this._size ? sum(data.map(this._size)) : false;
 
-  var group = elem$1("g.d3plus-viz-total", {
+  var group = elem("g.d3plus-viz-total", {
     enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
     parent: this._select,
     transition: this._transition,
@@ -29125,18 +28692,18 @@ function zoomControls() {
     .on("click", function() {
       select(this)
         .classed("active", !brushing)
-        .call(stylize$1, brushing ? that._zoomControlStyle || {} : that._zoomControlStyleActive || {});
+        .call(stylize, brushing ? that._zoomControlStyle || {} : that._zoomControlStyleActive || {});
       zoomEvents.bind(that)(!brushing);
     })
     .html("&#10696");
 
   control.selectAll(".zoom-control")
-    .call(stylize$1, that._zoomControlStyle)
+    .call(stylize, that._zoomControlStyle)
     .on("mouseenter", function() {
-      select(this).call(stylize$1, that._zoomControlStyleHover || {});
+      select(this).call(stylize, that._zoomControlStyleHover || {});
     })
     .on("mouseleave", function() {
-      select(this).call(stylize$1, select(this).classed("active") ? that._zoomControlStyleActive || {} : that._zoomControlStyle || {});
+      select(this).call(stylize, select(this).classed("active") ? that._zoomControlStyleActive || {} : that._zoomControlStyle || {});
     });
 
   this._zoomBrush
@@ -29347,10 +28914,10 @@ function brushStart() {
 function brushStyle() {
 
   this._brushGroup.selectAll(".selection")
-    .call(attrize$1, this._zoomBrushSelectionStyle || {});
+    .call(attrize, this._zoomBrushSelectionStyle || {});
 
   this._brushGroup.selectAll(".handle")
-    .call(attrize$1, this._zoomBrushHandleStyle || {});
+    .call(attrize, this._zoomBrushHandleStyle || {});
 
 }
 
@@ -29364,12 +28931,12 @@ function brushStyle() {
     @extends external:BaseClass
     @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
 */
-var Viz = (function (BaseClass) {
+var Viz = (function (BaseClass$$1) {
   function Viz() {
     var this$1 = this;
 
 
-    BaseClass.call(this);
+    BaseClass$$1.call(this);
 
     this._aggs = {};
     this._backClass = new TextBox()
@@ -29402,7 +28969,7 @@ var Viz = (function (BaseClass) {
     this._downloadPosition = "top";
     this._duration = 600;
     this._history = [];
-    this._groupBy = [accessor$1("id")];
+    this._groupBy = [accessor("id")];
     this._legend = true;
     this._legendConfig = {
       label: legendLabel.bind(this),
@@ -29417,7 +28984,7 @@ var Viz = (function (BaseClass) {
     this._legendClass = new Legend();
     this._legendPosition = "bottom";
 
-    this._loadingHTML = constant$10("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
+    this._loadingHTML = constant("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
 
     this._loadingMessage = true;
     this._locale = "en-US";
@@ -29432,7 +28999,7 @@ var Viz = (function (BaseClass) {
       "width": "100%"
     };
 
-    this._noDataHTML = constant$10("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>No Data Available</strong>\n    </div>");
+    this._noDataHTML = constant("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>No Data Available</strong>\n    </div>");
 
     this._noDataMessage = true;
     this._on = {
@@ -29444,7 +29011,7 @@ var Viz = (function (BaseClass) {
     };
     this._padding = 5;
     this._queue = [];
-    this._shape = constant$10("Rect");
+    this._shape = constant("Rect");
     this._shapes = [];
     this._shapeConfig = {
       fill: function (d, i) {
@@ -29470,12 +29037,12 @@ var Viz = (function (BaseClass) {
           return colorContrast(c);
         }
       },
-      opacity: constant$10(1),
+      opacity: constant(1),
       stroke: function (d, i) {
         var c = typeof this$1._shapeConfig.fill === "function" ? this$1._shapeConfig.fill(d, i) : this$1._shapeConfig.fill;
         return color(c).darker();
       },
-      strokeWidth: constant$10(0)
+      strokeWidth: constant(0)
     };
 
     this._timeline = true;
@@ -29547,8 +29114,8 @@ var Viz = (function (BaseClass) {
 
   }
 
-  if ( BaseClass ) { Viz.__proto__ = BaseClass; }
-  Viz.prototype = Object.create( BaseClass && BaseClass.prototype );
+  if ( BaseClass$$1 ) { Viz.__proto__ = BaseClass$$1; }
+  Viz.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
   Viz.prototype.constructor = Viz;
 
   /**
@@ -29607,7 +29174,7 @@ var Viz = (function (BaseClass) {
       for (var i$1 = 0; i$1 <= this._drawDepth; i$1++) { dataNest.key(this$1._groupBy[i$1]); }
       if (this._discrete && ("_" + (this._discrete)) in this) { dataNest.key(this[("_" + (this._discrete))]); }
       if (this._discrete && ("_" + (this._discrete) + "2") in this) { dataNest.key(this[("_" + (this._discrete) + "2")]); }
-      dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge$1(leaves, this$1._aggs)); }).entries(flatData);
+      dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
 
     }
     if (this._noDataMessage && !this._filteredData.length) {
@@ -29834,7 +29401,7 @@ var Viz = (function (BaseClass) {
       @chainable
   */
   Viz.prototype.aggs = function aggs (_) {
-    return arguments.length ? (this._aggs = assign$1(this._aggs, _), this) : this._aggs;
+    return arguments.length ? (this._aggs = assign(this._aggs, _), this) : this._aggs;
   };
 
   /**
@@ -29844,7 +29411,7 @@ var Viz = (function (BaseClass) {
       @chainable
   */
   Viz.prototype.backConfig = function backConfig (_) {
-    return arguments.length ? (this._backConfig = assign$1(this._backConfig, _), this) : this._backConfig;
+    return arguments.length ? (this._backConfig = assign(this._backConfig, _), this) : this._backConfig;
   };
 
   /**
@@ -29864,7 +29431,7 @@ var Viz = (function (BaseClass) {
       @chainable
   */
   Viz.prototype.color = function color$$1 (_) {
-    return arguments.length ? (this._color = !_ || typeof _ === "function" ? _ : accessor$1(_), this) : this._color;
+    return arguments.length ? (this._color = !_ || typeof _ === "function" ? _ : accessor(_), this) : this._color;
   };
 
   /**
@@ -29874,7 +29441,7 @@ var Viz = (function (BaseClass) {
       @chainable
   */
   Viz.prototype.colorScale = function colorScale (_) {
-    return arguments.length ? (this._colorScale = !_ || typeof _ === "function" ? _ : accessor$1(_), this) : this._colorScale;
+    return arguments.length ? (this._colorScale = !_ || typeof _ === "function" ? _ : accessor(_), this) : this._colorScale;
   };
 
   /**
@@ -29884,7 +29451,7 @@ var Viz = (function (BaseClass) {
       @chainable
   */
   Viz.prototype.colorScaleConfig = function colorScaleConfig (_) {
-    return arguments.length ? (this._colorScaleConfig = assign$1(this._colorScaleConfig, _), this) : this._colorScaleConfig;
+    return arguments.length ? (this._colorScaleConfig = assign(this._colorScaleConfig, _), this) : this._colorScaleConfig;
   };
 
   /**
@@ -29914,7 +29481,7 @@ var Viz = (function (BaseClass) {
       @chainable
   */
   Viz.prototype.controlConfig = function controlConfig (_) {
-    return arguments.length ? (this._controlConfig = assign$1(this._controlConfig, _), this) : this._controlConfig;
+    return arguments.length ? (this._controlConfig = assign(this._controlConfig, _), this) : this._controlConfig;
   };
 
   /**
@@ -30009,7 +29576,7 @@ If *data* is not specified, this method returns the current primary data array, 
       @chainable
   */
   Viz.prototype.downloadConfig = function downloadConfig (_) {
-    return arguments.length ? (this._downloadConfig = assign$1(this._downloadConfig, _), this) : this._downloadConfig;
+    return arguments.length ? (this._downloadConfig = assign(this._downloadConfig, _), this) : this._downloadConfig;
   };
 
   /**
@@ -30066,7 +29633,7 @@ function value(d) {
             return v.length === 1 ? v[0] : v;
           };
         }
-        return accessor$1(k);
+        return accessor(k);
       }
     }), this;
   };
@@ -30128,7 +29695,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.label = function label (_) {
-    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant$10(_), this) : this._label;
+    return arguments.length ? (this._label = typeof _ === "function" ? _ : constant(_), this) : this._label;
   };
 
   /**
@@ -30148,7 +29715,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.legendConfig = function legendConfig (_) {
-    return arguments.length ? (this._legendConfig = assign$1(this._legendConfig, _), this) : this._legendConfig;
+    return arguments.length ? (this._legendConfig = assign(this._legendConfig, _), this) : this._legendConfig;
   };
 
   /**
@@ -30158,7 +29725,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.legendTooltip = function legendTooltip (_) {
-    return arguments.length ? (this._legendTooltip = assign$1(this._legendTooltip, _), this) : this._legendTooltip;
+    return arguments.length ? (this._legendTooltip = assign(this._legendTooltip, _), this) : this._legendTooltip;
   };
 
   /**
@@ -30178,7 +29745,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.loadingHTML = function loadingHTML (_) {
-    return arguments.length ? (this._loadingHTML = typeof _ === "function" ? _ : constant$10(_), this) : this._loadingHTML;
+    return arguments.length ? (this._loadingHTML = typeof _ === "function" ? _ : constant(_), this) : this._loadingHTML;
   };
 
   /**
@@ -30218,7 +29785,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.messageStyle = function messageStyle (_) {
-    return arguments.length ? (this._messageStyle = assign$1(this._messageStyle, _), this) : this._messageStyle;
+    return arguments.length ? (this._messageStyle = assign(this._messageStyle, _), this) : this._messageStyle;
   };
 
   /**
@@ -30228,7 +29795,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.noDataHTML = function noDataHTML (_) {
-    return arguments.length ? (this._noDataHTML = typeof _ === "function" ? _ : constant$10(_), this) : this._noDataHTML;
+    return arguments.length ? (this._noDataHTML = typeof _ === "function" ? _ : constant(_), this) : this._noDataHTML;
   };
 
   /**
@@ -30258,7 +29825,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.shape = function shape (_) {
-    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant$10(_), this) : this._shape;
+    return arguments.length ? (this._shape = typeof _ === "function" ? _ : constant(_), this) : this._shape;
   };
 
   /**
@@ -30268,7 +29835,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.shapeConfig = function shapeConfig (_) {
-    return arguments.length ? (this._shapeConfig = assign$1(this._shapeConfig, _), this) : this._shapeConfig;
+    return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
   };
 
   /**
@@ -30283,7 +29850,7 @@ function value(d) {
         this._time = _;
       }
       else {
-        this._time = accessor$1(_);
+        this._time = accessor(_);
         if (!this._aggs[_]) {
           this._aggs[_] = function (a) {
             var v = Array.from(new Set(a));
@@ -30323,7 +29890,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.timelineConfig = function timelineConfig (_) {
-    return arguments.length ? (this._timelineConfig = assign$1(this._timelineConfig, _), this) : this._timelineConfig;
+    return arguments.length ? (this._timelineConfig = assign(this._timelineConfig, _), this) : this._timelineConfig;
   };
 
   /**
@@ -30333,7 +29900,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.title = function title (_) {
-    return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$10(_), this) : this._title;
+    return arguments.length ? (this._title = typeof _ === "function" ? _ : constant(_), this) : this._title;
   };
 
   /**
@@ -30343,7 +29910,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.titleConfig = function titleConfig (_) {
-    return arguments.length ? (this._titleConfig = assign$1(this._titleConfig, _), this) : this._titleConfig;
+    return arguments.length ? (this._titleConfig = assign(this._titleConfig, _), this) : this._titleConfig;
   };
 
   /**
@@ -30363,7 +29930,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.tooltipConfig = function tooltipConfig (_) {
-    return arguments.length ? (this._tooltipConfig = assign$1(this._tooltipConfig, _), this) : this._tooltipConfig;
+    return arguments.length ? (this._tooltipConfig = assign(this._tooltipConfig, _), this) : this._tooltipConfig;
   };
 
   /**
@@ -30373,7 +29940,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.total = function total (_) {
-    return arguments.length ? (this._total = typeof _ === "function" ? _ : accessor$1(_), this) : this._total;
+    return arguments.length ? (this._total = typeof _ === "function" ? _ : accessor(_), this) : this._total;
   };
 
   /**
@@ -30383,7 +29950,7 @@ function value(d) {
       @chainable
   */
   Viz.prototype.totalConfig = function totalConfig (_) {
-    return arguments.length ? (this._totalConfig = assign$1(this._totalConfig, _), this) : this._totalConfig;
+    return arguments.length ? (this._totalConfig = assign(this._totalConfig, _), this) : this._totalConfig;
   };
 
   /**
@@ -30517,7 +30084,7 @@ function value(d) {
   };
 
   return Viz;
-}(BaseClass$1));
+}(BaseClass));
 
 function ordinalBuffer(domain) {
 
