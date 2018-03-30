@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.0
+  d3plus-viz v0.11.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -17616,8 +17616,8 @@ Message.prototype.hide = function hide (ref) {
     var callback = ref.callback;
 
 
-  this.mask.call(this.exit, duration);
-  this.elem.call(this.exit, duration);
+  this.mask.call(this.exit.bind(this), duration);
+  this.elem.call(this.exit.bind(this), duration);
 
   if (callback) { setTimeout(callback, duration + 100); }
 
@@ -17653,7 +17653,7 @@ Message.prototype.render = function render (ref) {
     .style("opacity", 1)
     .merge(this.mask);
 
-  this.mask.exit().call(this.exit, duration);
+  this.mask.exit().call(this.exit.bind(this), duration);
 
   stylize(this.mask, {
     "background-color": String,
