@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.2
+  d3plus-viz v0.11.3
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -1717,7 +1717,14 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Viz.prototype.data = function data (_, f) {
-      return arguments.length ? (this._queue.push([load.bind(this), _, f, "data"]), this) : this._data;
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "data"; });
+        var d = [load.bind(this), _, f, "data"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._data;
     };
 
     /**
