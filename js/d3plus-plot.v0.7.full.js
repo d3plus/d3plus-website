@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.0
+  d3plus-plot v0.7.1
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -17667,8 +17667,8 @@ if (!Array.prototype.includes) {
       var callback = ref.callback;
 
 
-    this.mask.call(this.exit, duration);
-    this.elem.call(this.exit, duration);
+    this.mask.call(this.exit.bind(this), duration);
+    this.elem.call(this.exit.bind(this), duration);
 
     if (callback) { setTimeout(callback, duration + 100); }
 
@@ -17704,7 +17704,7 @@ if (!Array.prototype.includes) {
       .style("opacity", 1)
       .merge(this.mask);
 
-    this.mask.exit().call(this.exit, duration);
+    this.mask.exit().call(this.exit.bind(this), duration);
 
     stylize(this.mask, {
       "background-color": String,
@@ -28517,9 +28517,10 @@ if (!Array.prototype.includes) {
 
 
     var pageX = window.pageXOffset !== undefined ? window.pageXOffset
-            : (document.documentElement || document.body.parentNode || document.body).scrollLeft,
-          pageY = window.pageYOffset !== undefined ? window.pageYOffset
-            : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+      : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+
+    var pageY = window.pageYOffset !== undefined ? window.pageYOffset
+      : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 
     var bounds = elem.getBoundingClientRect();
     var height = bounds.height,
@@ -29343,7 +29344,7 @@ if (!Array.prototype.includes) {
           this$1._draw(callback);
           zoomControls.bind(this$1)();
 
-          if (this$1._messageClass._isVisible && this$1._filteredData.length) { this$1._messageClass.hide(); }
+          if (this$1._messageClass._isVisible && (!this$1._noDataMessage || this$1._filteredData.length)) { this$1._messageClass.hide(); }
 
           if (this$1._detectResize && (this$1._autoWidth || this$1._autoHeight)) {
             select(window).on(("resize." + (this$1._uuid)), function () {
@@ -30751,17 +30752,20 @@ if (!Array.prototype.includes) {
         .range([xOffsetLeft, undefined])
         .render();
 
-      var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + x2Height) + ")";
-      var x2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
+      var isYAxisOrdinal = yScale === "Ordinal";
+      var topOffset = isYAxisOrdinal ? this._yTest.shapeConfig().labelConfig.fontSize() : this._yTest.shapeConfig().labelConfig.fontSize() / 2;
+
+      var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + x2Height + topOffset) + ")";
+      var x2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + topOffset) + ")";
 
       var xGroup = elem("g.d3plus-plot-x-axis", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}});
       var x2Group = elem("g.d3plus-plot-x2-axis", {parent: parent, transition: transition, enter: {transform: x2Transform}, update: {transform: x2Transform}});
 
       var xTrans = xOffsetLeft > yWidth ? xOffsetLeft - yWidth : 0;
-      var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top) + ")";
+      var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top + topOffset) + ")";
       var yGroup = elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: yTransform}, update: {transform: yTransform}});
 
-      var y2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
+      var y2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + topOffset) + ")";
       var y2Group = elem("g.d3plus-plot-y2-axis", {parent: parent, transition: transition, enter: {transform: y2Transform}, update: {transform: y2Transform}});
 
       var xOffsetRight = max([y2Width, width - this._xTest._getRange()[1], width - this._x2Test._getRange()[1]]);
@@ -30770,7 +30774,7 @@ if (!Array.prototype.includes) {
 
       this._xAxis
         .domain(xDomain)
-        .height(height - x2Height)
+        .height(height - (x2Height + topOffset))
         .range([xOffsetLeft, width - xDifference])
         .scale(xScale.toLowerCase())
         .select(xGroup.node())
@@ -30788,7 +30792,7 @@ if (!Array.prototype.includes) {
 
       this._x2Axis
         .domain(x2Exists ? x2Domain : xDomain)
-        .height(height - xHeight)
+        .height(height - (xHeight + topOffset))
         .range([xOffsetLeft, width - x2Difference])
         .scale(x2Scale.toLowerCase())
         .select(x2Group.node())
@@ -30811,8 +30815,6 @@ if (!Array.prototype.includes) {
       };
       var xRange = this._xAxis._getRange();
 
-      var isYAxisOrdinal = yScale === "Ordinal";
-      var topOffset = isYAxisOrdinal ? this._yTest.shapeConfig().labelConfig.fontSize() : this._yTest.shapeConfig().labelConfig.fontSize() / 2;
       var yOffsetBottom = max([xHeight, height - this._yTest._getRange()[1], height - this._y2Test._getRange()[1]]);
       var yAxisOffset = height - this._yTest._getRange()[1];
       var yDifference = isYAxisOrdinal ? yOffsetBottom - yAxisOffset + this._yTest.padding() : xHeight;
@@ -30820,7 +30822,7 @@ if (!Array.prototype.includes) {
       this._yAxis
         .domain(yDomain)
         .height(height)
-        .range([this._xAxis.outerBounds().y + topOffset + x2Height, height - yDifference])
+        .range([this._xAxis.outerBounds().y + x2Height, height - (yDifference + topOffset)])
         .scale(yScale.toLowerCase())
         .select(yGroup.node())
         .ticks(yTicks)
@@ -30837,7 +30839,7 @@ if (!Array.prototype.includes) {
         .domain(y2Exists ? y2Domain : yDomain)
         .gridSize(0)
         .height(height)
-        .range([this._xAxis.outerBounds().y + x2Height + topOffset, height - y2Difference])
+        .range([this._xAxis.outerBounds().y + x2Height, height - (y2Difference + topOffset)])
         .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
         .select(y2Group.node())
         .width(width - max([0, xOffsetRight - y2Width]))
