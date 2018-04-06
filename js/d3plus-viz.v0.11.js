@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.3
+  d3plus-viz v0.11.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -1197,7 +1197,8 @@ if (!Array.prototype.includes) {
         shapeConfig: {
           labelConfig: {
             fontColor: undefined,
-            fontResize: false
+            fontResize: false,
+            padding: 0
           }
         }
       };
