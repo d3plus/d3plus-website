@@ -4,7 +4,7 @@
 <head>
 
   <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.4.full.min.js"></script>
+  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.5.full.min.js"></script>
 
   <style>
 
@@ -43,6 +43,7 @@
   
   new d3plus.Treemap()
     .data(data)
+    .groupBy("id")
     .tooltipConfig({
       body: function(d) {
         var table = "<table class='tooltip-table'>";
@@ -59,6 +60,7 @@
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();;
       }
     })
+    .sum("value")
     .render();
 
 </script>

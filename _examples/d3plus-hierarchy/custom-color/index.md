@@ -2,8 +2,8 @@
 title: Defining Custom Colors for a Visualization
 width: 990
 height: 400
-time: 1522436002948
-date: March 30, 2018
+time: 1523027791621
+date: April 06, 2018
 ---
 
 # Defining Custom Colors for a Visualization
@@ -20,7 +20,7 @@ var data = [
 ];
 ```
 
-Given the new `"color"` variable present in each data point, we can tell the [TreeMap](http://d3plus.org/docs/#Treemap) class to use our specific color for each rectangle's fill attribute. All of methods that the [Rect](http://d3plus.org/docs/#Rect) class makes available are accessible via the [.shapeConfig( )](http://d3plus.org/docs/#Viz.shapeConfig) method:
+Given the new `"color"` variable present in each data point, we can tell the [Treemap](http://d3plus.org/docs/#Treemap) class to use our specific color for each rectangle's fill attribute. All of methods that the [Rect](http://d3plus.org/docs/#Rect) class makes available are accessible via the [.shapeConfig( )](http://d3plus.org/docs/#Viz.shapeConfig) method:
 
 ```js
 new d3plus.Treemap()
@@ -31,5 +31,6 @@ new d3plus.Treemap()
       return d.color;
     }
   })
+  .sum("value")
   .render();
 ```

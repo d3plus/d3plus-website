@@ -2,8 +2,8 @@
 title: Changing Font Styles
 width: 990
 height: 400
-time: 1522436002948
-date: March 30, 2018
+time: 1523027791621
+date: April 06, 2018
 ---
 
 # Changing Font Styles
@@ -21,11 +21,13 @@ var data = [
 
 new d3plus.Treemap()
   .data(data)
+  .groupBy("id")
   .shapeConfig({
     labelConfig: {
       fontFamily: "serif",
       fontMax: 100
     }
   })
+  .sum("value")
   .render();
 ```

@@ -4,7 +4,7 @@
 <head>
 
   <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.4.full.min.js"></script>
+  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.5.full.min.js"></script>
 
   <style>
 
@@ -31,9 +31,11 @@
   
   new d3plus.Treemap()
     .data(data)
+    .groupBy("id")
     .on("click", function(d) {
       alert(d.id + " has been clicked!");
     })
+    .sum("value")
     .render();
 
 </script>

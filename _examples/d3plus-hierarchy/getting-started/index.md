@@ -2,8 +2,8 @@
 title: Simple Tree Map
 width: 990
 height: 400
-time: 1522436002948
-date: March 30, 2018
+time: 1523027791621
+date: April 06, 2018
 ---
 
 # Simple Tree Map
@@ -26,6 +26,7 @@ Only a few lines of code are needed to transform it into an interactive [TreeMap
 new d3plus.Treemap()
   .data(data)
   .groupBy(["parent", "id"])
+  .sum("value")
   .render();
 ```
 
