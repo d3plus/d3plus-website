@@ -17,12 +17,12 @@ This is a global class, and extends all of the methods and functionality of [<co
     * [.fitKey(*value*)](#Geomap.fitKey) ↩︎
     * [.fitObject(*data*, [*formatter*])](#Geomap.fitObject) ↩︎
     * [.ocean([*value*])](#Geomap.ocean) ↩︎
-    * [.padding([*value*])](#Geomap.padding) ↩︎
     * [.point([*value*])](#Geomap.point) ↩︎
     * [.pointSize([*value*])](#Geomap.pointSize) ↩︎
     * [.pointSizeMax([*value*])](#Geomap.pointSizeMax) ↩︎
     * [.pointSizeMin([*value*])](#Geomap.pointSizeMin) ↩︎
     * [.projection(*projection*)](#Geomap.projection) ↩︎
+    * [.projectionPadding([*value*])](#Geomap.projectionPadding) ↩︎
     * [.tiles([*value*])](#Geomap.tiles) ↩︎
     * [.tileUrl([url])](#Geomap.tileUrl) ↩︎
     * [.topojson(*data*, [*formatter*])](#Geomap.topojson) ↩︎
@@ -39,7 +39,7 @@ Creates a geographical map with zooming, panning, image tiles, and the ability t
 
 
 
-<a name="Geomap.fitFilter" href="#Geomap.fitFilter">#</a> Geomap.**fitFilter**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L385)
+<a name="Geomap.fitFilter" href="#Geomap.fitFilter">#</a> Geomap.**fitFilter**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L378)
 
 Topojson files sometimes include small geographies that negatively impact how the library determines the default zoom level (for example, a small island or territory far off the coast that is barely visible to the eye). The fitFilter method can be used to remove specific geographies from the logic used to determine the zooming.
 
@@ -49,7 +49,7 @@ The *value* passed can be a single id to remove, an array of ids, or a filter fu
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.fitKey" href="#Geomap.fitKey">#</a> Geomap.**fitKey**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L402)
+<a name="Geomap.fitKey" href="#Geomap.fitKey">#</a> Geomap.**fitKey**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L395)
 
 If the topojson being used to determine the zoom fit (either the main [topojson](#Geomap.topojson) object or the [fitObject](#Geomap.fitObject)) contains multiple geographical sets (for example, a file containing state and county boundaries), use this method to indentify which set to use for the zoom fit.
 
@@ -59,7 +59,7 @@ If not specified, the first key in the *Array* returned from using `Object.keys`
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.fitObject" href="#Geomap.fitObject">#</a> Geomap.**fitObject**(*data*, [*formatter*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L415)
+<a name="Geomap.fitObject" href="#Geomap.fitObject">#</a> Geomap.**fitObject**(*data*, [*formatter*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L408)
 
 The topojson to be used for the initial projection [fit extent](https://github.com/d3/d3-geo#projection_fitExtent). The value passed should either be a valid Topojson *Object* or a *String* representing a filepath or URL to be loaded.
 
@@ -83,15 +83,7 @@ The color visible behind any shapes drawn on the map projection. By default, a c
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.padding" href="#Geomap.padding">#</a> Geomap.**padding**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L435)
-
-The outer padding between the edge of the visualization and the shapes drawn. The value passed can be either a single number to be used on all sides, or a CSS string pattern (ie. `"20px 0 10px"`).
-
-
-This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
-
-
-<a name="Geomap.point" href="#Geomap.point">#</a> Geomap.**point**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L445)
+<a name="Geomap.point" href="#Geomap.point">#</a> Geomap.**point**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L435)
 
 The accessor to be used when detecting coordinate points in the objects passed to the [data](https://d3plus.org/docs/#Viz.data) method. Values are expected to be in the format `[longitude, latitude]`, which is in-line with d3's expected coordinate mapping.
 
@@ -99,7 +91,7 @@ The accessor to be used when detecting coordinate points in the objects passed t
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.pointSize" href="#Geomap.pointSize">#</a> Geomap.**pointSize**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L455)
+<a name="Geomap.pointSize" href="#Geomap.pointSize">#</a> Geomap.**pointSize**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L445)
 
 The accessor or static value to be used for sizing coordinate points.
 
@@ -107,7 +99,7 @@ The accessor or static value to be used for sizing coordinate points.
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.pointSizeMax" href="#Geomap.pointSizeMax">#</a> Geomap.**pointSizeMax**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L465)
+<a name="Geomap.pointSizeMax" href="#Geomap.pointSizeMax">#</a> Geomap.**pointSizeMax**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L455)
 
 The maximum pixel radius used in the scale for sizing coordinate points.
 
@@ -115,7 +107,7 @@ The maximum pixel radius used in the scale for sizing coordinate points.
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.pointSizeMin" href="#Geomap.pointSizeMin">#</a> Geomap.**pointSizeMin**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L475)
+<a name="Geomap.pointSizeMin" href="#Geomap.pointSizeMin">#</a> Geomap.**pointSizeMin**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L465)
 
 The minimum pixel radius used in the scale for sizing coordinate points.
 
@@ -123,9 +115,17 @@ The minimum pixel radius used in the scale for sizing coordinate points.
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.projection" href="#Geomap.projection">#</a> Geomap.**projection**(*projection*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L485)
+<a name="Geomap.projection" href="#Geomap.projection">#</a> Geomap.**projection**(*projection*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L475)
 
 Sets the map projection used when displaying topojson and coordinate points. Any of the standard projections exported from [d3-geo](https://github.com/d3/d3-geo#projections) are accepted, whether as the string name (ie. "geoMercator") or the generator function itself. Map tiles are only usable when the projection is set to Mercator (which is also the default value).
+
+
+This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
+
+
+<a name="Geomap.projectionPadding" href="#Geomap.projectionPadding">#</a> Geomap.**projectionPadding**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L486)
+
+The outer padding between the edge of the visualization and the shapes drawn. The value passed can be either a single number to be used on all sides, or a CSS string pattern (ie. `"20px 0 10px"`).
 
 
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
@@ -163,7 +163,7 @@ This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with
 
 
 
-<a name="Geomap.topojsonFilter" href="#Geomap.topojsonFilter">#</a> Geomap.**topojsonFilter**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L529)
+<a name="Geomap.topojsonFilter" href="#Geomap.topojsonFilter">#</a> Geomap.**topojsonFilter**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L536)
 
 If the [topojson](#Geomap.topojson) being used contains boundaries that should not be shown, this method can be used to filter them out of the final output. The *value* passed can be a single id to remove, an array of ids, or a filter function.
 
@@ -171,7 +171,7 @@ If the [topojson](#Geomap.topojson) being used contains boundaries that should n
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.topojsonKey" href="#Geomap.topojsonKey">#</a> Geomap.**topojsonKey**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L546)
+<a name="Geomap.topojsonKey" href="#Geomap.topojsonKey">#</a> Geomap.**topojsonKey**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L553)
 
 If the [topojson](#Geomap.topojson) contains multiple geographical sets (for example, a file containing state and county boundaries), use this method to indentify which set to use.
 
@@ -181,7 +181,7 @@ If not specified, the first key in the *Array* returned from using `Object.keys`
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.topojsonId" href="#Geomap.topojsonId">#</a> Geomap.**topojsonId**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L556)
+<a name="Geomap.topojsonId" href="#Geomap.topojsonId">#</a> Geomap.**topojsonId**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L563)
 
 The accessor used to map each topojson geometry to it's corresponding [data](https://d3plus.org/docs/#Viz.data) point.
 
