@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.1
+  d3plus-plot v0.7.2
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -391,8 +391,6 @@ if (!Array.prototype.includes) {
       var this$1 = this;
 
 
-      Viz.prototype._draw.call(this, callback);
-
       if (!this._filteredData.length) { return this; }
 
       var stackGroup = function (d, i) { return this$1._stacked
@@ -737,6 +735,33 @@ if (!Array.prototype.includes) {
       var isYAxisOrdinal = yScale === "Ordinal";
       var topOffset = isYAxisOrdinal ? this._yTest.shapeConfig().labelConfig.fontSize() : this._yTest.shapeConfig().labelConfig.fontSize() / 2;
 
+      var xOffsetRight = d3Array.max([y2Width, width - this._xTest._getRange()[1], width - this._x2Test._getRange()[1]]);
+      var xOffset = width - this._xTest._getRange()[1];
+      var xDifference = xOffsetRight - xOffset + this._xTest.padding();
+
+      var x2Offset = width - this._x2Test._getRange()[1];
+      var x2Difference = xOffsetRight - x2Offset + this._x2Test.padding();
+
+      var xBounds = this._xTest.outerBounds();
+      var xHeight = xBounds.height + this._xTest.padding();
+
+      var yOffsetBottom = d3Array.max([xHeight, height - this._yTest._getRange()[1], height - this._y2Test._getRange()[1]]);
+      var yAxisOffset = height - this._yTest._getRange()[1];
+      var yDifference = isYAxisOrdinal ? yOffsetBottom - yAxisOffset + this._yTest.padding() : xHeight;
+
+      var y2AxisOffset = height - this._y2Test._getRange()[1];
+      var y2Difference = isYAxisOrdinal ? yOffsetBottom - y2AxisOffset + this._y2Test.padding() : xHeight;
+
+      this._padding.left += xOffsetLeft;
+      this._padding.right += Math.max(xDifference, x2Difference);
+      this._padding.bottom += Math.max(yDifference, y2Difference);
+      this._padding.top += x2Height + topOffset;
+
+      Viz.prototype._draw.call(this, callback);
+
+      var horizontalMargin = this._margin.left + this._margin.right;
+      var verticalMargin = this._margin.top + this._margin.bottom;
+
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + x2Height + topOffset) + ")";
       var x2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + topOffset) + ")";
 
@@ -747,17 +772,13 @@ if (!Array.prototype.includes) {
       var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top + topOffset) + ")";
       var yGroup = d3plusCommon.elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: yTransform}, update: {transform: yTransform}});
 
-      var y2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + topOffset) + ")";
+      var y2Transform = "translate(-" + (this._margin.right) + ", " + (this._margin.top + topOffset) + ")";
       var y2Group = d3plusCommon.elem("g.d3plus-plot-y2-axis", {parent: parent, transition: transition, enter: {transform: y2Transform}, update: {transform: y2Transform}});
-
-      var xOffsetRight = d3Array.max([y2Width, width - this._xTest._getRange()[1], width - this._x2Test._getRange()[1]]);
-      var xOffset = width - this._xTest._getRange()[1];
-      var xDifference = xOffsetRight - xOffset + this._xTest.padding();
 
       this._xAxis
         .domain(xDomain)
-        .height(height - (x2Height + topOffset))
-        .range([xOffsetLeft, width - xDifference])
+        .height(height - (x2Height + topOffset + verticalMargin))
+        .range([xOffsetLeft, width - (xDifference + horizontalMargin)])
         .scale(xScale.toLowerCase())
         .select(xGroup.node())
         .ticks(xTicks)
@@ -766,16 +787,10 @@ if (!Array.prototype.includes) {
         .config(this._xConfig)
         .render();
 
-      var x2Offset = width - this._x2Test._getRange()[1];
-      var x2Difference = xOffsetRight - x2Offset + this._x2Test.padding();
-
-      var xBounds = this._xTest.outerBounds();
-      var xHeight = xBounds.height + this._xTest.padding();
-
       this._x2Axis
         .domain(x2Exists ? x2Domain : xDomain)
-        .height(height - (xHeight + topOffset))
-        .range([xOffsetLeft, width - x2Difference])
+        .height(height - (xHeight + topOffset + verticalMargin))
+        .range([xOffsetLeft, width - (x2Difference + horizontalMargin)])
         .scale(x2Scale.toLowerCase())
         .select(x2Group.node())
         .ticks(x2Exists ? x2Ticks : xTicks)
@@ -797,14 +812,10 @@ if (!Array.prototype.includes) {
       };
       var xRange = this._xAxis._getRange();
 
-      var yOffsetBottom = d3Array.max([xHeight, height - this._yTest._getRange()[1], height - this._y2Test._getRange()[1]]);
-      var yAxisOffset = height - this._yTest._getRange()[1];
-      var yDifference = isYAxisOrdinal ? yOffsetBottom - yAxisOffset + this._yTest.padding() : xHeight;
-
       this._yAxis
         .domain(yDomain)
         .height(height)
-        .range([this._xAxis.outerBounds().y + x2Height, height - (yDifference + topOffset)])
+        .range([this._xAxis.outerBounds().y + x2Height, height - (yDifference + topOffset + verticalMargin)])
         .scale(yScale.toLowerCase())
         .select(yGroup.node())
         .ticks(yTicks)
@@ -813,15 +824,12 @@ if (!Array.prototype.includes) {
         .config(this._yConfig)
         .render();
 
-      var y2AxisOffset = height - this._y2Test._getRange()[1];
-      var y2Difference = isYAxisOrdinal ? yOffsetBottom - y2AxisOffset + this._y2Test.padding() : xHeight;
-
       this._y2Axis
         .config(yC)
         .domain(y2Exists ? y2Domain : yDomain)
         .gridSize(0)
         .height(height)
-        .range([this._xAxis.outerBounds().y + x2Height, height - (y2Difference + topOffset)])
+        .range([this._xAxis.outerBounds().y + x2Height, height - (y2Difference + topOffset + verticalMargin)])
         .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
         .select(y2Group.node())
         .width(width - d3Array.max([0, xOffsetRight - y2Width]))

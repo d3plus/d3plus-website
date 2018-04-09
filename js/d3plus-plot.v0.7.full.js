@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.1
+  d3plus-plot v0.7.2
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -17749,12 +17749,12 @@ if (!Array.prototype.includes) {
     }).node();
 
     this._backClass
-      .data(visible ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
+      .data(visible ? [{text: "Back", x: 0, y: 0}] : [])
       .select(backGroup)
       .config(this._backConfig)
       .render();
 
-    this._margin.top += visible ? this._backClass.fontSize()() + this._padding : 0;
+    this._margin.top += visible ? this._backClass.fontSize()() : 0;
 
   }
 
@@ -17769,40 +17769,40 @@ if (!Array.prototype.includes) {
     if ( data === void 0 ) { data = []; }
 
 
-    var transform = {
-      opacity: this._colorScalePosition ? 1 : 0,
-      transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")
-    };
-
-    var showColorScale = this._colorScale && data && data.length > 1;
-
-    var scaleGroup = elem("g.d3plus-viz-colorScale", {
-      condition: showColorScale && !this._colorScaleConfig.select,
-      enter: transform,
-      parent: this._select,
-      transition: this._transition,
-      update: transform
-    }).node();
-
     if (this._colorScale && data) {
+
+      var position = this._colorScalePosition || "bottom";
+      var wide = ["top", "bottom"].includes(position);
+
+      var transform = {
+        opacity: this._colorScalePosition ? 1 : 0,
+        transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")
+      };
+
+      var showColorScale = this._colorScale && data && data.length > 1;
+
+      var scaleGroup = elem("g.d3plus-viz-colorScale", {
+        condition: showColorScale && !this._colorScaleConfig.select,
+        enter: transform,
+        parent: this._select,
+        transition: this._transition,
+        update: transform
+      }).node();
 
       var scaleData = data.filter(function (d, i) {
         var c = this$1._colorScale(d, i);
         return c !== undefined && c !== null;
       });
 
-      var position = this._colorScalePosition || "bottom";
-      var wide = ["top", "bottom"].includes(position);
-
       this._colorScaleClass
         .align({bottom: "end", left: "start", right: "end", top: "start"}[position])
         .duration(this._duration)
         .data(scaleData)
-        .height(this._height - this._margin.bottom - this._margin.top)
+        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
         .orient(position)
         .select(scaleGroup)
         .value(this._colorScale)
-        .width(this._width - this._margin.left - this._margin.right)
+        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
         .config(this._colorScaleConfig)
         .render();
 
@@ -28147,13 +28147,15 @@ if (!Array.prototype.includes) {
         });
       }
 
+      var wide = area === "top" || area === "bottom";
+
       var transform = {
-        height: this$1._height - this$1._margin.top - this$1._margin.bottom,
-        width: this$1._width - this$1._margin.left - this$1._margin.right
+        height: wide ? this$1._height - (this$1._margin.top + this$1._margin.bottom) : this$1._height - (this$1._margin.top + this$1._margin.bottom + this$1._padding.top + this$1._padding.bottom),
+        width: wide ? this$1._width - (this$1._margin.left + this$1._margin.right + this$1._padding.left + this$1._padding.right) : this$1._width - (this$1._margin.left + this$1._margin.right)
       };
 
-      transform.x = this$1._margin.left + (area === "right" ? transform.width : 0);
-      transform.y = this$1._margin.top + (area === "bottom" ? transform.height : 0);
+      transform.x = (wide ? this$1._margin.left + this$1._padding.left : this$1._margin.left) + (area === "right" ? transform.width : 0);
+      transform.y = (wide ? this$1._margin.top : this$1._margin.top + this$1._padding.top)  + (area === "bottom" ? transform.height : 0);
 
       var foreign = elem(("foreignObject.d3plus-viz-controls-" + area), {
         condition: controls.length,
@@ -28252,20 +28254,21 @@ if (!Array.prototype.includes) {
     if ( data === void 0 ) { data = []; }
 
 
-    var transform = {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")};
-
-    var legendGroup = elem("g.d3plus-viz-legend", {
-      condition: this._legend && !this._legendConfig.select,
-      enter: transform,
-      parent: this._select,
-      transition: this._transition,
-      update: transform
-    }).node();
-
     if (this._legend) {
 
+      var legendBounds = this._legendClass.outerBounds();
       var position = this._legendPosition;
       var wide = ["top", "bottom"].includes(position);
+
+      var transform = {transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")};
+
+      var legendGroup = elem("g.d3plus-viz-legend", {
+        condition: this._legend && !this._legendConfig.select,
+        enter: transform,
+        parent: this._select,
+        transition: this._transition,
+        update: transform
+      }).node();
 
       var legendData = [];
 
@@ -28290,30 +28293,27 @@ if (!Array.prototype.includes) {
         .key(fill)
         .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
         .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
-
+      
       this._legendClass
         .id(fill)
         .align(wide ? "center" : position)
         .direction(wide ? "row" : "column")
         .duration(this._duration)
         .data(legendData.length > 1 || this._colorScale ? legendData : [])
-        .height(this._height - this._margin.bottom - this._margin.top)
+        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
         .select(legendGroup)
         .verticalAlign(!wide ? "middle" : position)
-        .width(this._width - this._margin.left - this._margin.right)
+        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
         .shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend"))
         .config(this._legendConfig)
         .shapeConfig({fill: color, opacity: opacity})
         .render();
 
-      var legendBounds = this._legendClass.outerBounds();
       if (!this._legendConfig.select && legendBounds.height) {
         if (wide) { this._margin[position] += legendBounds.height + this._legendClass.padding() * 2; }
         else { this._margin[position] += legendBounds.width + this._legendClass.padding() * 2; }
       }
-
     }
-
   }
 
   /**
@@ -28351,10 +28351,14 @@ if (!Array.prototype.includes) {
     var ticks$$1 = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$3) : [];
     timelinePossible = timelinePossible && ticks$$1.length > 1;
 
+    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", 0)")};
+
     var timelineGroup = elem("g.d3plus-viz-timeline", {
       condition: timelinePossible,
+      enter: transform,
       parent: this._select,
-      transition: this._transition
+      transition: this._transition,
+      update: transform
     }).node();
 
     if (timelinePossible) {
@@ -28365,7 +28369,7 @@ if (!Array.prototype.includes) {
         .height(this._height - this._margin.bottom)
         .select(timelineGroup)
         .ticks(ticks$$1.sort(function (a, b) { return +a - +b; }))
-        .width(this._width);
+        .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right));
 
       if (this._timelineSelection === void 0) {
 
@@ -28407,21 +28411,23 @@ if (!Array.prototype.includes) {
 
     var text = this._title ? this._title(data) : false;
 
+    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", " + (this._margin.top) + ")")};
+
     var group = elem("g.d3plus-viz-title", {
-      enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
+      enter: transform,
       parent: this._select,
       transition: this._transition,
-      update: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")}
+      update: transform
     }).node();
 
     this._titleClass
       .data(text ? [{text: text}] : [])
       .select(group)
-      .width(this._width - this._margin.left - this._margin.right)
+      .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._titleConfig)
       .render();
 
-    this._margin.top += text ? group.getBBox().height + this._padding : 0;
+    this._margin.top += text ? group.getBBox().height : 0;
 
   }
 
@@ -28438,11 +28444,13 @@ if (!Array.prototype.includes) {
     var total = typeof this._total === "function" ? sum(data.map(this._total))
       : this._total === true && this._size ? sum(data.map(this._size)) : false;
 
+    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", " + (this._margin.top) + ")")};
+
     var group = elem("g.d3plus-viz-total", {
-      enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
+      enter: transform,
       parent: this._select,
       transition: this._transition,
-      update: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")}
+      update: transform
     }).node();
 
     var visible = typeof total === "number";
@@ -28450,11 +28458,11 @@ if (!Array.prototype.includes) {
     this._totalClass
       .data(visible ? [{text: ("Total: " + total)}] : [])
       .select(group)
-      .width(this._width - this._margin.left - this._margin.right)
+      .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._totalConfig)
       .render();
 
-    this._margin.top += visible ? group.getBBox().height + this._padding : 0;
+    this._margin.top += visible ? group.getBBox().height : 0;
 
   }
 
@@ -28948,6 +28956,7 @@ if (!Array.prototype.includes) {
         .on("mousemove", function () { return this$1._backClass.select().style("cursor", "pointer"); });
       this._backConfig = {
         fontSize: 10,
+        padding: 5,
         resize: false
       };
       this._cache = true;
@@ -28977,7 +28986,8 @@ if (!Array.prototype.includes) {
         shapeConfig: {
           labelConfig: {
             fontColor: undefined,
-            fontResize: false
+            fontResize: false,
+            padding: 0
           }
         }
       };
@@ -29010,7 +29020,6 @@ if (!Array.prototype.includes) {
         "mousemove.shape": mousemoveShape.bind(this),
         "mousemove.legend": mousemoveLegend.bind(this)
       };
-      this._padding = 5;
       this._queue = [];
       this._shape = constant("Rect");
       this._shapes = [];
@@ -29053,6 +29062,7 @@ if (!Array.prototype.includes) {
       this._titleClass = new TextBox();
       this._titleConfig = {
         fontSize: 12,
+        padding: 5,
         resize: false,
         textAnchor: "middle"
       };
@@ -29070,6 +29080,7 @@ if (!Array.prototype.includes) {
       this._totalClass = new TextBox();
       this._totalConfig = {
         fontSize: 10,
+        padding: 5,
         resize: false,
         textAnchor: "middle"
       };
@@ -29120,13 +29131,12 @@ if (!Array.prototype.includes) {
     Viz.prototype.constructor = Viz;
 
     /**
-        @memberof Viz
-        @desc Called by render once all checks are passed.
-        @private
-    */
-    Viz.prototype._draw = function _draw () {
+     @memberof Viz
+     @desc Called by draw before anything is drawn. Formats the data and performs preparations for draw.
+     @private
+     */
+    Viz.prototype._preDraw = function _preDraw () {
       var this$1 = this;
-
 
       var that = this;
 
@@ -29178,6 +29188,14 @@ if (!Array.prototype.includes) {
         dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
 
       }
+    };
+
+    /**
+        @memberof Viz
+        @desc Called by render once all checks are passed.
+        @private
+    */
+    Viz.prototype._draw = function _draw () {
       if (this._noDataMessage && !this._filteredData.length) {
         this._messageClass.render({
           container: this._select.node().parentNode,
@@ -29187,13 +29205,17 @@ if (!Array.prototype.includes) {
         });
       }
 
-      drawTitle.bind(this)(this._filteredData);
-      drawControls.bind(this)(this._filteredData);
-      drawTimeline.bind(this)(this._filteredData);
-      drawLegend.bind(this)(this._filteredData);
-      drawColorScale.bind(this)(this._filteredData);
+      if (this.legendPosition() === "left" || this.legendPosition() === "right") { drawLegend.bind(this)(this._filteredData); }
+      if (this.colorScalePosition() === "left" || this.legendPosition() === "right") { drawColorScale.bind(this)(this._filteredData); }
+
       drawBack.bind(this)();
+      drawTitle.bind(this)(this._filteredData);
       drawTotal.bind(this)(this._filteredData);
+      drawTimeline.bind(this)(this._filteredData);
+      drawControls.bind(this)(this._filteredData);
+
+      if (this.legendPosition() === "top" || this.legendPosition() === "bottom") { drawLegend.bind(this)(this._filteredData); }
+      if (this.colorScalePosition() === "top" || this.legendPosition() === "bottom") { drawColorScale.bind(this)(this._filteredData); }
 
       this._shapes = [];
 
@@ -29240,8 +29262,9 @@ if (!Array.prototype.includes) {
       var this$1 = this;
 
 
-      // Resets margins
+      // Resets margins and padding
       this._margin = {bottom: 0, left: 0, right: 0, top: 0};
+      this._padding = {bottom: 0, left: 0, right: 0, top: 0};
       this._transition = transition().duration(this._duration);
 
       // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
@@ -29341,6 +29364,7 @@ if (!Array.prototype.includes) {
         this._queue = [];
         q.awaitAll(function () {
 
+          this$1._preDraw();
           this$1._draw(callback);
           zoomControls.bind(this$1)();
 
@@ -29497,7 +29521,14 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Viz.prototype.data = function data (_, f) {
-      return arguments.length ? (this._queue.push([load.bind(this), _, f, "data"]), this) : this._data;
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "data"; });
+        var d = [load.bind(this), _, f, "data"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._data;
     };
 
     /**
@@ -30409,8 +30440,6 @@ if (!Array.prototype.includes) {
       var this$1 = this;
 
 
-      Viz$$1.prototype._draw.call(this, callback);
-
       if (!this._filteredData.length) { return this; }
 
       var stackGroup = function (d, i) { return this$1._stacked
@@ -30755,6 +30784,33 @@ if (!Array.prototype.includes) {
       var isYAxisOrdinal = yScale === "Ordinal";
       var topOffset = isYAxisOrdinal ? this._yTest.shapeConfig().labelConfig.fontSize() : this._yTest.shapeConfig().labelConfig.fontSize() / 2;
 
+      var xOffsetRight = max([y2Width, width - this._xTest._getRange()[1], width - this._x2Test._getRange()[1]]);
+      var xOffset = width - this._xTest._getRange()[1];
+      var xDifference = xOffsetRight - xOffset + this._xTest.padding();
+
+      var x2Offset = width - this._x2Test._getRange()[1];
+      var x2Difference = xOffsetRight - x2Offset + this._x2Test.padding();
+
+      var xBounds = this._xTest.outerBounds();
+      var xHeight = xBounds.height + this._xTest.padding();
+
+      var yOffsetBottom = max([xHeight, height - this._yTest._getRange()[1], height - this._y2Test._getRange()[1]]);
+      var yAxisOffset = height - this._yTest._getRange()[1];
+      var yDifference = isYAxisOrdinal ? yOffsetBottom - yAxisOffset + this._yTest.padding() : xHeight;
+
+      var y2AxisOffset = height - this._y2Test._getRange()[1];
+      var y2Difference = isYAxisOrdinal ? yOffsetBottom - y2AxisOffset + this._y2Test.padding() : xHeight;
+
+      this._padding.left += xOffsetLeft;
+      this._padding.right += Math.max(xDifference, x2Difference);
+      this._padding.bottom += Math.max(yDifference, y2Difference);
+      this._padding.top += x2Height + topOffset;
+
+      Viz$$1.prototype._draw.call(this, callback);
+
+      var horizontalMargin = this._margin.left + this._margin.right;
+      var verticalMargin = this._margin.top + this._margin.bottom;
+
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + x2Height + topOffset) + ")";
       var x2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + topOffset) + ")";
 
@@ -30765,17 +30821,13 @@ if (!Array.prototype.includes) {
       var yTransform = "translate(" + (this._margin.left + xTrans) + ", " + (this._margin.top + topOffset) + ")";
       var yGroup = elem("g.d3plus-plot-y-axis", {parent: parent, transition: transition, enter: {transform: yTransform}, update: {transform: yTransform}});
 
-      var y2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + topOffset) + ")";
+      var y2Transform = "translate(-" + (this._margin.right) + ", " + (this._margin.top + topOffset) + ")";
       var y2Group = elem("g.d3plus-plot-y2-axis", {parent: parent, transition: transition, enter: {transform: y2Transform}, update: {transform: y2Transform}});
-
-      var xOffsetRight = max([y2Width, width - this._xTest._getRange()[1], width - this._x2Test._getRange()[1]]);
-      var xOffset = width - this._xTest._getRange()[1];
-      var xDifference = xOffsetRight - xOffset + this._xTest.padding();
 
       this._xAxis
         .domain(xDomain)
-        .height(height - (x2Height + topOffset))
-        .range([xOffsetLeft, width - xDifference])
+        .height(height - (x2Height + topOffset + verticalMargin))
+        .range([xOffsetLeft, width - (xDifference + horizontalMargin)])
         .scale(xScale.toLowerCase())
         .select(xGroup.node())
         .ticks(xTicks)
@@ -30784,16 +30836,10 @@ if (!Array.prototype.includes) {
         .config(this._xConfig)
         .render();
 
-      var x2Offset = width - this._x2Test._getRange()[1];
-      var x2Difference = xOffsetRight - x2Offset + this._x2Test.padding();
-
-      var xBounds = this._xTest.outerBounds();
-      var xHeight = xBounds.height + this._xTest.padding();
-
       this._x2Axis
         .domain(x2Exists ? x2Domain : xDomain)
-        .height(height - (xHeight + topOffset))
-        .range([xOffsetLeft, width - x2Difference])
+        .height(height - (xHeight + topOffset + verticalMargin))
+        .range([xOffsetLeft, width - (x2Difference + horizontalMargin)])
         .scale(x2Scale.toLowerCase())
         .select(x2Group.node())
         .ticks(x2Exists ? x2Ticks : xTicks)
@@ -30815,14 +30861,10 @@ if (!Array.prototype.includes) {
       };
       var xRange = this._xAxis._getRange();
 
-      var yOffsetBottom = max([xHeight, height - this._yTest._getRange()[1], height - this._y2Test._getRange()[1]]);
-      var yAxisOffset = height - this._yTest._getRange()[1];
-      var yDifference = isYAxisOrdinal ? yOffsetBottom - yAxisOffset + this._yTest.padding() : xHeight;
-
       this._yAxis
         .domain(yDomain)
         .height(height)
-        .range([this._xAxis.outerBounds().y + x2Height, height - (yDifference + topOffset)])
+        .range([this._xAxis.outerBounds().y + x2Height, height - (yDifference + topOffset + verticalMargin)])
         .scale(yScale.toLowerCase())
         .select(yGroup.node())
         .ticks(yTicks)
@@ -30831,15 +30873,12 @@ if (!Array.prototype.includes) {
         .config(this._yConfig)
         .render();
 
-      var y2AxisOffset = height - this._y2Test._getRange()[1];
-      var y2Difference = isYAxisOrdinal ? yOffsetBottom - y2AxisOffset + this._y2Test.padding() : xHeight;
-
       this._y2Axis
         .config(yC)
         .domain(y2Exists ? y2Domain : yDomain)
         .gridSize(0)
         .height(height)
-        .range([this._xAxis.outerBounds().y + x2Height, height - (y2Difference + topOffset)])
+        .range([this._xAxis.outerBounds().y + x2Height, height - (y2Difference + topOffset + verticalMargin)])
         .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
         .select(y2Group.node())
         .width(width - max([0, xOffsetRight - y2Width]))
