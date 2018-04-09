@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.5.0
+  d3plus-geomap v0.5.1
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -20893,8 +20893,8 @@ if (!Array.prototype.includes) {
       var callback = ref.callback;
 
 
-    this.mask.call(this.exit, duration);
-    this.elem.call(this.exit, duration);
+    this.mask.call(this.exit.bind(this), duration);
+    this.elem.call(this.exit.bind(this), duration);
 
     if (callback) { setTimeout(callback, duration + 100); }
 
@@ -20930,7 +20930,7 @@ if (!Array.prototype.includes) {
       .style("opacity", 1)
       .merge(this.mask);
 
-    this.mask.exit().call(this.exit, duration);
+    this.mask.exit().call(this.exit.bind(this), duration);
 
     stylize(this.mask, {
       "background-color": String,
@@ -20975,12 +20975,12 @@ if (!Array.prototype.includes) {
     }).node();
 
     this._backClass
-      .data(visible ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
+      .data(visible ? [{text: "Back", x: 0, y: 0}] : [])
       .select(backGroup)
       .config(this._backConfig)
       .render();
 
-    this._margin.top += visible ? this._backClass.fontSize()() + this._padding : 0;
+    this._margin.top += visible ? this._backClass.fontSize()() : 0;
 
   }
 
@@ -20995,40 +20995,40 @@ if (!Array.prototype.includes) {
     if ( data === void 0 ) { data = []; }
 
 
-    var transform = {
-      opacity: this._colorScalePosition ? 1 : 0,
-      transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")
-    };
-
-    var showColorScale = this._colorScale && data && data.length > 1;
-
-    var scaleGroup = elem("g.d3plus-viz-colorScale", {
-      condition: showColorScale && !this._colorScaleConfig.select,
-      enter: transform,
-      parent: this._select,
-      transition: this._transition,
-      update: transform
-    }).node();
-
     if (this._colorScale && data) {
+
+      var position = this._colorScalePosition || "bottom";
+      var wide = ["top", "bottom"].includes(position);
+
+      var transform = {
+        opacity: this._colorScalePosition ? 1 : 0,
+        transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")
+      };
+
+      var showColorScale = this._colorScale && data && data.length > 1;
+
+      var scaleGroup = elem("g.d3plus-viz-colorScale", {
+        condition: showColorScale && !this._colorScaleConfig.select,
+        enter: transform,
+        parent: this._select,
+        transition: this._transition,
+        update: transform
+      }).node();
 
       var scaleData = data.filter(function (d, i) {
         var c = this$1._colorScale(d, i);
         return c !== undefined && c !== null;
       });
 
-      var position = this._colorScalePosition || "bottom";
-      var wide = ["top", "bottom"].includes(position);
-
       this._colorScaleClass
         .align({bottom: "end", left: "start", right: "end", top: "start"}[position])
         .duration(this._duration)
         .data(scaleData)
-        .height(this._height - this._margin.bottom - this._margin.top)
+        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
         .orient(position)
         .select(scaleGroup)
         .value(this._colorScale)
-        .width(this._width - this._margin.left - this._margin.right)
+        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
         .config(this._colorScaleConfig)
         .render();
 
@@ -31373,13 +31373,15 @@ if (!Array.prototype.includes) {
         });
       }
 
+      var wide = area === "top" || area === "bottom";
+
       var transform = {
-        height: this$1._height - this$1._margin.top - this$1._margin.bottom,
-        width: this$1._width - this$1._margin.left - this$1._margin.right
+        height: wide ? this$1._height - (this$1._margin.top + this$1._margin.bottom) : this$1._height - (this$1._margin.top + this$1._margin.bottom + this$1._padding.top + this$1._padding.bottom),
+        width: wide ? this$1._width - (this$1._margin.left + this$1._margin.right + this$1._padding.left + this$1._padding.right) : this$1._width - (this$1._margin.left + this$1._margin.right)
       };
 
-      transform.x = this$1._margin.left + (area === "right" ? transform.width : 0);
-      transform.y = this$1._margin.top + (area === "bottom" ? transform.height : 0);
+      transform.x = (wide ? this$1._margin.left + this$1._padding.left : this$1._margin.left) + (area === "right" ? transform.width : 0);
+      transform.y = (wide ? this$1._margin.top : this$1._margin.top + this$1._padding.top)  + (area === "bottom" ? transform.height : 0);
 
       var foreign = elem(("foreignObject.d3plus-viz-controls-" + area), {
         condition: controls.length,
@@ -31478,20 +31480,21 @@ if (!Array.prototype.includes) {
     if ( data === void 0 ) { data = []; }
 
 
-    var transform = {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")};
-
-    var legendGroup = elem("g.d3plus-viz-legend", {
-      condition: this._legend && !this._legendConfig.select,
-      enter: transform,
-      parent: this._select,
-      transition: this._transition,
-      update: transform
-    }).node();
-
     if (this._legend) {
 
+      var legendBounds = this._legendClass.outerBounds();
       var position = this._legendPosition;
       var wide = ["top", "bottom"].includes(position);
+
+      var transform = {transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")};
+
+      var legendGroup = elem("g.d3plus-viz-legend", {
+        condition: this._legend && !this._legendConfig.select,
+        enter: transform,
+        parent: this._select,
+        transition: this._transition,
+        update: transform
+      }).node();
 
       var legendData = [];
 
@@ -31516,30 +31519,27 @@ if (!Array.prototype.includes) {
         .key(fill)
         .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
         .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
-
+      
       this._legendClass
         .id(fill)
         .align(wide ? "center" : position)
         .direction(wide ? "row" : "column")
         .duration(this._duration)
         .data(legendData.length > 1 || this._colorScale ? legendData : [])
-        .height(this._height - this._margin.bottom - this._margin.top)
+        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
         .select(legendGroup)
         .verticalAlign(!wide ? "middle" : position)
-        .width(this._width - this._margin.left - this._margin.right)
+        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
         .shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend"))
         .config(this._legendConfig)
         .shapeConfig({fill: color, opacity: opacity})
         .render();
 
-      var legendBounds = this._legendClass.outerBounds();
       if (!this._legendConfig.select && legendBounds.height) {
         if (wide) { this._margin[position] += legendBounds.height + this._legendClass.padding() * 2; }
         else { this._margin[position] += legendBounds.width + this._legendClass.padding() * 2; }
       }
-
     }
-
   }
 
   /**
@@ -31577,10 +31577,14 @@ if (!Array.prototype.includes) {
     var ticks$$1 = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$3) : [];
     timelinePossible = timelinePossible && ticks$$1.length > 1;
 
+    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", 0)")};
+
     var timelineGroup = elem("g.d3plus-viz-timeline", {
       condition: timelinePossible,
+      enter: transform,
       parent: this._select,
-      transition: this._transition
+      transition: this._transition,
+      update: transform
     }).node();
 
     if (timelinePossible) {
@@ -31591,7 +31595,7 @@ if (!Array.prototype.includes) {
         .height(this._height - this._margin.bottom)
         .select(timelineGroup)
         .ticks(ticks$$1.sort(function (a, b) { return +a - +b; }))
-        .width(this._width);
+        .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right));
 
       if (this._timelineSelection === void 0) {
 
@@ -31633,21 +31637,23 @@ if (!Array.prototype.includes) {
 
     var text = this._title ? this._title(data) : false;
 
+    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", " + (this._margin.top) + ")")};
+
     var group = elem("g.d3plus-viz-title", {
-      enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
+      enter: transform,
       parent: this._select,
       transition: this._transition,
-      update: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")}
+      update: transform
     }).node();
 
     this._titleClass
       .data(text ? [{text: text}] : [])
       .select(group)
-      .width(this._width - this._margin.left - this._margin.right)
+      .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._titleConfig)
       .render();
 
-    this._margin.top += text ? group.getBBox().height + this._padding : 0;
+    this._margin.top += text ? group.getBBox().height : 0;
 
   }
 
@@ -31664,11 +31670,13 @@ if (!Array.prototype.includes) {
     var total = typeof this._total === "function" ? sum(data.map(this._total))
       : this._total === true && this._size ? sum(data.map(this._size)) : false;
 
+    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", " + (this._margin.top) + ")")};
+
     var group = elem("g.d3plus-viz-total", {
-      enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
+      enter: transform,
       parent: this._select,
       transition: this._transition,
-      update: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")}
+      update: transform
     }).node();
 
     var visible = typeof total === "number";
@@ -31676,11 +31684,11 @@ if (!Array.prototype.includes) {
     this._totalClass
       .data(visible ? [{text: ("Total: " + total)}] : [])
       .select(group)
-      .width(this._width - this._margin.left - this._margin.right)
+      .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._totalConfig)
       .render();
 
-    this._margin.top += visible ? group.getBBox().height + this._padding : 0;
+    this._margin.top += visible ? group.getBBox().height : 0;
 
   }
 
@@ -31743,9 +31751,10 @@ if (!Array.prototype.includes) {
 
 
     var pageX = window.pageXOffset !== undefined ? window.pageXOffset
-            : (document.documentElement || document.body.parentNode || document.body).scrollLeft,
-          pageY = window.pageYOffset !== undefined ? window.pageYOffset
-            : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+      : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+
+    var pageY = window.pageYOffset !== undefined ? window.pageYOffset
+      : (document.documentElement || document.body.parentNode || document.body).scrollTop;
 
     var bounds = elem.getBoundingClientRect();
     var height = bounds.height,
@@ -32173,6 +32182,7 @@ if (!Array.prototype.includes) {
         .on("mousemove", function () { return this$1._backClass.select().style("cursor", "pointer"); });
       this._backConfig = {
         fontSize: 10,
+        padding: 5,
         resize: false
       };
       this._cache = true;
@@ -32202,7 +32212,8 @@ if (!Array.prototype.includes) {
         shapeConfig: {
           labelConfig: {
             fontColor: undefined,
-            fontResize: false
+            fontResize: false,
+            padding: 0
           }
         }
       };
@@ -32235,7 +32246,6 @@ if (!Array.prototype.includes) {
         "mousemove.shape": mousemoveShape.bind(this),
         "mousemove.legend": mousemoveLegend.bind(this)
       };
-      this._padding = 5;
       this._queue = [];
       this._shape = constant$4("Rect");
       this._shapes = [];
@@ -32278,6 +32288,7 @@ if (!Array.prototype.includes) {
       this._titleClass = new TextBox();
       this._titleConfig = {
         fontSize: 12,
+        padding: 5,
         resize: false,
         textAnchor: "middle"
       };
@@ -32295,6 +32306,7 @@ if (!Array.prototype.includes) {
       this._totalClass = new TextBox();
       this._totalConfig = {
         fontSize: 10,
+        padding: 5,
         resize: false,
         textAnchor: "middle"
       };
@@ -32345,13 +32357,12 @@ if (!Array.prototype.includes) {
     Viz.prototype.constructor = Viz;
 
     /**
-        @memberof Viz
-        @desc Called by render once all checks are passed.
-        @private
-    */
-    Viz.prototype._draw = function _draw () {
+     @memberof Viz
+     @desc Called by draw before anything is drawn. Formats the data and performs preparations for draw.
+     @private
+     */
+    Viz.prototype._preDraw = function _preDraw () {
       var this$1 = this;
-
 
       var that = this;
 
@@ -32403,6 +32414,14 @@ if (!Array.prototype.includes) {
         dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
 
       }
+    };
+
+    /**
+        @memberof Viz
+        @desc Called by render once all checks are passed.
+        @private
+    */
+    Viz.prototype._draw = function _draw () {
       if (this._noDataMessage && !this._filteredData.length) {
         this._messageClass.render({
           container: this._select.node().parentNode,
@@ -32412,13 +32431,17 @@ if (!Array.prototype.includes) {
         });
       }
 
-      drawTitle.bind(this)(this._filteredData);
-      drawControls.bind(this)(this._filteredData);
-      drawTimeline.bind(this)(this._filteredData);
-      drawLegend.bind(this)(this._filteredData);
-      drawColorScale.bind(this)(this._filteredData);
+      if (this.legendPosition() === "left" || this.legendPosition() === "right") { drawLegend.bind(this)(this._filteredData); }
+      if (this.colorScalePosition() === "left" || this.legendPosition() === "right") { drawColorScale.bind(this)(this._filteredData); }
+
       drawBack.bind(this)();
+      drawTitle.bind(this)(this._filteredData);
       drawTotal.bind(this)(this._filteredData);
+      drawTimeline.bind(this)(this._filteredData);
+      drawControls.bind(this)(this._filteredData);
+
+      if (this.legendPosition() === "top" || this.legendPosition() === "bottom") { drawLegend.bind(this)(this._filteredData); }
+      if (this.colorScalePosition() === "top" || this.legendPosition() === "bottom") { drawColorScale.bind(this)(this._filteredData); }
 
       this._shapes = [];
 
@@ -32465,8 +32488,9 @@ if (!Array.prototype.includes) {
       var this$1 = this;
 
 
-      // Resets margins
+      // Resets margins and padding
       this._margin = {bottom: 0, left: 0, right: 0, top: 0};
+      this._padding = {bottom: 0, left: 0, right: 0, top: 0};
       this._transition = transition().duration(this._duration);
 
       // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
@@ -32566,10 +32590,11 @@ if (!Array.prototype.includes) {
         this._queue = [];
         q.awaitAll(function () {
 
+          this$1._preDraw();
           this$1._draw(callback);
           zoomControls.bind(this$1)();
 
-          if (this$1._messageClass._isVisible && this$1._filteredData.length) { this$1._messageClass.hide(); }
+          if (this$1._messageClass._isVisible && (!this$1._noDataMessage || this$1._filteredData.length)) { this$1._messageClass.hide(); }
 
           if (this$1._detectResize && (this$1._autoWidth || this$1._autoHeight)) {
             select(window).on(("resize." + (this$1._uuid)), function () {
@@ -32722,7 +32747,14 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Viz.prototype.data = function data (_, f) {
-      return arguments.length ? (this._queue.push([load.bind(this), _, f, "data"]), this) : this._data;
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "data"; });
+        var d = [load.bind(this), _, f, "data"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._data;
     };
 
     /**
@@ -33344,8 +33376,6 @@ if (!Array.prototype.includes) {
       this._fitObject = false;
       this._ocean = "#cdd1d3";
 
-      this._padding = 20;
-
       this._point = accessor("point");
       this._pointSize = constant$4(1);
       this._pointSizeMax = 10;
@@ -33353,6 +33383,7 @@ if (!Array.prototype.includes) {
       this._pointSizeScale = "linear";
 
       this._projection = mercator();
+      this._projectionPadding = 20;
 
       this._rotate = [0, 0];
 
@@ -33593,16 +33624,7 @@ if (!Array.prototype.includes) {
 
         }, []);
 
-        var pad = this._padding;
-        if (typeof pad === "string") {
-          pad = pad.match(/([-\d\.]+)/g).map(Number);
-          if (pad.length === 3) { pad.push(pad[1]); }
-          if (pad.length === 2) { pad = pad.concat(pad); }
-          if (pad.length === 1) { pad = Array(4).fill(pad); }
-        }
-        else {
-          pad = Array(4).fill(pad);
-        }
+        var pad = parseSides(this._projectionPadding);
 
         if (!extentBounds.features.length && pointData.length) {
 
@@ -33628,13 +33650,16 @@ if (!Array.prototype.includes) {
             }]
           };
           var maxSize = max(pointData, function (d, i) { return r(this$1._pointSize(d, i)); });
-          pad = pad.map(function (p) { return p + maxSize; });
+          pad.top += maxSize;
+          pad.right += maxSize;
+          pad.bottom += maxSize;
+          pad.left += maxSize;
 
         }
 
         this._projection = this._projection
           .fitExtent(
-            extentBounds.features.length ? [[pad[3], pad[0]], [width - pad[1] * 2, height - pad[2] * 2]] : [[0, 0], [width, height]],
+            extentBounds.features.length ? [[pad.left, pad.top], [width - pad.right, height - pad.bottom]] : [[0, 0], [width, height]],
             extentBounds.features.length ? extentBounds : {type: "Sphere"}
           );
 
@@ -33722,7 +33747,14 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Geomap.prototype.fitObject = function fitObject (_, f) {
-      return arguments.length ? (this._queue.push([load.bind(this), _, f, "fitObject"]), this) : this._fitObject;
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "fitObject"; });
+        var d = [load.bind(this), _, f, "fitObject"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._fitObject;
     };
 
     /**
@@ -33733,16 +33765,6 @@ if (!Array.prototype.includes) {
     */
     Geomap.prototype.ocean = function ocean (_) {
       return arguments.length ? (this._ocean = _, this) : this._ocean;
-    };
-
-    /**
-        @memberof Geomap
-        @desc The outer padding between the edge of the visualization and the shapes drawn. The value passed can be either a single number to be used on all sides, or a CSS string pattern (ie. `"20px 0 10px"`).
-        @param {Number|String} [*value* = 20]
-        @chainable
-    */
-    Geomap.prototype.padding = function padding (_) {
-      return arguments.length ? (this._padding = _, this) : this._padding;
     };
 
     /**
@@ -33798,6 +33820,16 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Geomap
+        @desc The outer padding between the edge of the visualization and the shapes drawn. The value passed can be either a single number to be used on all sides, or a CSS string pattern (ie. `"20px 0 10px"`).
+        @param {Number|String} [*value* = 20]
+        @chainable
+    */
+    Geomap.prototype.projectionPadding = function projectionPadding (_) {
+      return arguments.length ? (this._projectionPadding = _, this) : this._projectionPadding;
+    };
+
+    /**
+        @memberof Geomap
         @desc Toggles the visibility of the map tiles.
         @param {Boolean} [*value* = true]
         @chainable
@@ -33826,7 +33858,14 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Geomap.prototype.topojson = function topojson (_, f) {
-      return arguments.length ? (this._queue.push([load.bind(this), _, f, "topojson"]), this) : this._topojson;
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "topojson"; });
+        var d = [load.bind(this), _, f, "topojson"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._topojson;
     };
 
     /**

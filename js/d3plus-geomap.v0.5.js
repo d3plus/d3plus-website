@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.5.0
+  d3plus-geomap v0.5.1
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -101,8 +101,6 @@ if (!Array.prototype.includes) {
       this._fitObject = false;
       this._ocean = "#cdd1d3";
 
-      this._padding = 20;
-
       this._point = d3plusCommon.accessor("point");
       this._pointSize = d3plusCommon.constant(1);
       this._pointSizeMax = 10;
@@ -110,6 +108,7 @@ if (!Array.prototype.includes) {
       this._pointSizeScale = "linear";
 
       this._projection = d3Geo.geoMercator();
+      this._projectionPadding = 20;
 
       this._rotate = [0, 0];
 
@@ -350,16 +349,7 @@ if (!Array.prototype.includes) {
 
         }, []);
 
-        var pad = this._padding;
-        if (typeof pad === "string") {
-          pad = pad.match(/([-\d\.]+)/g).map(Number);
-          if (pad.length === 3) { pad.push(pad[1]); }
-          if (pad.length === 2) { pad = pad.concat(pad); }
-          if (pad.length === 1) { pad = Array(4).fill(pad); }
-        }
-        else {
-          pad = Array(4).fill(pad);
-        }
+        var pad = d3plusCommon.parseSides(this._projectionPadding);
 
         if (!extentBounds.features.length && pointData.length) {
 
@@ -385,13 +375,16 @@ if (!Array.prototype.includes) {
             }]
           };
           var maxSize = d3Array.max(pointData, function (d, i) { return r(this$1._pointSize(d, i)); });
-          pad = pad.map(function (p) { return p + maxSize; });
+          pad.top += maxSize;
+          pad.right += maxSize;
+          pad.bottom += maxSize;
+          pad.left += maxSize;
 
         }
 
         this._projection = this._projection
           .fitExtent(
-            extentBounds.features.length ? [[pad[3], pad[0]], [width - pad[1] * 2, height - pad[2] * 2]] : [[0, 0], [width, height]],
+            extentBounds.features.length ? [[pad.left, pad.top], [width - pad.right, height - pad.bottom]] : [[0, 0], [width, height]],
             extentBounds.features.length ? extentBounds : {type: "Sphere"}
           );
 
@@ -479,7 +472,14 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Geomap.prototype.fitObject = function fitObject (_, f) {
-      return arguments.length ? (this._queue.push([d3plusViz.dataLoad.bind(this), _, f, "fitObject"]), this) : this._fitObject;
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "fitObject"; });
+        var d = [d3plusViz.dataLoad.bind(this), _, f, "fitObject"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._fitObject;
     };
 
     /**
@@ -490,16 +490,6 @@ if (!Array.prototype.includes) {
     */
     Geomap.prototype.ocean = function ocean (_) {
       return arguments.length ? (this._ocean = _, this) : this._ocean;
-    };
-
-    /**
-        @memberof Geomap
-        @desc The outer padding between the edge of the visualization and the shapes drawn. The value passed can be either a single number to be used on all sides, or a CSS string pattern (ie. `"20px 0 10px"`).
-        @param {Number|String} [*value* = 20]
-        @chainable
-    */
-    Geomap.prototype.padding = function padding (_) {
-      return arguments.length ? (this._padding = _, this) : this._padding;
     };
 
     /**
@@ -555,6 +545,16 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Geomap
+        @desc The outer padding between the edge of the visualization and the shapes drawn. The value passed can be either a single number to be used on all sides, or a CSS string pattern (ie. `"20px 0 10px"`).
+        @param {Number|String} [*value* = 20]
+        @chainable
+    */
+    Geomap.prototype.projectionPadding = function projectionPadding (_) {
+      return arguments.length ? (this._projectionPadding = _, this) : this._projectionPadding;
+    };
+
+    /**
+        @memberof Geomap
         @desc Toggles the visibility of the map tiles.
         @param {Boolean} [*value* = true]
         @chainable
@@ -583,7 +583,14 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Geomap.prototype.topojson = function topojson (_, f) {
-      return arguments.length ? (this._queue.push([d3plusViz.dataLoad.bind(this), _, f, "topojson"]), this) : this._topojson;
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "topojson"; });
+        var d = [d3plusViz.dataLoad.bind(this), _, f, "topojson"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._topojson;
     };
 
     /**
