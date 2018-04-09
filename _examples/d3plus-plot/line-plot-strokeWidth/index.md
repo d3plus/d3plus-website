@@ -2,7 +2,7 @@
 title: Changing the Stroke Width of a Line Plot
 width: 990
 height: 400
-time: 1523284178062
+time: 1523284246908
 date: April 09, 2018
 ---
 
