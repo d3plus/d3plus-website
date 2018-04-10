@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.5
+  d3plus-viz v0.11.6
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -29021,6 +29021,7 @@ if (!Array.prototype.includes) {
         "mousemove.legend": mousemoveLegend.bind(this)
       };
       this._queue = [];
+      this._scrollContainer = typeof window === undefined ? "" : window;
       this._shape = constant$7("Rect");
       this._shapes = [];
       this._shapeConfig = {
@@ -29311,8 +29312,8 @@ if (!Array.prototype.includes) {
 
       clearInterval(this._visiblePoll);
       clearTimeout(this._resizePoll);
-      select(window).on(("scroll." + (this._uuid)), null);
-      select(window).on(("resize." + (this._uuid)), null);
+      select(this._scrollContainer).on(("scroll." + (this._uuid)), null);
+      select(this._scrollContainer).on(("resize." + (this._uuid)), null);
       if (this._detectVisible && this._select.style("visibility") === "hidden") {
 
         this._visiblePoll = setInterval(function () {
@@ -29335,9 +29336,9 @@ if (!Array.prototype.includes) {
       }
       else if (this._detectVisible && !inViewport(this._select.node())) {
 
-        select(window).on(("scroll." + (this._uuid)), function () {
+        select(this._scrollContainer).on(("scroll." + (this._uuid)), function () {
           if (inViewport(this$1._select.node())) {
-            select(window).on(("scroll." + (this$1._uuid)), null);
+            select(this$1._scrollContainer).on(("scroll." + (this$1._uuid)), null);
             this$1.render(callback);
           }
         });
@@ -29371,7 +29372,7 @@ if (!Array.prototype.includes) {
           if (this$1._messageClass._isVisible && (!this$1._noDataMessage || this$1._filteredData.length)) { this$1._messageClass.hide(); }
 
           if (this$1._detectResize && (this$1._autoWidth || this$1._autoHeight)) {
-            select(window).on(("resize." + (this$1._uuid)), function () {
+            select(this$1._scrollContainer).on(("resize." + (this$1._uuid)), function () {
               clearTimeout(this$1._resizePoll);
               this$1._resizePoll = setTimeout(function () {
                 clearTimeout(this$1._resizePoll);
@@ -29838,6 +29839,16 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.noDataMessage = function noDataMessage (_) {
       return arguments.length ? (this._noDataMessage = _, this) : this._noDataMessage;
+    };
+
+    /**
+        @memberof Viz
+        @desc If using scroll or visibility detection, this method allow a custom override of the element to which the scroll detection function gets attached.
+        @param {String|HTMLElement} *selector*
+        @chainable
+    */
+    Viz.prototype.scrollContainer = function scrollContainer (_) {
+      return arguments.length ? (this._scrollContainer = _, this) : this._scrollContainer;
     };
 
     /**
