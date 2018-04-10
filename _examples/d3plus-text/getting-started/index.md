@@ -2,8 +2,8 @@
 title: Wrapping SVG Text
 width: 700
 height: 75
-time: 1503372776581
-date: August 22, 2017
+time: 1523391620719
+date: April 10, 2018
 ---
 
 [width]: 700
@@ -21,13 +21,13 @@ var data = [
 ];
 ```
 
-
 And finally, this is how that data array would be passed to the [textBox](http://d3plus.org/docs/#TextBox):
 
 ```js
 new d3plus.TextBox()
   .data(data)
   .fontSize(16)
+  .padding("10 20")
   .width(200)
   .x(function(d, i) { return i * 250; })
   .render();

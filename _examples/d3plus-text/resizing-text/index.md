@@ -2,8 +2,8 @@
 title: Resizing Text to Fill Container
 width: 450
 height: 100
-time: 1503372776581
-date: August 22, 2017
+time: 1523391620719
+date: April 10, 2018
 ---
 
 [width]: 450
@@ -31,6 +31,5 @@ new d3plus.TextBox()
   .x(function(d, i) { return i * 250; })
   .render();
 ```
-
 
 The font-size calculated by this method is constrained by the [fontMin](http://d3plus.org/docs/#TextBox.fontMin) and [fontMax](http://d3plus.org/docs/#TextBox.fontMax) methods, which default to `8` and `50` respectively.
