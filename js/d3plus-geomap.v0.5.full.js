@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.5.1
+  d3plus-geomap v0.5.2
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -33374,6 +33374,7 @@ if (!Array.prototype.includes) {
       Viz$$1.call(this);
 
       this._fitObject = false;
+      this._noDataMessage = false;
       this._ocean = "#cdd1d3";
 
       this._point = accessor("point");
