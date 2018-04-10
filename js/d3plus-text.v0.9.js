@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.26
+  d3plus-text v0.9.27
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -462,6 +462,8 @@ function wrap() {
 */
 var TextBox = (function (BaseClass) {
   function TextBox() {
+    var this$1 = this;
+
 
     BaseClass.call(this);
 
@@ -472,11 +474,13 @@ var TextBox = (function (BaseClass) {
     this._fontFamily = d3plusCommon.constant(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
     this._fontMax = d3plusCommon.constant(50);
     this._fontMin = d3plusCommon.constant(8);
+    this._fontOpacity = d3plusCommon.constant(1);
     this._fontResize = d3plusCommon.constant(false);
     this._fontSize = d3plusCommon.constant(10);
     this._fontWeight = d3plusCommon.constant(400);
     this._height = d3plusCommon.accessor("height", 200);
     this._id = function (d, i) { return d.id || ("" + i); };
+    this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.2; };
     this._on = {};
     this._overflow = d3plusCommon.constant(false);
     this._padding = d3plusCommon.constant(0);
@@ -506,7 +510,7 @@ var TextBox = (function (BaseClass) {
 
 
     if (this._select === void 0) { this.select(d3Selection.select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
-    if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.4; }; }
+
     var that = this;
 
     var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
@@ -515,9 +519,10 @@ var TextBox = (function (BaseClass) {
       if (t === void 0) { return arr; }
 
       var resize = this$1._fontResize(d, i);
+      var lHRatio = this$1._lineHeight(d, i) / this$1._fontSize(d, i);
 
       var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
-          lH = resize ? fS * 1.4 : this$1._lineHeight(d, i),
+          lH = resize ? fS * lHRatio : this$1._lineHeight(d, i),
           line = 1,
           lineData = [],
           sizes,
@@ -562,7 +567,7 @@ var TextBox = (function (BaseClass) {
         else if (fS > fMax) { fS = fMax; }
 
         if (resize) {
-          lH = fS * 1.4;
+          lH = fS * lHRatio;
           wrapper
             .fontSize(fS)
             .lineHeight(lH);
@@ -589,7 +594,7 @@ var TextBox = (function (BaseClass) {
 
       }
 
-      if (w > fMin && (h > lH || resize && h > fMin * 1.4)) {
+      if (w > fMin && (h > lH || resize && h > fMin * lHRatio)) {
 
         if (resize) {
 
@@ -628,6 +633,7 @@ var TextBox = (function (BaseClass) {
           lines: lineData,
           fC: this$1._fontColor(d, i),
           fF: style["font-family"],
+          fO: this$1._fontOpacity(d, i),
           fW: style["font-weight"],
           id: this$1._id(d, i),
           tA: this$1._textAnchor(d, i),
@@ -691,6 +697,8 @@ var TextBox = (function (BaseClass) {
             .style("font-size", ((d.fS) + "px"))
             .attr("font-weight", d.fW)
             .style("font-weight", d.fW)
+            .attr("opacity", d.fO)
+            .style("opacity", d.fO)
             .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
             .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
         }
@@ -804,7 +812,7 @@ function(text, line) {
 
   /**
       @memberof TextBox
-      @desc Sets the maximum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
+      @desc Sets the maximum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
       @param {Function|Number} [*value* = 50]
   */
   TextBox.prototype.fontMax = function fontMax (_) {
@@ -813,11 +821,20 @@ function(text, line) {
 
   /**
       @memberof TextBox
-      @desc Sets the minimum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
+      @desc Sets the minimum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
       @param {Function|Number} [*value* = 8]
   */
   TextBox.prototype.fontMin = function fontMin (_) {
     return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._fontMin;
+  };
+
+  /**
+       @memberof TextBox
+       @desc Sets the font opacity to the specified accessor function or static number between 0 and 1.
+       @param {Function|Number} [*value* = 1]
+   */
+  TextBox.prototype.fontOpacity = function fontOpacity (_) {
+    return arguments.length ? (this._fontOpacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._fontOpacity;
   };
 
   /**
@@ -831,7 +848,7 @@ function(text, line) {
 
   /**
       @memberof TextBox
-      @desc Sets the font size to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
+      @desc Sets the font size to the specified accessor function or static number (which corresponds to pixel units), which is inferred from the [DOM selection](#textBox.select) by default.
       @param {Function|Number} [*value* = 10]
   */
   TextBox.prototype.fontSize = function fontSize (_) {
@@ -875,7 +892,7 @@ function(d, i) {
 
   /**
       @memberof TextBox
-      @desc Sets the line height to the specified accessor function or static number, which is 1.4 times the [font size](#textBox.fontSize) by default.
+      @desc Sets the line height to the specified accessor function or static number, which is 1.2 times the [font size](#textBox.fontSize) by default.
       @param {Function|Number} [*value*]
   */
   TextBox.prototype.lineHeight = function lineHeight (_) {
