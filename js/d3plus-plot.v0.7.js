@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.2
+  d3plus-plot v0.7.3
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -539,6 +539,8 @@ if (!Array.prototype.includes) {
           .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; })  : [])
           .concat(this._confidence && this._confidence[1] ? data.map(function (d) { return d.hci; }) : []);
 
+        data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
+
         domains = {
           x: this._xSort ? Array.from(new Set(data.filter(function (d) { return d.x; }).sort(function (a, b) { return this$1._xSort(a.data, b.data); }).map(function (d) { return d.x; }))) : d3Array.extent(xData, function (d) { return d; }),
           x2: this._x2Sort ? Array.from(new Set(data.filter(function (d) { return d.x2; }).sort(function (a, b) { return this$1._x2Sort(a.data, b.data); }).map(function (d) { return d.x2; }))) : d3Array.extent(x2Data, function (d) { return d; }),
@@ -557,6 +559,10 @@ if (!Array.prototype.includes) {
         xDomain = xDomain.map(d3plusAxis.date);
         xScale = "Time";
       }
+      else if (this._discrete === "x") {
+        xDomain = Array.from(new Set(data.filter(function (d) { return d.x; }).sort(function (a, b) { return this$1._xSort ? this$1._xSort(a.data, b.data) : a.x - b.x; }).map(function (d) { return d.x; })));
+        xScale = "Ordinal";
+      }
 
       var x2Domain = this._x2Domain ? this._x2Domain.slice() : domains.x2,
           x2Scale = this._x2Sort ? "Ordinal" : "Linear";
@@ -568,11 +574,7 @@ if (!Array.prototype.includes) {
         x2Domain = x2Domain.map(d3plusAxis.date);
         x2Scale = "Time";
       }
-
       else if (this._discrete === "x") {
-        xDomain = Array.from(new Set(data.filter(function (d) { return d.x; }).sort(function (a, b) { return this$1._xSort ? this$1._xSort(a.data, b.data) : a.x - b.x; }).map(function (d) { return d.x; })));
-        xScale = "Ordinal";
-
         x2Domain = Array.from(new Set(data.filter(function (d) { return d.x2; }).sort(function (a, b) { return this$1._x2Sort ? this$1._x2Sort(a.data, b.data) : a.x2 - b.x2; }).map(function (d) { return d.x2; })));
         x2Scale = "Ordinal";
       }
