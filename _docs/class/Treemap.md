@@ -13,7 +13,7 @@ This is a global class, and extends all of the methods and functionality of <cod
 
 * [Treemap](#Treemap) ⇐ <code>Viz</code>
     * [new Treemap()](#new_Treemap_new)
-    * [.padding([*value*])](#Treemap.padding)
+    * [.layoutPadding([*value*])](#Treemap.layoutPadding)
     * [.sort([*comparator*])](#Treemap.sort)
     * [.sum([*value*])](#Treemap.sum)
     * [.tile([*value*])](#Treemap.tile)
@@ -27,7 +27,7 @@ Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout)
 
 
 
-<a name="Treemap.padding" href="#Treemap.padding">#</a> Treemap.**padding**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Treemap.js#L124)
+<a name="Treemap.layoutPadding" href="#Treemap.layoutPadding">#</a> Treemap.**layoutPadding**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Treemap.js#L124)
 
 If *value* is specified, sets the inner and outer padding accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current padding accessor.
 
