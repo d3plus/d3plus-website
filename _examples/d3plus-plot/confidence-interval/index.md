@@ -2,7 +2,7 @@
 title: Confidence Interval
 width: 990
 height: 400
-time: 1523563544685
+time: 1523563610830
 date: April 12, 2018
 ---
 
