@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.6
+  d3plus-viz v0.11.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -794,6 +794,14 @@ if (!Array.prototype.includes) {
   }
 
   /**
+   @desc Global on click event for all entities in a Viz.
+   @private
+   */
+  function clickAll() {
+    if (this._tooltip) { this._tooltipClass.data([]).render(); }
+  }
+
+  /**
       @desc On mouseenter event for all shapes in a Viz.
       @param {Object} *d* The data object being interacted with.
       @param {Number} *i* The index of the data object being interacted with.
@@ -841,7 +849,7 @@ if (!Array.prototype.includes) {
       this._tooltipClass.data([d])
         .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
         .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
-        .translate(d3Selection.mouse(d3Selection.select("html").node()))
+        .position([d3Selection.event.clientX, d3Selection.event.clientY])
         .config(this._tooltipConfig)
         .config(this._legendTooltip)
         .render();
@@ -863,7 +871,7 @@ if (!Array.prototype.includes) {
       this._tooltipClass.data([d])
         .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
         .title(this._drawLabel)
-        .translate(d3Selection.mouse(d3Selection.select("html").node()))
+        .position([d3Selection.event.clientX, d3Selection.event.clientY])
         .config(this._tooltipConfig)
         .render();
     }
@@ -893,8 +901,8 @@ if (!Array.prototype.includes) {
 
     this._zoomToBounds = zoomToBounds.bind(this);
 
-    var control = d3Selection.select(this._select.node().parentNode).selectAll("div.d3plus-geomap-control").data(this._zoom ? [0] : []);
-    var controlEnter = control.enter().append("div").attr("class", "d3plus-geomap-control");
+    var control = d3Selection.select(this._select.node().parentNode).selectAll("div.d3plus-zoom-control").data(this._zoom ? [0] : []);
+    var controlEnter = control.enter().append("div").attr("class", "d3plus-zoom-control");
     control.exit().remove();
     control = control.merge(controlEnter)
       .style("position", "absolute")
@@ -924,7 +932,7 @@ if (!Array.prototype.includes) {
           .call(d3plusCommon.stylize, brushing ? that._zoomControlStyle || {} : that._zoomControlStyleActive || {});
         zoomEvents.bind(that)(!brushing);
       })
-      .html("&#10696");
+      .html("&#164");
 
     control.selectAll(".zoom-control")
       .call(d3plusCommon.stylize, that._zoomControlStyle)
@@ -1235,6 +1243,7 @@ if (!Array.prototype.includes) {
       this._noDataMessage = true;
       this._on = {
         "click": click.bind(this),
+        "click.all": clickAll.bind(this),
         "mouseenter": mouseenter.bind(this),
         "mouseleave": mouseleave.bind(this),
         "mousemove.shape": mousemoveShape.bind(this),
@@ -1427,7 +1436,7 @@ if (!Array.prototype.includes) {
       }
 
       if (this.legendPosition() === "left" || this.legendPosition() === "right") { drawLegend.bind(this)(this._filteredData); }
-      if (this.colorScalePosition() === "left" || this.legendPosition() === "right") { drawColorScale.bind(this)(this._filteredData); }
+      if (this.colorScalePosition() === "left" || this.colorScalePosition() === "right") { drawColorScale.bind(this)(this._filteredData); }
 
       drawBack.bind(this)();
       drawTitle.bind(this)(this._filteredData);
@@ -1436,7 +1445,7 @@ if (!Array.prototype.includes) {
       drawControls.bind(this)(this._filteredData);
 
       if (this.legendPosition() === "top" || this.legendPosition() === "bottom") { drawLegend.bind(this)(this._filteredData); }
-      if (this.colorScalePosition() === "top" || this.legendPosition() === "bottom") { drawColorScale.bind(this)(this._filteredData); }
+      if (this.colorScalePosition() === "top" || this.colorScalePosition() === "bottom") { drawColorScale.bind(this)(this._filteredData); }
 
       this._shapes = [];
 
@@ -1463,7 +1472,11 @@ if (!Array.prototype.includes) {
       //   .data(this._filteredData)
       //   .label("Test Label")
       //   .select(this._zoomGroup.node())
-      //   .on(this._on)
+      //   .on({
+      //     mouseenter: this._on.mouseenter,
+      //     mouseleave: this._on.mouseleave,
+      //     mousemove: this._on["mousemove.shape"]
+      //   })
       //   .id(d => d.group)
       //   .x(d => d.value * 10 + 200)
       //   .y(d => d.value * 10 + 200)
@@ -1491,7 +1504,7 @@ if (!Array.prototype.includes) {
       // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
       if (this._select === void 0 || this._select.node().tagName.toLowerCase() !== "svg") {
 
-        var parent = this._select === void 0 ? d3Selection.select("body") : this._select;
+        var parent = this._select === void 0 ? d3Selection.select("body").append("div") : this._select;
         var ref = getSize(parent.node());
         var w = ref[0];
         var h = ref[1];
