@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.43
+  d3plus-axis v0.3.44
   Beautiful javascript scales and axes.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -142,11 +142,13 @@ var Axis = (function (BaseClass) {
       "stroke-width": 1
     };
     this._height = 400;
+    this._labelOffset = true;
     this.orient("bottom");
     this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
     this._padding = 5;
     this._paddingInner = 0.1;
     this._paddingOuter = 0.1;
+    this._rotateLabels = false;
     this._scale = "linear";
     this._shape = "Line";
     this._shapeConfig = {
@@ -164,7 +166,7 @@ var Axis = (function (BaseClass) {
           var rtl = d3plusText.rtl();
           return this$1._orient === "left" ? rtl ? "start" : "end"
             : this$1._orient === "right" ? rtl ? "end" : "start"
-            : "middle";
+            : this$1._rotateLabels ? "end" : "middle";
         },
         verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
       },
@@ -515,6 +517,81 @@ var Axis = (function (BaseClass) {
 
     });
 
+    var labelHeight = d3Array.max(textData, function (t) { return t.height; }) || 0;
+
+    if (horizontal) {
+      for (var i$1 = 0; i$1 < labels.length; i$1++) {
+        var d = labels[i$1];
+
+        var f = this$1._shapeConfig.labelConfig.fontFamily(d, i$1),
+              s$1 = this$1._shapeConfig.labelConfig.fontSize(d, i$1);
+
+        var wrap = d3plusText.textWrap()
+          .fontFamily(f)
+          .fontSize(s$1)
+          .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i$1) : undefined)
+          .width(this$1._space)
+          .height(labelHeight);
+
+        var res = wrap(tickFormat(d));
+
+        var isTruncated = res.truncated;
+
+        var xPos = this$1._getPosition(d);
+        var prev = labels[i$1 - 1] || false;
+        var next = labels[i$1 + 1] || false;
+
+        var maxWidth = Math.max(res.widths);
+
+        var isOverlapping = prev ? xPos - maxWidth < this$1._getPosition(prev) + maxWidth : next ? xPos + maxWidth > this$1._getPosition(next) - maxWidth : false;
+
+        var isRotated = isTruncated || isOverlapping;
+
+        if (isRotated) {
+          this$1._rotateLabels = true;
+          break;
+        }
+      }
+    }
+
+    if (this._rotateLabels) {
+      textData = labels.map(function (d, i) {
+        var text = textData[i];
+
+        var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
+              s = this$1._shapeConfig.labelConfig.fontSize(d, i);
+
+        var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.4;
+
+        var lineTest = d3plusText.textWrap()
+            .fontFamily(f)
+            .fontSize(s)
+            .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
+            .height(lineHeight * 2 + 1)
+            .width(this$1._width);
+
+        var xPos = this$1._getPosition(d);
+        var prev = labels[i - 1] || false;
+        var next = labels[i + 1] || false;
+
+        var fitsTwoLines = prev ? xPos - lineHeight * 2 > this$1._getPosition(prev) + lineHeight * 2 : next ? xPos + lineHeight * 2 < this$1._getPosition(next) - lineHeight * 2 : true;
+
+        var lineTestResult = lineTest(tickFormat(d));
+
+        var isTwoLine = lineTestResult.words.length > 1 && lineTestResult.widths[0] > 80;
+        var height = fitsTwoLines && isTwoLine ? lineTestResult.widths[0] / 1.6 : lineTestResult.widths[0];
+        var width = fitsTwoLines && isTwoLine ? lineHeight * 2 : lineHeight;
+
+        return Object.assign(text, {
+          height: height,
+          lineHeight: lineHeight,
+          numLines: fitsTwoLines && isTwoLine ? 2 : 1,
+          width: width
+        });
+      });
+    }
+
+
     textData.forEach(function (d, i) {
       if (i) {
         var prev = textData[i - 1];
@@ -523,15 +600,25 @@ var Axis = (function (BaseClass) {
         }
       }
     });
-
-    var maxOffset = d3Array.max(textData, function (d) { return d.offset; });
-    if (maxOffset) {
-      textData.forEach(function (d) {
-        if (d.offset) {
-          d.offset = maxOffset;
-          d[height] += maxOffset;
+    if (this._labelOffset) {
+      textData.forEach(function (d, i) {
+        if (i) {
+          var prev = textData[i - 1];
+          if (!prev.offset && this$1._getPosition(d.d) - d[width] / 2 < this$1._getPosition(prev.d) + prev[width] / 2) {
+            d.offset = prev[height] + this$1._padding;
+          }
         }
       });
+
+      var maxOffset = d3Array.max(textData, function (d) { return d.offset; });
+      if (maxOffset) {
+        textData.forEach(function (d) {
+          if (d.offset) {
+            d.offset = maxOffset;
+            d[height] += maxOffset;
+          }
+        });
+      }
     }
 
     // Calculates new range, based on any text that may be overflowing.
@@ -544,25 +631,25 @@ var Axis = (function (BaseClass) {
 
       var firstB = d3Array.min([this._getPosition(first.d) - first[width] / 2, range[0] - wBuff]);
       if (firstB < range[0]) {
-        var d = range[0] - firstB;
+        var d$1 = range[0] - firstB;
         if (this._range === void 0 || this._range[0] === void 0) {
-          this._size -= d;
-          range[0] += d;
+          this._size -= d$1;
+          range[0] += d$1;
         }
         else if (this._range) {
-          rangeOuter[0] -= d;
+          rangeOuter[0] -= d$1;
         }
       }
 
       var lastB = d3Array.max([this._getPosition(last.d) + last[width] / 2, range[lastI] + wBuff]);
       if (lastB > range[lastI]) {
-        var d$1 = lastB - range[lastI];
+        var d$2 = lastB - range[lastI];
         if (this._range === void 0 || this._range[lastI] === void 0) {
-          this._size -= d$1;
-          range[lastI] -= d$1;
+          this._size -= d$2;
+          range[lastI] -= d$2;
         }
         else if (this._range) {
-          rangeOuter[lastI] += d$1;
+          rangeOuter[lastI] += d$2;
         }
       }
 
@@ -595,9 +682,9 @@ var Axis = (function (BaseClass) {
     }
     else if (labels.length > 1) {
       this._space = 0;
-      for (var i$1 = 0; i$1 < labels.length - 1; i$1++) {
-        var s$1 = this$1._getPosition(labels[i$1 + 1]) - this$1._getPosition(labels[i$1]);
-        if (s$1 > this$1._space) { this$1._space = s$1; }
+      for (var i$2 = 0; i$2 < labels.length - 1; i$2++) {
+        var s$2 = this$1._getPosition(labels[i$2 + 1]) - this$1._getPosition(labels[i$2]);
+        if (s$2 > this$1._space) { this$1._space = s$2; }
       }
     }
     else { this._space = this._size; }
@@ -631,19 +718,15 @@ var Axis = (function (BaseClass) {
         .attr("opacity", 1)
         .call(this._gridPosition.bind(this));
 
-    var labelHeight = d3Array.max(textData, function (t) { return t.height; }) || 0;
-
     var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); });
 
     var tickData = ticks.concat(labelOnly)
       .map(function (d) {
-        var obj;
-
         var data = textData.filter(function (td) { return td.d === d; });
         var dataIndex = data.length ? textData.indexOf(data[0]) : undefined;
         var xPos = this$1._getPosition(d);
 
-        var labelOffset = data.length ? data[0].offset : 0;
+        var labelOffset = data.length && this$1._labelOffset ? data[0].offset : 0;
 
         var labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
 
@@ -662,7 +745,7 @@ var Axis = (function (BaseClass) {
               size = (hBuff + labelOffset) * (flip ? -1 : 1),
               yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
 
-        return ( obj = {
+        var tickConfig = {
           id: d,
           labelBounds: {
             x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
@@ -673,7 +756,28 @@ var Axis = (function (BaseClass) {
           size: ticks.includes(d) ? size : 0,
           text: labels.includes(d) ? tickFormat(d) : false,
           tick: ticks.includes(d)
-        }, obj[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = yPos, obj);
+        };
+        tickConfig[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0);
+        tickConfig[y] = yPos;
+
+        var text = this$1._rotateLabels && textData.find(function (val) { return val.d === d; });
+        if (text) {
+          var lineHeight = text.lineHeight;
+          var numLines = text.numLines;
+          var width = text.height;
+          var height$1 = text.width;
+
+          tickConfig = Object.assign(tickConfig, {
+            labelBounds: {
+              x: -width / 2,
+              y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : -size - p - (width + height$1) / 2,
+              width: width,
+              height: height$1 + 1
+            }
+          });
+        }
+
+        return tickConfig;
       });
 
     if (this._shape === "Line") {
@@ -688,7 +792,8 @@ var Axis = (function (BaseClass) {
       .data(tickData)
       .duration(this._duration)
       .labelConfig({
-        ellipsis: function (d) { return d && d.length ? (d + "...") : ""; }
+        ellipsis: function (d) { return d && d.length ? (d + "...") : ""; },
+        rotate: this._rotateLabels ? -90 : 0
       })
       .select(d3plusCommon.elem("g.ticks", {parent: group}).node())
       .config(this._shapeConfig)
@@ -814,6 +919,16 @@ var Axis = (function (BaseClass) {
   */
   Axis.prototype.labels = function labels (_) {
     return arguments.length ? (this._labels = _, this) : this._labels;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
+      @param {Boolean} [*value* = true]
+      @chainable
+  */
+  Axis.prototype.labelOffset = function labelOffset (_) {
+    return arguments.length ? (this._labelOffset = _, this) : this._labels;
   };
 
   /**
