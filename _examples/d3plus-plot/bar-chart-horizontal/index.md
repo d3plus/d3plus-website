@@ -2,7 +2,7 @@
 title: Horizontal Bar Chart
 width: 990
 height: 400
-time: 1523632512833
+time: 1523632690688
 date: April 13, 2018
 ---
 
