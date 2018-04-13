@@ -2,7 +2,7 @@
 title: Bar Chart
 width: 990
 height: 400
-time: 1523632690688
+time: 1523632738018
 date: April 13, 2018
 ---
 
