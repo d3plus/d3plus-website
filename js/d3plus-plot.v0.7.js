@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.4
+  d3plus-plot v0.7.5
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -108,37 +108,40 @@ if (!Array.prototype.includes) {
 
     var oppDomain = oppScale.domain().slice();
 
-    if (this._discrete === "x") { oppDomain.reverse(); }
+    var isDiscreteX = this._discrete === "x";
+
+    if (isDiscreteX) { oppDomain.reverse(); }
 
     var negVals, posVals;
     if (this._stacked) {
       var groupedData = d3Collection.nest()
         .key(function (d) { return d[this$1._discrete]; })
         .entries(data)
-        .map(function (d) { return d.values.map(function (x) { return x[this$1._discrete === "x" ? yKey : xKey]; }); });
+        .map(function (d) { return d.values.map(function (x) { return x[isDiscreteX ? yKey : xKey]; }); });
       posVals = groupedData.map(function (arr) { return d3Array.sum(arr.filter(function (d) { return d > 0; })); });
       negVals = groupedData.map(function (arr) { return d3Array.sum(arr.filter(function (d) { return d < 0; })); });
     }
     else {
-      posVals = data.map(function (d) { return d[this$1._discrete === "x" ? yKey : xKey]; });
+      posVals = data.map(function (d) { return d[isDiscreteX ? yKey : xKey]; });
       negVals = posVals;
     }
+
     var bMax = oppScale(d3Array.max(posVals));
-    if (bMax !== oppScale(0)) { bMax += this._discrete === "x" ? -buffer : buffer; }
+    if (isDiscreteX ? bMax < oppScale(0) : bMax > oppScale(0)) { bMax += isDiscreteX ? -buffer : buffer; }
     bMax = oppScale.invert(bMax);
 
     var bMin = oppScale(d3Array.min(negVals));
-    if (bMin !== oppScale(0)) { bMin += this._discrete === "x" ? buffer : -buffer; }
+    if (isDiscreteX ? bMin > oppScale(0) : bMin < oppScale(0)) { bMin += isDiscreteX ? buffer : -buffer; }
     bMin = oppScale.invert(bMin);
 
     if (bMax > oppDomain[1]) { oppDomain[1] = bMax; }
     if (bMin < oppDomain[0]) { oppDomain[0] = bMin; }
 
-    if (this._discrete === "x") { oppDomain.reverse(); }
+    if (isDiscreteX) { oppDomain.reverse(); }
 
     oppScale.domain(oppDomain);
 
-    var discreteScale = this._discrete === "x" ? x : y;
+    var discreteScale = isDiscreteX ? x : y;
     discreteScale.domain(ordinalBuffer(discreteScale.domain()));
 
     return [x, y];
