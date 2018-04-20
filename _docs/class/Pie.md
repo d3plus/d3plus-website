@@ -17,7 +17,7 @@ This is a global class, and extends all of the methods and functionality of <cod
     * [.padAngle([*value*])](#Pie.padAngle)
     * [.padPixel([*value*])](#Pie.padPixel)
     * [.sort([*comparator*])](#Pie.sort)
-    * [.value([*value*])](#Pie.value)
+    * [.value(*value*)](#Pie.value)
 
 
 <a name="new_Pie_new" href="#new_Pie_new">#</a> new **Pie**()
@@ -67,7 +67,7 @@ function comparator(a, b) {
 ```
 
 
-<a name="Pie.value" href="#Pie.value">#</a> Pie.**value**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pie.js#L137)
+<a name="Pie.value" href="#Pie.value">#</a> Pie.**value**(*value*) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Pie.js#L137)
 
 If *value* is specified, sets the value accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current value accessor.
 
