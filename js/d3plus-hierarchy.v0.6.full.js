@@ -2665,8 +2665,8 @@ if (!Array.prototype.includes) {
 
       for (var event in on) {
 
-        if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type))) {
-          var eventName = event.replace("click", "click touchstart");
+        if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type)) || event.includes(".all")) {
+          var eventName = event.replace(/click(\.[a-z]*)/g, "click$1 touchstart$1");
           newObj.on[eventName] = wrapFunction(on[event]);
         }
 
@@ -14244,11 +14244,13 @@ if (!Array.prototype.includes) {
         "stroke-width": 1
       };
       this._height = 400;
+      this._labelOffset = true;
       this.orient("bottom");
       this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
       this._padding = 5;
       this._paddingInner = 0.1;
       this._paddingOuter = 0.1;
+      this._rotateLabels = false;
       this._scale = "linear";
       this._shape = "Line";
       this._shapeConfig = {
@@ -14266,7 +14268,7 @@ if (!Array.prototype.includes) {
             var rtl$$1 = detectRTL();
             return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
               : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
-              : "middle";
+              : this$1._rotateLabels ? "end" : "middle";
           },
           verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
         },
@@ -14617,6 +14619,81 @@ if (!Array.prototype.includes) {
 
       });
 
+      var labelHeight = max(textData, function (t) { return t.height; }) || 0;
+
+      if (horizontal) {
+        for (var i$1 = 0; i$1 < labels.length; i$1++) {
+          var d = labels[i$1];
+
+          var f = this$1._shapeConfig.labelConfig.fontFamily(d, i$1),
+                s$1 = this$1._shapeConfig.labelConfig.fontSize(d, i$1);
+
+          var wrap = textWrap()
+            .fontFamily(f)
+            .fontSize(s$1)
+            .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i$1) : undefined)
+            .width(this$1._space)
+            .height(labelHeight);
+
+          var res = wrap(tickFormat(d));
+
+          var isTruncated = res.truncated;
+
+          var xPos = this$1._getPosition(d);
+          var prev = labels[i$1 - 1] || false;
+          var next = labels[i$1 + 1] || false;
+
+          var maxWidth = Math.max(res.widths);
+
+          var isOverlapping = prev ? xPos - maxWidth < this$1._getPosition(prev) + maxWidth : next ? xPos + maxWidth > this$1._getPosition(next) - maxWidth : false;
+
+          var isRotated = isTruncated || isOverlapping;
+
+          if (isRotated) {
+            this$1._rotateLabels = true;
+            break;
+          }
+        }
+      }
+
+      if (this._rotateLabels) {
+        textData = labels.map(function (d, i) {
+          var text = textData[i];
+
+          var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
+                s = this$1._shapeConfig.labelConfig.fontSize(d, i);
+
+          var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.4;
+
+          var lineTest = textWrap()
+              .fontFamily(f)
+              .fontSize(s)
+              .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
+              .height(lineHeight * 2 + 1)
+              .width(this$1._width);
+
+          var xPos = this$1._getPosition(d);
+          var prev = labels[i - 1] || false;
+          var next = labels[i + 1] || false;
+
+          var fitsTwoLines = prev ? xPos - lineHeight * 2 > this$1._getPosition(prev) + lineHeight * 2 : next ? xPos + lineHeight * 2 < this$1._getPosition(next) - lineHeight * 2 : true;
+
+          var lineTestResult = lineTest(tickFormat(d));
+
+          var isTwoLine = lineTestResult.words.length > 1 && lineTestResult.widths[0] > 80;
+          var height = fitsTwoLines && isTwoLine ? lineTestResult.widths[0] / 1.6 : lineTestResult.widths[0];
+          var width = fitsTwoLines && isTwoLine ? lineHeight * 2 : lineHeight;
+
+          return Object.assign(text, {
+            height: height,
+            lineHeight: lineHeight,
+            numLines: fitsTwoLines && isTwoLine ? 2 : 1,
+            width: width
+          });
+        });
+      }
+
+
       textData.forEach(function (d, i) {
         if (i) {
           var prev = textData[i - 1];
@@ -14625,15 +14702,25 @@ if (!Array.prototype.includes) {
           }
         }
       });
-
-      var maxOffset = max(textData, function (d) { return d.offset; });
-      if (maxOffset) {
-        textData.forEach(function (d) {
-          if (d.offset) {
-            d.offset = maxOffset;
-            d[height] += maxOffset;
+      if (this._labelOffset) {
+        textData.forEach(function (d, i) {
+          if (i) {
+            var prev = textData[i - 1];
+            if (!prev.offset && this$1._getPosition(d.d) - d[width] / 2 < this$1._getPosition(prev.d) + prev[width] / 2) {
+              d.offset = prev[height] + this$1._padding;
+            }
           }
         });
+
+        var maxOffset = max(textData, function (d) { return d.offset; });
+        if (maxOffset) {
+          textData.forEach(function (d) {
+            if (d.offset) {
+              d.offset = maxOffset;
+              d[height] += maxOffset;
+            }
+          });
+        }
       }
 
       // Calculates new range, based on any text that may be overflowing.
@@ -14646,25 +14733,25 @@ if (!Array.prototype.includes) {
 
         var firstB = min([this._getPosition(first.d) - first[width] / 2, range$$1[0] - wBuff]);
         if (firstB < range$$1[0]) {
-          var d = range$$1[0] - firstB;
+          var d$1 = range$$1[0] - firstB;
           if (this._range === void 0 || this._range[0] === void 0) {
-            this._size -= d;
-            range$$1[0] += d;
+            this._size -= d$1;
+            range$$1[0] += d$1;
           }
           else if (this._range) {
-            rangeOuter[0] -= d;
+            rangeOuter[0] -= d$1;
           }
         }
 
         var lastB = max([this._getPosition(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
         if (lastB > range$$1[lastI]) {
-          var d$1 = lastB - range$$1[lastI];
+          var d$2 = lastB - range$$1[lastI];
           if (this._range === void 0 || this._range[lastI] === void 0) {
-            this._size -= d$1;
-            range$$1[lastI] -= d$1;
+            this._size -= d$2;
+            range$$1[lastI] -= d$2;
           }
           else if (this._range) {
-            rangeOuter[lastI] += d$1;
+            rangeOuter[lastI] += d$2;
           }
         }
 
@@ -14697,9 +14784,9 @@ if (!Array.prototype.includes) {
       }
       else if (labels.length > 1) {
         this._space = 0;
-        for (var i$1 = 0; i$1 < labels.length - 1; i$1++) {
-          var s$1 = this$1._getPosition(labels[i$1 + 1]) - this$1._getPosition(labels[i$1]);
-          if (s$1 > this$1._space) { this$1._space = s$1; }
+        for (var i$2 = 0; i$2 < labels.length - 1; i$2++) {
+          var s$2 = this$1._getPosition(labels[i$2 + 1]) - this$1._getPosition(labels[i$2]);
+          if (s$2 > this$1._space) { this$1._space = s$2; }
         }
       }
       else { this._space = this._size; }
@@ -14733,19 +14820,15 @@ if (!Array.prototype.includes) {
           .attr("opacity", 1)
           .call(this._gridPosition.bind(this));
 
-      var labelHeight = max(textData, function (t) { return t.height; }) || 0;
-
       var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks$$1.includes(d); });
 
       var tickData = ticks$$1.concat(labelOnly)
         .map(function (d) {
-          var obj;
-
           var data = textData.filter(function (td) { return td.d === d; });
           var dataIndex = data.length ? textData.indexOf(data[0]) : undefined;
           var xPos = this$1._getPosition(d);
 
-          var labelOffset = data.length ? data[0].offset : 0;
+          var labelOffset = data.length && this$1._labelOffset ? data[0].offset : 0;
 
           var labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
 
@@ -14764,7 +14847,7 @@ if (!Array.prototype.includes) {
                 size = (hBuff + labelOffset) * (flip ? -1 : 1),
                 yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
 
-          return ( obj = {
+          var tickConfig = {
             id: d,
             labelBounds: {
               x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
@@ -14775,7 +14858,28 @@ if (!Array.prototype.includes) {
             size: ticks$$1.includes(d) ? size : 0,
             text: labels.includes(d) ? tickFormat(d) : false,
             tick: ticks$$1.includes(d)
-          }, obj[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0), obj[y] = yPos, obj);
+          };
+          tickConfig[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0);
+          tickConfig[y] = yPos;
+
+          var text = this$1._rotateLabels && textData.find(function (val) { return val.d === d; });
+          if (text) {
+            var lineHeight = text.lineHeight;
+            var numLines = text.numLines;
+            var width = text.height;
+            var height$1 = text.width;
+
+            tickConfig = Object.assign(tickConfig, {
+              labelBounds: {
+                x: -width / 2,
+                y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : -size - p - (width + height$1) / 2,
+                width: width,
+                height: height$1 + 1
+              }
+            });
+          }
+
+          return tickConfig;
         });
 
       if (this._shape === "Line") {
@@ -14790,7 +14894,8 @@ if (!Array.prototype.includes) {
         .data(tickData)
         .duration(this._duration)
         .labelConfig({
-          ellipsis: function (d) { return d && d.length ? (d + "...") : ""; }
+          ellipsis: function (d) { return d && d.length ? (d + "...") : ""; },
+          rotate: this._rotateLabels ? -90 : 0
         })
         .select(elem("g.ticks", {parent: group}).node())
         .config(this._shapeConfig)
@@ -14916,6 +15021,16 @@ if (!Array.prototype.includes) {
     */
     Axis.prototype.labels = function labels (_) {
       return arguments.length ? (this._labels = _, this) : this._labels;
+    };
+
+    /**
+        @memberof Axis
+        @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
+        @param {Boolean} [*value* = true]
+        @chainable
+    */
+    Axis.prototype.labelOffset = function labelOffset (_) {
+      return arguments.length ? (this._labelOffset = _, this) : this._labels;
     };
 
     /**
@@ -16852,6 +16967,954 @@ if (!Array.prototype.includes) {
   }(BaseClass));
 
   /**
+      @function textWidth
+      @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
+      @param {String|Array} text Can be either a single string or an array of strings to analyze.
+      @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
+  */
+  function measure(text, style) {
+
+    style = Object.assign({
+      "font-size": 10,
+      "font-family": "sans-serif",
+      "font-style": "normal",
+      "font-weight": 400,
+      "font-variant": "normal"
+    }, style);
+
+    var context = document.createElement("canvas").getContext("2d");
+
+    var font = [];
+    font.push(style["font-style"]);
+    font.push(style["font-variant"]);
+    font.push(style["font-weight"]);
+    font.push(typeof style["font-size"] === "string" ? style["font-size"] : ((style["font-size"]) + "px"));
+    // let s = `${style["font-size"]}px`;
+    // if ("line-height" in style) s += `/${style["line-height"]}px`;
+    // font.push(s);
+    font.push(style["font-family"]);
+
+    context.font = font.join(" ");
+
+    if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
+    return context.measureText(text).width;
+
+  }
+
+  /**
+      @function trim
+      @desc Cross-browser implementation of [trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim).
+      @param {String} str
+  */
+  function trim$1(str) {
+    return str.replace(/^\s+|\s+$/g, "");
+  }
+
+  /**
+      @function trimRight
+      @desc Cross-browser implementation of [trimRight](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/TrimRight).
+      @param {String} str
+  */
+  function trimRight$1(str) {
+    return str.replace(/\s+$/, "");
+  }
+
+  var alpha$1 = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890",
+        checked$1 = {},
+        height$1 = 32;
+
+  var dejavu$1, macos$1, monospace$1, proportional$1;
+
+  /**
+      @function fontExists
+      @desc Given either a single font-family or a list of fonts, returns the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
+      @param {String|Array} font Can be either a valid CSS font-family string (single or comma-separated names) or an Array of string names.
+  */
+  var fontExists$1 = function (font) {
+
+    if (!dejavu$1) {
+      dejavu$1 = measure(alpha$1, {"font-family": "DejaVuSans", "font-size": height$1});
+      macos$1 = measure(alpha$1, {"font-family": "-apple-system", "font-size": height$1});
+      monospace$1 = measure(alpha$1, {"font-family": "monospace", "font-size": height$1});
+      proportional$1 = measure(alpha$1, {"font-family": "sans-serif", "font-size": height$1});
+    }
+
+    if (!(font instanceof Array)) { font = font.split(","); }
+    font = font.map(function (f) { return trim$1(f); });
+
+    for (var i = 0; i < font.length; i++) {
+      var fam = font[i];
+      if (checked$1[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
+      else if (checked$1[fam] === false) { continue; }
+      var width = measure(alpha$1, {"font-family": fam, "font-size": height$1});
+      checked$1[fam] = width !== monospace$1;
+      if (checked$1[fam]) { checked$1[fam] = width !== proportional$1; }
+      if (macos$1 && checked$1[fam]) { checked$1[fam] = width !== macos$1; }
+      if (dejavu$1 && checked$1[fam]) { checked$1[fam] = width !== dejavu$1; }
+      if (checked$1[fam]) { return fam; }
+    }
+
+    return false;
+
+  };
+
+  /**
+      @function rtl
+      @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
+  */
+  function detectRTL$1 () { return select("html").attr("dir") === "rtl" ||
+    select("body").attr("dir") === "rtl" ||
+    select("html").style("direction") === "rtl" ||
+    select("body").style("direction") === "rtl"; }
+
+  /**
+      @function stringify
+      @desc Coerces value into a String.
+      @param {String} value
+  */
+  function stringify$1(value) {
+    if (value === void 0) { value = "undefined"; }
+    else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
+    return value;
+  }
+
+  // great unicode list: http://asecuritysite.com/coding/asc2
+
+  var diacritics$1 = [
+    [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
+    [/[\306]/g, "AE"], [/[\346]/g, "ae"],
+    [/[\337]/g, "B"],
+    [/[\307]/g, "C"], [/[\347]/g, "c"],
+    [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
+    [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
+    [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
+    [/[\321]/g, "N"], [/[\361]/g, "n"],
+    [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
+    [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
+    [/[\327]/g, "x"],
+    [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
+  ];
+
+  /**
+      @function strip
+      @desc Removes all non ASCII characters from a string.
+      @param {String} value
+  */
+  function strip$1(value) {
+
+    return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
+
+      if (char === " ") { return "-"; }
+
+      var ret = false;
+      for (var d = 0; d < diacritics$1.length; d++) {
+        if (new RegExp(diacritics$1[d][0]).test(char)) {
+          ret = diacritics$1[d][1];
+          break;
+        }
+      }
+
+      return ret || "";
+
+    });
+  }
+
+  // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
+  // and http://www.fileformat.info/info/unicode/category/Mn/list.htm
+  // JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
+  // The following unicode characters combine to form new characters and should never be split from surrounding characters.
+  var a$2 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
+  var b$1 = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
+  var combiningMarks$1 = a$2.concat(b$1);
+
+  var splitChars$1 = ["-",  "/",  ";",  ":",  "&",
+    "u0E2F",  // thai character pairannoi
+    "u0EAF",  // lao ellipsis
+    "u0EC6",  // lao ko la (word repetition)
+    "u0ECC",  // lao cancellation mark
+    "u104A",  // myanmar sign little section
+    "u104B",  // myanmar sign section
+    "u104C",  // myanmar symbol locative
+    "u104D",  // myanmar symbol completed
+    "u104E",  // myanmar symbol aforementioned
+    "u104F",  // myanmar symbol genitive
+    "u2013",  // en dash
+    "u2014",  // em dash
+    "u2027",  // simplified chinese hyphenation point
+    "u3000",  // simplified chinese ideographic space
+    "u3001",  // simplified chinese ideographic comma
+    "u3002",  // simplified chinese ideographic full stop
+    "uFF0C",  // full-width comma
+    "uFF5E"   // wave dash
+  ];
+
+  var prefixChars$1 = ["'",  "<",  "(",  "{",  "[",
+    "u00AB",  // left-pointing double angle quotation mark
+    "u300A",  // left double angle bracket
+    "u3008"  // left angle bracket
+  ];
+
+  var suffixChars$1 = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
+    "u00BB",  // right-pointing double angle quotation mark
+    "u300B",  // right double angle bracket
+    "u3009"  // right angle bracket
+  ].concat(splitChars$1);
+
+  var burmeseRange$1 = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
+  var japaneseRange$1 = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff0b\uff0d-\uff5d\uff5f-\uff9f\u3400-\u4dbf";
+  var chineseRange$1 = "\u3400-\u9FBF";
+  var laoRange$1 = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
+
+  var noSpaceRange$1 = burmeseRange$1 + chineseRange$1 + laoRange$1;
+
+  var splitWords$1 = new RegExp(("(\\" + (splitChars$1.join("|\\")) + ")*[^\\s|\\" + (splitChars$1.join("|\\")) + "]*(\\" + (splitChars$1.join("|\\")) + ")*"), "g");
+  var japaneseChars$1 = new RegExp(("[" + japaneseRange$1 + "]"));
+  var noSpaceLanguage$1 = new RegExp(("[" + noSpaceRange$1 + "]"));
+  var splitAllChars$1 = new RegExp(("(\\" + (prefixChars$1.join("|\\")) + ")*[" + noSpaceRange$1 + "](\\" + (suffixChars$1.join("|\\")) + "|\\" + (combiningMarks$1.join("|\\")) + ")*|[a-z0-9]+"), "gi");
+
+  /**
+      @function textSplit
+      @desc Splits a given sentence into an array of words.
+      @param {String} sentence
+  */
+  function textSplit$1(sentence) {
+    if (!noSpaceLanguage$1.test(sentence)) { return stringify$1(sentence).match(splitWords$1).filter(function (w) { return w.length; }); }
+    return merge(stringify$1(sentence).match(splitWords$1).map(function (d) {
+      if (!japaneseChars$1.test(d) && noSpaceLanguage$1.test(d)) { return d.match(splitAllChars$1); }
+      return [d];
+    }));
+  }
+
+  /**
+      @function textWrap
+      @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
+  */
+  function wrap() {
+
+    var fontFamily = "sans-serif",
+        fontSize = 10,
+        fontWeight = 400,
+        height = 200,
+        lineHeight,
+        overflow = false,
+        split = textSplit$1,
+        width = 200;
+
+    /**
+        The inner return object and wraps the text and returns the line data array.
+        @private
+    */
+    function textWrap(sentence) {
+
+      sentence = stringify$1(sentence);
+
+      if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.4); }
+
+      var words = split(sentence);
+
+      var style = {
+        "font-family": fontFamily,
+        "font-size": fontSize,
+        "font-weight": fontWeight,
+        "line-height": lineHeight
+      };
+
+      var line = 1,
+          textProg = "",
+          truncated = false,
+          widthProg = 0;
+
+      var lineData = [],
+            sizes = measure(words, style),
+            space = measure(" ", style);
+
+      for (var i = 0; i < words.length; i++) {
+        var word = words[i];
+        var wordWidth = sizes[words.indexOf(word)];
+        word += sentence.slice(textProg.length + word.length).match("^( |\n)*", "g")[0];
+        if (textProg.slice(-1) === "\n" || widthProg + wordWidth > width) {
+          if (!i && !overflow) {
+            truncated = true;
+            break;
+          }
+          lineData[line - 1] = trimRight$1(lineData[line - 1]);
+          line++;
+          if (lineHeight * line > height || wordWidth > width && !overflow) {
+            truncated = true;
+            break;
+          }
+          widthProg = 0;
+          lineData.push(word);
+        }
+        else if (!i) { lineData[0] = word; }
+        else { lineData[line - 1] += word; }
+        textProg += word;
+        widthProg += wordWidth;
+        widthProg += word.match(/[\s]*$/g)[0].length * space;
+      }
+
+      return {
+        lines: lineData,
+        sentence: sentence, truncated: truncated,
+        widths: measure(lineData, style),
+        words: words
+      };
+
+    }
+
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
+        @param {Function|String} [*value* = "sans-serif"]
+    */
+    textWrap.fontFamily = function(_) {
+      return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
+    };
+
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
+        @param {Function|Number} [*value* = 10]
+    */
+    textWrap.fontSize = function(_) {
+      return arguments.length ? (fontSize = _, textWrap) : fontSize;
+    };
+
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
+        @param {Function|Number|String} [*value* = 400]
+    */
+    textWrap.fontWeight = function(_) {
+      return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
+    };
+
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets height limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
+        @param {Number} [*value* = 200]
+    */
+    textWrap.height = function(_) {
+      return arguments.length ? (height = _, textWrap) : height;
+    };
+
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textWrap.fontSize) by default.
+        @param {Function|Number} [*value*]
+    */
+    textWrap.lineHeight = function(_) {
+      return arguments.length ? (lineHeight = _, textWrap) : lineHeight;
+    };
+
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
+        @param {Boolean} [*value* = false]
+    */
+    textWrap.overflow = function(_) {
+      return arguments.length ? (overflow = _, textWrap) : overflow;
+    };
+
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
+        @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to textWrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
+    */
+    textWrap.split = function(_) {
+      return arguments.length ? (split = _, textWrap) : split;
+    };
+
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets width limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
+        @param {Number} [*value* = 200]
+    */
+    textWrap.width = function(_) {
+      return arguments.length ? (width = _, textWrap) : width;
+    };
+
+    return textWrap;
+
+  }
+
+  /**
+      @external BaseClass
+      @see https://github.com/d3plus/d3plus-common#BaseClass
+  */
+
+  /**
+      @class TextBox
+      @extends external:BaseClass
+      @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
+  */
+  var TextBox$1 = (function (BaseClass$$1) {
+    function TextBox() {
+      var this$1 = this;
+
+
+      BaseClass$$1.call(this);
+
+      this._delay = 0;
+      this._duration = 0;
+      this._ellipsis = function (text, line) { return line ? ((text.replace(/\.|,$/g, "")) + "...") : ""; };
+      this._fontColor = constant$2("black");
+      this._fontFamily = constant$2(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
+      this._fontMax = constant$2(50);
+      this._fontMin = constant$2(8);
+      this._fontOpacity = constant$2(1);
+      this._fontResize = constant$2(false);
+      this._fontSize = constant$2(10);
+      this._fontWeight = constant$2(400);
+      this._height = accessor("height", 200);
+      this._id = function (d, i) { return d.id || ("" + i); };
+      this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.2; };
+      this._on = {};
+      this._overflow = constant$2(false);
+      this._padding = constant$2(0);
+      this._pointerEvents = constant$2("auto");
+      this._rotate = constant$2(0);
+      this._split = textSplit$1;
+      this._text = accessor("text");
+      this._textAnchor = constant$2("start");
+      this._verticalAlign = constant$2("top");
+      this._width = accessor("width", 200);
+      this._x = accessor("x", 0);
+      this._y = accessor("y", 0);
+
+    }
+
+    if ( BaseClass$$1 ) { TextBox.__proto__ = BaseClass$$1; }
+    TextBox.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
+    TextBox.prototype.constructor = TextBox;
+
+    /**
+        @memberof TextBox
+        @desc Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
+        @param {Function} [*callback* = undefined]
+    */
+    TextBox.prototype.render = function render (callback) {
+      var this$1 = this;
+
+
+      if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
+
+      var that = this;
+
+      var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
+
+        var t = this$1._text(d, i);
+        if (t === void 0) { return arr; }
+
+        var resize = this$1._fontResize(d, i);
+        var lHRatio = this$1._lineHeight(d, i) / this$1._fontSize(d, i);
+
+        var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
+            lH = resize ? fS * lHRatio : this$1._lineHeight(d, i),
+            line = 1,
+            lineData = [],
+            sizes,
+            wrapResults;
+
+        var style = {
+          "font-family": fontExists$1(this$1._fontFamily(d, i)),
+          "font-size": fS,
+          "font-weight": this$1._fontWeight(d, i),
+          "line-height": lH
+        };
+
+        var padding = parseSides(this$1._padding(d, i));
+
+        var h = this$1._height(d, i) - (padding.top + padding.bottom),
+              w = this$1._width(d, i) - (padding.left + padding.right);
+
+        var wrapper = wrap()
+          .fontFamily(style["font-family"])
+          .fontSize(fS)
+          .fontWeight(style["font-weight"])
+          .lineHeight(lH)
+          .height(h)
+          .overflow(this$1._overflow(d, i))
+          .width(w);
+
+        var fMax = this$1._fontMax(d, i),
+              fMin = this$1._fontMin(d, i),
+              vA = this$1._verticalAlign(d, i),
+              words = this$1._split(t, i);
+
+        /**
+            Figures out the lineData to be used for wrapping.
+            @private
+        */
+        function checkSize() {
+
+          if (fS < fMin) {
+            lineData = [];
+            return;
+          }
+          else if (fS > fMax) { fS = fMax; }
+
+          if (resize) {
+            lH = fS * lHRatio;
+            wrapper
+              .fontSize(fS)
+              .lineHeight(lH);
+            style["font-size"] = fS;
+            style["line-height"] = lH;
+          }
+
+          wrapResults = wrapper(t);
+          lineData = wrapResults.lines.filter(function (l) { return l !== ""; });
+          line = lineData.length;
+
+          if (wrapResults.truncated) {
+
+            if (resize) {
+              fS--;
+              if (fS < fMin) { lineData = []; }
+              else { checkSize(); }
+            }
+            else if (line < 1) { lineData = [that._ellipsis("", line)]; }
+            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
+
+          }
+
+
+        }
+
+        if (w > fMin && (h > lH || resize && h > fMin * lHRatio)) {
+
+          if (resize) {
+
+            sizes = measure(words, style);
+
+            var areaMod = 1.165 + w / h * 0.1,
+                  boxArea = w * h,
+                  maxWidth = max(sizes),
+                  textArea = sum(sizes, function (d) { return d * lH; }) * areaMod;
+
+            if (maxWidth > w || textArea > boxArea) {
+              var areaRatio = Math.sqrt(boxArea / textArea),
+                    widthRatio = w / maxWidth;
+              var sizeRatio = min([areaRatio, widthRatio]);
+              fS = Math.floor(fS * sizeRatio);
+            }
+
+            var heightMax = Math.floor(h * 0.8);
+            if (fS > heightMax) { fS = heightMax; }
+
+          }
+
+          checkSize();
+
+        }
+
+        if (lineData.length) {
+
+          var tH = line * lH;
+          var yP = vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH;
+          yP -= lH * 0.1;
+
+          arr.push({
+            data: d,
+            i: i,
+            lines: lineData,
+            fC: this$1._fontColor(d, i),
+            fF: style["font-family"],
+            fO: this$1._fontOpacity(d, i),
+            fW: style["font-weight"],
+            id: this$1._id(d, i),
+            tA: this$1._textAnchor(d, i),
+            widths: wrapResults.widths,
+            fS: fS, lH: lH, w: w, h: h,
+            x: this$1._x(d, i) + padding.left,
+            y: this$1._y(d, i) + yP + padding.top
+          });
+
+        }
+
+        return arr;
+
+      }, []), this._id);
+
+      var t = transition().duration(this._duration);
+
+      if (this._duration === 0) {
+
+        boxes.exit().remove();
+
+      }
+      else {
+
+        boxes.exit().transition().delay(this._duration).remove();
+
+        boxes.exit().selectAll("text").transition(t)
+          .attr("opacity", 0);
+
+      }
+
+      function rotate(text) {
+        text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + ", " + (d.x + d.w / 2) + ", " + (d.y + d.h / 2) + ")translate(" + (d.x) + ", " + (d.y) + ")"); });
+      }
+
+      var update = boxes.enter().append("g")
+          .attr("class", "d3plus-textBox")
+          .attr("id", function (d) { return ("d3plus-textBox-" + (strip$1(d.id))); })
+          .call(rotate)
+        .merge(boxes);
+
+      var rtl = detectRTL$1();
+
+      update
+        .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
+        .each(function(d) {
+
+          /**
+              Styles to apply to each <text> element.
+              @private
+          */
+          function textStyle(text) {
+            text
+              .text(function (t) { return trimRight$1(t); })
+              .attr("dir", rtl ? "rtl" : "ltr")
+              .attr("fill", d.fC)
+              .attr("text-anchor", d.tA)
+              .attr("font-family", d.fF)
+              .style("font-family", d.fF)
+              .attr("font-size", ((d.fS) + "px"))
+              .style("font-size", ((d.fS) + "px"))
+              .attr("font-weight", d.fW)
+              .style("font-weight", d.fW)
+              .attr("opacity", d.fO)
+              .style("opacity", d.fO)
+              .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
+              .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
+          }
+
+          var texts = select(this).selectAll("text").data(d.lines);
+
+          if (that._duration === 0) {
+
+            texts.call(textStyle);
+
+            texts.exit().remove();
+
+            texts.enter().append("text")
+              .attr("dominant-baseline", "alphabetic")
+              .style("baseline-shift", "0%")
+              .attr("unicode-bidi", "bidi-override")
+              .call(textStyle);
+
+          }
+          else {
+
+            texts.transition(t).call(textStyle);
+
+            texts.exit().transition(t)
+              .attr("opacity", 0).remove();
+
+            texts.enter().append("text")
+                .attr("dominant-baseline", "alphabetic")
+                .style("baseline-shift", "0%")
+                .attr("opacity", 0)
+                .call(textStyle)
+              .merge(texts).transition(t).delay(that._delay)
+                .call(textStyle)
+                .attr("opacity", 1);
+
+          }
+
+        })
+        .transition(t).call(rotate);
+
+      var events = Object.keys(this._on),
+            on = events.reduce(function (obj, e) {
+              obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
+              return obj;
+            }, {});
+      for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
+
+      if (callback) { setTimeout(callback, this._duration + 100); }
+
+      return this;
+
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
+        @param {Array} [*data* = []]
+    */
+    TextBox.prototype.data = function data (_) {
+      return arguments.length ? (this._data = _, this) : this._data;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the animation delay to the specified number in milliseconds.
+        @param {Number} [*value* = 0]
+    */
+    TextBox.prototype.delay = function delay (_) {
+      return arguments.length ? (this._delay = _, this) : this._delay;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the animation duration to the specified number in milliseconds.
+        @param {Number} [*value* = 0]
+    */
+    TextBox.prototype.duration = function duration (_) {
+      return arguments.length ? (this._duration = _, this) : this._duration;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the function that handles what to do when a line is truncated. It should return the new value for the line, and is passed 2 arguments: the String of text for the line in question, and the number of the line. By default, an ellipsis is added to the end of any line except if it is the first word that cannot fit (in that case, an empty string is returned).
+        @param {Function|String} [*value*]
+        @example <caption>default accessor</caption>
+  function(text, line) {
+    return line ? text.replace(/\.|,$/g, "") + "..." : "";
+  }
+    */
+    TextBox.prototype.ellipsis = function ellipsis (_) {
+      return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$2(_), this) : this._ellipsis;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
+        @param {Function|String} [*value* = "black"]
+    */
+    TextBox.prototype.fontColor = function fontColor (_) {
+      return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$2(_), this) : this._fontColor;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
+        @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
+    */
+    TextBox.prototype.fontFamily = function fontFamily (_) {
+      return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$2(_), this) : this._fontFamily;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the maximum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
+        @param {Function|Number} [*value* = 50]
+    */
+    TextBox.prototype.fontMax = function fontMax (_) {
+      return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$2(_), this) : this._fontMax;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the minimum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
+        @param {Function|Number} [*value* = 8]
+    */
+    TextBox.prototype.fontMin = function fontMin (_) {
+      return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$2(_), this) : this._fontMin;
+    };
+
+    /**
+         @memberof TextBox
+         @desc Sets the font opacity to the specified accessor function or static number between 0 and 1.
+         @param {Function|Number} [*value* = 1]
+     */
+    TextBox.prototype.fontOpacity = function fontOpacity (_) {
+      return arguments.length ? (this._fontOpacity = typeof _ === "function" ? _ : constant$2(_), this) : this._fontOpacity;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
+        @param {Function|Boolean} [*value* = false]
+    */
+    TextBox.prototype.fontResize = function fontResize (_) {
+      return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$2(_), this) : this._fontResize;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the font size to the specified accessor function or static number (which corresponds to pixel units), which is inferred from the [DOM selection](#textBox.select) by default.
+        @param {Function|Number} [*value* = 10]
+    */
+    TextBox.prototype.fontSize = function fontSize (_) {
+      return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$2(_), this) : this._fontSize;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
+        @param {Function|Number|String} [*value* = 400]
+    */
+    TextBox.prototype.fontWeight = function fontWeight (_) {
+      return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$2(_), this) : this._fontWeight;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the height for each box to the specified accessor function or static number.
+        @param {Function|Number} [*value*]
+        @example <caption>default accessor</caption>
+  function(d) {
+    return d.height || 200;
+  }
+    */
+    TextBox.prototype.height = function height (_) {
+      return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$2(_), this) : this._height;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Defines the unique id for each box to the specified accessor function or static number.
+        @param {Function|Number} [*value*]
+        @example <caption>default accessor</caption>
+  function(d, i) {
+    return d.id || i + "";
+  }
+    */
+    TextBox.prototype.id = function id (_) {
+      return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$2(_), this) : this._id;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the line height to the specified accessor function or static number, which is 1.2 times the [font size](#textBox.fontSize) by default.
+        @param {Function|Number} [*value*]
+    */
+    TextBox.prototype.lineHeight = function lineHeight (_) {
+      return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$2(_), this) : this._lineHeight;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the text overflow to the specified accessor function or static boolean.
+        @param {Function|Boolean} [*value* = false]
+    */
+    TextBox.prototype.overflow = function overflow (_) {
+      return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$2(_), this) : this._overflow;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the padding to the specified accessor function, CSS shorthand string, or static number, which is 0 by default.
+        @param {Function|Number|String} [*value*]
+    */
+    TextBox.prototype.padding = function padding (_) {
+      return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$2(_), this) : this._padding;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the pointer-events to the specified accessor function or static string.
+        @param {Function|String} [*value* = "auto"]
+    */
+    TextBox.prototype.pointerEvents = function pointerEvents (_) {
+      return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$2(_), this) : this._pointerEvents;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the rotate percentage for each box to the specified accessor function or static string.
+        @param {Function|Number} [*value* = 0]
+    */
+    TextBox.prototype.rotate = function rotate (_) {
+      return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$2(_), this) : this._rotate;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
+        @param {String|HTMLElement} [*selector*]
+    */
+    TextBox.prototype.select = function select$1 (_) {
+      return arguments.length ? (this._select = select(_), this) : this._select;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
+        @param {Function} [*value*]
+    */
+    TextBox.prototype.split = function split (_) {
+      return arguments.length ? (this._split = _, this) : this._split;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the text for each box to the specified accessor function or static string.
+        @param {Function|String} [*value*]
+        @example <caption>default accessor</caption>
+  function(d) {
+    return d.text;
+  }
+    */
+    TextBox.prototype.text = function text (_) {
+      return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$2(_), this) : this._text;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
+        @param {Function|String} [*value* = "start"]
+    */
+    TextBox.prototype.textAnchor = function textAnchor (_) {
+      return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$2(_), this) : this._textAnchor;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
+        @param {Function|String} [*value* = "top"]
+    */
+    TextBox.prototype.verticalAlign = function verticalAlign (_) {
+      return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$2(_), this) : this._verticalAlign;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the width for each box to the specified accessor function or static number.
+        @param {Function|Number} [*value*]
+        @example <caption>default accessor</caption>
+  function(d) {
+    return d.width || 200;
+  }
+    */
+    TextBox.prototype.width = function width (_) {
+      return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$2(_), this) : this._width;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
+        @param {Function|Number} [*value*]
+        @example <caption>default accessor</caption>
+  function(d) {
+    return d.x || 0;
+  }
+    */
+    TextBox.prototype.x = function x (_) {
+      return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$2(_), this) : this._x;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
+        @param {Function|Number} [*value*]
+        @example <caption>default accessor</caption>
+  function(d) {
+    return d.y || 0;
+  }
+    */
+    TextBox.prototype.y = function y (_) {
+      return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$2(_), this) : this._y;
+    };
+
+    return TextBox;
+  }(BaseClass));
+
+  /**
       @external Axis
       @see https://github.com/d3plus/d3plus-axis#Axis
   */
@@ -17174,6 +18237,2526 @@ if (!Array.prototype.includes) {
     return Timeline;
   }(Axis));
 
+  /**!
+   * @fileOverview Kickass library to create and place poppers near their reference elements.
+   * @version 1.14.3
+   * @license
+   * Copyright (c) 2016 Federico Zivolo and contributors
+   *
+   * Permission is hereby granted, free of charge, to any person obtaining a copy
+   * of this software and associated documentation files (the "Software"), to deal
+   * in the Software without restriction, including without limitation the rights
+   * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   * copies of the Software, and to permit persons to whom the Software is
+   * furnished to do so, subject to the following conditions:
+   *
+   * The above copyright notice and this permission notice shall be included in all
+   * copies or substantial portions of the Software.
+   *
+   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   * SOFTWARE.
+   */
+  var isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
+
+  var longerTimeoutBrowsers = ['Edge', 'Trident', 'Firefox'];
+  var timeoutDuration = 0;
+  for (var i = 0; i < longerTimeoutBrowsers.length; i += 1) {
+    if (isBrowser && navigator.userAgent.indexOf(longerTimeoutBrowsers[i]) >= 0) {
+      timeoutDuration = 1;
+      break;
+    }
+  }
+
+  function microtaskDebounce(fn) {
+    var called = false;
+    return function () {
+      if (called) {
+        return;
+      }
+      called = true;
+      window.Promise.resolve().then(function () {
+        called = false;
+        fn();
+      });
+    };
+  }
+
+  function taskDebounce(fn) {
+    var scheduled = false;
+    return function () {
+      if (!scheduled) {
+        scheduled = true;
+        setTimeout(function () {
+          scheduled = false;
+          fn();
+        }, timeoutDuration);
+      }
+    };
+  }
+
+  var supportsMicroTasks = isBrowser && window.Promise;
+
+  /**
+  * Create a debounced version of a method, that's asynchronously deferred
+  * but called in the minimum time possible.
+  *
+  * @method
+  * @memberof Popper.Utils
+  * @argument {Function} fn
+  * @returns {Function}
+  */
+  var debounce = supportsMicroTasks ? microtaskDebounce : taskDebounce;
+
+  /**
+   * Check if the given variable is a function
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Any} functionToCheck - variable to check
+   * @returns {Boolean} answer to: is a function?
+   */
+  function isFunction(functionToCheck) {
+    var getType = {};
+    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+  }
+
+  /**
+   * Get CSS computed property of the given element
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Eement} element
+   * @argument {String} property
+   */
+  function getStyleComputedProperty(element, property) {
+    if (element.nodeType !== 1) {
+      return [];
+    }
+    // NOTE: 1 DOM access here
+    var css = getComputedStyle(element, null);
+    return property ? css[property] : css;
+  }
+
+  /**
+   * Returns the parentNode or the host of the element
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} element
+   * @returns {Element} parent
+   */
+  function getParentNode(element) {
+    if (element.nodeName === 'HTML') {
+      return element;
+    }
+    return element.parentNode || element.host;
+  }
+
+  /**
+   * Returns the scrolling parent of the given element
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} element
+   * @returns {Element} scroll parent
+   */
+  function getScrollParent(element) {
+    // Return body, `getScroll` will take care to get the correct `scrollTop` from it
+    if (!element) {
+      return document.body;
+    }
+
+    switch (element.nodeName) {
+      case 'HTML':
+      case 'BODY':
+        return element.ownerDocument.body;
+      case '#document':
+        return element.body;
+    }
+
+    // Firefox want us to check `-x` and `-y` variations as well
+
+    var _getStyleComputedProp = getStyleComputedProperty(element),
+        overflow = _getStyleComputedProp.overflow,
+        overflowX = _getStyleComputedProp.overflowX,
+        overflowY = _getStyleComputedProp.overflowY;
+
+    if (/(auto|scroll|overlay)/.test(overflow + overflowY + overflowX)) {
+      return element;
+    }
+
+    return getScrollParent(getParentNode(element));
+  }
+
+  var isIE11 = isBrowser && !!(window.MSInputMethodContext && document.documentMode);
+  var isIE10 = isBrowser && /MSIE 10/.test(navigator.userAgent);
+
+  /**
+   * Determines if the browser is Internet Explorer
+   * @method
+   * @memberof Popper.Utils
+   * @param {Number} version to check
+   * @returns {Boolean} isIE
+   */
+  function isIE(version) {
+    if (version === 11) {
+      return isIE11;
+    }
+    if (version === 10) {
+      return isIE10;
+    }
+    return isIE11 || isIE10;
+  }
+
+  /**
+   * Returns the offset parent of the given element
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} element
+   * @returns {Element} offset parent
+   */
+  function getOffsetParent(element) {
+    if (!element) {
+      return document.documentElement;
+    }
+
+    var noOffsetParent = isIE(10) ? document.body : null;
+
+    // NOTE: 1 DOM access here
+    var offsetParent = element.offsetParent;
+    // Skip hidden elements which don't have an offsetParent
+    while (offsetParent === noOffsetParent && element.nextElementSibling) {
+      offsetParent = (element = element.nextElementSibling).offsetParent;
+    }
+
+    var nodeName = offsetParent && offsetParent.nodeName;
+
+    if (!nodeName || nodeName === 'BODY' || nodeName === 'HTML') {
+      return element ? element.ownerDocument.documentElement : document.documentElement;
+    }
+
+    // .offsetParent will return the closest TD or TABLE in case
+    // no offsetParent is present, I hate this job...
+    if (['TD', 'TABLE'].indexOf(offsetParent.nodeName) !== -1 && getStyleComputedProperty(offsetParent, 'position') === 'static') {
+      return getOffsetParent(offsetParent);
+    }
+
+    return offsetParent;
+  }
+
+  function isOffsetContainer(element) {
+    var nodeName = element.nodeName;
+
+    if (nodeName === 'BODY') {
+      return false;
+    }
+    return nodeName === 'HTML' || getOffsetParent(element.firstElementChild) === element;
+  }
+
+  /**
+   * Finds the root node (document, shadowDOM root) of the given element
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} node
+   * @returns {Element} root node
+   */
+  function getRoot(node) {
+    if (node.parentNode !== null) {
+      return getRoot(node.parentNode);
+    }
+
+    return node;
+  }
+
+  /**
+   * Finds the offset parent common to the two provided nodes
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} element1
+   * @argument {Element} element2
+   * @returns {Element} common offset parent
+   */
+  function findCommonOffsetParent(element1, element2) {
+    // This check is needed to avoid errors in case one of the elements isn't defined for any reason
+    if (!element1 || !element1.nodeType || !element2 || !element2.nodeType) {
+      return document.documentElement;
+    }
+
+    // Here we make sure to give as "start" the element that comes first in the DOM
+    var order = element1.compareDocumentPosition(element2) & Node.DOCUMENT_POSITION_FOLLOWING;
+    var start = order ? element1 : element2;
+    var end = order ? element2 : element1;
+
+    // Get common ancestor container
+    var range = document.createRange();
+    range.setStart(start, 0);
+    range.setEnd(end, 0);
+    var commonAncestorContainer = range.commonAncestorContainer;
+
+    // Both nodes are inside #document
+
+    if (element1 !== commonAncestorContainer && element2 !== commonAncestorContainer || start.contains(end)) {
+      if (isOffsetContainer(commonAncestorContainer)) {
+        return commonAncestorContainer;
+      }
+
+      return getOffsetParent(commonAncestorContainer);
+    }
+
+    // one of the nodes is inside shadowDOM, find which one
+    var element1root = getRoot(element1);
+    if (element1root.host) {
+      return findCommonOffsetParent(element1root.host, element2);
+    } else {
+      return findCommonOffsetParent(element1, getRoot(element2).host);
+    }
+  }
+
+  /**
+   * Gets the scroll value of the given element in the given side (top and left)
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} element
+   * @argument {String} side `top` or `left`
+   * @returns {number} amount of scrolled pixels
+   */
+  function getScroll(element) {
+    var side = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'top';
+
+    var upperSide = side === 'top' ? 'scrollTop' : 'scrollLeft';
+    var nodeName = element.nodeName;
+
+    if (nodeName === 'BODY' || nodeName === 'HTML') {
+      var html = element.ownerDocument.documentElement;
+      var scrollingElement = element.ownerDocument.scrollingElement || html;
+      return scrollingElement[upperSide];
+    }
+
+    return element[upperSide];
+  }
+
+  /*
+   * Sum or subtract the element scroll values (left and top) from a given rect object
+   * @method
+   * @memberof Popper.Utils
+   * @param {Object} rect - Rect object you want to change
+   * @param {HTMLElement} element - The element from the function reads the scroll values
+   * @param {Boolean} subtract - set to true if you want to subtract the scroll values
+   * @return {Object} rect - The modifier rect object
+   */
+  function includeScroll(rect, element) {
+    var subtract = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+    var scrollTop = getScroll(element, 'top');
+    var scrollLeft = getScroll(element, 'left');
+    var modifier = subtract ? -1 : 1;
+    rect.top += scrollTop * modifier;
+    rect.bottom += scrollTop * modifier;
+    rect.left += scrollLeft * modifier;
+    rect.right += scrollLeft * modifier;
+    return rect;
+  }
+
+  /*
+   * Helper to detect borders of a given element
+   * @method
+   * @memberof Popper.Utils
+   * @param {CSSStyleDeclaration} styles
+   * Result of `getStyleComputedProperty` on the given element
+   * @param {String} axis - `x` or `y`
+   * @return {number} borders - The borders size of the given axis
+   */
+
+  function getBordersSize(styles, axis) {
+    var sideA = axis === 'x' ? 'Left' : 'Top';
+    var sideB = sideA === 'Left' ? 'Right' : 'Bottom';
+
+    return parseFloat(styles['border' + sideA + 'Width'], 10) + parseFloat(styles['border' + sideB + 'Width'], 10);
+  }
+
+  function getSize(axis, body, html, computedStyle) {
+    return Math.max(body['offset' + axis], body['scroll' + axis], html['client' + axis], html['offset' + axis], html['scroll' + axis], isIE(10) ? html['offset' + axis] + computedStyle['margin' + (axis === 'Height' ? 'Top' : 'Left')] + computedStyle['margin' + (axis === 'Height' ? 'Bottom' : 'Right')] : 0);
+  }
+
+  function getWindowSizes() {
+    var body = document.body;
+    var html = document.documentElement;
+    var computedStyle = isIE(10) && getComputedStyle(html);
+
+    return {
+      height: getSize('Height', body, html, computedStyle),
+      width: getSize('Width', body, html, computedStyle)
+    };
+  }
+
+  var classCallCheck = function (instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  };
+
+  var createClass = function () {
+    function defineProperties(target, props) {
+      for (var i = 0; i < props.length; i++) {
+        var descriptor = props[i];
+        descriptor.enumerable = descriptor.enumerable || false;
+        descriptor.configurable = true;
+        if ("value" in descriptor) { descriptor.writable = true; }
+        Object.defineProperty(target, descriptor.key, descriptor);
+      }
+    }
+
+    return function (Constructor, protoProps, staticProps) {
+      if (protoProps) { defineProperties(Constructor.prototype, protoProps); }
+      if (staticProps) { defineProperties(Constructor, staticProps); }
+      return Constructor;
+    };
+  }();
+
+
+
+
+
+  var defineProperty = function (obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  };
+
+  var _extends = Object.assign || function (target) {
+    var arguments$1 = arguments;
+
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments$1[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  /**
+   * Given element offsets, generate an output similar to getBoundingClientRect
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Object} offsets
+   * @returns {Object} ClientRect like output
+   */
+  function getClientRect(offsets) {
+    return _extends({}, offsets, {
+      right: offsets.left + offsets.width,
+      bottom: offsets.top + offsets.height
+    });
+  }
+
+  /**
+   * Get bounding client rect of given element
+   * @method
+   * @memberof Popper.Utils
+   * @param {HTMLElement} element
+   * @return {Object} client rect
+   */
+  function getBoundingClientRect(element) {
+    var rect = {};
+
+    // IE10 10 FIX: Please, don't ask, the element isn't
+    // considered in DOM in some circumstances...
+    // This isn't reproducible in IE10 compatibility mode of IE11
+    try {
+      if (isIE(10)) {
+        rect = element.getBoundingClientRect();
+        var scrollTop = getScroll(element, 'top');
+        var scrollLeft = getScroll(element, 'left');
+        rect.top += scrollTop;
+        rect.left += scrollLeft;
+        rect.bottom += scrollTop;
+        rect.right += scrollLeft;
+      } else {
+        rect = element.getBoundingClientRect();
+      }
+    } catch (e) {}
+
+    var result = {
+      left: rect.left,
+      top: rect.top,
+      width: rect.right - rect.left,
+      height: rect.bottom - rect.top
+    };
+
+    // subtract scrollbar size from sizes
+    var sizes = element.nodeName === 'HTML' ? getWindowSizes() : {};
+    var width = sizes.width || element.clientWidth || result.right - result.left;
+    var height = sizes.height || element.clientHeight || result.bottom - result.top;
+
+    var horizScrollbar = element.offsetWidth - width;
+    var vertScrollbar = element.offsetHeight - height;
+
+    // if an hypothetical scrollbar is detected, we must be sure it's not a `border`
+    // we make this check conditional for performance reasons
+    if (horizScrollbar || vertScrollbar) {
+      var styles = getStyleComputedProperty(element);
+      horizScrollbar -= getBordersSize(styles, 'x');
+      vertScrollbar -= getBordersSize(styles, 'y');
+
+      result.width -= horizScrollbar;
+      result.height -= vertScrollbar;
+    }
+
+    return getClientRect(result);
+  }
+
+  function getOffsetRectRelativeToArbitraryNode(children, parent) {
+    var fixedPosition = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+    var isIE10 = isIE(10);
+    var isHTML = parent.nodeName === 'HTML';
+    var childrenRect = getBoundingClientRect(children);
+    var parentRect = getBoundingClientRect(parent);
+    var scrollParent = getScrollParent(children);
+
+    var styles = getStyleComputedProperty(parent);
+    var borderTopWidth = parseFloat(styles.borderTopWidth, 10);
+    var borderLeftWidth = parseFloat(styles.borderLeftWidth, 10);
+
+    // In cases where the parent is fixed, we must ignore negative scroll in offset calc
+    if (fixedPosition && parent.nodeName === 'HTML') {
+      parentRect.top = Math.max(parentRect.top, 0);
+      parentRect.left = Math.max(parentRect.left, 0);
+    }
+    var offsets = getClientRect({
+      top: childrenRect.top - parentRect.top - borderTopWidth,
+      left: childrenRect.left - parentRect.left - borderLeftWidth,
+      width: childrenRect.width,
+      height: childrenRect.height
+    });
+    offsets.marginTop = 0;
+    offsets.marginLeft = 0;
+
+    // Subtract margins of documentElement in case it's being used as parent
+    // we do this only on HTML because it's the only element that behaves
+    // differently when margins are applied to it. The margins are included in
+    // the box of the documentElement, in the other cases not.
+    if (!isIE10 && isHTML) {
+      var marginTop = parseFloat(styles.marginTop, 10);
+      var marginLeft = parseFloat(styles.marginLeft, 10);
+
+      offsets.top -= borderTopWidth - marginTop;
+      offsets.bottom -= borderTopWidth - marginTop;
+      offsets.left -= borderLeftWidth - marginLeft;
+      offsets.right -= borderLeftWidth - marginLeft;
+
+      // Attach marginTop and marginLeft because in some circumstances we may need them
+      offsets.marginTop = marginTop;
+      offsets.marginLeft = marginLeft;
+    }
+
+    if (isIE10 && !fixedPosition ? parent.contains(scrollParent) : parent === scrollParent && scrollParent.nodeName !== 'BODY') {
+      offsets = includeScroll(offsets, parent);
+    }
+
+    return offsets;
+  }
+
+  function getViewportOffsetRectRelativeToArtbitraryNode(element) {
+    var excludeScroll = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+    var html = element.ownerDocument.documentElement;
+    var relativeOffset = getOffsetRectRelativeToArbitraryNode(element, html);
+    var width = Math.max(html.clientWidth, window.innerWidth || 0);
+    var height = Math.max(html.clientHeight, window.innerHeight || 0);
+
+    var scrollTop = !excludeScroll ? getScroll(html) : 0;
+    var scrollLeft = !excludeScroll ? getScroll(html, 'left') : 0;
+
+    var offset = {
+      top: scrollTop - relativeOffset.top + relativeOffset.marginTop,
+      left: scrollLeft - relativeOffset.left + relativeOffset.marginLeft,
+      width: width,
+      height: height
+    };
+
+    return getClientRect(offset);
+  }
+
+  /**
+   * Check if the given element is fixed or is inside a fixed parent
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} element
+   * @argument {Element} customContainer
+   * @returns {Boolean} answer to "isFixed?"
+   */
+  function isFixed(element) {
+    var nodeName = element.nodeName;
+    if (nodeName === 'BODY' || nodeName === 'HTML') {
+      return false;
+    }
+    if (getStyleComputedProperty(element, 'position') === 'fixed') {
+      return true;
+    }
+    return isFixed(getParentNode(element));
+  }
+
+  /**
+   * Finds the first parent of an element that has a transformed property defined
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} element
+   * @returns {Element} first transformed parent or documentElement
+   */
+
+  function getFixedPositionOffsetParent(element) {
+    // This check is needed to avoid errors in case one of the elements isn't defined for any reason
+    if (!element || !element.parentElement || isIE()) {
+      return document.documentElement;
+    }
+    var el = element.parentElement;
+    while (el && getStyleComputedProperty(el, 'transform') === 'none') {
+      el = el.parentElement;
+    }
+    return el || document.documentElement;
+  }
+
+  /**
+   * Computed the boundaries limits and return them
+   * @method
+   * @memberof Popper.Utils
+   * @param {HTMLElement} popper
+   * @param {HTMLElement} reference
+   * @param {number} padding
+   * @param {HTMLElement} boundariesElement - Element used to define the boundaries
+   * @param {Boolean} fixedPosition - Is in fixed position mode
+   * @returns {Object} Coordinates of the boundaries
+   */
+  function getBoundaries(popper, reference, padding, boundariesElement) {
+    var fixedPosition = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+
+    // NOTE: 1 DOM access here
+
+    var boundaries = { top: 0, left: 0 };
+    var offsetParent = fixedPosition ? getFixedPositionOffsetParent(popper) : findCommonOffsetParent(popper, reference);
+
+    // Handle viewport case
+    if (boundariesElement === 'viewport') {
+      boundaries = getViewportOffsetRectRelativeToArtbitraryNode(offsetParent, fixedPosition);
+    } else {
+      // Handle other cases based on DOM element used as boundaries
+      var boundariesNode = void 0;
+      if (boundariesElement === 'scrollParent') {
+        boundariesNode = getScrollParent(getParentNode(reference));
+        if (boundariesNode.nodeName === 'BODY') {
+          boundariesNode = popper.ownerDocument.documentElement;
+        }
+      } else if (boundariesElement === 'window') {
+        boundariesNode = popper.ownerDocument.documentElement;
+      } else {
+        boundariesNode = boundariesElement;
+      }
+
+      var offsets = getOffsetRectRelativeToArbitraryNode(boundariesNode, offsetParent, fixedPosition);
+
+      // In case of HTML, we need a different computation
+      if (boundariesNode.nodeName === 'HTML' && !isFixed(offsetParent)) {
+        var _getWindowSizes = getWindowSizes(),
+            height = _getWindowSizes.height,
+            width = _getWindowSizes.width;
+
+        boundaries.top += offsets.top - offsets.marginTop;
+        boundaries.bottom = height + offsets.top;
+        boundaries.left += offsets.left - offsets.marginLeft;
+        boundaries.right = width + offsets.left;
+      } else {
+        // for all the other DOM elements, this one is good
+        boundaries = offsets;
+      }
+    }
+
+    // Add paddings
+    boundaries.left += padding;
+    boundaries.top += padding;
+    boundaries.right -= padding;
+    boundaries.bottom -= padding;
+
+    return boundaries;
+  }
+
+  function getArea(_ref) {
+    var width = _ref.width,
+        height = _ref.height;
+
+    return width * height;
+  }
+
+  /**
+   * Utility used to transform the `auto` placement to the placement with more
+   * available space.
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Object} data - The data object generated by update method
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {Object} The data object, properly modified
+   */
+  function computeAutoPlacement(placement, refRect, popper, reference, boundariesElement) {
+    var padding = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 0;
+
+    if (placement.indexOf('auto') === -1) {
+      return placement;
+    }
+
+    var boundaries = getBoundaries(popper, reference, padding, boundariesElement);
+
+    var rects = {
+      top: {
+        width: boundaries.width,
+        height: refRect.top - boundaries.top
+      },
+      right: {
+        width: boundaries.right - refRect.right,
+        height: boundaries.height
+      },
+      bottom: {
+        width: boundaries.width,
+        height: boundaries.bottom - refRect.bottom
+      },
+      left: {
+        width: refRect.left - boundaries.left,
+        height: boundaries.height
+      }
+    };
+
+    var sortedAreas = Object.keys(rects).map(function (key) {
+      return _extends({
+        key: key
+      }, rects[key], {
+        area: getArea(rects[key])
+      });
+    }).sort(function (a, b) {
+      return b.area - a.area;
+    });
+
+    var filteredAreas = sortedAreas.filter(function (_ref2) {
+      var width = _ref2.width,
+          height = _ref2.height;
+      return width >= popper.clientWidth && height >= popper.clientHeight;
+    });
+
+    var computedPlacement = filteredAreas.length > 0 ? filteredAreas[0].key : sortedAreas[0].key;
+
+    var variation = placement.split('-')[1];
+
+    return computedPlacement + (variation ? '-' + variation : '');
+  }
+
+  /**
+   * Get offsets to the reference element
+   * @method
+   * @memberof Popper.Utils
+   * @param {Object} state
+   * @param {Element} popper - the popper element
+   * @param {Element} reference - the reference element (the popper will be relative to this)
+   * @param {Element} fixedPosition - is in fixed position mode
+   * @returns {Object} An object containing the offsets which will be applied to the popper
+   */
+  function getReferenceOffsets(state, popper, reference) {
+    var fixedPosition = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
+    var commonOffsetParent = fixedPosition ? getFixedPositionOffsetParent(popper) : findCommonOffsetParent(popper, reference);
+    return getOffsetRectRelativeToArbitraryNode(reference, commonOffsetParent, fixedPosition);
+  }
+
+  /**
+   * Get the outer sizes of the given element (offset size + margins)
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} element
+   * @returns {Object} object containing width and height properties
+   */
+  function getOuterSizes(element) {
+    var styles = getComputedStyle(element);
+    var x = parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
+    var y = parseFloat(styles.marginLeft) + parseFloat(styles.marginRight);
+    var result = {
+      width: element.offsetWidth + y,
+      height: element.offsetHeight + x
+    };
+    return result;
+  }
+
+  /**
+   * Get the opposite placement of the given one
+   * @method
+   * @memberof Popper.Utils
+   * @argument {String} placement
+   * @returns {String} flipped placement
+   */
+  function getOppositePlacement(placement) {
+    var hash = { left: 'right', right: 'left', bottom: 'top', top: 'bottom' };
+    return placement.replace(/left|right|bottom|top/g, function (matched) {
+      return hash[matched];
+    });
+  }
+
+  /**
+   * Get offsets to the popper
+   * @method
+   * @memberof Popper.Utils
+   * @param {Object} position - CSS position the Popper will get applied
+   * @param {HTMLElement} popper - the popper element
+   * @param {Object} referenceOffsets - the reference offsets (the popper will be relative to this)
+   * @param {String} placement - one of the valid placement options
+   * @returns {Object} popperOffsets - An object containing the offsets which will be applied to the popper
+   */
+  function getPopperOffsets(popper, referenceOffsets, placement) {
+    placement = placement.split('-')[0];
+
+    // Get popper node sizes
+    var popperRect = getOuterSizes(popper);
+
+    // Add position, width and height to our offsets object
+    var popperOffsets = {
+      width: popperRect.width,
+      height: popperRect.height
+    };
+
+    // depending by the popper placement we have to compute its offsets slightly differently
+    var isHoriz = ['right', 'left'].indexOf(placement) !== -1;
+    var mainSide = isHoriz ? 'top' : 'left';
+    var secondarySide = isHoriz ? 'left' : 'top';
+    var measurement = isHoriz ? 'height' : 'width';
+    var secondaryMeasurement = !isHoriz ? 'height' : 'width';
+
+    popperOffsets[mainSide] = referenceOffsets[mainSide] + referenceOffsets[measurement] / 2 - popperRect[measurement] / 2;
+    if (placement === secondarySide) {
+      popperOffsets[secondarySide] = referenceOffsets[secondarySide] - popperRect[secondaryMeasurement];
+    } else {
+      popperOffsets[secondarySide] = referenceOffsets[getOppositePlacement(secondarySide)];
+    }
+
+    return popperOffsets;
+  }
+
+  /**
+   * Mimics the `find` method of Array
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Array} arr
+   * @argument prop
+   * @argument value
+   * @returns index or -1
+   */
+  function find(arr, check) {
+    // use native find if supported
+    if (Array.prototype.find) {
+      return arr.find(check);
+    }
+
+    // use `filter` to obtain the same behavior of `find`
+    return arr.filter(check)[0];
+  }
+
+  /**
+   * Return the index of the matching object
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Array} arr
+   * @argument prop
+   * @argument value
+   * @returns index or -1
+   */
+  function findIndex(arr, prop, value) {
+    // use native findIndex if supported
+    if (Array.prototype.findIndex) {
+      return arr.findIndex(function (cur) {
+        return cur[prop] === value;
+      });
+    }
+
+    // use `find` + `indexOf` if `findIndex` isn't supported
+    var match = find(arr, function (obj) {
+      return obj[prop] === value;
+    });
+    return arr.indexOf(match);
+  }
+
+  /**
+   * Loop trough the list of modifiers and run them in order,
+   * each of them will then edit the data object.
+   * @method
+   * @memberof Popper.Utils
+   * @param {dataObject} data
+   * @param {Array} modifiers
+   * @param {String} ends - Optional modifier name used as stopper
+   * @returns {dataObject}
+   */
+  function runModifiers(modifiers, data, ends) {
+    var modifiersToRun = ends === undefined ? modifiers : modifiers.slice(0, findIndex(modifiers, 'name', ends));
+
+    modifiersToRun.forEach(function (modifier) {
+      if (modifier['function']) {
+        // eslint-disable-line dot-notation
+        console.warn('`modifier.function` is deprecated, use `modifier.fn`!');
+      }
+      var fn = modifier['function'] || modifier.fn; // eslint-disable-line dot-notation
+      if (modifier.enabled && isFunction(fn)) {
+        // Add properties to offsets to make them a complete clientRect object
+        // we do this before each modifier to make sure the previous one doesn't
+        // mess with these values
+        data.offsets.popper = getClientRect(data.offsets.popper);
+        data.offsets.reference = getClientRect(data.offsets.reference);
+
+        data = fn(data, modifier);
+      }
+    });
+
+    return data;
+  }
+
+  /**
+   * Updates the position of the popper, computing the new offsets and applying
+   * the new style.<br />
+   * Prefer `scheduleUpdate` over `update` because of performance reasons.
+   * @method
+   * @memberof Popper
+   */
+  function update() {
+    // if popper is destroyed, don't perform any further update
+    if (this.state.isDestroyed) {
+      return;
+    }
+
+    var data = {
+      instance: this,
+      styles: {},
+      arrowStyles: {},
+      attributes: {},
+      flipped: false,
+      offsets: {}
+    };
+
+    // compute reference element offsets
+    data.offsets.reference = getReferenceOffsets(this.state, this.popper, this.reference, this.options.positionFixed);
+
+    // compute auto placement, store placement inside the data object,
+    // modifiers will be able to edit `placement` if needed
+    // and refer to originalPlacement to know the original value
+    data.placement = computeAutoPlacement(this.options.placement, data.offsets.reference, this.popper, this.reference, this.options.modifiers.flip.boundariesElement, this.options.modifiers.flip.padding);
+
+    // store the computed placement inside `originalPlacement`
+    data.originalPlacement = data.placement;
+
+    data.positionFixed = this.options.positionFixed;
+
+    // compute the popper offsets
+    data.offsets.popper = getPopperOffsets(this.popper, data.offsets.reference, data.placement);
+
+    data.offsets.popper.position = this.options.positionFixed ? 'fixed' : 'absolute';
+
+    // run the modifiers
+    data = runModifiers(this.modifiers, data);
+
+    // the first `update` will call `onCreate` callback
+    // the other ones will call `onUpdate` callback
+    if (!this.state.isCreated) {
+      this.state.isCreated = true;
+      this.options.onCreate(data);
+    } else {
+      this.options.onUpdate(data);
+    }
+  }
+
+  /**
+   * Helper used to know if the given modifier is enabled.
+   * @method
+   * @memberof Popper.Utils
+   * @returns {Boolean}
+   */
+  function isModifierEnabled(modifiers, modifierName) {
+    return modifiers.some(function (_ref) {
+      var name = _ref.name,
+          enabled = _ref.enabled;
+      return enabled && name === modifierName;
+    });
+  }
+
+  /**
+   * Get the prefixed supported property name
+   * @method
+   * @memberof Popper.Utils
+   * @argument {String} property (camelCase)
+   * @returns {String} prefixed property (camelCase or PascalCase, depending on the vendor prefix)
+   */
+  function getSupportedPropertyName(property) {
+    var prefixes = [false, 'ms', 'Webkit', 'Moz', 'O'];
+    var upperProp = property.charAt(0).toUpperCase() + property.slice(1);
+
+    for (var i = 0; i < prefixes.length; i++) {
+      var prefix = prefixes[i];
+      var toCheck = prefix ? '' + prefix + upperProp : property;
+      if (typeof document.body.style[toCheck] !== 'undefined') {
+        return toCheck;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Destroy the popper
+   * @method
+   * @memberof Popper
+   */
+  function destroy() {
+    this.state.isDestroyed = true;
+
+    // touch DOM only if `applyStyle` modifier is enabled
+    if (isModifierEnabled(this.modifiers, 'applyStyle')) {
+      this.popper.removeAttribute('x-placement');
+      this.popper.style.position = '';
+      this.popper.style.top = '';
+      this.popper.style.left = '';
+      this.popper.style.right = '';
+      this.popper.style.bottom = '';
+      this.popper.style.willChange = '';
+      this.popper.style[getSupportedPropertyName('transform')] = '';
+    }
+
+    this.disableEventListeners();
+
+    // remove the popper if user explicity asked for the deletion on destroy
+    // do not use `remove` because IE11 doesn't support it
+    if (this.options.removeOnDestroy) {
+      this.popper.parentNode.removeChild(this.popper);
+    }
+    return this;
+  }
+
+  /**
+   * Get the window associated with the element
+   * @argument {Element} element
+   * @returns {Window}
+   */
+  function getWindow(element) {
+    var ownerDocument = element.ownerDocument;
+    return ownerDocument ? ownerDocument.defaultView : window;
+  }
+
+  function attachToScrollParents(scrollParent, event, callback, scrollParents) {
+    var isBody = scrollParent.nodeName === 'BODY';
+    var target = isBody ? scrollParent.ownerDocument.defaultView : scrollParent;
+    target.addEventListener(event, callback, { passive: true });
+
+    if (!isBody) {
+      attachToScrollParents(getScrollParent(target.parentNode), event, callback, scrollParents);
+    }
+    scrollParents.push(target);
+  }
+
+  /**
+   * Setup needed event listeners used to update the popper position
+   * @method
+   * @memberof Popper.Utils
+   * @private
+   */
+  function setupEventListeners(reference, options, state, updateBound) {
+    // Resize event listener on window
+    state.updateBound = updateBound;
+    getWindow(reference).addEventListener('resize', state.updateBound, { passive: true });
+
+    // Scroll event listener on scroll parents
+    var scrollElement = getScrollParent(reference);
+    attachToScrollParents(scrollElement, 'scroll', state.updateBound, state.scrollParents);
+    state.scrollElement = scrollElement;
+    state.eventsEnabled = true;
+
+    return state;
+  }
+
+  /**
+   * It will add resize/scroll events and start recalculating
+   * position of the popper element when they are triggered.
+   * @method
+   * @memberof Popper
+   */
+  function enableEventListeners() {
+    if (!this.state.eventsEnabled) {
+      this.state = setupEventListeners(this.reference, this.options, this.state, this.scheduleUpdate);
+    }
+  }
+
+  /**
+   * Remove event listeners used to update the popper position
+   * @method
+   * @memberof Popper.Utils
+   * @private
+   */
+  function removeEventListeners(reference, state) {
+    // Remove resize event listener on window
+    getWindow(reference).removeEventListener('resize', state.updateBound);
+
+    // Remove scroll event listener on scroll parents
+    state.scrollParents.forEach(function (target) {
+      target.removeEventListener('scroll', state.updateBound);
+    });
+
+    // Reset state
+    state.updateBound = null;
+    state.scrollParents = [];
+    state.scrollElement = null;
+    state.eventsEnabled = false;
+    return state;
+  }
+
+  /**
+   * It will remove resize/scroll events and won't recalculate popper position
+   * when they are triggered. It also won't trigger onUpdate callback anymore,
+   * unless you call `update` method manually.
+   * @method
+   * @memberof Popper
+   */
+  function disableEventListeners() {
+    if (this.state.eventsEnabled) {
+      cancelAnimationFrame(this.scheduleUpdate);
+      this.state = removeEventListeners(this.reference, this.state);
+    }
+  }
+
+  /**
+   * Tells if a given input is a number
+   * @method
+   * @memberof Popper.Utils
+   * @param {*} input to check
+   * @return {Boolean}
+   */
+  function isNumeric(n) {
+    return n !== '' && !isNaN(parseFloat(n)) && isFinite(n);
+  }
+
+  /**
+   * Set the style to the given popper
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} element - Element to apply the style to
+   * @argument {Object} styles
+   * Object with a list of properties and values which will be applied to the element
+   */
+  function setStyles(element, styles) {
+    Object.keys(styles).forEach(function (prop) {
+      var unit = '';
+      // add unit if the value is numeric and is one of the following
+      if (['width', 'height', 'top', 'right', 'bottom', 'left'].indexOf(prop) !== -1 && isNumeric(styles[prop])) {
+        unit = 'px';
+      }
+      element.style[prop] = styles[prop] + unit;
+    });
+  }
+
+  /**
+   * Set the attributes to the given popper
+   * @method
+   * @memberof Popper.Utils
+   * @argument {Element} element - Element to apply the attributes to
+   * @argument {Object} styles
+   * Object with a list of properties and values which will be applied to the element
+   */
+  function setAttributes(element, attributes) {
+    Object.keys(attributes).forEach(function (prop) {
+      var value = attributes[prop];
+      if (value !== false) {
+        element.setAttribute(prop, attributes[prop]);
+      } else {
+        element.removeAttribute(prop);
+      }
+    });
+  }
+
+  /**
+   * @function
+   * @memberof Modifiers
+   * @argument {Object} data - The data object generated by `update` method
+   * @argument {Object} data.styles - List of style properties - values to apply to popper element
+   * @argument {Object} data.attributes - List of attribute properties - values to apply to popper element
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {Object} The same data object
+   */
+  function applyStyle(data) {
+    // any property present in `data.styles` will be applied to the popper,
+    // in this way we can make the 3rd party modifiers add custom styles to it
+    // Be aware, modifiers could override the properties defined in the previous
+    // lines of this modifier!
+    setStyles(data.instance.popper, data.styles);
+
+    // any property present in `data.attributes` will be applied to the popper,
+    // they will be set as HTML attributes of the element
+    setAttributes(data.instance.popper, data.attributes);
+
+    // if arrowElement is defined and arrowStyles has some properties
+    if (data.arrowElement && Object.keys(data.arrowStyles).length) {
+      setStyles(data.arrowElement, data.arrowStyles);
+    }
+
+    return data;
+  }
+
+  /**
+   * Set the x-placement attribute before everything else because it could be used
+   * to add margins to the popper margins needs to be calculated to get the
+   * correct popper offsets.
+   * @method
+   * @memberof Popper.modifiers
+   * @param {HTMLElement} reference - The reference element used to position the popper
+   * @param {HTMLElement} popper - The HTML element used as popper
+   * @param {Object} options - Popper.js options
+   */
+  function applyStyleOnLoad(reference, popper, options, modifierOptions, state) {
+    // compute reference element offsets
+    var referenceOffsets = getReferenceOffsets(state, popper, reference, options.positionFixed);
+
+    // compute auto placement, store placement inside the data object,
+    // modifiers will be able to edit `placement` if needed
+    // and refer to originalPlacement to know the original value
+    var placement = computeAutoPlacement(options.placement, referenceOffsets, popper, reference, options.modifiers.flip.boundariesElement, options.modifiers.flip.padding);
+
+    popper.setAttribute('x-placement', placement);
+
+    // Apply `position` to popper before anything else because
+    // without the position applied we can't guarantee correct computations
+    setStyles(popper, { position: options.positionFixed ? 'fixed' : 'absolute' });
+
+    return options;
+  }
+
+  /**
+   * @function
+   * @memberof Modifiers
+   * @argument {Object} data - The data object generated by `update` method
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {Object} The data object, properly modified
+   */
+  function computeStyle(data, options) {
+    var x = options.x,
+        y = options.y;
+    var popper = data.offsets.popper;
+
+    // Remove this legacy support in Popper.js v2
+
+    var legacyGpuAccelerationOption = find(data.instance.modifiers, function (modifier) {
+      return modifier.name === 'applyStyle';
+    }).gpuAcceleration;
+    if (legacyGpuAccelerationOption !== undefined) {
+      console.warn('WARNING: `gpuAcceleration` option moved to `computeStyle` modifier and will not be supported in future versions of Popper.js!');
+    }
+    var gpuAcceleration = legacyGpuAccelerationOption !== undefined ? legacyGpuAccelerationOption : options.gpuAcceleration;
+
+    var offsetParent = getOffsetParent(data.instance.popper);
+    var offsetParentRect = getBoundingClientRect(offsetParent);
+
+    // Styles
+    var styles = {
+      position: popper.position
+    };
+
+    // Avoid blurry text by using full pixel integers.
+    // For pixel-perfect positioning, top/bottom prefers rounded
+    // values, while left/right prefers floored values.
+    var offsets = {
+      left: Math.floor(popper.left),
+      top: Math.round(popper.top),
+      bottom: Math.round(popper.bottom),
+      right: Math.floor(popper.right)
+    };
+
+    var sideA = x === 'bottom' ? 'top' : 'bottom';
+    var sideB = y === 'right' ? 'left' : 'right';
+
+    // if gpuAcceleration is set to `true` and transform is supported,
+    //  we use `translate3d` to apply the position to the popper we
+    // automatically use the supported prefixed version if needed
+    var prefixedProperty = getSupportedPropertyName('transform');
+
+    // now, let's make a step back and look at this code closely (wtf?)
+    // If the content of the popper grows once it's been positioned, it
+    // may happen that the popper gets misplaced because of the new content
+    // overflowing its reference element
+    // To avoid this problem, we provide two options (x and y), which allow
+    // the consumer to define the offset origin.
+    // If we position a popper on top of a reference element, we can set
+    // `x` to `top` to make the popper grow towards its top instead of
+    // its bottom.
+    var left = void 0,
+        top = void 0;
+    if (sideA === 'bottom') {
+      top = -offsetParentRect.height + offsets.bottom;
+    } else {
+      top = offsets.top;
+    }
+    if (sideB === 'right') {
+      left = -offsetParentRect.width + offsets.right;
+    } else {
+      left = offsets.left;
+    }
+    if (gpuAcceleration && prefixedProperty) {
+      styles[prefixedProperty] = 'translate3d(' + left + 'px, ' + top + 'px, 0)';
+      styles[sideA] = 0;
+      styles[sideB] = 0;
+      styles.willChange = 'transform';
+    } else {
+      // othwerise, we use the standard `top`, `left`, `bottom` and `right` properties
+      var invertTop = sideA === 'bottom' ? -1 : 1;
+      var invertLeft = sideB === 'right' ? -1 : 1;
+      styles[sideA] = top * invertTop;
+      styles[sideB] = left * invertLeft;
+      styles.willChange = sideA + ', ' + sideB;
+    }
+
+    // Attributes
+    var attributes = {
+      'x-placement': data.placement
+    };
+
+    // Update `data` attributes, styles and arrowStyles
+    data.attributes = _extends({}, attributes, data.attributes);
+    data.styles = _extends({}, styles, data.styles);
+    data.arrowStyles = _extends({}, data.offsets.arrow, data.arrowStyles);
+
+    return data;
+  }
+
+  /**
+   * Helper used to know if the given modifier depends from another one.<br />
+   * It checks if the needed modifier is listed and enabled.
+   * @method
+   * @memberof Popper.Utils
+   * @param {Array} modifiers - list of modifiers
+   * @param {String} requestingName - name of requesting modifier
+   * @param {String} requestedName - name of requested modifier
+   * @returns {Boolean}
+   */
+  function isModifierRequired(modifiers, requestingName, requestedName) {
+    var requesting = find(modifiers, function (_ref) {
+      var name = _ref.name;
+      return name === requestingName;
+    });
+
+    var isRequired = !!requesting && modifiers.some(function (modifier) {
+      return modifier.name === requestedName && modifier.enabled && modifier.order < requesting.order;
+    });
+
+    if (!isRequired) {
+      var _requesting = '`' + requestingName + '`';
+      var requested = '`' + requestedName + '`';
+      console.warn(requested + ' modifier is required by ' + _requesting + ' modifier in order to work, be sure to include it before ' + _requesting + '!');
+    }
+    return isRequired;
+  }
+
+  /**
+   * @function
+   * @memberof Modifiers
+   * @argument {Object} data - The data object generated by update method
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {Object} The data object, properly modified
+   */
+  function arrow(data, options) {
+    var _data$offsets$arrow;
+
+    // arrow depends on keepTogether in order to work
+    if (!isModifierRequired(data.instance.modifiers, 'arrow', 'keepTogether')) {
+      return data;
+    }
+
+    var arrowElement = options.element;
+
+    // if arrowElement is a string, suppose it's a CSS selector
+    if (typeof arrowElement === 'string') {
+      arrowElement = data.instance.popper.querySelector(arrowElement);
+
+      // if arrowElement is not found, don't run the modifier
+      if (!arrowElement) {
+        return data;
+      }
+    } else {
+      // if the arrowElement isn't a query selector we must check that the
+      // provided DOM node is child of its popper node
+      if (!data.instance.popper.contains(arrowElement)) {
+        console.warn('WARNING: `arrow.element` must be child of its popper element!');
+        return data;
+      }
+    }
+
+    var placement = data.placement.split('-')[0];
+    var _data$offsets = data.offsets,
+        popper = _data$offsets.popper,
+        reference = _data$offsets.reference;
+
+    var isVertical = ['left', 'right'].indexOf(placement) !== -1;
+
+    var len = isVertical ? 'height' : 'width';
+    var sideCapitalized = isVertical ? 'Top' : 'Left';
+    var side = sideCapitalized.toLowerCase();
+    var altSide = isVertical ? 'left' : 'top';
+    var opSide = isVertical ? 'bottom' : 'right';
+    var arrowElementSize = getOuterSizes(arrowElement)[len];
+
+    //
+    // extends keepTogether behavior making sure the popper and its
+    // reference have enough pixels in conjuction
+    //
+
+    // top/left side
+    if (reference[opSide] - arrowElementSize < popper[side]) {
+      data.offsets.popper[side] -= popper[side] - (reference[opSide] - arrowElementSize);
+    }
+    // bottom/right side
+    if (reference[side] + arrowElementSize > popper[opSide]) {
+      data.offsets.popper[side] += reference[side] + arrowElementSize - popper[opSide];
+    }
+    data.offsets.popper = getClientRect(data.offsets.popper);
+
+    // compute center of the popper
+    var center = reference[side] + reference[len] / 2 - arrowElementSize / 2;
+
+    // Compute the sideValue using the updated popper offsets
+    // take popper margin in account because we don't have this info available
+    var css = getStyleComputedProperty(data.instance.popper);
+    var popperMarginSide = parseFloat(css['margin' + sideCapitalized], 10);
+    var popperBorderSide = parseFloat(css['border' + sideCapitalized + 'Width'], 10);
+    var sideValue = center - data.offsets.popper[side] - popperMarginSide - popperBorderSide;
+
+    // prevent arrowElement from being placed not contiguously to its popper
+    sideValue = Math.max(Math.min(popper[len] - arrowElementSize, sideValue), 0);
+
+    data.arrowElement = arrowElement;
+    data.offsets.arrow = (_data$offsets$arrow = {}, defineProperty(_data$offsets$arrow, side, Math.round(sideValue)), defineProperty(_data$offsets$arrow, altSide, ''), _data$offsets$arrow);
+
+    return data;
+  }
+
+  /**
+   * Get the opposite placement variation of the given one
+   * @method
+   * @memberof Popper.Utils
+   * @argument {String} placement variation
+   * @returns {String} flipped placement variation
+   */
+  function getOppositeVariation(variation) {
+    if (variation === 'end') {
+      return 'start';
+    } else if (variation === 'start') {
+      return 'end';
+    }
+    return variation;
+  }
+
+  /**
+   * List of accepted placements to use as values of the `placement` option.<br />
+   * Valid placements are:
+   * - `auto`
+   * - `top`
+   * - `right`
+   * - `bottom`
+   * - `left`
+   *
+   * Each placement can have a variation from this list:
+   * - `-start`
+   * - `-end`
+   *
+   * Variations are interpreted easily if you think of them as the left to right
+   * written languages. Horizontally (`top` and `bottom`), `start` is left and `end`
+   * is right.<br />
+   * Vertically (`left` and `right`), `start` is top and `end` is bottom.
+   *
+   * Some valid examples are:
+   * - `top-end` (on top of reference, right aligned)
+   * - `right-start` (on right of reference, top aligned)
+   * - `bottom` (on bottom, centered)
+   * - `auto-right` (on the side with more space available, alignment depends by placement)
+   *
+   * @static
+   * @type {Array}
+   * @enum {String}
+   * @readonly
+   * @method placements
+   * @memberof Popper
+   */
+  var placements = ['auto-start', 'auto', 'auto-end', 'top-start', 'top', 'top-end', 'right-start', 'right', 'right-end', 'bottom-end', 'bottom', 'bottom-start', 'left-end', 'left', 'left-start'];
+
+  // Get rid of `auto` `auto-start` and `auto-end`
+  var validPlacements = placements.slice(3);
+
+  /**
+   * Given an initial placement, returns all the subsequent placements
+   * clockwise (or counter-clockwise).
+   *
+   * @method
+   * @memberof Popper.Utils
+   * @argument {String} placement - A valid placement (it accepts variations)
+   * @argument {Boolean} counter - Set to true to walk the placements counterclockwise
+   * @returns {Array} placements including their variations
+   */
+  function clockwise(placement) {
+    var counter = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+    var index = validPlacements.indexOf(placement);
+    var arr = validPlacements.slice(index + 1).concat(validPlacements.slice(0, index));
+    return counter ? arr.reverse() : arr;
+  }
+
+  var BEHAVIORS = {
+    FLIP: 'flip',
+    CLOCKWISE: 'clockwise',
+    COUNTERCLOCKWISE: 'counterclockwise'
+  };
+
+  /**
+   * @function
+   * @memberof Modifiers
+   * @argument {Object} data - The data object generated by update method
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {Object} The data object, properly modified
+   */
+  function flip(data, options) {
+    // if `inner` modifier is enabled, we can't use the `flip` modifier
+    if (isModifierEnabled(data.instance.modifiers, 'inner')) {
+      return data;
+    }
+
+    if (data.flipped && data.placement === data.originalPlacement) {
+      // seems like flip is trying to loop, probably there's not enough space on any of the flippable sides
+      return data;
+    }
+
+    var boundaries = getBoundaries(data.instance.popper, data.instance.reference, options.padding, options.boundariesElement, data.positionFixed);
+
+    var placement = data.placement.split('-')[0];
+    var placementOpposite = getOppositePlacement(placement);
+    var variation = data.placement.split('-')[1] || '';
+
+    var flipOrder = [];
+
+    switch (options.behavior) {
+      case BEHAVIORS.FLIP:
+        flipOrder = [placement, placementOpposite];
+        break;
+      case BEHAVIORS.CLOCKWISE:
+        flipOrder = clockwise(placement);
+        break;
+      case BEHAVIORS.COUNTERCLOCKWISE:
+        flipOrder = clockwise(placement, true);
+        break;
+      default:
+        flipOrder = options.behavior;
+    }
+
+    flipOrder.forEach(function (step, index) {
+      if (placement !== step || flipOrder.length === index + 1) {
+        return data;
+      }
+
+      placement = data.placement.split('-')[0];
+      placementOpposite = getOppositePlacement(placement);
+
+      var popperOffsets = data.offsets.popper;
+      var refOffsets = data.offsets.reference;
+
+      // using floor because the reference offsets may contain decimals we are not going to consider here
+      var floor = Math.floor;
+      var overlapsRef = placement === 'left' && floor(popperOffsets.right) > floor(refOffsets.left) || placement === 'right' && floor(popperOffsets.left) < floor(refOffsets.right) || placement === 'top' && floor(popperOffsets.bottom) > floor(refOffsets.top) || placement === 'bottom' && floor(popperOffsets.top) < floor(refOffsets.bottom);
+
+      var overflowsLeft = floor(popperOffsets.left) < floor(boundaries.left);
+      var overflowsRight = floor(popperOffsets.right) > floor(boundaries.right);
+      var overflowsTop = floor(popperOffsets.top) < floor(boundaries.top);
+      var overflowsBottom = floor(popperOffsets.bottom) > floor(boundaries.bottom);
+
+      var overflowsBoundaries = placement === 'left' && overflowsLeft || placement === 'right' && overflowsRight || placement === 'top' && overflowsTop || placement === 'bottom' && overflowsBottom;
+
+      // flip the variation if required
+      var isVertical = ['top', 'bottom'].indexOf(placement) !== -1;
+      var flippedVariation = !!options.flipVariations && (isVertical && variation === 'start' && overflowsLeft || isVertical && variation === 'end' && overflowsRight || !isVertical && variation === 'start' && overflowsTop || !isVertical && variation === 'end' && overflowsBottom);
+
+      if (overlapsRef || overflowsBoundaries || flippedVariation) {
+        // this boolean to detect any flip loop
+        data.flipped = true;
+
+        if (overlapsRef || overflowsBoundaries) {
+          placement = flipOrder[index + 1];
+        }
+
+        if (flippedVariation) {
+          variation = getOppositeVariation(variation);
+        }
+
+        data.placement = placement + (variation ? '-' + variation : '');
+
+        // this object contains `position`, we want to preserve it along with
+        // any additional property we may add in the future
+        data.offsets.popper = _extends({}, data.offsets.popper, getPopperOffsets(data.instance.popper, data.offsets.reference, data.placement));
+
+        data = runModifiers(data.instance.modifiers, data, 'flip');
+      }
+    });
+    return data;
+  }
+
+  /**
+   * @function
+   * @memberof Modifiers
+   * @argument {Object} data - The data object generated by update method
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {Object} The data object, properly modified
+   */
+  function keepTogether(data) {
+    var _data$offsets = data.offsets,
+        popper = _data$offsets.popper,
+        reference = _data$offsets.reference;
+
+    var placement = data.placement.split('-')[0];
+    var floor = Math.floor;
+    var isVertical = ['top', 'bottom'].indexOf(placement) !== -1;
+    var side = isVertical ? 'right' : 'bottom';
+    var opSide = isVertical ? 'left' : 'top';
+    var measurement = isVertical ? 'width' : 'height';
+
+    if (popper[side] < floor(reference[opSide])) {
+      data.offsets.popper[opSide] = floor(reference[opSide]) - popper[measurement];
+    }
+    if (popper[opSide] > floor(reference[side])) {
+      data.offsets.popper[opSide] = floor(reference[side]);
+    }
+
+    return data;
+  }
+
+  /**
+   * Converts a string containing value + unit into a px value number
+   * @function
+   * @memberof {modifiers~offset}
+   * @private
+   * @argument {String} str - Value + unit string
+   * @argument {String} measurement - `height` or `width`
+   * @argument {Object} popperOffsets
+   * @argument {Object} referenceOffsets
+   * @returns {Number|String}
+   * Value in pixels, or original string if no values were extracted
+   */
+  function toValue(str, measurement, popperOffsets, referenceOffsets) {
+    // separate value from unit
+    var split = str.match(/((?:\-|\+)?\d*\.?\d*)(.*)/);
+    var value = +split[1];
+    var unit = split[2];
+
+    // If it's not a number it's an operator, I guess
+    if (!value) {
+      return str;
+    }
+
+    if (unit.indexOf('%') === 0) {
+      var element = void 0;
+      switch (unit) {
+        case '%p':
+          element = popperOffsets;
+          break;
+        case '%':
+        case '%r':
+        default:
+          element = referenceOffsets;
+      }
+
+      var rect = getClientRect(element);
+      return rect[measurement] / 100 * value;
+    } else if (unit === 'vh' || unit === 'vw') {
+      // if is a vh or vw, we calculate the size based on the viewport
+      var size = void 0;
+      if (unit === 'vh') {
+        size = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+      } else {
+        size = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      }
+      return size / 100 * value;
+    } else {
+      // if is an explicit pixel unit, we get rid of the unit and keep the value
+      // if is an implicit unit, it's px, and we return just the value
+      return value;
+    }
+  }
+
+  /**
+   * Parse an `offset` string to extrapolate `x` and `y` numeric offsets.
+   * @function
+   * @memberof {modifiers~offset}
+   * @private
+   * @argument {String} offset
+   * @argument {Object} popperOffsets
+   * @argument {Object} referenceOffsets
+   * @argument {String} basePlacement
+   * @returns {Array} a two cells array with x and y offsets in numbers
+   */
+  function parseOffset(offset, popperOffsets, referenceOffsets, basePlacement) {
+    var offsets = [0, 0];
+
+    // Use height if placement is left or right and index is 0 otherwise use width
+    // in this way the first offset will use an axis and the second one
+    // will use the other one
+    var useHeight = ['right', 'left'].indexOf(basePlacement) !== -1;
+
+    // Split the offset string to obtain a list of values and operands
+    // The regex addresses values with the plus or minus sign in front (+10, -20, etc)
+    var fragments = offset.split(/(\+|\-)/).map(function (frag) {
+      return frag.trim();
+    });
+
+    // Detect if the offset string contains a pair of values or a single one
+    // they could be separated by comma or space
+    var divider = fragments.indexOf(find(fragments, function (frag) {
+      return frag.search(/,|\s/) !== -1;
+    }));
+
+    if (fragments[divider] && fragments[divider].indexOf(',') === -1) {
+      console.warn('Offsets separated by white space(s) are deprecated, use a comma (,) instead.');
+    }
+
+    // If divider is found, we divide the list of values and operands to divide
+    // them by ofset X and Y.
+    var splitRegex = /\s*,\s*|\s+/;
+    var ops = divider !== -1 ? [fragments.slice(0, divider).concat([fragments[divider].split(splitRegex)[0]]), [fragments[divider].split(splitRegex)[1]].concat(fragments.slice(divider + 1))] : [fragments];
+
+    // Convert the values with units to absolute pixels to allow our computations
+    ops = ops.map(function (op, index) {
+      // Most of the units rely on the orientation of the popper
+      var measurement = (index === 1 ? !useHeight : useHeight) ? 'height' : 'width';
+      var mergeWithPrevious = false;
+      return op
+      // This aggregates any `+` or `-` sign that aren't considered operators
+      // e.g.: 10 + +5 => [10, +, +5]
+      .reduce(function (a, b) {
+        if (a[a.length - 1] === '' && ['+', '-'].indexOf(b) !== -1) {
+          a[a.length - 1] = b;
+          mergeWithPrevious = true;
+          return a;
+        } else if (mergeWithPrevious) {
+          a[a.length - 1] += b;
+          mergeWithPrevious = false;
+          return a;
+        } else {
+          return a.concat(b);
+        }
+      }, [])
+      // Here we convert the string values into number values (in px)
+      .map(function (str) {
+        return toValue(str, measurement, popperOffsets, referenceOffsets);
+      });
+    });
+
+    // Loop trough the offsets arrays and execute the operations
+    ops.forEach(function (op, index) {
+      op.forEach(function (frag, index2) {
+        if (isNumeric(frag)) {
+          offsets[index] += frag * (op[index2 - 1] === '-' ? -1 : 1);
+        }
+      });
+    });
+    return offsets;
+  }
+
+  /**
+   * @function
+   * @memberof Modifiers
+   * @argument {Object} data - The data object generated by update method
+   * @argument {Object} options - Modifiers configuration and options
+   * @argument {Number|String} options.offset=0
+   * The offset value as described in the modifier description
+   * @returns {Object} The data object, properly modified
+   */
+  function offset(data, _ref) {
+    var offset = _ref.offset;
+    var placement = data.placement,
+        _data$offsets = data.offsets,
+        popper = _data$offsets.popper,
+        reference = _data$offsets.reference;
+
+    var basePlacement = placement.split('-')[0];
+
+    var offsets = void 0;
+    if (isNumeric(+offset)) {
+      offsets = [+offset, 0];
+    } else {
+      offsets = parseOffset(offset, popper, reference, basePlacement);
+    }
+
+    if (basePlacement === 'left') {
+      popper.top += offsets[0];
+      popper.left -= offsets[1];
+    } else if (basePlacement === 'right') {
+      popper.top += offsets[0];
+      popper.left += offsets[1];
+    } else if (basePlacement === 'top') {
+      popper.left += offsets[0];
+      popper.top -= offsets[1];
+    } else if (basePlacement === 'bottom') {
+      popper.left += offsets[0];
+      popper.top += offsets[1];
+    }
+
+    data.popper = popper;
+    return data;
+  }
+
+  /**
+   * @function
+   * @memberof Modifiers
+   * @argument {Object} data - The data object generated by `update` method
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {Object} The data object, properly modified
+   */
+  function preventOverflow(data, options) {
+    var boundariesElement = options.boundariesElement || getOffsetParent(data.instance.popper);
+
+    // If offsetParent is the reference element, we really want to
+    // go one step up and use the next offsetParent as reference to
+    // avoid to make this modifier completely useless and look like broken
+    if (data.instance.reference === boundariesElement) {
+      boundariesElement = getOffsetParent(boundariesElement);
+    }
+
+    // NOTE: DOM access here
+    // resets the popper's position so that the document size can be calculated excluding
+    // the size of the popper element itself
+    var transformProp = getSupportedPropertyName('transform');
+    var popperStyles = data.instance.popper.style; // assignment to help minification
+    var top = popperStyles.top,
+        left = popperStyles.left,
+        transform = popperStyles[transformProp];
+
+    popperStyles.top = '';
+    popperStyles.left = '';
+    popperStyles[transformProp] = '';
+
+    var boundaries = getBoundaries(data.instance.popper, data.instance.reference, options.padding, boundariesElement, data.positionFixed);
+
+    // NOTE: DOM access here
+    // restores the original style properties after the offsets have been computed
+    popperStyles.top = top;
+    popperStyles.left = left;
+    popperStyles[transformProp] = transform;
+
+    options.boundaries = boundaries;
+
+    var order = options.priority;
+    var popper = data.offsets.popper;
+
+    var check = {
+      primary: function primary(placement) {
+        var value = popper[placement];
+        if (popper[placement] < boundaries[placement] && !options.escapeWithReference) {
+          value = Math.max(popper[placement], boundaries[placement]);
+        }
+        return defineProperty({}, placement, value);
+      },
+      secondary: function secondary(placement) {
+        var mainSide = placement === 'right' ? 'left' : 'top';
+        var value = popper[mainSide];
+        if (popper[placement] > boundaries[placement] && !options.escapeWithReference) {
+          value = Math.min(popper[mainSide], boundaries[placement] - (placement === 'right' ? popper.width : popper.height));
+        }
+        return defineProperty({}, mainSide, value);
+      }
+    };
+
+    order.forEach(function (placement) {
+      var side = ['left', 'top'].indexOf(placement) !== -1 ? 'primary' : 'secondary';
+      popper = _extends({}, popper, check[side](placement));
+    });
+
+    data.offsets.popper = popper;
+
+    return data;
+  }
+
+  /**
+   * @function
+   * @memberof Modifiers
+   * @argument {Object} data - The data object generated by `update` method
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {Object} The data object, properly modified
+   */
+  function shift(data) {
+    var placement = data.placement;
+    var basePlacement = placement.split('-')[0];
+    var shiftvariation = placement.split('-')[1];
+
+    // if shift shiftvariation is specified, run the modifier
+    if (shiftvariation) {
+      var _data$offsets = data.offsets,
+          reference = _data$offsets.reference,
+          popper = _data$offsets.popper;
+
+      var isVertical = ['bottom', 'top'].indexOf(basePlacement) !== -1;
+      var side = isVertical ? 'left' : 'top';
+      var measurement = isVertical ? 'width' : 'height';
+
+      var shiftOffsets = {
+        start: defineProperty({}, side, reference[side]),
+        end: defineProperty({}, side, reference[side] + reference[measurement] - popper[measurement])
+      };
+
+      data.offsets.popper = _extends({}, popper, shiftOffsets[shiftvariation]);
+    }
+
+    return data;
+  }
+
+  /**
+   * @function
+   * @memberof Modifiers
+   * @argument {Object} data - The data object generated by update method
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {Object} The data object, properly modified
+   */
+  function hide(data) {
+    if (!isModifierRequired(data.instance.modifiers, 'hide', 'preventOverflow')) {
+      return data;
+    }
+
+    var refRect = data.offsets.reference;
+    var bound = find(data.instance.modifiers, function (modifier) {
+      return modifier.name === 'preventOverflow';
+    }).boundaries;
+
+    if (refRect.bottom < bound.top || refRect.left > bound.right || refRect.top > bound.bottom || refRect.right < bound.left) {
+      // Avoid unnecessary DOM access if visibility hasn't changed
+      if (data.hide === true) {
+        return data;
+      }
+
+      data.hide = true;
+      data.attributes['x-out-of-boundaries'] = '';
+    } else {
+      // Avoid unnecessary DOM access if visibility hasn't changed
+      if (data.hide === false) {
+        return data;
+      }
+
+      data.hide = false;
+      data.attributes['x-out-of-boundaries'] = false;
+    }
+
+    return data;
+  }
+
+  /**
+   * @function
+   * @memberof Modifiers
+   * @argument {Object} data - The data object generated by `update` method
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {Object} The data object, properly modified
+   */
+  function inner(data) {
+    var placement = data.placement;
+    var basePlacement = placement.split('-')[0];
+    var _data$offsets = data.offsets,
+        popper = _data$offsets.popper,
+        reference = _data$offsets.reference;
+
+    var isHoriz = ['left', 'right'].indexOf(basePlacement) !== -1;
+
+    var subtractLength = ['top', 'left'].indexOf(basePlacement) === -1;
+
+    popper[isHoriz ? 'left' : 'top'] = reference[basePlacement] - (subtractLength ? popper[isHoriz ? 'width' : 'height'] : 0);
+
+    data.placement = getOppositePlacement(placement);
+    data.offsets.popper = getClientRect(popper);
+
+    return data;
+  }
+
+  /**
+   * Modifier function, each modifier can have a function of this type assigned
+   * to its `fn` property.<br />
+   * These functions will be called on each update, this means that you must
+   * make sure they are performant enough to avoid performance bottlenecks.
+   *
+   * @function ModifierFn
+   * @argument {dataObject} data - The data object generated by `update` method
+   * @argument {Object} options - Modifiers configuration and options
+   * @returns {dataObject} The data object, properly modified
+   */
+
+  /**
+   * Modifiers are plugins used to alter the behavior of your poppers.<br />
+   * Popper.js uses a set of 9 modifiers to provide all the basic functionalities
+   * needed by the library.
+   *
+   * Usually you don't want to override the `order`, `fn` and `onLoad` props.
+   * All the other properties are configurations that could be tweaked.
+   * @namespace modifiers
+   */
+  var modifiers = {
+    /**
+     * Modifier used to shift the popper on the start or end of its reference
+     * element.<br />
+     * It will read the variation of the `placement` property.<br />
+     * It can be one either `-end` or `-start`.
+     * @memberof modifiers
+     * @inner
+     */
+    shift: {
+      /** @prop {number} order=100 - Index used to define the order of execution */
+      order: 100,
+      /** @prop {Boolean} enabled=true - Whether the modifier is enabled or not */
+      enabled: true,
+      /** @prop {ModifierFn} */
+      fn: shift
+    },
+
+    /**
+     * The `offset` modifier can shift your popper on both its axis.
+     *
+     * It accepts the following units:
+     * - `px` or unitless, interpreted as pixels
+     * - `%` or `%r`, percentage relative to the length of the reference element
+     * - `%p`, percentage relative to the length of the popper element
+     * - `vw`, CSS viewport width unit
+     * - `vh`, CSS viewport height unit
+     *
+     * For length is intended the main axis relative to the placement of the popper.<br />
+     * This means that if the placement is `top` or `bottom`, the length will be the
+     * `width`. In case of `left` or `right`, it will be the height.
+     *
+     * You can provide a single value (as `Number` or `String`), or a pair of values
+     * as `String` divided by a comma or one (or more) white spaces.<br />
+     * The latter is a deprecated method because it leads to confusion and will be
+     * removed in v2.<br />
+     * Additionally, it accepts additions and subtractions between different units.
+     * Note that multiplications and divisions aren't supported.
+     *
+     * Valid examples are:
+     * ```
+     * 10
+     * '10%'
+     * '10, 10'
+     * '10%, 10'
+     * '10 + 10%'
+     * '10 - 5vh + 3%'
+     * '-10px + 5vh, 5px - 6%'
+     * ```
+     * > **NB**: If you desire to apply offsets to your poppers in a way that may make them overlap
+     * > with their reference element, unfortunately, you will have to disable the `flip` modifier.
+     * > More on this [reading this issue](https://github.com/FezVrasta/popper.js/issues/373)
+     *
+     * @memberof modifiers
+     * @inner
+     */
+    offset: {
+      /** @prop {number} order=200 - Index used to define the order of execution */
+      order: 200,
+      /** @prop {Boolean} enabled=true - Whether the modifier is enabled or not */
+      enabled: true,
+      /** @prop {ModifierFn} */
+      fn: offset,
+      /** @prop {Number|String} offset=0
+       * The offset value as described in the modifier description
+       */
+      offset: 0
+    },
+
+    /**
+     * Modifier used to prevent the popper from being positioned outside the boundary.
+     *
+     * An scenario exists where the reference itself is not within the boundaries.<br />
+     * We can say it has "escaped the boundaries" — or just "escaped".<br />
+     * In this case we need to decide whether the popper should either:
+     *
+     * - detach from the reference and remain "trapped" in the boundaries, or
+     * - if it should ignore the boundary and "escape with its reference"
+     *
+     * When `escapeWithReference` is set to`true` and reference is completely
+     * outside its boundaries, the popper will overflow (or completely leave)
+     * the boundaries in order to remain attached to the edge of the reference.
+     *
+     * @memberof modifiers
+     * @inner
+     */
+    preventOverflow: {
+      /** @prop {number} order=300 - Index used to define the order of execution */
+      order: 300,
+      /** @prop {Boolean} enabled=true - Whether the modifier is enabled or not */
+      enabled: true,
+      /** @prop {ModifierFn} */
+      fn: preventOverflow,
+      /**
+       * @prop {Array} [priority=['left','right','top','bottom']]
+       * Popper will try to prevent overflow following these priorities by default,
+       * then, it could overflow on the left and on top of the `boundariesElement`
+       */
+      priority: ['left', 'right', 'top', 'bottom'],
+      /**
+       * @prop {number} padding=5
+       * Amount of pixel used to define a minimum distance between the boundaries
+       * and the popper this makes sure the popper has always a little padding
+       * between the edges of its container
+       */
+      padding: 5,
+      /**
+       * @prop {String|HTMLElement} boundariesElement='scrollParent'
+       * Boundaries used by the modifier, can be `scrollParent`, `window`,
+       * `viewport` or any DOM element.
+       */
+      boundariesElement: 'scrollParent'
+    },
+
+    /**
+     * Modifier used to make sure the reference and its popper stay near eachothers
+     * without leaving any gap between the two. Expecially useful when the arrow is
+     * enabled and you want to assure it to point to its reference element.
+     * It cares only about the first axis, you can still have poppers with margin
+     * between the popper and its reference element.
+     * @memberof modifiers
+     * @inner
+     */
+    keepTogether: {
+      /** @prop {number} order=400 - Index used to define the order of execution */
+      order: 400,
+      /** @prop {Boolean} enabled=true - Whether the modifier is enabled or not */
+      enabled: true,
+      /** @prop {ModifierFn} */
+      fn: keepTogether
+    },
+
+    /**
+     * This modifier is used to move the `arrowElement` of the popper to make
+     * sure it is positioned between the reference element and its popper element.
+     * It will read the outer size of the `arrowElement` node to detect how many
+     * pixels of conjuction are needed.
+     *
+     * It has no effect if no `arrowElement` is provided.
+     * @memberof modifiers
+     * @inner
+     */
+    arrow: {
+      /** @prop {number} order=500 - Index used to define the order of execution */
+      order: 500,
+      /** @prop {Boolean} enabled=true - Whether the modifier is enabled or not */
+      enabled: true,
+      /** @prop {ModifierFn} */
+      fn: arrow,
+      /** @prop {String|HTMLElement} element='[x-arrow]' - Selector or node used as arrow */
+      element: '[x-arrow]'
+    },
+
+    /**
+     * Modifier used to flip the popper's placement when it starts to overlap its
+     * reference element.
+     *
+     * Requires the `preventOverflow` modifier before it in order to work.
+     *
+     * **NOTE:** this modifier will interrupt the current update cycle and will
+     * restart it if it detects the need to flip the placement.
+     * @memberof modifiers
+     * @inner
+     */
+    flip: {
+      /** @prop {number} order=600 - Index used to define the order of execution */
+      order: 600,
+      /** @prop {Boolean} enabled=true - Whether the modifier is enabled or not */
+      enabled: true,
+      /** @prop {ModifierFn} */
+      fn: flip,
+      /**
+       * @prop {String|Array} behavior='flip'
+       * The behavior used to change the popper's placement. It can be one of
+       * `flip`, `clockwise`, `counterclockwise` or an array with a list of valid
+       * placements (with optional variations).
+       */
+      behavior: 'flip',
+      /**
+       * @prop {number} padding=5
+       * The popper will flip if it hits the edges of the `boundariesElement`
+       */
+      padding: 5,
+      /**
+       * @prop {String|HTMLElement} boundariesElement='viewport'
+       * The element which will define the boundaries of the popper position,
+       * the popper will never be placed outside of the defined boundaries
+       * (except if keepTogether is enabled)
+       */
+      boundariesElement: 'viewport'
+    },
+
+    /**
+     * Modifier used to make the popper flow toward the inner of the reference element.
+     * By default, when this modifier is disabled, the popper will be placed outside
+     * the reference element.
+     * @memberof modifiers
+     * @inner
+     */
+    inner: {
+      /** @prop {number} order=700 - Index used to define the order of execution */
+      order: 700,
+      /** @prop {Boolean} enabled=false - Whether the modifier is enabled or not */
+      enabled: false,
+      /** @prop {ModifierFn} */
+      fn: inner
+    },
+
+    /**
+     * Modifier used to hide the popper when its reference element is outside of the
+     * popper boundaries. It will set a `x-out-of-boundaries` attribute which can
+     * be used to hide with a CSS selector the popper when its reference is
+     * out of boundaries.
+     *
+     * Requires the `preventOverflow` modifier before it in order to work.
+     * @memberof modifiers
+     * @inner
+     */
+    hide: {
+      /** @prop {number} order=800 - Index used to define the order of execution */
+      order: 800,
+      /** @prop {Boolean} enabled=true - Whether the modifier is enabled or not */
+      enabled: true,
+      /** @prop {ModifierFn} */
+      fn: hide
+    },
+
+    /**
+     * Computes the style that will be applied to the popper element to gets
+     * properly positioned.
+     *
+     * Note that this modifier will not touch the DOM, it just prepares the styles
+     * so that `applyStyle` modifier can apply it. This separation is useful
+     * in case you need to replace `applyStyle` with a custom implementation.
+     *
+     * This modifier has `850` as `order` value to maintain backward compatibility
+     * with previous versions of Popper.js. Expect the modifiers ordering method
+     * to change in future major versions of the library.
+     *
+     * @memberof modifiers
+     * @inner
+     */
+    computeStyle: {
+      /** @prop {number} order=850 - Index used to define the order of execution */
+      order: 850,
+      /** @prop {Boolean} enabled=true - Whether the modifier is enabled or not */
+      enabled: true,
+      /** @prop {ModifierFn} */
+      fn: computeStyle,
+      /**
+       * @prop {Boolean} gpuAcceleration=true
+       * If true, it uses the CSS 3d transformation to position the popper.
+       * Otherwise, it will use the `top` and `left` properties.
+       */
+      gpuAcceleration: true,
+      /**
+       * @prop {string} [x='bottom']
+       * Where to anchor the X axis (`bottom` or `top`). AKA X offset origin.
+       * Change this if your popper should grow in a direction different from `bottom`
+       */
+      x: 'bottom',
+      /**
+       * @prop {string} [x='left']
+       * Where to anchor the Y axis (`left` or `right`). AKA Y offset origin.
+       * Change this if your popper should grow in a direction different from `right`
+       */
+      y: 'right'
+    },
+
+    /**
+     * Applies the computed styles to the popper element.
+     *
+     * All the DOM manipulations are limited to this modifier. This is useful in case
+     * you want to integrate Popper.js inside a framework or view library and you
+     * want to delegate all the DOM manipulations to it.
+     *
+     * Note that if you disable this modifier, you must make sure the popper element
+     * has its position set to `absolute` before Popper.js can do its work!
+     *
+     * Just disable this modifier and define you own to achieve the desired effect.
+     *
+     * @memberof modifiers
+     * @inner
+     */
+    applyStyle: {
+      /** @prop {number} order=900 - Index used to define the order of execution */
+      order: 900,
+      /** @prop {Boolean} enabled=true - Whether the modifier is enabled or not */
+      enabled: true,
+      /** @prop {ModifierFn} */
+      fn: applyStyle,
+      /** @prop {Function} */
+      onLoad: applyStyleOnLoad,
+      /**
+       * @deprecated since version 1.10.0, the property moved to `computeStyle` modifier
+       * @prop {Boolean} gpuAcceleration=true
+       * If true, it uses the CSS 3d transformation to position the popper.
+       * Otherwise, it will use the `top` and `left` properties.
+       */
+      gpuAcceleration: undefined
+    }
+  };
+
+  /**
+   * The `dataObject` is an object containing all the informations used by Popper.js
+   * this object get passed to modifiers and to the `onCreate` and `onUpdate` callbacks.
+   * @name dataObject
+   * @property {Object} data.instance The Popper.js instance
+   * @property {String} data.placement Placement applied to popper
+   * @property {String} data.originalPlacement Placement originally defined on init
+   * @property {Boolean} data.flipped True if popper has been flipped by flip modifier
+   * @property {Boolean} data.hide True if the reference element is out of boundaries, useful to know when to hide the popper.
+   * @property {HTMLElement} data.arrowElement Node used as arrow by arrow modifier
+   * @property {Object} data.styles Any CSS property defined here will be applied to the popper, it expects the JavaScript nomenclature (eg. `marginBottom`)
+   * @property {Object} data.arrowStyles Any CSS property defined here will be applied to the popper arrow, it expects the JavaScript nomenclature (eg. `marginBottom`)
+   * @property {Object} data.boundaries Offsets of the popper boundaries
+   * @property {Object} data.offsets The measurements of popper, reference and arrow elements.
+   * @property {Object} data.offsets.popper `top`, `left`, `width`, `height` values
+   * @property {Object} data.offsets.reference `top`, `left`, `width`, `height` values
+   * @property {Object} data.offsets.arrow] `top` and `left` offsets, only one of them will be different from 0
+   */
+
+  /**
+   * Default options provided to Popper.js constructor.<br />
+   * These can be overriden using the `options` argument of Popper.js.<br />
+   * To override an option, simply pass as 3rd argument an object with the same
+   * structure of this object, example:
+   * ```
+   * new Popper(ref, pop, {
+   *   modifiers: {
+   *     preventOverflow: { enabled: false }
+   *   }
+   * })
+   * ```
+   * @type {Object}
+   * @static
+   * @memberof Popper
+   */
+  var Defaults = {
+    /**
+     * Popper's placement
+     * @prop {Popper.placements} placement='bottom'
+     */
+    placement: 'bottom',
+
+    /**
+     * Set this to true if you want popper to position it self in 'fixed' mode
+     * @prop {Boolean} positionFixed=false
+     */
+    positionFixed: false,
+
+    /**
+     * Whether events (resize, scroll) are initially enabled
+     * @prop {Boolean} eventsEnabled=true
+     */
+    eventsEnabled: true,
+
+    /**
+     * Set to true if you want to automatically remove the popper when
+     * you call the `destroy` method.
+     * @prop {Boolean} removeOnDestroy=false
+     */
+    removeOnDestroy: false,
+
+    /**
+     * Callback called when the popper is created.<br />
+     * By default, is set to no-op.<br />
+     * Access Popper.js instance with `data.instance`.
+     * @prop {onCreate}
+     */
+    onCreate: function onCreate() {},
+
+    /**
+     * Callback called when the popper is updated, this callback is not called
+     * on the initialization/creation of the popper, but only on subsequent
+     * updates.<br />
+     * By default, is set to no-op.<br />
+     * Access Popper.js instance with `data.instance`.
+     * @prop {onUpdate}
+     */
+    onUpdate: function onUpdate() {},
+
+    /**
+     * List of modifiers used to modify the offsets before they are applied to the popper.
+     * They provide most of the functionalities of Popper.js
+     * @prop {modifiers}
+     */
+    modifiers: modifiers
+  };
+
+  /**
+   * @callback onCreate
+   * @param {dataObject} data
+   */
+
+  /**
+   * @callback onUpdate
+   * @param {dataObject} data
+   */
+
+  // Utils
+  // Methods
+  var Popper = function () {
+    /**
+     * Create a new Popper.js instance
+     * @class Popper
+     * @param {HTMLElement|referenceObject} reference - The reference element used to position the popper
+     * @param {HTMLElement} popper - The HTML element used as popper.
+     * @param {Object} options - Your custom options to override the ones defined in [Defaults](#defaults)
+     * @return {Object} instance - The generated Popper.js instance
+     */
+    function Popper(reference, popper) {
+      var _this = this;
+
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      classCallCheck(this, Popper);
+
+      this.scheduleUpdate = function () {
+        return requestAnimationFrame(_this.update);
+      };
+
+      // make update() debounced, so that it only runs at most once-per-tick
+      this.update = debounce(this.update.bind(this));
+
+      // with {} we create a new object with the options inside it
+      this.options = _extends({}, Popper.Defaults, options);
+
+      // init state
+      this.state = {
+        isDestroyed: false,
+        isCreated: false,
+        scrollParents: []
+      };
+
+      // get reference and popper elements (allow jQuery wrappers)
+      this.reference = reference && reference.jquery ? reference[0] : reference;
+      this.popper = popper && popper.jquery ? popper[0] : popper;
+
+      // Deep merge modifiers options
+      this.options.modifiers = {};
+      Object.keys(_extends({}, Popper.Defaults.modifiers, options.modifiers)).forEach(function (name) {
+        _this.options.modifiers[name] = _extends({}, Popper.Defaults.modifiers[name] || {}, options.modifiers ? options.modifiers[name] : {});
+      });
+
+      // Refactoring modifiers' list (Object => Array)
+      this.modifiers = Object.keys(this.options.modifiers).map(function (name) {
+        return _extends({
+          name: name
+        }, _this.options.modifiers[name]);
+      })
+      // sort the modifiers by order
+      .sort(function (a, b) {
+        return a.order - b.order;
+      });
+
+      // modifiers have the ability to execute arbitrary code when Popper.js get inited
+      // such code is executed in the same order of its modifier
+      // they could add new properties to their options configuration
+      // BE AWARE: don't add options to `options.modifiers.name` but to `modifierOptions`!
+      this.modifiers.forEach(function (modifierOptions) {
+        if (modifierOptions.enabled && isFunction(modifierOptions.onLoad)) {
+          modifierOptions.onLoad(_this.reference, _this.popper, _this.options, modifierOptions, _this.state);
+        }
+      });
+
+      // fire the first update to position the popper in the right place
+      this.update();
+
+      var eventsEnabled = this.options.eventsEnabled;
+      if (eventsEnabled) {
+        // setup event listeners, they will take care of update the position in specific situations
+        this.enableEventListeners();
+      }
+
+      this.state.eventsEnabled = eventsEnabled;
+    }
+
+    // We can't use class properties because they don't get listed in the
+    // class prototype and break stuff like Sinon stubs
+
+
+    createClass(Popper, [{
+      key: 'update',
+      value: function update$$1() {
+        return update.call(this);
+      }
+    }, {
+      key: 'destroy',
+      value: function destroy$$1() {
+        return destroy.call(this);
+      }
+    }, {
+      key: 'enableEventListeners',
+      value: function enableEventListeners$$1() {
+        return enableEventListeners.call(this);
+      }
+    }, {
+      key: 'disableEventListeners',
+      value: function disableEventListeners$$1() {
+        return disableEventListeners.call(this);
+      }
+
+      /**
+       * Schedule an update, it will run on the next UI update available
+       * @method scheduleUpdate
+       * @memberof Popper
+       */
+
+
+      /**
+       * Collection of utilities useful when writing custom modifiers.
+       * Starting from version 1.7, this method is available only if you
+       * include `popper-utils.js` before `popper.js`.
+       *
+       * **DEPRECATION**: This way to access PopperUtils is deprecated
+       * and will be removed in v2! Use the PopperUtils module directly instead.
+       * Due to the high instability of the methods contained in Utils, we can't
+       * guarantee them to follow semver. Use them at your own risk!
+       * @static
+       * @private
+       * @type {Object}
+       * @deprecated since version 1.8
+       * @member Utils
+       * @memberof Popper
+       */
+
+    }]);
+    return Popper;
+  }();
+
+  /**
+   * The `referenceObject` is an object that provides an interface compatible with Popper.js
+   * and lets you use it as replacement of a real DOM node.<br />
+   * You can use this method to position a popper relatively to a set of coordinates
+   * in case you don't have a DOM node to use as reference.
+   *
+   * ```
+   * new Popper(referenceObject, popperNode);
+   * ```
+   *
+   * NB: This feature isn't supported in Internet Explorer 10
+   * @name referenceObject
+   * @property {Function} data.getBoundingClientRect
+   * A function that returns a set of coordinates compatible with the native `getBoundingClientRect` method.
+   * @property {number} data.clientWidth
+   * An ES6 getter that will return the width of the virtual reference element.
+   * @property {number} data.clientHeight
+   * An ES6 getter that will return the height of the virtual reference element.
+   */
+
+
+  Popper.Utils = (typeof window !== 'undefined' ? window : global).PopperUtils;
+  Popper.placements = placements;
+  Popper.Defaults = Defaults;
+
   /**
       @class Tooltip
       @extends BaseClass
@@ -17183,12 +20766,26 @@ if (!Array.prototype.includes) {
     function Tooltip() {
 
       BaseClass$$1.call(this);
-      this._background = constant$2("rgba(255, 255, 255, 0.75)");
+
+      this._arrow = accessor("arrow", "");
+      this._arrowStyle = {
+        "content": "",
+        "background": "inherit",
+        "border": "inherit",
+        "border-width": "0 1px 1px 0",
+        "height": "10px",
+        "position": "absolute",
+        "transform": "rotate(45deg)",
+        "width": "10px",
+        "z-index": "-1"
+      };
+      this._background = constant$2("rgba(255, 255, 255, 1)");
       this._body = accessor("body", "");
       this._bodyStyle = {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
         "font-size": "12px",
-        "font-weight": "400"
+        "font-weight": "400",
+        "z-index": "1"
       };
       this._border = constant$2("1px solid rgba(0, 0, 0, 0.1)");
       this._borderRadius = constant$2("2px");
@@ -17199,13 +20796,15 @@ if (!Array.prototype.includes) {
       this._footerStyle = {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
         "font-size": "12px",
-        "font-weight": "400"
+        "font-weight": "400",
+        "z-index": "1"
       };
       this._height = constant$2("auto");
       this._id = function (d, i) { return d.id || ("" + i); };
-      this._offset = constant$2(10);
+      this._offset = constant$2(5);
       this._padding = constant$2("5px");
       this._pointerEvents = constant$2("auto");
+      this._position = function (d) { return [d.x, d.y]; };
       this._prefix = prefix$1();
       this._tableStyle = {
         "border-spacing": "0",
@@ -17230,9 +20829,7 @@ if (!Array.prototype.includes) {
         "font-size": "14px",
         "font-weight": "600"
       };
-      this._translate = function (d) { return [d.x, d.y]; };
       this._width = constant$2("auto");
-
     }
 
     if ( BaseClass$$1 ) { Tooltip.__proto__ = BaseClass$$1; }
@@ -17253,10 +20850,7 @@ if (!Array.prototype.includes) {
         .data(this._data, this._id);
 
       var enter = tooltips.enter().append("div")
-        .attr("class", this._className)
-        .style("position", "absolute")
-        .style(((this._prefix) + "transform"), "scale(0)")
-        .style(((this._prefix) + "transform-origin"), "50% 100%");
+        .attr("class", this._className);
 
       var update = tooltips.merge(enter);
 
@@ -17265,7 +20859,9 @@ if (!Array.prototype.includes) {
           @private
       */
       function divElement(cat) {
-        enter.append("div").attr("class", ("d3plus-tooltip-" + cat));
+        enter.append("div").attr("class", ("d3plus-tooltip-" + cat))
+                           .attr("id", function (d, i) { return ("d3plus-tooltip-" + cat + "-" + (d ? that._id(d, i) : "")); });
+
         var div = update.select((".d3plus-tooltip-" + cat)).html(that[("_" + cat)]);
         stylize(div, that[("_" + cat + "Style")]);
       }
@@ -17298,14 +20894,7 @@ if (!Array.prototype.includes) {
           .style("border", function(d, i) {
             var b = select(this).style("border");
             return b !== "0px none rgb(0, 0, 0)" ? b : that._border(d, i);
-          })
-          .style("top", function(d, i) {
-            return ((that._translate(d, i)[1] - this.offsetHeight - that._offset(d, i)) + "px");
-          })
-          .style("left", function(d, i) {
-            return ((that._translate(d, i)[0] - this.offsetWidth / 2) + "px");
           });
-
       }
 
       divElement("title");
@@ -17334,25 +20923,125 @@ if (!Array.prototype.includes) {
 
       divElement("footer");
 
+      divElement("arrow");
+
       enter.call(boxStyles);
 
       var t = transition().duration(this._duration);
 
       update
-        .attr("id", function (d, i) { return ("d3plus-tooltip-" + (this$1._id(d, i))); })
+        .attr("id", function (d, i) { return ("d3plus-tooltip-" + (d ? this$1._id(d, i) : "")); })
         .transition(t)
-          .style(((this._prefix) + "transform"), "scale(1)")
+          .style("opacity", 1)
           .call(boxStyles);
 
       tooltips.exit()
         .transition(t)
-          .style(((this._prefix) + "transform"), "scale(0)")
-          .remove();
+          .style("opacity", 0)
+        .remove();
+
+      for (var i = 0; i < this._data.length; i++) {
+        var d = that._data[i];
+
+        if (d) {
+          var tooltip = document.getElementById(("d3plus-tooltip-" + (that._id(d, i))));
+          var arrow = document.getElementById(("d3plus-tooltip-arrow-" + (that._id(d, i))));
+          var arrowHeight = arrow.offsetHeight;
+          var arrowDistance = arrow.getBoundingClientRect().height / 2;
+          arrow.style.bottom = "-" + (arrowHeight / 2) + "px";
+
+          var position = that._position(d, i);
+
+          var referenceObject = Array.isArray(position) ? {
+            clientWidth: 0,
+            clientHeight: 0,
+            getBoundingClientRect: function () { return ({
+              top: position[1],
+              right: position[0],
+              bottom: position[1],
+              left: position[0],
+              width: 0,
+              height: 0
+            }); }
+          }
+            : that._position(d, i);
+
+          new Popper(referenceObject, tooltip, {
+            placement: "top",
+            placements: ["top", "bottom", "left", "right"],
+            modifiers: {
+              arrow: {
+                element: arrow
+              },
+              offset: {
+                offset: ("0," + (that._offset(d, i) + arrowDistance))
+              },
+              preventOverflow: {
+                boundariesElement: "scrollParent"
+              },
+              flip: {
+                behavior: "flip",
+                boundariesElement: "viewport"
+              }
+            },
+            onCreate: function onCreate(ref) {
+              var instance = ref.instance;
+
+              document.onmousemove = function () {
+                instance.scheduleUpdate();
+              };
+            },
+            onUpdate: function onUpdate(ref) {
+              var arrowElement = ref.arrowElement;
+              var flipped = ref.flipped;
+
+              if (flipped) {
+                arrowElement.style.transform = "rotate(225deg)";
+                arrowElement.style.top = "-" + (arrowHeight / 2) + "px";
+              }
+              else {
+                arrowElement.style.transform = "rotate(45deg)";
+                arrowElement.style.bottom = "-" + (arrowHeight / 2) + "px";
+              }
+            }
+          });
+        }
+      }
 
       if (callback) { setTimeout(callback, this._duration + 100); }
 
       return this;
 
+    };
+
+    /**
+     @memberof Tooltip
+     @desc Sets the inner HTML content of the arrow element, which by default is empty.
+     @param {Function|String} [*value*]
+     @example <caption>default accessor</caption>
+     function value(d) {
+    return d.arrow || "";
+  }
+     */
+    Tooltip.prototype.arrow = function arrow (_) {
+      return arguments.length ? (this._arrow = typeof _ === "function" ? _ : constant$2(_), this) : this._arrow;
+    };
+
+    /**
+     @memberof Tooltip
+     @desc If *value* is specified, sets the arrow styles to the specified values and returns this generator. If *value* is not specified, returns the current arrow styles.
+     @param {Object} [*value*]
+     @example <caption>default styles</caption>
+     {
+       "content": "",
+       "border-width": "10px",
+       "border-style": "solid",
+       "border-color": "rgba(255, 255, 255, 0.75) transparent transparent transparent",
+       "position": "absolute"
+     }
+     */
+    Tooltip.prototype.arrowStyle = function arrowStyle (_) {
+      return arguments.length ? (this._arrowStyle = Object.assign(this._arrowStyle, _), this) : this._arrowStyle;
     };
 
     /**
@@ -17516,6 +21205,19 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Tooltip
+        @desc If *value* is specified, sets the position accessor to the specified function or array and returns this generator. If *value* is not specified, returns the current position accessor. If *value* is an HTMLElement, positions the Tooltip near that HTMLElement. Otherwise, coordinate points must be in reference to the client viewport, not the overall page.
+        @param {Function|Array|HTMLElement} [*value*]
+        @example <caption>default accessor</caption>
+     function value(d) {
+      return [d.x, d.y];
+    }
+     */
+    Tooltip.prototype.position = function position (_) {
+      return arguments.length ? (this._position = typeof _ === "function" ? _ : constant$2(_), this) : this._position;
+    };
+
+    /**
+        @memberof Tooltip
         @desc If *value* is specified, sets the table styles to the specified values and returns this generator. If *value* is not specified, returns the current table styles.
         @param {Object} [*value*]
         @example <caption>default styles</caption>
@@ -17605,19 +21307,6 @@ if (!Array.prototype.includes) {
     */
     Tooltip.prototype.titleStyle = function titleStyle (_) {
       return arguments.length ? (this._titleStyle = Object.assign(this._titleStyle, _), this) : this._titleStyle;
-    };
-
-    /**
-        @memberof Tooltip
-        @desc If *value* is specified, sets the translate accessor to the specified function or array and returns this generator. If *value* is not specified, returns the current translate accessor.
-        @param {Function|Array} [*value*]
-        @example <caption>default accessor</caption>
-  function value(d) {
-    return [d.x, d.y];
-  }
-    */
-    Tooltip.prototype.translate = function translate (_) {
-      return arguments.length ? (this._translate = typeof _ === "function" ? _ : constant$2(_), this) : this._translate;
     };
 
     /**
@@ -17749,12 +21438,12 @@ if (!Array.prototype.includes) {
     }).node();
 
     this._backClass
-      .data(visible ? [{text: "Back", x: this._padding * 2, y: 0}] : [])
+      .data(visible ? [{text: "Back", x: 0, y: 0}] : [])
       .select(backGroup)
       .config(this._backConfig)
       .render();
 
-    this._margin.top += visible ? this._backClass.fontSize()() + this._padding : 0;
+    this._margin.top += visible ? this._backClass.fontSize()() : 0;
 
   }
 
@@ -17769,40 +21458,40 @@ if (!Array.prototype.includes) {
     if ( data === void 0 ) { data = []; }
 
 
-    var transform = {
-      opacity: this._colorScalePosition ? 1 : 0,
-      transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")
-    };
-
-    var showColorScale = this._colorScale && data && data.length > 1;
-
-    var scaleGroup = elem("g.d3plus-viz-colorScale", {
-      condition: showColorScale && !this._colorScaleConfig.select,
-      enter: transform,
-      parent: this._select,
-      transition: this._transition,
-      update: transform
-    }).node();
-
     if (this._colorScale && data) {
+
+      var position = this._colorScalePosition || "bottom";
+      var wide = ["top", "bottom"].includes(position);
+
+      var transform = {
+        opacity: this._colorScalePosition ? 1 : 0,
+        transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")
+      };
+
+      var showColorScale = this._colorScale && data && data.length > 1;
+
+      var scaleGroup = elem("g.d3plus-viz-colorScale", {
+        condition: showColorScale && !this._colorScaleConfig.select,
+        enter: transform,
+        parent: this._select,
+        transition: this._transition,
+        update: transform
+      }).node();
 
       var scaleData = data.filter(function (d, i) {
         var c = this$1._colorScale(d, i);
         return c !== undefined && c !== null;
       });
 
-      var position = this._colorScalePosition || "bottom";
-      var wide = ["top", "bottom"].includes(position);
-
       this._colorScaleClass
         .align({bottom: "end", left: "start", right: "end", top: "start"}[position])
         .duration(this._duration)
         .data(scaleData)
-        .height(this._height - this._margin.bottom - this._margin.top)
+        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
         .orient(position)
         .select(scaleGroup)
         .value(this._colorScale)
-        .width(this._width - this._margin.left - this._margin.right)
+        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
         .config(this._colorScaleConfig)
         .render();
 
@@ -22648,7 +26337,7 @@ if (!Array.prototype.includes) {
   ^\w+\.prototype\.([_\w]+)\s*=\s*((?:.*\{\s*?[\r\n][\s\S]*?^})|\S.*?(?=[;\r\n]));?
   ^\w+\.prototype\.([_\w]+)\s*=\s*(\S.*?(?=[;\r\n]));?
    */
-  function _extends(Class,Super){
+  function _extends$1(Class,Super){
   	var pt = Class.prototype;
   	if(Object.create){
   		var ppt = Object.create(Super.prototype);
@@ -22770,7 +26459,7 @@ if (!Array.prototype.includes) {
   	return this[i];
   };
 
-  _extends(LiveNodeList,NodeList);
+  _extends$1(LiveNodeList,NodeList);
   /**
    * 
    * Objects implementing the NamedNodeMap interface are used to represent collections of nodes that can be accessed by name. Note that NamedNodeMap does not inherit from NodeList; NamedNodeMaps are not maintained in any particular order. Objects contained in an object implementing NamedNodeMap may also be accessed by an ordinal index, but this is simply to allow convenient enumeration of the contents of a NamedNodeMap, and does not imply that the DOM specifies an order to these Nodes.
@@ -23348,7 +27037,7 @@ if (!Array.prototype.includes) {
   		return node;
   	}
   };
-  _extends(Document,Node$1);
+  _extends$1(Document,Node$1);
 
 
   function Element$1() {
@@ -23443,10 +27132,10 @@ if (!Array.prototype.includes) {
   Document.prototype.getElementsByTagNameNS = Element$1.prototype.getElementsByTagNameNS;
 
 
-  _extends(Element$1,Node$1);
+  _extends$1(Element$1,Node$1);
   function Attr() {
   }Attr.prototype.nodeType = ATTRIBUTE_NODE;
-  _extends(Attr,Node$1);
+  _extends$1(Attr,Node$1);
 
 
   function CharacterData() {
@@ -23478,7 +27167,7 @@ if (!Array.prototype.includes) {
   		this.length = text.length;
   	}
   };
-  _extends(CharacterData,Node$1);
+  _extends$1(CharacterData,Node$1);
   function Text() {
   }Text.prototype = {
   	nodeName : "#text",
@@ -23496,48 +27185,48 @@ if (!Array.prototype.includes) {
   		return newNode;
   	}
   };
-  _extends(Text,CharacterData);
+  _extends$1(Text,CharacterData);
   function Comment() {
   }Comment.prototype = {
   	nodeName : "#comment",
   	nodeType : COMMENT_NODE
   };
-  _extends(Comment,CharacterData);
+  _extends$1(Comment,CharacterData);
 
   function CDATASection() {
   }CDATASection.prototype = {
   	nodeName : "#cdata-section",
   	nodeType : CDATA_SECTION_NODE
   };
-  _extends(CDATASection,CharacterData);
+  _extends$1(CDATASection,CharacterData);
 
 
   function DocumentType() {
   }DocumentType.prototype.nodeType = DOCUMENT_TYPE_NODE;
-  _extends(DocumentType,Node$1);
+  _extends$1(DocumentType,Node$1);
 
   function Notation() {
   }Notation.prototype.nodeType = NOTATION_NODE;
-  _extends(Notation,Node$1);
+  _extends$1(Notation,Node$1);
 
   function Entity() {
   }Entity.prototype.nodeType = ENTITY_NODE;
-  _extends(Entity,Node$1);
+  _extends$1(Entity,Node$1);
 
   function EntityReference() {
   }EntityReference.prototype.nodeType = ENTITY_REFERENCE_NODE;
-  _extends(EntityReference,Node$1);
+  _extends$1(EntityReference,Node$1);
 
   function DocumentFragment() {
   }DocumentFragment.prototype.nodeName =	"#document-fragment";
   DocumentFragment.prototype.nodeType =	DOCUMENT_FRAGMENT_NODE;
-  _extends(DocumentFragment,Node$1);
+  _extends$1(DocumentFragment,Node$1);
 
 
   function ProcessingInstruction() {
   }
   ProcessingInstruction.prototype.nodeType = PROCESSING_INSTRUCTION_NODE;
-  _extends(ProcessingInstruction,Node$1);
+  _extends$1(ProcessingInstruction,Node$1);
   function XMLSerializer$1(){}
   XMLSerializer$1.prototype.serializeToString = function(node,isHtml,nodeFilter){
   	return nodeSerializeToString.call(node,isHtml,nodeFilter);
@@ -28147,13 +31836,15 @@ if (!Array.prototype.includes) {
         });
       }
 
+      var wide = area === "top" || area === "bottom";
+
       var transform = {
-        height: this$1._height - this$1._margin.top - this$1._margin.bottom,
-        width: this$1._width - this$1._margin.left - this$1._margin.right
+        height: wide ? this$1._height - (this$1._margin.top + this$1._margin.bottom) : this$1._height - (this$1._margin.top + this$1._margin.bottom + this$1._padding.top + this$1._padding.bottom),
+        width: wide ? this$1._width - (this$1._margin.left + this$1._margin.right + this$1._padding.left + this$1._padding.right) : this$1._width - (this$1._margin.left + this$1._margin.right)
       };
 
-      transform.x = this$1._margin.left + (area === "right" ? transform.width : 0);
-      transform.y = this$1._margin.top + (area === "bottom" ? transform.height : 0);
+      transform.x = (wide ? this$1._margin.left + this$1._padding.left : this$1._margin.left) + (area === "right" ? transform.width : 0);
+      transform.y = (wide ? this$1._margin.top : this$1._margin.top + this$1._padding.top)  + (area === "bottom" ? transform.height : 0);
 
       var foreign = elem(("foreignObject.d3plus-viz-controls-" + area), {
         condition: controls.length,
@@ -28252,20 +31943,21 @@ if (!Array.prototype.includes) {
     if ( data === void 0 ) { data = []; }
 
 
-    var transform = {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")};
-
-    var legendGroup = elem("g.d3plus-viz-legend", {
-      condition: this._legend && !this._legendConfig.select,
-      enter: transform,
-      parent: this._select,
-      transition: this._transition,
-      update: transform
-    }).node();
-
     if (this._legend) {
 
+      var legendBounds = this._legendClass.outerBounds();
       var position = this._legendPosition;
       var wide = ["top", "bottom"].includes(position);
+
+      var transform = {transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")};
+
+      var legendGroup = elem("g.d3plus-viz-legend", {
+        condition: this._legend && !this._legendConfig.select,
+        enter: transform,
+        parent: this._select,
+        transition: this._transition,
+        update: transform
+      }).node();
 
       var legendData = [];
 
@@ -28290,30 +31982,27 @@ if (!Array.prototype.includes) {
         .key(fill)
         .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
         .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
-
+      
       this._legendClass
         .id(fill)
         .align(wide ? "center" : position)
         .direction(wide ? "row" : "column")
         .duration(this._duration)
         .data(legendData.length > 1 || this._colorScale ? legendData : [])
-        .height(this._height - this._margin.bottom - this._margin.top)
+        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
         .select(legendGroup)
         .verticalAlign(!wide ? "middle" : position)
-        .width(this._width - this._margin.left - this._margin.right)
+        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
         .shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend"))
         .config(this._legendConfig)
         .shapeConfig({fill: color, opacity: opacity})
         .render();
 
-      var legendBounds = this._legendClass.outerBounds();
       if (!this._legendConfig.select && legendBounds.height) {
         if (wide) { this._margin[position] += legendBounds.height + this._legendClass.padding() * 2; }
         else { this._margin[position] += legendBounds.width + this._legendClass.padding() * 2; }
       }
-
     }
-
   }
 
   /**
@@ -28351,10 +32040,14 @@ if (!Array.prototype.includes) {
     var ticks$$1 = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$3) : [];
     timelinePossible = timelinePossible && ticks$$1.length > 1;
 
+    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", 0)")};
+
     var timelineGroup = elem("g.d3plus-viz-timeline", {
       condition: timelinePossible,
+      enter: transform,
       parent: this._select,
-      transition: this._transition
+      transition: this._transition,
+      update: transform
     }).node();
 
     if (timelinePossible) {
@@ -28365,7 +32058,7 @@ if (!Array.prototype.includes) {
         .height(this._height - this._margin.bottom)
         .select(timelineGroup)
         .ticks(ticks$$1.sort(function (a, b) { return +a - +b; }))
-        .width(this._width);
+        .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right));
 
       if (this._timelineSelection === void 0) {
 
@@ -28407,21 +32100,23 @@ if (!Array.prototype.includes) {
 
     var text = this._title ? this._title(data) : false;
 
+    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", " + (this._margin.top) + ")")};
+
     var group = elem("g.d3plus-viz-title", {
-      enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
+      enter: transform,
       parent: this._select,
       transition: this._transition,
-      update: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")}
+      update: transform
     }).node();
 
     this._titleClass
       .data(text ? [{text: text}] : [])
       .select(group)
-      .width(this._width - this._margin.left - this._margin.right)
+      .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._titleConfig)
       .render();
 
-    this._margin.top += text ? group.getBBox().height + this._padding : 0;
+    this._margin.top += text ? group.getBBox().height : 0;
 
   }
 
@@ -28438,11 +32133,13 @@ if (!Array.prototype.includes) {
     var total = typeof this._total === "function" ? sum(data.map(this._total))
       : this._total === true && this._size ? sum(data.map(this._size)) : false;
 
+    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", " + (this._margin.top) + ")")};
+
     var group = elem("g.d3plus-viz-total", {
-      enter: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")},
+      enter: transform,
       parent: this._select,
       transition: this._transition,
-      update: {transform: ("translate(" + (this._margin.left) + ", " + (this._margin.top) + ")")}
+      update: transform
     }).node();
 
     var visible = typeof total === "number";
@@ -28450,11 +32147,11 @@ if (!Array.prototype.includes) {
     this._totalClass
       .data(visible ? [{text: ("Total: " + total)}] : [])
       .select(group)
-      .width(this._width - this._margin.left - this._margin.right)
+      .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._totalConfig)
       .render();
 
-    this._margin.top += visible ? group.getBBox().height + this._padding : 0;
+    this._margin.top += visible ? group.getBBox().height : 0;
 
   }
 
@@ -28502,7 +32199,7 @@ if (!Array.prototype.includes) {
       @param {HTMLElement} elem The HTMLElement to find dimensions for.
       @private
   */
-  function getSize(elem) {
+  function getSize$1(elem) {
     return [_elementSize(elem, "width"), _elementSize(elem, "height")];
   }
 
@@ -28566,6 +32263,14 @@ if (!Array.prototype.includes) {
   }
 
   /**
+   @desc Global on click event for all entities in a Viz.
+   @private
+   */
+  function clickAll() {
+    if (this._tooltip) { this._tooltipClass.data([]).render(); }
+  }
+
+  /**
       @desc On mouseenter event for all shapes in a Viz.
       @param {Object} *d* The data object being interacted with.
       @param {Number} *i* The index of the data object being interacted with.
@@ -28613,7 +32318,7 @@ if (!Array.prototype.includes) {
       this._tooltipClass.data([d])
         .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
         .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
-        .translate(mouse(select("html").node()))
+        .position([event$1.clientX, event$1.clientY])
         .config(this._tooltipConfig)
         .config(this._legendTooltip)
         .render();
@@ -28635,7 +32340,7 @@ if (!Array.prototype.includes) {
       this._tooltipClass.data([d])
         .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
         .title(this._drawLabel)
-        .translate(mouse(select("html").node()))
+        .position([event$1.clientX, event$1.clientY])
         .config(this._tooltipConfig)
         .render();
     }
@@ -28665,8 +32370,8 @@ if (!Array.prototype.includes) {
 
     this._zoomToBounds = zoomToBounds.bind(this);
 
-    var control = select(this._select.node().parentNode).selectAll("div.d3plus-geomap-control").data(this._zoom ? [0] : []);
-    var controlEnter = control.enter().append("div").attr("class", "d3plus-geomap-control");
+    var control = select(this._select.node().parentNode).selectAll("div.d3plus-zoom-control").data(this._zoom ? [0] : []);
+    var controlEnter = control.enter().append("div").attr("class", "d3plus-zoom-control");
     control.exit().remove();
     control = control.merge(controlEnter)
       .style("position", "absolute")
@@ -28696,7 +32401,7 @@ if (!Array.prototype.includes) {
           .call(stylize, brushing ? that._zoomControlStyle || {} : that._zoomControlStyleActive || {});
         zoomEvents.bind(that)(!brushing);
       })
-      .html("&#10696");
+      .html("&#164");
 
     control.selectAll(".zoom-control")
       .call(stylize, that._zoomControlStyle)
@@ -28940,7 +32645,7 @@ if (!Array.prototype.includes) {
       BaseClass$$1.call(this);
 
       this._aggs = {};
-      this._backClass = new TextBox()
+      this._backClass = new TextBox$1()
         .on("click", function () {
           if (this$1._history.length) { this$1.config(this$1._history.pop()).render(); }
           else { this$1.depth(this$1._drawDepth - 1).filter(false).render(); }
@@ -28948,6 +32653,7 @@ if (!Array.prototype.includes) {
         .on("mousemove", function () { return this$1._backClass.select().style("cursor", "pointer"); });
       this._backConfig = {
         fontSize: 10,
+        padding: 5,
         resize: false
       };
       this._cache = true;
@@ -29006,13 +32712,14 @@ if (!Array.prototype.includes) {
       this._noDataMessage = true;
       this._on = {
         "click": click.bind(this),
+        "click.all": clickAll.bind(this),
         "mouseenter": mouseenter.bind(this),
         "mouseleave": mouseleave.bind(this),
         "mousemove.shape": mousemoveShape.bind(this),
         "mousemove.legend": mousemoveLegend.bind(this)
       };
-      this._padding = 5;
       this._queue = [];
+      this._scrollContainer = typeof window === undefined ? "" : window;
       this._shape = constant$2("Rect");
       this._shapes = [];
       this._shapeConfig = {
@@ -29051,9 +32758,10 @@ if (!Array.prototype.includes) {
       this._timelineClass = new Timeline().align("end");
       this._timelineConfig = {};
 
-      this._titleClass = new TextBox();
+      this._titleClass = new TextBox$1();
       this._titleConfig = {
         fontSize: 12,
+        padding: 5,
         resize: false,
         textAnchor: "middle"
       };
@@ -29068,9 +32776,10 @@ if (!Array.prototype.includes) {
         }
       };
 
-      this._totalClass = new TextBox();
+      this._totalClass = new TextBox$1();
       this._totalConfig = {
         fontSize: 10,
+        padding: 5,
         resize: false,
         textAnchor: "middle"
       };
@@ -29121,13 +32830,12 @@ if (!Array.prototype.includes) {
     Viz.prototype.constructor = Viz;
 
     /**
-        @memberof Viz
-        @desc Called by render once all checks are passed.
-        @private
-    */
-    Viz.prototype._draw = function _draw () {
+     @memberof Viz
+     @desc Called by draw before anything is drawn. Formats the data and performs preparations for draw.
+     @private
+     */
+    Viz.prototype._preDraw = function _preDraw () {
       var this$1 = this;
-
 
       var that = this;
 
@@ -29179,6 +32887,14 @@ if (!Array.prototype.includes) {
         dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
 
       }
+    };
+
+    /**
+        @memberof Viz
+        @desc Called by render once all checks are passed.
+        @private
+    */
+    Viz.prototype._draw = function _draw () {
       if (this._noDataMessage && !this._filteredData.length) {
         this._messageClass.render({
           container: this._select.node().parentNode,
@@ -29188,13 +32904,17 @@ if (!Array.prototype.includes) {
         });
       }
 
-      drawTitle.bind(this)(this._filteredData);
-      drawControls.bind(this)(this._filteredData);
-      drawTimeline.bind(this)(this._filteredData);
-      drawLegend.bind(this)(this._filteredData);
-      drawColorScale.bind(this)(this._filteredData);
+      if (this.legendPosition() === "left" || this.legendPosition() === "right") { drawLegend.bind(this)(this._filteredData); }
+      if (this.colorScalePosition() === "left" || this.colorScalePosition() === "right") { drawColorScale.bind(this)(this._filteredData); }
+
       drawBack.bind(this)();
+      drawTitle.bind(this)(this._filteredData);
       drawTotal.bind(this)(this._filteredData);
+      drawTimeline.bind(this)(this._filteredData);
+      drawControls.bind(this)(this._filteredData);
+
+      if (this.legendPosition() === "top" || this.legendPosition() === "bottom") { drawLegend.bind(this)(this._filteredData); }
+      if (this.colorScalePosition() === "top" || this.colorScalePosition() === "bottom") { drawColorScale.bind(this)(this._filteredData); }
 
       this._shapes = [];
 
@@ -29221,7 +32941,11 @@ if (!Array.prototype.includes) {
       //   .data(this._filteredData)
       //   .label("Test Label")
       //   .select(this._zoomGroup.node())
-      //   .on(this._on)
+      //   .on({
+      //     mouseenter: this._on.mouseenter,
+      //     mouseleave: this._on.mouseleave,
+      //     mousemove: this._on["mousemove.shape"]
+      //   })
       //   .id(d => d.group)
       //   .x(d => d.value * 10 + 200)
       //   .y(d => d.value * 10 + 200)
@@ -29241,15 +32965,16 @@ if (!Array.prototype.includes) {
       var this$1 = this;
 
 
-      // Resets margins
+      // Resets margins and padding
       this._margin = {bottom: 0, left: 0, right: 0, top: 0};
+      this._padding = {bottom: 0, left: 0, right: 0, top: 0};
       this._transition = transition().duration(this._duration);
 
       // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
       if (this._select === void 0 || this._select.node().tagName.toLowerCase() !== "svg") {
 
-        var parent = this._select === void 0 ? select("body") : this._select;
-        var ref = getSize(parent.node());
+        var parent = this._select === void 0 ? select("body").append("div") : this._select;
+        var ref = getSize$1(parent.node());
         var w = ref[0];
         var h = ref[1];
         var svg = parent.append("svg");
@@ -29276,7 +33001,7 @@ if (!Array.prototype.includes) {
 
       // Calculates the width and/or height of the Viz based on the this._select, if either has not been defined.
       if (!this._width || !this._height) {
-        var ref$1 = getSize(this._select.node());
+        var ref$1 = getSize$1(this._select.node());
         var w$1 = ref$1[0];
         var h$1 = ref$1[1];
         if (!this._width) { this.width(w$1); }
@@ -29289,8 +33014,8 @@ if (!Array.prototype.includes) {
 
       clearInterval(this._visiblePoll);
       clearTimeout(this._resizePoll);
-      select(window).on(("scroll." + (this._uuid)), null);
-      select(window).on(("resize." + (this._uuid)), null);
+      select(this._scrollContainer).on(("scroll." + (this._uuid)), null);
+      select(this._scrollContainer).on(("resize." + (this._uuid)), null);
       if (this._detectVisible && this._select.style("visibility") === "hidden") {
 
         this._visiblePoll = setInterval(function () {
@@ -29313,9 +33038,9 @@ if (!Array.prototype.includes) {
       }
       else if (this._detectVisible && !inViewport(this._select.node())) {
 
-        select(window).on(("scroll." + (this._uuid)), function () {
+        select(this._scrollContainer).on(("scroll." + (this._uuid)), function () {
           if (inViewport(this$1._select.node())) {
-            select(window).on(("scroll." + (this$1._uuid)), null);
+            select(this$1._scrollContainer).on(("scroll." + (this$1._uuid)), null);
             this$1.render(callback);
           }
         });
@@ -29342,19 +33067,20 @@ if (!Array.prototype.includes) {
         this._queue = [];
         q.awaitAll(function () {
 
+          this$1._preDraw();
           this$1._draw(callback);
           zoomControls.bind(this$1)();
 
           if (this$1._messageClass._isVisible && (!this$1._noDataMessage || this$1._filteredData.length)) { this$1._messageClass.hide(); }
 
           if (this$1._detectResize && (this$1._autoWidth || this$1._autoHeight)) {
-            select(window).on(("resize." + (this$1._uuid)), function () {
+            select(this$1._scrollContainer).on(("resize." + (this$1._uuid)), function () {
               clearTimeout(this$1._resizePoll);
               this$1._resizePoll = setTimeout(function () {
                 clearTimeout(this$1._resizePoll);
                 var display = this$1._select.style("display");
                 this$1._select.style("display", "none");
-                var ref = getSize(this$1._select.node().parentNode);
+                var ref = getSize$1(this$1._select.node().parentNode);
                 var w = ref[0];
                 var h = ref[1];
                 w -= parseFloat(this$1._select.style("border-left-width"), 10);
@@ -29819,6 +33545,16 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Viz
+        @desc If using scroll or visibility detection, this method allow a custom override of the element to which the scroll detection function gets attached.
+        @param {String|HTMLElement} *selector*
+        @chainable
+    */
+    Viz.prototype.scrollContainer = function scrollContainer (_) {
+      return arguments.length ? (this._scrollContainer = _, this) : this._scrollContainer;
+    };
+
+    /**
+        @memberof Viz
         @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element, which is `undefined` by default.
         @param {String|HTMLElement} [*selector*]
         @chainable
@@ -30218,14 +33954,14 @@ if (!Array.prototype.includes) {
     /**
         @memberof Pie
         @desc If *value* is specified, sets the value accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current value accessor.
-        @param {Function|Number} [*value*]
+        @param {Function|String} *value*
         @example
   function value(d) {
     return d.value;
   }
     */
     Pie.prototype.value = function value (_) {
-      return arguments.length ? (this._value = typeof _ === "function" ? _ : constant$2(_), this) : this._value;
+      return arguments.length ? (this._value = typeof _ === "function" ? _ : accessor(_), this) : this._value;
     };
 
     return Pie;

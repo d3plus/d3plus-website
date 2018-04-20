@@ -192,14 +192,14 @@ if (!Array.prototype.includes) {
     /**
         @memberof Pie
         @desc If *value* is specified, sets the value accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current value accessor.
-        @param {Function|Number} [*value*]
+        @param {Function|String} *value*
         @example
   function value(d) {
     return d.value;
   }
     */
     Pie.prototype.value = function value (_) {
-      return arguments.length ? (this._value = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._value;
+      return arguments.length ? (this._value = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._value;
     };
 
     return Pie;
