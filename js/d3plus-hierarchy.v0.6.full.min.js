@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.6.0
+  d3plus-hierarchy v0.6.1
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
