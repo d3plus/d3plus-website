@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.44
+  d3plus-axis v0.3.45
   Beautiful javascript scales and axes.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -12293,7 +12293,7 @@ var Axis = (function (BaseClass$$1) {
       "stroke-width": 1
     };
     this._height = 400;
-    this._labelOffset = true;
+    this._labelOffset = false;
     this.orient("bottom");
     this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
     this._padding = 5;
@@ -12649,7 +12649,7 @@ var Axis = (function (BaseClass$$1) {
         .fontFamily(f)
         .fontSize(s)
         .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
-        .width(horizontal ? this$1._space * 2 : this$1._width - hBuff - p)
+        .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
         .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
 
       var res = wrap$$1(tickFormat(d));
@@ -12719,7 +12719,7 @@ var Axis = (function (BaseClass$$1) {
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
             .height(lineHeight * 2 + 1)
-            .width(this$1._width);
+            .width(this$1._maxSize ? this$1._maxSize - this$1._margin.top - this$1._margin.bottom - this$1._tickSize : this$1._height);
 
         var xPos = this$1._getPosition(d);
         var prev = labels[i - 1] || false;
@@ -12734,10 +12734,10 @@ var Axis = (function (BaseClass$$1) {
         var width = fitsTwoLines && isTwoLine ? lineHeight * 2 : lineHeight;
 
         return Object.assign(text, {
-          height: height,
+          height: height || 0,
           lineHeight: lineHeight,
           numLines: fitsTwoLines && isTwoLine ? 2 : 1,
-          width: width
+          width: width || 0
         });
       });
     }
@@ -12887,7 +12887,7 @@ var Axis = (function (BaseClass$$1) {
         next = next.length ? next[0] : false;
 
         var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth);
-        if (data.length && data[0].width > space) {
+        if (data.length && data[0].width > labelWidth) {
           data[0].hidden = true;
           data[0].offset = labelOffset = 0;
         }
@@ -13080,6 +13080,16 @@ var Axis = (function (BaseClass$$1) {
   */
   Axis.prototype.labelOffset = function labelOffset (_) {
     return arguments.length ? (this._labelOffset = _, this) : this._labels;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets the maximum size allowed for the space that contains the axis tick labels and title.
+      @param {Number}
+      @chainable
+   */
+  Axis.prototype.maxSize = function maxSize (_) {
+    return arguments.length ? (this._maxSize = _, this) : this._maxSize;
   };
 
   /**
