@@ -1,14 +1,14 @@
 ---
-title: Line Plot
+title: Secondary Axis Only
 width: 990
 height: 400
 time: 1524846576802
 date: April 27, 2018
 ---
 
-# Line Plot
+# Secondary Axis Only
 
-When constructing data to be used with a [LinePlot](http://d3plus.org/docs/#LinePlot), there must be a unique data point for each point on the [discrete](http://d3plus.org/docs/#Plot.discrete) axis (defaults to the X axis). Given this data array:
+This example demonstrates creating a Plot that has a secondary x-axis, but does not have a primary x-axis. This is achieved by passing `false` as a static value for [`.x`](https://d3plus.org/docs/#Plot.x) and supplying a [`.x2`](https://d3plus.org/docs/#Plot.x2) accessor.
 
 ```js
 var data = [
@@ -19,13 +19,11 @@ var data = [
   {id: "beta",  x: 5, y:  8},
   {id: "beta",  x: 6, y: 13}
 ];
-```
 
-We can create a simple Line Plot:
-
-```js
 new d3plus.LinePlot()
   .data(data)
   .groupBy("id")
+  .x(false)
+  .x2("x")
   .render();
 ```
