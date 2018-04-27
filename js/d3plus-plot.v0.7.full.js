@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.5
+  d3plus-plot v0.7.6
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -12513,7 +12513,7 @@ if (!Array.prototype.includes) {
         "stroke-width": 1
       };
       this._height = 400;
-      this._labelOffset = true;
+      this._labelOffset = false;
       this.orient("bottom");
       this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
       this._padding = 5;
@@ -12869,7 +12869,7 @@ if (!Array.prototype.includes) {
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
-          .width(horizontal ? this$1._space * 2 : this$1._width - hBuff - p)
+          .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
           .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
 
         var res = wrap(tickFormat(d));
@@ -12939,7 +12939,7 @@ if (!Array.prototype.includes) {
               .fontSize(s)
               .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
               .height(lineHeight * 2 + 1)
-              .width(this$1._width);
+              .width(this$1._maxSize ? this$1._maxSize - this$1._margin.top - this$1._margin.bottom - this$1._tickSize : this$1._height);
 
           var xPos = this$1._getPosition(d);
           var prev = labels[i - 1] || false;
@@ -12954,10 +12954,10 @@ if (!Array.prototype.includes) {
           var width = fitsTwoLines && isTwoLine ? lineHeight * 2 : lineHeight;
 
           return Object.assign(text, {
-            height: height,
+            height: height || 0,
             lineHeight: lineHeight,
             numLines: fitsTwoLines && isTwoLine ? 2 : 1,
-            width: width
+            width: width || 0
           });
         });
       }
@@ -13107,7 +13107,7 @@ if (!Array.prototype.includes) {
           next = next.length ? next[0] : false;
 
           var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth);
-          if (data.length && data[0].width > space) {
+          if (data.length && data[0].width > labelWidth) {
             data[0].hidden = true;
             data[0].offset = labelOffset = 0;
           }
@@ -13300,6 +13300,16 @@ if (!Array.prototype.includes) {
     */
     Axis.prototype.labelOffset = function labelOffset (_) {
       return arguments.length ? (this._labelOffset = _, this) : this._labels;
+    };
+
+    /**
+        @memberof Axis
+        @desc If *value* is specified, sets the maximum size allowed for the space that contains the axis tick labels and title.
+        @param {Number}
+        @chainable
+     */
+    Axis.prototype.maxSize = function maxSize (_) {
+      return arguments.length ? (this._maxSize = _, this) : this._maxSize;
     };
 
     /**
@@ -34119,9 +34129,7 @@ if (!Array.prototype.includes) {
       this._x2Axis = new AxisTop().align("start");
       this._xTest = new AxisBottom().align("end").gridSize(0);
       this._x2Test = new AxisTop().align("start").gridSize(0);
-      this._xConfig = {
-        title: "X Axis"
-      };
+      this._xConfig = {};
       this._x2Config = {
         padding: 0
       };
@@ -34137,8 +34145,7 @@ if (!Array.prototype.includes) {
             var domain = this$1._yAxis.domain();
             return domain[domain.length - 1] === d.id ? "transparent" : "#ccc";
           }
-        },
-        title: "Y Axis"
+        }
       };
       this._y2Config = {};
 
@@ -34373,7 +34380,6 @@ if (!Array.prototype.includes) {
         y2Scale = "Time";
       }
 
-
       domains = {x: xDomain, x2: x2Domain || xDomain, y: yDomain, y2: y2Domain || yDomain};
 
       opps.forEach(function (opp) {
@@ -34434,6 +34440,7 @@ if (!Array.prototype.includes) {
       this._yTest
         .domain(yDomain)
         .height(height)
+        .maxSize(width / 2)
         .scale(yScale.toLowerCase())
         .select(testGroup.node())
         .ticks(yTicks)
@@ -34467,6 +34474,7 @@ if (!Array.prototype.includes) {
       this._xTest
         .domain(xDomain)
         .height(height)
+        .maxSize(height / 2)
         .range([undefined, undefined])
         .scale(xScale.toLowerCase())
         .select(testGroup.node())
@@ -34529,6 +34537,41 @@ if (!Array.prototype.includes) {
       var horizontalMargin = this._margin.left + this._margin.right;
       var verticalMargin = this._margin.top + this._margin.bottom;
 
+      this._yTest
+        .domain(yDomain)
+        .height(height)
+        .maxSize(width / 2)
+        .range([x2Height, height - (yDifference + topOffset + verticalMargin)])
+        .scale(yScale.toLowerCase())
+        .select(testGroup.node())
+        .ticks(yTicks)
+        .width(width)
+        .config(yC)
+        .config(this._yConfig)
+        .render();
+
+      yBounds = this._yTest.outerBounds();
+      yWidth = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
+      xOffsetLeft =  max([yWidth, this._xTest._getRange()[0], this._x2Test._getRange()[0]]);
+
+      this._y2Test
+        .config(yC)
+        .domain(y2Exists ? y2Domain : yDomain)
+        .gridSize(0)
+        .height(height)
+        .range([x2Height, height - (y2Difference + topOffset + verticalMargin)])
+        .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
+        .select(testGroup.node())
+        .width(width - max([0, xOffsetRight - y2Width]))
+        .title(false)
+        .config(this._y2Config)
+        .config(defaultY2Config)
+        .render();
+
+      y2Bounds = this._y2Test.outerBounds();
+      y2Width = y2Bounds.width ? y2Bounds.width + this._y2Test.padding() : undefined;
+      xOffsetRight = max([y2Width, width - this._xTest._getRange()[1], width - this._x2Test._getRange()[1]]);
+
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + x2Height + topOffset) + ")";
       var x2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + topOffset) + ")";
 
@@ -34545,6 +34588,7 @@ if (!Array.prototype.includes) {
       this._xAxis
         .domain(xDomain)
         .height(height - (x2Height + topOffset + verticalMargin))
+        .maxSize(height / 2)
         .range([xOffsetLeft, width - (xDifference + horizontalMargin)])
         .scale(xScale.toLowerCase())
         .select(xGroup.node())
@@ -34582,6 +34626,7 @@ if (!Array.prototype.includes) {
       this._yAxis
         .domain(yDomain)
         .height(height)
+        .maxSize(width / 2)
         .range([this._xAxis.outerBounds().y + x2Height, height - (yDifference + topOffset + verticalMargin)])
         .scale(yScale.toLowerCase())
         .select(yGroup.node())

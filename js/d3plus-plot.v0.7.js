@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.5
+  d3plus-plot v0.7.6
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -357,9 +357,7 @@ if (!Array.prototype.includes) {
       this._x2Axis = new d3plusAxis.AxisTop().align("start");
       this._xTest = new d3plusAxis.AxisBottom().align("end").gridSize(0);
       this._x2Test = new d3plusAxis.AxisTop().align("start").gridSize(0);
-      this._xConfig = {
-        title: "X Axis"
-      };
+      this._xConfig = {};
       this._x2Config = {
         padding: 0
       };
@@ -375,8 +373,7 @@ if (!Array.prototype.includes) {
             var domain = this$1._yAxis.domain();
             return domain[domain.length - 1] === d.id ? "transparent" : "#ccc";
           }
-        },
-        title: "Y Axis"
+        }
       };
       this._y2Config = {};
 
@@ -611,7 +608,6 @@ if (!Array.prototype.includes) {
         y2Scale = "Time";
       }
 
-
       domains = {x: xDomain, x2: x2Domain || xDomain, y: yDomain, y2: y2Domain || yDomain};
 
       opps.forEach(function (opp) {
@@ -672,6 +668,7 @@ if (!Array.prototype.includes) {
       this._yTest
         .domain(yDomain)
         .height(height)
+        .maxSize(width / 2)
         .scale(yScale.toLowerCase())
         .select(testGroup.node())
         .ticks(yTicks)
@@ -705,6 +702,7 @@ if (!Array.prototype.includes) {
       this._xTest
         .domain(xDomain)
         .height(height)
+        .maxSize(height / 2)
         .range([undefined, undefined])
         .scale(xScale.toLowerCase())
         .select(testGroup.node())
@@ -767,6 +765,41 @@ if (!Array.prototype.includes) {
       var horizontalMargin = this._margin.left + this._margin.right;
       var verticalMargin = this._margin.top + this._margin.bottom;
 
+      this._yTest
+        .domain(yDomain)
+        .height(height)
+        .maxSize(width / 2)
+        .range([x2Height, height - (yDifference + topOffset + verticalMargin)])
+        .scale(yScale.toLowerCase())
+        .select(testGroup.node())
+        .ticks(yTicks)
+        .width(width)
+        .config(yC)
+        .config(this._yConfig)
+        .render();
+
+      yBounds = this._yTest.outerBounds();
+      yWidth = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
+      xOffsetLeft =  d3Array.max([yWidth, this._xTest._getRange()[0], this._x2Test._getRange()[0]]);
+
+      this._y2Test
+        .config(yC)
+        .domain(y2Exists ? y2Domain : yDomain)
+        .gridSize(0)
+        .height(height)
+        .range([x2Height, height - (y2Difference + topOffset + verticalMargin)])
+        .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
+        .select(testGroup.node())
+        .width(width - d3Array.max([0, xOffsetRight - y2Width]))
+        .title(false)
+        .config(this._y2Config)
+        .config(defaultY2Config)
+        .render();
+
+      y2Bounds = this._y2Test.outerBounds();
+      y2Width = y2Bounds.width ? y2Bounds.width + this._y2Test.padding() : undefined;
+      xOffsetRight = d3Array.max([y2Width, width - this._xTest._getRange()[1], width - this._x2Test._getRange()[1]]);
+
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + x2Height + topOffset) + ")";
       var x2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + topOffset) + ")";
 
@@ -783,6 +816,7 @@ if (!Array.prototype.includes) {
       this._xAxis
         .domain(xDomain)
         .height(height - (x2Height + topOffset + verticalMargin))
+        .maxSize(height / 2)
         .range([xOffsetLeft, width - (xDifference + horizontalMargin)])
         .scale(xScale.toLowerCase())
         .select(xGroup.node())
@@ -820,6 +854,7 @@ if (!Array.prototype.includes) {
       this._yAxis
         .domain(yDomain)
         .height(height)
+        .maxSize(width / 2)
         .range([this._xAxis.outerBounds().y + x2Height, height - (yDifference + topOffset + verticalMargin)])
         .scale(yScale.toLowerCase())
         .select(yGroup.node())
