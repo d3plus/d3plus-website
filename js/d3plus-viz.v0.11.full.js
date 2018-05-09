@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.7
+  d3plus-viz v0.11.8
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -31336,7 +31336,7 @@ if (!Array.prototype.includes) {
    @private
    */
   function clickAll() {
-    if (this._tooltip) { this._tooltipClass.data([]).render(); }
+    if (this._tooltip && !event$1.touches) { this._tooltipClass.data([]).render(); }
   }
 
   /**
@@ -31381,13 +31381,17 @@ if (!Array.prototype.includes) {
       @private
   */
   function mousemoveLegend(d) {
+    event$1.preventDefault();
+    event$1.stopPropagation();
+
+    var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
 
     if (this._tooltip && d) {
       this._select.style("cursor", "pointer");
       this._tooltipClass.data([d])
         .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
         .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
-        .position([event$1.clientX, event$1.clientY])
+        .position(position)
         .config(this._tooltipConfig)
         .config(this._legendTooltip)
         .render();
@@ -31403,17 +31407,32 @@ if (!Array.prototype.includes) {
       @private
   */
   function mousemoveShape(d) {
+    event$1.preventDefault();
+    event$1.stopPropagation();
+
+    var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
 
     if (this._tooltip && d) {
       this._select.style("cursor", "pointer");
       this._tooltipClass.data([d])
         .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
         .title(this._drawLabel)
-        .position([event$1.clientX, event$1.clientY])
+        .position(position)
         .config(this._tooltipConfig)
         .render();
     }
 
+  }
+
+  /**
+   @desc On touchstart event for the Body element.
+   @private
+   */
+  function touchstartBody(d) {
+    event$1.preventDefault();
+    event$1.stopPropagation();
+
+    if (this._tooltip && !d) { this._tooltipClass.data([]).render(); }
   }
 
   var brushing = false;
@@ -31785,7 +31804,9 @@ if (!Array.prototype.includes) {
         "mouseenter": mouseenter.bind(this),
         "mouseleave": mouseleave.bind(this),
         "mousemove.shape": mousemoveShape.bind(this),
-        "mousemove.legend": mousemoveLegend.bind(this)
+        "mousemove.legend": mousemoveLegend.bind(this),
+        "touchstart.legend": mousemoveLegend.bind(this),
+        "touchstart.shape": mousemoveShape.bind(this)
       };
       this._queue = [];
       this._scrollContainer = typeof window === undefined ? "" : window;
@@ -32168,6 +32189,9 @@ if (!Array.prototype.includes) {
         });
 
       }
+
+      // Attaches touchstart event listener to the BODY to hide the tooltip when the user touches any element without data
+      select("body").on(("touchstart." + (this._uuid)), touchstartBody.bind(this));
 
       return this;
 
