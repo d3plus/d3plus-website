@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.6
+  d3plus-plot v0.7.7
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -463,6 +463,7 @@ if (!Array.prototype.includes) {
           }, {});
 
         data = data.sort(function (a, b) {
+          if (this$1[("_" + (this$1._discrete) + "Sort")]) { return this$1[("_" + (this$1._discrete) + "Sort")](a.data, b.data); }
           var a1 = a[this$1._discrete], b1 = b[this$1._discrete];
           if (a1 - b1 !== 0) { return a1 - b1; }
           if (a.group !== b.group) { return groupValues[b.group] - groupValues[a.group]; }
@@ -502,7 +503,12 @@ if (!Array.prototype.includes) {
           }
         });
 
-        data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
+        if (this[("_" + (this._discrete) + "Sort")]) {
+          data.sort(function (a, b) { return this$1[("_" + (this$1._discrete) + "Sort")](a.data, b.data); });
+        }
+        else {
+          data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
+        }
         var order = this._stackOrder;
 
         if (order instanceof Array) { stackKeys.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); }); }
@@ -539,7 +545,12 @@ if (!Array.prototype.includes) {
           .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; })  : [])
           .concat(this._confidence && this._confidence[1] ? data.map(function (d) { return d.hci; }) : []);
 
-        data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
+        if (this[("_" + (this._discrete) + "Sort")]) {
+          data.sort(function (a, b) { return this$1[("_" + (this$1._discrete) + "Sort")](a.data, b.data); });
+        }
+        else {
+          data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
+        }
 
         domains = {
           x: this._xSort ? Array.from(new Set(data.filter(function (d) { return d.x; }).sort(function (a, b) { return this$1._xSort(a.data, b.data); }).map(function (d) { return d.x; }))) : d3Array.extent(xData, function (d) { return d; }),
