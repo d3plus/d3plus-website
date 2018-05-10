@@ -2,7 +2,7 @@
 title: Simple Rings
 width: 990
 height: 400
-time: 1525988073801
+time: 1525988481933
 date: May 10, 2018
 ---
 
