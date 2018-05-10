@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-network.v0.2.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var links = [
+      {"source": "alpha", "target": "beta"},
+      {"source": "alpha", "target": "gamma"},
+      {"source": "beta", "target": "delta"},
+      {"source": "beta", "target": "epsilon"},
+      {"source": "zeta", "target": "gamma"},
+      {"source": "theta", "target": "gamma"},
+      {"source": "eta", "target": "gamma"}
+    ];
+  
+    new d3plus.Rings()
+      .links(links)
+      .label(d => d.id)
+      .center("alpha")
+      .render();
+
+</script>
+
+</html>
