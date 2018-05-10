@@ -593,7 +593,7 @@ if (!Array.prototype.includes) {
   /**
       @class Rings
       @extends external:Viz
-      @desc
+      @desc Creates a ring visualization based on a defined set of nodes and edges. [Click here](http://d3plus.org/examples/d3plus-network/simple-rings/) for help getting started using the Rings class.
   */
   var Rings = (function (Viz) {
     function Rings() {
@@ -751,7 +751,7 @@ if (!Array.prototype.includes) {
             secondaryRing = ringWidth * 2;
 
       var center = nodeLookup[this._center];
-      
+
       center.x = width / 2;
       center.y = height / 2;
       center.r = this._sizeMin ? d3Array.max([this._sizeMin, primaryRing * .65]) : this._sizeMax ? d3Array.min([this._sizeMax, primaryRing * .65]) : primaryRing * .65;
@@ -816,7 +816,7 @@ if (!Array.prototype.includes) {
           node.radians = a;
           node.x = width / 2 + secondaryRing * Math.cos(a);
           node.y = height / 2 + secondaryRing * Math.sin(a);
-          
+
           secondaries.push(node);
         });
       });
@@ -991,7 +991,7 @@ if (!Array.prototype.includes) {
         obj[d.target.id].push(d.source);
         return obj;
       }, {});
-      
+
       this._shapes.push(new shapes.Path()
         .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "edge", "Path"))
         .id(function (d) { return ((d.source.id) + "_" + (d.target.id)); })
