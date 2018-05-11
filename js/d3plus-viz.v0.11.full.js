@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.8
+  d3plus-viz v0.11.9
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -7456,6 +7456,7 @@ if (!Array.prototype.includes) {
       @param {String} [nest] An optional nested key to bubble up to the parent config level.
   */
   function configPrep(config, type, nest) {
+    var this$1 = this;
     if ( config === void 0 ) { config = this._shapeConfig; }
     if ( type === void 0 ) { type = "shape"; }
     if ( nest === void 0 ) { nest = false; }
@@ -7468,16 +7469,15 @@ if (!Array.prototype.includes) {
         i = d.i;
         d = d.data || d.feature;
       }
-      return func(d, i, s);
+      return func.bind(this$1)(d, i, s);
     }; };
 
     var parseEvents = function (newObj, on) {
 
       for (var event in on) {
 
-        if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type)) || event.includes(".all")) {
-          var eventName = event.replace(/click(\.[a-z]*)/g, "click$1 touchstart$1");
-          newObj.on[eventName] = wrapFunction(on[event]);
+        if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type))) {
+          newObj.on[event] = wrapFunction(on[event]);
         }
 
       }
@@ -31332,14 +31332,6 @@ if (!Array.prototype.includes) {
   }
 
   /**
-   @desc Global on click event for all entities in a Viz.
-   @private
-   */
-  function clickAll() {
-    if (this._tooltip && !event$1.touches) { this._tooltipClass.data([]).render(); }
-  }
-
-  /**
       @desc On mouseenter event for all shapes in a Viz.
       @param {Object} *d* The data object being interacted with.
       @param {Number} *i* The index of the data object being interacted with.
@@ -31381,9 +31373,6 @@ if (!Array.prototype.includes) {
       @private
   */
   function mousemoveLegend(d) {
-    event$1.preventDefault();
-    event$1.stopPropagation();
-
     var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
 
     if (this._tooltip && d) {
@@ -31407,9 +31396,6 @@ if (!Array.prototype.includes) {
       @private
   */
   function mousemoveShape(d) {
-    event$1.preventDefault();
-    event$1.stopPropagation();
-
     var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
 
     if (this._tooltip && d) {
@@ -31800,13 +31786,10 @@ if (!Array.prototype.includes) {
       this._noDataMessage = true;
       this._on = {
         "click": click.bind(this),
-        "click.all": clickAll.bind(this),
         "mouseenter": mouseenter.bind(this),
         "mouseleave": mouseleave.bind(this),
         "mousemove.shape": mousemoveShape.bind(this),
-        "mousemove.legend": mousemoveLegend.bind(this),
-        "touchstart.legend": mousemoveLegend.bind(this),
-        "touchstart.shape": mousemoveShape.bind(this)
+        "mousemove.legend": mousemoveLegend.bind(this)
       };
       this._queue = [];
       this._scrollContainer = typeof window === undefined ? "" : window;

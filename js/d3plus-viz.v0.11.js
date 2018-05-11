@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.8
+  d3plus-viz v0.11.9
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -794,14 +794,6 @@ if (!Array.prototype.includes) {
   }
 
   /**
-   @desc Global on click event for all entities in a Viz.
-   @private
-   */
-  function clickAll() {
-    if (this._tooltip && !d3Selection.event.touches) { this._tooltipClass.data([]).render(); }
-  }
-
-  /**
       @desc On mouseenter event for all shapes in a Viz.
       @param {Object} *d* The data object being interacted with.
       @param {Number} *i* The index of the data object being interacted with.
@@ -843,9 +835,6 @@ if (!Array.prototype.includes) {
       @private
   */
   function mousemoveLegend(d) {
-    d3Selection.event.preventDefault();
-    d3Selection.event.stopPropagation();
-
     var position = d3Selection.event.touches ? [d3Selection.event.touches[0].clientX, d3Selection.event.touches[0].clientY] : [d3Selection.event.clientX, d3Selection.event.clientY];
 
     if (this._tooltip && d) {
@@ -869,9 +858,6 @@ if (!Array.prototype.includes) {
       @private
   */
   function mousemoveShape(d) {
-    d3Selection.event.preventDefault();
-    d3Selection.event.stopPropagation();
-
     var position = d3Selection.event.touches ? [d3Selection.event.touches[0].clientX, d3Selection.event.touches[0].clientY] : [d3Selection.event.clientX, d3Selection.event.clientY];
 
     if (this._tooltip && d) {
@@ -1262,13 +1248,10 @@ if (!Array.prototype.includes) {
       this._noDataMessage = true;
       this._on = {
         "click": click.bind(this),
-        "click.all": clickAll.bind(this),
         "mouseenter": mouseenter.bind(this),
         "mouseleave": mouseleave.bind(this),
         "mousemove.shape": mousemoveShape.bind(this),
-        "mousemove.legend": mousemoveLegend.bind(this),
-        "touchstart.legend": mousemoveLegend.bind(this),
-        "touchstart.shape": mousemoveShape.bind(this)
+        "mousemove.legend": mousemoveLegend.bind(this)
       };
       this._queue = [];
       this._scrollContainer = typeof window === undefined ? "" : window;
