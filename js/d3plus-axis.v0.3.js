@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.45
+  d3plus-axis v0.3.46
   Beautiful javascript scales and axes.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -166,7 +166,7 @@ var Axis = (function (BaseClass) {
           var rtl = d3plusText.rtl();
           return this$1._orient === "left" ? rtl ? "start" : "end"
             : this$1._orient === "right" ? rtl ? "end" : "start"
-            : this$1._rotateLabels ? "end" : "middle";
+            : this$1._rotateLabels ? this$1._orient === "bottom" ? "end" : "start" : "middle";
         },
         verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
       },
@@ -519,7 +519,7 @@ var Axis = (function (BaseClass) {
 
     var labelHeight = d3Array.max(textData, function (t) { return t.height; }) || 0;
 
-    if (horizontal) {
+    if (horizontal && typeof this._labelRotation === "undefined") {
       for (var i$1 = 0; i$1 < labels.length; i$1++) {
         var d = labels[i$1];
 
@@ -553,6 +553,7 @@ var Axis = (function (BaseClass) {
         }
       }
     }
+    else if (horizontal) { this._rotateLabels = this._labelRotation; }
 
     if (this._rotateLabels) {
       textData = labels.map(function (d, i) {
@@ -770,7 +771,7 @@ var Axis = (function (BaseClass) {
           tickConfig = Object.assign(tickConfig, {
             labelBounds: {
               x: -width / 2,
-              y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : -size - p - (width + height$1) / 2,
+              y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : size - p * 2 - (width + lineHeight * numLines) / 2,
               width: width,
               height: height$1 + 1
             }
@@ -926,9 +927,19 @@ var Axis = (function (BaseClass) {
       @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
       @param {Boolean} [*value* = true]
       @chainable
-  */
+   */
   Axis.prototype.labelOffset = function labelOffset (_) {
-    return arguments.length ? (this._labelOffset = _, this) : this._labels;
+    return arguments.length ? (this._labelOffset = _, this) : this._labelOffset;
+  };
+
+  /**
+      @memberof Axis
+      @desc If *value* is specified, sets whether whether horizontal axis labels are rotated -90 degrees.
+      @param {Boolean}
+      @chainable
+   */
+  Axis.prototype.labelRotation = function labelRotation (_) {
+    return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
   };
 
   /**
