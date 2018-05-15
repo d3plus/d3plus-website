@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.14.5
+  d3plus-shape v0.14.6
   Fancy SVG shapes for visualizations
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -8486,7 +8486,7 @@ if (!Array.prototype.includes) {
     Shape.prototype._renderImage = function _renderImage () {
       var this$1 = this;
 
-      console.log("IMAGE");
+
       var imageData = [];
 
       this._update.merge(this._enter).data()
