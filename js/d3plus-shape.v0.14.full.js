@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.14.4
+  d3plus-shape v0.14.5
   Fancy SVG shapes for visualizations
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -8183,7 +8183,11 @@ if (!Array.prototype.includes) {
 
       this._activeOpacity = 0.25;
       this._activeStyle = {
-        "stroke": "#444444",
+        "stroke": function (d, i) {
+          var c = this$1._fill(d, i);
+          if (["transparent", "none"].includes(c)) { c = this$1._stroke(d, i); }
+          return color(c).darker(1);
+        },
         "stroke-width": function (d, i) {
           var s = this$1._strokeWidth(d, i) || 1;
           return s * 3;
@@ -8198,7 +8202,11 @@ if (!Array.prototype.includes) {
 
       this._hoverOpacity = 0.5;
       this._hoverStyle = {
-        "stroke": "#888888",
+        "stroke": function (d, i) {
+          var c = this$1._fill(d, i);
+          if (["transparent", "none"].includes(c)) { c = this$1._stroke(d, i); }
+          return color(c).darker(0.5);
+        },
         "stroke-width": function (d, i) {
           var s = this$1._strokeWidth(d, i) || 1;
           return s * 2;
@@ -8419,8 +8427,8 @@ if (!Array.prototype.includes) {
 
         });
 
-      this._renderImage();
-      this._renderLabels();
+      // this._renderImage();
+      // this._renderLabels();
 
       this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
         .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
@@ -8462,8 +8470,8 @@ if (!Array.prototype.includes) {
 
         });
 
-      this._renderImage();
-      this._renderLabels();
+      // this._renderImage();
+      // this._renderLabels();
 
       this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
         .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
@@ -8478,7 +8486,7 @@ if (!Array.prototype.includes) {
     Shape.prototype._renderImage = function _renderImage () {
       var this$1 = this;
 
-
+      console.log("IMAGE");
       var imageData = [];
 
       this._update.merge(this._enter).data()
@@ -8746,8 +8754,8 @@ if (!Array.prototype.includes) {
       if (!arguments.length || _ === undefined) { return this._active; }
       this._active = _;
       if (this._group) {
-        this._renderImage();
-        this._renderLabels();
+        // this._renderImage();
+        // this._renderLabels();
         this._renderActive();
       }
       return this;
@@ -8845,8 +8853,8 @@ if (!Array.prototype.includes) {
       if (!arguments.length || _ === void 0) { return this._hover; }
       this._hover = _;
       if (this._group) {
-        this._renderImage();
-        this._renderLabels();
+        // this._renderImage();
+        // this._renderLabels();
         this._renderHover();
       }
       return this;
