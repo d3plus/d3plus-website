@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.9
+  d3plus-viz v0.11.10
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -31960,14 +31960,7 @@ if (!Array.prototype.includes) {
         dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
 
       }
-    };
 
-    /**
-        @memberof Viz
-        @desc Called by render once all checks are passed.
-        @private
-    */
-    Viz.prototype._draw = function _draw () {
       if (this._noDataMessage && !this._filteredData.length) {
         this._messageClass.render({
           container: this._select.node().parentNode,
@@ -31977,6 +31970,14 @@ if (!Array.prototype.includes) {
         });
       }
 
+    };
+
+    /**
+        @memberof Viz
+        @desc Called by render once all checks are passed.
+        @private
+    */
+    Viz.prototype._draw = function _draw () {
       if (this.legendPosition() === "left" || this.legendPosition() === "right") { drawLegend.bind(this)(this._filteredData); }
       if (this.colorScalePosition() === "left" || this.colorScalePosition() === "right") { drawColorScale.bind(this)(this._filteredData); }
 
