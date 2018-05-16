@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.5.2
+  d3plus-geomap v0.5.3
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -109,7 +109,7 @@ if (!Array.prototype.includes) {
       this._pointSizeScale = "linear";
 
       this._projection = d3Geo.geoMercator();
-      this._projectionPadding = 20;
+      this._projectionPadding = d3plusCommon.parseSides(20);
 
       this._rotate = [0, 0];
 
@@ -292,11 +292,11 @@ if (!Array.prototype.includes) {
 
         var fitData = this._fitObject ? topo2feature(this._fitObject, this._fitKey) : coordData;
 
-        var extentBounds = {
+        this._extentBounds = {
           type: "FeatureCollection",
           features: this._fitFilter ? fitData.features.filter(this._fitFilter) : fitData.features.slice()
         };
-        extentBounds.features = extentBounds.features.reduce(function (arr, d) {
+        this._extentBounds.features = this._extentBounds.features.reduce(function (arr, d) {
 
           if (d.geometry) {
 
@@ -350,9 +350,7 @@ if (!Array.prototype.includes) {
 
         }, []);
 
-        var pad = d3plusCommon.parseSides(this._projectionPadding);
-
-        if (!extentBounds.features.length && pointData.length) {
+        if (!this._extentBounds.features.length && pointData.length) {
 
           var bounds = [[undefined, undefined], [undefined, undefined]];
           pointData.forEach(function (d, i) {
@@ -365,7 +363,7 @@ if (!Array.prototype.includes) {
 
           });
 
-          extentBounds = {
+          this._extentBounds = {
             type: "FeatureCollection",
             features: [{
               type: "Feature",
@@ -376,18 +374,12 @@ if (!Array.prototype.includes) {
             }]
           };
           var maxSize = d3Array.max(pointData, function (d, i) { return r(this$1._pointSize(d, i)); });
-          pad.top += maxSize;
-          pad.right += maxSize;
-          pad.bottom += maxSize;
-          pad.left += maxSize;
+          this._projectionPadding.top += maxSize;
+          this._projectionPadding.right += maxSize;
+          this._projectionPadding.bottom += maxSize;
+          this._projectionPadding.left += maxSize;
 
         }
-
-        this._projection = this._projection
-          .fitExtent(
-            extentBounds.features.length ? [[pad.left, pad.top], [width - pad.right, height - pad.bottom]] : [[0, 0], [width, height]],
-            extentBounds.features.length ? extentBounds : {type: "Sphere"}
-          );
 
         this._zoomBehavior
           .extent([[0, 0], [width, height]])
@@ -397,6 +389,12 @@ if (!Array.prototype.includes) {
         this._zoomSet = true;
 
       }
+
+      this._projection = this._projection
+        .fitExtent(
+          this._extentBounds.features.length ? [[this._projectionPadding.left, this._projectionPadding.top], [width - this._projectionPadding.right, height - this._projectionPadding.bottom]] : [[0, 0], [width, height]],
+          this._extentBounds.features.length ? this._extentBounds : {type: "Sphere"}
+        );
 
       this._shapes.push(new d3plusShape.Path()
         .data(topoData)
@@ -551,7 +549,7 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Geomap.prototype.projectionPadding = function projectionPadding (_) {
-      return arguments.length ? (this._projectionPadding = _, this) : this._projectionPadding;
+      return arguments.length ? (this._projectionPadding = d3plusCommon.parseSides(_), this) : this._projectionPadding;
     };
 
     /**
