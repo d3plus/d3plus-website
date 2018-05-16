@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.7
+  d3plus-plot v0.7.8
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -680,6 +680,7 @@ if (!Array.prototype.includes) {
         .domain(yDomain)
         .height(height)
         .maxSize(width / 2)
+        .range([undefined, undefined])
         .scale(yScale.toLowerCase())
         .select(testGroup.node())
         .ticks(yTicks)
@@ -694,6 +695,7 @@ if (!Array.prototype.includes) {
       this._y2Test
         .domain(y2Exists ? y2Domain : yDomain)
         .height(height)
+        .range([undefined, undefined])
         .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
         .select(testGroup.node())
         .ticks(y2Ticks ? y2Ticks : yTicks)
