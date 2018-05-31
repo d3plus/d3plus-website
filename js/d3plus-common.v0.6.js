@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.38
+  d3plus-common v0.6.39
   Common functions and methods used across D3plus modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -97,6 +97,17 @@ if (!Array.prototype.includes) {
 
   /**
       @function assign
+      @desc Determines if the object passed is the document or window.
+      @param {Object} obj
+      @private
+  */
+  function validObject(obj) {
+    if (typeof window === "undefined") { return true; }
+    else { return obj !== window && obj !== document; }
+  }
+
+  /**
+      @function assign
       @desc A deeply recursive version of `Object.assign`.
       @param {...Object} objects
       @example <caption>this</caption>
@@ -118,7 +129,7 @@ if (!Array.prototype.includes) {
 
         var value = source[prop];
 
-        if (isObject(value) && (typeof window === undefined || value !== window)) {
+        if (isObject(value) && validObject(value)) {
           if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
           else { target[prop] = assign({}, value); }
         }
