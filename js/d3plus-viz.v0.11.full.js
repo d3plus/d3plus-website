@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.10
+  d3plus-viz v0.11.11
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -2165,6 +2165,9 @@ if (!Array.prototype.includes) {
     displayable: function() {
       return this.rgb().displayable();
     },
+    hex: function() {
+      return this.rgb().hex();
+    },
     toString: function() {
       return this.rgb() + "";
     }
@@ -2231,6 +2234,9 @@ if (!Array.prototype.includes) {
           && (0 <= this.b && this.b <= 255)
           && (0 <= this.opacity && this.opacity <= 1);
     },
+    hex: function() {
+      return "#" + hex(this.r) + hex(this.g) + hex(this.b);
+    },
     toString: function() {
       var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
       return (a === 1 ? "rgb(" : "rgba(")
@@ -2240,6 +2246,11 @@ if (!Array.prototype.includes) {
           + (a === 1 ? ")" : ", " + a + ")");
     }
   }));
+
+  function hex(value) {
+    value = Math.max(0, Math.min(255, Math.round(value) || 0));
+    return (value < 16 ? "0" : "") + value.toString(16);
+  }
 
   function hsla(h, s, l, a) {
     if (a <= 0) { h = s = l = NaN; }
@@ -2325,10 +2336,11 @@ if (!Array.prototype.includes) {
   var deg2rad = Math.PI / 180;
   var rad2deg = 180 / Math.PI;
 
-  var Kn = 18,
-      Xn = 0.950470, // D65 standard referent
+  // https://beta.observablehq.com/@mbostock/lab-and-rgb
+  var K = 18,
+      Xn = 0.96422,
       Yn = 1,
-      Zn = 1.088830,
+      Zn = 0.82521,
       t0 = 4 / 29,
       t1 = 6 / 29,
       t2 = 3 * t1 * t1,
@@ -2337,16 +2349,19 @@ if (!Array.prototype.includes) {
   function labConvert(o) {
     if (o instanceof Lab) { return new Lab(o.l, o.a, o.b, o.opacity); }
     if (o instanceof Hcl) {
+      if (isNaN(o.h)) { return new Lab(o.l, 0, 0, o.opacity); }
       var h = o.h * deg2rad;
       return new Lab(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
     }
     if (!(o instanceof Rgb)) { o = rgbConvert(o); }
-    var b = rgb2xyz(o.r),
-        a = rgb2xyz(o.g),
-        l = rgb2xyz(o.b),
-        x = xyz2lab((0.4124564 * b + 0.3575761 * a + 0.1804375 * l) / Xn),
-        y = xyz2lab((0.2126729 * b + 0.7151522 * a + 0.0721750 * l) / Yn),
-        z = xyz2lab((0.0193339 * b + 0.1191920 * a + 0.9503041 * l) / Zn);
+    var r = rgb2lrgb(o.r),
+        g = rgb2lrgb(o.g),
+        b = rgb2lrgb(o.b),
+        y = xyz2lab((0.2225045 * r + 0.7168786 * g + 0.0606169 * b) / Yn), x, z;
+    if (r === g && g === b) { x = z = y; } else {
+      x = xyz2lab((0.4360747 * r + 0.3850649 * g + 0.1430804 * b) / Xn);
+      z = xyz2lab((0.0139322 * r + 0.0971045 * g + 0.7141733 * b) / Zn);
+    }
     return new Lab(116 * y - 16, 500 * (x - y), 200 * (y - z), o.opacity);
   }
 
@@ -2363,22 +2378,22 @@ if (!Array.prototype.includes) {
 
   define(Lab, lab, extend(Color, {
     brighter: function(k) {
-      return new Lab(this.l + Kn * (k == null ? 1 : k), this.a, this.b, this.opacity);
+      return new Lab(this.l + K * (k == null ? 1 : k), this.a, this.b, this.opacity);
     },
     darker: function(k) {
-      return new Lab(this.l - Kn * (k == null ? 1 : k), this.a, this.b, this.opacity);
+      return new Lab(this.l - K * (k == null ? 1 : k), this.a, this.b, this.opacity);
     },
     rgb: function() {
       var y = (this.l + 16) / 116,
           x = isNaN(this.a) ? y : y + this.a / 500,
           z = isNaN(this.b) ? y : y - this.b / 200;
-      y = Yn * lab2xyz(y);
       x = Xn * lab2xyz(x);
+      y = Yn * lab2xyz(y);
       z = Zn * lab2xyz(z);
       return new Rgb(
-        xyz2rgb( 3.2404542 * x - 1.5371385 * y - 0.4985314 * z), // D65 -> sRGB
-        xyz2rgb(-0.9692660 * x + 1.8760108 * y + 0.0415560 * z),
-        xyz2rgb( 0.0556434 * x - 0.2040259 * y + 1.0572252 * z),
+        lrgb2rgb( 3.1338561 * x - 1.6168667 * y - 0.4906146 * z),
+        lrgb2rgb(-0.9787684 * x + 1.9161415 * y + 0.0334540 * z),
+        lrgb2rgb( 0.0719453 * x - 0.2289914 * y + 1.4052427 * z),
         this.opacity
       );
     }
@@ -2392,17 +2407,18 @@ if (!Array.prototype.includes) {
     return t > t1 ? t * t * t : t2 * (t - t0);
   }
 
-  function xyz2rgb(x) {
+  function lrgb2rgb(x) {
     return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055);
   }
 
-  function rgb2xyz(x) {
+  function rgb2lrgb(x) {
     return (x /= 255) <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
   }
 
   function hclConvert(o) {
     if (o instanceof Hcl) { return new Hcl(o.h, o.c, o.l, o.opacity); }
     if (!(o instanceof Lab)) { o = labConvert(o); }
+    if (o.a === 0 && o.b === 0) { return new Hcl(NaN, 0, o.l, o.opacity); }
     var h = Math.atan2(o.b, o.a) * rad2deg;
     return new Hcl(h < 0 ? h + 360 : h, Math.sqrt(o.a * o.a + o.b * o.b), o.l, o.opacity);
   }
@@ -2420,10 +2436,10 @@ if (!Array.prototype.includes) {
 
   define(Hcl, hcl, extend(Color, {
     brighter: function(k) {
-      return new Hcl(this.h, this.c, this.l + Kn * (k == null ? 1 : k), this.opacity);
+      return new Hcl(this.h, this.c, this.l + K * (k == null ? 1 : k), this.opacity);
     },
     darker: function(k) {
-      return new Hcl(this.h, this.c, this.l - Kn * (k == null ? 1 : k), this.opacity);
+      return new Hcl(this.h, this.c, this.l - K * (k == null ? 1 : k), this.opacity);
     },
     rgb: function() {
       return labConvert(this).rgb();
@@ -7242,6 +7258,17 @@ if (!Array.prototype.includes) {
 
   /**
       @function assign
+      @desc Determines if the object passed is the document or window.
+      @param {Object} obj
+      @private
+  */
+  function validObject(obj) {
+    if (typeof window === "undefined") { return true; }
+    else { return obj !== window && obj !== document; }
+  }
+
+  /**
+      @function assign
       @desc A deeply recursive version of `Object.assign`.
       @param {...Object} objects
       @example <caption>this</caption>
@@ -7265,11 +7292,9 @@ if (!Array.prototype.includes) {
 
         var value = source[prop];
 
-        if (isObject(value)) {
-
+        if (isObject(value) && validObject(value)) {
           if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
-          else { target[prop] = value; }
-
+          else { target[prop] = assign({}, value); }
         }
         else if (Array.isArray(value)) {
 
@@ -7894,6 +7919,528 @@ if (!Array.prototype.includes) {
   Image$1.prototype.y = function y (_) {
     return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$7(_), this) : this._y;
   };
+
+  function define$1(constructor, factory, prototype) {
+    constructor.prototype = factory.prototype = prototype;
+    prototype.constructor = constructor;
+  }
+
+  function extend$1(parent, definition) {
+    var prototype = Object.create(parent.prototype);
+    for (var key in definition) { prototype[key] = definition[key]; }
+    return prototype;
+  }
+
+  function Color$1() {}
+
+  var darker$1 = 0.7;
+  var brighter$1 = 1 / darker$1;
+
+  var reI$1 = "\\s*([+-]?\\d+)\\s*",
+      reN$1 = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
+      reP$1 = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
+      reHex3$1 = /^#([0-9a-f]{3})$/,
+      reHex6$1 = /^#([0-9a-f]{6})$/,
+      reRgbInteger$1 = new RegExp("^rgb\\(" + [reI$1, reI$1, reI$1] + "\\)$"),
+      reRgbPercent$1 = new RegExp("^rgb\\(" + [reP$1, reP$1, reP$1] + "\\)$"),
+      reRgbaInteger$1 = new RegExp("^rgba\\(" + [reI$1, reI$1, reI$1, reN$1] + "\\)$"),
+      reRgbaPercent$1 = new RegExp("^rgba\\(" + [reP$1, reP$1, reP$1, reN$1] + "\\)$"),
+      reHslPercent$1 = new RegExp("^hsl\\(" + [reN$1, reP$1, reP$1] + "\\)$"),
+      reHslaPercent$1 = new RegExp("^hsla\\(" + [reN$1, reP$1, reP$1, reN$1] + "\\)$");
+
+  var named$1 = {
+    aliceblue: 0xf0f8ff,
+    antiquewhite: 0xfaebd7,
+    aqua: 0x00ffff,
+    aquamarine: 0x7fffd4,
+    azure: 0xf0ffff,
+    beige: 0xf5f5dc,
+    bisque: 0xffe4c4,
+    black: 0x000000,
+    blanchedalmond: 0xffebcd,
+    blue: 0x0000ff,
+    blueviolet: 0x8a2be2,
+    brown: 0xa52a2a,
+    burlywood: 0xdeb887,
+    cadetblue: 0x5f9ea0,
+    chartreuse: 0x7fff00,
+    chocolate: 0xd2691e,
+    coral: 0xff7f50,
+    cornflowerblue: 0x6495ed,
+    cornsilk: 0xfff8dc,
+    crimson: 0xdc143c,
+    cyan: 0x00ffff,
+    darkblue: 0x00008b,
+    darkcyan: 0x008b8b,
+    darkgoldenrod: 0xb8860b,
+    darkgray: 0xa9a9a9,
+    darkgreen: 0x006400,
+    darkgrey: 0xa9a9a9,
+    darkkhaki: 0xbdb76b,
+    darkmagenta: 0x8b008b,
+    darkolivegreen: 0x556b2f,
+    darkorange: 0xff8c00,
+    darkorchid: 0x9932cc,
+    darkred: 0x8b0000,
+    darksalmon: 0xe9967a,
+    darkseagreen: 0x8fbc8f,
+    darkslateblue: 0x483d8b,
+    darkslategray: 0x2f4f4f,
+    darkslategrey: 0x2f4f4f,
+    darkturquoise: 0x00ced1,
+    darkviolet: 0x9400d3,
+    deeppink: 0xff1493,
+    deepskyblue: 0x00bfff,
+    dimgray: 0x696969,
+    dimgrey: 0x696969,
+    dodgerblue: 0x1e90ff,
+    firebrick: 0xb22222,
+    floralwhite: 0xfffaf0,
+    forestgreen: 0x228b22,
+    fuchsia: 0xff00ff,
+    gainsboro: 0xdcdcdc,
+    ghostwhite: 0xf8f8ff,
+    gold: 0xffd700,
+    goldenrod: 0xdaa520,
+    gray: 0x808080,
+    green: 0x008000,
+    greenyellow: 0xadff2f,
+    grey: 0x808080,
+    honeydew: 0xf0fff0,
+    hotpink: 0xff69b4,
+    indianred: 0xcd5c5c,
+    indigo: 0x4b0082,
+    ivory: 0xfffff0,
+    khaki: 0xf0e68c,
+    lavender: 0xe6e6fa,
+    lavenderblush: 0xfff0f5,
+    lawngreen: 0x7cfc00,
+    lemonchiffon: 0xfffacd,
+    lightblue: 0xadd8e6,
+    lightcoral: 0xf08080,
+    lightcyan: 0xe0ffff,
+    lightgoldenrodyellow: 0xfafad2,
+    lightgray: 0xd3d3d3,
+    lightgreen: 0x90ee90,
+    lightgrey: 0xd3d3d3,
+    lightpink: 0xffb6c1,
+    lightsalmon: 0xffa07a,
+    lightseagreen: 0x20b2aa,
+    lightskyblue: 0x87cefa,
+    lightslategray: 0x778899,
+    lightslategrey: 0x778899,
+    lightsteelblue: 0xb0c4de,
+    lightyellow: 0xffffe0,
+    lime: 0x00ff00,
+    limegreen: 0x32cd32,
+    linen: 0xfaf0e6,
+    magenta: 0xff00ff,
+    maroon: 0x800000,
+    mediumaquamarine: 0x66cdaa,
+    mediumblue: 0x0000cd,
+    mediumorchid: 0xba55d3,
+    mediumpurple: 0x9370db,
+    mediumseagreen: 0x3cb371,
+    mediumslateblue: 0x7b68ee,
+    mediumspringgreen: 0x00fa9a,
+    mediumturquoise: 0x48d1cc,
+    mediumvioletred: 0xc71585,
+    midnightblue: 0x191970,
+    mintcream: 0xf5fffa,
+    mistyrose: 0xffe4e1,
+    moccasin: 0xffe4b5,
+    navajowhite: 0xffdead,
+    navy: 0x000080,
+    oldlace: 0xfdf5e6,
+    olive: 0x808000,
+    olivedrab: 0x6b8e23,
+    orange: 0xffa500,
+    orangered: 0xff4500,
+    orchid: 0xda70d6,
+    palegoldenrod: 0xeee8aa,
+    palegreen: 0x98fb98,
+    paleturquoise: 0xafeeee,
+    palevioletred: 0xdb7093,
+    papayawhip: 0xffefd5,
+    peachpuff: 0xffdab9,
+    peru: 0xcd853f,
+    pink: 0xffc0cb,
+    plum: 0xdda0dd,
+    powderblue: 0xb0e0e6,
+    purple: 0x800080,
+    rebeccapurple: 0x663399,
+    red: 0xff0000,
+    rosybrown: 0xbc8f8f,
+    royalblue: 0x4169e1,
+    saddlebrown: 0x8b4513,
+    salmon: 0xfa8072,
+    sandybrown: 0xf4a460,
+    seagreen: 0x2e8b57,
+    seashell: 0xfff5ee,
+    sienna: 0xa0522d,
+    silver: 0xc0c0c0,
+    skyblue: 0x87ceeb,
+    slateblue: 0x6a5acd,
+    slategray: 0x708090,
+    slategrey: 0x708090,
+    snow: 0xfffafa,
+    springgreen: 0x00ff7f,
+    steelblue: 0x4682b4,
+    tan: 0xd2b48c,
+    teal: 0x008080,
+    thistle: 0xd8bfd8,
+    tomato: 0xff6347,
+    turquoise: 0x40e0d0,
+    violet: 0xee82ee,
+    wheat: 0xf5deb3,
+    white: 0xffffff,
+    whitesmoke: 0xf5f5f5,
+    yellow: 0xffff00,
+    yellowgreen: 0x9acd32
+  };
+
+  define$1(Color$1, color$1, {
+    displayable: function() {
+      return this.rgb().displayable();
+    },
+    hex: function() {
+      return this.rgb().hex();
+    },
+    toString: function() {
+      return this.rgb() + "";
+    }
+  });
+
+  function color$1(format) {
+    var m;
+    format = (format + "").trim().toLowerCase();
+    return (m = reHex3$1.exec(format)) ? (m = parseInt(m[1], 16), new Rgb$1((m >> 8 & 0xf) | (m >> 4 & 0x0f0), (m >> 4 & 0xf) | (m & 0xf0), ((m & 0xf) << 4) | (m & 0xf), 1)) // #f00
+        : (m = reHex6$1.exec(format)) ? rgbn$1(parseInt(m[1], 16)) // #ff0000
+        : (m = reRgbInteger$1.exec(format)) ? new Rgb$1(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
+        : (m = reRgbPercent$1.exec(format)) ? new Rgb$1(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
+        : (m = reRgbaInteger$1.exec(format)) ? rgba$1(m[1], m[2], m[3], m[4]) // rgba(255, 0, 0, 1)
+        : (m = reRgbaPercent$1.exec(format)) ? rgba$1(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
+        : (m = reHslPercent$1.exec(format)) ? hsla$1(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
+        : (m = reHslaPercent$1.exec(format)) ? hsla$1(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
+        : named$1.hasOwnProperty(format) ? rgbn$1(named$1[format])
+        : format === "transparent" ? new Rgb$1(NaN, NaN, NaN, 0)
+        : null;
+  }
+
+  function rgbn$1(n) {
+    return new Rgb$1(n >> 16 & 0xff, n >> 8 & 0xff, n & 0xff, 1);
+  }
+
+  function rgba$1(r, g, b, a) {
+    if (a <= 0) { r = g = b = NaN; }
+    return new Rgb$1(r, g, b, a);
+  }
+
+  function rgbConvert$1(o) {
+    if (!(o instanceof Color$1)) { o = color$1(o); }
+    if (!o) { return new Rgb$1; }
+    o = o.rgb();
+    return new Rgb$1(o.r, o.g, o.b, o.opacity);
+  }
+
+  function rgb$1(r, g, b, opacity) {
+    return arguments.length === 1 ? rgbConvert$1(r) : new Rgb$1(r, g, b, opacity == null ? 1 : opacity);
+  }
+
+  function Rgb$1(r, g, b, opacity) {
+    this.r = +r;
+    this.g = +g;
+    this.b = +b;
+    this.opacity = +opacity;
+  }
+
+  define$1(Rgb$1, rgb$1, extend$1(Color$1, {
+    brighter: function(k) {
+      k = k == null ? brighter$1 : Math.pow(brighter$1, k);
+      return new Rgb$1(this.r * k, this.g * k, this.b * k, this.opacity);
+    },
+    darker: function(k) {
+      k = k == null ? darker$1 : Math.pow(darker$1, k);
+      return new Rgb$1(this.r * k, this.g * k, this.b * k, this.opacity);
+    },
+    rgb: function() {
+      return this;
+    },
+    displayable: function() {
+      return (0 <= this.r && this.r <= 255)
+          && (0 <= this.g && this.g <= 255)
+          && (0 <= this.b && this.b <= 255)
+          && (0 <= this.opacity && this.opacity <= 1);
+    },
+    hex: function() {
+      return "#" + hex$1(this.r) + hex$1(this.g) + hex$1(this.b);
+    },
+    toString: function() {
+      var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+      return (a === 1 ? "rgb(" : "rgba(")
+          + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", "
+          + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", "
+          + Math.max(0, Math.min(255, Math.round(this.b) || 0))
+          + (a === 1 ? ")" : ", " + a + ")");
+    }
+  }));
+
+  function hex$1(value) {
+    value = Math.max(0, Math.min(255, Math.round(value) || 0));
+    return (value < 16 ? "0" : "") + value.toString(16);
+  }
+
+  function hsla$1(h, s, l, a) {
+    if (a <= 0) { h = s = l = NaN; }
+    else if (l <= 0 || l >= 1) { h = s = NaN; }
+    else if (s <= 0) { h = NaN; }
+    return new Hsl$1(h, s, l, a);
+  }
+
+  function hslConvert$1(o) {
+    if (o instanceof Hsl$1) { return new Hsl$1(o.h, o.s, o.l, o.opacity); }
+    if (!(o instanceof Color$1)) { o = color$1(o); }
+    if (!o) { return new Hsl$1; }
+    if (o instanceof Hsl$1) { return o; }
+    o = o.rgb();
+    var r = o.r / 255,
+        g = o.g / 255,
+        b = o.b / 255,
+        min = Math.min(r, g, b),
+        max = Math.max(r, g, b),
+        h = NaN,
+        s = max - min,
+        l = (max + min) / 2;
+    if (s) {
+      if (r === max) { h = (g - b) / s + (g < b) * 6; }
+      else if (g === max) { h = (b - r) / s + 2; }
+      else { h = (r - g) / s + 4; }
+      s /= l < 0.5 ? max + min : 2 - max - min;
+      h *= 60;
+    } else {
+      s = l > 0 && l < 1 ? 0 : h;
+    }
+    return new Hsl$1(h, s, l, o.opacity);
+  }
+
+  function hsl$2(h, s, l, opacity) {
+    return arguments.length === 1 ? hslConvert$1(h) : new Hsl$1(h, s, l, opacity == null ? 1 : opacity);
+  }
+
+  function Hsl$1(h, s, l, opacity) {
+    this.h = +h;
+    this.s = +s;
+    this.l = +l;
+    this.opacity = +opacity;
+  }
+
+  define$1(Hsl$1, hsl$2, extend$1(Color$1, {
+    brighter: function(k) {
+      k = k == null ? brighter$1 : Math.pow(brighter$1, k);
+      return new Hsl$1(this.h, this.s, this.l * k, this.opacity);
+    },
+    darker: function(k) {
+      k = k == null ? darker$1 : Math.pow(darker$1, k);
+      return new Hsl$1(this.h, this.s, this.l * k, this.opacity);
+    },
+    rgb: function() {
+      var h = this.h % 360 + (this.h < 0) * 360,
+          s = isNaN(h) || isNaN(this.s) ? 0 : this.s,
+          l = this.l,
+          m2 = l + (l < 0.5 ? l : 1 - l) * s,
+          m1 = 2 * l - m2;
+      return new Rgb$1(
+        hsl2rgb$1(h >= 240 ? h - 240 : h + 120, m1, m2),
+        hsl2rgb$1(h, m1, m2),
+        hsl2rgb$1(h < 120 ? h + 240 : h - 120, m1, m2),
+        this.opacity
+      );
+    },
+    displayable: function() {
+      return (0 <= this.s && this.s <= 1 || isNaN(this.s))
+          && (0 <= this.l && this.l <= 1)
+          && (0 <= this.opacity && this.opacity <= 1);
+    }
+  }));
+
+  /* From FvD 13.37, CSS Color Module Level 3 */
+  function hsl2rgb$1(h, m1, m2) {
+    return (h < 60 ? m1 + (m2 - m1) * h / 60
+        : h < 180 ? m2
+        : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60
+        : m1) * 255;
+  }
+
+  var deg2rad$1 = Math.PI / 180;
+  var rad2deg$1 = 180 / Math.PI;
+
+  // https://beta.observablehq.com/@mbostock/lab-and-rgb
+  var K$1 = 18,
+      Xn$1 = 0.96422,
+      Yn$1 = 1,
+      Zn$1 = 0.82521,
+      t0$2 = 4 / 29,
+      t1$2 = 6 / 29,
+      t2$1 = 3 * t1$2 * t1$2,
+      t3$1 = t1$2 * t1$2 * t1$2;
+
+  function labConvert$1(o) {
+    if (o instanceof Lab$1) { return new Lab$1(o.l, o.a, o.b, o.opacity); }
+    if (o instanceof Hcl$1) {
+      if (isNaN(o.h)) { return new Lab$1(o.l, 0, 0, o.opacity); }
+      var h = o.h * deg2rad$1;
+      return new Lab$1(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
+    }
+    if (!(o instanceof Rgb$1)) { o = rgbConvert$1(o); }
+    var r = rgb2lrgb$1(o.r),
+        g = rgb2lrgb$1(o.g),
+        b = rgb2lrgb$1(o.b),
+        y = xyz2lab$1((0.2225045 * r + 0.7168786 * g + 0.0606169 * b) / Yn$1), x, z;
+    if (r === g && g === b) { x = z = y; } else {
+      x = xyz2lab$1((0.4360747 * r + 0.3850649 * g + 0.1430804 * b) / Xn$1);
+      z = xyz2lab$1((0.0139322 * r + 0.0971045 * g + 0.7141733 * b) / Zn$1);
+    }
+    return new Lab$1(116 * y - 16, 500 * (x - y), 200 * (y - z), o.opacity);
+  }
+
+  function lab$2(l, a, b, opacity) {
+    return arguments.length === 1 ? labConvert$1(l) : new Lab$1(l, a, b, opacity == null ? 1 : opacity);
+  }
+
+  function Lab$1(l, a, b, opacity) {
+    this.l = +l;
+    this.a = +a;
+    this.b = +b;
+    this.opacity = +opacity;
+  }
+
+  define$1(Lab$1, lab$2, extend$1(Color$1, {
+    brighter: function(k) {
+      return new Lab$1(this.l + K$1 * (k == null ? 1 : k), this.a, this.b, this.opacity);
+    },
+    darker: function(k) {
+      return new Lab$1(this.l - K$1 * (k == null ? 1 : k), this.a, this.b, this.opacity);
+    },
+    rgb: function() {
+      var y = (this.l + 16) / 116,
+          x = isNaN(this.a) ? y : y + this.a / 500,
+          z = isNaN(this.b) ? y : y - this.b / 200;
+      x = Xn$1 * lab2xyz$1(x);
+      y = Yn$1 * lab2xyz$1(y);
+      z = Zn$1 * lab2xyz$1(z);
+      return new Rgb$1(
+        lrgb2rgb$1( 3.1338561 * x - 1.6168667 * y - 0.4906146 * z),
+        lrgb2rgb$1(-0.9787684 * x + 1.9161415 * y + 0.0334540 * z),
+        lrgb2rgb$1( 0.0719453 * x - 0.2289914 * y + 1.4052427 * z),
+        this.opacity
+      );
+    }
+  }));
+
+  function xyz2lab$1(t) {
+    return t > t3$1 ? Math.pow(t, 1 / 3) : t / t2$1 + t0$2;
+  }
+
+  function lab2xyz$1(t) {
+    return t > t1$2 ? t * t * t : t2$1 * (t - t0$2);
+  }
+
+  function lrgb2rgb$1(x) {
+    return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055);
+  }
+
+  function rgb2lrgb$1(x) {
+    return (x /= 255) <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+  }
+
+  function hclConvert$1(o) {
+    if (o instanceof Hcl$1) { return new Hcl$1(o.h, o.c, o.l, o.opacity); }
+    if (!(o instanceof Lab$1)) { o = labConvert$1(o); }
+    if (o.a === 0 && o.b === 0) { return new Hcl$1(NaN, 0, o.l, o.opacity); }
+    var h = Math.atan2(o.b, o.a) * rad2deg$1;
+    return new Hcl$1(h < 0 ? h + 360 : h, Math.sqrt(o.a * o.a + o.b * o.b), o.l, o.opacity);
+  }
+
+  function hcl$3(h, c, l, opacity) {
+    return arguments.length === 1 ? hclConvert$1(h) : new Hcl$1(h, c, l, opacity == null ? 1 : opacity);
+  }
+
+  function Hcl$1(h, c, l, opacity) {
+    this.h = +h;
+    this.c = +c;
+    this.l = +l;
+    this.opacity = +opacity;
+  }
+
+  define$1(Hcl$1, hcl$3, extend$1(Color$1, {
+    brighter: function(k) {
+      return new Hcl$1(this.h, this.c, this.l + K$1 * (k == null ? 1 : k), this.opacity);
+    },
+    darker: function(k) {
+      return new Hcl$1(this.h, this.c, this.l - K$1 * (k == null ? 1 : k), this.opacity);
+    },
+    rgb: function() {
+      return labConvert$1(this).rgb();
+    }
+  }));
+
+  var A$1 = -0.14861,
+      B$1 = +1.78277,
+      C$1 = -0.29227,
+      D$1 = -0.90649,
+      E$1 = +1.97294,
+      ED$1 = E$1 * D$1,
+      EB$1 = E$1 * B$1,
+      BC_DA$1 = B$1 * C$1 - D$1 * A$1;
+
+  function cubehelixConvert$1(o) {
+    if (o instanceof Cubehelix$1) { return new Cubehelix$1(o.h, o.s, o.l, o.opacity); }
+    if (!(o instanceof Rgb$1)) { o = rgbConvert$1(o); }
+    var r = o.r / 255,
+        g = o.g / 255,
+        b = o.b / 255,
+        l = (BC_DA$1 * b + ED$1 * r - EB$1 * g) / (BC_DA$1 + ED$1 - EB$1),
+        bl = b - l,
+        k = (E$1 * (g - l) - C$1 * bl) / D$1,
+        s = Math.sqrt(k * k + bl * bl) / (E$1 * l * (1 - l)), // NaN if l=0 or l=1
+        h = s ? Math.atan2(k, bl) * rad2deg$1 - 120 : NaN;
+    return new Cubehelix$1(h < 0 ? h + 360 : h, s, l, o.opacity);
+  }
+
+  function cubehelix$3(h, s, l, opacity) {
+    return arguments.length === 1 ? cubehelixConvert$1(h) : new Cubehelix$1(h, s, l, opacity == null ? 1 : opacity);
+  }
+
+  function Cubehelix$1(h, s, l, opacity) {
+    this.h = +h;
+    this.s = +s;
+    this.l = +l;
+    this.opacity = +opacity;
+  }
+
+  define$1(Cubehelix$1, cubehelix$3, extend$1(Color$1, {
+    brighter: function(k) {
+      k = k == null ? brighter$1 : Math.pow(brighter$1, k);
+      return new Cubehelix$1(this.h, this.s, this.l * k, this.opacity);
+    },
+    darker: function(k) {
+      k = k == null ? darker$1 : Math.pow(darker$1, k);
+      return new Cubehelix$1(this.h, this.s, this.l * k, this.opacity);
+    },
+    rgb: function() {
+      var h = isNaN(this.h) ? 0 : (this.h + 120) * deg2rad$1,
+          l = +this.l,
+          a = isNaN(this.s) ? 0 : this.s * l * (1 - l),
+          cosh = Math.cos(h),
+          sinh = Math.sin(h);
+      return new Rgb$1(
+        255 * (l + a * (A$1 * cosh + B$1 * sinh)),
+        255 * (l + a * (C$1 * cosh + D$1 * sinh)),
+        255 * (l + a * (E$1 * cosh)),
+        this.opacity
+      );
+    }
+  }));
 
   var array$3 = Array.prototype;
   var slice$3 = array$3.slice;
@@ -10366,6 +10913,7 @@ if (!Array.prototype.includes) {
         fontWeight = 400,
         height = 200,
         lineHeight,
+        maxLines = null,
         overflow = false,
         split = textSplit,
         width = 200;
@@ -10409,7 +10957,7 @@ if (!Array.prototype.includes) {
           }
           lineData[line - 1] = trimRight(lineData[line - 1]);
           line++;
-          if (lineHeight * line > height || wordWidth > width && !overflow) {
+          if (lineHeight * line > height || wordWidth > width && !overflow || maxLines && line > maxLines) {
             truncated = true;
             break;
           }
@@ -10479,6 +11027,15 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof textWrap
+        @desc If *value* is specified, sets the maximum number of lines allowed when wrapping.
+        @param {Function|Number} [*value*]
+    */
+    textWrap.maxLines = function(_) {
+      return arguments.length ? (maxLines = _, textWrap) : maxLines;
+    };
+
+    /**
+        @memberof textWrap
         @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
         @param {Boolean} [*value* = false]
     */
@@ -10506,6 +11063,27 @@ if (!Array.prototype.includes) {
 
     return textWrap;
 
+  }
+
+  /**
+      @function textTruncate
+      @desc Truncate a single word with ellipsis until if fits within the given width
+      @param  {String} text     The word to truncate
+      @param  {String} ellipsis The ellipsis to append
+      @param  {Number} maxWidth The maximum width that the text can take
+      @param  {Object} style    The style object to apply
+      @return {String}          The resultant text with ellipsis
+   */
+  function truncateWord(text, ellipsis, maxWidth, style) {
+    for (var i = text.length; i > 0; i--) {
+      var shortened = text.slice(0, i) + ellipsis;
+      var width = textWidth(shortened, style);
+      if (width < maxWidth) {
+        return shortened;
+      }
+    }
+
+    return ellipsis;
   }
 
   /**
@@ -10539,11 +11117,13 @@ if (!Array.prototype.includes) {
       this._height = accessor("height", 200);
       this._id = function (d, i) { return d.id || ("" + i); };
       this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.2; };
+      this._maxLines = constant$7(null);
       this._on = {};
       this._overflow = constant$7(false);
       this._padding = constant$7(0);
       this._pointerEvents = constant$7("auto");
       this._rotate = constant$7(0);
+      this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
       this._split = textSplit;
       this._text = accessor("text");
       this._textAnchor = constant$7("start");
@@ -10603,6 +11183,7 @@ if (!Array.prototype.includes) {
           .fontSize(fS)
           .fontWeight(style["font-weight"])
           .lineHeight(lH)
+          .maxLines(this$1._maxLines(d, i))
           .height(h)
           .overflow(this$1._overflow(d, i))
           .width(w);
@@ -10617,12 +11198,14 @@ if (!Array.prototype.includes) {
             @private
         */
         function checkSize() {
+          var truncate = function () {
+            if (line < 1) { lineData = [truncateWord(wrapResults.words[0], that._ellipsis("", line), w, style)]; }
+            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
+          };
 
-          if (fS < fMin) {
-            lineData = [];
-            return;
-          }
-          else if (fS > fMax) { fS = fMax; }
+          // Constraint the font size
+          fS = max([fS, fMin]);
+          fS = min([fS, fMax]);
 
           if (resize) {
             lH = fS * lHRatio;
@@ -10638,18 +11221,17 @@ if (!Array.prototype.includes) {
           line = lineData.length;
 
           if (wrapResults.truncated) {
-
             if (resize) {
               fS--;
-              if (fS < fMin) { lineData = []; }
+              if (fS < fMin) {
+                fS = fMin;
+                truncate();
+                return;
+              }
               else { checkSize(); }
             }
-            else if (line < 1) { lineData = [that._ellipsis("", line)]; }
-            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
-
+            else { truncate(); }
           }
-
-
         }
 
         if (w > fMin && (h > lH || resize && h > fMin * lHRatio)) {
@@ -10694,6 +11276,7 @@ if (!Array.prototype.includes) {
             fO: this$1._fontOpacity(d, i),
             fW: style["font-weight"],
             id: this$1._id(d, i),
+            r: this$1._rotate(d, i),
             tA: this$1._textAnchor(d, i),
             widths: wrapResults.widths,
             fS: fS, lH: lH, w: w, h: h,
@@ -10705,7 +11288,7 @@ if (!Array.prototype.includes) {
 
         return arr;
 
-      }, []), this._id);
+      }, []), function (d) { return this$1._id(d.data, d.i); });
 
       var t = transition().duration(this._duration);
 
@@ -10719,12 +11302,16 @@ if (!Array.prototype.includes) {
         boxes.exit().transition().delay(this._duration).remove();
 
         boxes.exit().selectAll("text").transition(t)
-          .attr("opacity", 0);
+          .attr("opacity", 0)
+          .style("opacity", 0);
 
       }
 
       function rotate(text) {
-        text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + ", " + (d.x + d.w / 2) + ", " + (d.y + d.h / 2) + ")translate(" + (d.x) + ", " + (d.y) + ")"); });
+        text.attr("transform", function (d, i) {
+          var rotateAnchor = that._rotateAnchor(d, i);
+          return ("translate(" + (d.x) + ", " + (d.y) + ") rotate(" + (d.r) + ", " + (rotateAnchor[0]) + ", " + (rotateAnchor[1]) + ")");
+        });
       }
 
       var update = boxes.enter().append("g")
@@ -10755,8 +11342,6 @@ if (!Array.prototype.includes) {
               .style("font-size", ((d.fS) + "px"))
               .attr("font-weight", d.fW)
               .style("font-weight", d.fW)
-              .attr("opacity", d.fO)
-              .style("opacity", d.fO)
               .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
               .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
           }
@@ -10773,7 +11358,9 @@ if (!Array.prototype.includes) {
               .attr("dominant-baseline", "alphabetic")
               .style("baseline-shift", "0%")
               .attr("unicode-bidi", "bidi-override")
-              .call(textStyle);
+              .call(textStyle)
+              .attr("opacity", d.fO)
+              .style("opacity", d.fO);
 
           }
           else {
@@ -10787,10 +11374,12 @@ if (!Array.prototype.includes) {
                 .attr("dominant-baseline", "alphabetic")
                 .style("baseline-shift", "0%")
                 .attr("opacity", 0)
+                .style("opacity", 0)
                 .call(textStyle)
               .merge(texts).transition(t).delay(that._delay)
                 .call(textStyle)
-                .attr("opacity", 1);
+                .attr("opacity", d.fO)
+                .style("opacity", d.fO);
 
           }
 
@@ -10959,6 +11548,15 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
+        @desc Restricts the maximum number of lines to wrap onto, which is null (unlimited) by default.
+        @param {Function|Number} [*value*]
+    */
+    TextBox.prototype.maxLines = function maxLines (_) {
+      return arguments.length ? (this._maxLines = typeof _ === "function" ? _ : constant$7(_), this) : this._maxLines;
+    };
+
+    /**
+        @memberof TextBox
         @desc Sets the text overflow to the specified accessor function or static boolean.
         @param {Function|Boolean} [*value* = false]
     */
@@ -10991,6 +11589,15 @@ if (!Array.prototype.includes) {
     */
     TextBox.prototype.rotate = function rotate (_) {
       return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$7(_), this) : this._rotate;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the anchor point around which to rotate the text box.
+        @param {Function|Number[]}
+     */
+    TextBox.prototype.rotateAnchor = function rotateAnchor (_) {
+      return arguments.length ? (this._rotateAnchor = typeof _ === "function" ? _ : constant$7(_), this) : this._rotateAnchor;
     };
 
     /**
@@ -11129,7 +11736,11 @@ if (!Array.prototype.includes) {
 
       this._activeOpacity = 0.25;
       this._activeStyle = {
-        "stroke": "#444444",
+        "stroke": function (d, i) {
+          var c = this$1._fill(d, i);
+          if (["transparent", "none"].includes(c)) { c = this$1._stroke(d, i); }
+          return color$1(c).darker(1);
+        },
         "stroke-width": function (d, i) {
           var s = this$1._strokeWidth(d, i) || 1;
           return s * 3;
@@ -11143,6 +11754,17 @@ if (!Array.prototype.includes) {
       this._fillOpacity = constant$7(1);
 
       this._hoverOpacity = 0.5;
+      this._hoverStyle = {
+        "stroke": function (d, i) {
+          var c = this$1._fill(d, i);
+          if (["transparent", "none"].includes(c)) { c = this$1._stroke(d, i); }
+          return color$1(c).darker(0.5);
+        },
+        "stroke-width": function (d, i) {
+          var s = this$1._strokeWidth(d, i) || 1;
+          return s * 2;
+        }
+      };
       this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
       this._label = constant$7(false);
       this._labelClass = new TextBox();
@@ -11154,11 +11776,12 @@ if (!Array.prototype.includes) {
       this._name = "Shape";
       this._opacity = constant$7(1);
       this._pointerEvents = constant$7("visiblePainted");
+      this._rotate = constant$7(0);
       this._rx = constant$7(0);
       this._ry = constant$7(0);
       this._scale = constant$7(1);
       this._shapeRendering = constant$7("geometricPrecision");
-      this._stroke = function (d, i) { return color(this$1._fill(d, i)).darker(1); };
+      this._stroke = function (d, i) { return color$1(this$1._fill(d, i)).darker(1); };
       this._strokeDasharray = constant$7("0");
       this._strokeLinecap = constant$7("butt");
       this._strokeOpacity = constant$7(1);
@@ -11218,13 +11841,12 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Shape
-        @desc Provides the default styling to the active shape elements.
+        @desc Provides the updated styling to the given shape elements.
         @param {HTMLElement} *elem*
+        @param {Object} *style*
         @private
     */
-    Shape.prototype._applyActive = function _applyActive (elem$$1) {
-      var this$1 = this;
-
+    Shape.prototype._updateStyle = function _updateStyle (elem$$1, style) {
 
       var that = this;
 
@@ -11243,14 +11865,14 @@ if (!Array.prototype.includes) {
             : this(d, i);
       }
 
-      var activeStyle = {};
-      for (var key in this$1._activeStyle) {
-        if ({}.hasOwnProperty.call(this$1._activeStyle, key)) {
-          activeStyle[key] = styleLogic.bind(this$1._activeStyle[key]);
+      var styleObject = {};
+      for (var key in style) {
+        if ({}.hasOwnProperty.call(style, key)) {
+          styleObject[key] = styleLogic.bind(style[key]);
         }
       }
 
-      elem$$1.transition().duration(0).call(attrize, activeStyle);
+      elem$$1.transition().duration(0).call(attrize, styleObject);
 
     };
 
@@ -11307,7 +11929,9 @@ if (!Array.prototype.includes) {
       ? d.translate ? d.translate
       : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
       : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plusShape__ ? d.scale || this$1._scale(d.data, d.i)
-    : this$1._scale(d, i)) + ")"); });
+    : this$1._scale(d, i)) + ")\n        rotate(" + (d.__d3plusShape__ ? d.rotate ? d.rotate
+    : this$1._rotate(d.data || d, d.i)
+    : this$1._rotate(d.data || d, d.i)) + ")"); });
     };
 
     /**
@@ -11350,14 +11974,14 @@ if (!Array.prototype.includes) {
             group.appendChild(this);
             if (this.className.baseVal.includes("d3plus-Shape")) {
               if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
-              else { select(this).call(that._applyActive.bind(that)); }
+              else { select(this).call(that._updateStyle.bind(that, select(this), that._activeStyle)); }
             }
           }
 
         });
 
-      this._renderImage();
-      this._renderLabels();
+      // this._renderImage();
+      // this._renderLabels();
 
       this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
         .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
@@ -11392,11 +12016,15 @@ if (!Array.prototype.includes) {
 
           var group = !that._hover || typeof that._hover !== "function" || !that._hover(d, i) ? parent : that._hoverGroup.node();
           if (group !== this.parentNode) { group.appendChild(this); }
+          if (this.className.baseVal.includes("d3plus-Shape")) {
+            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
+            else { select(this).call(that._updateStyle.bind(that, select(this), that._hoverStyle)); }
+          }
 
         });
 
-      this._renderImage();
-      this._renderLabels();
+      // this._renderImage();
+      // this._renderLabels();
 
       this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
         .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
@@ -11436,7 +12064,7 @@ if (!Array.prototype.includes) {
               var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
                     : this$1._x(d.data, d.i) : this$1._x(d, i),
                   y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                    : this$1._y(d.data, d.i) : this$1._y(d, i);
+                  : this$1._y(d.data, d.i) : this$1._y(d, i);
 
               if (aes.x) { x += aes.x; }
               if (aes.y) { y += aes.y; }
@@ -11506,7 +12134,7 @@ if (!Array.prototype.includes) {
               var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
                       : this$1._x(d.data, d.i) : this$1._x(d, i),
                     y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                      : this$1._y(d.data, d.i) : this$1._y(d, i);
+                    : this$1._y(d.data, d.i) : this$1._y(d, i);
 
               if (d.__d3plusShape__) {
                 d = d.data;
@@ -11516,6 +12144,10 @@ if (!Array.prototype.includes) {
               for (var l = 0; l < labels.length; l++) {
 
                 var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds);
+                var rotate = this$1._rotate(d, i);
+                var r = d.labelConfig && d.labelConfig.rotate ? d.labelConfig.rotate : bounds.angle !== undefined ? bounds.angle : 0;
+                r += rotate;
+                var rotateAnchor = rotate !== 0 ? [b.x * -1 || 0, b.y * -1 || 0] : [b.width / 2, b.height / 2];
 
                 labelData.push({
                   __d3plus__: true,
@@ -11523,7 +12155,8 @@ if (!Array.prototype.includes) {
                   height: b.height,
                   l: l,
                   id: ((this$1._id(d, i)) + "_" + l),
-                  r: d.labelConfig && d.labelConfig.rotate ? d.labelConfig.rotate : bounds.angle !== undefined ? bounds.angle : 0,
+                  r: r,
+                  rotateAnchor: rotateAnchor,
                   text: labels[l],
                   width: b.width,
                   x: x + b.x,
@@ -11542,7 +12175,8 @@ if (!Array.prototype.includes) {
         .data(labelData)
         .duration(this._duration)
         .pointerEvents("none")
-        .rotate(function (d) { return d.data.r; })
+        .rotate(function (d) { return d.r; })
+        .rotateAnchor(function (d) { return d.data.rotateAnchor; })
         .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
         .config(this._labelConfig)
         .render();
@@ -11673,8 +12307,8 @@ if (!Array.prototype.includes) {
       if (!arguments.length || _ === undefined) { return this._active; }
       this._active = _;
       if (this._group) {
-        this._renderImage();
-        this._renderLabels();
+        // this._renderImage();
+        // this._renderLabels();
         this._renderActive();
       }
       return this;
@@ -11772,12 +12406,22 @@ if (!Array.prototype.includes) {
       if (!arguments.length || _ === void 0) { return this._hover; }
       this._hover = _;
       if (this._group) {
-        this._renderImage();
-        this._renderLabels();
+        // this._renderImage();
+        // this._renderLabels();
         this._renderHover();
       }
       return this;
 
+    };
+
+    /**
+        @memberof Shape
+        @desc The style to apply to hovered shapes.
+        @param {Object} *value*
+        @chainable
+     */
+    Shape.prototype.hoverStyle = function hoverStyle (_) {
+      return arguments.length ? (this._hoverStyle = assign({}, this._hoverStyle, _), this) : this._hoverStyle;
     };
 
     /**
@@ -11876,6 +12520,16 @@ if (!Array.prototype.includes) {
      */
     Shape.prototype.pointerEvents = function pointerEvents (_) {
       return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$7(_), this) : this._pointerEvents;
+    };
+
+    /**
+        @memberof Shape
+        @desc If *value* is specified, sets the rotate accessor to the specified function or number and returns the current class instance.
+        @param {Function|Number} [*value* = 0]
+        @chainable
+     */
+    Shape.prototype.rotate = function rotate (_) {
+      return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$7(_), this) : this._rotate;
     };
 
     /**
@@ -12363,7 +13017,7 @@ if (!Array.prototype.includes) {
    *   end command object and returns true if the segment should be excluded from splitting.
    * @return {Object[]} The extended commandsToExtend array
    */
-  function extend$1(commandsToExtend, referenceCommands, excludeSegment) {
+  function extend$2(commandsToExtend, referenceCommands, excludeSegment) {
     // compute insertion points:
     // number of segments in the path to extend
     var numSegmentsToExtend = commandsToExtend.length - 1;
@@ -12518,11 +13172,11 @@ if (!Array.prototype.includes) {
     if (numPointsToExtend !== 0) {
       // B has more points than A, so add points to A before interpolating
       if (bCommands.length > aCommands.length) {
-        aCommands = extend$1(aCommands, bCommands, excludeSegment);
+        aCommands = extend$2(aCommands, bCommands, excludeSegment);
 
       // else if A has more points than B, add more points to B
       } else if (bCommands.length < aCommands.length) {
-        bCommands = extend$1(bCommands, aCommands, excludeSegment);
+        bCommands = extend$2(bCommands, aCommands, excludeSegment);
       }
     }
 
@@ -14261,7 +14915,7 @@ if (!Array.prototype.includes) {
         "stroke-width": 1
       };
       this._height = 400;
-      this._labelOffset = true;
+      this._labelOffset = false;
       this.orient("bottom");
       this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
       this._padding = 5;
@@ -14285,7 +14939,7 @@ if (!Array.prototype.includes) {
             var rtl$$1 = detectRTL();
             return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
               : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
-              : this$1._rotateLabels ? "end" : "middle";
+              : this$1._rotateLabels ? this$1._orient === "bottom" ? "end" : "start" : "middle";
           },
           verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
         },
@@ -14617,7 +15271,7 @@ if (!Array.prototype.includes) {
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
-          .width(horizontal ? this$1._space * 2 : this$1._width - hBuff - p)
+          .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
           .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
 
         var res = wrap(tickFormat(d));
@@ -14638,7 +15292,7 @@ if (!Array.prototype.includes) {
 
       var labelHeight = max(textData, function (t) { return t.height; }) || 0;
 
-      if (horizontal) {
+      if (horizontal && typeof this._labelRotation === "undefined") {
         for (var i$1 = 0; i$1 < labels.length; i$1++) {
           var d = labels[i$1];
 
@@ -14672,6 +15326,7 @@ if (!Array.prototype.includes) {
           }
         }
       }
+      else if (horizontal) { this._rotateLabels = this._labelRotation; }
 
       if (this._rotateLabels) {
         textData = labels.map(function (d, i) {
@@ -14687,7 +15342,7 @@ if (!Array.prototype.includes) {
               .fontSize(s)
               .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
               .height(lineHeight * 2 + 1)
-              .width(this$1._width);
+              .width(this$1._maxSize ? this$1._maxSize - this$1._margin.top - this$1._margin.bottom - this$1._tickSize : this$1._height);
 
           var xPos = this$1._getPosition(d);
           var prev = labels[i - 1] || false;
@@ -14702,10 +15357,10 @@ if (!Array.prototype.includes) {
           var width = fitsTwoLines && isTwoLine ? lineHeight * 2 : lineHeight;
 
           return Object.assign(text, {
-            height: height,
+            height: height || 0,
             lineHeight: lineHeight,
             numLines: fitsTwoLines && isTwoLine ? 2 : 1,
-            width: width
+            width: width || 0
           });
         });
       }
@@ -14855,7 +15510,7 @@ if (!Array.prototype.includes) {
           next = next.length ? next[0] : false;
 
           var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth);
-          if (data.length && data[0].width > space) {
+          if (data.length && data[0].width > labelWidth) {
             data[0].hidden = true;
             data[0].offset = labelOffset = 0;
           }
@@ -14889,7 +15544,7 @@ if (!Array.prototype.includes) {
             tickConfig = Object.assign(tickConfig, {
               labelBounds: {
                 x: -width / 2,
-                y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : -size - p - (width + height$1) / 2,
+                y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : size - p * 2 - (width + lineHeight * numLines) / 2,
                 width: width,
                 height: height$1 + 1
               }
@@ -15045,9 +15700,29 @@ if (!Array.prototype.includes) {
         @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
         @param {Boolean} [*value* = true]
         @chainable
-    */
+     */
     Axis.prototype.labelOffset = function labelOffset (_) {
-      return arguments.length ? (this._labelOffset = _, this) : this._labels;
+      return arguments.length ? (this._labelOffset = _, this) : this._labelOffset;
+    };
+
+    /**
+        @memberof Axis
+        @desc If *value* is specified, sets whether whether horizontal axis labels are rotated -90 degrees.
+        @param {Boolean}
+        @chainable
+     */
+    Axis.prototype.labelRotation = function labelRotation (_) {
+      return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
+    };
+
+    /**
+        @memberof Axis
+        @desc If *value* is specified, sets the maximum size allowed for the space that contains the axis tick labels and title.
+        @param {Number}
+        @chainable
+     */
+    Axis.prototype.maxSize = function maxSize (_) {
+      return arguments.length ? (this._maxSize = _, this) : this._maxSize;
     };
 
     /**
@@ -15833,6 +16508,328 @@ if (!Array.prototype.includes) {
 
     return Select;
   }(BaseClass));
+
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal$1(x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) { return null; } // NaN, ±Infinity
+    var i, coefficient = x.slice(0, i);
+
+    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+    return [
+      coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
+      +x.slice(i + 1)
+    ];
+  }
+
+  function exponent$2(x) {
+    return x = formatDecimal$1(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup$1(grouping, thousands) {
+    return function(value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) { g = Math.max(1, width - length); }
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) { break; }
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals$1(numerals) {
+    return function(value) {
+      return value.replace(/[0-9]/g, function(i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re$1 = /^(?:(.)?([<>=^]))?([+\-\( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+
+  function formatSpecifier$1(specifier) {
+    return new FormatSpecifier$1(specifier);
+  }
+
+  formatSpecifier$1.prototype = FormatSpecifier$1.prototype; // instanceof
+
+  function FormatSpecifier$1(specifier) {
+    if (!(match = re$1.exec(specifier))) { throw new Error("invalid format: " + specifier); }
+    var match;
+    this.fill = match[1] || " ";
+    this.align = match[2] || ">";
+    this.sign = match[3] || "-";
+    this.symbol = match[4] || "";
+    this.zero = !!match[5];
+    this.width = match[6] && +match[6];
+    this.comma = !!match[7];
+    this.precision = match[8] && +match[8].slice(1);
+    this.trim = !!match[9];
+    this.type = match[10] || "";
+  }
+
+  FormatSpecifier$1.prototype.toString = function() {
+    return this.fill
+        + this.align
+        + this.sign
+        + this.symbol
+        + (this.zero ? "0" : "")
+        + (this.width == null ? "" : Math.max(1, this.width | 0))
+        + (this.comma ? "," : "")
+        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
+        + (this.trim ? "~" : "")
+        + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim(s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".": i0 = i1 = i; break;
+        case "0": if (i0 === 0) { i0 = i; } i1 = i; break;
+        default: if (i0 > 0) { if (!+s[i]) { break out; } i0 = 0; } break;
+      }
+    }
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent$1;
+
+  function formatPrefixAuto$1(x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) { return x + ""; }
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient
+        : i > n ? coefficient + new Array(i - n + 1).join("0")
+        : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
+        : "0." + new Array(1 - i).join("0") + formatDecimal$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded$1(x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) { return x + ""; }
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
+        : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
+        : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes$1 = {
+    "%": function(x, p) { return (x * 100).toFixed(p); },
+    "b": function(x) { return Math.round(x).toString(2); },
+    "c": function(x) { return x + ""; },
+    "d": function(x) { return Math.round(x).toString(10); },
+    "e": function(x, p) { return x.toExponential(p); },
+    "f": function(x, p) { return x.toFixed(p); },
+    "g": function(x, p) { return x.toPrecision(p); },
+    "o": function(x) { return Math.round(x).toString(8); },
+    "p": function(x, p) { return formatRounded$1(x * 100, p); },
+    "r": formatRounded$1,
+    "s": formatPrefixAuto$1,
+    "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
+    "x": function(x) { return Math.round(x).toString(16); }
+  };
+
+  function identity$7(x) {
+    return x;
+  }
+
+  var prefixes$1 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+
+  function formatLocale$2(locale) {
+    var group = locale.grouping && locale.thousands ? formatGroup$1(locale.grouping, locale.thousands) : identity$7,
+        currency = locale.currency,
+        decimal = locale.decimal,
+        numerals = locale.numerals ? formatNumerals$1(locale.numerals) : identity$7,
+        percent = locale.percent || "%";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier$1(specifier);
+
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type;
+
+      // The "n" type is an alias for ",g".
+      if (type === "n") { comma = true, type = "g"; }
+
+      // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes$1[type]) { precision == null && (precision = 12), trim = true, type = "g"; }
+
+      // If zero fill is specified, padding goes after sign and before digits.
+      if (zero || (fill === "0" && align === "=")) { zero = true, fill = "0", align = "="; }
+
+      // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
+
+      // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+      var formatType = formatTypes$1[type],
+          maybeSuffix = /[defgprs%]/.test(type);
+
+      // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+      precision = precision == null ? 6
+          : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+          : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i, n, c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value;
+
+          // Perform the initial formatting.
+          var valueNegative = value < 0;
+          value = formatType(Math.abs(value), precision);
+
+          // Trim insignificant zeros.
+          if (trim) { value = formatTrim(value); }
+
+          // If a negative value rounds to zero during formatting, treat as positive.
+          if (valueNegative && +value === 0) { valueNegative = false; }
+
+          // Compute the prefix and suffix.
+          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes$1[8 + prefixExponent$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+
+          // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        }
+
+        // If the fill character is not "0", grouping is applied before padding.
+        if (comma && !zero) { value = group(value, Infinity); }
+
+        // Compute the padding.
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : "";
+
+        // If the fill character is "0", grouping is applied after padding.
+        if (comma && zero) { value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = ""; }
+
+        // Reconstruct the final output based on the desired alignment.
+        switch (align) {
+          case "<": value = valuePrefix + value + valueSuffix + padding; break;
+          case "=": value = valuePrefix + padding + value + valueSuffix; break;
+          case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
+          default: value = padding + valuePrefix + value + valueSuffix; break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function() {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier$1(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$2(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes$1[8 + e / 3];
+      return function(value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
+  var locale$2;
+  var format$1;
+  var formatPrefix$1;
+
+  defaultLocale$2({
+    decimal: ".",
+    thousands: ",",
+    grouping: [3],
+    currency: ["$", ""]
+  });
+
+  function defaultLocale$2(definition) {
+    locale$2 = formatLocale$2(definition);
+    format$1 = locale$2.format;
+    formatPrefix$1 = locale$2.formatPrefix;
+    return locale$2;
+  }
+
+  /**
+      @function formatAbbreviate
+      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
+      @param {Number} n The number to be formatted.
+      @returns {String}
+  */
+  function formatAbbreviate(n) {
+    if (typeof n !== "number") { return "N/A"; }
+    var length = n.toString().split(".")[0].length;
+    var val;
+    if (n === 0) { val = "0"; }
+    else if (length >= 3) {
+      var f = format$1(".3s")(n)
+        .replace("G", "B")
+        .replace("T", "t")
+        .replace("P", "q")
+        .replace("E", "Q");
+      var num = f.slice(0, -1);
+      var char = f.slice(f.length - 1);
+      val = "" + (parseFloat(num)) + char;
+    }
+    else if (length === 3) { val = format$1(",f")(n); }
+    else if (n < 1 && n > -1) { val = format$1(".2g")(n); }
+    else { val = format$1(".3g")(n); }
+
+    return val
+      .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+      .replace(/[.]$/g, ""); // removes any trailing decimal point
+  }
 
   /**
       @desc Sort an array of numbers by their numeric value, ensuring that the array is not changed in place.
@@ -31214,7 +32211,7 @@ if (!Array.prototype.includes) {
     var visible = typeof total === "number";
 
     this._totalClass
-      .data(visible ? [{text: ("Total: " + total)}] : [])
+      .data(visible ? [{text: ("Total: " + (this._totalFormat(total)))}] : [])
       .select(group)
       .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._totalConfig)
@@ -31856,6 +32853,7 @@ if (!Array.prototype.includes) {
         resize: false,
         textAnchor: "middle"
       };
+      this._totalFormat = formatAbbreviate;
 
       this._zoom = false;
       this._zoomBehavior = zoom();
@@ -32773,6 +33771,16 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.totalConfig = function totalConfig (_) {
       return arguments.length ? (this._totalConfig = assign(this._totalConfig, _), this) : this._totalConfig;
+    };
+
+    /**
+        @memberof Viz
+        @desc Formatter function for the value in the total bar.
+        @param {Function} *value*
+        @chainable
+    */
+    Viz.prototype.totalFormat = function totalFormat (_) {
+      return arguments.length ? (this._totalFormat = _, this) : this._totalFormat;
     };
 
     /**

@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.10
+  d3plus-viz v0.11.11
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -64,10 +64,10 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-selection'), require('d3plus-common'), require('d3plus-export'), require('d3plus-form'), require('d3-collection'), require('d3-array'), require('d3plus-axis'), require('d3-zoom'), require('d3-brush'), require('d3-color'), require('d3-queue'), require('d3-transition'), require('lrucache'), require('d3plus-color'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
-  typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-selection', 'd3plus-common', 'd3plus-export', 'd3plus-form', 'd3-collection', 'd3-array', 'd3plus-axis', 'd3-zoom', 'd3-brush', 'd3-color', 'd3-queue', 'd3-transition', 'lrucache', 'd3plus-color', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
-  (factory((global.d3plus = {}),global.d3Request,global.d3Selection,global.d3plusCommon,global.d3plusExport,global.d3plusForm,global.d3Collection,global.d3Array,global.d3plusAxis,global.d3Zoom,global.d3Brush,global.d3Color,global.d3Queue,global.d3Transition,global.lrucache,global.d3plusColor,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
-}(this, (function (exports,d3Request,d3Selection,d3plusCommon,d3plusExport,d3plusForm,d3Collection,d3Array,d3plusAxis,d3Zoom,d3Brush,d3Color,d3Queue,d3Transition,lrucache,d3plusColor,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-selection'), require('d3plus-common'), require('d3plus-export'), require('d3plus-form'), require('d3-collection'), require('d3-array'), require('d3plus-axis'), require('d3-zoom'), require('d3-brush'), require('d3-color'), require('d3-queue'), require('d3-transition'), require('lrucache'), require('d3plus-color'), require('d3plus-format'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
+  typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-selection', 'd3plus-common', 'd3plus-export', 'd3plus-form', 'd3-collection', 'd3-array', 'd3plus-axis', 'd3-zoom', 'd3-brush', 'd3-color', 'd3-queue', 'd3-transition', 'lrucache', 'd3plus-color', 'd3plus-format', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
+  (factory((global.d3plus = {}),global.d3Request,global.d3Selection,global.d3plusCommon,global.d3plusExport,global.d3plusForm,global.d3Collection,global.d3Array,global.d3plusAxis,global.d3Zoom,global.d3Brush,global.d3Color,global.d3Queue,global.d3Transition,global.lrucache,global.d3plusColor,global.d3plusFormat,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
+}(this, (function (exports,d3Request,d3Selection,d3plusCommon,d3plusExport,d3plusForm,d3Collection,d3Array,d3plusAxis,d3Zoom,d3Brush,d3Color,d3Queue,d3Transition,lrucache,d3plusColor,d3plusFormat,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
 
   lrucache = lrucache && lrucache.hasOwnProperty('default') ? lrucache['default'] : lrucache;
 
@@ -676,7 +676,7 @@ if (!Array.prototype.includes) {
     var visible = typeof total === "number";
 
     this._totalClass
-      .data(visible ? [{text: ("Total: " + total)}] : [])
+      .data(visible ? [{text: ("Total: " + (this._totalFormat(total)))}] : [])
       .select(group)
       .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._totalConfig)
@@ -1318,6 +1318,7 @@ if (!Array.prototype.includes) {
         resize: false,
         textAnchor: "middle"
       };
+      this._totalFormat = d3plusFormat.formatAbbreviate;
 
       this._zoom = false;
       this._zoomBehavior = d3Zoom.zoom();
@@ -2235,6 +2236,16 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.totalConfig = function totalConfig (_) {
       return arguments.length ? (this._totalConfig = d3plusCommon.assign(this._totalConfig, _), this) : this._totalConfig;
+    };
+
+    /**
+        @memberof Viz
+        @desc Formatter function for the value in the total bar.
+        @param {Function} *value*
+        @chainable
+    */
+    Viz.prototype.totalFormat = function totalFormat (_) {
+      return arguments.length ? (this._totalFormat = _, this) : this._totalFormat;
     };
 
     /**
