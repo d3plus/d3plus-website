@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.11
+  d3plus-viz v0.11.12
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -32217,7 +32217,7 @@ if (!Array.prototype.includes) {
       .config(this._totalConfig)
       .render();
 
-    this._margin.top += visible ? group.getBBox().height : 0;
+    this._margin.top += visible ? group.getBBox().height + this._totalConfig.padding * 2 : 0;
 
   }
 
