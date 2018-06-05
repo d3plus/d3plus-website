@@ -2,8 +2,8 @@
 title: Resizing Text to Fill Container
 width: 450
 height: 100
-time: 1528161573380
-date: June 04, 2018
+time: 1528213824517
+date: June 05, 2018
 ---
 
 [width]: 450
