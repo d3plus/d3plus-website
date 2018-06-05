@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.6.1
+  d3plus-hierarchy v0.6.2
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -2432,6 +2432,17 @@ if (!Array.prototype.includes) {
 
   /**
       @function assign
+      @desc Determines if the object passed is the document or window.
+      @param {Object} obj
+      @private
+  */
+  function validObject(obj) {
+    if (typeof window === "undefined") { return true; }
+    else { return obj !== window && obj !== document; }
+  }
+
+  /**
+      @function assign
       @desc A deeply recursive version of `Object.assign`.
       @param {...Object} objects
       @example <caption>this</caption>
@@ -2455,11 +2466,9 @@ if (!Array.prototype.includes) {
 
         var value = source[prop];
 
-        if (isObject(value)) {
-
+        if (isObject(value) && validObject(value)) {
           if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
-          else { target[prop] = value; }
-
+          else { target[prop] = assign({}, value); }
         }
         else if (Array.isArray(value)) {
 
@@ -2646,6 +2655,7 @@ if (!Array.prototype.includes) {
       @param {String} [nest] An optional nested key to bubble up to the parent config level.
   */
   function configPrep(config, type, nest) {
+    var this$1 = this;
     if ( config === void 0 ) { config = this._shapeConfig; }
     if ( type === void 0 ) { type = "shape"; }
     if ( nest === void 0 ) { nest = false; }
@@ -2658,16 +2668,15 @@ if (!Array.prototype.includes) {
         i = d.i;
         d = d.data || d.feature;
       }
-      return func(d, i, s);
+      return func.bind(this$1)(d, i, s);
     }; };
 
     var parseEvents = function (newObj, on) {
 
       for (var event in on) {
 
-        if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type)) || event.includes(".all")) {
-          var eventName = event.replace(/click(\.[a-z]*)/g, "click$1 touchstart$1");
-          newObj.on[eventName] = wrapFunction(on[event]);
+        if ({}.hasOwnProperty.call(on, event) && !event.includes(".") || event.includes(("." + type))) {
+          newObj.on[event] = wrapFunction(on[event]);
         }
 
       }
@@ -4227,6 +4236,9 @@ if (!Array.prototype.includes) {
     displayable: function() {
       return this.rgb().displayable();
     },
+    hex: function() {
+      return this.rgb().hex();
+    },
     toString: function() {
       return this.rgb() + "";
     }
@@ -4293,6 +4305,9 @@ if (!Array.prototype.includes) {
           && (0 <= this.b && this.b <= 255)
           && (0 <= this.opacity && this.opacity <= 1);
     },
+    hex: function() {
+      return "#" + hex(this.r) + hex(this.g) + hex(this.b);
+    },
     toString: function() {
       var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
       return (a === 1 ? "rgb(" : "rgba(")
@@ -4302,6 +4317,11 @@ if (!Array.prototype.includes) {
           + (a === 1 ? ")" : ", " + a + ")");
     }
   }));
+
+  function hex(value) {
+    value = Math.max(0, Math.min(255, Math.round(value) || 0));
+    return (value < 16 ? "0" : "") + value.toString(16);
+  }
 
   function hsla(h, s, l, a) {
     if (a <= 0) { h = s = l = NaN; }
@@ -4387,10 +4407,11 @@ if (!Array.prototype.includes) {
   var deg2rad = Math.PI / 180;
   var rad2deg = 180 / Math.PI;
 
-  var Kn = 18,
-      Xn = 0.950470, // D65 standard referent
+  // https://beta.observablehq.com/@mbostock/lab-and-rgb
+  var K = 18,
+      Xn = 0.96422,
       Yn = 1,
-      Zn = 1.088830,
+      Zn = 0.82521,
       t0 = 4 / 29,
       t1 = 6 / 29,
       t2 = 3 * t1 * t1,
@@ -4399,16 +4420,19 @@ if (!Array.prototype.includes) {
   function labConvert(o) {
     if (o instanceof Lab) { return new Lab(o.l, o.a, o.b, o.opacity); }
     if (o instanceof Hcl) {
+      if (isNaN(o.h)) { return new Lab(o.l, 0, 0, o.opacity); }
       var h = o.h * deg2rad;
       return new Lab(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
     }
     if (!(o instanceof Rgb)) { o = rgbConvert(o); }
-    var b = rgb2xyz(o.r),
-        a = rgb2xyz(o.g),
-        l = rgb2xyz(o.b),
-        x = xyz2lab((0.4124564 * b + 0.3575761 * a + 0.1804375 * l) / Xn),
-        y = xyz2lab((0.2126729 * b + 0.7151522 * a + 0.0721750 * l) / Yn),
-        z = xyz2lab((0.0193339 * b + 0.1191920 * a + 0.9503041 * l) / Zn);
+    var r = rgb2lrgb(o.r),
+        g = rgb2lrgb(o.g),
+        b = rgb2lrgb(o.b),
+        y = xyz2lab((0.2225045 * r + 0.7168786 * g + 0.0606169 * b) / Yn), x, z;
+    if (r === g && g === b) { x = z = y; } else {
+      x = xyz2lab((0.4360747 * r + 0.3850649 * g + 0.1430804 * b) / Xn);
+      z = xyz2lab((0.0139322 * r + 0.0971045 * g + 0.7141733 * b) / Zn);
+    }
     return new Lab(116 * y - 16, 500 * (x - y), 200 * (y - z), o.opacity);
   }
 
@@ -4425,22 +4449,22 @@ if (!Array.prototype.includes) {
 
   define(Lab, lab, extend(Color, {
     brighter: function(k) {
-      return new Lab(this.l + Kn * (k == null ? 1 : k), this.a, this.b, this.opacity);
+      return new Lab(this.l + K * (k == null ? 1 : k), this.a, this.b, this.opacity);
     },
     darker: function(k) {
-      return new Lab(this.l - Kn * (k == null ? 1 : k), this.a, this.b, this.opacity);
+      return new Lab(this.l - K * (k == null ? 1 : k), this.a, this.b, this.opacity);
     },
     rgb: function() {
       var y = (this.l + 16) / 116,
           x = isNaN(this.a) ? y : y + this.a / 500,
           z = isNaN(this.b) ? y : y - this.b / 200;
-      y = Yn * lab2xyz(y);
       x = Xn * lab2xyz(x);
+      y = Yn * lab2xyz(y);
       z = Zn * lab2xyz(z);
       return new Rgb(
-        xyz2rgb( 3.2404542 * x - 1.5371385 * y - 0.4985314 * z), // D65 -> sRGB
-        xyz2rgb(-0.9692660 * x + 1.8760108 * y + 0.0415560 * z),
-        xyz2rgb( 0.0556434 * x - 0.2040259 * y + 1.0572252 * z),
+        lrgb2rgb( 3.1338561 * x - 1.6168667 * y - 0.4906146 * z),
+        lrgb2rgb(-0.9787684 * x + 1.9161415 * y + 0.0334540 * z),
+        lrgb2rgb( 0.0719453 * x - 0.2289914 * y + 1.4052427 * z),
         this.opacity
       );
     }
@@ -4454,17 +4478,18 @@ if (!Array.prototype.includes) {
     return t > t1 ? t * t * t : t2 * (t - t0);
   }
 
-  function xyz2rgb(x) {
+  function lrgb2rgb(x) {
     return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055);
   }
 
-  function rgb2xyz(x) {
+  function rgb2lrgb(x) {
     return (x /= 255) <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
   }
 
   function hclConvert(o) {
     if (o instanceof Hcl) { return new Hcl(o.h, o.c, o.l, o.opacity); }
     if (!(o instanceof Lab)) { o = labConvert(o); }
+    if (o.a === 0 && o.b === 0) { return new Hcl(NaN, 0, o.l, o.opacity); }
     var h = Math.atan2(o.b, o.a) * rad2deg;
     return new Hcl(h < 0 ? h + 360 : h, Math.sqrt(o.a * o.a + o.b * o.b), o.l, o.opacity);
   }
@@ -4482,10 +4507,10 @@ if (!Array.prototype.includes) {
 
   define(Hcl, hcl, extend(Color, {
     brighter: function(k) {
-      return new Hcl(this.h, this.c, this.l + Kn * (k == null ? 1 : k), this.opacity);
+      return new Hcl(this.h, this.c, this.l + K * (k == null ? 1 : k), this.opacity);
     },
     darker: function(k) {
-      return new Hcl(this.h, this.c, this.l - Kn * (k == null ? 1 : k), this.opacity);
+      return new Hcl(this.h, this.c, this.l - K * (k == null ? 1 : k), this.opacity);
     },
     rgb: function() {
       return labConvert(this).rgb();
@@ -6198,19 +6223,53 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function formatDefault(x, p) {
-    x = x.toPrecision(p);
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re = /^(?:(.)?([<>=^]))?([+\-\( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
 
-    out: for (var n = x.length, i = 1, i0 = -1, i1; i < n; ++i) {
-      switch (x[i]) {
+  function formatSpecifier(specifier) {
+    return new FormatSpecifier(specifier);
+  }
+
+  formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
+
+  function FormatSpecifier(specifier) {
+    if (!(match = re.exec(specifier))) { throw new Error("invalid format: " + specifier); }
+    var match;
+    this.fill = match[1] || " ";
+    this.align = match[2] || ">";
+    this.sign = match[3] || "-";
+    this.symbol = match[4] || "";
+    this.zero = !!match[5];
+    this.width = match[6] && +match[6];
+    this.comma = !!match[7];
+    this.precision = match[8] && +match[8].slice(1);
+    this.trim = !!match[9];
+    this.type = match[10] || "";
+  }
+
+  FormatSpecifier.prototype.toString = function() {
+    return this.fill
+        + this.align
+        + this.sign
+        + this.symbol
+        + (this.zero ? "0" : "")
+        + (this.width == null ? "" : Math.max(1, this.width | 0))
+        + (this.comma ? "," : "")
+        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
+        + (this.trim ? "~" : "")
+        + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim(s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
         case ".": i0 = i1 = i; break;
         case "0": if (i0 === 0) { i0 = i; } i1 = i; break;
-        case "e": break out;
-        default: if (i0 > 0) { i0 = 0; } break;
+        default: if (i0 > 0) { if (!+s[i]) { break out; } i0 = 0; } break;
       }
     }
-
-    return i0 > 0 ? x.slice(0, i0) + x.slice(i1 + 1) : x;
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
   }
 
   var prefixExponent;
@@ -6239,7 +6298,6 @@ if (!Array.prototype.includes) {
   }
 
   var formatTypes = {
-    "": formatDefault,
     "%": function(x, p) { return (x * 100).toFixed(p); },
     "b": function(x) { return Math.round(x).toString(2); },
     "c": function(x) { return x + ""; },
@@ -6253,61 +6311,6 @@ if (!Array.prototype.includes) {
     "s": formatPrefixAuto,
     "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
     "x": function(x) { return Math.round(x).toString(16); }
-  };
-
-  // [[fill]align][sign][symbol][0][width][,][.precision][type]
-  var re = /^(?:(.)?([<>=^]))?([+\-\( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?([a-z%])?$/i;
-
-  function formatSpecifier(specifier) {
-    return new FormatSpecifier(specifier);
-  }
-
-  formatSpecifier.prototype = FormatSpecifier.prototype; // instanceof
-
-  function FormatSpecifier(specifier) {
-    if (!(match = re.exec(specifier))) { throw new Error("invalid format: " + specifier); }
-
-    var match,
-        fill = match[1] || " ",
-        align = match[2] || ">",
-        sign = match[3] || "-",
-        symbol = match[4] || "",
-        zero = !!match[5],
-        width = match[6] && +match[6],
-        comma = !!match[7],
-        precision = match[8] && +match[8].slice(1),
-        type = match[9] || "";
-
-    // The "n" type is an alias for ",g".
-    if (type === "n") { comma = true, type = "g"; }
-
-    // Map invalid types to the default format.
-    else if (!formatTypes[type]) { type = ""; }
-
-    // If zero fill is specified, padding goes after sign and before digits.
-    if (zero || (fill === "0" && align === "=")) { zero = true, fill = "0", align = "="; }
-
-    this.fill = fill;
-    this.align = align;
-    this.sign = sign;
-    this.symbol = symbol;
-    this.zero = zero;
-    this.width = width;
-    this.comma = comma;
-    this.precision = precision;
-    this.type = type;
-  }
-
-  FormatSpecifier.prototype.toString = function() {
-    return this.fill
-        + this.align
-        + this.sign
-        + this.symbol
-        + (this.zero ? "0" : "")
-        + (this.width == null ? "" : Math.max(1, this.width | 0))
-        + (this.comma ? "," : "")
-        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
-        + this.type;
   };
 
   function identity$3(x) {
@@ -6334,7 +6337,17 @@ if (!Array.prototype.includes) {
           width = specifier.width,
           comma = specifier.comma,
           precision = specifier.precision,
+          trim = specifier.trim,
           type = specifier.type;
+
+      // The "n" type is an alias for ",g".
+      if (type === "n") { comma = true, type = "g"; }
+
+      // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes[type]) { precision == null && (precision = 12), trim = true, type = "g"; }
+
+      // If zero fill is specified, padding goes after sign and before digits.
+      if (zero || (fill === "0" && align === "=")) { zero = true, fill = "0", align = "="; }
 
       // Compute the prefix and suffix.
       // For SI-prefix, the suffix is lazily computed.
@@ -6345,13 +6358,13 @@ if (!Array.prototype.includes) {
       // Is this an integer type?
       // Can this type generate exponential notation?
       var formatType = formatTypes[type],
-          maybeSuffix = !type || /[defgprs%]/.test(type);
+          maybeSuffix = /[defgprs%]/.test(type);
 
       // Set the default precision if not specified,
       // or clamp the specified precision to the supported range.
       // For significant precision, it must be in [1, 21].
       // For fixed precision, it must be in [0, 20].
-      precision = precision == null ? (type ? 6 : 12)
+      precision = precision == null ? 6
           : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
           : Math.max(0, Math.min(20, precision));
 
@@ -6369,6 +6382,9 @@ if (!Array.prototype.includes) {
           // Perform the initial formatting.
           var valueNegative = value < 0;
           value = formatType(Math.abs(value), precision);
+
+          // Trim insignificant zeros.
+          if (trim) { value = formatTrim(value); }
 
           // If a negative value rounds to zero during formatting, treat as positive.
           if (valueNegative && +value === 0) { valueNegative = false; }
@@ -7774,6 +7790,7 @@ if (!Array.prototype.includes) {
         fontWeight = 400,
         height = 200,
         lineHeight,
+        maxLines = null,
         overflow = false,
         split = textSplit,
         width = 200;
@@ -7817,7 +7834,7 @@ if (!Array.prototype.includes) {
           }
           lineData[line - 1] = trimRight(lineData[line - 1]);
           line++;
-          if (lineHeight * line > height || wordWidth > width && !overflow) {
+          if (lineHeight * line > height || wordWidth > width && !overflow || (maxLines && line > maxLines)) {
             truncated = true;
             break;
           }
@@ -7887,6 +7904,15 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof textWrap
+        @desc If *value* is specified, sets the maximum number of lines allowed when wrapping.
+        @param {Function|Number} [*value*]
+    */
+    textWrap.maxLines = function(_) {
+      return arguments.length ? (maxLines = _, textWrap) : maxLines;
+    };
+
+    /**
+        @memberof textWrap
         @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
         @param {Boolean} [*value* = false]
     */
@@ -7917,6 +7943,27 @@ if (!Array.prototype.includes) {
   }
 
   /**
+      @function textTruncate
+      @desc Truncate a single word with ellipsis until if fits within the given width
+      @param  {String} text     The word to truncate
+      @param  {String} ellipsis The ellipsis to append
+      @param  {Number} maxWidth The maximum width that the text can take
+      @param  {Object} style    The style object to apply
+      @return {String}          The resultant text with ellipsis
+   */
+  function truncateWord(text, ellipsis, maxWidth, style) {
+    for (var i = text.length; i > 0; i--) {
+      var shortened = text.slice(0, i) + ellipsis;
+      var width = textWidth(shortened, style);
+      if (width < maxWidth) {
+        return shortened;
+      }
+    }
+
+    return ellipsis;
+  }
+
+  /**
       @external BaseClass
       @see https://github.com/d3plus/d3plus-common#BaseClass
   */
@@ -7928,6 +7975,8 @@ if (!Array.prototype.includes) {
   */
   var TextBox = (function (BaseClass$$1) {
     function TextBox() {
+      var this$1 = this;
+
 
       BaseClass$$1.call(this);
 
@@ -7938,16 +7987,20 @@ if (!Array.prototype.includes) {
       this._fontFamily = constant$2(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
       this._fontMax = constant$2(50);
       this._fontMin = constant$2(8);
+      this._fontOpacity = constant$2(1);
       this._fontResize = constant$2(false);
       this._fontSize = constant$2(10);
       this._fontWeight = constant$2(400);
       this._height = accessor("height", 200);
       this._id = function (d, i) { return d.id || ("" + i); };
+      this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.2; };
+      this._maxLines = constant$2(null);
       this._on = {};
       this._overflow = constant$2(false);
       this._padding = constant$2(0);
       this._pointerEvents = constant$2("auto");
       this._rotate = constant$2(0);
+      this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
       this._split = textSplit;
       this._text = accessor("text");
       this._textAnchor = constant$2("start");
@@ -7972,7 +8025,7 @@ if (!Array.prototype.includes) {
 
 
       if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
-      if (this._lineHeight === void 0) { this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.4; }; }
+
       var that = this;
 
       var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
@@ -7981,9 +8034,10 @@ if (!Array.prototype.includes) {
         if (t === void 0) { return arr; }
 
         var resize = this$1._fontResize(d, i);
+        var lHRatio = this$1._lineHeight(d, i) / this$1._fontSize(d, i);
 
         var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
-            lH = resize ? fS * 1.4 : this$1._lineHeight(d, i),
+            lH = resize ? fS * lHRatio : this$1._lineHeight(d, i),
             line = 1,
             lineData = [],
             sizes,
@@ -8006,6 +8060,7 @@ if (!Array.prototype.includes) {
           .fontSize(fS)
           .fontWeight(style["font-weight"])
           .lineHeight(lH)
+          .maxLines(this$1._maxLines(d, i))
           .height(h)
           .overflow(this$1._overflow(d, i))
           .width(w);
@@ -8020,15 +8075,17 @@ if (!Array.prototype.includes) {
             @private
         */
         function checkSize() {
+          var truncate = function () {
+            if (line < 1) { lineData = [truncateWord(wrapResults.words[0], that._ellipsis("", line), w, style)]; }
+            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
+          };
 
-          if (fS < fMin) {
-            lineData = [];
-            return;
-          }
-          else if (fS > fMax) { fS = fMax; }
+          // Constraint the font size
+          fS = max([fS, fMin]);
+          fS = min([fS, fMax]);
 
           if (resize) {
-            lH = fS * 1.4;
+            lH = fS * lHRatio;
             wrapper
               .fontSize(fS)
               .lineHeight(lH);
@@ -8041,21 +8098,20 @@ if (!Array.prototype.includes) {
           line = lineData.length;
 
           if (wrapResults.truncated) {
-
             if (resize) {
               fS--;
-              if (fS < fMin) { lineData = []; }
+              if (fS < fMin) {
+                fS = fMin;
+                truncate();
+                return;
+              }
               else { checkSize(); }
             }
-            else if (line < 1) { lineData = [that._ellipsis("", line)]; }
-            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
-
+            else { truncate(); }
           }
-
-
         }
 
-        if (w > fMin && (h > lH || resize && h > fMin * 1.4)) {
+        if (w > fMin && (h > lH || resize && h > fMin * lHRatio)) {
 
           if (resize) {
 
@@ -8094,8 +8150,10 @@ if (!Array.prototype.includes) {
             lines: lineData,
             fC: this$1._fontColor(d, i),
             fF: style["font-family"],
+            fO: this$1._fontOpacity(d, i),
             fW: style["font-weight"],
             id: this$1._id(d, i),
+            r: this$1._rotate(d, i),
             tA: this$1._textAnchor(d, i),
             widths: wrapResults.widths,
             fS: fS, lH: lH, w: w, h: h,
@@ -8126,7 +8184,10 @@ if (!Array.prototype.includes) {
       }
 
       function rotate(text) {
-        text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + ", " + (d.x + d.w / 2) + ", " + (d.y + d.h / 2) + ")translate(" + (d.x) + ", " + (d.y) + ")"); });
+        text.attr("transform", function (d, i) {
+          var rotateAnchor = that._rotateAnchor(d, i);
+          return ("translate(" + (d.x) + ", " + (d.y) + ") rotate(" + (d.r) + ", " + (rotateAnchor[0]) + ", " + (rotateAnchor[1]) + ")");
+        });
       }
 
       var update = boxes.enter().append("g")
@@ -8157,6 +8218,8 @@ if (!Array.prototype.includes) {
               .style("font-size", ((d.fS) + "px"))
               .attr("font-weight", d.fW)
               .style("font-weight", d.fW)
+              .attr("opacity", d.fO)
+              .style("opacity", d.fO)
               .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
               .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
           }
@@ -8270,7 +8333,7 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
-        @desc Sets the maximum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
+        @desc Sets the maximum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
         @param {Function|Number} [*value* = 50]
     */
     TextBox.prototype.fontMax = function fontMax (_) {
@@ -8279,11 +8342,20 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
-        @desc Sets the minimum font size to the specified accessor function or static number, which is used when [dynamically resizing fonts](#textBox.fontResize).
+        @desc Sets the minimum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
         @param {Function|Number} [*value* = 8]
     */
     TextBox.prototype.fontMin = function fontMin (_) {
       return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$2(_), this) : this._fontMin;
+    };
+
+    /**
+         @memberof TextBox
+         @desc Sets the font opacity to the specified accessor function or static number between 0 and 1.
+         @param {Function|Number} [*value* = 1]
+     */
+    TextBox.prototype.fontOpacity = function fontOpacity (_) {
+      return arguments.length ? (this._fontOpacity = typeof _ === "function" ? _ : constant$2(_), this) : this._fontOpacity;
     };
 
     /**
@@ -8297,7 +8369,7 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
-        @desc Sets the font size to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
+        @desc Sets the font size to the specified accessor function or static number (which corresponds to pixel units), which is inferred from the [DOM selection](#textBox.select) by default.
         @param {Function|Number} [*value* = 10]
     */
     TextBox.prototype.fontSize = function fontSize (_) {
@@ -8341,11 +8413,20 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
-        @desc Sets the line height to the specified accessor function or static number, which is 1.4 times the [font size](#textBox.fontSize) by default.
+        @desc Sets the line height to the specified accessor function or static number, which is 1.2 times the [font size](#textBox.fontSize) by default.
         @param {Function|Number} [*value*]
     */
     TextBox.prototype.lineHeight = function lineHeight (_) {
       return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$2(_), this) : this._lineHeight;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Restricts the maximum number of lines to wrap onto, which is null (unlimited) by default.
+        @param {Function|Number} [*value*]
+    */
+    TextBox.prototype.maxLines = function maxLines (_) {
+      return arguments.length ? (this._maxLines = typeof _ === "function" ? _ : constant$2(_), this) : this._maxLines;
     };
 
     /**
@@ -8382,6 +8463,15 @@ if (!Array.prototype.includes) {
     */
     TextBox.prototype.rotate = function rotate (_) {
       return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$2(_), this) : this._rotate;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the anchor point around which to rotate the text box.
+        @param {Function|Number[]}
+     */
+    TextBox.prototype.rotateAnchor = function rotateAnchor (_) {
+      return arguments.length ? (this._rotateAnchor = typeof _ === "function" ? _ : constant$2(_), this) : this._rotateAnchor;
     };
 
     /**
@@ -8520,7 +8610,11 @@ if (!Array.prototype.includes) {
 
       this._activeOpacity = 0.25;
       this._activeStyle = {
-        "stroke": "#444444",
+        "stroke": function (d, i) {
+          var c = this$1._fill(d, i);
+          if (["transparent", "none"].includes(c)) { c = this$1._stroke(d, i); }
+          return color(c).darker(1);
+        },
         "stroke-width": function (d, i) {
           var s = this$1._strokeWidth(d, i) || 1;
           return s * 3;
@@ -8534,6 +8628,17 @@ if (!Array.prototype.includes) {
       this._fillOpacity = constant$2(1);
 
       this._hoverOpacity = 0.5;
+      this._hoverStyle = {
+        "stroke": function (d, i) {
+          var c = this$1._fill(d, i);
+          if (["transparent", "none"].includes(c)) { c = this$1._stroke(d, i); }
+          return color(c).darker(0.5);
+        },
+        "stroke-width": function (d, i) {
+          var s = this$1._strokeWidth(d, i) || 1;
+          return s * 2;
+        }
+      };
       this._id = function (d, i) { return d.id !== void 0 ? d.id : i; };
       this._label = constant$2(false);
       this._labelClass = new TextBox();
@@ -8545,6 +8650,7 @@ if (!Array.prototype.includes) {
       this._name = "Shape";
       this._opacity = constant$2(1);
       this._pointerEvents = constant$2("visiblePainted");
+      this._rotate = constant$2(0);
       this._rx = constant$2(0);
       this._ry = constant$2(0);
       this._scale = constant$2(1);
@@ -8609,13 +8715,12 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Shape
-        @desc Provides the default styling to the active shape elements.
+        @desc Provides the updated styling to the given shape elements.
         @param {HTMLElement} *elem*
+        @param {Object} *style*
         @private
     */
-    Shape.prototype._applyActive = function _applyActive (elem$$1) {
-      var this$1 = this;
-
+    Shape.prototype._updateStyle = function _updateStyle (elem$$1, style) {
 
       var that = this;
 
@@ -8634,14 +8739,14 @@ if (!Array.prototype.includes) {
             : this(d, i);
       }
 
-      var activeStyle = {};
-      for (var key in this$1._activeStyle) {
-        if ({}.hasOwnProperty.call(this$1._activeStyle, key)) {
-          activeStyle[key] = styleLogic.bind(this$1._activeStyle[key]);
+      var styleObject = {};
+      for (var key in style) {
+        if ({}.hasOwnProperty.call(style, key)) {
+          styleObject[key] = styleLogic.bind(style[key]);
         }
       }
 
-      elem$$1.transition().duration(0).call(attrize, activeStyle);
+      elem$$1.transition().duration(0).call(attrize, styleObject);
 
     };
 
@@ -8698,7 +8803,9 @@ if (!Array.prototype.includes) {
       ? d.translate ? d.translate
       : ((this$1._x(d.data, d.i)) + "," + (this$1._y(d.data, d.i)))
       : ((this$1._x(d, i)) + "," + (this$1._y(d, i)))) + ")\n        scale(" + (d.__d3plusShape__ ? d.scale || this$1._scale(d.data, d.i)
-    : this$1._scale(d, i)) + ")"); });
+    : this$1._scale(d, i)) + ")\n        rotate(" + (d.__d3plusShape__ ? d.rotate ? d.rotate
+    : this$1._rotate(d.data || d, d.i)
+    : this$1._rotate(d.data || d, d.i)) + ")"); });
     };
 
     /**
@@ -8741,14 +8848,14 @@ if (!Array.prototype.includes) {
             group.appendChild(this);
             if (this.className.baseVal.includes("d3plus-Shape")) {
               if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
-              else { select(this).call(that._applyActive.bind(that)); }
+              else { select(this).call(that._updateStyle.bind(that, select(this), that._activeStyle)); }
             }
           }
 
         });
 
-      this._renderImage();
-      this._renderLabels();
+      // this._renderImage();
+      // this._renderLabels();
 
       this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
         .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
@@ -8783,11 +8890,15 @@ if (!Array.prototype.includes) {
 
           var group = !that._hover || typeof that._hover !== "function" || !that._hover(d, i) ? parent : that._hoverGroup.node();
           if (group !== this.parentNode) { group.appendChild(this); }
+          if (this.className.baseVal.includes("d3plus-Shape")) {
+            if (parent === group) { select(this).call(that._applyStyle.bind(that)); }
+            else { select(this).call(that._updateStyle.bind(that, select(this), that._hoverStyle)); }
+          }
 
         });
 
-      this._renderImage();
-      this._renderLabels();
+      // this._renderImage();
+      // this._renderLabels();
 
       this._group.selectAll(("g.d3plus-" + (this._name) + "-shape, g.d3plus-" + (this._name) + "-image, g.d3plus-" + (this._name) + "-text"))
         .attr("opacity", this._hover ? this._hoverOpacity : this._active ? this._activeOpacity : 1);
@@ -8827,7 +8938,7 @@ if (!Array.prototype.includes) {
               var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
                     : this$1._x(d.data, d.i) : this$1._x(d, i),
                   y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                    : this$1._y(d.data, d.i) : this$1._y(d, i);
+                  : this$1._y(d.data, d.i) : this$1._y(d, i);
 
               if (aes.x) { x += aes.x; }
               if (aes.y) { y += aes.y; }
@@ -8897,7 +9008,7 @@ if (!Array.prototype.includes) {
               var x = d.__d3plusShape__ ? d.translate ? d.translate[0]
                       : this$1._x(d.data, d.i) : this$1._x(d, i),
                     y = d.__d3plusShape__ ? d.translate ? d.translate[1]
-                      : this$1._y(d.data, d.i) : this$1._y(d, i);
+                    : this$1._y(d.data, d.i) : this$1._y(d, i);
 
               if (d.__d3plusShape__) {
                 d = d.data;
@@ -8907,6 +9018,10 @@ if (!Array.prototype.includes) {
               for (var l = 0; l < labels.length; l++) {
 
                 var b = bounds.constructor === Array ? bounds[l] : Object.assign({}, bounds);
+                var rotate = this$1._rotate(d, i);
+                var r = d.labelConfig && d.labelConfig.rotate ? d.labelConfig.rotate : bounds.angle !== undefined ? bounds.angle : 0;
+                r += rotate;
+                var rotateAnchor = rotate !== 0 ? [b.x * -1 || 0, b.y * -1 || 0] : [b.width / 2, b.height / 2];
 
                 labelData.push({
                   __d3plus__: true,
@@ -8914,7 +9029,8 @@ if (!Array.prototype.includes) {
                   height: b.height,
                   l: l,
                   id: ((this$1._id(d, i)) + "_" + l),
-                  r: d.labelConfig && d.labelConfig.rotate ? d.labelConfig.rotate : bounds.angle !== undefined ? bounds.angle : 0,
+                  r: r,
+                  rotateAnchor: rotateAnchor,
                   text: labels[l],
                   width: b.width,
                   x: x + b.x,
@@ -8933,7 +9049,8 @@ if (!Array.prototype.includes) {
         .data(labelData)
         .duration(this._duration)
         .pointerEvents("none")
-        .rotate(function (d) { return d.data.r; })
+        .rotate(function (d) { return d.r; })
+        .rotateAnchor(function (d) { return d.data.rotateAnchor; })
         .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
         .config(this._labelConfig)
         .render();
@@ -9064,8 +9181,8 @@ if (!Array.prototype.includes) {
       if (!arguments.length || _ === undefined) { return this._active; }
       this._active = _;
       if (this._group) {
-        this._renderImage();
-        this._renderLabels();
+        // this._renderImage();
+        // this._renderLabels();
         this._renderActive();
       }
       return this;
@@ -9163,12 +9280,22 @@ if (!Array.prototype.includes) {
       if (!arguments.length || _ === void 0) { return this._hover; }
       this._hover = _;
       if (this._group) {
-        this._renderImage();
-        this._renderLabels();
+        // this._renderImage();
+        // this._renderLabels();
         this._renderHover();
       }
       return this;
 
+    };
+
+    /**
+        @memberof Shape
+        @desc The style to apply to hovered shapes.
+        @param {Object} *value*
+        @chainable
+     */
+    Shape.prototype.hoverStyle = function hoverStyle (_) {
+      return arguments.length ? (this._hoverStyle = assign({}, this._hoverStyle, _), this) : this._hoverStyle;
     };
 
     /**
@@ -9267,6 +9394,16 @@ if (!Array.prototype.includes) {
      */
     Shape.prototype.pointerEvents = function pointerEvents (_) {
       return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$2(_), this) : this._pointerEvents;
+    };
+
+    /**
+        @memberof Shape
+        @desc If *value* is specified, sets the rotate accessor to the specified function or number and returns the current class instance.
+        @param {Function|Number} [*value* = 0]
+        @chainable
+     */
+    Shape.prototype.rotate = function rotate (_) {
+      return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$2(_), this) : this._rotate;
     };
 
     /**
@@ -13535,22 +13672,22 @@ if (!Array.prototype.includes) {
         range$$1 = unit$1,
         interpolate$$1 = interpolateValue,
         clamp = false,
-        piecewise,
+        piecewise$$1,
         output,
         input;
 
     function rescale() {
-      piecewise = Math.min(domain.length, range$$1.length) > 2 ? polymap$1 : bimap$1;
+      piecewise$$1 = Math.min(domain.length, range$$1.length) > 2 ? polymap$1 : bimap$1;
       output = input = null;
       return scale;
     }
 
     function scale(x) {
-      return (output || (output = piecewise(domain, range$$1, clamp ? deinterpolateClamp$1(deinterpolate) : deinterpolate, interpolate$$1)))(+x);
+      return (output || (output = piecewise$$1(domain, range$$1, clamp ? deinterpolateClamp$1(deinterpolate) : deinterpolate, interpolate$$1)))(+x);
     }
 
     scale.invert = function(y) {
-      return (input || (input = piecewise(range$$1, domain, deinterpolateLinear$1, clamp ? reinterpolateClamp$1(reinterpolate$$1) : reinterpolate$$1)))(+y);
+      return (input || (input = piecewise$$1(range$$1, domain, deinterpolateLinear$1, clamp ? reinterpolateClamp$1(reinterpolate$$1) : reinterpolate$$1)))(+y);
     };
 
     scale.domain = function(_) {
@@ -14244,7 +14381,7 @@ if (!Array.prototype.includes) {
         "stroke-width": 1
       };
       this._height = 400;
-      this._labelOffset = true;
+      this._labelOffset = false;
       this.orient("bottom");
       this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
       this._padding = 5;
@@ -14268,7 +14405,7 @@ if (!Array.prototype.includes) {
             var rtl$$1 = detectRTL();
             return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
               : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
-              : this$1._rotateLabels ? "end" : "middle";
+              : this$1._rotateLabels ? this$1._orient === "bottom" ? "end" : "start" : "middle";
           },
           verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
         },
@@ -14600,7 +14737,7 @@ if (!Array.prototype.includes) {
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
-          .width(horizontal ? this$1._space * 2 : this$1._width - hBuff - p)
+          .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
           .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
 
         var res = wrap(tickFormat(d));
@@ -14621,7 +14758,7 @@ if (!Array.prototype.includes) {
 
       var labelHeight = max(textData, function (t) { return t.height; }) || 0;
 
-      if (horizontal) {
+      if (horizontal && typeof this._labelRotation === "undefined") {
         for (var i$1 = 0; i$1 < labels.length; i$1++) {
           var d = labels[i$1];
 
@@ -14655,6 +14792,7 @@ if (!Array.prototype.includes) {
           }
         }
       }
+      else if (horizontal) { this._rotateLabels = this._labelRotation; }
 
       if (this._rotateLabels) {
         textData = labels.map(function (d, i) {
@@ -14670,7 +14808,7 @@ if (!Array.prototype.includes) {
               .fontSize(s)
               .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
               .height(lineHeight * 2 + 1)
-              .width(this$1._width);
+              .width(this$1._maxSize ? this$1._maxSize - this$1._margin.top - this$1._margin.bottom - this$1._tickSize : this$1._height);
 
           var xPos = this$1._getPosition(d);
           var prev = labels[i - 1] || false;
@@ -14685,10 +14823,10 @@ if (!Array.prototype.includes) {
           var width = fitsTwoLines && isTwoLine ? lineHeight * 2 : lineHeight;
 
           return Object.assign(text, {
-            height: height,
+            height: height || 0,
             lineHeight: lineHeight,
             numLines: fitsTwoLines && isTwoLine ? 2 : 1,
-            width: width
+            width: width || 0
           });
         });
       }
@@ -14838,7 +14976,7 @@ if (!Array.prototype.includes) {
           next = next.length ? next[0] : false;
 
           var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth);
-          if (data.length && data[0].width > space) {
+          if (data.length && data[0].width > labelWidth) {
             data[0].hidden = true;
             data[0].offset = labelOffset = 0;
           }
@@ -14872,7 +15010,7 @@ if (!Array.prototype.includes) {
             tickConfig = Object.assign(tickConfig, {
               labelBounds: {
                 x: -width / 2,
-                y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : -size - p - (width + height$1) / 2,
+                y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : size - p * 2 - (width + lineHeight * numLines) / 2,
                 width: width,
                 height: height$1 + 1
               }
@@ -15028,9 +15166,29 @@ if (!Array.prototype.includes) {
         @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
         @param {Boolean} [*value* = true]
         @chainable
-    */
+     */
     Axis.prototype.labelOffset = function labelOffset (_) {
-      return arguments.length ? (this._labelOffset = _, this) : this._labels;
+      return arguments.length ? (this._labelOffset = _, this) : this._labelOffset;
+    };
+
+    /**
+        @memberof Axis
+        @desc If *value* is specified, sets whether whether horizontal axis labels are rotated -90 degrees.
+        @param {Boolean}
+        @chainable
+     */
+    Axis.prototype.labelRotation = function labelRotation (_) {
+      return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
+    };
+
+    /**
+        @memberof Axis
+        @desc If *value* is specified, sets the maximum size allowed for the space that contains the axis tick labels and title.
+        @param {Number}
+        @chainable
+     */
+    Axis.prototype.maxSize = function maxSize (_) {
+      return arguments.length ? (this._maxSize = _, this) : this._maxSize;
     };
 
     /**
@@ -15816,6 +15974,36 @@ if (!Array.prototype.includes) {
 
     return Select;
   }(BaseClass));
+
+  /**
+      @function formatAbbreviate
+      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
+      @param {Number} n The number to be formatted.
+      @returns {String}
+  */
+  function formatAbbreviate(n) {
+    if (typeof n !== "number") { return "N/A"; }
+    var length = n.toString().split(".")[0].length;
+    var val;
+    if (n === 0) { val = "0"; }
+    else if (length >= 3) {
+      var f = format(".3s")(n)
+        .replace("G", "B")
+        .replace("T", "t")
+        .replace("P", "q")
+        .replace("E", "Q");
+      var num = f.slice(0, -1);
+      var char = f.slice(f.length - 1);
+      val = "" + (parseFloat(num)) + char;
+    }
+    else if (length === 3) { val = format(",f")(n); }
+    else if (n < 1 && n > -1) { val = format(".2g")(n); }
+    else { val = format(".3g")(n); }
+
+    return val
+      .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+      .replace(/[.]$/g, ""); // removes any trailing decimal point
+  }
 
   /**
       @desc Sort an array of numbers by their numeric value, ensuring that the array is not changed in place.
@@ -17196,6 +17384,7 @@ if (!Array.prototype.includes) {
         fontWeight = 400,
         height = 200,
         lineHeight,
+        maxLines = null,
         overflow = false,
         split = textSplit$1,
         width = 200;
@@ -17239,7 +17428,7 @@ if (!Array.prototype.includes) {
           }
           lineData[line - 1] = trimRight$1(lineData[line - 1]);
           line++;
-          if (lineHeight * line > height || wordWidth > width && !overflow) {
+          if (lineHeight * line > height || wordWidth > width && !overflow || maxLines && line > maxLines) {
             truncated = true;
             break;
           }
@@ -17309,6 +17498,15 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof textWrap
+        @desc If *value* is specified, sets the maximum number of lines allowed when wrapping.
+        @param {Function|Number} [*value*]
+    */
+    textWrap.maxLines = function(_) {
+      return arguments.length ? (maxLines = _, textWrap) : maxLines;
+    };
+
+    /**
+        @memberof textWrap
         @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
         @param {Boolean} [*value* = false]
     */
@@ -17336,6 +17534,27 @@ if (!Array.prototype.includes) {
 
     return textWrap;
 
+  }
+
+  /**
+      @function textTruncate
+      @desc Truncate a single word with ellipsis until if fits within the given width
+      @param  {String} text     The word to truncate
+      @param  {String} ellipsis The ellipsis to append
+      @param  {Number} maxWidth The maximum width that the text can take
+      @param  {Object} style    The style object to apply
+      @return {String}          The resultant text with ellipsis
+   */
+  function truncateWord$1(text, ellipsis, maxWidth, style) {
+    for (var i = text.length; i > 0; i--) {
+      var shortened = text.slice(0, i) + ellipsis;
+      var width = measure(shortened, style);
+      if (width < maxWidth) {
+        return shortened;
+      }
+    }
+
+    return ellipsis;
   }
 
   /**
@@ -17369,11 +17588,13 @@ if (!Array.prototype.includes) {
       this._height = accessor("height", 200);
       this._id = function (d, i) { return d.id || ("" + i); };
       this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.2; };
+      this._maxLines = constant$2(null);
       this._on = {};
       this._overflow = constant$2(false);
       this._padding = constant$2(0);
       this._pointerEvents = constant$2("auto");
       this._rotate = constant$2(0);
+      this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
       this._split = textSplit$1;
       this._text = accessor("text");
       this._textAnchor = constant$2("start");
@@ -17433,6 +17654,7 @@ if (!Array.prototype.includes) {
           .fontSize(fS)
           .fontWeight(style["font-weight"])
           .lineHeight(lH)
+          .maxLines(this$1._maxLines(d, i))
           .height(h)
           .overflow(this$1._overflow(d, i))
           .width(w);
@@ -17447,12 +17669,14 @@ if (!Array.prototype.includes) {
             @private
         */
         function checkSize() {
+          var truncate = function () {
+            if (line < 1) { lineData = [truncateWord$1(wrapResults.words[0], that._ellipsis("", line), w, style)]; }
+            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
+          };
 
-          if (fS < fMin) {
-            lineData = [];
-            return;
-          }
-          else if (fS > fMax) { fS = fMax; }
+          // Constraint the font size
+          fS = max([fS, fMin]);
+          fS = min([fS, fMax]);
 
           if (resize) {
             lH = fS * lHRatio;
@@ -17468,18 +17692,17 @@ if (!Array.prototype.includes) {
           line = lineData.length;
 
           if (wrapResults.truncated) {
-
             if (resize) {
               fS--;
-              if (fS < fMin) { lineData = []; }
+              if (fS < fMin) {
+                fS = fMin;
+                truncate();
+                return;
+              }
               else { checkSize(); }
             }
-            else if (line < 1) { lineData = [that._ellipsis("", line)]; }
-            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
-
+            else { truncate(); }
           }
-
-
         }
 
         if (w > fMin && (h > lH || resize && h > fMin * lHRatio)) {
@@ -17524,6 +17747,7 @@ if (!Array.prototype.includes) {
             fO: this$1._fontOpacity(d, i),
             fW: style["font-weight"],
             id: this$1._id(d, i),
+            r: this$1._rotate(d, i),
             tA: this$1._textAnchor(d, i),
             widths: wrapResults.widths,
             fS: fS, lH: lH, w: w, h: h,
@@ -17535,7 +17759,7 @@ if (!Array.prototype.includes) {
 
         return arr;
 
-      }, []), this._id);
+      }, []), function (d) { return this$1._id(d.data, d.i); });
 
       var t = transition().duration(this._duration);
 
@@ -17549,12 +17773,16 @@ if (!Array.prototype.includes) {
         boxes.exit().transition().delay(this._duration).remove();
 
         boxes.exit().selectAll("text").transition(t)
-          .attr("opacity", 0);
+          .attr("opacity", 0)
+          .style("opacity", 0);
 
       }
 
       function rotate(text) {
-        text.attr("transform", function (d, i) { return ("rotate(" + (that._rotate(d, i)) + ", " + (d.x + d.w / 2) + ", " + (d.y + d.h / 2) + ")translate(" + (d.x) + ", " + (d.y) + ")"); });
+        text.attr("transform", function (d, i) {
+          var rotateAnchor = that._rotateAnchor(d, i);
+          return ("translate(" + (d.x) + ", " + (d.y) + ") rotate(" + (d.r) + ", " + (rotateAnchor[0]) + ", " + (rotateAnchor[1]) + ")");
+        });
       }
 
       var update = boxes.enter().append("g")
@@ -17585,8 +17813,6 @@ if (!Array.prototype.includes) {
               .style("font-size", ((d.fS) + "px"))
               .attr("font-weight", d.fW)
               .style("font-weight", d.fW)
-              .attr("opacity", d.fO)
-              .style("opacity", d.fO)
               .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
               .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
           }
@@ -17603,7 +17829,9 @@ if (!Array.prototype.includes) {
               .attr("dominant-baseline", "alphabetic")
               .style("baseline-shift", "0%")
               .attr("unicode-bidi", "bidi-override")
-              .call(textStyle);
+              .call(textStyle)
+              .attr("opacity", d.fO)
+              .style("opacity", d.fO);
 
           }
           else {
@@ -17617,10 +17845,12 @@ if (!Array.prototype.includes) {
                 .attr("dominant-baseline", "alphabetic")
                 .style("baseline-shift", "0%")
                 .attr("opacity", 0)
+                .style("opacity", 0)
                 .call(textStyle)
               .merge(texts).transition(t).delay(that._delay)
                 .call(textStyle)
-                .attr("opacity", 1);
+                .attr("opacity", d.fO)
+                .style("opacity", d.fO);
 
           }
 
@@ -17789,6 +18019,15 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
+        @desc Restricts the maximum number of lines to wrap onto, which is null (unlimited) by default.
+        @param {Function|Number} [*value*]
+    */
+    TextBox.prototype.maxLines = function maxLines (_) {
+      return arguments.length ? (this._maxLines = typeof _ === "function" ? _ : constant$2(_), this) : this._maxLines;
+    };
+
+    /**
+        @memberof TextBox
         @desc Sets the text overflow to the specified accessor function or static boolean.
         @param {Function|Boolean} [*value* = false]
     */
@@ -17821,6 +18060,15 @@ if (!Array.prototype.includes) {
     */
     TextBox.prototype.rotate = function rotate (_) {
       return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$2(_), this) : this._rotate;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Sets the anchor point around which to rotate the text box.
+        @param {Function|Number[]}
+     */
+    TextBox.prototype.rotateAnchor = function rotateAnchor (_) {
+      return arguments.length ? (this._rotateAnchor = typeof _ === "function" ? _ : constant$2(_), this) : this._rotateAnchor;
     };
 
     /**
@@ -32145,13 +32393,13 @@ if (!Array.prototype.includes) {
     var visible = typeof total === "number";
 
     this._totalClass
-      .data(visible ? [{text: ("Total: " + total)}] : [])
+      .data(visible ? [{text: ("Total: " + (this._totalFormat(total)))}] : [])
       .select(group)
       .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._totalConfig)
       .render();
 
-    this._margin.top += visible ? group.getBBox().height : 0;
+    this._margin.top += visible ? group.getBBox().height + this._totalConfig.padding * 2 : 0;
 
   }
 
@@ -32263,14 +32511,6 @@ if (!Array.prototype.includes) {
   }
 
   /**
-   @desc Global on click event for all entities in a Viz.
-   @private
-   */
-  function clickAll() {
-    if (this._tooltip) { this._tooltipClass.data([]).render(); }
-  }
-
-  /**
       @desc On mouseenter event for all shapes in a Viz.
       @param {Object} *d* The data object being interacted with.
       @param {Number} *i* The index of the data object being interacted with.
@@ -32312,13 +32552,14 @@ if (!Array.prototype.includes) {
       @private
   */
   function mousemoveLegend(d) {
+    var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
 
     if (this._tooltip && d) {
       this._select.style("cursor", "pointer");
       this._tooltipClass.data([d])
         .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
         .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
-        .position([event$1.clientX, event$1.clientY])
+        .position(position)
         .config(this._tooltipConfig)
         .config(this._legendTooltip)
         .render();
@@ -32334,17 +32575,29 @@ if (!Array.prototype.includes) {
       @private
   */
   function mousemoveShape(d) {
+    var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
 
     if (this._tooltip && d) {
       this._select.style("cursor", "pointer");
       this._tooltipClass.data([d])
         .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
         .title(this._drawLabel)
-        .position([event$1.clientX, event$1.clientY])
+        .position(position)
         .config(this._tooltipConfig)
         .render();
     }
 
+  }
+
+  /**
+   @desc On touchstart event for the Body element.
+   @private
+   */
+  function touchstartBody(d) {
+    event$1.preventDefault();
+    event$1.stopPropagation();
+
+    if (this._tooltip && !d) { this._tooltipClass.data([]).render(); }
   }
 
   var brushing = false;
@@ -32712,7 +32965,6 @@ if (!Array.prototype.includes) {
       this._noDataMessage = true;
       this._on = {
         "click": click.bind(this),
-        "click.all": clickAll.bind(this),
         "mouseenter": mouseenter.bind(this),
         "mouseleave": mouseleave.bind(this),
         "mousemove.shape": mousemoveShape.bind(this),
@@ -32783,6 +33035,7 @@ if (!Array.prototype.includes) {
         resize: false,
         textAnchor: "middle"
       };
+      this._totalFormat = formatAbbreviate;
 
       this._zoom = false;
       this._zoomBehavior = zoom();
@@ -32887,14 +33140,7 @@ if (!Array.prototype.includes) {
         dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
 
       }
-    };
 
-    /**
-        @memberof Viz
-        @desc Called by render once all checks are passed.
-        @private
-    */
-    Viz.prototype._draw = function _draw () {
       if (this._noDataMessage && !this._filteredData.length) {
         this._messageClass.render({
           container: this._select.node().parentNode,
@@ -32904,6 +33150,14 @@ if (!Array.prototype.includes) {
         });
       }
 
+    };
+
+    /**
+        @memberof Viz
+        @desc Called by render once all checks are passed.
+        @private
+    */
+    Viz.prototype._draw = function _draw () {
       if (this.legendPosition() === "left" || this.legendPosition() === "right") { drawLegend.bind(this)(this._filteredData); }
       if (this.colorScalePosition() === "left" || this.colorScalePosition() === "right") { drawColorScale.bind(this)(this._filteredData); }
 
@@ -33099,6 +33353,9 @@ if (!Array.prototype.includes) {
         });
 
       }
+
+      // Attaches touchstart event listener to the BODY to hide the tooltip when the user touches any element without data
+      select("body").on(("touchstart." + (this._uuid)), touchstartBody.bind(this));
 
       return this;
 
@@ -33700,6 +33957,16 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Viz
+        @desc Formatter function for the value in the total bar.
+        @param {Function} *value*
+        @chainable
+    */
+    Viz.prototype.totalFormat = function totalFormat (_) {
+      return arguments.length ? (this._totalFormat = _, this) : this._totalFormat;
+    };
+
+    /**
+        @memberof Viz
         @desc If *value* is specified, sets the overallwidth to the specified number and returns the current class instance.
         @param {Number} [*value* = window.innerWidth]
         @chainable
@@ -33838,6 +34105,8 @@ if (!Array.prototype.includes) {
   */
   var Pie = (function (Viz$$1) {
     function Pie() {
+      var this$1 = this;
+
 
       Viz$$1.call(this);
 
@@ -33851,7 +34120,7 @@ if (!Array.prototype.includes) {
       this._innerRadius = 0;
       this._padPixel = 0;
       this._pie = pie();
-      this._sort = function (a, b) { return b.value - a.value; };
+      this._sort = function (a, b) { return this$1._value(b) - this$1._value(a); };
       this._value = accessor("value");
 
     }
@@ -33890,7 +34159,7 @@ if (!Array.prototype.includes) {
         .innerRadius(this._innerRadius)
         .outerRadius(outerRadius);
 
-      var transform = "translate(" + (width / 2) + ", " + (height / 2) + ")";
+      var transform = "translate(" + (width / 2 + this._margin.left) + ", " + (height / 2 + this._margin.top) + ")";
       this._shapes.push(new Path$1()
         .data(pieData)
         .d(arcData)
@@ -33983,7 +34252,7 @@ if (!Array.prototype.includes) {
         this$1._width - this$1._margin.left - this$1._margin.right,
         this$1._height - this$1._margin.top - this$1._margin.bottom
       ]) / 4; };
-      this._padPixel = 5;
+      this._padPixel = 2;
 
     }
 

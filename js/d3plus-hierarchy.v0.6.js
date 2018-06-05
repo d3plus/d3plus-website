@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.6.1
+  d3plus-hierarchy v0.6.2
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -76,6 +76,8 @@ if (!Array.prototype.includes) {
   */
   var Pie = (function (Viz) {
     function Pie() {
+      var this$1 = this;
+
 
       Viz.call(this);
 
@@ -89,7 +91,7 @@ if (!Array.prototype.includes) {
       this._innerRadius = 0;
       this._padPixel = 0;
       this._pie = d3Shape.pie();
-      this._sort = function (a, b) { return b.value - a.value; };
+      this._sort = function (a, b) { return this$1._value(b) - this$1._value(a); };
       this._value = d3plusCommon.accessor("value");
 
     }
@@ -128,7 +130,7 @@ if (!Array.prototype.includes) {
         .innerRadius(this._innerRadius)
         .outerRadius(outerRadius);
 
-      var transform = "translate(" + (width / 2) + ", " + (height / 2) + ")";
+      var transform = "translate(" + (width / 2 + this._margin.left) + ", " + (height / 2 + this._margin.top) + ")";
       this._shapes.push(new d3plusShape.Path()
         .data(pieData)
         .d(arcData)
@@ -221,7 +223,7 @@ if (!Array.prototype.includes) {
         this$1._width - this$1._margin.left - this$1._margin.right,
         this$1._height - this$1._margin.top - this$1._margin.bottom
       ]) / 4; };
-      this._padPixel = 5;
+      this._padPixel = 2;
 
     }
 
