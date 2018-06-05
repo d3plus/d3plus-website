@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.14.6
+  d3plus-shape v0.14.7
   Fancy SVG shapes for visualizations
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -769,7 +769,7 @@ if (!Array.prototype.includes) {
         .data(labelData)
         .duration(this._duration)
         .pointerEvents("none")
-        .rotate(function (d) { return d.data.r; })
+        .rotate(function (d) { return d.r; })
         .rotateAnchor(function (d) { return d.data.rotateAnchor; })
         .select(d3plusCommon.elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
         .config(this._labelConfig)
