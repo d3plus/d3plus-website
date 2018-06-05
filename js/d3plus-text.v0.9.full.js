@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.28
+  d3plus-text v0.9.29
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -3451,6 +3451,7 @@ if (!Array.prototype.includes) {
         fontWeight = 400,
         height = 200,
         lineHeight,
+        maxLines = null,
         overflow = false,
         split = textSplit,
         width = 200;
@@ -3494,7 +3495,7 @@ if (!Array.prototype.includes) {
           }
           lineData[line - 1] = trimRight(lineData[line - 1]);
           line++;
-          if (lineHeight * line > height || wordWidth > width && !overflow) {
+          if (lineHeight * line > height || wordWidth > width && !overflow || (maxLines && line > maxLines)) {
             truncated = true;
             break;
           }
@@ -3564,6 +3565,15 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof textWrap
+        @desc If *value* is specified, sets the maximum number of lines allowed when wrapping.
+        @param {Function|Number} [*value*]
+    */
+    textWrap.maxLines = function(_) {
+      return arguments.length ? (maxLines = _, textWrap) : maxLines;
+    };
+
+    /**
+        @memberof textWrap
         @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
         @param {Boolean} [*value* = false]
     */
@@ -3591,6 +3601,27 @@ if (!Array.prototype.includes) {
 
     return textWrap;
 
+  }
+
+  /**
+      @function textTruncate
+      @desc Truncate a single word with ellipsis until if fits within the given width
+      @param  {String} text     The word to truncate
+      @param  {String} ellipsis The ellipsis to append
+      @param  {Number} maxWidth The maximum width that the text can take
+      @param  {Object} style    The style object to apply
+      @return {String}          The resultant text with ellipsis
+   */
+  function truncateWord(text, ellipsis, maxWidth, style) {
+    for (var i = text.length; i > 0; i--) {
+      var shortened = text.slice(0, i) + ellipsis;
+      var width = measure(shortened, style);
+      if (width < maxWidth) {
+        return shortened;
+      }
+    }
+
+    return ellipsis;
   }
 
   /**
@@ -3624,6 +3655,7 @@ if (!Array.prototype.includes) {
       this._height = accessor("height", 200);
       this._id = function (d, i) { return d.id || ("" + i); };
       this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.2; };
+      this._maxLines = constant$3(null);
       this._on = {};
       this._overflow = constant$3(false);
       this._padding = constant$3(0);
@@ -3689,6 +3721,7 @@ if (!Array.prototype.includes) {
           .fontSize(fS)
           .fontWeight(style["font-weight"])
           .lineHeight(lH)
+          .maxLines(this$1._maxLines(d, i))
           .height(h)
           .overflow(this$1._overflow(d, i))
           .width(w);
@@ -3703,12 +3736,14 @@ if (!Array.prototype.includes) {
             @private
         */
         function checkSize() {
+          var truncate = function () {
+            if (line < 1) { lineData = [truncateWord(wrapResults.words[0], that._ellipsis("", line), w, style)]; }
+            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
+          };
 
-          if (fS < fMin) {
-            lineData = [];
-            return;
-          }
-          else if (fS > fMax) { fS = fMax; }
+          // Constraint the font size
+          fS = max([fS, fMin]);
+          fS = min([fS, fMax]);
 
           if (resize) {
             lH = fS * lHRatio;
@@ -3724,18 +3759,17 @@ if (!Array.prototype.includes) {
           line = lineData.length;
 
           if (wrapResults.truncated) {
-
             if (resize) {
               fS--;
-              if (fS < fMin) { lineData = []; }
+              if (fS < fMin) {
+                fS = fMin;
+                truncate();
+                return;
+              }
               else { checkSize(); }
             }
-            else if (line < 1) { lineData = [that._ellipsis("", line)]; }
-            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
-
+            else { truncate(); }
           }
-
-
         }
 
         if (w > fMin && (h > lH || resize && h > fMin * lHRatio)) {
@@ -3780,6 +3814,7 @@ if (!Array.prototype.includes) {
             fO: this$1._fontOpacity(d, i),
             fW: style["font-weight"],
             id: this$1._id(d, i),
+            r: this$1._rotate(d, i),
             tA: this$1._textAnchor(d, i),
             widths: wrapResults.widths,
             fS: fS, lH: lH, w: w, h: h,
@@ -3812,7 +3847,7 @@ if (!Array.prototype.includes) {
       function rotate(text) {
         text.attr("transform", function (d, i) {
           var rotateAnchor = that._rotateAnchor(d, i);
-          return ("translate(" + (d.x) + ", " + (d.y) + ") rotate(" + (that._rotate(d, i)) + ", " + (rotateAnchor[0]) + ", " + (rotateAnchor[1]) + ")");
+          return ("translate(" + (d.x) + ", " + (d.y) + ") rotate(" + (d.r) + ", " + (rotateAnchor[0]) + ", " + (rotateAnchor[1]) + ")");
         });
       }
 
@@ -4044,6 +4079,15 @@ if (!Array.prototype.includes) {
     */
     TextBox.prototype.lineHeight = function lineHeight (_) {
       return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$3(_), this) : this._lineHeight;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Restricts the maximum number of lines to wrap onto, which is null (unlimited) by default.
+        @param {Function|Number} [*value*]
+    */
+    TextBox.prototype.maxLines = function maxLines (_) {
+      return arguments.length ? (this._maxLines = typeof _ === "function" ? _ : constant$3(_), this) : this._maxLines;
     };
 
     /**
