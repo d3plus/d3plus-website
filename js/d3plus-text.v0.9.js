@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.30
+  d3plus-text v0.9.31
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -461,27 +461,6 @@ if (!Array.prototype.includes) {
   }
 
   /**
-      @function textTruncate
-      @desc Truncate a single word with ellipsis until if fits within the given width
-      @param  {String} text     The word to truncate
-      @param  {String} ellipsis The ellipsis to append
-      @param  {Number} maxWidth The maximum width that the text can take
-      @param  {Object} style    The style object to apply
-      @return {String}          The resultant text with ellipsis
-   */
-  function truncateWord(text, ellipsis, maxWidth, style) {
-    for (var i = text.length; i > 0; i--) {
-      var shortened = text.slice(0, i) + ellipsis;
-      var width = measure(shortened, style);
-      if (width < maxWidth) {
-        return shortened;
-      }
-    }
-
-    return ellipsis;
-  }
-
-  /**
       @external BaseClass
       @see https://github.com/d3plus/d3plus-common#BaseClass
   */
@@ -594,7 +573,7 @@ if (!Array.prototype.includes) {
         */
         function checkSize() {
           var truncate = function () {
-            if (line < 1) { lineData = [truncateWord(wrapResults.words[0], that._ellipsis("", line), w, style)]; }
+            if (line < 1) { lineData = [that._ellipsis("", line)]; }
             else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
           };
 
