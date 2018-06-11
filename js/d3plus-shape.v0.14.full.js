@@ -1549,9 +1549,6 @@ if (!Array.prototype.includes) {
     displayable: function() {
       return this.rgb().displayable();
     },
-    hex: function() {
-      return this.rgb().hex();
-    },
     toString: function() {
       return this.rgb() + "";
     }
@@ -1618,9 +1615,6 @@ if (!Array.prototype.includes) {
           && (0 <= this.b && this.b <= 255)
           && (0 <= this.opacity && this.opacity <= 1);
     },
-    hex: function() {
-      return "#" + hex(this.r) + hex(this.g) + hex(this.b);
-    },
     toString: function() {
       var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
       return (a === 1 ? "rgb(" : "rgba(")
@@ -1630,11 +1624,6 @@ if (!Array.prototype.includes) {
           + (a === 1 ? ")" : ", " + a + ")");
     }
   }));
-
-  function hex(value) {
-    value = Math.max(0, Math.min(255, Math.round(value) || 0));
-    return (value < 16 ? "0" : "") + value.toString(16);
-  }
 
   function hsla(h, s, l, a) {
     if (a <= 0) { h = s = l = NaN; }
@@ -2764,17 +2753,6 @@ if (!Array.prototype.includes) {
 
   /**
       @function assign
-      @desc Determines if the object passed is the document or window.
-      @param {Object} obj
-      @private
-  */
-  function validObject(obj) {
-    if (typeof window === "undefined") { return true; }
-    else { return obj !== window && obj !== document; }
-  }
-
-  /**
-      @function assign
       @desc A deeply recursive version of `Object.assign`.
       @param {...Object} objects
       @example <caption>this</caption>
@@ -2798,9 +2776,11 @@ if (!Array.prototype.includes) {
 
         var value = source[prop];
 
-        if (isObject(value) && validObject(value)) {
+        if (isObject(value)) {
+
           if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
-          else { target[prop] = assign({}, value); }
+          else { target[prop] = value; }
+
         }
         else if (Array.isArray(value)) {
 
@@ -7427,7 +7407,6 @@ if (!Array.prototype.includes) {
         fontWeight = 400,
         height = 200,
         lineHeight,
-        maxLines = null,
         overflow = false,
         split = textSplit,
         width = 200;
@@ -7471,7 +7450,7 @@ if (!Array.prototype.includes) {
           }
           lineData[line - 1] = trimRight(lineData[line - 1]);
           line++;
-          if (lineHeight * line > height || wordWidth > width && !overflow || (maxLines && line > maxLines)) {
+          if (lineHeight * line > height || wordWidth > width && !overflow) {
             truncated = true;
             break;
           }
@@ -7541,15 +7520,6 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof textWrap
-        @desc If *value* is specified, sets the maximum number of lines allowed when wrapping.
-        @param {Function|Number} [*value*]
-    */
-    textWrap.maxLines = function(_) {
-      return arguments.length ? (maxLines = _, textWrap) : maxLines;
-    };
-
-    /**
-        @memberof textWrap
         @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
         @param {Boolean} [*value* = false]
     */
@@ -7577,27 +7547,6 @@ if (!Array.prototype.includes) {
 
     return textWrap;
 
-  }
-
-  /**
-      @function textTruncate
-      @desc Truncate a single word with ellipsis until if fits within the given width
-      @param  {String} text     The word to truncate
-      @param  {String} ellipsis The ellipsis to append
-      @param  {Number} maxWidth The maximum width that the text can take
-      @param  {Object} style    The style object to apply
-      @return {String}          The resultant text with ellipsis
-   */
-  function truncateWord(text, ellipsis, maxWidth, style) {
-    for (var i = text.length; i > 0; i--) {
-      var shortened = text.slice(0, i) + ellipsis;
-      var width = measure(shortened, style);
-      if (width < maxWidth) {
-        return shortened;
-      }
-    }
-
-    return ellipsis;
   }
 
   /**
@@ -7631,7 +7580,6 @@ if (!Array.prototype.includes) {
       this._height = accessor("height", 200);
       this._id = function (d, i) { return d.id || ("" + i); };
       this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.2; };
-      this._maxLines = constant$2(null);
       this._on = {};
       this._overflow = constant$2(false);
       this._padding = constant$2(0);
@@ -7697,7 +7645,6 @@ if (!Array.prototype.includes) {
           .fontSize(fS)
           .fontWeight(style["font-weight"])
           .lineHeight(lH)
-          .maxLines(this$1._maxLines(d, i))
           .height(h)
           .overflow(this$1._overflow(d, i))
           .width(w);
@@ -7712,14 +7659,12 @@ if (!Array.prototype.includes) {
             @private
         */
         function checkSize() {
-          var truncate = function () {
-            if (line < 1) { lineData = [truncateWord(wrapResults.words[0], that._ellipsis("", line), w, style)]; }
-            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
-          };
 
-          // Constraint the font size
-          fS = max([fS, fMin]);
-          fS = min([fS, fMax]);
+          if (fS < fMin) {
+            lineData = [];
+            return;
+          }
+          else if (fS > fMax) { fS = fMax; }
 
           if (resize) {
             lH = fS * lHRatio;
@@ -7735,17 +7680,18 @@ if (!Array.prototype.includes) {
           line = lineData.length;
 
           if (wrapResults.truncated) {
+
             if (resize) {
               fS--;
-              if (fS < fMin) {
-                fS = fMin;
-                truncate();
-                return;
-              }
+              if (fS < fMin) { lineData = []; }
               else { checkSize(); }
             }
-            else { truncate(); }
+            else if (line < 1) { lineData = [that._ellipsis("", line)]; }
+            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
+
           }
+
+
         }
 
         if (w > fMin && (h > lH || resize && h > fMin * lHRatio)) {
@@ -7790,7 +7736,6 @@ if (!Array.prototype.includes) {
             fO: this$1._fontOpacity(d, i),
             fW: style["font-weight"],
             id: this$1._id(d, i),
-            r: this$1._rotate(d, i),
             tA: this$1._textAnchor(d, i),
             widths: wrapResults.widths,
             fS: fS, lH: lH, w: w, h: h,
@@ -7823,7 +7768,7 @@ if (!Array.prototype.includes) {
       function rotate(text) {
         text.attr("transform", function (d, i) {
           var rotateAnchor = that._rotateAnchor(d, i);
-          return ("translate(" + (d.x) + ", " + (d.y) + ") rotate(" + (d.r) + ", " + (rotateAnchor[0]) + ", " + (rotateAnchor[1]) + ")");
+          return ("translate(" + (d.x) + ", " + (d.y) + ") rotate(" + (that._rotate(d, i)) + ", " + (rotateAnchor[0]) + ", " + (rotateAnchor[1]) + ")");
         });
       }
 
@@ -8059,15 +8004,6 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
-        @desc Restricts the maximum number of lines to wrap onto, which is null (unlimited) by default.
-        @param {Function|Number} [*value*]
-    */
-    TextBox.prototype.maxLines = function maxLines (_) {
-      return arguments.length ? (this._maxLines = typeof _ === "function" ? _ : constant$2(_), this) : this._maxLines;
-    };
-
-    /**
-        @memberof TextBox
         @desc Sets the text overflow to the specified accessor function or static boolean.
         @param {Function|Boolean} [*value* = false]
     */
@@ -8257,6 +8193,7 @@ if (!Array.prototype.includes) {
           return s * 3;
         }
       };
+      this._ariaLabel = constant$2("");
       this._backgroundImage = constant$2(false);
       this._backgroundImageClass = new Image();
       this._data = [];
@@ -8287,6 +8224,7 @@ if (!Array.prototype.includes) {
       this._name = "Shape";
       this._opacity = constant$2(1);
       this._pointerEvents = constant$2("visiblePainted");
+      this._role = constant$2("presentation");
       this._rotate = constant$2(0);
       this._rx = constant$2(0);
       this._ry = constant$2(0);
@@ -8686,7 +8624,7 @@ if (!Array.prototype.includes) {
         .data(labelData)
         .duration(this._duration)
         .pointerEvents("none")
-        .rotate(function (d) { return d.r; })
+        .rotate(function (d) { return d.data.r; })
         .rotateAnchor(function (d) { return d.data.rotateAnchor; })
         .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
         .config(this._labelConfig)
@@ -8740,6 +8678,8 @@ if (!Array.prototype.includes) {
       var enter = this._enter = update.enter().append(this._tagName)
         .attr("class", function (d, i) { return ("d3plus-Shape d3plus-" + (this$1._name) + " d3plus-id-" + (strip(this$1._nestWrapper(this$1._id)(d, i)))); })
         .call(this._applyTransform.bind(this))
+        .attr("aria-label", this._ariaLabel)
+        .attr("role", this._role)
         .attr("opacity", this._nestWrapper(this._opacity));
 
       var enterUpdate = enter.merge(update);
@@ -8844,6 +8784,18 @@ if (!Array.prototype.includes) {
     */
     Shape.prototype.activeStyle = function activeStyle (_) {
       return arguments.length ? (this._activeStyle = assign({}, this._activeStyle, _), this) : this._activeStyle;
+    };
+
+    /**
+        @memberof Shape
+        @desc If *value* is specified, sets the aria-label attribute to the specified function or string and returns the current class instance.
+        @param {Function|String} *value*
+        @chainable
+    */
+    Shape.prototype.ariaLabel = function ariaLabel (_) {
+      return _ !== undefined 
+        ? (this._ariaLabel = typeof _ === "function" ? _ : constant$2(_), this) 
+        : this._ariaLabel;
     };
 
     /**
@@ -9024,13 +8976,25 @@ if (!Array.prototype.includes) {
     };
 
     /**
-         @memberof Shape
-         @desc If *value* is specified, sets the pointerEvents accessor to the specified function or string and returns the current class instance.
-         @param {String} [*value*]
-         @chainable
+        @memberof Shape
+        @desc If *value* is specified, sets the pointerEvents accessor to the specified function or string and returns the current class instance.
+        @param {String} [*value*]
+        @chainable
      */
     Shape.prototype.pointerEvents = function pointerEvents (_) {
       return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$2(_), this) : this._pointerEvents;
+    };
+
+    /**
+        @memberof Shape
+        @desc If *value* is specified, sets the role attribute to the specified function or string and returns the current class instance.
+        @param {Function|String} *value*
+        @chainable
+    */
+    Shape.prototype.role = function role (_) {
+      return _ !== undefined 
+        ? (this._role = typeof _ === "function" ? _ : constant$2(_), this) 
+        : this._role;
     };
 
     /**

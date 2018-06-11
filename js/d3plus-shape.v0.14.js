@@ -340,6 +340,7 @@ if (!Array.prototype.includes) {
           return s * 3;
         }
       };
+      this._ariaLabel = d3plusCommon.constant("");
       this._backgroundImage = d3plusCommon.constant(false);
       this._backgroundImageClass = new Image();
       this._data = [];
@@ -370,6 +371,7 @@ if (!Array.prototype.includes) {
       this._name = "Shape";
       this._opacity = d3plusCommon.constant(1);
       this._pointerEvents = d3plusCommon.constant("visiblePainted");
+      this._role = d3plusCommon.constant("presentation");
       this._rotate = d3plusCommon.constant(0);
       this._rx = d3plusCommon.constant(0);
       this._ry = d3plusCommon.constant(0);
@@ -769,7 +771,7 @@ if (!Array.prototype.includes) {
         .data(labelData)
         .duration(this._duration)
         .pointerEvents("none")
-        .rotate(function (d) { return d.r; })
+        .rotate(function (d) { return d.data.r; })
         .rotateAnchor(function (d) { return d.data.rotateAnchor; })
         .select(d3plusCommon.elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
         .config(this._labelConfig)
@@ -823,6 +825,8 @@ if (!Array.prototype.includes) {
       var enter = this._enter = update.enter().append(this._tagName)
         .attr("class", function (d, i) { return ("d3plus-Shape d3plus-" + (this$1._name) + " d3plus-id-" + (d3plusText.strip(this$1._nestWrapper(this$1._id)(d, i)))); })
         .call(this._applyTransform.bind(this))
+        .attr("aria-label", this._ariaLabel)
+        .attr("role", this._role)
         .attr("opacity", this._nestWrapper(this._opacity));
 
       var enterUpdate = enter.merge(update);
@@ -927,6 +931,18 @@ if (!Array.prototype.includes) {
     */
     Shape.prototype.activeStyle = function activeStyle (_) {
       return arguments.length ? (this._activeStyle = d3plusCommon.assign({}, this._activeStyle, _), this) : this._activeStyle;
+    };
+
+    /**
+        @memberof Shape
+        @desc If *value* is specified, sets the aria-label attribute to the specified function or string and returns the current class instance.
+        @param {Function|String} *value*
+        @chainable
+    */
+    Shape.prototype.ariaLabel = function ariaLabel (_) {
+      return _ !== undefined 
+        ? (this._ariaLabel = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) 
+        : this._ariaLabel;
     };
 
     /**
@@ -1107,13 +1123,25 @@ if (!Array.prototype.includes) {
     };
 
     /**
-         @memberof Shape
-         @desc If *value* is specified, sets the pointerEvents accessor to the specified function or string and returns the current class instance.
-         @param {String} [*value*]
-         @chainable
+        @memberof Shape
+        @desc If *value* is specified, sets the pointerEvents accessor to the specified function or string and returns the current class instance.
+        @param {String} [*value*]
+        @chainable
      */
     Shape.prototype.pointerEvents = function pointerEvents (_) {
       return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._pointerEvents;
+    };
+
+    /**
+        @memberof Shape
+        @desc If *value* is specified, sets the role attribute to the specified function or string and returns the current class instance.
+        @param {Function|String} *value*
+        @chainable
+    */
+    Shape.prototype.role = function role (_) {
+      return _ !== undefined 
+        ? (this._role = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) 
+        : this._role;
     };
 
     /**
