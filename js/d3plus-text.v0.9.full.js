@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.31
+  d3plus-text v0.9.32
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -3620,6 +3620,7 @@ if (!Array.prototype.includes) {
 
       BaseClass$$1.call(this);
 
+      this._ariaHidden = constant$3("false");
       this._delay = 0;
       this._duration = 0;
       this._ellipsis = function (text, line) { return line ? ((text.replace(/\.|,$/g, "")) + "...") : ""; };
@@ -3785,6 +3786,7 @@ if (!Array.prototype.includes) {
           yP -= lH * 0.1;
 
           arr.push({
+            aH: this$1._ariaHidden(d, i),
             data: d,
             i: i,
             lines: lineData,
@@ -3850,6 +3852,7 @@ if (!Array.prototype.includes) {
           function textStyle(text) {
             text
               .text(function (t) { return trimRight(t); })
+              .attr("aria-hidden", d.aH)
               .attr("dir", rtl ? "rtl" : "ltr")
               .attr("fill", d.fC)
               .attr("text-anchor", d.tA)
@@ -3897,7 +3900,6 @@ if (!Array.prototype.includes) {
                 .call(textStyle)
                 .attr("opacity", d.fO)
                 .style("opacity", d.fO);
-
           }
 
         })
@@ -3918,8 +3920,21 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
+        @desc If *value* is specified, sets the aria-hidden attribute to the specified function or string and returns the current class instance.
+        @param {Function|String} *value*
+        @chainable
+    */
+    TextBox.prototype.ariaHidden = function ariaHidden (_) {
+      return _ !== undefined 
+        ? (this._ariaHidden = typeof _ === "function" ? _ : constant$3(_), this) 
+        : this._ariaHidden;
+    };
+
+    /**
+        @memberof TextBox
         @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
         @param {Array} [*data* = []]
+        @chainable
     */
     TextBox.prototype.data = function data (_) {
       return arguments.length ? (this._data = _, this) : this._data;
@@ -3929,6 +3944,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the animation delay to the specified number in milliseconds.
         @param {Number} [*value* = 0]
+        @chainable
     */
     TextBox.prototype.delay = function delay (_) {
       return arguments.length ? (this._delay = _, this) : this._delay;
@@ -3938,6 +3954,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the animation duration to the specified number in milliseconds.
         @param {Number} [*value* = 0]
+        @chainable
     */
     TextBox.prototype.duration = function duration (_) {
       return arguments.length ? (this._duration = _, this) : this._duration;
@@ -3947,6 +3964,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the function that handles what to do when a line is truncated. It should return the new value for the line, and is passed 2 arguments: the String of text for the line in question, and the number of the line. By default, an ellipsis is added to the end of any line except if it is the first word that cannot fit (in that case, an empty string is returned).
         @param {Function|String} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(text, line) {
     return line ? text.replace(/\.|,$/g, "") + "..." : "";
@@ -3960,6 +3978,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
         @param {Function|String} [*value* = "black"]
+        @chainable
     */
     TextBox.prototype.fontColor = function fontColor (_) {
       return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$3(_), this) : this._fontColor;
@@ -3969,6 +3988,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
         @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
+        @chainable
     */
     TextBox.prototype.fontFamily = function fontFamily (_) {
       return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$3(_), this) : this._fontFamily;
@@ -3978,6 +3998,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the maximum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
         @param {Function|Number} [*value* = 50]
+        @chainable
     */
     TextBox.prototype.fontMax = function fontMax (_) {
       return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$3(_), this) : this._fontMax;
@@ -3987,15 +4008,17 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the minimum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
         @param {Function|Number} [*value* = 8]
+        @chainable
     */
     TextBox.prototype.fontMin = function fontMin (_) {
       return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$3(_), this) : this._fontMin;
     };
 
     /**
-         @memberof TextBox
-         @desc Sets the font opacity to the specified accessor function or static number between 0 and 1.
-         @param {Function|Number} [*value* = 1]
+        @memberof TextBox
+        @desc Sets the font opacity to the specified accessor function or static number between 0 and 1.
+        @param {Function|Number} [*value* = 1]
+        @chainable
      */
     TextBox.prototype.fontOpacity = function fontOpacity (_) {
       return arguments.length ? (this._fontOpacity = typeof _ === "function" ? _ : constant$3(_), this) : this._fontOpacity;
@@ -4005,6 +4028,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
         @param {Function|Boolean} [*value* = false]
+        @chainable
     */
     TextBox.prototype.fontResize = function fontResize (_) {
       return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$3(_), this) : this._fontResize;
@@ -4014,6 +4038,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the font size to the specified accessor function or static number (which corresponds to pixel units), which is inferred from the [DOM selection](#textBox.select) by default.
         @param {Function|Number} [*value* = 10]
+        @chainable
     */
     TextBox.prototype.fontSize = function fontSize (_) {
       return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$3(_), this) : this._fontSize;
@@ -4023,6 +4048,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
         @param {Function|Number|String} [*value* = 400]
+        @chainable
     */
     TextBox.prototype.fontWeight = function fontWeight (_) {
       return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$3(_), this) : this._fontWeight;
@@ -4032,6 +4058,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the height for each box to the specified accessor function or static number.
         @param {Function|Number} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d) {
     return d.height || 200;
@@ -4045,6 +4072,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Defines the unique id for each box to the specified accessor function or static number.
         @param {Function|Number} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d, i) {
     return d.id || i + "";
@@ -4058,6 +4086,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the line height to the specified accessor function or static number, which is 1.2 times the [font size](#textBox.fontSize) by default.
         @param {Function|Number} [*value*]
+        @chainable
     */
     TextBox.prototype.lineHeight = function lineHeight (_) {
       return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$3(_), this) : this._lineHeight;
@@ -4067,6 +4096,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Restricts the maximum number of lines to wrap onto, which is null (unlimited) by default.
         @param {Function|Number} [*value*]
+        @chainable
     */
     TextBox.prototype.maxLines = function maxLines (_) {
       return arguments.length ? (this._maxLines = typeof _ === "function" ? _ : constant$3(_), this) : this._maxLines;
@@ -4076,6 +4106,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the text overflow to the specified accessor function or static boolean.
         @param {Function|Boolean} [*value* = false]
+        @chainable
     */
     TextBox.prototype.overflow = function overflow (_) {
       return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$3(_), this) : this._overflow;
@@ -4085,6 +4116,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the padding to the specified accessor function, CSS shorthand string, or static number, which is 0 by default.
         @param {Function|Number|String} [*value*]
+        @chainable
     */
     TextBox.prototype.padding = function padding (_) {
       return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$3(_), this) : this._padding;
@@ -4094,6 +4126,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the pointer-events to the specified accessor function or static string.
         @param {Function|String} [*value* = "auto"]
+        @chainable
     */
     TextBox.prototype.pointerEvents = function pointerEvents (_) {
       return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$3(_), this) : this._pointerEvents;
@@ -4103,6 +4136,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the rotate percentage for each box to the specified accessor function or static string.
         @param {Function|Number} [*value* = 0]
+        @chainable
     */
     TextBox.prototype.rotate = function rotate (_) {
       return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$3(_), this) : this._rotate;
@@ -4112,6 +4146,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the anchor point around which to rotate the text box.
         @param {Function|Number[]}
+        @chainable
      */
     TextBox.prototype.rotateAnchor = function rotateAnchor (_) {
       return arguments.length ? (this._rotateAnchor = typeof _ === "function" ? _ : constant$3(_), this) : this._rotateAnchor;
@@ -4121,6 +4156,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
         @param {String|HTMLElement} [*selector*]
+        @chainable
     */
     TextBox.prototype.select = function select$1 (_) {
       return arguments.length ? (this._select = select(_), this) : this._select;
@@ -4130,6 +4166,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
         @param {Function} [*value*]
+        @chainable
     */
     TextBox.prototype.split = function split (_) {
       return arguments.length ? (this._split = _, this) : this._split;
@@ -4139,6 +4176,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the text for each box to the specified accessor function or static string.
         @param {Function|String} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d) {
     return d.text;
@@ -4152,6 +4190,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
         @param {Function|String} [*value* = "start"]
+        @chainable
     */
     TextBox.prototype.textAnchor = function textAnchor (_) {
       return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$3(_), this) : this._textAnchor;
@@ -4161,6 +4200,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
         @param {Function|String} [*value* = "top"]
+        @chainable
     */
     TextBox.prototype.verticalAlign = function verticalAlign (_) {
       return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$3(_), this) : this._verticalAlign;
@@ -4170,6 +4210,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the width for each box to the specified accessor function or static number.
         @param {Function|Number} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d) {
     return d.width || 200;
@@ -4183,6 +4224,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
         @param {Function|Number} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d) {
     return d.x || 0;
@@ -4196,6 +4238,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
         @param {Function|Number} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d) {
     return d.y || 0;
