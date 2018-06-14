@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.14.8
+  d3plus-shape v0.14.9
   Fancy SVG shapes for visualizations
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -8624,8 +8624,8 @@ if (!Array.prototype.includes) {
         .data(labelData)
         .duration(this._duration)
         .pointerEvents("none")
-        .rotate(function (d) { return d.data.r; })
-        .rotateAnchor(function (d) { return d.data.rotateAnchor; })
+        .rotate(function (d) { return d.__d3plus__ ? d.r : d.data.r; })
+        .rotateAnchor(function (d) { return d.__d3plus__ ? d.rotateAnchor : d.data.rotateAnchor; })
         .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
         .config(this._labelConfig)
         .render();
@@ -8793,8 +8793,8 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Shape.prototype.ariaLabel = function ariaLabel (_) {
-      return _ !== undefined 
-        ? (this._ariaLabel = typeof _ === "function" ? _ : constant$2(_), this) 
+      return _ !== undefined
+        ? (this._ariaLabel = typeof _ === "function" ? _ : constant$2(_), this)
         : this._ariaLabel;
     };
 
@@ -8992,8 +8992,8 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Shape.prototype.role = function role (_) {
-      return _ !== undefined 
-        ? (this._role = typeof _ === "function" ? _ : constant$2(_), this) 
+      return _ !== undefined
+        ? (this._role = typeof _ === "function" ? _ : constant$2(_), this)
         : this._role;
     };
 
