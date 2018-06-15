@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.12
+  d3plus-viz v0.11.13
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -10595,6 +10595,7 @@ if (!Array.prototype.includes) {
     TextBox.prototype.render = function render (callback) {
       var this$1 = this;
 
+
       if (this._select === void 0) { this.select(select("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
 
       var that = this;
@@ -10855,8 +10856,8 @@ if (!Array.prototype.includes) {
         @chainable
     */
     TextBox.prototype.ariaHidden = function ariaHidden (_) {
-      return _ !== undefined
-        ? (this._ariaHidden = typeof _ === "function" ? _ : constant$7(_), this)
+      return _ !== undefined 
+        ? (this._ariaHidden = typeof _ === "function" ? _ : constant$7(_), this) 
         : this._ariaHidden;
     };
 
@@ -11667,8 +11668,8 @@ if (!Array.prototype.includes) {
         .data(labelData)
         .duration(this._duration)
         .pointerEvents("none")
-        .rotate(function (d) { return (console.log(d), d.__d3plus__ ? d.r : d.data.r); })
-        .rotateAnchor(function (d) { return (console.log(d), d.__d3plus__ ? d.rotateAnchor : d.data.rotateAnchor); })
+        .rotate(function (d) { return d.__d3plus__ ? d.r : d.data.r; })
+        .rotateAnchor(function (d) { return d.__d3plus__ ? d.rotateAnchor : d.data.rotateAnchor; })
         .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
         .config(this._labelConfig)
         .render();
@@ -11683,6 +11684,7 @@ if (!Array.prototype.includes) {
     */
     Shape.prototype.render = function render (callback) {
       var this$1 = this;
+
 
       if (this._select === void 0) {
         this.select(select("body").append("svg")
@@ -11699,7 +11701,13 @@ if (!Array.prototype.includes) {
         if (data.key) { key = data.key; }
       }
 
-      if (this._sort) { data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ ? a.data : a, b.__d3plusShape__ ? b.data : b); }); }
+      if (this._sort) {
+        data = data.sort(function (a, b) {
+          while (a.__d3plusShape__ || a.__d3plus__) { a = a.data; }
+          while (b.__d3plusShape__ || b.__d3plus__) { b = b.data; }
+          return this$1._sort(a, b);
+        });
+      }
 
       selectAll(("g.d3plus-" + (this._name) + "-hover > *, g.d3plus-" + (this._name) + "-active > *")).each(function(d) {
         if (d && d.parentNode) { d.parentNode.appendChild(this); }
@@ -31273,8 +31281,7 @@ if (!Array.prototype.includes) {
         .key(fill)
         .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
         .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
-      console.log(configPrep.bind(this)(this._shapeConfig, "legend"));
-      console.log(this._legendConfig);
+      
       this._legendClass
         .id(fill)
         .align(wide ? "center" : position)
@@ -32217,39 +32224,39 @@ if (!Array.prototype.includes) {
       this._shapes = [];
 
       // Draws a container and zoomGroup to test functionality.
-      this._container = this._select.selectAll("svg.d3plus-viz").data([0]);
-
-      this._container = this._container.enter().append("svg")
-          .attr("class", "d3plus-viz")
-          .attr("width", this._width - this._margin.left - this._margin.right)
-          .attr("height", this._height - this._margin.top - this._margin.bottom)
-          .attr("x", this._margin.left)
-          .attr("y", this._margin.top)
-          .style("background-color", "transparent")
-        .merge(this._container);
-
-      this._zoomGroup = this._container.selectAll("g.d3plus-viz-zoomGroup").data([0]);
-      var enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
-        .merge(this._zoomGroup);
-
-      this._zoomGroup = enter.merge(this._zoomGroup);
-
-      this._shapes.push(new Rect()
-        .config(this._shapeConfig)
-        .data(this._filteredData)
-        .label("Test Label")
-        .select(this._zoomGroup.node())
-        .on({
-          mouseenter: this._on.mouseenter,
-          mouseleave: this._on.mouseleave,
-          mousemove: this._on["mousemove.shape"]
-        })
-        .id(function (d) { return d.group; })
-        .x(function (d) { return d.value * 10 + 200; })
-        .y(function (d) { return d.value * 10 + 200; })
-        .width(100)
-        .height(100)
-        .render());
+      // this._container = this._select.selectAll("svg.d3plus-viz").data([0]);
+      //
+      // this._container = this._container.enter().append("svg")
+      //     .attr("class", "d3plus-viz")
+      //     .attr("width", this._width - this._margin.left - this._margin.right)
+      //     .attr("height", this._height - this._margin.top - this._margin.bottom)
+      //     .attr("x", this._margin.left)
+      //     .attr("y", this._margin.top)
+      //     .style("background-color", "transparent")
+      //   .merge(this._container);
+      //
+      // this._zoomGroup = this._container.selectAll("g.d3plus-viz-zoomGroup").data([0]);
+      // const enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
+      //   .merge(this._zoomGroup);
+      //
+      // this._zoomGroup = enter.merge(this._zoomGroup);
+      //
+      // this._shapes.push(new Rect()
+      //   .config(this._shapeConfig)
+      //   .data(this._filteredData)
+      //   .label("Test Label")
+      //   .select(this._zoomGroup.node())
+      //   .on({
+      //     mouseenter: this._on.mouseenter,
+      //     mouseleave: this._on.mouseleave,
+      //     mousemove: this._on["mousemove.shape"]
+      //   })
+      //   .id(d => d.group)
+      //   .x(d => d.value * 10 + 200)
+      //   .y(d => d.value * 10 + 200)
+      //   .width(100)
+      //   .height(100)
+      //   .render());
 
     };
 
@@ -32310,15 +32317,16 @@ if (!Array.prototype.includes) {
         .style("width", ((this._width) + "px"))
         .style("height", ((this._height) + "px"));
 
-      clearInterval(this._visiblePoll);
-      clearTimeout(this._resizePoll);
+      this._visiblePoll = clearInterval(this._visiblePoll);
+      this._resizePoll = clearTimeout(this._resizePoll);
+      this._scrollPoll = clearTimeout(this._scrollPoll);
       select(this._scrollContainer).on(("scroll." + (this._uuid)), null);
       select(this._scrollContainer).on(("resize." + (this._uuid)), null);
       if (this._detectVisible && this._select.style("visibility") === "hidden") {
 
         this._visiblePoll = setInterval(function () {
           if (this$1._select.style("visibility") !== "hidden") {
-            clearInterval(this$1._visiblePoll);
+            this$1._visiblePoll = clearInterval(this$1._visiblePoll);
             this$1.render(callback);
           }
         }, this._detectVisibleInterval);
@@ -32328,7 +32336,7 @@ if (!Array.prototype.includes) {
 
         this._visiblePoll = setInterval(function () {
           if (this$1._select.style("display") !== "none") {
-            clearInterval(this$1._visiblePoll);
+            this$1._visiblePoll = clearInterval(this$1._visiblePoll);
             this$1.render(callback);
           }
         }, this._detectVisibleInterval);
@@ -32337,9 +32345,14 @@ if (!Array.prototype.includes) {
       else if (this._detectVisible && !inViewport(this._select.node())) {
 
         select(this._scrollContainer).on(("scroll." + (this._uuid)), function () {
-          if (inViewport(this$1._select.node())) {
-            select(this$1._scrollContainer).on(("scroll." + (this$1._uuid)), null);
-            this$1.render(callback);
+          if (!this$1._scrollPoll) {
+            this$1._scrollPoll = setTimeout(function () {
+              if (inViewport(this$1._select.node())) {
+                select(this$1._scrollContainer).on(("scroll." + (this$1._uuid)), null);
+                this$1.render(callback);
+              }
+              this$1._scrollPoll = clearTimeout(this$1._scrollPoll);
+            }, this$1._detectVisibleInterval);
           }
         });
 
@@ -32373,9 +32386,9 @@ if (!Array.prototype.includes) {
 
           if (this$1._detectResize && (this$1._autoWidth || this$1._autoHeight)) {
             select(this$1._scrollContainer).on(("resize." + (this$1._uuid)), function () {
-              clearTimeout(this$1._resizePoll);
+              this$1._resizePoll = clearTimeout(this$1._resizePoll);
               this$1._resizePoll = setTimeout(function () {
-                clearTimeout(this$1._resizePoll);
+                this$1._resizePoll = clearTimeout(this$1._resizePoll);
                 var display = this$1._select.style("display");
                 this$1._select.style("display", "none");
                 var ref = getSize$1(this$1._select.node().parentNode);
