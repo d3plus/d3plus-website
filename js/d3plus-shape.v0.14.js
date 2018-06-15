@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.14.10
+  d3plus-shape v0.14.11
   Fancy SVG shapes for visualizations
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -804,7 +804,13 @@ if (!Array.prototype.includes) {
         if (data.key) { key = data.key; }
       }
 
-      if (this._sort) { data = data.sort(function (a, b) { return this$1._sort(a.__d3plusShape__ || a.__d3plus__ ? a.data : a, b.__d3plusShape__ || b.__d3plus__ ? b.data : b); }); }
+      if (this._sort) {
+        data = data.sort(function (a, b) {
+          while (a.__d3plusShape__ || a.__d3plus__) { a = a.data; }
+          while (b.__d3plusShape__ || b.__d3plus__) { b = b.data; }
+          return this$1._sort(a, b);
+        });
+      }
 
       d3Selection.selectAll(("g.d3plus-" + (this._name) + "-hover > *, g.d3plus-" + (this._name) + "-active > *")).each(function(d) {
         if (d && d.parentNode) { d.parentNode.appendChild(this); }
