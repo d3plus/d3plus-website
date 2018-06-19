@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.8
+  d3plus-plot v0.7.9
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -692,18 +692,20 @@ if (!Array.prototype.includes) {
       var yBounds = this._yTest.outerBounds();
       var yWidth = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
 
-      this._y2Test
-        .domain(y2Exists ? y2Domain : yDomain)
-        .height(height)
-        .range([undefined, undefined])
-        .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
-        .select(testGroup.node())
-        .ticks(y2Ticks ? y2Ticks : yTicks)
-        .width(width)
-        .config(yC)
-        .config(defaultY2Config)
-        .config(this._y2Config)
-        .render();
+      if (y2Exists) {
+        this._y2Test
+          .domain(y2Domain)
+          .height(height)
+          .range([undefined, undefined])
+          .scale(y2Scale.toLowerCase())
+          .select(testGroup.node())
+          .ticks(y2Ticks)
+          .width(width)
+          .config(yC)
+          .config(defaultY2Config)
+          .config(this._y2Config)
+          .render();
+      }
 
       var y2Bounds = this._y2Test.outerBounds();
       var y2Width = y2Bounds.width ? y2Bounds.width + this._y2Test.padding() : undefined;
@@ -725,24 +727,29 @@ if (!Array.prototype.includes) {
         .config(this._xConfig)
         .render();
 
-      this._x2Test
-        .domain(x2Exists ? x2Domain : xDomain)
-        .height(height)
-        .range([undefined, undefined])
-        .scale(x2Exists ? x2Scale.toLowerCase() : xScale.toLowerCase())
-        .select(testGroup.node())
-        .ticks(x2Exists ? x2Ticks : xTicks)
-        .width(width)
-        .config(xC)
-        .tickSize(0)
-        .config(defaultX2Config)
-        .config(this._x2Config)
-        .render();
+      if (x2Exists) {
+        this._x2Test
+          .domain(x2Domain)
+          .height(height)
+          .range([undefined, undefined])
+          .scale(x2Scale.toLowerCase())
+          .select(testGroup.node())
+          .ticks(x2Ticks)
+          .width(width)
+          .config(xC)
+          .tickSize(0)
+          .config(defaultX2Config)
+          .config(this._x2Config)
+          .render();
+      }
+
+      var xTestRange = this._xTest._getRange();
+      var x2TestRange = this._x2Test._getRange();
 
       var x2Bounds = this._x2Test.outerBounds();
       var x2Height = x2Bounds.height + this._x2Test.padding();
 
-      var xOffsetLeft =  d3Array.max([yWidth, this._xTest._getRange()[0], this._x2Test._getRange()[0]]);
+      var xOffsetLeft =  d3Array.max([yWidth, xTestRange[0], x2TestRange[0]]);
 
       this._xTest
         .range([xOffsetLeft, undefined])
@@ -751,21 +758,23 @@ if (!Array.prototype.includes) {
       var isYAxisOrdinal = yScale === "Ordinal";
       var topOffset = isYAxisOrdinal ? this._yTest.shapeConfig().labelConfig.fontSize() : this._yTest.shapeConfig().labelConfig.fontSize() / 2;
 
-      var xOffsetRight = d3Array.max([y2Width, width - this._xTest._getRange()[1], width - this._x2Test._getRange()[1]]);
-      var xOffset = width - this._xTest._getRange()[1];
+      var xOffsetRight = d3Array.max([y2Width, width - xTestRange[1], width - x2TestRange[1]]);
+      var xOffset = width - xTestRange[1];
       var xDifference = xOffsetRight - xOffset + this._xTest.padding();
 
-      var x2Offset = width - this._x2Test._getRange()[1];
+      var x2Offset = x2TestRange[1] !== undefined ? width - x2TestRange[1] : width;
       var x2Difference = xOffsetRight - x2Offset + this._x2Test.padding();
-
       var xBounds = this._xTest.outerBounds();
       var xHeight = xBounds.height + this._xTest.padding();
 
-      var yOffsetBottom = d3Array.max([xHeight, height - this._yTest._getRange()[1], height - this._y2Test._getRange()[1]]);
-      var yAxisOffset = height - this._yTest._getRange()[1];
+      var yTestRange = this._yTest._getRange();
+      var y2TestRange = this._y2Test._getRange();
+
+      var yOffsetBottom = d3Array.max([xHeight, height - yTestRange[1], height - y2TestRange[1]]);
+      var yAxisOffset = height - yTestRange[1];
       var yDifference = isYAxisOrdinal ? yOffsetBottom - yAxisOffset + this._yTest.padding() : xHeight;
 
-      var y2AxisOffset = height - this._y2Test._getRange()[1];
+      var y2AxisOffset = y2TestRange[1] !== undefined ? height - y2TestRange[1] : height;
       var y2Difference = isYAxisOrdinal ? yOffsetBottom - y2AxisOffset + this._y2Test.padding() : xHeight;
 
       this._padding.left += xOffsetLeft;
@@ -793,25 +802,27 @@ if (!Array.prototype.includes) {
 
       yBounds = this._yTest.outerBounds();
       yWidth = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
-      xOffsetLeft =  d3Array.max([yWidth, this._xTest._getRange()[0], this._x2Test._getRange()[0]]);
+      xOffsetLeft =  d3Array.max([yWidth, xTestRange[0], x2TestRange[0]]);
 
-      this._y2Test
+      if (y2Exists) {
+        this._y2Test
         .config(yC)
-        .domain(y2Exists ? y2Domain : yDomain)
+        .domain(y2Domain)
         .gridSize(0)
         .height(height)
         .range([x2Height, height - (y2Difference + topOffset + verticalMargin)])
-        .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
+        .scale(y2Scale.toLowerCase())
         .select(testGroup.node())
         .width(width - d3Array.max([0, xOffsetRight - y2Width]))
         .title(false)
         .config(this._y2Config)
         .config(defaultY2Config)
         .render();
+      }
 
       y2Bounds = this._y2Test.outerBounds();
       y2Width = y2Bounds.width ? y2Bounds.width + this._y2Test.padding() : undefined;
-      xOffsetRight = d3Array.max([y2Width, width - this._xTest._getRange()[1], width - this._x2Test._getRange()[1]]);
+      xOffsetRight = d3Array.max([y2Width, width - xTestRange[1], width - x2TestRange[1]]);
 
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + x2Height + topOffset) + ")";
       var x2Transform = "translate(" + (this._margin.left) + ", " + (this._margin.top + topOffset) + ")";
@@ -839,18 +850,20 @@ if (!Array.prototype.includes) {
         .config(this._xConfig)
         .render();
 
-      this._x2Axis
-        .domain(x2Exists ? x2Domain : xDomain)
-        .height(height - (xHeight + topOffset + verticalMargin))
-        .range([xOffsetLeft, width - (x2Difference + horizontalMargin)])
-        .scale(x2Scale.toLowerCase())
-        .select(x2Group.node())
-        .ticks(x2Exists ? x2Ticks : xTicks)
-        .width(width)
-        .config(xC)
-        .config(defaultX2Config)
-        .config(this._x2Config)
-        .render();
+      if (x2Exists) {
+        this._x2Axis
+          .domain(x2Domain)
+          .height(height - (xHeight + topOffset + verticalMargin))
+          .range([xOffsetLeft, width - (x2Difference + horizontalMargin)])
+          .scale(x2Scale.toLowerCase())
+          .select(x2Group.node())
+          .ticks(x2Ticks)
+          .width(width)
+          .config(xC)
+          .config(defaultX2Config)
+          .config(this._x2Config)
+          .render();
+      }
 
       x = function (d, x) {
         if (x === "x2") {
@@ -877,19 +890,21 @@ if (!Array.prototype.includes) {
         .config(this._yConfig)
         .render();
 
-      this._y2Axis
-        .config(yC)
-        .domain(y2Exists ? y2Domain : yDomain)
-        .gridSize(0)
-        .height(height)
-        .range([this._xAxis.outerBounds().y + x2Height, height - (y2Difference + topOffset + verticalMargin)])
-        .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
-        .select(y2Group.node())
-        .width(width - d3Array.max([0, xOffsetRight - y2Width]))
-        .title(false)
-        .config(this._y2Config)
-        .config(defaultY2Config)
-        .render();
+      if (y2Exists) {
+        this._y2Axis
+          .config(yC)
+          .domain(y2Exists ? y2Domain : yDomain)
+          .gridSize(0)
+          .height(height)
+          .range([this._xAxis.outerBounds().y + x2Height, height - (y2Difference + topOffset + verticalMargin)])
+          .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
+          .select(y2Group.node())
+          .width(width - d3Array.max([0, xOffsetRight - y2Width]))
+          .title(false)
+          .config(this._y2Config)
+          .config(defaultY2Config)
+          .render();
+      }
 
       y = function (d, y) {
         if (y === "y2") {
