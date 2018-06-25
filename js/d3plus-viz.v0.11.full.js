@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.13
+  d3plus-viz v0.11.14
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -31971,6 +31971,7 @@ if (!Array.prototype.includes) {
         selectStyle: Object.assign({margin: "5px"}, controlTest.selectStyle())
       };
       this._data = [];
+      this._svgDesc = "";
       this._detectResize = true;
       this._detectResizeDelay = 400;
       this._detectVisible = true;
@@ -31985,6 +31986,7 @@ if (!Array.prototype.includes) {
       this._legendConfig = {
         label: legendLabel.bind(this),
         shapeConfig: {
+          ariaLabel: legendLabel.bind(this),
           labelConfig: {
             fontColor: undefined,
             fontResize: false,
@@ -32026,6 +32028,7 @@ if (!Array.prototype.includes) {
       this._shape = constant$7("Rect");
       this._shapes = [];
       this._shapeConfig = {
+        ariaLabel: function (d, i) { return this$1._drawLabel(d, i); },
         fill: function (d, i) {
           while (d.__d3plus__ && d.data) {
             d = d.data;
@@ -32054,6 +32057,7 @@ if (!Array.prototype.includes) {
           var c = typeof this$1._shapeConfig.fill === "function" ? this$1._shapeConfig.fill(d, i) : this$1._shapeConfig.fill;
           return color(c).darker();
         },
+        role: "presentation",
         strokeWidth: constant$7(0)
       };
 
@@ -32063,6 +32067,7 @@ if (!Array.prototype.includes) {
 
       this._titleClass = new TextBox();
       this._titleConfig = {
+        ariaHidden: true,
         fontSize: 12,
         padding: 5,
         resize: false,
@@ -32225,7 +32230,7 @@ if (!Array.prototype.includes) {
 
       // Draws a container and zoomGroup to test functionality.
       // this._container = this._select.selectAll("svg.d3plus-viz").data([0]);
-      //
+      
       // this._container = this._container.enter().append("svg")
       //     .attr("class", "d3plus-viz")
       //     .attr("width", this._width - this._margin.left - this._margin.right)
@@ -32234,13 +32239,13 @@ if (!Array.prototype.includes) {
       //     .attr("y", this._margin.top)
       //     .style("background-color", "transparent")
       //   .merge(this._container);
-      //
+      
       // this._zoomGroup = this._container.selectAll("g.d3plus-viz-zoomGroup").data([0]);
       // const enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
       //   .merge(this._zoomGroup);
-      //
+      
       // this._zoomGroup = enter.merge(this._zoomGroup);
-      //
+      
       // this._shapes.push(new Rect()
       //   .config(this._shapeConfig)
       //   .data(this._filteredData)
@@ -32257,7 +32262,6 @@ if (!Array.prototype.includes) {
       //   .width(100)
       //   .height(100)
       //   .render());
-
     };
 
     /**
@@ -32301,7 +32305,6 @@ if (!Array.prototype.includes) {
           .style("height", ((this._height) + "px"));
 
         this.select(svg.node());
-
       }
 
       // Calculates the width and/or height of the Viz based on the this._select, if either has not been defined.
@@ -32313,9 +32316,23 @@ if (!Array.prototype.includes) {
         if (!this._height) { this.height(h$1); }
       }
 
-      this._select.transition(this._transition)
+      this._select
+        .attr("aria-labelledby", ((this._uuid) + "-title " + (this._uuid) + "-desc"))
+        .attr("role", "img")
+        .transition(this._transition)
         .style("width", ((this._width) + "px"))
         .style("height", ((this._height) + "px"));
+
+      // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
+      var svgTitleText = this._title || "D3plus Visualization";
+      var svgTitle = this._select.selectAll("title").data([0]);
+      var svgTitleEnter = svgTitle.enter().append("title").attr("id", ((this._uuid) + "-title"));
+      svgTitle.merge(svgTitleEnter).text(svgTitleText);
+
+      // Updates the <desc> tag if already exists else creates a new <desc> tag on this.select.
+      var svgDesc = this._select.selectAll("desc").data([0]);
+      var svgDescEnter = svgDesc.enter().append("desc").attr("id", ((this._uuid) + "-desc"));
+      svgDesc.merge(svgDescEnter).text(this._svgDesc);
 
       this._visiblePoll = clearInterval(this._visiblePoll);
       this._resizePoll = clearTimeout(this._resizePoll);
@@ -32358,7 +32375,6 @@ if (!Array.prototype.includes) {
 
       }
       else {
-
         var q = queue();
 
         if (this._loadingMessage) {
@@ -32556,6 +32572,16 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.depth = function depth (_) {
       return arguments.length ? (this._depth = _, this) : this._depth;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the description accessor to the specified string and returns the current class instance.
+        @param {String} [*value*]
+        @chainable
+    */
+    Viz.prototype.desc = function desc (_) {
+      return arguments.length ? (this._svgDesc =  _, this) : this._svgDesc;
     };
 
     /**
