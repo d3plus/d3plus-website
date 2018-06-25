@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.3.0
+  d3plus-network v0.3.1
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -200,6 +200,10 @@ if (!Array.prototype.includes) {
       this._sizeScale = "sqrt";
       this._shape = d3plusCommon.constant("Circle");
       this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
+        ariaLabel: function (d, i) {
+          var validSize = this$1._size ? (", " + (this$1._size(d, i))) : "";
+          return ("" + (this$1._drawLabel(d, i)) + validSize + ".");
+        },
         labelConfig: {
           duration: 0,
           fontMin: 1,
@@ -647,6 +651,10 @@ if (!Array.prototype.includes) {
       this._sizeScale = "sqrt";
       this._shape = d3plusCommon.constant("Circle");
       this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
+        ariaLabel: function (d, i) {
+          var validSize = this$1._size ? (", " + (this$1._size(d, i))) : "";
+          return ("" + (this$1._drawLabel(d, i)) + validSize + ".");
+        },
         labelConfig: {
           duration: 0,
           fontMin: 1,
