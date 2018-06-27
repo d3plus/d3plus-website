@@ -68,7 +68,6 @@ if (!Array.prototype.includes) {
   typeof define === 'function' && define.amd ? define('d3plus-dev', ['exports'], factory) :
   (factory((global.d3plus = {})));
 }(this, (function (exports) {
-
   function ascending(a, b) {
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
@@ -1440,6 +1439,7 @@ if (!Array.prototype.includes) {
       return (end - start) / k;
     });
   };
+  var milliseconds = millisecond.range;
 
   var durationSecond = 1e3;
   var durationMinute = 6e4;
@@ -1456,6 +1456,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getUTCSeconds();
   });
+  var seconds = second.range;
 
   var minute = newInterval(function(date) {
     date.setTime(Math.floor(date / durationMinute) * durationMinute);
@@ -1466,6 +1467,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getMinutes();
   });
+  var minutes = minute.range;
 
   var hour = newInterval(function(date) {
     var offset = date.getTimezoneOffset() * durationMinute % durationHour;
@@ -1478,6 +1480,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getHours();
   });
+  var hours = hour.range;
 
   var day = newInterval(function(date) {
     date.setHours(0, 0, 0, 0);
@@ -1488,6 +1491,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getDate() - 1;
   });
+  var days = day.range;
 
   function weekday(i) {
     return newInterval(function(date) {
@@ -1508,6 +1512,8 @@ if (!Array.prototype.includes) {
   var friday = weekday(5);
   var saturday = weekday(6);
 
+  var sundays = sunday.range;
+
   var month = newInterval(function(date) {
     date.setDate(1);
     date.setHours(0, 0, 0, 0);
@@ -1518,6 +1524,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getMonth();
   });
+  var months = month.range;
 
   var year = newInterval(function(date) {
     date.setMonth(0, 1);
@@ -1540,6 +1547,7 @@ if (!Array.prototype.includes) {
       date.setFullYear(date.getFullYear() + step * k);
     });
   };
+  var years = year.range;
 
   var utcMinute = newInterval(function(date) {
     date.setUTCSeconds(0, 0);
@@ -1550,6 +1558,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getUTCMinutes();
   });
+  var utcMinutes = utcMinute.range;
 
   var utcHour = newInterval(function(date) {
     date.setUTCMinutes(0, 0, 0);
@@ -1560,6 +1569,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getUTCHours();
   });
+  var utcHours = utcHour.range;
 
   var utcDay = newInterval(function(date) {
     date.setUTCHours(0, 0, 0, 0);
@@ -1570,6 +1580,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getUTCDate() - 1;
   });
+  var utcDays = utcDay.range;
 
   function utcWeekday(i) {
     return newInterval(function(date) {
@@ -1590,6 +1601,8 @@ if (!Array.prototype.includes) {
   var utcFriday = utcWeekday(5);
   var utcSaturday = utcWeekday(6);
 
+  var utcSundays = utcSunday.range;
+
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
@@ -1600,6 +1613,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getUTCMonth();
   });
+  var utcMonths = utcMonth.range;
 
   var utcYear = newInterval(function(date) {
     date.setUTCMonth(0, 1);
@@ -1622,6 +1636,7 @@ if (!Array.prototype.includes) {
       date.setUTCFullYear(date.getUTCFullYear() + step * k);
     });
   };
+  var utcYears = utcYear.range;
 
   function localDate(d) {
     if (0 <= d.y && d.y < 100) {
@@ -3771,12 +3786,12 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function attrFunction$1(name, interpolate$$1, value) {
+  function attrFunction$1(name, interpolate$$1, value$$1) {
     var value00,
         value10,
         interpolate0;
     return function() {
-      var value0, value1 = value(this);
+      var value0, value1 = value$$1(this);
       if (value1 == null) { return void this.removeAttribute(name); }
       value0 = this.getAttribute(name);
       return value0 === value1 ? null
@@ -3785,12 +3800,12 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function attrFunctionNS$1(fullname, interpolate$$1, value) {
+  function attrFunctionNS$1(fullname, interpolate$$1, value$$1) {
     var value00,
         value10,
         interpolate0;
     return function() {
-      var value0, value1 = value(this);
+      var value0, value1 = value$$1(this);
       if (value1 == null) { return void this.removeAttributeNS(fullname.space, fullname.local); }
       value0 = this.getAttributeNS(fullname.space, fullname.local);
       return value0 === value1 ? null
@@ -3799,12 +3814,12 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function transition_attr(name, value) {
+  function transition_attr(name, value$$1) {
     var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate;
-    return this.attrTween(name, typeof value === "function"
-        ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
-        : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
-        : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value + ""));
+    return this.attrTween(name, typeof value$$1 === "function"
+        ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value$$1))
+        : value$$1 == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
+        : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value$$1 + ""));
   }
 
   function attrTweenNS(fullname, value) {
@@ -4052,13 +4067,13 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function styleFunction$1(name, interpolate$$1, value) {
+  function styleFunction$1(name, interpolate$$1, value$$1) {
     var value00,
         value10,
         interpolate0;
     return function() {
       var value0 = styleValue(this, name),
-          value1 = value(this);
+          value1 = value$$1(this);
       if (value1 == null) { value1 = (this.style.removeProperty(name), styleValue(this, name)); }
       return value0 === value1 ? null
           : value0 === value00 && value1 === value10 ? interpolate0
@@ -4066,14 +4081,14 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function transition_style(name, value, priority) {
+  function transition_style(name, value$$1, priority) {
     var i = (name += "") === "transform" ? interpolateTransformCss : interpolate;
-    return value == null ? this
+    return value$$1 == null ? this
             .styleTween(name, styleRemove$1(name, i))
             .on("end.style." + name, styleRemoveEnd(name))
-        : this.styleTween(name, typeof value === "function"
-            ? styleFunction$1(name, i, tweenValue(this, "style." + name, value))
-            : styleConstant$1(name, i, value + ""), priority);
+        : this.styleTween(name, typeof value$$1 === "function"
+            ? styleFunction$1(name, i, tweenValue(this, "style." + name, value$$1))
+            : styleConstant$1(name, i, value$$1 + ""), priority);
   }
 
   function styleTween(name, value, priority) {
