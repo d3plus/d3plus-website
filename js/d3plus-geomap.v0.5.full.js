@@ -6611,15 +6611,16 @@ if (!Array.prototype.includes) {
   function sequential(interpolator) {
     var x0 = 0,
         x1 = 1,
+        k10 = 1,
         clamp = false;
 
     function scale(x) {
-      var t = (x - x0) / (x1 - x0);
+      var t = (x - x0) * k10;
       return interpolator(clamp ? Math.max(0, Math.min(1, t)) : t);
     }
 
     scale.domain = function(_) {
-      return arguments.length ? (x0 = +_[0], x1 = +_[1], scale) : [x0, x1];
+      return arguments.length ? (x0 = +_[0], x1 = +_[1], k10 = x0 === x1 ? 0 : 1 / (x1 - x0), scale) : [x0, x1];
     };
 
     scale.clamp = function(_) {
@@ -6632,6 +6633,38 @@ if (!Array.prototype.includes) {
 
     scale.copy = function() {
       return sequential(interpolator).domain([x0, x1]).clamp(clamp);
+    };
+
+    return linearish(scale);
+  }
+
+  function diverging(interpolator) {
+    var x0 = 0,
+        x1 = 0.5,
+        x2 = 1,
+        k10 = 1,
+        k21 = 1,
+        clamp = false;
+
+    function scale(x) {
+      var t = 0.5 + ((x = +x) - x1) * (x < x1 ? k10 : k21);
+      return interpolator(clamp ? Math.max(0, Math.min(1, t)) : t);
+    }
+
+    scale.domain = function(_) {
+      return arguments.length ? (x0 = +_[0], x1 = +_[1], x2 = +_[2], k10 = x0 === x1 ? 0 : 0.5 / (x1 - x0), k21 = x1 === x2 ? 0 : 0.5 / (x2 - x1), scale) : [x0, x1, x2];
+    };
+
+    scale.clamp = function(_) {
+      return arguments.length ? (clamp = !!_, scale) : clamp;
+    };
+
+    scale.interpolator = function(_) {
+      return arguments.length ? (interpolator = _, scale) : interpolator;
+    };
+
+    scale.copy = function() {
+      return diverging(interpolator).domain([x0, x1, x2]).clamp(clamp);
     };
 
     return linearish(scale);
@@ -6654,7 +6687,8 @@ if (!Array.prototype.includes) {
     scaleThreshold: threshold$1,
     scaleTime: time,
     scaleUtc: utcTime,
-    scaleSequential: sequential
+    scaleSequential: sequential,
+    scaleDiverging: diverging
   });
 
   function tile() {
@@ -6851,6 +6885,17 @@ if (!Array.prototype.includes) {
 
   /**
       @function assign
+      @desc Determines if the object passed is the document or window.
+      @param {Object} obj
+      @private
+  */
+  function validObject(obj) {
+    if (typeof window === "undefined") { return true; }
+    else { return obj !== window && obj !== document; }
+  }
+
+  /**
+      @function assign
       @desc A deeply recursive version of `Object.assign`.
       @param {...Object} objects
       @example <caption>this</caption>
@@ -6874,11 +6919,9 @@ if (!Array.prototype.includes) {
 
         var value = source[prop];
 
-        if (isObject(value)) {
-
+        if (isObject(value) && validObject(value)) {
           if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
-          else { target[prop] = value; }
-
+          else { target[prop] = assign({}, value); }
         }
         else if (Array.isArray(value)) {
 
@@ -9222,7 +9265,7 @@ if (!Array.prototype.includes) {
       @param {Object} obj
       @private
   */
-  function validObject(obj) {
+  function validObject$1(obj) {
     if (typeof window === "undefined") { return true; }
     else { return obj !== window && obj !== document; }
   }
@@ -9252,7 +9295,7 @@ if (!Array.prototype.includes) {
 
         var value = source[prop];
 
-        if (isObject$1(value) && validObject(value)) {
+        if (isObject$1(value) && validObject$1(value)) {
           if (target.hasOwnProperty(prop) && isObject$1(target[prop])) { target[prop] = assign$1({}, target[prop], value); }
           else { target[prop] = assign$1({}, value); }
         }
@@ -11896,7 +11939,7 @@ if (!Array.prototype.includes) {
     none$1(series, order);
   }
 
-  function diverging(series, order) {
+  function diverging$1(series, order) {
     if (!((n = series.length) > 1)) { return; }
     for (var i, j = 0, d, dy, yp, yn, n, m = series[order[0]].length; j < m; ++j) {
       for (yp = yn = 0, i = 0; i < n; ++i) {
@@ -12031,7 +12074,7 @@ if (!Array.prototype.includes) {
     curveStepBefore: stepBefore,
     stack: stack,
     stackOffsetExpand: expand,
-    stackOffsetDiverging: diverging,
+    stackOffsetDiverging: diverging$1,
     stackOffsetNone: none$1,
     stackOffsetSilhouette: silhouette,
     stackOffsetWiggle: wiggle,
@@ -18218,6 +18261,7 @@ if (!Array.prototype.includes) {
         fontWeight = 400,
         height = 200,
         lineHeight,
+        maxLines = null,
         overflow = false,
         split = textSplit$1,
         width = 200;
@@ -18261,7 +18305,7 @@ if (!Array.prototype.includes) {
           }
           lineData[line - 1] = trimRight$1(lineData[line - 1]);
           line++;
-          if (lineHeight * line > height || wordWidth > width && !overflow) {
+          if (lineHeight * line > height || wordWidth > width && !overflow || maxLines && line > maxLines) {
             truncated = true;
             break;
           }
@@ -18331,6 +18375,15 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof textWrap
+        @desc If *value* is specified, sets the maximum number of lines allowed when wrapping.
+        @param {Function|Number} [*value*]
+    */
+    textWrap.maxLines = function(_) {
+      return arguments.length ? (maxLines = _, textWrap) : maxLines;
+    };
+
+    /**
+        @memberof textWrap
         @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
         @param {Boolean} [*value* = false]
     */
@@ -18377,6 +18430,7 @@ if (!Array.prototype.includes) {
 
       BaseClass$$1.call(this);
 
+      this._ariaHidden = constant$4("false");
       this._delay = 0;
       this._duration = 0;
       this._ellipsis = function (text, line) { return line ? ((text.replace(/\.|,$/g, "")) + "...") : ""; };
@@ -18391,6 +18445,7 @@ if (!Array.prototype.includes) {
       this._height = accessor("height", 200);
       this._id = function (d, i) { return d.id || ("" + i); };
       this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.2; };
+      this._maxLines = constant$4(null);
       this._on = {};
       this._overflow = constant$4(false);
       this._padding = constant$4(0);
@@ -18456,6 +18511,7 @@ if (!Array.prototype.includes) {
           .fontSize(fS)
           .fontWeight(style["font-weight"])
           .lineHeight(lH)
+          .maxLines(this$1._maxLines(d, i))
           .height(h)
           .overflow(this$1._overflow(d, i))
           .width(w);
@@ -18470,12 +18526,14 @@ if (!Array.prototype.includes) {
             @private
         */
         function checkSize() {
+          var truncate = function () {
+            if (line < 1) { lineData = [that._ellipsis("", line)]; }
+            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
+          };
 
-          if (fS < fMin) {
-            lineData = [];
-            return;
-          }
-          else if (fS > fMax) { fS = fMax; }
+          // Constraint the font size
+          fS = max([fS, fMin]);
+          fS = min([fS, fMax]);
 
           if (resize) {
             lH = fS * lHRatio;
@@ -18491,18 +18549,17 @@ if (!Array.prototype.includes) {
           line = lineData.length;
 
           if (wrapResults.truncated) {
-
             if (resize) {
               fS--;
-              if (fS < fMin) { lineData = []; }
+              if (fS < fMin) {
+                fS = fMin;
+                truncate();
+                return;
+              }
               else { checkSize(); }
             }
-            else if (line < 1) { lineData = [that._ellipsis("", line)]; }
-            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
-
+            else { truncate(); }
           }
-
-
         }
 
         if (w > fMin && (h > lH || resize && h > fMin * lHRatio)) {
@@ -18539,6 +18596,7 @@ if (!Array.prototype.includes) {
           yP -= lH * 0.1;
 
           arr.push({
+            aH: this$1._ariaHidden(d, i),
             data: d,
             i: i,
             lines: lineData,
@@ -18547,6 +18605,7 @@ if (!Array.prototype.includes) {
             fO: this$1._fontOpacity(d, i),
             fW: style["font-weight"],
             id: this$1._id(d, i),
+            r: this$1._rotate(d, i),
             tA: this$1._textAnchor(d, i),
             widths: wrapResults.widths,
             fS: fS, lH: lH, w: w, h: h,
@@ -18558,7 +18617,7 @@ if (!Array.prototype.includes) {
 
         return arr;
 
-      }, []), this._id);
+      }, []), function (d) { return this$1._id(d.data, d.i); });
 
       var t = transition().duration(this._duration);
 
@@ -18572,14 +18631,15 @@ if (!Array.prototype.includes) {
         boxes.exit().transition().delay(this._duration).remove();
 
         boxes.exit().selectAll("text").transition(t)
-          .attr("opacity", 0);
+          .attr("opacity", 0)
+          .style("opacity", 0);
 
       }
 
       function rotate(text) {
         text.attr("transform", function (d, i) {
           var rotateAnchor = that._rotateAnchor(d, i);
-          return ("translate(" + (d.x) + ", " + (d.y) + ") rotate(" + (that._rotate(d, i)) + ", " + (rotateAnchor[0]) + ", " + (rotateAnchor[1]) + ")");
+          return ("translate(" + (d.x) + ", " + (d.y) + ") rotate(" + (d.r) + ", " + (rotateAnchor[0]) + ", " + (rotateAnchor[1]) + ")");
         });
       }
 
@@ -18602,6 +18662,7 @@ if (!Array.prototype.includes) {
           function textStyle(text) {
             text
               .text(function (t) { return trimRight$1(t); })
+              .attr("aria-hidden", d.aH)
               .attr("dir", rtl ? "rtl" : "ltr")
               .attr("fill", d.fC)
               .attr("text-anchor", d.tA)
@@ -18611,8 +18672,6 @@ if (!Array.prototype.includes) {
               .style("font-size", ((d.fS) + "px"))
               .attr("font-weight", d.fW)
               .style("font-weight", d.fW)
-              .attr("opacity", d.fO)
-              .style("opacity", d.fO)
               .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
               .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
           }
@@ -18629,7 +18688,9 @@ if (!Array.prototype.includes) {
               .attr("dominant-baseline", "alphabetic")
               .style("baseline-shift", "0%")
               .attr("unicode-bidi", "bidi-override")
-              .call(textStyle);
+              .call(textStyle)
+              .attr("opacity", d.fO)
+              .style("opacity", d.fO);
 
           }
           else {
@@ -18643,11 +18704,12 @@ if (!Array.prototype.includes) {
                 .attr("dominant-baseline", "alphabetic")
                 .style("baseline-shift", "0%")
                 .attr("opacity", 0)
+                .style("opacity", 0)
                 .call(textStyle)
               .merge(texts).transition(t).delay(that._delay)
                 .call(textStyle)
-                .attr("opacity", 1);
-
+                .attr("opacity", d.fO)
+                .style("opacity", d.fO);
           }
 
         })
@@ -18668,8 +18730,21 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
+        @desc If *value* is specified, sets the aria-hidden attribute to the specified function or string and returns the current class instance.
+        @param {Function|String} *value*
+        @chainable
+    */
+    TextBox.prototype.ariaHidden = function ariaHidden (_) {
+      return _ !== undefined 
+        ? (this._ariaHidden = typeof _ === "function" ? _ : constant$4(_), this) 
+        : this._ariaHidden;
+    };
+
+    /**
+        @memberof TextBox
         @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
         @param {Array} [*data* = []]
+        @chainable
     */
     TextBox.prototype.data = function data (_) {
       return arguments.length ? (this._data = _, this) : this._data;
@@ -18679,6 +18754,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the animation delay to the specified number in milliseconds.
         @param {Number} [*value* = 0]
+        @chainable
     */
     TextBox.prototype.delay = function delay (_) {
       return arguments.length ? (this._delay = _, this) : this._delay;
@@ -18688,6 +18764,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the animation duration to the specified number in milliseconds.
         @param {Number} [*value* = 0]
+        @chainable
     */
     TextBox.prototype.duration = function duration (_) {
       return arguments.length ? (this._duration = _, this) : this._duration;
@@ -18697,6 +18774,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the function that handles what to do when a line is truncated. It should return the new value for the line, and is passed 2 arguments: the String of text for the line in question, and the number of the line. By default, an ellipsis is added to the end of any line except if it is the first word that cannot fit (in that case, an empty string is returned).
         @param {Function|String} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(text, line) {
     return line ? text.replace(/\.|,$/g, "") + "..." : "";
@@ -18710,6 +18788,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
         @param {Function|String} [*value* = "black"]
+        @chainable
     */
     TextBox.prototype.fontColor = function fontColor (_) {
       return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$4(_), this) : this._fontColor;
@@ -18719,6 +18798,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
         @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
+        @chainable
     */
     TextBox.prototype.fontFamily = function fontFamily (_) {
       return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$4(_), this) : this._fontFamily;
@@ -18728,6 +18808,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the maximum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
         @param {Function|Number} [*value* = 50]
+        @chainable
     */
     TextBox.prototype.fontMax = function fontMax (_) {
       return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$4(_), this) : this._fontMax;
@@ -18737,15 +18818,17 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the minimum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
         @param {Function|Number} [*value* = 8]
+        @chainable
     */
     TextBox.prototype.fontMin = function fontMin (_) {
       return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$4(_), this) : this._fontMin;
     };
 
     /**
-         @memberof TextBox
-         @desc Sets the font opacity to the specified accessor function or static number between 0 and 1.
-         @param {Function|Number} [*value* = 1]
+        @memberof TextBox
+        @desc Sets the font opacity to the specified accessor function or static number between 0 and 1.
+        @param {Function|Number} [*value* = 1]
+        @chainable
      */
     TextBox.prototype.fontOpacity = function fontOpacity (_) {
       return arguments.length ? (this._fontOpacity = typeof _ === "function" ? _ : constant$4(_), this) : this._fontOpacity;
@@ -18755,6 +18838,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
         @param {Function|Boolean} [*value* = false]
+        @chainable
     */
     TextBox.prototype.fontResize = function fontResize (_) {
       return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$4(_), this) : this._fontResize;
@@ -18764,6 +18848,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the font size to the specified accessor function or static number (which corresponds to pixel units), which is inferred from the [DOM selection](#textBox.select) by default.
         @param {Function|Number} [*value* = 10]
+        @chainable
     */
     TextBox.prototype.fontSize = function fontSize (_) {
       return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$4(_), this) : this._fontSize;
@@ -18773,6 +18858,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
         @param {Function|Number|String} [*value* = 400]
+        @chainable
     */
     TextBox.prototype.fontWeight = function fontWeight (_) {
       return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$4(_), this) : this._fontWeight;
@@ -18782,6 +18868,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the height for each box to the specified accessor function or static number.
         @param {Function|Number} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d) {
     return d.height || 200;
@@ -18795,6 +18882,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Defines the unique id for each box to the specified accessor function or static number.
         @param {Function|Number} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d, i) {
     return d.id || i + "";
@@ -18808,6 +18896,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the line height to the specified accessor function or static number, which is 1.2 times the [font size](#textBox.fontSize) by default.
         @param {Function|Number} [*value*]
+        @chainable
     */
     TextBox.prototype.lineHeight = function lineHeight (_) {
       return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$4(_), this) : this._lineHeight;
@@ -18815,8 +18904,19 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
+        @desc Restricts the maximum number of lines to wrap onto, which is null (unlimited) by default.
+        @param {Function|Number} [*value*]
+        @chainable
+    */
+    TextBox.prototype.maxLines = function maxLines (_) {
+      return arguments.length ? (this._maxLines = typeof _ === "function" ? _ : constant$4(_), this) : this._maxLines;
+    };
+
+    /**
+        @memberof TextBox
         @desc Sets the text overflow to the specified accessor function or static boolean.
         @param {Function|Boolean} [*value* = false]
+        @chainable
     */
     TextBox.prototype.overflow = function overflow (_) {
       return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$4(_), this) : this._overflow;
@@ -18826,6 +18926,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the padding to the specified accessor function, CSS shorthand string, or static number, which is 0 by default.
         @param {Function|Number|String} [*value*]
+        @chainable
     */
     TextBox.prototype.padding = function padding (_) {
       return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$4(_), this) : this._padding;
@@ -18835,6 +18936,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the pointer-events to the specified accessor function or static string.
         @param {Function|String} [*value* = "auto"]
+        @chainable
     */
     TextBox.prototype.pointerEvents = function pointerEvents (_) {
       return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$4(_), this) : this._pointerEvents;
@@ -18844,6 +18946,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the rotate percentage for each box to the specified accessor function or static string.
         @param {Function|Number} [*value* = 0]
+        @chainable
     */
     TextBox.prototype.rotate = function rotate (_) {
       return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$4(_), this) : this._rotate;
@@ -18853,6 +18956,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the anchor point around which to rotate the text box.
         @param {Function|Number[]}
+        @chainable
      */
     TextBox.prototype.rotateAnchor = function rotateAnchor (_) {
       return arguments.length ? (this._rotateAnchor = typeof _ === "function" ? _ : constant$4(_), this) : this._rotateAnchor;
@@ -18862,6 +18966,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
         @param {String|HTMLElement} [*selector*]
+        @chainable
     */
     TextBox.prototype.select = function select$1 (_) {
       return arguments.length ? (this._select = select(_), this) : this._select;
@@ -18871,6 +18976,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
         @param {Function} [*value*]
+        @chainable
     */
     TextBox.prototype.split = function split (_) {
       return arguments.length ? (this._split = _, this) : this._split;
@@ -18880,6 +18986,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the text for each box to the specified accessor function or static string.
         @param {Function|String} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d) {
     return d.text;
@@ -18893,6 +19000,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
         @param {Function|String} [*value* = "start"]
+        @chainable
     */
     TextBox.prototype.textAnchor = function textAnchor (_) {
       return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$4(_), this) : this._textAnchor;
@@ -18902,6 +19010,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
         @param {Function|String} [*value* = "top"]
+        @chainable
     */
     TextBox.prototype.verticalAlign = function verticalAlign (_) {
       return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$4(_), this) : this._verticalAlign;
@@ -18911,6 +19020,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the width for each box to the specified accessor function or static number.
         @param {Function|Number} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d) {
     return d.width || 200;
@@ -18924,6 +19034,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
         @param {Function|Number} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d) {
     return d.x || 0;
@@ -18937,6 +19048,7 @@ if (!Array.prototype.includes) {
         @memberof TextBox
         @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
         @param {Function|Number} [*value*]
+        @chainable
         @example <caption>default accessor</caption>
   function(d) {
     return d.y || 0;
@@ -20615,6 +20727,328 @@ if (!Array.prototype.includes) {
 
     return Select;
   }(BaseClass));
+
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal$1(x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) { return null; } // NaN, ±Infinity
+    var i, coefficient = x.slice(0, i);
+
+    // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+    return [
+      coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient,
+      +x.slice(i + 1)
+    ];
+  }
+
+  function exponent$2(x) {
+    return x = formatDecimal$1(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup$1(grouping, thousands) {
+    return function(value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) { g = Math.max(1, width - length); }
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) { break; }
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals$1(numerals) {
+    return function(value) {
+      return value.replace(/[0-9]/g, function(i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re$1 = /^(?:(.)?([<>=^]))?([+\-\( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+
+  function formatSpecifier$1(specifier) {
+    return new FormatSpecifier$1(specifier);
+  }
+
+  formatSpecifier$1.prototype = FormatSpecifier$1.prototype; // instanceof
+
+  function FormatSpecifier$1(specifier) {
+    if (!(match = re$1.exec(specifier))) { throw new Error("invalid format: " + specifier); }
+    var match;
+    this.fill = match[1] || " ";
+    this.align = match[2] || ">";
+    this.sign = match[3] || "-";
+    this.symbol = match[4] || "";
+    this.zero = !!match[5];
+    this.width = match[6] && +match[6];
+    this.comma = !!match[7];
+    this.precision = match[8] && +match[8].slice(1);
+    this.trim = !!match[9];
+    this.type = match[10] || "";
+  }
+
+  FormatSpecifier$1.prototype.toString = function() {
+    return this.fill
+        + this.align
+        + this.sign
+        + this.symbol
+        + (this.zero ? "0" : "")
+        + (this.width == null ? "" : Math.max(1, this.width | 0))
+        + (this.comma ? "," : "")
+        + (this.precision == null ? "" : "." + Math.max(0, this.precision | 0))
+        + (this.trim ? "~" : "")
+        + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim(s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".": i0 = i1 = i; break;
+        case "0": if (i0 === 0) { i0 = i; } i1 = i; break;
+        default: if (i0 > 0) { if (!+s[i]) { break out; } i0 = 0; } break;
+      }
+    }
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent$1;
+
+  function formatPrefixAuto$1(x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) { return x + ""; }
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient
+        : i > n ? coefficient + new Array(i - n + 1).join("0")
+        : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
+        : "0." + new Array(1 - i).join("0") + formatDecimal$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded$1(x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) { return x + ""; }
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient
+        : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1)
+        : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes$1 = {
+    "%": function(x, p) { return (x * 100).toFixed(p); },
+    "b": function(x) { return Math.round(x).toString(2); },
+    "c": function(x) { return x + ""; },
+    "d": function(x) { return Math.round(x).toString(10); },
+    "e": function(x, p) { return x.toExponential(p); },
+    "f": function(x, p) { return x.toFixed(p); },
+    "g": function(x, p) { return x.toPrecision(p); },
+    "o": function(x) { return Math.round(x).toString(8); },
+    "p": function(x, p) { return formatRounded$1(x * 100, p); },
+    "r": formatRounded$1,
+    "s": formatPrefixAuto$1,
+    "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
+    "x": function(x) { return Math.round(x).toString(16); }
+  };
+
+  function identity$10(x) {
+    return x;
+  }
+
+  var prefixes$1 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
+
+  function formatLocale$2(locale) {
+    var group = locale.grouping && locale.thousands ? formatGroup$1(locale.grouping, locale.thousands) : identity$10,
+        currency = locale.currency,
+        decimal = locale.decimal,
+        numerals = locale.numerals ? formatNumerals$1(locale.numerals) : identity$10,
+        percent = locale.percent || "%";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier$1(specifier);
+
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type;
+
+      // The "n" type is an alias for ",g".
+      if (type === "n") { comma = true, type = "g"; }
+
+      // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes$1[type]) { precision == null && (precision = 12), trim = true, type = "g"; }
+
+      // If zero fill is specified, padding goes after sign and before digits.
+      if (zero || (fill === "0" && align === "=")) { zero = true, fill = "0", align = "="; }
+
+      // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+      var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
+
+      // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+      var formatType = formatTypes$1[type],
+          maybeSuffix = /[defgprs%]/.test(type);
+
+      // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+      precision = precision == null ? 6
+          : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision))
+          : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i, n, c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value;
+
+          // Perform the initial formatting.
+          var valueNegative = value < 0;
+          value = formatType(Math.abs(value), precision);
+
+          // Trim insignificant zeros.
+          if (trim) { value = formatTrim(value); }
+
+          // If a negative value rounds to zero during formatting, treat as positive.
+          if (valueNegative && +value === 0) { valueNegative = false; }
+
+          // Compute the prefix and suffix.
+          valuePrefix = (valueNegative ? (sign === "(" ? sign : "-") : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes$1[8 + prefixExponent$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : "");
+
+          // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        }
+
+        // If the fill character is not "0", grouping is applied before padding.
+        if (comma && !zero) { value = group(value, Infinity); }
+
+        // Compute the padding.
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : "";
+
+        // If the fill character is "0", grouping is applied after padding.
+        if (comma && zero) { value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = ""; }
+
+        // Reconstruct the final output based on the desired alignment.
+        switch (align) {
+          case "<": value = valuePrefix + value + valueSuffix + padding; break;
+          case "=": value = valuePrefix + padding + value + valueSuffix; break;
+          case "^": value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length); break;
+          default: value = padding + valuePrefix + value + valueSuffix; break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function() {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier$1(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$2(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes$1[8 + e / 3];
+      return function(value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
+  var locale$2;
+  var format$1;
+  var formatPrefix$1;
+
+  defaultLocale$2({
+    decimal: ".",
+    thousands: ",",
+    grouping: [3],
+    currency: ["$", ""]
+  });
+
+  function defaultLocale$2(definition) {
+    locale$2 = formatLocale$2(definition);
+    format$1 = locale$2.format;
+    formatPrefix$1 = locale$2.formatPrefix;
+    return locale$2;
+  }
+
+  /**
+      @function formatAbbreviate
+      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
+      @param {Number} n The number to be formatted.
+      @returns {String}
+  */
+  function formatAbbreviate(n) {
+    if (typeof n !== "number") { return "N/A"; }
+    var length = n.toString().split(".")[0].length;
+    var val;
+    if (n === 0) { val = "0"; }
+    else if (length >= 3) {
+      var f = format$1(".3s")(n)
+        .replace("G", "B")
+        .replace("T", "t")
+        .replace("P", "q")
+        .replace("E", "Q");
+      var num = f.slice(0, -1);
+      var char = f.slice(f.length - 1);
+      val = "" + (parseFloat(num)) + char;
+    }
+    else if (length === 3) { val = format$1(",f")(n); }
+    else if (n < 1 && n > -1) { val = format$1(".2g")(n); }
+    else { val = format$1(".3g")(n); }
+
+    return val
+      .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+      .replace(/[.]$/g, ""); // removes any trailing decimal point
+  }
 
   /**
       @desc Sort an array of numbers by their numeric value, ensuring that the array is not changed in place.
@@ -35996,13 +36430,13 @@ if (!Array.prototype.includes) {
     var visible = typeof total === "number";
 
     this._totalClass
-      .data(visible ? [{text: ("Total: " + total)}] : [])
+      .data(visible ? [{text: ("Total: " + (this._totalFormat(total)))}] : [])
       .select(group)
       .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._totalConfig)
       .render();
 
-    this._margin.top += visible ? group.getBBox().height : 0;
+    this._margin.top += visible ? group.getBBox().height + this._totalConfig.padding * 2 : 0;
 
   }
 
@@ -36523,6 +36957,7 @@ if (!Array.prototype.includes) {
         selectStyle: Object.assign({margin: "5px"}, controlTest.selectStyle())
       };
       this._data = [];
+      this._svgDesc = "";
       this._detectResize = true;
       this._detectResizeDelay = 400;
       this._detectVisible = true;
@@ -36537,6 +36972,7 @@ if (!Array.prototype.includes) {
       this._legendConfig = {
         label: legendLabel.bind(this),
         shapeConfig: {
+          ariaLabel: legendLabel.bind(this),
           labelConfig: {
             fontColor: undefined,
             fontResize: false,
@@ -36578,6 +37014,7 @@ if (!Array.prototype.includes) {
       this._shape = constant$4("Rect");
       this._shapes = [];
       this._shapeConfig = {
+        ariaLabel: function (d, i) { return this$1._drawLabel(d, i); },
         fill: function (d, i) {
           while (d.__d3plus__ && d.data) {
             d = d.data;
@@ -36606,6 +37043,7 @@ if (!Array.prototype.includes) {
           var c = typeof this$1._shapeConfig.fill === "function" ? this$1._shapeConfig.fill(d, i) : this$1._shapeConfig.fill;
           return color(c).darker();
         },
+        role: "presentation",
         strokeWidth: constant$4(0)
       };
 
@@ -36615,6 +37053,7 @@ if (!Array.prototype.includes) {
 
       this._titleClass = new TextBox$1();
       this._titleConfig = {
+        ariaHidden: true,
         fontSize: 12,
         padding: 5,
         resize: false,
@@ -36638,6 +37077,7 @@ if (!Array.prototype.includes) {
         resize: false,
         textAnchor: "middle"
       };
+      this._totalFormat = formatAbbreviate;
 
       this._zoom = false;
       this._zoomBehavior = zoom();
@@ -36776,7 +37216,7 @@ if (!Array.prototype.includes) {
 
       // Draws a container and zoomGroup to test functionality.
       // this._container = this._select.selectAll("svg.d3plus-viz").data([0]);
-      //
+      
       // this._container = this._container.enter().append("svg")
       //     .attr("class", "d3plus-viz")
       //     .attr("width", this._width - this._margin.left - this._margin.right)
@@ -36785,13 +37225,13 @@ if (!Array.prototype.includes) {
       //     .attr("y", this._margin.top)
       //     .style("background-color", "transparent")
       //   .merge(this._container);
-      //
+      
       // this._zoomGroup = this._container.selectAll("g.d3plus-viz-zoomGroup").data([0]);
       // const enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
       //   .merge(this._zoomGroup);
-      //
+      
       // this._zoomGroup = enter.merge(this._zoomGroup);
-      //
+      
       // this._shapes.push(new Rect()
       //   .config(this._shapeConfig)
       //   .data(this._filteredData)
@@ -36808,7 +37248,6 @@ if (!Array.prototype.includes) {
       //   .width(100)
       //   .height(100)
       //   .render());
-
     };
 
     /**
@@ -36852,7 +37291,6 @@ if (!Array.prototype.includes) {
           .style("height", ((this._height) + "px"));
 
         this.select(svg.node());
-
       }
 
       // Calculates the width and/or height of the Viz based on the this._select, if either has not been defined.
@@ -36864,19 +37302,34 @@ if (!Array.prototype.includes) {
         if (!this._height) { this.height(h$1); }
       }
 
-      this._select.transition(this._transition)
+      this._select
+        .attr("aria-labelledby", ((this._uuid) + "-title " + (this._uuid) + "-desc"))
+        .attr("role", "img")
+        .transition(this._transition)
         .style("width", ((this._width) + "px"))
         .style("height", ((this._height) + "px"));
 
-      clearInterval(this._visiblePoll);
-      clearTimeout(this._resizePoll);
+      // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
+      var svgTitleText = this._title || "D3plus Visualization";
+      var svgTitle = this._select.selectAll("title").data([0]);
+      var svgTitleEnter = svgTitle.enter().append("title").attr("id", ((this._uuid) + "-title"));
+      svgTitle.merge(svgTitleEnter).text(svgTitleText);
+
+      // Updates the <desc> tag if already exists else creates a new <desc> tag on this.select.
+      var svgDesc = this._select.selectAll("desc").data([0]);
+      var svgDescEnter = svgDesc.enter().append("desc").attr("id", ((this._uuid) + "-desc"));
+      svgDesc.merge(svgDescEnter).text(this._svgDesc);
+
+      this._visiblePoll = clearInterval(this._visiblePoll);
+      this._resizePoll = clearTimeout(this._resizePoll);
+      this._scrollPoll = clearTimeout(this._scrollPoll);
       select(this._scrollContainer).on(("scroll." + (this._uuid)), null);
       select(this._scrollContainer).on(("resize." + (this._uuid)), null);
       if (this._detectVisible && this._select.style("visibility") === "hidden") {
 
         this._visiblePoll = setInterval(function () {
           if (this$1._select.style("visibility") !== "hidden") {
-            clearInterval(this$1._visiblePoll);
+            this$1._visiblePoll = clearInterval(this$1._visiblePoll);
             this$1.render(callback);
           }
         }, this._detectVisibleInterval);
@@ -36886,7 +37339,7 @@ if (!Array.prototype.includes) {
 
         this._visiblePoll = setInterval(function () {
           if (this$1._select.style("display") !== "none") {
-            clearInterval(this$1._visiblePoll);
+            this$1._visiblePoll = clearInterval(this$1._visiblePoll);
             this$1.render(callback);
           }
         }, this._detectVisibleInterval);
@@ -36895,15 +37348,19 @@ if (!Array.prototype.includes) {
       else if (this._detectVisible && !inViewport(this._select.node())) {
 
         select(this._scrollContainer).on(("scroll." + (this._uuid)), function () {
-          if (inViewport(this$1._select.node())) {
-            select(this$1._scrollContainer).on(("scroll." + (this$1._uuid)), null);
-            this$1.render(callback);
+          if (!this$1._scrollPoll) {
+            this$1._scrollPoll = setTimeout(function () {
+              if (inViewport(this$1._select.node())) {
+                select(this$1._scrollContainer).on(("scroll." + (this$1._uuid)), null);
+                this$1.render(callback);
+              }
+              this$1._scrollPoll = clearTimeout(this$1._scrollPoll);
+            }, this$1._detectVisibleInterval);
           }
         });
 
       }
       else {
-
         var q = queue();
 
         if (this._loadingMessage) {
@@ -36931,9 +37388,9 @@ if (!Array.prototype.includes) {
 
           if (this$1._detectResize && (this$1._autoWidth || this$1._autoHeight)) {
             select(this$1._scrollContainer).on(("resize." + (this$1._uuid)), function () {
-              clearTimeout(this$1._resizePoll);
+              this$1._resizePoll = clearTimeout(this$1._resizePoll);
               this$1._resizePoll = setTimeout(function () {
-                clearTimeout(this$1._resizePoll);
+                this$1._resizePoll = clearTimeout(this$1._resizePoll);
                 var display = this$1._select.style("display");
                 this$1._select.style("display", "none");
                 var ref = getSize$1(this$1._select.node().parentNode);
@@ -37101,6 +37558,16 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.depth = function depth (_) {
       return arguments.length ? (this._depth = _, this) : this._depth;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the description accessor to the specified string and returns the current class instance.
+        @param {String} [*value*]
+        @chainable
+    */
+    Viz.prototype.desc = function desc (_) {
+      return arguments.length ? (this._svgDesc =  _, this) : this._svgDesc;
     };
 
     /**
@@ -37555,6 +38022,16 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.totalConfig = function totalConfig (_) {
       return arguments.length ? (this._totalConfig = assign(this._totalConfig, _), this) : this._totalConfig;
+    };
+
+    /**
+        @memberof Viz
+        @desc Formatter function for the value in the total bar.
+        @param {Function} *value*
+        @chainable
+    */
+    Viz.prototype.totalFormat = function totalFormat (_) {
+      return arguments.length ? (this._totalFormat = _, this) : this._totalFormat;
     };
 
     /**
