@@ -25,7 +25,7 @@ Uses d3's [tree layout](https://github.com/d3/d3-hierarchy#tree) to create a tid
 
 
 
-<a name="Tree.orient" href="#Tree.orient">#</a> Tree.**orient**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Tree.js#L207)
+<a name="Tree.orient" href="#Tree.orient">#</a> Tree.**orient**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Tree.js#L208)
 
 If *value* is specified, sets the orientation to the specified value. If *value* is not specified, returns the current orientation.
 
@@ -33,7 +33,7 @@ If *value* is specified, sets the orientation to the specified value. If *value*
 This is a static method of [<code>Tree</code>](#Tree).
 
 
-<a name="Tree.separation" href="#Tree.separation">#</a> Tree.**separation**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Tree.js#L223)
+<a name="Tree.separation" href="#Tree.separation">#</a> Tree.**separation**([*value*]) [<>](https://github.com/d3plus/d3plus-hierarchy/blob/master/src/Tree.js#L224)
 
 If *value* is specified, sets the separation accessor to the specified function. If *value* is not specified, returns the current separation accessor.
 
