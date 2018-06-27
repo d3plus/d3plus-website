@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.6.2
+  d3plus-hierarchy v0.6.3
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -82,6 +82,7 @@ if (!Array.prototype.includes) {
       Viz.call(this);
 
       this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
+        ariaLabel: function (d, i) { return this$1._pieData ? ((++this$1._pieData[i].index) + ". " + (this$1._drawLabel(d, i)) + ", " + (this$1._value(d, i)) + ".") : ""; },
         Path: {
           labelConfig: {
             fontResize: true
@@ -93,7 +94,6 @@ if (!Array.prototype.includes) {
       this._pie = d3Shape.pie();
       this._sort = function (a, b) { return this$1._value(b) - this$1._value(a); };
       this._value = d3plusCommon.accessor("value");
-
     }
 
     if ( Viz ) Pie.__proto__ = Viz;
@@ -115,7 +115,7 @@ if (!Array.prototype.includes) {
 
       var outerRadius = d3Array.min([width, height]) / 2;
 
-      var pieData = this._pie
+      var pieData = this._pieData = this._pie
         .padAngle(this._padAngle || this._padPixel / outerRadius)
         .sort(this._sort)
         .value(this._value)
@@ -148,7 +148,6 @@ if (!Array.prototype.includes) {
         .render());
 
       return this;
-
     };
 
     /**
@@ -279,6 +278,8 @@ if (!Array.prototype.includes) {
   */
   var Tree = (function (Viz) {
     function Tree() {
+      var this$1 = this;
+
 
       Viz.call(this);
 
@@ -287,6 +288,7 @@ if (!Array.prototype.includes) {
 
       this._shape = d3plusCommon.constant("Circle");
       this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
+        ariaLabel: function (d, i) { return this$1._treeData ? ((this$1._treeData[i].depth) + ". " + (this$1._drawLabel(d, i)) + ".") : ""; },
         labelConfig: {
           fontColor: "#444"
         },
@@ -328,7 +330,7 @@ if (!Array.prototype.includes) {
               ? this._height - this._margin.top - this._margin.bottom
               : this._width - this._margin.left - this._margin.right;
 
-      var treeData = this._tree
+      var treeData = this._treeData = this._tree
         .separation(this._separation)
         .size([width, height])
         (d3Hierarchy.hierarchy({
@@ -495,11 +497,17 @@ if (!Array.prototype.includes) {
   */
   var Treemap = (function (Viz) {
     function Treemap() {
+      var this$1 = this;
+
 
       Viz.call(this);
 
       this._layoutPadding = 1;
       this._shapeConfig = d3plusCommon.assign({}, this._shapeConfig, {
+        ariaLabel: function (d, i) {
+          var rank = this$1._rankData ? ((this$1._rankData.indexOf(d) + 1) + ". ") : "";
+          return ("" + rank + (this$1._drawLabel(d, i)) + ", " + (this$1._sum(d, i)) + ".");
+        },
         labelConfig: {
           fontMax: 20,
           fontResize: true,
@@ -518,7 +526,8 @@ if (!Array.prototype.includes) {
     Treemap.prototype.constructor = Treemap;
 
     /**
-        Extends the draw behavior of the abstract Viz class.
+        @memberof Treemap
+        @desc Extends the draw behavior of the abstract Viz class.
         @private
     */
     Treemap.prototype._draw = function _draw (callback) {
@@ -526,7 +535,7 @@ if (!Array.prototype.includes) {
 
 
       Viz.prototype._draw.call(this, callback);
-
+      
       var nestedData = d3Collection.nest();
       for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this$1._groupBy[i]); }
       nestedData = nestedData.entries(this._filteredData);
@@ -543,7 +552,8 @@ if (!Array.prototype.includes) {
       var shapeData = [], that = this;
 
       /**
-          Flattens and merges treemap data.
+          @memberof Treemap
+          @desc Flattens and merges treemap data.
           @private
       */
       function extractLayout(children) {
@@ -553,8 +563,8 @@ if (!Array.prototype.includes) {
           else {
             node.__d3plus__ = true;
             node.id = node.data.key;
+            node.i = node.data.values.length === 1 && that._filteredData.includes(node.data.values[0]) ? that._filteredData.indexOf(node.data.values[0]) : undefined;
             node.data = d3plusCommon.merge(node.data.values);
-            node.i = i;
             node.x = node.x0 + (node.x1 - node.x0) / 2;
             node.y = node.y0 + (node.y1 - node.y0) / 2;
             shapeData.push(node);
@@ -562,6 +572,8 @@ if (!Array.prototype.includes) {
         }
       }
       if (tmapData.children) { extractLayout(tmapData.children); }
+
+      this._rankData = shapeData.sort(this._sort).map(function (d) { return d.data; });
       var total = tmapData.value;
 
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
