@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.5.3
+  d3plus-geomap v0.5.4
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -115,8 +115,13 @@ if (!Array.prototype.includes) {
 
       this._shape = d3plusCommon.constant("Circle");
       this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
+        ariaLabel: function (d, i) { return ((this$1._drawLabel(d, i)) + ", " + (this$1._pointSize(d, i))); },
         hoverOpacity: 1,
         Path: {
+          ariaLabel: function (d, i) {
+            var validColorScale = this$1._colorScale ? (", " + (this$1._colorScale(d, i))) : "";
+            return ("" + (this$1._drawLabel(d, i)) + validColorScale + ".");
+          },
           fill: function (d) {
             if (this$1._colorScale && !this$1._coordData.features.includes(d)) {
               var c = this$1._colorScale(d);
