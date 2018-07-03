@@ -1200,7 +1200,7 @@ if (!Array.prototype.includes) {
       this._links = d3plusCommon.accessor("links");
       this._noDataMessage = false;
       this._nodes = d3plusCommon.accessor("nodes");
-      this._nodeAlign = sankeyAligns["justify"];
+      this._nodeAlign = sankeyAligns.justify;
       this._nodeWidth = 30;
       this._on.mouseenter = function () {};
       this._on["mouseleave.shape"] = function () {
