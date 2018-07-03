@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.4.0
+  d3plus-network v0.4.1
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -33798,7 +33798,9 @@ if (!Array.prototype.includes) {
       this._on["mouseleave.shape"] = function () {
         this$1.hover(false);
       };
+      var defaultMouseMove = this._on["mousemove.shape"];
       this._on["mousemove.shape"] = function (d, i) {
+        defaultMouseMove(d, i);
         if (this$1._focus && this$1._focus === d.id) {
           this$1.hover(false);
           this$1._on.mouseenter.bind(this$1)(d, i);
@@ -34684,7 +34686,9 @@ if (!Array.prototype.includes) {
       this._on["mouseleave.shape"] = function () {
         this$1.hover(false);
       };
+      var defaultMouseMove = this._on["mousemove.shape"];
       this._on["mousemove.shape"] = function (d, i) {
+        defaultMouseMove(d, i);
         if (this$1._focus && this$1._focus === d.id) {
           this$1.hover(false);
           this$1._on.mouseenter.bind(this$1)(d, i);
@@ -34723,12 +34727,12 @@ if (!Array.prototype.includes) {
         Path: {
           fill: "none",
           hoverStyle: {
-            "stroke-width": function (d, i) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (this$1._value(d, i) / d.source.value) - 20); }
+            "stroke-width": function (d, i) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (this$1._value(d, i) / d.source.value) - 2); }
           },
           label: false,
           stroke: "#DBDBDB",
-          strokeOpacity: 0.2,
-          strokeWidth: function (d, i) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (this$1._value(d, i) / d.source.value) - 20); }
+          strokeOpacity: 0.5,
+          strokeWidth: function (d, i) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (this$1._value(d, i) / d.source.value) - 2); }
 
         },
         Rect: {}
@@ -34753,18 +34757,14 @@ if (!Array.prototype.includes) {
             width = this._width - this._margin.left - this._margin.right;
 
       var nodes = this._nodes
-        .map(function (id, i) {
-          var n = id;
-
-          return {
-            __d3plus__: true,
-            data: n,
-            id: this$1._nodeId(id, i),
-            node: n,
-            shape: "Rect"
-          };
-        })
-        .filter(function (n) { return n; });
+        .map(function (n, i) { return ({
+          __d3plus__: true,
+          data: n,
+          i: i,
+          id: this$1._nodeId(n, i),
+          node: n,
+          shape: "Rect"
+        }); });
 
       var nodeLookup = this._nodeLookup = nodes.reduce(function (obj, d, i) {
         obj[d.id] = i;
