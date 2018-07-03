@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.3.1
+  d3plus-network v0.3.2
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -64,10 +64,10 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-zoom'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3plus-color')) :
-  typeof define === 'function' && define.amd ? define('d3plus-network', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3-zoom', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3plus-color'], factory) :
-  (factory((global.d3plus = {}),global.d3Array,global.d3Collection,global.scales,global.d3Zoom,global.d3plusCommon,global.shapes,global.d3plusViz,global.d3plusColor));
-}(this, (function (exports,d3Array,d3Collection,scales,d3Zoom,d3plusCommon,shapes,d3plusViz,d3plusColor) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-zoom'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3plus-color'), require('d3-sankey')) :
+  typeof define === 'function' && define.amd ? define('d3plus-network', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3-zoom', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3plus-color', 'd3-sankey'], factory) :
+  (factory((global.d3plus = {}),global.d3Array,global.d3Collection,global.scales,global.d3Zoom,global.d3plusCommon,global.shapes,global.d3plusViz,global.d3plusColor,global.d3Sankey));
+}(this, (function (exports,d3Array,d3Collection,scales,d3Zoom,d3plusCommon,shapes,d3plusViz,d3plusColor,d3Sankey) { 'use strict';
 
   /**
       @external Viz
@@ -613,7 +613,9 @@ if (!Array.prototype.includes) {
       this._on["mouseleave.shape"] = function () {
         this$1.hover(false);
       };
+      var defaultMouseMove = this._on["mousemove.shape"];
       this._on["mousemove.shape"] = function (d, i) {
+        defaultMouseMove(d, i);
         if (this$1._focus && this$1._focus === d.id) {
           this$1.hover(false);
           this$1._on.mouseenter.bind(this$1)(d, i);
@@ -1172,8 +1174,283 @@ if (!Array.prototype.includes) {
     return Rings;
   }(d3plusViz.Viz));
 
+  /**
+      @external Viz
+      @see https://github.com/d3plus/d3plus-viz#Viz
+  */
+
+  /**
+      @class Sankey
+      @extends external:Viz
+      @desc Creates a sankey visualization based on a defined set of nodes and links. [Click here](http://d3plus.org/examples/d3plus-network/sankey-diagram/) for help getting started using the Sankey class.
+  */
+  var Sankey = (function (Viz) {
+    function Sankey() {
+      var this$1 = this;
+
+      Viz.call(this);
+      this._nodeId = d3plusCommon.accessor("id");
+      this._links = d3plusCommon.accessor("links");
+      this._noDataMessage = false;
+      this._nodes = d3plusCommon.accessor("nodes");
+      this._nodeWidth = 30;
+      this._on.mouseenter = function () {};
+      this._on["mouseleave.shape"] = function () {
+        this$1.hover(false);
+      };
+      var defaultMouseMove = this._on["mousemove.shape"];
+      this._on["mousemove.shape"] = function (d, i) {
+        defaultMouseMove(d, i);
+        if (this$1._focus && this$1._focus === d.id) {
+          this$1.hover(false);
+          this$1._on.mouseenter.bind(this$1)(d, i);
+
+          this$1._focus = undefined;
+        }
+        else {
+          var id = this$1._nodeId(d, i),
+                node = this$1._nodeLookup[id],
+                nodeLookup = Object.keys(this$1._nodeLookup).reduce(function (all, item) {
+                  all[this$1._nodeLookup[item]] = !isNaN(item) ? parseInt(item, 10) : item;
+                  return all;
+                }, {});
+
+          var links = this$1._linkLookup[node];
+          var filterIds = [id];
+
+          links.forEach(function (l) {
+            filterIds.push(nodeLookup[l]);
+          });
+
+          this$1.hover(function (h, x) {
+            if (h.source && h.target) {
+              return h.source.id === id || h.target.id === id;
+            }
+            else {
+              return filterIds.includes(this$1._nodeId(h, x));
+            }
+          });
+        }
+      };
+      this._path = d3Sankey.sankeyLinkHorizontal();
+      this._sankey = d3Sankey.sankey();
+      this._shape = d3plusCommon.constant("Rect");
+      this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
+        Path: {
+          fill: "none",
+          hoverStyle: {
+            "stroke-width": function (d, i) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (this$1._value(d, i) / d.source.value) - 2); }
+          },
+          label: false,
+          stroke: "#DBDBDB",
+          strokeOpacity: 0.5,
+          strokeWidth: function (d, i) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (this$1._value(d, i) / d.source.value) - 2); }
+
+        },
+        Rect: {}
+      });
+      this._value = d3plusCommon.constant(1);
+    }
+
+    if ( Viz ) Sankey.__proto__ = Viz;
+    Sankey.prototype = Object.create( Viz && Viz.prototype );
+    Sankey.prototype.constructor = Sankey;
+
+    /**
+        Extends the draw behavior of the abstract Viz class.
+        @private
+    */
+    Sankey.prototype._draw = function _draw (callback) {
+      var this$1 = this;
+
+      Viz.prototype._draw.call(this, callback);
+
+      var height = this._height - this._margin.top - this._margin.bottom,
+            width = this._width - this._margin.left - this._margin.right;
+
+      var nodes = this._nodes
+        .map(function (n, i) { return ({
+          __d3plus__: true,
+          data: n,
+          i: i,
+          id: this$1._nodeId(n, i),
+          node: n,
+          shape: "Rect"
+        }); });
+
+      var nodeLookup = this._nodeLookup = nodes.reduce(function (obj, d, i) {
+        obj[d.id] = i;
+        return obj;
+      }, {});
+
+      var links = this._links.map(function (link, i) {
+        var check = ["source", "target"];
+        var linkLookup = check.reduce(function (result, item) {
+          result[item] =
+            typeof link[item] === "number"
+              ? nodeLookup[link[item]]
+              : nodeLookup[link[item]];
+          return result;
+        }, {});
+        return {
+          source: linkLookup.source,
+          target: linkLookup.target,
+          value: this$1._value(link, i)
+        };
+      });
+
+      this._linkLookup = links.reduce(function (obj, d) {
+        if (!obj[d.source]) { obj[d.source] = []; }
+        obj[d.source].push(d.target);
+        if (!obj[d.target]) { obj[d.target] = []; }
+        obj[d.target].push(d.source);
+        return obj;
+      }, {});
+
+      var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
+
+      this._sankey
+        .nodeWidth(this._nodeWidth)
+        .nodes(nodes)
+        .links(links)
+        .size([width, height])();
+
+      this._shapes.push(
+        new shapes.Path()
+          .config(this._shapeConfig.Path)
+          .data(links)
+          .d(this._path)
+          .select(
+            d3plusCommon.elem("g.d3plus-Links", {
+              parent: this._select,
+              enter: {transform: transform},
+              update: {transform: transform}
+            }).node()
+          )
+          .render()
+      );
+      d3Collection.nest()
+        .key(function (d) { return d.shape; })
+        .entries(nodes)
+        .forEach(function (d) {
+          this$1._shapes.push(
+            new shapes[d.key]()
+              .data(d.values)
+              .height(function (d) { return d.y1 - d.y0; })
+              .width(function (d) { return d.x1 - d.x0; })
+              .x(function (d) { return (d.x1 + d.x0) / 2; })
+              .y(function (d) { return (d.y1 + d.y0) / 2; })
+              .select(
+                d3plusCommon.elem("g.d3plus-sankey-nodes", {
+                  parent: this$1._select,
+                  enter: {transform: transform},
+                  update: {transform: transform}
+                }).node()
+              )
+              .config(d3plusCommon.configPrep.bind(this$1)(this$1._shapeConfig, "shape", d.key))
+              .render()
+          );
+        });
+      return this;
+    };
+
+    /**
+        @memberof Sankey
+        @desc If *value* is specified, sets the hover method to the specified function and returns the current class instance.
+        @param {Function} [*value*]
+        @chainable
+     */
+    Sankey.prototype.hover = function hover (_) {
+      this._hover = _;
+      this._shapes.forEach(function (s) { return s.hover(_); });
+      if (this._legend) { this._legendClass.hover(_); }
+
+      return this;
+    };
+
+    /**
+        @memberof Sankey
+        @desc A predefined *Array* of edges that connect each object passed to the [node](#Sankey.node) method. The `source` and `target` keys in each link need to map to the nodes in one of one way:
+  1. A *String* value matching the `id` of the node.
+
+  The value passed should be an *Array* of data. An optional formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final links *Array*.
+        @param {Array} *links* = []
+        @chainable
+    */
+    Sankey.prototype.links = function links (_, f) {
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "links"; });
+        var d = [d3plusViz.dataLoad.bind(this), _, f, "links"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._links;
+    };
+
+    /**
+        @memberof Sankey
+        @desc If *value* is specified, sets the node id accessor(s) to the specified array of values and returns the current class instance. If *value* is not specified, returns the current node group accessor.
+        @param {String} [*value* = "id"]
+        @chainable
+    */
+    Sankey.prototype.nodeId = function nodeId (_) {
+      return arguments.length
+        ? (this._nodeId = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this)
+        : this._nodeId;
+    };
+
+    /**
+        @memberof Sankey
+        @desc The list of nodes to be used for drawing the network. The value passed must be an *Array* of data.
+
+  Additionally, a custom formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final node *Array*.
+        @param {Array} *nodes* = []
+        @chainable
+    */
+    Sankey.prototype.nodes = function nodes (_, f) {
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "nodes"; });
+        var d = [d3plusViz.dataLoad.bind(this), _, f, "nodes"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._nodes;
+    };
+
+    /**
+        @memberof Sankey
+        @desc If *value* is specified, sets the width of the node and returns the current class instance. If *value* is not specified, returns the current nodeWidth. By default, the nodeWidth size is 30.
+        @param {Number} [*value* = 30]
+        @chainable
+    */
+    Sankey.prototype.nodeWidth = function nodeWidth (_) {
+      return arguments.length ? (this._nodeWidth = _, this) : this._nodeWidth;
+    };
+
+    /**
+        @memberof Sankey
+        @desc If *value* is specified, sets the width of the links and returns the current class instance. If *value* is not specified, returns the current value accessor.
+        @param {Function|Number} *value*
+        @example
+  function value(d) {
+    return d.value;
+  }
+    */
+    Sankey.prototype.value = function value (_) {
+
+      return arguments.length
+        ? (this._value = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this)
+        : this._value;
+    };
+
+    return Sankey;
+  }(d3plusViz.Viz));
+
   exports.Network = Network;
   exports.Rings = Rings;
+  exports.Sankey = Sankey;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

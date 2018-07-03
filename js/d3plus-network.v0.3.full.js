@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.3.1
+  d3plus-network v0.3.2
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -33798,7 +33798,9 @@ if (!Array.prototype.includes) {
       this._on["mouseleave.shape"] = function () {
         this$1.hover(false);
       };
+      var defaultMouseMove = this._on["mousemove.shape"];
       this._on["mousemove.shape"] = function (d, i) {
+        defaultMouseMove(d, i);
         if (this$1._focus && this$1._focus === d.id) {
           this$1.hover(false);
           this$1._on.mouseenter.bind(this$1)(d, i);
@@ -34357,8 +34359,586 @@ if (!Array.prototype.includes) {
     return Rings;
   }(Viz));
 
+  function justify(node, n) {
+    return node.sourceLinks.length ? node.depth : n - 1;
+  }
+
+  function constant$10(x) {
+    return function() {
+      return x;
+    };
+  }
+
+  function ascendingSourceBreadth(a, b) {
+    return ascendingBreadth(a.source, b.source) || a.index - b.index;
+  }
+
+  function ascendingTargetBreadth(a, b) {
+    return ascendingBreadth(a.target, b.target) || a.index - b.index;
+  }
+
+  function ascendingBreadth(a, b) {
+    return a.y0 - b.y0;
+  }
+
+  function value(d) {
+    return d.value;
+  }
+
+  function nodeCenter(node) {
+    return (node.y0 + node.y1) / 2;
+  }
+
+  function weightedSource(link) {
+    return nodeCenter(link.source) * link.value;
+  }
+
+  function weightedTarget(link) {
+    return nodeCenter(link.target) * link.value;
+  }
+
+  function defaultId(d) {
+    return d.index;
+  }
+
+  function defaultNodes(graph) {
+    return graph.nodes;
+  }
+
+  function defaultLinks(graph) {
+    return graph.links;
+  }
+
+  function find$1(nodeById, id) {
+    var node = nodeById.get(id);
+    if (!node) { throw new Error("missing: " + id); }
+    return node;
+  }
+
+  function sankey() {
+    var x0 = 0, y0 = 0, x1 = 1, y1 = 1, // extent
+        dx = 24, // nodeWidth
+        py = 8, // nodePadding
+        id = defaultId,
+        align = justify,
+        nodes = defaultNodes,
+        links = defaultLinks,
+        iterations = 32;
+
+    function sankey() {
+      var graph = {nodes: nodes.apply(null, arguments), links: links.apply(null, arguments)};
+      computeNodeLinks(graph);
+      computeNodeValues(graph);
+      computeNodeDepths(graph);
+      computeNodeBreadths(graph, iterations);
+      computeLinkBreadths(graph);
+      return graph;
+    }
+
+    sankey.update = function(graph) {
+      computeLinkBreadths(graph);
+      return graph;
+    };
+
+    sankey.nodeId = function(_) {
+      return arguments.length ? (id = typeof _ === "function" ? _ : constant$10(_), sankey) : id;
+    };
+
+    sankey.nodeAlign = function(_) {
+      return arguments.length ? (align = typeof _ === "function" ? _ : constant$10(_), sankey) : align;
+    };
+
+    sankey.nodeWidth = function(_) {
+      return arguments.length ? (dx = +_, sankey) : dx;
+    };
+
+    sankey.nodePadding = function(_) {
+      return arguments.length ? (py = +_, sankey) : py;
+    };
+
+    sankey.nodes = function(_) {
+      return arguments.length ? (nodes = typeof _ === "function" ? _ : constant$10(_), sankey) : nodes;
+    };
+
+    sankey.links = function(_) {
+      return arguments.length ? (links = typeof _ === "function" ? _ : constant$10(_), sankey) : links;
+    };
+
+    sankey.size = function(_) {
+      return arguments.length ? (x0 = y0 = 0, x1 = +_[0], y1 = +_[1], sankey) : [x1 - x0, y1 - y0];
+    };
+
+    sankey.extent = function(_) {
+      return arguments.length ? (x0 = +_[0][0], x1 = +_[1][0], y0 = +_[0][1], y1 = +_[1][1], sankey) : [[x0, y0], [x1, y1]];
+    };
+
+    sankey.iterations = function(_) {
+      return arguments.length ? (iterations = +_, sankey) : iterations;
+    };
+
+    // Populate the sourceLinks and targetLinks for each node.
+    // Also, if the source and target are not objects, assume they are indices.
+    function computeNodeLinks(graph) {
+      graph.nodes.forEach(function(node, i) {
+        node.index = i;
+        node.sourceLinks = [];
+        node.targetLinks = [];
+      });
+      var nodeById = map$1(graph.nodes, id);
+      graph.links.forEach(function(link, i) {
+        link.index = i;
+        var source = link.source, target = link.target;
+        if (typeof source !== "object") { source = link.source = find$1(nodeById, source); }
+        if (typeof target !== "object") { target = link.target = find$1(nodeById, target); }
+        source.sourceLinks.push(link);
+        target.targetLinks.push(link);
+      });
+    }
+
+    // Compute the value (size) of each node by summing the associated links.
+    function computeNodeValues(graph) {
+      graph.nodes.forEach(function(node) {
+        node.value = Math.max(
+          sum(node.sourceLinks, value),
+          sum(node.targetLinks, value)
+        );
+      });
+    }
+
+    // Iteratively assign the depth (x-position) for each node.
+    // Nodes are assigned the maximum depth of incoming neighbors plus one;
+    // nodes with no incoming links are assigned depth zero, while
+    // nodes with no outgoing links are assigned the maximum depth.
+    function computeNodeDepths(graph) {
+      var nodes, next, x;
+
+      for (nodes = graph.nodes, next = [], x = 0; nodes.length; ++x, nodes = next, next = []) {
+        nodes.forEach(function(node) {
+          node.depth = x;
+          node.sourceLinks.forEach(function(link) {
+            if (next.indexOf(link.target) < 0) {
+              next.push(link.target);
+            }
+          });
+        });
+      }
+
+      for (nodes = graph.nodes, next = [], x = 0; nodes.length; ++x, nodes = next, next = []) {
+        nodes.forEach(function(node) {
+          node.height = x;
+          node.targetLinks.forEach(function(link) {
+            if (next.indexOf(link.source) < 0) {
+              next.push(link.source);
+            }
+          });
+        });
+      }
+
+      var kx = (x1 - x0 - dx) / (x - 1);
+      graph.nodes.forEach(function(node) {
+        node.x1 = (node.x0 = x0 + Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x)))) * kx) + dx;
+      });
+    }
+
+    function computeNodeBreadths(graph) {
+      var columns = nest()
+          .key(function(d) { return d.x0; })
+          .sortKeys(ascending)
+          .entries(graph.nodes)
+          .map(function(d) { return d.values; });
+
+      //
+      initializeNodeBreadth();
+      resolveCollisions();
+      for (var alpha = 1, n = iterations; n > 0; --n) {
+        relaxRightToLeft(alpha *= 0.99);
+        resolveCollisions();
+        relaxLeftToRight(alpha);
+        resolveCollisions();
+      }
+
+      function initializeNodeBreadth() {
+        var ky = min(columns, function(nodes) {
+          return (y1 - y0 - (nodes.length - 1) * py) / sum(nodes, value);
+        });
+
+        columns.forEach(function(nodes) {
+          nodes.forEach(function(node, i) {
+            node.y1 = (node.y0 = i) + node.value * ky;
+          });
+        });
+
+        graph.links.forEach(function(link) {
+          link.width = link.value * ky;
+        });
+      }
+
+      function relaxLeftToRight(alpha) {
+        columns.forEach(function(nodes) {
+          nodes.forEach(function(node) {
+            if (node.targetLinks.length) {
+              var dy = (sum(node.targetLinks, weightedSource) / sum(node.targetLinks, value) - nodeCenter(node)) * alpha;
+              node.y0 += dy, node.y1 += dy;
+            }
+          });
+        });
+      }
+
+      function relaxRightToLeft(alpha) {
+        columns.slice().reverse().forEach(function(nodes) {
+          nodes.forEach(function(node) {
+            if (node.sourceLinks.length) {
+              var dy = (sum(node.sourceLinks, weightedTarget) / sum(node.sourceLinks, value) - nodeCenter(node)) * alpha;
+              node.y0 += dy, node.y1 += dy;
+            }
+          });
+        });
+      }
+
+      function resolveCollisions() {
+        columns.forEach(function(nodes) {
+          var node,
+              dy,
+              y = y0,
+              n = nodes.length,
+              i;
+
+          // Push any overlapping nodes down.
+          nodes.sort(ascendingBreadth);
+          for (i = 0; i < n; ++i) {
+            node = nodes[i];
+            dy = y - node.y0;
+            if (dy > 0) { node.y0 += dy, node.y1 += dy; }
+            y = node.y1 + py;
+          }
+
+          // If the bottommost node goes outside the bounds, push it back up.
+          dy = y - py - y1;
+          if (dy > 0) {
+            y = (node.y0 -= dy), node.y1 -= dy;
+
+            // Push any overlapping nodes back up.
+            for (i = n - 2; i >= 0; --i) {
+              node = nodes[i];
+              dy = node.y1 + py - y;
+              if (dy > 0) { node.y0 -= dy, node.y1 -= dy; }
+              y = node.y0;
+            }
+          }
+        });
+      }
+    }
+
+    function computeLinkBreadths(graph) {
+      graph.nodes.forEach(function(node) {
+        node.sourceLinks.sort(ascendingTargetBreadth);
+        node.targetLinks.sort(ascendingSourceBreadth);
+      });
+      graph.nodes.forEach(function(node) {
+        var y0 = node.y0, y1 = y0;
+        node.sourceLinks.forEach(function(link) {
+          link.y0 = y0 + link.width / 2, y0 += link.width;
+        });
+        node.targetLinks.forEach(function(link) {
+          link.y1 = y1 + link.width / 2, y1 += link.width;
+        });
+      });
+    }
+
+    return sankey;
+  }
+
+  function horizontalSource(d) {
+    return [d.source.x1, d.y0];
+  }
+
+  function horizontalTarget(d) {
+    return [d.target.x0, d.y1];
+  }
+
+  function sankeyLinkHorizontal() {
+    return linkHorizontal()
+        .source(horizontalSource)
+        .target(horizontalTarget);
+  }
+
+  /**
+      @external Viz
+      @see https://github.com/d3plus/d3plus-viz#Viz
+  */
+
+  /**
+      @class Sankey
+      @extends external:Viz
+      @desc Creates a sankey visualization based on a defined set of nodes and links. [Click here](http://d3plus.org/examples/d3plus-network/sankey-diagram/) for help getting started using the Sankey class.
+  */
+  var Sankey = (function (Viz$$1) {
+    function Sankey() {
+      var this$1 = this;
+
+      Viz$$1.call(this);
+      this._nodeId = accessor("id");
+      this._links = accessor("links");
+      this._noDataMessage = false;
+      this._nodes = accessor("nodes");
+      this._nodeWidth = 30;
+      this._on.mouseenter = function () {};
+      this._on["mouseleave.shape"] = function () {
+        this$1.hover(false);
+      };
+      var defaultMouseMove = this._on["mousemove.shape"];
+      this._on["mousemove.shape"] = function (d, i) {
+        defaultMouseMove(d, i);
+        if (this$1._focus && this$1._focus === d.id) {
+          this$1.hover(false);
+          this$1._on.mouseenter.bind(this$1)(d, i);
+
+          this$1._focus = undefined;
+        }
+        else {
+          var id = this$1._nodeId(d, i),
+                node = this$1._nodeLookup[id],
+                nodeLookup = Object.keys(this$1._nodeLookup).reduce(function (all, item) {
+                  all[this$1._nodeLookup[item]] = !isNaN(item) ? parseInt(item, 10) : item;
+                  return all;
+                }, {});
+
+          var links = this$1._linkLookup[node];
+          var filterIds = [id];
+
+          links.forEach(function (l) {
+            filterIds.push(nodeLookup[l]);
+          });
+
+          this$1.hover(function (h, x) {
+            if (h.source && h.target) {
+              return h.source.id === id || h.target.id === id;
+            }
+            else {
+              return filterIds.includes(this$1._nodeId(h, x));
+            }
+          });
+        }
+      };
+      this._path = sankeyLinkHorizontal();
+      this._sankey = sankey();
+      this._shape = constant$6("Rect");
+      this._shapeConfig = assign(this._shapeConfig, {
+        Path: {
+          fill: "none",
+          hoverStyle: {
+            "stroke-width": function (d, i) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (this$1._value(d, i) / d.source.value) - 2); }
+          },
+          label: false,
+          stroke: "#DBDBDB",
+          strokeOpacity: 0.5,
+          strokeWidth: function (d, i) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (this$1._value(d, i) / d.source.value) - 2); }
+
+        },
+        Rect: {}
+      });
+      this._value = constant$6(1);
+    }
+
+    if ( Viz$$1 ) Sankey.__proto__ = Viz$$1;
+    Sankey.prototype = Object.create( Viz$$1 && Viz$$1.prototype );
+    Sankey.prototype.constructor = Sankey;
+
+    /**
+        Extends the draw behavior of the abstract Viz class.
+        @private
+    */
+    Sankey.prototype._draw = function _draw (callback) {
+      var this$1 = this;
+
+      Viz$$1.prototype._draw.call(this, callback);
+
+      var height = this._height - this._margin.top - this._margin.bottom,
+            width = this._width - this._margin.left - this._margin.right;
+
+      var nodes = this._nodes
+        .map(function (n, i) { return ({
+          __d3plus__: true,
+          data: n,
+          i: i,
+          id: this$1._nodeId(n, i),
+          node: n,
+          shape: "Rect"
+        }); });
+
+      var nodeLookup = this._nodeLookup = nodes.reduce(function (obj, d, i) {
+        obj[d.id] = i;
+        return obj;
+      }, {});
+
+      var links = this._links.map(function (link, i) {
+        var check = ["source", "target"];
+        var linkLookup = check.reduce(function (result, item) {
+          result[item] =
+            typeof link[item] === "number"
+              ? nodeLookup[link[item]]
+              : nodeLookup[link[item]];
+          return result;
+        }, {});
+        return {
+          source: linkLookup.source,
+          target: linkLookup.target,
+          value: this$1._value(link, i)
+        };
+      });
+
+      this._linkLookup = links.reduce(function (obj, d) {
+        if (!obj[d.source]) { obj[d.source] = []; }
+        obj[d.source].push(d.target);
+        if (!obj[d.target]) { obj[d.target] = []; }
+        obj[d.target].push(d.source);
+        return obj;
+      }, {});
+
+      var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
+
+      this._sankey
+        .nodeWidth(this._nodeWidth)
+        .nodes(nodes)
+        .links(links)
+        .size([width, height])();
+
+      this._shapes.push(
+        new Path$1()
+          .config(this._shapeConfig.Path)
+          .data(links)
+          .d(this._path)
+          .select(
+            elem("g.d3plus-Links", {
+              parent: this._select,
+              enter: {transform: transform},
+              update: {transform: transform}
+            }).node()
+          )
+          .render()
+      );
+      nest()
+        .key(function (d) { return d.shape; })
+        .entries(nodes)
+        .forEach(function (d) {
+          this$1._shapes.push(
+            new shapes[d.key]()
+              .data(d.values)
+              .height(function (d) { return d.y1 - d.y0; })
+              .width(function (d) { return d.x1 - d.x0; })
+              .x(function (d) { return (d.x1 + d.x0) / 2; })
+              .y(function (d) { return (d.y1 + d.y0) / 2; })
+              .select(
+                elem("g.d3plus-sankey-nodes", {
+                  parent: this$1._select,
+                  enter: {transform: transform},
+                  update: {transform: transform}
+                }).node()
+              )
+              .config(configPrep.bind(this$1)(this$1._shapeConfig, "shape", d.key))
+              .render()
+          );
+        });
+      return this;
+    };
+
+    /**
+        @memberof Sankey
+        @desc If *value* is specified, sets the hover method to the specified function and returns the current class instance.
+        @param {Function} [*value*]
+        @chainable
+     */
+    Sankey.prototype.hover = function hover (_) {
+      this._hover = _;
+      this._shapes.forEach(function (s) { return s.hover(_); });
+      if (this._legend) { this._legendClass.hover(_); }
+
+      return this;
+    };
+
+    /**
+        @memberof Sankey
+        @desc A predefined *Array* of edges that connect each object passed to the [node](#Sankey.node) method. The `source` and `target` keys in each link need to map to the nodes in one of one way:
+  1. A *String* value matching the `id` of the node.
+
+  The value passed should be an *Array* of data. An optional formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final links *Array*.
+        @param {Array} *links* = []
+        @chainable
+    */
+    Sankey.prototype.links = function links (_, f) {
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "links"; });
+        var d = [load.bind(this), _, f, "links"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._links;
+    };
+
+    /**
+        @memberof Sankey
+        @desc If *value* is specified, sets the node id accessor(s) to the specified array of values and returns the current class instance. If *value* is not specified, returns the current node group accessor.
+        @param {String} [*value* = "id"]
+        @chainable
+    */
+    Sankey.prototype.nodeId = function nodeId (_) {
+      return arguments.length
+        ? (this._nodeId = typeof _ === "function" ? _ : accessor(_), this)
+        : this._nodeId;
+    };
+
+    /**
+        @memberof Sankey
+        @desc The list of nodes to be used for drawing the network. The value passed must be an *Array* of data.
+
+  Additionally, a custom formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final node *Array*.
+        @param {Array} *nodes* = []
+        @chainable
+    */
+    Sankey.prototype.nodes = function nodes (_, f) {
+      if (arguments.length) {
+        var prev = this._queue.find(function (q) { return q[3] === "nodes"; });
+        var d = [load.bind(this), _, f, "nodes"];
+        if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
+        else { this._queue.push(d); }
+        return this;
+      }
+      return this._nodes;
+    };
+
+    /**
+        @memberof Sankey
+        @desc If *value* is specified, sets the width of the node and returns the current class instance. If *value* is not specified, returns the current nodeWidth. By default, the nodeWidth size is 30.
+        @param {Number} [*value* = 30]
+        @chainable
+    */
+    Sankey.prototype.nodeWidth = function nodeWidth (_) {
+      return arguments.length ? (this._nodeWidth = _, this) : this._nodeWidth;
+    };
+
+    /**
+        @memberof Sankey
+        @desc If *value* is specified, sets the width of the links and returns the current class instance. If *value* is not specified, returns the current value accessor.
+        @param {Function|Number} *value*
+        @example
+  function value(d) {
+    return d.value;
+  }
+    */
+    Sankey.prototype.value = function value (_) {
+
+      return arguments.length
+        ? (this._value = typeof _ === "function" ? _ : accessor(_), this)
+        : this._value;
+    };
+
+    return Sankey;
+  }(Viz));
+
   exports.Network = Network;
   exports.Rings = Rings;
+  exports.Sankey = Sankey;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
