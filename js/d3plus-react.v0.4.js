@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.4.1
+  d3plus-react v0.4.2
   React components for d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -327,6 +327,40 @@ if (!Array.prototype.includes) {
   Priestley.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusPriestley.Priestley});
 
   /**
+      @class Rings
+      @extends Viz
+  */
+  var Rings = (function (Shell) {
+      function Rings () {
+          Shell.apply(this, arguments);
+      }if ( Shell ) Rings.__proto__ = Shell;
+      Rings.prototype = Object.create( Shell && Shell.prototype );
+      Rings.prototype.constructor = Rings;
+
+      
+
+      return Rings;
+  }(Viz));
+  Rings.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusNetwork.Rings});
+
+  /**
+      @class Sankey
+      @extends Viz
+  */
+  var Sankey = (function (Shell) {
+      function Sankey () {
+          Shell.apply(this, arguments);
+      }if ( Shell ) Sankey.__proto__ = Shell;
+      Sankey.prototype = Object.create( Shell && Shell.prototype );
+      Sankey.prototype.constructor = Sankey;
+
+      
+
+      return Sankey;
+  }(Viz));
+  Sankey.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusNetwork.Sankey});
+
+  /**
       @class StackedArea
       @extends Viz
   */
@@ -387,6 +421,8 @@ if (!Array.prototype.includes) {
   exports.Pie = Pie;
   exports.Plot = Plot;
   exports.Priestley = Priestley;
+  exports.Rings = Rings;
+  exports.Sankey = Sankey;
   exports.StackedArea = StackedArea;
   exports.Tree = Tree;
   exports.Treemap = Treemap;
