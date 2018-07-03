@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.4.1
+  d3plus-network v0.4.2
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -34727,12 +34727,12 @@ if (!Array.prototype.includes) {
         Path: {
           fill: "none",
           hoverStyle: {
-            "stroke-width": function (d, i) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (this$1._value(d, i) / d.source.value) - 2); }
+            "stroke-width": function (d) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (d.value / d.source.value) - 2); }
           },
           label: false,
           stroke: "#DBDBDB",
           strokeOpacity: 0.5,
-          strokeWidth: function (d, i) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (this$1._value(d, i) / d.source.value) - 2); }
+          strokeWidth: function (d) { return Math.max(1, Math.abs(d.source.y1 - d.source.y0) * (d.value / d.source.value) - 2); }
 
         },
         Rect: {}
