@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.4.2
+  d3plus-network v0.4.3
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -1179,6 +1179,13 @@ if (!Array.prototype.includes) {
       @see https://github.com/d3plus/d3plus-viz#Viz
   */
 
+  var sankeyAligns = {
+    center: d3Sankey.sankeyCenter,
+    justify: d3Sankey.sankeyJustify,
+    left: d3Sankey.sankeyLeft,
+    right: d3Sankey.sankeyRight
+  };
+
   /**
       @class Sankey
       @extends external:Viz
@@ -1193,6 +1200,7 @@ if (!Array.prototype.includes) {
       this._links = d3plusCommon.accessor("links");
       this._noDataMessage = false;
       this._nodes = d3plusCommon.accessor("nodes");
+      this._nodeAlign = sankeyAligns["justify"];
       this._nodeWidth = 30;
       this._on.mouseenter = function () {};
       this._on["mouseleave.shape"] = function () {
@@ -1310,6 +1318,7 @@ if (!Array.prototype.includes) {
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
 
       this._sankey
+        .nodeAlign(this._nodeAlign)
         .nodeWidth(this._nodeWidth)
         .nodes(nodes)
         .links(links)
@@ -1386,6 +1395,18 @@ if (!Array.prototype.includes) {
         return this;
       }
       return this._links;
+    };
+
+    /**
+        @memberof Sankey
+        @desc Sets the nodeAlign property of the sankey layout, which can either be "left", "right", "center", or "justify".
+        @param {Function|String} [*value* = "justify"]
+        @chainable
+    */
+    Sankey.prototype.nodeAlign = function nodeAlign (_) {
+      return arguments.length
+        ? (this._nodeAlign = typeof _ === "function" ? _ : sankeyAligns[_], this)
+        : this._nodeAlign;
     };
 
     /**
