@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.9
+  d3plus-plot v0.7.10
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -34780,6 +34780,18 @@ if (!Array.prototype.includes) {
             fontResize: true
           }
         },
+        ariaLabel: function (d, i) {
+          var ariaLabelStr = "";
+          if (d.nested) { ariaLabelStr = "" + (this$1._drawLabel(d.data, d.i)); }
+          else {
+            ariaLabelStr = "" + (this$1._drawLabel(d, i));
+            if (this$1._x(d, i) !== undefined) { ariaLabelStr += ", x: " + (this$1._x(d, i)); }
+            if (this$1._y(d, i) !== undefined) { ariaLabelStr += ", y: " + (this$1._y(d, i)); }
+            if (this$1._x2(d, i) !== undefined) { ariaLabelStr += ", x2: " + (this$1._x2(d, i)); }
+            if (this$1._y2(d, i) !== undefined) { ariaLabelStr += ", y2: " + (this$1._y2(d, i)); }
+          }
+          return (ariaLabelStr + ".");
+        },
         Bar: {
           labelConfig: {
             textAnchor: function () { return this$1._discrete === "x" ? "middle" : "end"; },
@@ -34984,19 +34996,19 @@ if (!Array.prototype.includes) {
       }
       else {
         var xData = this._discrete === "x" ? data.map(function (d) { return d.x; }) : data.map(function (d) { return d.x; })
-          .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; })  : [])
+          .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; }) : [])
           .concat(this._confidence && this._confidence[1] ? data.map(function (d) { return d.hci; }) : []);
 
         var x2Data = this._discrete === "x" ? data.map(function (d) { return d.x2; }) : data.map(function (d) { return d.x2; })
-          .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; })  : [])
+          .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; }) : [])
           .concat(this._confidence && this._confidence[1] ? data.map(function (d) { return d.hci; }) : []);
 
         var yData = this._discrete === "y" ? data.map(function (d) { return d.y; }) : data.map(function (d) { return d.y; })
-          .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; })  : [])
+          .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; }) : [])
           .concat(this._confidence && this._confidence[1] ? data.map(function (d) { return d.hci; }) : []);
 
         var y2Data = this._discrete === "y" ? data.map(function (d) { return d.y2; }) : data.map(function (d) { return d.y2; })
-          .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; })  : [])
+          .concat(this._confidence && this._confidence[0] ? data.map(function (d) { return d.lci; }) : [])
           .concat(this._confidence && this._confidence[1] ? data.map(function (d) { return d.hci; }) : []);
 
         if (this[("_" + (this._discrete) + "Sort")]) {
@@ -35107,8 +35119,6 @@ if (!Array.prototype.includes) {
       yDomain = y.domain();
       y2Domain = y2.domain();
 
-      this._xDomain = xDomain;
-
       var testGroup = elem("g.d3plus-plot-test", {enter: {opacity: 0}, parent: this._select}),
             x2Ticks = this._discrete === "x" && !x2Time ? domains.x2 : undefined,
             xTicks = this._discrete === "x" && !xTime ? domains.x : undefined,
@@ -35203,7 +35213,7 @@ if (!Array.prototype.includes) {
       var x2Bounds = this._x2Test.outerBounds();
       var x2Height = x2Bounds.height + this._x2Test.padding();
 
-      var xOffsetLeft =  max([yWidth, xTestRange[0], x2TestRange[0]]);
+      var xOffsetLeft = max([yWidth, xTestRange[0], x2TestRange[0]]);
 
       this._xTest
         .range([xOffsetLeft, undefined])
@@ -35211,16 +35221,14 @@ if (!Array.prototype.includes) {
 
       var isYAxisOrdinal = yScale === "Ordinal";
       var topOffset = isYAxisOrdinal ? this._yTest.shapeConfig().labelConfig.fontSize() : this._yTest.shapeConfig().labelConfig.fontSize() / 2;
-
+      
       var xOffsetRight = max([y2Width, width - xTestRange[1], width - x2TestRange[1]]);
       var xOffset = width - xTestRange[1];
-      var xDifference = xOffsetRight - xOffset + this._xTest.padding();
-
+      var xDifference = xTime || x2Time ? xOffsetRight : xOffsetRight - xOffset + this._xTest.padding();
       var x2Offset = x2TestRange[1] !== undefined ? width - x2TestRange[1] : width;
-      var x2Difference = xOffsetRight - x2Offset + this._x2Test.padding();
+      var x2Difference = xTime || x2Time ? xOffsetRight : xOffsetRight - x2Offset + this._x2Test.padding();
       var xBounds = this._xTest.outerBounds();
       var xHeight = xBounds.height + this._xTest.padding();
-
       var yTestRange = this._yTest._getRange();
       var y2TestRange = this._y2Test._getRange();
 
@@ -35240,7 +35248,6 @@ if (!Array.prototype.includes) {
 
       var horizontalMargin = this._margin.left + this._margin.right;
       var verticalMargin = this._margin.top + this._margin.bottom;
-
       this._yTest
         .domain(yDomain)
         .height(height)
@@ -35256,22 +35263,22 @@ if (!Array.prototype.includes) {
 
       yBounds = this._yTest.outerBounds();
       yWidth = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
-      xOffsetLeft =  max([yWidth, xTestRange[0], x2TestRange[0]]);
+      xOffsetLeft = max([yWidth, xTestRange[0], x2TestRange[0]]);
 
       if (y2Exists) {
         this._y2Test
-        .config(yC)
-        .domain(y2Domain)
-        .gridSize(0)
-        .height(height)
-        .range([x2Height, height - (y2Difference + topOffset + verticalMargin)])
-        .scale(y2Scale.toLowerCase())
-        .select(testGroup.node())
-        .width(width - max([0, xOffsetRight - y2Width]))
-        .title(false)
-        .config(this._y2Config)
-        .config(defaultY2Config)
-        .render();
+          .config(yC)
+          .domain(y2Domain)
+          .gridSize(0)
+          .height(height)
+          .range([x2Height, height - (y2Difference + topOffset + verticalMargin)])
+          .scale(y2Scale.toLowerCase())
+          .select(testGroup.node())
+          .width(width - max([0, xOffsetRight - y2Width]))
+          .title(false)
+          .config(this._y2Config)
+          .config(defaultY2Config)
+          .render();
       }
 
       y2Bounds = this._y2Test.outerBounds();
@@ -35981,11 +35988,12 @@ if (!Array.prototype.includes) {
       this._shape = constant("Line");
       this.x("x");
       this.y2(function (d) { return this$1._y(d); });
+
       this.yConfig({
         tickFormat: function (val) {
           var data = this$1._formattedData;
-          var xDomain = this$1._xDomain;
-          var startData = data.filter(function (d) { return d.x === xDomain[0]; });
+          var xMin = data[0].x instanceof Date ? data[0].x.getTime() : data[0].x;
+          var startData = data.filter(function (d) { return (d.x instanceof Date ? d.x.getTime() : d.x) === xMin; });
           var d = startData.find(function (d) { return d.y === val; });
           return d ? this$1._drawLabel(d, d.i) : "";
         }
@@ -35993,8 +36001,8 @@ if (!Array.prototype.includes) {
       this.y2Config({
         tickFormat: function (val) {
           var data = this$1._formattedData;
-          var xDomain = this$1._xDomain;
-          var endData = data.filter(function (d) { return d.x === xDomain[xDomain.length - 1]; });
+          var xMax = data[data.length - 1].x instanceof Date ? data[data.length - 1].x.getTime() : data[data.length - 1].x;
+          var endData = data.filter(function (d) { return (d.x instanceof Date ? d.x.getTime() : d.x) === xMax; });
           var d = endData.find(function (d) { return d.y === val; });
           return d ? this$1._drawLabel(d, d.i) : "";
         }
