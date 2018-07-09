@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.5.4
+  d3plus-geomap v0.5.5
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -182,7 +182,7 @@ if (!Array.prototype.includes) {
       }
 
       var images = this._tileGroup.selectAll("image.tile")
-          .data(tileData, function (d) { return ((d.x) + "-" + (d.y) + "-" + (d.z)); });
+        .data(tileData, function (d) { return ((d.x) + "-" + (d.y) + "-" + (d.z)); });
 
       images.exit().transition().duration(duration)
         .attr("opacity", 0).remove();
@@ -190,19 +190,25 @@ if (!Array.prototype.includes) {
       var scale = tileData.scale / transform.k;
 
       images.enter().append("image")
-          .attr("class", "tile")
-          .attr("opacity", 0)
-          .attr("xlink:href", function (d) { return this$1._tileUrl
-            .replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0])
-            .replace("{z}", d.z)
-            .replace("{x}", d.x)
-            .replace("{y}", d.y); })
-          .attr("width", scale)
-          .attr("height", scale)
-          .attr("x", function (d) { return d.x * scale + tileData.translate[0] * scale - transform.x / transform.k; })
-          .attr("y", function (d) { return d.y * scale + tileData.translate[1] * scale - transform.y / transform.k; })
+        .attr("class", "tile")
+        .attr("opacity", 0)
+        .attr("xlink:href", function (d) { return this$1._tileUrl
+          .replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0])
+          .replace("{z}", d.z)
+          .replace("{x}", d.x)
+          .replace("{y}", d.y); })
+        .attr("width", scale)
+        .attr("height", scale)
+        .attr("x", function (d) { return d.x * scale + tileData.translate[0] * scale - transform.x / transform.k; })
+        .attr("y", function (d) { return d.y * scale + tileData.translate[1] * scale - transform.y / transform.k; })
         .transition().duration(duration)
-          .attr("opacity", 1);
+        .attr("opacity", 1);
+
+      images
+        .attr("width", scale)
+        .attr("height", scale)
+        .attr("x", function (d) { return d.x * scale + tileData.translate[0] * scale - transform.x / transform.k; })
+        .attr("y", function (d) { return d.y * scale + tileData.translate[1] * scale - transform.y / transform.k; });
 
     };
 
@@ -238,11 +244,11 @@ if (!Array.prototype.includes) {
 
       var ocean = this._container.selectAll("rect.d3plus-geomap-ocean").data([0]);
       ocean.enter().append("rect")
-          .attr("class", "d3plus-geomap-ocean")
+        .attr("class", "d3plus-geomap-ocean")
         .merge(ocean)
-          .attr("width", width)
-          .attr("height", height)
-          .attr("fill", this._ocean || "transparent");
+        .attr("width", width)
+        .attr("height", height)
+        .attr("fill", this._ocean || "transparent");
 
       this._tileGroup = this._container.selectAll("g.d3plus-geomap-tileGroup").data([0]);
       this._tileGroup = this._tileGroup.enter().append("g")
