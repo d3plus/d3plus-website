@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.14
+  d3plus-viz v0.11.15
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -20756,7 +20756,6 @@ if (!Array.prototype.includes) {
     var this$1 = this;
     if ( data === void 0 ) data = [];
 
-
     if (this._colorScale && data) {
 
       var position = this._colorScalePosition || "bottom";
@@ -20782,19 +20781,18 @@ if (!Array.prototype.includes) {
         return c !== undefined && c !== null;
       });
 
-      this._colorScaleClass
-        .align({bottom: "end", left: "start", right: "end", top: "start"}[position])
-        .duration(this._duration)
-        .data(scaleData)
-        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
-        .orient(position)
-        .select(scaleGroup)
-        .value(this._colorScale)
-        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
-        .config(this._colorScaleConfig)
-        .render();
-
       if (showColorScale) {
+        this._colorScaleClass
+          .align({bottom: "end", left: "start", right: "end", top: "start"}[position])
+          .duration(this._duration)
+          .data(scaleData)
+          .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
+          .orient(position)
+          .select(scaleGroup)
+          .value(this._colorScale)
+          .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
+          .config(this._colorScaleConfig)
+          .render();
 
         var scaleBounds = this._colorScaleClass.outerBounds();
         if (this._colorScalePosition && !this._colorScaleConfig.select && scaleBounds.height) {
