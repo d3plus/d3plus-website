@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.10
+  d3plus-plot v0.7.11
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -765,29 +765,15 @@ if (!Array.prototype.includes) {
         .range([xOffsetLeft, undefined])
         .render();
 
-      var isYAxisOrdinal = yScale === "Ordinal";
-      var topOffset = isYAxisOrdinal ? this._yTest.shapeConfig().labelConfig.fontSize() : this._yTest.shapeConfig().labelConfig.fontSize() / 2;
-      
+      var topOffset = this._yTest.shapeConfig().labelConfig.fontSize() / 2;
+
       var xOffsetRight = d3Array.max([y2Width, width - xTestRange[1], width - x2TestRange[1]]);
-      var xOffset = width - xTestRange[1];
-      var xDifference = xTime || x2Time ? xOffsetRight : xOffsetRight - xOffset + this._xTest.padding();
-      var x2Offset = x2TestRange[1] !== undefined ? width - x2TestRange[1] : width;
-      var x2Difference = xTime || x2Time ? xOffsetRight : xOffsetRight - x2Offset + this._x2Test.padding();
       var xBounds = this._xTest.outerBounds();
       var xHeight = xBounds.height + this._xTest.padding();
-      var yTestRange = this._yTest._getRange();
-      var y2TestRange = this._y2Test._getRange();
-
-      var yOffsetBottom = d3Array.max([xHeight, height - yTestRange[1], height - y2TestRange[1]]);
-      var yAxisOffset = height - yTestRange[1];
-      var yDifference = isYAxisOrdinal ? yOffsetBottom - yAxisOffset + this._yTest.padding() : xHeight;
-
-      var y2AxisOffset = y2TestRange[1] !== undefined ? height - y2TestRange[1] : height;
-      var y2Difference = isYAxisOrdinal ? yOffsetBottom - y2AxisOffset + this._y2Test.padding() : xHeight;
 
       this._padding.left += xOffsetLeft;
-      this._padding.right += Math.max(xDifference, x2Difference);
-      this._padding.bottom += Math.max(yDifference, y2Difference);
+      this._padding.right += xOffsetRight;
+      this._padding.bottom += xHeight;
       this._padding.top += x2Height + topOffset;
 
       Viz.prototype._draw.call(this, callback);
@@ -798,7 +784,7 @@ if (!Array.prototype.includes) {
         .domain(yDomain)
         .height(height)
         .maxSize(width / 2)
-        .range([x2Height, height - (yDifference + topOffset + verticalMargin)])
+        .range([x2Height, height - (xHeight + topOffset + verticalMargin)])
         .scale(yScale.toLowerCase())
         .select(testGroup.node())
         .ticks(yTicks)
@@ -817,7 +803,7 @@ if (!Array.prototype.includes) {
           .domain(y2Domain)
           .gridSize(0)
           .height(height)
-          .range([x2Height, height - (y2Difference + topOffset + verticalMargin)])
+          .range([x2Height, height - (xHeight + topOffset + verticalMargin)])
           .scale(y2Scale.toLowerCase())
           .select(testGroup.node())
           .width(width - d3Array.max([0, xOffsetRight - y2Width]))
@@ -848,7 +834,7 @@ if (!Array.prototype.includes) {
         .domain(xDomain)
         .height(height - (x2Height + topOffset + verticalMargin))
         .maxSize(height / 2)
-        .range([xOffsetLeft, width - (xDifference + horizontalMargin)])
+        .range([xOffsetLeft, width - (xOffsetRight + horizontalMargin)])
         .scale(xScale.toLowerCase())
         .select(xGroup.node())
         .ticks(xTicks)
@@ -861,7 +847,7 @@ if (!Array.prototype.includes) {
         this._x2Axis
           .domain(x2Domain)
           .height(height - (xHeight + topOffset + verticalMargin))
-          .range([xOffsetLeft, width - (x2Difference + horizontalMargin)])
+          .range([xOffsetLeft, width - (xOffsetRight + horizontalMargin)])
           .scale(x2Scale.toLowerCase())
           .select(x2Group.node())
           .ticks(x2Ticks)
@@ -888,7 +874,7 @@ if (!Array.prototype.includes) {
         .domain(yDomain)
         .height(height)
         .maxSize(width / 2)
-        .range([this._xAxis.outerBounds().y + x2Height, height - (yDifference + topOffset + verticalMargin)])
+        .range([this._xAxis.outerBounds().y + x2Height, height - (xHeight + topOffset + verticalMargin)])
         .scale(yScale.toLowerCase())
         .select(yGroup.node())
         .ticks(yTicks)
@@ -903,7 +889,7 @@ if (!Array.prototype.includes) {
           .domain(y2Exists ? y2Domain : yDomain)
           .gridSize(0)
           .height(height)
-          .range([this._xAxis.outerBounds().y + x2Height, height - (y2Difference + topOffset + verticalMargin)])
+          .range([this._xAxis.outerBounds().y + x2Height, height - (xHeight + topOffset + verticalMargin)])
           .scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase())
           .select(y2Group.node())
           .width(width - d3Array.max([0, xOffsetRight - y2Width]))
