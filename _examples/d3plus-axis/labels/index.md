@@ -2,8 +2,8 @@
 title: Hiding Specific Axis Labels
 width: 600
 height: 300
-time: 1526404345260
-date: May 15, 2018
+time: 1531234123484
+date: July 10, 2018
 ---
 
 [width]: 600
