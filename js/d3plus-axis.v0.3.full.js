@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.47
+  d3plus-axis v0.3.48
   Beautiful javascript scales and axes.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -12798,7 +12798,7 @@ var Axis = (function (BaseClass$$1) {
         var d$2 = lastB - range$$1[lastI];
         if (this._range === void 0 || this._range[this._range.length - 1] === void 0) {
           this._size -= d$2;
-          range$$1[this._range.length - 1] -= d$2;
+          range$$1[lastI] -= d$2;
         }
         else if (this._range) {
           rangeOuter[rangeOuter.length - 1] += d$2;
