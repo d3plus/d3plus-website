@@ -13,34 +13,28 @@
       overflow: hidden;
     }
 
-    #viz {
-      height: 200px;
-      width: 500px;
-    }
-
   </style>
 
 </head>
 
-<body>
-
-  <div id="viz"></div>
-
-</body>
+<body></body>
 
 <script>
 
   var data = [
-    {id: "alpha", value: 29},
-    {id: "beta",  value: 10}
+    {parent: "Group 1", id: "alpha", value: 29},
+    {parent: "Group 1", id: "beta", value: 10},
+    {parent: "Group 1", id: "gamma", value: 2},
+    {parent: "Group 2", id: "delta", value: 29},
+    {parent: "Group 2", id: "eta", value: 25}
   ];
-  
-  new d3plus.Treemap()
+
+  new d3plus.Pack()
     .data(data)
-    .groupBy("id")
-    .select("#viz")
+    .groupBy(["parent", "id"])
     .sum("value")
     .render();
+  
 
 </script>
 
