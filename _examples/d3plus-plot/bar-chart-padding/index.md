@@ -2,8 +2,8 @@
 title: Custom Bar Chart Padding
 width: 990
 height: 400
-time: 1531235743973
-date: July 10, 2018
+time: 1532366292479
+date: July 23, 2018
 ---
 
 # Custom Bar Chart Padding
