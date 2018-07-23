@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.11
+  d3plus-plot v0.7.12
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -92,11 +92,16 @@ if (!Array.prototype.includes) {
       @param {*} item
   */
   function isObject(item) {
-    return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
+    return item &&
+      typeof item === "object" &&
+      (typeof window === "undefined" || item !== window && item !== window.document) &&
+      !(item instanceof Element) &&
+      !Array.isArray(item)
+      ? true : false;
   }
 
   /**
-      @function assign
+      @function validObject
       @desc Determines if the object passed is the document or window.
       @param {Object} obj
       @private
@@ -20790,6 +20795,7 @@ if (!Array.prototype.includes) {
     var this$1 = this;
     if ( data === void 0 ) { data = []; }
 
+
     if (this._colorScale && data) {
 
       var position = this._colorScalePosition || "bottom";
@@ -20817,7 +20823,7 @@ if (!Array.prototype.includes) {
 
       if (showColorScale) {
         this._colorScaleClass
-          .align({bottom: "end", left: "start", right: "end", top: "start"}[position])
+          .align({bottom: "end", left: "start", right: "end", top: "start"}[position] || "bottom")
           .duration(this._duration)
           .data(scaleData)
           .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
@@ -32246,8 +32252,9 @@ if (!Array.prototype.includes) {
         @private
     */
     Viz.prototype._draw = function _draw () {
-      if (this.legendPosition() === "left" || this.legendPosition() === "right") { drawLegend.bind(this)(this._filteredData); }
-      if (this.colorScalePosition() === "left" || this.colorScalePosition() === "right") { drawColorScale.bind(this)(this._filteredData); }
+
+      if (this._legendPosition === "left" || this._legendPosition === "right") { drawLegend.bind(this)(this._filteredData); }
+      if (this._colorScalePosition === "left" || this._colorScalePosition === "right" || this._colorScalePosition === false) { drawColorScale.bind(this)(this._filteredData); }
 
       drawBack.bind(this)();
       drawTitle.bind(this)(this._filteredData);
@@ -32255,14 +32262,14 @@ if (!Array.prototype.includes) {
       drawTimeline.bind(this)(this._filteredData);
       drawControls.bind(this)(this._filteredData);
 
-      if (this.legendPosition() === "top" || this.legendPosition() === "bottom") { drawLegend.bind(this)(this._filteredData); }
-      if (this.colorScalePosition() === "top" || this.colorScalePosition() === "bottom") { drawColorScale.bind(this)(this._filteredData); }
+      if (this._legendPosition === "top" || this._legendPosition === "bottom") { drawLegend.bind(this)(this._filteredData); }
+      if (this._colorScalePosition === "top" || this._colorScalePosition === "bottom") { drawColorScale.bind(this)(this._filteredData); }
 
       this._shapes = [];
 
       // Draws a container and zoomGroup to test functionality.
       // this._container = this._select.selectAll("svg.d3plus-viz").data([0]);
-      
+
       // this._container = this._container.enter().append("svg")
       //     .attr("class", "d3plus-viz")
       //     .attr("width", this._width - this._margin.left - this._margin.right)
@@ -32271,13 +32278,13 @@ if (!Array.prototype.includes) {
       //     .attr("y", this._margin.top)
       //     .style("background-color", "transparent")
       //   .merge(this._container);
-      
+
       // this._zoomGroup = this._container.selectAll("g.d3plus-viz-zoomGroup").data([0]);
       // const enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
       //   .merge(this._zoomGroup);
-      
+
       // this._zoomGroup = enter.merge(this._zoomGroup);
-      
+
       // this._shapes.push(new Rect()
       //   .config(this._shapeConfig)
       //   .data(this._filteredData)
