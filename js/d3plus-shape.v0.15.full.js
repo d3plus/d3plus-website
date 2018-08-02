@@ -11561,10 +11561,10 @@ if (!Array.prototype.includes) {
         .entries(this._data)
         .map(function (d) {
           d.data = objectMerge(d.values);
-          d.i = this$1._data.indexOf(d.values[0]); 
+          d.i = this$1._data.indexOf(d.values[0]);
           d.orient = this$1._orient(d.data, d.i);
           var values$$1 = d.values.map(d.orient === "vertical" ? this$1._y : this$1._x);
-          values$$1.sort(function (a, b) { return a - b; }); 
+          values$$1.sort(function (a, b) { return a - b; });
 
           d.first = quantile(values$$1, 0.25);
           d.median = quantile(values$$1, 0.50);
@@ -11802,7 +11802,7 @@ if (!Array.prototype.includes) {
     /**
         @memberof Box
         @desc Determines the value used for each whisker. Can be passed a single value to apply for both whiskers, or an Array of 2 values for the lower and upper whiskers (in that order). Accepted values are `"tukey"`, `"extent"`, or a Number representing a quantile.
-        @param {String|Number|Array[2]} *value* = "tukey"
+        @param {String|Number|String[]|Number[]} [*value* = "tukey"]
         @chainable
     */
     Box.prototype.whiskerMode = function whiskerMode (_) {
