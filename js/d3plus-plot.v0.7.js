@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.12
+  d3plus-plot v0.7.13
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -358,6 +358,8 @@ if (!Array.prototype.includes) {
           width: function (d) { return defaultSize.bind(this$1)(d) * 2; }
         }
       });
+      this._shapeOrder = ["Area", "Path", "Bar", "Box", "Line", "Rect", "Circle"];
+      this._shapeSort = function (a, b) { return this$1._shapeOrder.indexOf(a) - this$1._shapeOrder.indexOf(b); };
       this._sizeMax = 20;
       this._sizeMin = 5;
       this._sizeScale = "sqrt";
@@ -646,7 +648,11 @@ if (!Array.prototype.includes) {
           y = scales[("scale" + yScale)]().domain(domains.y.reverse()).range(d3Array.range(0, height + 1, height / (domains.y.length - 1))),
           y2 = scales[("scale" + y2Scale)]().domain(domains.y2.reverse()).range(d3Array.range(0, height + 1, height / (domains.y2.length - 1)));
 
-      var shapeData = d3Collection.nest().key(function (d) { return d.shape; }).entries(data);
+      var shapeData = d3Collection.nest()
+        .key(function (d) { return d.shape; })
+        .entries(data)
+        .sort(function (a, b) { return this$1._shapeSort(a.key, b.key); });
+
       var oppScale = this._discrete === "x" ? yScale : xScale;
       if (this._xConfig.scale !== "log" && this._yConfig.scale !== "log" && oppScale !== "Ordinal") {
         shapeData.forEach(function (d) {
@@ -1129,6 +1135,16 @@ if (!Array.prototype.includes) {
     */
     Plot.prototype.groupPadding = function groupPadding (_) {
       return arguments.length ? (this._groupPadding = _, this) : this._groupPadding;
+    };
+
+    /**
+        @memberof Plot
+        @desc A JavaScript [sort comparator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) that receives each shape Class (ie. "Circle", "Line", etc) as it's comparator arguments. Shapes are drawn in groups based on their type, so you are defining the layering order for all shapes of said type.
+        @param {Function} *value*
+        @chainable
+    */
+    Plot.prototype.shapeSort = function shapeSort (_) {
+      return arguments.length ? (this._shapeSort = _, this) : this._shapeSort;
     };
 
     /**
