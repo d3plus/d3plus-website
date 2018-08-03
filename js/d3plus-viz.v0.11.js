@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.11.16
+  d3plus-viz v0.11.17
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -318,6 +318,9 @@ if (!Array.prototype.includes) {
           else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
         }
 
+      }
+      else {
+        this._colorScaleClass.config(this._colorScaleConfig);
       }
 
     }
