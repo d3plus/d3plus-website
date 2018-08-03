@@ -2,8 +2,8 @@
 title: Coordinate Points on a Map
 width: 990
 height: 550
-time: 1531173039105
-date: July 09, 2018
+time: 1533308313330
+date: August 03, 2018
 ---
 
 [height]: 550
