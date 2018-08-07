@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.41
+  d3plus-common v0.6.42
   Common functions and methods used across D3plus modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -94,8 +94,7 @@ if (!Array.prototype.includes) {
   function isObject(item) {
     return item &&
       typeof item === "object" &&
-      (typeof window === "undefined" || item !== window && item !== window.document) &&
-      !(item instanceof Element) &&
+      (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) &&
       !Array.isArray(item)
       ? true : false;
   }
