@@ -2,8 +2,8 @@
 title: Drawing Rectangles
 width: 360
 height: 150
-time: 1533223239656
-date: August 02, 2018
+time: 1534192168991
+date: August 13, 2018
 ---
 
 [width]: 360
