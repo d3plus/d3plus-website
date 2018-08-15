@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.4.3
+  d3plus-network v0.4.4
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -1016,11 +1016,11 @@ if (!Array.prototype.includes) {
         label: function (d) { return nodes.length <= this$1._labelCutoff || (this$1._hover && this$1._hover(d) || this$1._active && this$1._active(d)) ? this$1._drawLabel(d.data || d.node, d.i) : false; },
         labelBounds: function (d) { return d.labelBounds; },
         labelConfig: {
-          fontColor: function (d) { return d.data.data.id === this$1._center ? d3plusCommon.configPrep.bind(that)(that._shapeConfig, "shape", d.key).labelConfig.fontColor(d) : d3plusColor.colorLegible(d3plusCommon.configPrep.bind(that)(that._shapeConfig, "shape", d.key).fill(d)); },
-          fontResize: function (d) { return d.data.data.id === this$1._center; },
+          fontColor: function (d) { return d.data.id === this$1._center ? d3plusCommon.configPrep.bind(that)(that._shapeConfig, "shape", d.key).labelConfig.fontColor(d) : d3plusColor.colorLegible(d3plusCommon.configPrep.bind(that)(that._shapeConfig, "shape", d.key).fill(d)); },
+          fontResize: function (d) { return d.data.id === this$1._center; },
           padding: 0,
-          textAnchor: function (d) { return nodeLookup[d.data.data.id].textAnchor || d3plusCommon.configPrep.bind(that)(that._shapeConfig, "shape", d.key).labelConfig.textAnchor; },
-          verticalAlign: function (d) { return d.data.data.id === this$1._center ? "middle" : "top"; }
+          textAnchor: function (d) { return nodeLookup[d.data.id].textAnchor || d3plusCommon.configPrep.bind(that)(that._shapeConfig, "shape", d.key).labelConfig.textAnchor; },
+          verticalAlign: function (d) { return d.data.id === this$1._center ? "middle" : "top"; }
         },
         rotate: function (d) { return nodeLookup[d.id].rotate || 0; },
         select: d3plusCommon.elem("g.d3plus-rings-nodes", {parent: this._select, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node()
