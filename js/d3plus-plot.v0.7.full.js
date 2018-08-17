@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.14
+  d3plus-plot v0.7.15
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -39611,6 +39611,71 @@ if (!Array.prototype.includes) {
       @param {D3Scale} x
       @param {D3Scale} y
       @param {Object} [config]
+      @param {Number} [buffer = 10]
+      @private
+  */
+  function BoxBuffer(ref) {
+    var this$1 = this;
+    var data = ref.data;
+    var x = ref.x;
+    var y = ref.y;
+    var x2 = ref.x2;
+    var y2 = ref.y2;
+    var buffer = ref.buffer; if ( buffer === void 0 ) buffer = 10;
+
+    var xKey = x2 ? "x2" : "x";
+    var yKey = y2 ? "y2" : "y";
+
+    var oppScale = this._discrete === "x" ? y : x;
+
+    var oppDomain = oppScale.domain().slice();
+
+    var isDiscreteX = this._discrete === "x";
+
+    if (isDiscreteX) { oppDomain.reverse(); }
+
+    var negVals, posVals;
+    if (this._stacked) {
+      var groupedData = nest()
+        .key(function (d) { return d[this$1._discrete]; })
+        .entries(data)
+        .map(function (d) { return d.values.map(function (x) { return x[isDiscreteX ? yKey : xKey]; }); });
+      posVals = groupedData.map(function (arr) { return sum(arr.filter(function (d) { return d > 0; })); });
+      negVals = groupedData.map(function (arr) { return sum(arr.filter(function (d) { return d < 0; })); });
+    }
+    else {
+      posVals = data.map(function (d) { return d[isDiscreteX ? yKey : xKey]; });
+      negVals = posVals;
+    }
+
+    var bMax = oppScale(max(posVals));
+    bMax += isDiscreteX ? -buffer : buffer;
+    bMax = oppScale.invert(bMax);
+
+    var bMin = oppScale(min(negVals));
+    bMin += isDiscreteX ? buffer : -buffer;
+    bMin = oppScale.invert(bMin);
+
+    if (bMax > oppDomain[1]) { oppDomain[1] = bMax; }
+    if (bMin < oppDomain[0]) { oppDomain[0] = bMin; }
+
+    if (isDiscreteX) { oppDomain.reverse(); }
+
+    oppScale.domain(oppDomain);
+
+    var discreteScale = isDiscreteX ? x : y;
+    discreteScale.domain(ordinalBuffer(discreteScale.domain()));
+
+    return [x, y];
+
+  }
+
+  /**
+      Adds a buffer to either side of the non-discrete axis.
+      @param {Array} data
+      @param {D3Scale} x
+      @param {D3Scale} y
+      @param {Object} [config]
       @param {Number} [buffer] Defaults to the radius of the largest Circle.
       @private
   */
@@ -39661,6 +39726,36 @@ if (!Array.prototype.includes) {
 
     x.domain(xD).range(xR);
     y.domain(yD).range(yR);
+
+    return [x, y];
+
+  }
+
+  function LineBuffer(ref) {
+    var this$1 = this;
+    var data = ref.data;
+    var x = ref.x;
+    var y = ref.y;
+    var x2 = ref.x2;
+    var y2 = ref.y2;
+
+    var xKey = x2 ? "x2" : "x";
+    var yKey = y2 ? "y2" : "y";
+
+    var s = this._discrete === "x" ? y : x;
+
+    var d = s.domain().slice();
+
+    if (this._discrete === "x") { d.reverse(); }
+
+    var vals = data.map(function (d) { return d[this$1._discrete === "x" ? yKey : xKey]; });
+    var b = s.invert(s(max(vals)) + (this._discrete === "x" ? -10 : 10));
+
+    if (b > d[1]) { d[1] = b; }
+
+    if (this._discrete === "x") { d.reverse(); }
+
+    s.domain(d);
 
     return [x, y];
 
@@ -39718,36 +39813,6 @@ if (!Array.prototype.includes) {
 
   }
 
-  function LineBuffer(ref) {
-    var this$1 = this;
-    var data = ref.data;
-    var x = ref.x;
-    var y = ref.y;
-    var x2 = ref.x2;
-    var y2 = ref.y2;
-
-    var xKey = x2 ? "x2" : "x";
-    var yKey = y2 ? "y2" : "y";
-
-    var s = this._discrete === "x" ? y : x;
-
-    var d = s.domain().slice();
-
-    if (this._discrete === "x") { d.reverse(); }
-
-    var vals = data.map(function (d) { return d[this$1._discrete === "x" ? yKey : xKey]; });
-    var b = s.invert(s(max(vals)) + (this._discrete === "x" ? -10 : 10));
-
-    if (b > d[1]) { d[1] = b; }
-
-    if (this._discrete === "x") { d.reverse(); }
-
-    s.domain(d);
-
-    return [x, y];
-
-  }
-
   function defaultSize(d) {
     return this._sizeScaleD3(this._size ? this._size(d) : null);
   }
@@ -39767,6 +39832,7 @@ if (!Array.prototype.includes) {
       this._barPadding = 0;
       this._buffer = {
         Bar: BarBuffer,
+        Box: BoxBuffer,
         Circle: CircleBuffer,
         Line: LineBuffer,
         Rect: RectBuffer
@@ -40953,6 +41019,47 @@ if (!Array.prototype.includes) {
   }(Plot));
 
   /**
+      @class BoxWhisker
+      @extends Plot
+      @desc Creates a simple box and whisker based on an array of data.
+      @example <caption>the equivalent of calling:</caption>
+  new d3plus.Plot()
+    .discrete("x")
+    .shape("Box")
+  */
+  var BoxWhisker = (function (Plot$$1) {
+    function BoxWhisker() {
+      var this$1 = this;
+
+
+      Plot$$1.call(this);
+      this._discrete = "x";
+      this._shape = constant("Box");
+      this.x("x");
+
+      this._tooltipConfig = assign(this._tooltipConfig, {
+        title: function (d, i) {
+          if (!d) { return ""; }
+          while (d.__d3plus__ && d.data) {
+            d = d.data;
+            i = d.i;
+          }
+          if (this$1._label) { return this$1._label(d, i); }
+          var l = this$1._ids(d, i).slice(0, this$1._drawDepth);
+          return l[l.length - 1];
+        }
+      });
+
+    }
+
+    if ( Plot$$1 ) BoxWhisker.__proto__ = Plot$$1;
+    BoxWhisker.prototype = Object.create( Plot$$1 && Plot$$1.prototype );
+    BoxWhisker.prototype.constructor = BoxWhisker;
+
+    return BoxWhisker;
+  }(Plot));
+
+  /**
       @class BumpChart
       @extends Plot
       @desc Creates a bump chart based on an array of data.
@@ -41074,6 +41181,7 @@ if (!Array.prototype.includes) {
 
   exports.AreaPlot = AreaPlot;
   exports.BarChart = BarChart;
+  exports.BoxWhisker = BoxWhisker;
   exports.BumpChart = BumpChart;
   exports.LinePlot = LinePlot;
   exports.Plot = Plot;
