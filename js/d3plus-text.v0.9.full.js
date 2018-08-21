@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.32
+  d3plus-text v0.9.33
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -3420,10 +3420,9 @@ if (!Array.prototype.includes) {
   var chineseRange = "\u3400-\u9FBF";
   var laoRange = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
 
-  var noSpaceRange = burmeseRange + chineseRange + laoRange;
+  var noSpaceRange = burmeseRange + chineseRange + japaneseRange + laoRange;
 
   var splitWords = new RegExp(("(\\" + (splitChars.join("|\\")) + ")*[^\\s|\\" + (splitChars.join("|\\")) + "]*(\\" + (splitChars.join("|\\")) + ")*"), "g");
-  var japaneseChars = new RegExp(("[" + japaneseRange + "]"));
   var noSpaceLanguage = new RegExp(("[" + noSpaceRange + "]"));
   var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSpaceRange + "](\\" + (suffixChars.join("|\\")) + "|\\" + (combiningMarks.join("|\\")) + ")*|[a-z0-9]+"), "gi");
 
@@ -3435,7 +3434,7 @@ if (!Array.prototype.includes) {
   function textSplit(sentence) {
     if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
     return merge(stringify(sentence).match(splitWords).map(function (d) {
-      if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
+      if (noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
       return [d];
     }));
   }
@@ -3782,7 +3781,8 @@ if (!Array.prototype.includes) {
         if (lineData.length) {
 
           var tH = line * lH;
-          var yP = vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH;
+          var r = this$1._rotate(d, i);
+          var yP = r === 0 ? vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH : 0;
           yP -= lH * 0.1;
 
           arr.push({
@@ -3795,10 +3795,10 @@ if (!Array.prototype.includes) {
             fO: this$1._fontOpacity(d, i),
             fW: style["font-weight"],
             id: this$1._id(d, i),
-            r: this$1._rotate(d, i),
             tA: this$1._textAnchor(d, i),
+            vA: this$1._verticalAlign(d, i),
             widths: wrapResults.widths,
-            fS: fS, lH: lH, w: w, h: h,
+            fS: fS, lH: lH, w: w, h: h, r: r,
             x: this$1._x(d, i) + padding.left,
             y: this$1._y(d, i) + yP + padding.top
           });
@@ -3850,6 +3850,7 @@ if (!Array.prototype.includes) {
               @private
           */
           function textStyle(text) {
+
             text
               .text(function (t) { return trimRight(t); })
               .attr("aria-hidden", d.aH)
@@ -3862,8 +3863,12 @@ if (!Array.prototype.includes) {
               .style("font-size", ((d.fS) + "px"))
               .attr("font-weight", d.fW)
               .style("font-weight", d.fW)
-              .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
-              .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
+              .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 2 * Math.sin(Math.PI * d.r / 180)) + "px"))
+              .attr("y", function (t, i) { return d.r === 0 || d.vA === "top" ? (((i + 1) * d.lH - (d.lH - d.fS)) + "px") : 
+                d.vA === "middle" ? 
+                  (((d.h + d.fS) / 2 - (d.lH - d.fS) + (i - d.lines.length / 2 + 0.5) * d.lH) + "px") : 
+                  ((d.h - 2 * (d.lH - d.fS) - (d.lines.length - (i + 1)) * d.lH + 2 * Math.cos(Math.PI * d.r / 180)) + "px"); });
+
           }
 
           var texts = select(this).selectAll("text").data(d.lines);
