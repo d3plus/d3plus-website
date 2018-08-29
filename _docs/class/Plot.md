@@ -44,6 +44,8 @@ This is a global class, and extends all of the methods and functionality of <cod
     * [.y2Domain(*value*)](#Plot.y2Domain) ↩︎
     * [.ySort(*value*)](#Plot.ySort) ↩︎
     * [.y2Sort(*value*)](#Plot.y2Sort) ↩︎
+    * [.x(*value*)](#Plot.x) ↩︎
+    * [.y(*value*)](#Plot.y) ↩︎
 
 
 <a name="new_Plot_new" href="#new_Plot_new">#</a> new **Plot**()
@@ -309,6 +311,22 @@ This is a static method of [<code>Plot</code>](#Plot), and is chainable with oth
 <a name="Plot.y2Sort" href="#Plot.y2Sort">#</a> Plot.**y2Sort**(*value*) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Plot.js#L1147)
 
 Defines a custom sorting comparitor function to be used for discrete y2 axes.
+
+
+This is a static method of [<code>Plot</code>](#Plot), and is chainable with other methods of this Class.
+
+
+<a name="Plot.x" href="#Plot.x">#</a> Plot.**x**(*value*) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L235)
+
+Sets the x accessor to the specified function or number. If *value* is not specified, returns the current x accessor.
+
+
+This is a static method of [<code>Plot</code>](#Plot), and is chainable with other methods of this Class.
+
+
+<a name="Plot.y" href="#Plot.y">#</a> Plot.**y**(*value*) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L258)
+
+Sets the y accessor to the specified function or number. If *value* is not specified, returns the current y accessor.
 
 
 This is a static method of [<code>Plot</code>](#Plot), and is chainable with other methods of this Class.
