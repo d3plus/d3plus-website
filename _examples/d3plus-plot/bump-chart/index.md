@@ -2,8 +2,8 @@
 title: Bump Chart
 width: 990
 height: 400
-time: 1535511442994
-date: August 28, 2018
+time: 1535511696554
+date: August 29, 2018
 ---
 
 # Bump Chart
