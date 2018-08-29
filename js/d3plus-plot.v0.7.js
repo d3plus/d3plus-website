@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.7.15
+  d3plus-plot v0.7.16
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -1700,6 +1700,279 @@ if (!Array.prototype.includes) {
   }(Plot));
 
   /**
+      @external Viz
+      @see https://github.com/d3plus/d3plus-viz#Viz
+  */
+
+  var tau = Math.PI * 2;
+
+  /**
+      @class Radar
+      @extends Plot
+      @desc Creates a radar visualization based on an array of data.
+  */
+  var Radar = (function (Viz) {
+    function Radar() {
+      Viz.call(this);
+
+      this._axisConfig = {
+        fill: d3plusCommon.constant("none"),
+        stroke: d3plusCommon.constant("#CCC"),
+        strokeWidth: d3plusCommon.constant(1)
+      };
+      this._hover = true;
+      this._levels = 6;
+      this._radarPadding = 100;
+      this._shape = d3plusCommon.constant("Path");
+      this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
+        Circle: {
+          r: d3plusCommon.accessor("r", 0)
+        },
+        Path: {}
+      });
+      this._value = d3plusCommon.accessor("value");
+      this._x = d3plusCommon.accessor("x");
+      this._y = d3plusCommon.accessor("y");
+    }
+
+    if ( Viz ) Radar.__proto__ = Viz;
+    Radar.prototype = Object.create( Viz && Viz.prototype );
+    Radar.prototype.constructor = Radar;
+
+    /**
+        Extends the draw behavior of the abstract Plot class.
+        @private
+    */
+    Radar.prototype._draw = function _draw (callback) {
+      var this$1 = this;
+
+      Viz.prototype._draw.call(this, callback);
+      var height = this._height - this._margin.top - this._margin.bottom,
+            width = this._width - this._margin.left - this._margin.right;
+
+      var radius = (Math.min(height, width) - this._radarPadding) / 2,
+            transform = "translate(" + (width / 2) + ", " + (height / 2) + ")";
+
+      var maxValue = Math.max.apply(Math, this._data.map(function (d, i) { return this$1._value(d, i); })),
+            nestedAxisData = d3Collection.nest()
+          .key(this._y)
+          .entries(this._data),
+            nestedGroupData = d3Collection.nest()
+          .key(this._x)
+          .entries(this._data);
+
+      var circularAxis = Array.from(Array(this._levels).keys()).map(function (d) { return ({
+        id: d,
+        r: radius * ((d + 1) / this$1._levels)
+      }); });
+
+      new shapes.Circle()
+        .data(circularAxis)
+        .select(
+          d3plusCommon.elem("g.d3plus-Radar-radial-circles", {
+            parent: this._select,
+            enter: {transform: transform},
+            update: {transform: transform}
+          }).node()
+        )
+        .config(this._axisConfig)
+        .render();
+
+      var totalAxis = nestedAxisData.length;
+      var polarAxis = nestedAxisData
+        .map(function (d, i) {
+          var width = 100;
+          var fontSize =
+            this$1._shapeConfig.labelConfig.fontSize &&
+              this$1._shapeConfig.labelConfig.fontSize(d, i) ||
+            11;
+
+          var lineHeight = fontSize * 1.4;
+          var height = lineHeight * 2;
+          var padding = 10,
+                quadrant = parseInt(360 - 360 / totalAxis * i / 90, 10) % 4 + 1,
+                radians = tau / totalAxis * i;
+
+          var angle = 360 / totalAxis * i;
+
+          var textAnchor = "start";
+          var x = padding;
+
+          if (quadrant === 2 || quadrant === 3) {
+            x = -width - padding;
+            textAnchor = "end";
+            angle += 180;
+          }
+
+          var labelBounds = {
+            x: x,
+            y: -height / 2,
+            width: width,
+            height: height
+          };
+
+          return {
+            id: d.key,
+            angle: angle,
+            textAnchor: textAnchor,
+            labelBounds: labelBounds,
+            rotateAnchor: [-x, height / 2],
+            x: radius * Math.cos(radians),
+            y: radius * Math.sin(radians)
+          };
+        })
+        .sort(function (a, b) { return a.key - b.key; });
+
+      new shapes.Rect()
+        .data(polarAxis)
+        .rotate(function (d) { return d.angle; })
+        .width(0)
+        .height(0)
+        .x(function (d) { return d.x; })
+        .y(function (d) { return d.y; })
+        .label(function (d) { return d.id; })
+        .labelBounds(function (d) { return d.labelBounds; })
+        .labelConfig({
+          padding: 0,
+          textAnchor: function (d) { return d.data.textAnchor; },
+          rotateAnchor: function (d) { return d.data.data.rotateAnchor; },
+          fontColor: "black",
+          verticalAlign: "middle"
+        })
+        .select(
+          d3plusCommon.elem("g.d3plus-Radar-text", {
+            parent: this._select,
+            enter: {transform: transform},
+            update: {transform: transform}
+          }).node()
+        )
+        .render();
+
+      new shapes.Path()
+        .data(polarAxis)
+        .d(function (d) { return ("M" + (0) + "," + (0) + " " + (-d.x) + "," + (-d.y)); })
+        .select(
+          d3plusCommon.elem("g.d3plus-Radar-axis", {
+            parent: this._select,
+            enter: {transform: transform},
+            update: {transform: transform}
+          }).node()
+        )
+        .config(this._axisConfig)
+        .render();
+
+      var groupData = nestedGroupData.map(function (h) {
+        var q = h.values.map(function (d, i) {
+          var r = this$1._value(d, i) / maxValue * radius,
+                radians = tau / totalAxis * i;
+          return {
+            x: r * Math.cos(radians),
+            y: r * Math.sin(radians)
+          };
+        });
+
+        var d = "M " + (q[0].x) + " " + (q[0].y) + " " + (q
+          .map(function (l) { return ("L " + (l.x) + " " + (l.y)); })
+          .join(" ")) + " L " + (q[0].x) + " " + (q[0].y);
+
+        return {id: h.key, d: d};
+      });
+
+      this._shapes.push(
+        new shapes.Path()
+          .data(groupData)
+          .d(function (d) { return d.d; })
+          .select(
+            d3plusCommon.elem("g.d3plus-Radar-items", {
+              parent: this._select,
+              enter: {transform: transform},
+              update: {transform: transform}
+            }).node()
+          )
+          .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
+          .render()
+      );
+
+      return this;
+    };
+
+    /**
+        @memberof Radar
+        @desc If *value* is specified, sets the padding of the chart and returns the current class instance. If *value* is not specified, returns the current radarPadding. By default, the radarPadding is 100.
+        @param {Number} [*value* = 100]
+        @chainable
+    */
+    Radar.prototype.radarPadding = function radarPadding (_) {
+      return arguments.length
+        ? (this._radarPadding = _, this)
+        : this._radarPadding;
+    };
+
+    /**
+        @memberof Radar
+        @desc If *value* is specified, sets the value accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current value accessor.
+        @param {Function|String} *value*
+        @example
+  function value(d) {
+    return d.value;
+  }
+    */
+    Radar.prototype.value = function value (_) {
+      return arguments.length
+        ? (this._value = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this)
+        : this._value;
+    };
+
+    /**
+        @memberof Plot
+        @desc Sets the x accessor to the specified function or number. If *value* is not specified, returns the current x accessor.
+        @param {Function|Number} *value*
+        @chainable
+    */
+    Radar.prototype.x = function x (_) {
+      if (arguments.length) {
+        if (typeof _ === "function") { this._x = _; }
+        else {
+          this._x = d3plusCommon.accessor(_);
+          if (!this._aggs[_] && this._discrete === "x") {
+            this._aggs[_] = function (a) {
+              var v = Array.from(new Set(a));
+              return v.length === 1 ? v[0] : v;
+            };
+          }
+        }
+        return this;
+      }
+      else { return this._x; }
+    };
+
+    /**
+        @memberof Plot
+        @desc Sets the y accessor to the specified function or number. If *value* is not specified, returns the current y accessor.
+        @param {Function|Number} *value*
+        @chainable
+    */
+    Radar.prototype.y = function y (_) {
+      if (arguments.length) {
+        if (typeof _ === "function") { this._y = _; }
+        else {
+          this._y = d3plusCommon.accessor(_);
+          if (!this._aggs[_] && this._discrete === "y") {
+            this._aggs[_] = function (a) {
+              var v = Array.from(new Set(a));
+              return v.length === 1 ? v[0] : v;
+            };
+          }
+        }
+        return this;
+      }
+      else { return this._y; }
+    };
+
+    return Radar;
+  }(d3plusViz.Viz));
+
+  /**
       @class StackedArea
       @extends Area
       @desc Creates a stacked area plot based on an array of data.
@@ -1728,6 +2001,7 @@ if (!Array.prototype.includes) {
   exports.BumpChart = BumpChart;
   exports.LinePlot = LinePlot;
   exports.Plot = Plot;
+  exports.Radar = Radar;
   exports.StackedArea = StackedArea;
 
   Object.defineProperty(exports, '__esModule', { value: true });
