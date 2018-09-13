@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.42
+  d3plus-common v0.6.43
   Common functions and methods used across D3plus modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -150,7 +150,7 @@ if (!Array.prototype.includes) {
 
                 if (Object.is(targetItem, sourceItem)) { return; }
 
-                if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
+                if (isObject(targetItem) && isObject(sourceItem)) {
                   targetArray[itemIndex] = assign({}, targetItem, sourceItem);
                 }
                 else { targetArray[itemIndex] = sourceItem; }
