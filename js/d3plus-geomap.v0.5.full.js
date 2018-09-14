@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.5.6
+  d3plus-geomap v0.5.7
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -68,7 +68,6 @@ if (!Array.prototype.includes) {
   typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports'], factory) :
   (factory((global.d3plus = {})));
 }(this, (function (exports) {
-
   function ascending(a, b) {
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
@@ -216,7 +215,7 @@ if (!Array.prototype.includes) {
     return stop < start ? -step1 : step1;
   }
 
-  function quantile(values, p, valueof) {
+  function threshold(values, p, valueof) {
     if (valueof == null) { valueof = number; }
     if (!(n = values.length)) { return; }
     if ((p = +p) <= 0 || n < 2) { return +valueof(values[0], 0, values); }
@@ -3475,7 +3474,8 @@ if (!Array.prototype.includes) {
 
     function albersUsa(coordinates) {
       var x = coordinates[0], y = coordinates[1];
-      return point = null, (lower48Point.point(x, y), point)
+      return point = null,
+          (lower48Point.point(x, y), point)
           || (alaskaPoint.point(x, y), point)
           || (hawaiiPoint.point(x, y), point);
     }
@@ -3639,7 +3639,7 @@ if (!Array.prototype.includes) {
     };
 
     m.clipExtent = function(_) {
-      return arguments.length ? (_ == null ? x0 = y0 = x1 = y1 = null : (x0 = +_[0][0], y0 = +_[0][1], x1 = +_[1][0], y1 = +_[1][1]), reclip()) : x0 == null ? null : [[x0, y0], [x1, y1]];
+      return arguments.length ? ((_ == null ? x0 = y0 = x1 = y1 = null : (x0 = +_[0][0], y0 = +_[0][1], x1 = +_[1][0], y1 = +_[1][1])), reclip()) : x0 == null ? null : [[x0, y0], [x1, y1]];
     };
 
     function reclip() {
@@ -3721,6 +3721,40 @@ if (!Array.prototype.includes) {
     return conicProjection(conicEquidistantRaw)
         .scale(131.154)
         .center([0, 13.9389]);
+  }
+
+  var A1 = 1.340264,
+      A2 = -0.081106,
+      A3 = 0.000893,
+      A4 = 0.003796,
+      M = sqrt(3) / 2,
+      iterations = 12;
+
+  function equalEarthRaw(lambda, phi) {
+    var l = asin(M * sin(phi)), l2 = l * l, l6 = l2 * l2 * l2;
+    return [
+      lambda * cos(l) / (M * (A1 + 3 * A2 * l2 + l6 * (7 * A3 + 9 * A4 * l2))),
+      l * (A1 + A2 * l2 + l6 * (A3 + A4 * l2))
+    ];
+  }
+
+  equalEarthRaw.invert = function(x, y) {
+    var l = y, l2 = l * l, l6 = l2 * l2 * l2;
+    for (var i = 0, delta, fy, fpy; i < iterations; ++i) {
+      fy = l * (A1 + A2 * l2 + l6 * (A3 + A4 * l2)) - y;
+      fpy = A1 + 3 * A2 * l2 + l6 * (7 * A3 + 9 * A4 * l2);
+      l -= delta = fy / fpy, l2 = l * l, l6 = l2 * l2 * l2;
+      if (abs(delta) < epsilon2) { break; }
+    }
+    return [
+      M * x * (A1 + 3 * A2 * l2 + l6 * (7 * A3 + 9 * A4 * l2)) / cos(l),
+      asin(sin(l) / M)
+    ];
+  };
+
+  function equalEarth() {
+    return projection(equalEarthRaw)
+        .scale(177.158);
   }
 
   function gnomonicRaw(x, y) {
@@ -3902,6 +3936,8 @@ if (!Array.prototype.includes) {
     geoConicEqualAreaRaw: conicEqualAreaRaw,
     geoConicEquidistant: conicEquidistant,
     geoConicEquidistantRaw: conicEquidistantRaw,
+    geoEqualEarth: equalEarth,
+    geoEqualEarthRaw: equalEarthRaw,
     geoEquirectangular: equirectangular,
     geoEquirectangularRaw: equirectangularRaw,
     geoGnomonic: gnomonic,
@@ -4337,7 +4373,7 @@ if (!Array.prototype.includes) {
         c = new Array(nb),
         i;
 
-    for (i = 0; i < na; ++i) { x[i] = interpolate$1(a[i], b[i]); }
+    for (i = 0; i < na; ++i) { x[i] = interpolateValue(a[i], b[i]); }
     for (; i < nb; ++i) { c[i] = b[i]; }
 
     return function(t) {
@@ -4369,7 +4405,7 @@ if (!Array.prototype.includes) {
 
     for (k in b) {
       if (k in a) {
-        i[k] = interpolate$1(a[k], b[k]);
+        i[k] = interpolateValue(a[k], b[k]);
       } else {
         c[k] = b[k];
       }
@@ -4444,7 +4480,7 @@ if (!Array.prototype.includes) {
           });
   }
 
-  function interpolate$1(a, b) {
+  function interpolateValue(a, b) {
     var t = typeof b, c;
     return b == null || t === "boolean" ? constant$2(b)
         : (t === "number" ? reinterpolate
@@ -4759,7 +4795,7 @@ if (!Array.prototype.includes) {
   function continuous(deinterpolate, reinterpolate$$1) {
     var domain = unit,
         range$$1 = unit,
-        interpolate$$1 = interpolate$1,
+        interpolate$$1 = interpolateValue,
         clamp = false,
         piecewise,
         output,
@@ -5407,7 +5443,7 @@ if (!Array.prototype.includes) {
     return pow$1().exponent(0.5);
   }
 
-  function quantile$1() {
+  function quantile$$1() {
     var domain = [],
         range$$1 = [],
         thresholds = [];
@@ -5415,7 +5451,7 @@ if (!Array.prototype.includes) {
     function rescale() {
       var i = 0, n = Math.max(1, range$$1.length);
       thresholds = new Array(n - 1);
-      while (++i < n) { thresholds[i - 1] = quantile(domain, i / n); }
+      while (++i < n) { thresholds[i - 1] = threshold(domain, i / n); }
       return scale;
     }
 
@@ -5448,7 +5484,7 @@ if (!Array.prototype.includes) {
     };
 
     scale.copy = function() {
-      return quantile$1()
+      return quantile$$1()
           .domain(domain)
           .range(range$$1);
     };
@@ -5499,7 +5535,7 @@ if (!Array.prototype.includes) {
     return linearish(scale);
   }
 
-  function threshold() {
+  function threshold$1() {
     var domain = [0.5],
         range$$1 = [0, 1],
         n = 1;
@@ -5522,7 +5558,7 @@ if (!Array.prototype.includes) {
     };
 
     scale.copy = function() {
-      return threshold()
+      return threshold$1()
           .domain(domain)
           .range(range$$1);
     };
@@ -5620,6 +5656,7 @@ if (!Array.prototype.includes) {
       return (end - start) / k;
     });
   };
+  var milliseconds = millisecond.range;
 
   var durationSecond = 1e3;
   var durationMinute = 6e4;
@@ -5636,6 +5673,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getUTCSeconds();
   });
+  var seconds = second.range;
 
   var minute = newInterval(function(date) {
     date.setTime(Math.floor(date / durationMinute) * durationMinute);
@@ -5646,6 +5684,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getMinutes();
   });
+  var minutes = minute.range;
 
   var hour = newInterval(function(date) {
     var offset = date.getTimezoneOffset() * durationMinute % durationHour;
@@ -5658,6 +5697,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getHours();
   });
+  var hours = hour.range;
 
   var day = newInterval(function(date) {
     date.setHours(0, 0, 0, 0);
@@ -5668,6 +5708,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getDate() - 1;
   });
+  var days = day.range;
 
   function weekday(i) {
     return newInterval(function(date) {
@@ -5688,6 +5729,8 @@ if (!Array.prototype.includes) {
   var friday = weekday(5);
   var saturday = weekday(6);
 
+  var sundays = sunday.range;
+
   var month = newInterval(function(date) {
     date.setDate(1);
     date.setHours(0, 0, 0, 0);
@@ -5698,6 +5741,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getMonth();
   });
+  var months = month.range;
 
   var year = newInterval(function(date) {
     date.setMonth(0, 1);
@@ -5720,6 +5764,7 @@ if (!Array.prototype.includes) {
       date.setFullYear(date.getFullYear() + step * k);
     });
   };
+  var years = year.range;
 
   var utcMinute = newInterval(function(date) {
     date.setUTCSeconds(0, 0);
@@ -5730,6 +5775,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getUTCMinutes();
   });
+  var utcMinutes = utcMinute.range;
 
   var utcHour = newInterval(function(date) {
     date.setUTCMinutes(0, 0, 0);
@@ -5740,6 +5786,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getUTCHours();
   });
+  var utcHours = utcHour.range;
 
   var utcDay = newInterval(function(date) {
     date.setUTCHours(0, 0, 0, 0);
@@ -5750,6 +5797,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getUTCDate() - 1;
   });
+  var utcDays = utcDay.range;
 
   function utcWeekday(i) {
     return newInterval(function(date) {
@@ -5770,6 +5818,8 @@ if (!Array.prototype.includes) {
   var utcFriday = utcWeekday(5);
   var utcSaturday = utcWeekday(6);
 
+  var utcSundays = utcSunday.range;
+
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
@@ -5780,6 +5830,7 @@ if (!Array.prototype.includes) {
   }, function(date) {
     return date.getUTCMonth();
   });
+  var utcMonths = utcMonth.range;
 
   var utcYear = newInterval(function(date) {
     date.setUTCMonth(0, 1);
@@ -5802,6 +5853,7 @@ if (!Array.prototype.includes) {
       date.setUTCFullYear(date.getUTCFullYear() + step * k);
     });
   };
+  var utcYears = utcYear.range;
 
   function localDate(d) {
     if (0 <= d.y && d.y < 100) {
@@ -6682,9 +6734,9 @@ if (!Array.prototype.includes) {
     scaleImplicit: implicit,
     scalePow: pow$1,
     scaleSqrt: sqrt$1,
-    scaleQuantile: quantile$1,
+    scaleQuantile: quantile$$1,
     scaleQuantize: quantize$1,
-    scaleThreshold: threshold,
+    scaleThreshold: threshold$1,
     scaleTime: time,
     scaleUtc: utcTime,
     scaleSequential: sequential,
@@ -6882,8 +6934,7 @@ if (!Array.prototype.includes) {
   function isObject(item) {
     return item &&
       typeof item === "object" &&
-      (typeof window === "undefined" || item !== window && item !== window.document) &&
-      !(item instanceof Element) &&
+      (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) &&
       !Array.isArray(item)
       ? true : false;
   }
@@ -6941,7 +6992,7 @@ if (!Array.prototype.includes) {
 
                 if (Object.is(targetItem, sourceItem)) { return; }
 
-                if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
+                if (isObject(targetItem) && isObject(sourceItem)) {
                   targetArray[itemIndex] = assign({}, targetItem, sourceItem);
                 }
                 else { targetArray[itemIndex] = sourceItem; }
@@ -8591,7 +8642,7 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function interpolate$2(a, b) {
+  function interpolate$1(a, b) {
     var c;
     return (typeof b === "number" ? reinterpolate
         : b instanceof color ? interpolateRgb
@@ -8662,7 +8713,7 @@ if (!Array.prototype.includes) {
   }
 
   function transition_attr(name, value) {
-    var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate$2;
+    var fullname = namespace(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate$1;
     return this.attrTween(name, typeof value === "function"
         ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
         : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
@@ -8929,7 +8980,7 @@ if (!Array.prototype.includes) {
   }
 
   function transition_style(name, value, priority) {
-    var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$2;
+    var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$1;
     return value == null ? this
             .styleTween(name, styleRemove$1(name, i))
             .on("end.style." + name, styleRemoveEnd(name))
@@ -9687,7 +9738,7 @@ if (!Array.prototype.includes) {
       }
 
       // Or, is (x1,y1) coincident with (x0,y0)? Do nothing.
-      else if (!(l01_2 > epsilon$1)) {}
+      else if (!(l01_2 > epsilon$1)) ;
 
       // Or, are (x0,y0), (x1,y1) and (x2,y2) collinear?
       // Equivalently, is (x1,y1) coincident with (x2,y2)?
@@ -10039,7 +10090,7 @@ if (!Array.prototype.includes) {
     };
 
     arc.context = function(_) {
-      return arguments.length ? (context = _ == null ? null : _, arc) : context;
+      return arguments.length ? ((context = _ == null ? null : _), arc) : context;
     };
 
     return arc;
@@ -10446,7 +10497,7 @@ if (!Array.prototype.includes) {
     };
 
     link.context = function(_) {
-      return arguments.length ? (context = _ == null ? null : _, link) : context;
+      return arguments.length ? ((context = _ == null ? null : _), link) : context;
     };
 
     return link;
@@ -11701,7 +11752,7 @@ if (!Array.prototype.includes) {
       @param {String|Array} text Can be either a single string or an array of strings to analyze.
       @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
   */
-  function textWidth(text, style) {
+  function measure(text, style) {
 
     style = Object.assign({
       "font-size": 10,
@@ -11762,10 +11813,10 @@ if (!Array.prototype.includes) {
   var fontExists = function (font) {
 
     if (!dejavu) {
-      dejavu = textWidth(alpha, {"font-family": "DejaVuSans", "font-size": height});
-      macos = textWidth(alpha, {"font-family": "-apple-system", "font-size": height});
-      monospace = textWidth(alpha, {"font-family": "monospace", "font-size": height});
-      proportional = textWidth(alpha, {"font-family": "sans-serif", "font-size": height});
+      dejavu = measure(alpha, {"font-family": "DejaVuSans", "font-size": height});
+      macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
+      monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
+      proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
     }
 
     if (!(font instanceof Array)) { font = font.split(","); }
@@ -11775,7 +11826,7 @@ if (!Array.prototype.includes) {
       var fam = font[i];
       if (checked[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
       else if (checked[fam] === false) { continue; }
-      var width = textWidth(alpha, {"font-family": fam, "font-size": height});
+      var width = measure(alpha, {"font-family": fam, "font-size": height});
       checked[fam] = width !== monospace;
       if (checked[fam]) { checked[fam] = width !== proportional; }
       if (macos && checked[fam]) { checked[fam] = width !== macos; }
@@ -11918,7 +11969,7 @@ if (!Array.prototype.includes) {
       @function textWrap
       @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
   */
-  function textWrap() {
+  function wrap() {
 
     var fontFamily = "sans-serif",
         fontSize = 10,
@@ -11955,8 +12006,8 @@ if (!Array.prototype.includes) {
           widthProg = 0;
 
       var lineData = [],
-            sizes = textWidth(words, style),
-            space = textWidth(" ", style);
+            sizes = measure(words, style),
+            space = measure(" ", style);
 
       for (var i = 0; i < words.length; i++) {
         var word = words[i];
@@ -11986,7 +12037,7 @@ if (!Array.prototype.includes) {
       return {
         lines: lineData,
         sentence: sentence, truncated: truncated,
-        widths: textWidth(lineData, style),
+        widths: measure(lineData, style),
         words: words
       };
 
@@ -12170,7 +12221,7 @@ if (!Array.prototype.includes) {
         var h = this$1._height(d, i) - (padding.top + padding.bottom),
               w = this$1._width(d, i) - (padding.left + padding.right);
 
-        var wrapper = textWrap()
+        var wrapper = wrap()
           .fontFamily(style["font-family"])
           .fontSize(fS)
           .fontWeight(style["font-weight"])
@@ -12230,7 +12281,7 @@ if (!Array.prototype.includes) {
 
           if (resize) {
 
-            sizes = textWidth(words, style);
+            sizes = measure(words, style);
 
             var areaMod = 1.165 + w / h * 0.1,
                   boxArea = w * h,
@@ -13282,7 +13333,6 @@ if (!Array.prototype.includes) {
         .attr("pointer-events", "none")
         .transition(this._transition)
         .attr("opacity", this._nestWrapper(this._opacity))
-        .transition()
         .attr("pointer-events", this._pointerEvents);
 
       // Makes the exit state of the group selection accessible.
@@ -15760,7 +15810,8 @@ if (!Array.prototype.includes) {
         lineData.push({__d3plus__: true, data: d, i: i, id: i, x: endpointX, y: endpointY});
       });
 
-      new Line()
+      // Draw whisker line.
+      this._line = new Line()
         .data(lineData)
         .select(elem("g.d3plus-Whisker", {parent: this._select}).node())
         .config(configPrep.bind(this)(this._lineConfig, "shape"))
@@ -15791,12 +15842,14 @@ if (!Array.prototype.includes) {
 
       });
 
+      // Draw whisker endpoint.
+      this._whiskerEndpoint = [];
       nest()
         .key(function (d) { return d.endpoint; })
         .entries(whiskerData)
         .forEach(function (shapeData) {
           var shapeName = shapeData.key;
-          new shapes[shapeName]()
+          this$1._whiskerEndpoint.push(new shapes[shapeName]()
             .data(shapeData.values)
             .select(elem(("g.d3plus-Whisker-Endpoint-" + shapeName), {parent: this$1._select}).node())
             .config({
@@ -15804,11 +15857,22 @@ if (!Array.prototype.includes) {
               width: function (d) { return d.orient === "top" || d.orient === "bottom" ? 20 : 5; }
             })
             .config(configPrep.bind(this$1)(this$1._endpointConfig, "shape", shapeName))
-            .render();
+            .render());
         });
 
       return this;
 
+    };
+
+    /**
+        @memberof Whisker
+        @desc Sets the highlight accessor to the Shape class's active function.
+        @param {Function} [*value*]
+        @chainable
+    */
+    Whisker.prototype.active = function active (_) {
+      if (this._line) { this._line.active(_); }
+      if (this._whiskerEndpoint) { this._whiskerEndpoint.forEach(function (endPoint) { return endPoint.active(_); }); }
     };
 
     /**
@@ -15839,6 +15903,17 @@ if (!Array.prototype.includes) {
     */
     Whisker.prototype.endpointConfig = function endpointConfig (_) {
       return arguments.length ? (this._endpointConfig = assign(this._endpointConfig, _), this) : this._endpointConfig;
+    };
+
+    /**
+        @memberof Whisker
+        @desc Sets the highlight accessor to the Shape class's hover function.
+        @param {Function} [*value*]
+        @chainable
+    */
+    Whisker.prototype.hover = function hover (_) {
+      if (this._line) { this._line.hover(_); }
+      if (this._whiskerEndpoint) { this._whiskerEndpoint.forEach(function (endPoint) { return endPoint.hover(_); }); }
     };
 
     /**
@@ -15986,9 +16061,9 @@ if (!Array.prototype.includes) {
           var values$$1 = d.values.map(d.orient === "vertical" ? this$1._y : this$1._x);
           values$$1.sort(function (a, b) { return a - b; });
 
-          d.first = quantile(values$$1, 0.25);
-          d.median = quantile(values$$1, 0.50);
-          d.third = quantile(values$$1, 0.75);
+          d.first = threshold(values$$1, 0.25);
+          d.median = threshold(values$$1, 0.50);
+          d.third = threshold(values$$1, 0.75);
 
           var mode = this$1._whiskerMode;
 
@@ -15997,14 +16072,14 @@ if (!Array.prototype.includes) {
             if (d.lowerLimit < min(values$$1)) { d.lowerLimit = min(values$$1); }
           }
           else if (mode[0] === "extent") { d.lowerLimit = min(values$$1); }
-          else if (typeof mode[0] === "number") { d.lowerLimit = quantile(values$$1, mode[0]); }
+          else if (typeof mode[0] === "number") { d.lowerLimit = threshold(values$$1, mode[0]); }
 
           if (mode[1] === "tukey") {
             d.upperLimit = d.third + (d.third - d.first) * 1.5;
             if (d.upperLimit > max(values$$1)) { d.upperLimit = max(values$$1); }
           }
           else if (mode[1] === "extent") { d.upperLimit = max(values$$1); }
-          else if (typeof mode[1] === "number") { d.upperLimit = quantile(values$$1, mode[1]); }
+          else if (typeof mode[1] === "number") { d.upperLimit = threshold(values$$1, mode[1]); }
 
           var rectLength = d.third - d.first;
 
@@ -16048,14 +16123,13 @@ if (!Array.prototype.includes) {
 
           });
 
-          d.nested = true;
           d.__d3plus__ = true;
 
           return d;
         });
 
       // Draw box.
-      new Rect()
+      this._box = new Rect()
         .data(filteredData)
         .x(function (d) { return d.x; })
         .y(function (d) { return d.y; })
@@ -16064,7 +16138,7 @@ if (!Array.prototype.includes) {
         .render();
 
       // Draw median.
-      new Rect()
+      this._median = new Rect()
         .data(filteredData)
         .x(function (d) { return d.orient === "vertical" ? d.x : d.median; })
         .y(function (d) { return d.orient === "vertical" ? d.median : d.y; })
@@ -16103,26 +16177,40 @@ if (!Array.prototype.includes) {
       });
 
       // Draw whiskers.
-      new Whisker()
+      this._whisker = new Whisker()
         .data(whiskerData)
         .select(elem("g.d3plus-Box-Whisker", {parent: this._select}).node())
         .config(configPrep.bind(this)(this._whiskerConfig, "shape"))
         .render();
 
       // Draw outliers.
+      this._whiskerEndpoint = [];
       nest()
         .key(function (d) { return d.outlier; })
         .entries(outlierData)
         .forEach(function (shapeData) {
           var shapeName = shapeData.key;
-          new shapes$1[shapeName]()
+          this$1._whiskerEndpoint.push(new shapes$1[shapeName]()
             .data(shapeData.values)
             .select(elem(("g.d3plus-Box-Outlier-" + shapeName), {parent: this$1._select}).node())
             .config(configPrep.bind(this$1)(this$1._outlierConfig, "shape", shapeName))
-            .render();
+            .render());
         });
 
       return this;
+    };
+
+    /**
+        @memberof Box
+        @desc Sets the highlight accessor to the Shape class's active function.
+        @param {Function} [*value*]
+        @chainable
+    */
+    Box.prototype.active = function active (_) {
+      if (this._box) { this._box.active(_); }
+      if (this._median) { this._median.active(_); }
+      if (this._whisker) { this._whisker.active(_); }
+      if (this._whiskerEndpoint) { this._whiskerEndpoint.forEach(function (endPoint) { return endPoint.active(_); }); }
     };
 
     /**
@@ -16133,6 +16221,19 @@ if (!Array.prototype.includes) {
     */
     Box.prototype.data = function data (_) {
       return arguments.length ? (this._data = _, this) : this._data;
+    };
+
+    /**
+        @memberof Box
+        @desc Sets the highlight accessor to the Shape class's hover function.
+        @param {Function} [*value*]
+        @chainable
+    */
+    Box.prototype.hover = function hover (_) {
+      if (this._box) { this._box.hover(_); }
+      if (this._median) { this._median.hover(_); }
+      if (this._whisker) { this._whisker.hover(_); }
+      if (this._whiskerEndpoint) { this._whiskerEndpoint.forEach(function (endPoint) { return endPoint.hover(_); }); }
     };
 
     /**
@@ -16763,10 +16864,16 @@ if (!Array.prototype.includes) {
   var csv = dsv(",");
 
   var csvParse = csv.parse;
+  var csvParseRows = csv.parseRows;
+  var csvFormat = csv.format;
+  var csvFormatRows = csv.formatRows;
 
   var tsv = dsv("\t");
 
   var tsvParse = tsv.parse;
+  var tsvParseRows = tsv.parseRows;
+  var tsvFormat = tsv.format;
+  var tsvFormatRows = tsv.formatRows;
 
   function dsv$1(defaultMimeType, parse) {
     return function(url, row, callback) {
@@ -16845,7 +16952,7 @@ if (!Array.prototype.includes) {
     event$1.stopImmediatePropagation();
   }
 
-  function dragDisable(view) {
+  function nodrag(view) {
     var root = view.document.documentElement,
         selection$$1 = select(view).on("dragstart.drag", noevent, true);
     if ("onselectstart" in root) {
@@ -17073,7 +17180,7 @@ if (!Array.prototype.includes) {
                   emit = emitter(that, arguments),
                   selection0 = state.selection,
                   selection1 = dim.input(typeof selection$$1 === "function" ? selection$$1.apply(this, arguments) : selection$$1, state.extent),
-                  i = interpolate$1(selection0, selection1);
+                  i = interpolateValue(selection0, selection1);
 
               function tween(t) {
                 state.selection = t === 1 && empty$1(selection1) ? null : i(t);
@@ -17224,7 +17331,7 @@ if (!Array.prototype.includes) {
             .on("mousemove.brush", moved, true)
             .on("mouseup.brush", ended, true);
 
-        dragDisable(event$1.view);
+        nodrag(event$1.view);
       }
 
       nopropagation$1();
@@ -17536,7 +17643,7 @@ if (!Array.prototype.includes) {
     return new Queue(concurrency);
   }
 
-  function constant$10(x) {
+  function constant$a(x) {
     return function() {
       return x;
     };
@@ -17862,7 +17969,7 @@ if (!Array.prototype.includes) {
           x0 = event$1.clientX,
           y0 = event$1.clientY;
 
-      dragDisable(event$1.view);
+      nodrag(event$1.view);
       nopropagation$2();
       g.mouse = [p, this.__zoom.invert(p)];
       interrupt(this);
@@ -17981,19 +18088,19 @@ if (!Array.prototype.includes) {
     }
 
     zoom.wheelDelta = function(_) {
-      return arguments.length ? (wheelDelta = typeof _ === "function" ? _ : constant$10(+_), zoom) : wheelDelta;
+      return arguments.length ? (wheelDelta = typeof _ === "function" ? _ : constant$a(+_), zoom) : wheelDelta;
     };
 
     zoom.filter = function(_) {
-      return arguments.length ? (filter = typeof _ === "function" ? _ : constant$10(!!_), zoom) : filter;
+      return arguments.length ? (filter = typeof _ === "function" ? _ : constant$a(!!_), zoom) : filter;
     };
 
     zoom.touchable = function(_) {
-      return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$10(!!_), zoom) : touchable;
+      return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$a(!!_), zoom) : touchable;
     };
 
     zoom.extent = function(_) {
-      return arguments.length ? (extent = typeof _ === "function" ? _ : constant$10([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), zoom) : extent;
+      return arguments.length ? (extent = typeof _ === "function" ? _ : constant$a([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), zoom) : extent;
     };
 
     zoom.scaleExtent = function(_) {
@@ -21308,7 +21415,7 @@ if (!Array.prototype.includes) {
         var fontFamily = ref$1.fontFamily;
         var fontSize = ref$1.fontSize;
         var lineHeight = ref$1.lineHeight;
-        var titleWrap = textWrap()
+        var titleWrap = wrap()
           .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
           .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
           .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
@@ -21450,21 +21557,21 @@ if (!Array.prototype.includes) {
         var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
               s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-        var wrap = textWrap()
+        var wrap$$1 = wrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
           .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
           .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
 
-        var res = wrap(tickFormat(d));
+        var res = wrap$$1(tickFormat(d));
         res.lines = res.lines.filter(function (d) { return d !== ""; });
         res.d = d;
         res.fS = s;
         res.width = res.lines.length
-          ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
+          ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
           : 0;
-        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
+        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap$$1.lineHeight() + 1)) : 0;
         res.offset = 0;
         res.hidden = false;
         if (res.width % 2) { res.width++; }
@@ -21482,14 +21589,14 @@ if (!Array.prototype.includes) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i$1),
                 s$1 = this$1._shapeConfig.labelConfig.fontSize(d, i$1);
 
-          var wrap = textWrap()
+          var wrap$$1 = wrap()
             .fontFamily(f)
             .fontSize(s$1)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i$1) : undefined)
             .width(this$1._space)
             .height(labelHeight);
 
-          var res = wrap(tickFormat(d));
+          var res = wrap$$1(tickFormat(d));
 
           var isTruncated = res.truncated;
 
@@ -21520,7 +21627,7 @@ if (!Array.prototype.includes) {
 
           var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.4;
 
-          var lineTest = textWrap()
+          var lineTest = wrap()
               .fontFamily(f)
               .fontSize(s)
               .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
@@ -21647,7 +21754,7 @@ if (!Array.prototype.includes) {
       else { this._space = this._size; }
 
       var tBuff = this._shape === "Line" ? 0 : hBuff;
-      var bounds = this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return Math.ceil(t[height]); }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj);
+      var bounds = this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return Math.ceil(t[height]); }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
 
       margin[this._orient] += hBuff;
       margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - margin[this._orient] - bounds[height] - p;
@@ -22828,17 +22935,17 @@ if (!Array.prototype.includes) {
     "x": function(x) { return Math.round(x).toString(16); }
   };
 
-  function identity$10(x) {
+  function identity$a(x) {
     return x;
   }
 
   var prefixes$1 = ["y","z","a","f","p","n","µ","m","","k","M","G","T","P","E","Z","Y"];
 
   function formatLocale$2(locale) {
-    var group = locale.grouping && locale.thousands ? formatGroup$1(locale.grouping, locale.thousands) : identity$10,
+    var group = locale.grouping && locale.thousands ? formatGroup$1(locale.grouping, locale.thousands) : identity$a,
         currency = locale.currency,
         decimal = locale.decimal,
-        numerals = locale.numerals ? formatNumerals$1(locale.numerals) : identity$10,
+        numerals = locale.numerals ? formatNumerals$1(locale.numerals) : identity$a,
         percent = locale.percent || "%";
 
     function newFormat(specifier) {
@@ -26210,7 +26317,7 @@ if (!Array.prototype.includes) {
           labels = Array.from(tickSet);
         }
 
-        this._colorScale = threshold()
+        this._colorScale = threshold$1()
           .domain(ticks$$1)
           .range(["black"].concat(colors).concat(colors[colors.length - 1]));
 
@@ -26293,7 +26400,7 @@ if (!Array.prototype.includes) {
         .select(elem("g.d3plus-ColorScale-Rect", {parent: this._group}).node())
         .config(( obj = {
           fill: ticks$$1 ? function (d) { return this$1._colorScale(d); } : ("url(#gradient-" + (this._uuid) + ")")
-        }, obj[x] = ticks$$1 ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2, obj[width] = ticks$$1 ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._size, obj))
+        }, obj[x] = ticks$$1 ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2, obj[width] = ticks$$1 ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._size, obj ))
         .config(this._rectConfig)
         .render();
 
@@ -26582,7 +26689,7 @@ if (!Array.prototype.includes) {
         var lH = lH = this._titleConfig.lineHeight || this._titleClass.lineHeight();
         lH = lH ? lH() : s * 1.4;
 
-        var res = textWrap()
+        var res = wrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lH)
@@ -26622,7 +26729,7 @@ if (!Array.prototype.includes) {
         var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
               w = this$1._width;
 
-        res = Object.assign(res, textWrap()
+        res = Object.assign(res, wrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lh)
@@ -26630,7 +26737,7 @@ if (!Array.prototype.includes) {
           .height(h)
           (label));
 
-        res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
+        res.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
         res.height = Math.ceil(res.lines.length * (lh + 1));
         res.og = {height: res.height, width: res.width};
         res.f = f;
@@ -26667,9 +26774,9 @@ if (!Array.prototype.includes) {
             var loop = function ( x ) {
               var label = wrappable[x];
               var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
-              var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+              var res = wrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
               if (!res.truncated) {
-                label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+                label.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
                 label.height = res.lines.length * (label.lh + 1);
               }
               else {
@@ -30624,7 +30731,7 @@ if (!Array.prototype.includes) {
     Released under  License
   */
 
-  (function(f){{module.exports=f();}})(function(){var define;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof commonjsRequire=="function"&&commonjsRequire;if(!u&&a){ return a(o,!0); }if(i){ return i(o,!0); }var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND", f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r);}return n[o].exports}var i=typeof commonjsRequire=="function"&&commonjsRequire;for(var o=0;o<r.length;o++){ s(r[o]); }return s})({1:[function(_dereq_,module,exports){
+  (function(f){{module.exports=f();}})(function(){return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof commonjsRequire=="function"&&commonjsRequire;if(!u&&a){ return a(o,!0); }if(i){ return i(o,!0); }var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r);}return n[o].exports}var i=typeof commonjsRequire=="function"&&commonjsRequire;for(var o=0;o<r.length;o++){ s(r[o]); }return s})({1:[function(_dereq_,module,exports){
   (function (global){
   (function(root) {
 
@@ -31134,15 +31241,7 @@ if (!Array.prototype.includes) {
   	/** Expose `punycode` */
   	// Some AMD build optimizers, like r.js, check for specific condition patterns
   	// like the following:
-  	if (
-  		typeof define == 'function' &&
-  		typeof define.amd == 'object' &&
-  		define.amd
-  	) {
-  		define('punycode', function() {
-  			return punycode;
-  		});
-  	} else if (freeExports && freeModule) {
+  	if (freeExports && freeModule) {
   		if (module.exports == freeExports) {
   			// in Node.js, io.js, or RingoJS v0.8.0+
   			freeModule.exports = punycode;
@@ -31603,12 +31702,6 @@ if (!Array.prototype.includes) {
   } : html2canvas;
 
   module.exports = html2canvasExport;
-
-  if (typeof(define) === 'function' && define.amd) {
-      define('html2canvas', [], function() {
-          return html2canvasExport;
-      });
-  }
 
   function renderDocument(document, options, windowWidth, windowHeight, html2canvasIndex) {
       return createWindowClone(document, document, windowWidth, windowHeight, options, document.defaultView.pageXOffset, document.defaultView.pageYOffset).then(function(container) {
@@ -35482,22 +35575,22 @@ if (!Array.prototype.includes) {
   // ExceptionCode
   var ExceptionCode = {};
   var ExceptionMessage = {};
-  var INDEX_SIZE_ERR              = ExceptionCode.INDEX_SIZE_ERR              = (ExceptionMessage[1]="Index size error", 1);
-  var DOMSTRING_SIZE_ERR          = ExceptionCode.DOMSTRING_SIZE_ERR          = (ExceptionMessage[2]="DOMString size error", 2);
-  var HIERARCHY_REQUEST_ERR       = ExceptionCode.HIERARCHY_REQUEST_ERR       = (ExceptionMessage[3]="Hierarchy request error", 3);
-  var WRONG_DOCUMENT_ERR          = ExceptionCode.WRONG_DOCUMENT_ERR          = (ExceptionMessage[4]="Wrong document", 4);
-  var INVALID_CHARACTER_ERR       = ExceptionCode.INVALID_CHARACTER_ERR       = (ExceptionMessage[5]="Invalid character", 5);
-  var NO_DATA_ALLOWED_ERR         = ExceptionCode.NO_DATA_ALLOWED_ERR         = (ExceptionMessage[6]="No data allowed", 6);
-  var NO_MODIFICATION_ALLOWED_ERR = ExceptionCode.NO_MODIFICATION_ALLOWED_ERR = (ExceptionMessage[7]="No modification allowed", 7);
-  var NOT_FOUND_ERR               = ExceptionCode.NOT_FOUND_ERR               = (ExceptionMessage[8]="Not found", 8);
-  var NOT_SUPPORTED_ERR           = ExceptionCode.NOT_SUPPORTED_ERR           = (ExceptionMessage[9]="Not supported", 9);
-  var INUSE_ATTRIBUTE_ERR         = ExceptionCode.INUSE_ATTRIBUTE_ERR         = (ExceptionMessage[10]="Attribute in use", 10);
+  var INDEX_SIZE_ERR              = ExceptionCode.INDEX_SIZE_ERR              = ((ExceptionMessage[1]="Index size error"),1);
+  var DOMSTRING_SIZE_ERR          = ExceptionCode.DOMSTRING_SIZE_ERR          = ((ExceptionMessage[2]="DOMString size error"),2);
+  var HIERARCHY_REQUEST_ERR       = ExceptionCode.HIERARCHY_REQUEST_ERR       = ((ExceptionMessage[3]="Hierarchy request error"),3);
+  var WRONG_DOCUMENT_ERR          = ExceptionCode.WRONG_DOCUMENT_ERR          = ((ExceptionMessage[4]="Wrong document"),4);
+  var INVALID_CHARACTER_ERR       = ExceptionCode.INVALID_CHARACTER_ERR       = ((ExceptionMessage[5]="Invalid character"),5);
+  var NO_DATA_ALLOWED_ERR         = ExceptionCode.NO_DATA_ALLOWED_ERR         = ((ExceptionMessage[6]="No data allowed"),6);
+  var NO_MODIFICATION_ALLOWED_ERR = ExceptionCode.NO_MODIFICATION_ALLOWED_ERR = ((ExceptionMessage[7]="No modification allowed"),7);
+  var NOT_FOUND_ERR               = ExceptionCode.NOT_FOUND_ERR               = ((ExceptionMessage[8]="Not found"),8);
+  var NOT_SUPPORTED_ERR           = ExceptionCode.NOT_SUPPORTED_ERR           = ((ExceptionMessage[9]="Not supported"),9);
+  var INUSE_ATTRIBUTE_ERR         = ExceptionCode.INUSE_ATTRIBUTE_ERR         = ((ExceptionMessage[10]="Attribute in use"),10);
   //level2
-  var INVALID_STATE_ERR        	= ExceptionCode.INVALID_STATE_ERR        	= (ExceptionMessage[11]="Invalid state", 11);
-  var SYNTAX_ERR               	= ExceptionCode.SYNTAX_ERR               	= (ExceptionMessage[12]="Syntax error", 12);
-  var INVALID_MODIFICATION_ERR 	= ExceptionCode.INVALID_MODIFICATION_ERR 	= (ExceptionMessage[13]="Invalid modification", 13);
-  var NAMESPACE_ERR            	= ExceptionCode.NAMESPACE_ERR           	= (ExceptionMessage[14]="Invalid namespace", 14);
-  var INVALID_ACCESS_ERR       	= ExceptionCode.INVALID_ACCESS_ERR      	= (ExceptionMessage[15]="Invalid access", 15);
+  var INVALID_STATE_ERR        	= ExceptionCode.INVALID_STATE_ERR        	= ((ExceptionMessage[11]="Invalid state"),11);
+  var SYNTAX_ERR               	= ExceptionCode.SYNTAX_ERR               	= ((ExceptionMessage[12]="Syntax error"),12);
+  var INVALID_MODIFICATION_ERR 	= ExceptionCode.INVALID_MODIFICATION_ERR 	= ((ExceptionMessage[13]="Invalid modification"),13);
+  var NAMESPACE_ERR            	= ExceptionCode.NAMESPACE_ERR           	= ((ExceptionMessage[14]="Invalid namespace"),14);
+  var INVALID_ACCESS_ERR       	= ExceptionCode.INVALID_ACCESS_ERR      	= ((ExceptionMessage[15]="Invalid access"),15);
 
 
   function DOMException(code, message) {
@@ -36022,7 +36115,7 @@ if (!Array.prototype.includes) {
   			this.documentElement = newChild;
   		}
   		
-  		return _insertBefore(this,newChild,refChild), newChild.ownerDocument = this, newChild;
+  		return _insertBefore(this,newChild,refChild),(newChild.ownerDocument = this),newChild;
   	},
   	removeChild :  function(oldChild){
   		if(this.documentElement == oldChild){
@@ -40814,12 +40907,8 @@ if (!Array.prototype.includes) {
   // while `this` is nsIContentFrameMessageManager
   // with an attribute `content` that corresponds to the window
 
-  if ('object' !== "undefined" && module.exports) {
+  if (module.exports) {
     module.exports.saveAs = saveAs;
-  } else if ((typeof undefined !== "undefined" && undefined !== null) && (undefined.amd !== null)) {
-    undefined("FileSaver.js", function() {
-      return saveAs;
-    });
   }
   });
   var FileSaver_1 = FileSaver.saveAs;
@@ -43272,7 +43361,7 @@ if (!Array.prototype.includes) {
 
               });
 
-              var distCutoff = quantile(areas.reduce(function (arr, dist, i) {
+              var distCutoff = threshold(areas.reduce(function (arr, dist, i) {
                 if (dist) { arr.push(areas[i] / dist); }
                 return arr;
               }, []), 0.9);
@@ -43385,6 +43474,7 @@ if (!Array.prototype.includes) {
       if (arguments.length) {
         if (typeof _ === "function") { return this._fitFilter = _, this; }
         if (!(_ instanceof Array)) { _ = [_]; }
+        this._zoomSet = false;
         return this._fitFilter = function (d) { return _.includes(d.id); }, this;
       }
       return this._fitFilter;
@@ -43399,7 +43489,12 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Geomap.prototype.fitKey = function fitKey (_) {
-      return arguments.length ? (this._fitKey = _, this) : this._fitKey;
+      if (arguments.length) {
+        this._fitKey = _;
+        this._zoomSet = false;
+        return this;
+      }
+      return this._fitKey;
     };
 
     /**
@@ -43417,6 +43512,7 @@ if (!Array.prototype.includes) {
         var d = [load.bind(this), _, f, "fitObject"];
         if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
         else { this._queue.push(d); }
+        this._zoomSet = false;
         return this;
       }
       return this._fitObject;
@@ -43528,6 +43624,7 @@ if (!Array.prototype.includes) {
         var d = [load.bind(this), _, f, "topojson"];
         if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
         else { this._queue.push(d); }
+        this._zoomSet = false;
         return this;
       }
       return this._topojson;
@@ -43543,6 +43640,7 @@ if (!Array.prototype.includes) {
       if (arguments.length) {
         if (typeof _ === "function") { return this._topojsonFilter = _, this; }
         if (!(_ instanceof Array)) { _ = [_]; }
+        this._zoomSet = false;
         return this._topojsonFilter = function (d) { return _.includes(d.id); }, this;
       }
       return this._topojsonFilter;
@@ -43557,7 +43655,12 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Geomap.prototype.topojsonKey = function topojsonKey (_) {
-      return arguments.length ? (this._topojsonKey = _, this) : this._topojsonKey;
+      if (arguments.length) {
+        this._topojsonKey = _;
+        this._zoomSet = false;
+        return this;
+      }
+      return this._topojsonKey;
     };
 
     /**

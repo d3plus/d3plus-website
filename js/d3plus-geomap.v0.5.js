@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.5.6
+  d3plus-geomap v0.5.7
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -464,6 +464,7 @@ if (!Array.prototype.includes) {
       if (arguments.length) {
         if (typeof _ === "function") { return this._fitFilter = _, this; }
         if (!(_ instanceof Array)) { _ = [_]; }
+        this._zoomSet = false;
         return this._fitFilter = function (d) { return _.includes(d.id); }, this;
       }
       return this._fitFilter;
@@ -478,7 +479,12 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Geomap.prototype.fitKey = function fitKey (_) {
-      return arguments.length ? (this._fitKey = _, this) : this._fitKey;
+      if (arguments.length) {
+        this._fitKey = _;
+        this._zoomSet = false;
+        return this;
+      }
+      return this._fitKey;
     };
 
     /**
@@ -496,6 +502,7 @@ if (!Array.prototype.includes) {
         var d = [d3plusViz.dataLoad.bind(this), _, f, "fitObject"];
         if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
         else { this._queue.push(d); }
+        this._zoomSet = false;
         return this;
       }
       return this._fitObject;
@@ -607,6 +614,7 @@ if (!Array.prototype.includes) {
         var d = [d3plusViz.dataLoad.bind(this), _, f, "topojson"];
         if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
         else { this._queue.push(d); }
+        this._zoomSet = false;
         return this;
       }
       return this._topojson;
@@ -622,6 +630,7 @@ if (!Array.prototype.includes) {
       if (arguments.length) {
         if (typeof _ === "function") { return this._topojsonFilter = _, this; }
         if (!(_ instanceof Array)) { _ = [_]; }
+        this._zoomSet = false;
         return this._topojsonFilter = function (d) { return _.includes(d.id); }, this;
       }
       return this._topojsonFilter;
@@ -636,7 +645,12 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Geomap.prototype.topojsonKey = function topojsonKey (_) {
-      return arguments.length ? (this._topojsonKey = _, this) : this._topojsonKey;
+      if (arguments.length) {
+        this._topojsonKey = _;
+        this._zoomSet = false;
+        return this;
+      }
+      return this._topojsonKey;
     };
 
     /**
