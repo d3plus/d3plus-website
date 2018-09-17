@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.7.1
+  d3plus-hierarchy v0.7.2
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -642,7 +642,7 @@ if (!Array.prototype.includes) {
                   x = this$1._orient === "vertical" ? "x" : "y",
                   y = this$1._orient === "vertical" ? "y" : "x";
 
-            return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj);
+            return ( obj = {}, obj[width] = w, obj[height] = h, obj[x] = -w / 2, obj[y] = d.children && d.depth !== this$1._groupBy.length ? -(s.r + h) : s.r, obj );
 
           }
         })
