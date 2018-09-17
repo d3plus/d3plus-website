@@ -84,6 +84,7 @@ var Timeline = (function (Axis) {
 
 
     Axis.call(this);
+
     this._barConfig = Object.assign({}, this._barConfig, {
       "stroke-width": function () { return this$1._buttonBehaviorCurrent === "buttons" ? 0 : 1; }
     });
@@ -132,30 +133,9 @@ var Timeline = (function (Axis) {
 
     if (d3Selection.event.sourceEvent && d3Selection.event.sourceEvent.offsetX && d3Selection.event.selection !== null && (!this._brushing || this._snapping)) {
 
-      var buttonDomain = 0.5 * (this._ticksWidth / this._availableTicks.length - this._handleSize + 0.2),
-            selection =  this._buttonBehaviorCurrent === "ticks" || d3Selection.event.selection[1] === d3Selection.event.selection[0] || buttonDomain === Math.round((d3Selection.event.selection[1] - d3Selection.event.selection[0]) * 10) / 10
-              ? d3Selection.event.selection 
-              : [d3Selection.event.selection[0] + buttonDomain, d3Selection.event.selection[1] - buttonDomain].sort(function (a, b) { return a - b; });
+      var domain = this._updateDomain();
 
-      var domain = (this._brushing ? selection
-        : this._buttonBehaviorCurrent === "buttons" 
-          ? [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX] : [d3Selection.event.selection[0], d3Selection.event.selection[0]])
-        .map(this._d3Scale.invert)
-        .map(Number);
-
-      var ticks = this._availableTicks.map(Number);
-
-      domain[0] = d3plusAxis.date(d3plusCommon.closest(domain[0], ticks));
-      domain[1] = d3plusAxis.date(d3plusCommon.closest(domain[1], ticks));
-
-      var single = +domain[0] === +domain[1];
-
-      this._selection = single ? domain[0] : domain;
-
-      var pixelDomain = domain.map(this._d3Scale);
-      this._updateBrushLimit(pixelDomain);
-
-      this._brushGroup.call(this._brush.move, pixelDomain);
+      this._brushGroup.call(this._brush.move, this._updateBrushLimit(domain));
 
     }
 
@@ -173,28 +153,12 @@ var Timeline = (function (Axis) {
 
     if (!d3Selection.event.sourceEvent) { return; } // Only transition after input.
 
-    var domain = (d3Selection.event.selection && this._brushing ? d3Selection.event.selection
-      : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX])
-      .map(this._d3Scale.invert)
-      .map(Number);
-
-    var ticks = this._availableTicks.map(Number);
-    domain[0] = d3plusAxis.date(d3plusCommon.closest(domain[0], ticks));
-    domain[1] = d3plusAxis.date(d3plusCommon.closest(domain[1], ticks));
-      
-    var single = +domain[0] === +domain[1];
-
-    if (this._brushing || !this._snapping) {
-
-      var pixelDomain = domain.map(this._d3Scale);
-      this._updateBrushLimit(pixelDomain);
-
-      this._brushGroup.transition(this._transition).call(this._brush.move, pixelDomain);
-
-    }
+    var domain = this._updateDomain();
 
     this._brushStyle();
-    this._selection = single ? domain[0] : domain;
+
+    if (this._brushing || !this._snapping) { this._brushGroup.transition(this._transition).call(this._brush.move, this._updateBrushLimit(domain)); }
+
     if (this._on.end) { this._on.end(this._selection); }
 
   };
@@ -208,19 +172,8 @@ var Timeline = (function (Axis) {
 
     if (d3Selection.event.sourceEvent !== null && (!this._brushing || this._snapping)) {
 
-      var domain = (d3Selection.event.selection && this._brushing ? d3Selection.event.selection
-        : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX])
-        .map(this._d3Scale.invert)
-        .map(Number);
-
-      var ticks = this._availableTicks.map(Number);
-      domain[0] = d3plusAxis.date(d3plusCommon.closest(domain[0], ticks));
-      domain[1] = d3plusAxis.date(d3plusCommon.closest(domain[1], ticks));
-
-      var pixelDomain = domain.map(this._d3Scale);
-      this._updateBrushLimit(pixelDomain);
-
-      this._brushGroup.call(this._brush.move, pixelDomain);
+      var domain = this._updateDomain();
+      this._brushGroup.call(this._brush.move, this._updateBrushLimit(domain));
 
     }
 
@@ -267,10 +220,64 @@ var Timeline = (function (Axis) {
 
   /**
       @memberof Timeline
-      @desc Update limits of the brush.
+      @desc Updates domain of the timeline used in brush functions.
       @private
   */
-  Timeline.prototype._updateBrushLimit = function _updateBrushLimit (selection) {
+  Timeline.prototype._updateDomain = function _updateDomain () {
+
+    var domain = this._buttonBehaviorCurrent === "ticks"
+      ? (d3Selection.event.selection && this._brushing 
+        ? d3Selection.event.selection 
+        : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX]).map(this._d3Scale.invert).map(Number) 
+      : (d3Selection.event.selection && this._brushing 
+        ? d3Selection.event.selection
+        : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX]).map(Number);
+    
+    if (d3Selection.event.type === "brush" && this._brushing && this._buttonBehaviorCurrent === "buttons") {
+      var diffs = d3Selection.event.selection.map(function (d) { return Math.abs(d - d3Selection.event.sourceEvent.offsetX); });
+
+      domain = diffs[1] <= diffs[0] 
+        ? [d3Selection.event.selection[0], d3Selection.event.sourceEvent.offsetX].sort(function (a, b) { return a - b; })
+        : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.selection[1]].sort(function (a, b) { return a - b; });
+
+    }
+
+    var ticks = this._buttonBehaviorCurrent === "ticks"
+      ? this._availableTicks.map(Number) 
+      : this._d3Scale.range();
+
+    if (this._buttonBehaviorCurrent === "ticks") {
+      domain[0] = d3plusAxis.date(d3plusCommon.closest(domain[0], ticks));
+      domain[1] = d3plusAxis.date(d3plusCommon.closest(domain[1], ticks));
+    } 
+    else {
+      domain[0] = d3plusCommon.closest(domain[0], ticks);
+      domain[1] = d3plusCommon.closest(domain[1], ticks);
+    }
+
+    var single = +domain[0] === +domain[1];
+
+    if (d3Selection.event.type === "brush" || d3Selection.event.type === "end") {
+      this._selection = this._buttonBehaviorCurrent === "ticks" 
+        ? single ? domain[0] : domain 
+        : single 
+          ? d3plusAxis.date(this._availableTicks[ticks.indexOf(domain[0])]) 
+          : [d3plusAxis.date(this._availableTicks[ticks.indexOf(domain[0])]), d3plusAxis.date(this._availableTicks[ticks.indexOf(domain[1])])];
+    }
+
+    return domain;
+
+  };
+
+  /**
+      @memberof Timeline
+      @desc Updates limits of the brush.
+      @private
+  */
+  Timeline.prototype._updateBrushLimit = function _updateBrushLimit (domain) {
+    
+    var selection = this._buttonBehaviorCurrent === "ticks" ? domain.map(d3plusAxis.date).map(this._d3Scale) : domain;
+
     if (selection[0] === selection[1]) {
       selection[0] -= 0.1;
       selection[1] += 0.1;
@@ -304,12 +311,12 @@ var Timeline = (function (Axis) {
             tickFormat = d3Scale$$1.tickFormat();
 
       ticks = this._ticks ? ticks : d3Scale$$1.ticks();
+
       // Measures size of ticks
       this._ticksWidth = ticks.reduce(function (sum, d, i) {
         var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
               s = this$1._shapeConfig.labelConfig.fontSize(d, i);
-  
-              
+
         var wrap = d3plusText.textWrap()
           .fontFamily(f)
           .fontSize(s)
@@ -332,6 +339,14 @@ var Timeline = (function (Axis) {
       this.labels(this._ticks);
     }
 
+    if (this._buttonBehaviorCurrent === "buttons") {
+      if (!this._ticks) { this._ticks = Array.from(Array(this._domain[this._domain.length - 1] - this._domain[0] + 1), function (_, x) { return this$1._domain[0] + x; }); }
+      if (!this._brushing) { this._handleSize = 0; }
+
+      this._scale = "ordinal";
+      this._domain = this._ticks;
+    }
+
     if (this._ticksWidth && this._buttonBehaviorCurrent === "buttons") {
       var ticks$1 = this._ticks ? this._ticks.map(d3plusAxis.date) : this._domain.map(d3plusAxis.date);
       var d3Scale$1 = d3Scale.scaleTime().domain(ticks$1).range([0, this._ticksWidth]);
@@ -350,36 +365,33 @@ var Timeline = (function (Axis) {
       this._range = [this._align === "start" ? undefined : this._marginLeft + buttonMargin, marginRight]; 
     }
 
-    if (this._buttonBehaviorCurrent === "buttons" && !this._brushing) {
-      this._handleSize = 0;
-    }
-
     Axis.prototype.render.call(this, callback);
 
     var offset = this._outerBounds[y],
           range = this._d3Scale.range();
 
     var brush = this._brush = d3Brush.brushX()
-      .extent([[range[0], offset], [range[1], offset + this._outerBounds[height]]])
+      .extent([[range[0], offset], [range[range.length - 1], offset + this._outerBounds[height]]])
       .filter(this._brushFilter)
       .handleSize(this._handleSize)
       .on("start", this._brushStart.bind(this))
       .on("brush", this._brushBrush.bind(this))
       .on("end", this._brushEnd.bind(this));
 
-    var latest = this._availableTicks[this._availableTicks.length - 1];
-    var selection = (this._selection === void 0 ? [latest, latest]
+    var latest = this._buttonBehaviorCurrent === "ticks"
+      ? this._availableTicks[this._availableTicks.length - 1]
+      : range[range.length - 1];
+
+    var selection = this._selection === void 0 ? [latest, latest]
       : this._selection instanceof Array
         ? this._selection.slice()
-        : [this._selection, this._selection])
-      .map(d3plusAxis.date)
-      .map(this._d3Scale);
+        : [this._selection, this._selection];
 
     this._updateBrushLimit(selection);
 
     this._brushGroup = d3plusCommon.elem("g.brushGroup", {parent: this._group});
     this._brushGroup.call(brush).transition(this._transition)
-      .call(brush.move, selection);
+      .call(brush.move, this._buttonBehaviorCurrent === "ticks" ? this._updateBrushLimit(selection) : selection);
 
     this._outerBounds.y -= this._handleSize / 2;
     this._outerBounds.height += this._handleSize / 2;
