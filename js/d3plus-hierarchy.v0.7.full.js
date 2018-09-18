@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.7.2
+  d3plus-hierarchy v0.7.3
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -4657,7 +4657,7 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function interpolateNumber(a, b) {
+  function reinterpolate(a, b) {
     return a = +a, b -= a, function(t) {
       return a + b * t;
     };
@@ -4725,7 +4725,7 @@ if (!Array.prototype.includes) {
         else { s[++i] = bm; }
       } else { // interpolate non-matching numbers
         s[++i] = null;
-        q.push({i: i, x: interpolateNumber(am, bm)});
+        q.push({i: i, x: reinterpolate(am, bm)});
       }
       bi = reB.lastIndex;
     }
@@ -4751,13 +4751,13 @@ if (!Array.prototype.includes) {
   function interpolateValue(a, b) {
     var t = typeof b, c;
     return b == null || t === "boolean" ? constant$4(b)
-        : (t === "number" ? interpolateNumber
+        : (t === "number" ? reinterpolate
         : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
         : b instanceof color ? interpolateRgb
         : b instanceof Date ? date
         : Array.isArray(b) ? array$1
         : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object
-        : interpolateNumber)(a, b);
+        : reinterpolate)(a, b);
   }
 
   function interpolateRound(a, b) {
@@ -4826,7 +4826,7 @@ if (!Array.prototype.includes) {
     function translate(xa, ya, xb, yb, s, q) {
       if (xa !== xb || ya !== yb) {
         var i = s.push("translate(", null, pxComma, null, pxParen);
-        q.push({i: i - 4, x: interpolateNumber(xa, xb)}, {i: i - 2, x: interpolateNumber(ya, yb)});
+        q.push({i: i - 4, x: reinterpolate(xa, xb)}, {i: i - 2, x: reinterpolate(ya, yb)});
       } else if (xb || yb) {
         s.push("translate(" + xb + pxComma + yb + pxParen);
       }
@@ -4835,7 +4835,7 @@ if (!Array.prototype.includes) {
     function rotate(a, b, s, q) {
       if (a !== b) {
         if (a - b > 180) { b += 360; } else if (b - a > 180) { a += 360; } // shortest path
-        q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: interpolateNumber(a, b)});
+        q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: reinterpolate(a, b)});
       } else if (b) {
         s.push(pop(s) + "rotate(" + b + degParen);
       }
@@ -4843,7 +4843,7 @@ if (!Array.prototype.includes) {
 
     function skewX(a, b, s, q) {
       if (a !== b) {
-        q.push({i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: interpolateNumber(a, b)});
+        q.push({i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: reinterpolate(a, b)});
       } else if (b) {
         s.push(pop(s) + "skewX(" + b + degParen);
       }
@@ -4852,7 +4852,7 @@ if (!Array.prototype.includes) {
     function scale(xa, ya, xb, yb, s, q) {
       if (xa !== xb || ya !== yb) {
         var i = s.push(pop(s) + "scale(", null, ",", null, ")");
-        q.push({i: i - 4, x: interpolateNumber(xa, xb)}, {i: i - 2, x: interpolateNumber(ya, yb)});
+        q.push({i: i - 4, x: reinterpolate(xa, xb)}, {i: i - 2, x: reinterpolate(ya, yb)});
       } else if (xb !== 1 || yb !== 1) {
         s.push(pop(s) + "scale(" + xb + "," + yb + ")");
       }
@@ -5070,7 +5070,7 @@ if (!Array.prototype.includes) {
 
   function interpolate(a, b) {
     var c;
-    return (typeof b === "number" ? interpolateNumber
+    return (typeof b === "number" ? reinterpolate
         : b instanceof color ? interpolateRgb
         : (c = color(b)) ? (b = c, interpolateRgb)
         : interpolateString)(a, b);
@@ -6227,7 +6227,7 @@ if (!Array.prototype.includes) {
   }
 
   // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
-  var re = /^(?:(.)?([<>=^]))?([+\-\( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+  var re = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
 
   function formatSpecifier(specifier) {
     return new FormatSpecifier(specifier);
@@ -7778,10 +7778,9 @@ if (!Array.prototype.includes) {
   var chineseRange = "\u3400-\u9FBF";
   var laoRange = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
 
-  var noSpaceRange = burmeseRange + chineseRange + laoRange;
+  var noSpaceRange = burmeseRange + chineseRange + japaneseRange + laoRange;
 
   var splitWords = new RegExp(("(\\" + (splitChars.join("|\\")) + ")*[^\\s|\\" + (splitChars.join("|\\")) + "]*(\\" + (splitChars.join("|\\")) + ")*"), "g");
-  var japaneseChars = new RegExp(("[" + japaneseRange + "]"));
   var noSpaceLanguage = new RegExp(("[" + noSpaceRange + "]"));
   var splitAllChars = new RegExp(("(\\" + (prefixChars.join("|\\")) + ")*[" + noSpaceRange + "](\\" + (suffixChars.join("|\\")) + "|\\" + (combiningMarks.join("|\\")) + ")*|[a-z0-9]+"), "gi");
 
@@ -7793,7 +7792,7 @@ if (!Array.prototype.includes) {
   function textSplit(sentence) {
     if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
     return merge(stringify(sentence).match(splitWords).map(function (d) {
-      if (!japaneseChars.test(d) && noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
+      if (noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
       return [d];
     }));
   }
@@ -8140,7 +8139,8 @@ if (!Array.prototype.includes) {
         if (lineData.length) {
 
           var tH = line * lH;
-          var yP = vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH;
+          var r = this$1._rotate(d, i);
+          var yP = r === 0 ? vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH : 0;
           yP -= lH * 0.1;
 
           arr.push({
@@ -8153,10 +8153,10 @@ if (!Array.prototype.includes) {
             fO: this$1._fontOpacity(d, i),
             fW: style["font-weight"],
             id: this$1._id(d, i),
-            r: this$1._rotate(d, i),
             tA: this$1._textAnchor(d, i),
+            vA: this$1._verticalAlign(d, i),
             widths: wrapResults.widths,
-            fS: fS, lH: lH, w: w, h: h,
+            fS: fS, lH: lH, w: w, h: h, r: r,
             x: this$1._x(d, i) + padding.left,
             y: this$1._y(d, i) + yP + padding.top
           });
@@ -8208,6 +8208,7 @@ if (!Array.prototype.includes) {
               @private
           */
           function textStyle(text) {
+
             text
               .text(function (t) { return trimRight(t); })
               .attr("aria-hidden", d.aH)
@@ -8220,8 +8221,12 @@ if (!Array.prototype.includes) {
               .style("font-size", ((d.fS) + "px"))
               .attr("font-weight", d.fW)
               .style("font-weight", d.fW)
-              .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 0) + "px"))
-              .attr("y", function (t, i) { return (((i + 1) * d.lH - (d.lH - d.fS)) + "px"); });
+              .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 2 * Math.sin(Math.PI * d.r / 180)) + "px"))
+              .attr("y", function (t, i) { return d.r === 0 || d.vA === "top" ? (((i + 1) * d.lH - (d.lH - d.fS)) + "px") : 
+                d.vA === "middle" ? 
+                  (((d.h + d.fS) / 2 - (d.lH - d.fS) + (i - d.lines.length / 2 + 0.5) * d.lH) + "px") : 
+                  ((d.h - 2 * (d.lH - d.fS) - (d.lines.length - (i + 1)) * d.lH + 2 * Math.cos(Math.PI * d.r / 180)) + "px"); });
+
           }
 
           var texts = select(this).selectAll("text").data(d.lines);
@@ -14322,21 +14327,21 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function reinterpolateClamp$1(reinterpolate) {
+  function reinterpolateClamp$1(reinterpolate$$1) {
     return function(a, b) {
-      var r = reinterpolate(a = +a, b = +b);
+      var r = reinterpolate$$1(a = +a, b = +b);
       return function(t) { return t <= 0 ? a : t >= 1 ? b : r(t); };
     };
   }
 
-  function bimap$1(domain, range, deinterpolate, reinterpolate) {
+  function bimap$1(domain, range, deinterpolate, reinterpolate$$1) {
     var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
-    if (d1 < d0) { d0 = deinterpolate(d1, d0), r0 = reinterpolate(r1, r0); }
-    else { d0 = deinterpolate(d0, d1), r0 = reinterpolate(r0, r1); }
+    if (d1 < d0) { d0 = deinterpolate(d1, d0), r0 = reinterpolate$$1(r1, r0); }
+    else { d0 = deinterpolate(d0, d1), r0 = reinterpolate$$1(r0, r1); }
     return function(x) { return r0(d0(x)); };
   }
 
-  function polymap$1(domain, range, deinterpolate, reinterpolate) {
+  function polymap$1(domain, range, deinterpolate, reinterpolate$$1) {
     var j = Math.min(domain.length, range.length) - 1,
         d = new Array(j),
         r = new Array(j),
@@ -14350,7 +14355,7 @@ if (!Array.prototype.includes) {
 
     while (++i < j) {
       d[i] = deinterpolate(domain[i], domain[i + 1]);
-      r[i] = reinterpolate(range[i], range[i + 1]);
+      r[i] = reinterpolate$$1(range[i], range[i + 1]);
     }
 
     return function(x) {
@@ -14369,7 +14374,7 @@ if (!Array.prototype.includes) {
 
   // deinterpolate(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
   // reinterpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding domain value x in [a,b].
-  function continuous$1(deinterpolate, reinterpolate) {
+  function continuous$1(deinterpolate, reinterpolate$$1) {
     var domain = unit$1,
         range = unit$1,
         interpolate$$1 = interpolateValue,
@@ -14389,7 +14394,7 @@ if (!Array.prototype.includes) {
     }
 
     scale.invert = function(y) {
-      return (input || (input = piecewise$$1(range, domain, deinterpolateLinear$1, clamp ? reinterpolateClamp$1(reinterpolate) : reinterpolate)))(+y);
+      return (input || (input = piecewise$$1(range, domain, deinterpolateLinear$1, clamp ? reinterpolateClamp$1(reinterpolate$$1) : reinterpolate$$1)))(+y);
     };
 
     scale.domain = function(_) {
@@ -14500,7 +14505,7 @@ if (!Array.prototype.includes) {
   }
 
   function linear$3() {
-    var scale = continuous$1(deinterpolateLinear$1, interpolateNumber);
+    var scale = continuous$1(deinterpolateLinear$1, reinterpolate);
 
     scale.copy = function() {
       return copy$1(scale, linear$3());
@@ -14554,7 +14559,7 @@ if (!Array.prototype.includes) {
         : constant$9(b);
   }
 
-  function reinterpolate$1(a, b) {
+  function reinterpolate$2(a, b) {
     return a < 0
         ? function(t) { return -Math.pow(-b, t) * Math.pow(-a, 1 - t); }
         : function(t) { return Math.pow(b, t) * Math.pow(a, 1 - t); };
@@ -14584,7 +14589,7 @@ if (!Array.prototype.includes) {
   }
 
   function log$1() {
-    var scale = continuous$1(deinterpolate$1, reinterpolate$1).domain([1, 10]),
+    var scale = continuous$1(deinterpolate$1, reinterpolate$2).domain([1, 10]),
         domain = scale.domain,
         base = 10,
         logs = logp$1(10),
@@ -14846,7 +14851,7 @@ if (!Array.prototype.includes) {
   }
 
   function calendar$1(year$$1, month$$1, week, day$$1, hour$$1, minute$$1, second$$1, millisecond$$1, format) {
-    var scale = continuous$1(deinterpolateLinear$1, interpolateNumber),
+    var scale = continuous$1(deinterpolateLinear$1, reinterpolate),
         invert = scale.invert,
         domain = scale.domain;
 
@@ -15044,2667 +15049,6 @@ if (!Array.prototype.includes) {
     scaleDiverging: diverging$1
   });
 
-  var xhtml$1 = "http://www.w3.org/1999/xhtml";
-
-  var namespaces$1 = {
-    svg: "http://www.w3.org/2000/svg",
-    xhtml: xhtml$1,
-    xlink: "http://www.w3.org/1999/xlink",
-    xml: "http://www.w3.org/XML/1998/namespace",
-    xmlns: "http://www.w3.org/2000/xmlns/"
-  };
-
-  function namespace$1(name) {
-    var prefix = name += "", i = prefix.indexOf(":");
-    if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") { name = name.slice(i + 1); }
-    return namespaces$1.hasOwnProperty(prefix) ? {space: namespaces$1[prefix], local: name} : name;
-  }
-
-  function creatorInherit$1(name) {
-    return function() {
-      var document = this.ownerDocument,
-          uri = this.namespaceURI;
-      return uri === xhtml$1 && document.documentElement.namespaceURI === xhtml$1
-          ? document.createElement(name)
-          : document.createElementNS(uri, name);
-    };
-  }
-
-  function creatorFixed$1(fullname) {
-    return function() {
-      return this.ownerDocument.createElementNS(fullname.space, fullname.local);
-    };
-  }
-
-  function creator$1(name) {
-    var fullname = namespace$1(name);
-    return (fullname.local
-        ? creatorFixed$1
-        : creatorInherit$1)(fullname);
-  }
-
-  function none$3() {}
-
-  function selector$1(selector) {
-    return selector == null ? none$3 : function() {
-      return this.querySelector(selector);
-    };
-  }
-
-  function selection_select$1(select) {
-    if (typeof select !== "function") { select = selector$1(select); }
-
-    for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-      for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-        if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
-          if ("__data__" in node) { subnode.__data__ = node.__data__; }
-          subgroup[i] = subnode;
-        }
-      }
-    }
-
-    return new Selection$2(subgroups, this._parents);
-  }
-
-  function empty$2() {
-    return [];
-  }
-
-  function selectorAll$1(selector) {
-    return selector == null ? empty$2 : function() {
-      return this.querySelectorAll(selector);
-    };
-  }
-
-  function selection_selectAll$1(select) {
-    if (typeof select !== "function") { select = selectorAll$1(select); }
-
-    for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
-      for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
-        if (node = group[i]) {
-          subgroups.push(select.call(node, node.__data__, i, group));
-          parents.push(node);
-        }
-      }
-    }
-
-    return new Selection$2(subgroups, parents);
-  }
-
-  var matcher$2 = function(selector) {
-    return function() {
-      return this.matches(selector);
-    };
-  };
-
-  if (typeof document !== "undefined") {
-    var element$2 = document.documentElement;
-    if (!element$2.matches) {
-      var vendorMatches$1 = element$2.webkitMatchesSelector
-          || element$2.msMatchesSelector
-          || element$2.mozMatchesSelector
-          || element$2.oMatchesSelector;
-      matcher$2 = function(selector) {
-        return function() {
-          return vendorMatches$1.call(this, selector);
-        };
-      };
-    }
-  }
-
-  var matcher$3 = matcher$2;
-
-  function selection_filter$1(match) {
-    if (typeof match !== "function") { match = matcher$3(match); }
-
-    for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-      for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
-        if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
-          subgroup.push(node);
-        }
-      }
-    }
-
-    return new Selection$2(subgroups, this._parents);
-  }
-
-  function sparse$1(update) {
-    return new Array(update.length);
-  }
-
-  function selection_enter$1() {
-    return new Selection$2(this._enter || this._groups.map(sparse$1), this._parents);
-  }
-
-  function EnterNode$1(parent, datum) {
-    this.ownerDocument = parent.ownerDocument;
-    this.namespaceURI = parent.namespaceURI;
-    this._next = null;
-    this._parent = parent;
-    this.__data__ = datum;
-  }
-
-  EnterNode$1.prototype = {
-    constructor: EnterNode$1,
-    appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
-    insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
-    querySelector: function(selector) { return this._parent.querySelector(selector); },
-    querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
-  };
-
-  function constant$a(x) {
-    return function() {
-      return x;
-    };
-  }
-
-  var keyPrefix$1 = "$"; // Protect against keys like “__proto__”.
-
-  function bindIndex$1(parent, group, enter, update, exit, data) {
-    var i = 0,
-        node,
-        groupLength = group.length,
-        dataLength = data.length;
-
-    // Put any non-null nodes that fit into update.
-    // Put any null nodes into enter.
-    // Put any remaining data into enter.
-    for (; i < dataLength; ++i) {
-      if (node = group[i]) {
-        node.__data__ = data[i];
-        update[i] = node;
-      } else {
-        enter[i] = new EnterNode$1(parent, data[i]);
-      }
-    }
-
-    // Put any non-null nodes that don’t fit into exit.
-    for (; i < groupLength; ++i) {
-      if (node = group[i]) {
-        exit[i] = node;
-      }
-    }
-  }
-
-  function bindKey$1(parent, group, enter, update, exit, data, key) {
-    var i,
-        node,
-        nodeByKeyValue = {},
-        groupLength = group.length,
-        dataLength = data.length,
-        keyValues = new Array(groupLength),
-        keyValue;
-
-    // Compute the key for each node.
-    // If multiple nodes have the same key, the duplicates are added to exit.
-    for (i = 0; i < groupLength; ++i) {
-      if (node = group[i]) {
-        keyValues[i] = keyValue = keyPrefix$1 + key.call(node, node.__data__, i, group);
-        if (keyValue in nodeByKeyValue) {
-          exit[i] = node;
-        } else {
-          nodeByKeyValue[keyValue] = node;
-        }
-      }
-    }
-
-    // Compute the key for each datum.
-    // If there a node associated with this key, join and add it to update.
-    // If there is not (or the key is a duplicate), add it to enter.
-    for (i = 0; i < dataLength; ++i) {
-      keyValue = keyPrefix$1 + key.call(parent, data[i], i, data);
-      if (node = nodeByKeyValue[keyValue]) {
-        update[i] = node;
-        node.__data__ = data[i];
-        nodeByKeyValue[keyValue] = null;
-      } else {
-        enter[i] = new EnterNode$1(parent, data[i]);
-      }
-    }
-
-    // Add any remaining nodes that were not bound to data to exit.
-    for (i = 0; i < groupLength; ++i) {
-      if ((node = group[i]) && (nodeByKeyValue[keyValues[i]] === node)) {
-        exit[i] = node;
-      }
-    }
-  }
-
-  function selection_data$1(value, key) {
-    if (!value) {
-      data = new Array(this.size()), j = -1;
-      this.each(function(d) { data[++j] = d; });
-      return data;
-    }
-
-    var bind = key ? bindKey$1 : bindIndex$1,
-        parents = this._parents,
-        groups = this._groups;
-
-    if (typeof value !== "function") { value = constant$a(value); }
-
-    for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
-      var parent = parents[j],
-          group = groups[j],
-          groupLength = group.length,
-          data = value.call(parent, parent && parent.__data__, j, parents),
-          dataLength = data.length,
-          enterGroup = enter[j] = new Array(dataLength),
-          updateGroup = update[j] = new Array(dataLength),
-          exitGroup = exit[j] = new Array(groupLength);
-
-      bind(parent, group, enterGroup, updateGroup, exitGroup, data, key);
-
-      // Now connect the enter nodes to their following update node, such that
-      // appendChild can insert the materialized enter node before this node,
-      // rather than at the end of the parent node.
-      for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
-        if (previous = enterGroup[i0]) {
-          if (i0 >= i1) { i1 = i0 + 1; }
-          while (!(next = updateGroup[i1]) && ++i1 < dataLength){ }
-          previous._next = next || null;
-        }
-      }
-    }
-
-    update = new Selection$2(update, parents);
-    update._enter = enter;
-    update._exit = exit;
-    return update;
-  }
-
-  function selection_exit$1() {
-    return new Selection$2(this._exit || this._groups.map(sparse$1), this._parents);
-  }
-
-  function selection_merge$1(selection) {
-
-    for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
-      for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
-        if (node = group0[i] || group1[i]) {
-          merge[i] = node;
-        }
-      }
-    }
-
-    for (; j < m0; ++j) {
-      merges[j] = groups0[j];
-    }
-
-    return new Selection$2(merges, this._parents);
-  }
-
-  function selection_order$1() {
-
-    for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
-      for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
-        if (node = group[i]) {
-          if (next && next !== node.nextSibling) { next.parentNode.insertBefore(node, next); }
-          next = node;
-        }
-      }
-    }
-
-    return this;
-  }
-
-  function selection_sort$1(compare) {
-    if (!compare) { compare = ascending$3; }
-
-    function compareNode(a, b) {
-      return a && b ? compare(a.__data__, b.__data__) : !a - !b;
-    }
-
-    for (var groups = this._groups, m = groups.length, sortgroups = new Array(m), j = 0; j < m; ++j) {
-      for (var group = groups[j], n = group.length, sortgroup = sortgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
-        if (node = group[i]) {
-          sortgroup[i] = node;
-        }
-      }
-      sortgroup.sort(compareNode);
-    }
-
-    return new Selection$2(sortgroups, this._parents).order();
-  }
-
-  function ascending$3(a, b) {
-    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
-  }
-
-  function selection_call$1() {
-    var callback = arguments[0];
-    arguments[0] = this;
-    callback.apply(null, arguments);
-    return this;
-  }
-
-  function selection_nodes$1() {
-    var nodes = new Array(this.size()), i = -1;
-    this.each(function() { nodes[++i] = this; });
-    return nodes;
-  }
-
-  function selection_node$1() {
-
-    for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
-      for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
-        var node = group[i];
-        if (node) { return node; }
-      }
-    }
-
-    return null;
-  }
-
-  function selection_size$1() {
-    var size = 0;
-    this.each(function() { ++size; });
-    return size;
-  }
-
-  function selection_empty$1() {
-    return !this.node();
-  }
-
-  function selection_each$1(callback) {
-
-    for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
-      for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
-        if (node = group[i]) { callback.call(node, node.__data__, i, group); }
-      }
-    }
-
-    return this;
-  }
-
-  function attrRemove$2(name) {
-    return function() {
-      this.removeAttribute(name);
-    };
-  }
-
-  function attrRemoveNS$2(fullname) {
-    return function() {
-      this.removeAttributeNS(fullname.space, fullname.local);
-    };
-  }
-
-  function attrConstant$2(name, value) {
-    return function() {
-      this.setAttribute(name, value);
-    };
-  }
-
-  function attrConstantNS$2(fullname, value) {
-    return function() {
-      this.setAttributeNS(fullname.space, fullname.local, value);
-    };
-  }
-
-  function attrFunction$2(name, value) {
-    return function() {
-      var v = value.apply(this, arguments);
-      if (v == null) { this.removeAttribute(name); }
-      else { this.setAttribute(name, v); }
-    };
-  }
-
-  function attrFunctionNS$2(fullname, value) {
-    return function() {
-      var v = value.apply(this, arguments);
-      if (v == null) { this.removeAttributeNS(fullname.space, fullname.local); }
-      else { this.setAttributeNS(fullname.space, fullname.local, v); }
-    };
-  }
-
-  function selection_attr$1(name, value) {
-    var fullname = namespace$1(name);
-
-    if (arguments.length < 2) {
-      var node = this.node();
-      return fullname.local
-          ? node.getAttributeNS(fullname.space, fullname.local)
-          : node.getAttribute(fullname);
-    }
-
-    return this.each((value == null
-        ? (fullname.local ? attrRemoveNS$2 : attrRemove$2) : (typeof value === "function"
-        ? (fullname.local ? attrFunctionNS$2 : attrFunction$2)
-        : (fullname.local ? attrConstantNS$2 : attrConstant$2)))(fullname, value));
-  }
-
-  function defaultView$1(node) {
-    return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
-        || (node.document && node) // node is a Window
-        || node.defaultView; // node is a Document
-  }
-
-  function styleRemove$2(name) {
-    return function() {
-      this.style.removeProperty(name);
-    };
-  }
-
-  function styleConstant$2(name, value, priority) {
-    return function() {
-      this.style.setProperty(name, value, priority);
-    };
-  }
-
-  function styleFunction$2(name, value, priority) {
-    return function() {
-      var v = value.apply(this, arguments);
-      if (v == null) { this.style.removeProperty(name); }
-      else { this.style.setProperty(name, v, priority); }
-    };
-  }
-
-  function selection_style$1(name, value, priority) {
-    return arguments.length > 1
-        ? this.each((value == null
-              ? styleRemove$2 : typeof value === "function"
-              ? styleFunction$2
-              : styleConstant$2)(name, value, priority == null ? "" : priority))
-        : styleValue$1(this.node(), name);
-  }
-
-  function styleValue$1(node, name) {
-    return node.style.getPropertyValue(name)
-        || defaultView$1(node).getComputedStyle(node, null).getPropertyValue(name);
-  }
-
-  function propertyRemove$1(name) {
-    return function() {
-      delete this[name];
-    };
-  }
-
-  function propertyConstant$1(name, value) {
-    return function() {
-      this[name] = value;
-    };
-  }
-
-  function propertyFunction$1(name, value) {
-    return function() {
-      var v = value.apply(this, arguments);
-      if (v == null) { delete this[name]; }
-      else { this[name] = v; }
-    };
-  }
-
-  function selection_property$1(name, value) {
-    return arguments.length > 1
-        ? this.each((value == null
-            ? propertyRemove$1 : typeof value === "function"
-            ? propertyFunction$1
-            : propertyConstant$1)(name, value))
-        : this.node()[name];
-  }
-
-  function classArray$1(string) {
-    return string.trim().split(/^|\s+/);
-  }
-
-  function classList$1(node) {
-    return node.classList || new ClassList$1(node);
-  }
-
-  function ClassList$1(node) {
-    this._node = node;
-    this._names = classArray$1(node.getAttribute("class") || "");
-  }
-
-  ClassList$1.prototype = {
-    add: function(name) {
-      var i = this._names.indexOf(name);
-      if (i < 0) {
-        this._names.push(name);
-        this._node.setAttribute("class", this._names.join(" "));
-      }
-    },
-    remove: function(name) {
-      var i = this._names.indexOf(name);
-      if (i >= 0) {
-        this._names.splice(i, 1);
-        this._node.setAttribute("class", this._names.join(" "));
-      }
-    },
-    contains: function(name) {
-      return this._names.indexOf(name) >= 0;
-    }
-  };
-
-  function classedAdd$1(node, names) {
-    var list = classList$1(node), i = -1, n = names.length;
-    while (++i < n) { list.add(names[i]); }
-  }
-
-  function classedRemove$1(node, names) {
-    var list = classList$1(node), i = -1, n = names.length;
-    while (++i < n) { list.remove(names[i]); }
-  }
-
-  function classedTrue$1(names) {
-    return function() {
-      classedAdd$1(this, names);
-    };
-  }
-
-  function classedFalse$1(names) {
-    return function() {
-      classedRemove$1(this, names);
-    };
-  }
-
-  function classedFunction$1(names, value) {
-    return function() {
-      (value.apply(this, arguments) ? classedAdd$1 : classedRemove$1)(this, names);
-    };
-  }
-
-  function selection_classed$1(name, value) {
-    var names = classArray$1(name + "");
-
-    if (arguments.length < 2) {
-      var list = classList$1(this.node()), i = -1, n = names.length;
-      while (++i < n) { if (!list.contains(names[i])) { return false; } }
-      return true;
-    }
-
-    return this.each((typeof value === "function"
-        ? classedFunction$1 : value
-        ? classedTrue$1
-        : classedFalse$1)(names, value));
-  }
-
-  function textRemove$1() {
-    this.textContent = "";
-  }
-
-  function textConstant$2(value) {
-    return function() {
-      this.textContent = value;
-    };
-  }
-
-  function textFunction$2(value) {
-    return function() {
-      var v = value.apply(this, arguments);
-      this.textContent = v == null ? "" : v;
-    };
-  }
-
-  function selection_text$1(value) {
-    return arguments.length
-        ? this.each(value == null
-            ? textRemove$1 : (typeof value === "function"
-            ? textFunction$2
-            : textConstant$2)(value))
-        : this.node().textContent;
-  }
-
-  function htmlRemove$1() {
-    this.innerHTML = "";
-  }
-
-  function htmlConstant$1(value) {
-    return function() {
-      this.innerHTML = value;
-    };
-  }
-
-  function htmlFunction$1(value) {
-    return function() {
-      var v = value.apply(this, arguments);
-      this.innerHTML = v == null ? "" : v;
-    };
-  }
-
-  function selection_html$1(value) {
-    return arguments.length
-        ? this.each(value == null
-            ? htmlRemove$1 : (typeof value === "function"
-            ? htmlFunction$1
-            : htmlConstant$1)(value))
-        : this.node().innerHTML;
-  }
-
-  function raise$3() {
-    if (this.nextSibling) { this.parentNode.appendChild(this); }
-  }
-
-  function selection_raise$1() {
-    return this.each(raise$3);
-  }
-
-  function lower$1() {
-    if (this.previousSibling) { this.parentNode.insertBefore(this, this.parentNode.firstChild); }
-  }
-
-  function selection_lower$1() {
-    return this.each(lower$1);
-  }
-
-  function selection_append$1(name) {
-    var create = typeof name === "function" ? name : creator$1(name);
-    return this.select(function() {
-      return this.appendChild(create.apply(this, arguments));
-    });
-  }
-
-  function constantNull$1() {
-    return null;
-  }
-
-  function selection_insert$1(name, before) {
-    var create = typeof name === "function" ? name : creator$1(name),
-        select = before == null ? constantNull$1 : typeof before === "function" ? before : selector$1(before);
-    return this.select(function() {
-      return this.insertBefore(create.apply(this, arguments), select.apply(this, arguments) || null);
-    });
-  }
-
-  function remove$1() {
-    var parent = this.parentNode;
-    if (parent) { parent.removeChild(this); }
-  }
-
-  function selection_remove$1() {
-    return this.each(remove$1);
-  }
-
-  function selection_cloneShallow$1() {
-    return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
-  }
-
-  function selection_cloneDeep$1() {
-    return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
-  }
-
-  function selection_clone$1(deep) {
-    return this.select(deep ? selection_cloneDeep$1 : selection_cloneShallow$1);
-  }
-
-  function selection_datum$1(value) {
-    return arguments.length
-        ? this.property("__data__", value)
-        : this.node().__data__;
-  }
-
-  var filterEvents$1 = {};
-
-  if (typeof document !== "undefined") {
-    var element$3 = document.documentElement;
-    if (!("onmouseenter" in element$3)) {
-      filterEvents$1 = {mouseenter: "mouseover", mouseleave: "mouseout"};
-    }
-  }
-
-  function filterContextListener$1(listener, index, group) {
-    listener = contextListener$1(listener, index, group);
-    return function(event) {
-      var related = event.relatedTarget;
-      if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
-        listener.call(this, event);
-      }
-    };
-  }
-
-  function contextListener$1(listener, index, group) {
-    return function(event1) {
-      try {
-        listener.call(this, this.__data__, index, group);
-      } finally {
-      }
-    };
-  }
-
-  function parseTypenames$2(typenames) {
-    return typenames.trim().split(/^|\s+/).map(function(t) {
-      var name = "", i = t.indexOf(".");
-      if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
-      return {type: t, name: name};
-    });
-  }
-
-  function onRemove$1(typename) {
-    return function() {
-      var this$1 = this;
-
-      var on = this.__on;
-      if (!on) { return; }
-      for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
-        if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-          this$1.removeEventListener(o.type, o.listener, o.capture);
-        } else {
-          on[++i] = o;
-        }
-      }
-      if (++i) { on.length = i; }
-      else { delete this.__on; }
-    };
-  }
-
-  function onAdd$1(typename, value, capture) {
-    var wrap = filterEvents$1.hasOwnProperty(typename.type) ? filterContextListener$1 : contextListener$1;
-    return function(d, i, group) {
-      var this$1 = this;
-
-      var on = this.__on, o, listener = wrap(value, i, group);
-      if (on) { for (var j = 0, m = on.length; j < m; ++j) {
-        if ((o = on[j]).type === typename.type && o.name === typename.name) {
-          this$1.removeEventListener(o.type, o.listener, o.capture);
-          this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
-          o.value = value;
-          return;
-        }
-      } }
-      this.addEventListener(typename.type, listener, capture);
-      o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
-      if (!on) { this.__on = [o]; }
-      else { on.push(o); }
-    };
-  }
-
-  function selection_on$1(typename, value, capture) {
-    var this$1 = this;
-
-    var typenames = parseTypenames$2(typename + ""), i, n = typenames.length, t;
-
-    if (arguments.length < 2) {
-      var on = this.node().__on;
-      if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
-        for (i = 0, o = on[j]; i < n; ++i) {
-          if ((t = typenames[i]).type === o.type && t.name === o.name) {
-            return o.value;
-          }
-        }
-      } }
-      return;
-    }
-
-    on = value ? onAdd$1 : onRemove$1;
-    if (capture == null) { capture = false; }
-    for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
-    return this;
-  }
-
-  function dispatchEvent$1(node, type, params) {
-    var window = defaultView$1(node),
-        event = window.CustomEvent;
-
-    if (typeof event === "function") {
-      event = new event(type, params);
-    } else {
-      event = window.document.createEvent("Event");
-      if (params) { event.initEvent(type, params.bubbles, params.cancelable), event.detail = params.detail; }
-      else { event.initEvent(type, false, false); }
-    }
-
-    node.dispatchEvent(event);
-  }
-
-  function dispatchConstant$1(type, params) {
-    return function() {
-      return dispatchEvent$1(this, type, params);
-    };
-  }
-
-  function dispatchFunction$1(type, params) {
-    return function() {
-      return dispatchEvent$1(this, type, params.apply(this, arguments));
-    };
-  }
-
-  function selection_dispatch$1(type, params) {
-    return this.each((typeof params === "function"
-        ? dispatchFunction$1
-        : dispatchConstant$1)(type, params));
-  }
-
-  var root$2 = [null];
-
-  function Selection$2(groups, parents) {
-    this._groups = groups;
-    this._parents = parents;
-  }
-
-  function selection$1() {
-    return new Selection$2([[document.documentElement]], root$2);
-  }
-
-  Selection$2.prototype = selection$1.prototype = {
-    constructor: Selection$2,
-    select: selection_select$1,
-    selectAll: selection_selectAll$1,
-    filter: selection_filter$1,
-    data: selection_data$1,
-    enter: selection_enter$1,
-    exit: selection_exit$1,
-    merge: selection_merge$1,
-    order: selection_order$1,
-    sort: selection_sort$1,
-    call: selection_call$1,
-    nodes: selection_nodes$1,
-    node: selection_node$1,
-    size: selection_size$1,
-    empty: selection_empty$1,
-    each: selection_each$1,
-    attr: selection_attr$1,
-    style: selection_style$1,
-    property: selection_property$1,
-    classed: selection_classed$1,
-    text: selection_text$1,
-    html: selection_html$1,
-    raise: selection_raise$1,
-    lower: selection_lower$1,
-    append: selection_append$1,
-    insert: selection_insert$1,
-    remove: selection_remove$1,
-    clone: selection_clone$1,
-    datum: selection_datum$1,
-    on: selection_on$1,
-    dispatch: selection_dispatch$1
-  };
-
-  function select$1(selector) {
-    return typeof selector === "string"
-        ? new Selection$2([[document.querySelector(selector)]], [document.documentElement])
-        : new Selection$2([[selector]], root$2);
-  }
-
-  var emptyOn$1 = dispatch("start", "end", "interrupt");
-  var emptyTween$1 = [];
-
-  var CREATED$1 = 0;
-  var SCHEDULED$1 = 1;
-  var STARTING$1 = 2;
-  var STARTED$1 = 3;
-  var RUNNING$1 = 4;
-  var ENDING$1 = 5;
-  var ENDED$1 = 6;
-
-  function schedule$1(node, name, id, index, group, timing) {
-    var schedules = node.__transition;
-    if (!schedules) { node.__transition = {}; }
-    else if (id in schedules) { return; }
-    create$3(node, id, {
-      name: name,
-      index: index, // For context during callback.
-      group: group, // For context during callback.
-      on: emptyOn$1,
-      tween: emptyTween$1,
-      time: timing.time,
-      delay: timing.delay,
-      duration: timing.duration,
-      ease: timing.ease,
-      timer: null,
-      state: CREATED$1
-    });
-  }
-
-  function init$1(node, id) {
-    var schedule = get$2(node, id);
-    if (schedule.state > CREATED$1) { throw new Error("too late; already scheduled"); }
-    return schedule;
-  }
-
-  function set$3(node, id) {
-    var schedule = get$2(node, id);
-    if (schedule.state > STARTING$1) { throw new Error("too late; already started"); }
-    return schedule;
-  }
-
-  function get$2(node, id) {
-    var schedule = node.__transition;
-    if (!schedule || !(schedule = schedule[id])) { throw new Error("transition not found"); }
-    return schedule;
-  }
-
-  function create$3(node, id, self) {
-    var schedules = node.__transition,
-        tween;
-
-    // Initialize the self timer when the transition is created.
-    // Note the actual delay is not known until the first callback!
-    schedules[id] = self;
-    self.timer = timer(schedule, 0, self.time);
-
-    function schedule(elapsed) {
-      self.state = SCHEDULED$1;
-      self.timer.restart(start, self.delay, self.time);
-
-      // If the elapsed delay is less than our first sleep, start immediately.
-      if (self.delay <= elapsed) { start(elapsed - self.delay); }
-    }
-
-    function start(elapsed) {
-      var i, j, n, o;
-
-      // If the state is not SCHEDULED, then we previously errored on start.
-      if (self.state !== SCHEDULED$1) { return stop(); }
-
-      for (i in schedules) {
-        o = schedules[i];
-        if (o.name !== self.name) { continue; }
-
-        // While this element already has a starting transition during this frame,
-        // defer starting an interrupting transition until that transition has a
-        // chance to tick (and possibly end); see d3/d3-transition#54!
-        if (o.state === STARTED$1) { return timeout$1(start); }
-
-        // Interrupt the active transition, if any.
-        // Dispatch the interrupt event.
-        if (o.state === RUNNING$1) {
-          o.state = ENDED$1;
-          o.timer.stop();
-          o.on.call("interrupt", node, node.__data__, o.index, o.group);
-          delete schedules[i];
-        }
-
-        // Cancel any pre-empted transitions. No interrupt event is dispatched
-        // because the cancelled transitions never started. Note that this also
-        // removes this transition from the pending list!
-        else if (+i < id) {
-          o.state = ENDED$1;
-          o.timer.stop();
-          delete schedules[i];
-        }
-      }
-
-      // Defer the first tick to end of the current frame; see d3/d3#1576.
-      // Note the transition may be canceled after start and before the first tick!
-      // Note this must be scheduled before the start event; see d3/d3-transition#16!
-      // Assuming this is successful, subsequent callbacks go straight to tick.
-      timeout$1(function() {
-        if (self.state === STARTED$1) {
-          self.state = RUNNING$1;
-          self.timer.restart(tick, self.delay, self.time);
-          tick(elapsed);
-        }
-      });
-
-      // Dispatch the start event.
-      // Note this must be done before the tween are initialized.
-      self.state = STARTING$1;
-      self.on.call("start", node, node.__data__, self.index, self.group);
-      if (self.state !== STARTING$1) { return; } // interrupted
-      self.state = STARTED$1;
-
-      // Initialize the tween, deleting null tween.
-      tween = new Array(n = self.tween.length);
-      for (i = 0, j = -1; i < n; ++i) {
-        if (o = self.tween[i].value.call(node, node.__data__, self.index, self.group)) {
-          tween[++j] = o;
-        }
-      }
-      tween.length = j + 1;
-    }
-
-    function tick(elapsed) {
-      var t = elapsed < self.duration ? self.ease.call(null, elapsed / self.duration) : (self.timer.restart(stop), self.state = ENDING$1, 1),
-          i = -1,
-          n = tween.length;
-
-      while (++i < n) {
-        tween[i].call(null, t);
-      }
-
-      // Dispatch the end event.
-      if (self.state === ENDING$1) {
-        self.on.call("end", node, node.__data__, self.index, self.group);
-        stop();
-      }
-    }
-
-    function stop() {
-      self.state = ENDED$1;
-      self.timer.stop();
-      delete schedules[id];
-      for (var i in schedules) { return; } // eslint-disable-line no-unused-vars
-      delete node.__transition;
-    }
-  }
-
-  function interrupt$1(node, name) {
-    var schedules = node.__transition,
-        schedule,
-        active,
-        empty = true,
-        i;
-
-    if (!schedules) { return; }
-
-    name = name == null ? null : name + "";
-
-    for (i in schedules) {
-      if ((schedule = schedules[i]).name !== name) { empty = false; continue; }
-      active = schedule.state > STARTING$1 && schedule.state < ENDING$1;
-      schedule.state = ENDED$1;
-      schedule.timer.stop();
-      if (active) { schedule.on.call("interrupt", node, node.__data__, schedule.index, schedule.group); }
-      delete schedules[i];
-    }
-
-    if (empty) { delete node.__transition; }
-  }
-
-  function selection_interrupt$1(name) {
-    return this.each(function() {
-      interrupt$1(this, name);
-    });
-  }
-
-  function tweenRemove$1(id, name) {
-    var tween0, tween1;
-    return function() {
-      var schedule = set$3(this, id),
-          tween = schedule.tween;
-
-      // If this node shared tween with the previous node,
-      // just assign the updated shared tween and we’re done!
-      // Otherwise, copy-on-write.
-      if (tween !== tween0) {
-        tween1 = tween0 = tween;
-        for (var i = 0, n = tween1.length; i < n; ++i) {
-          if (tween1[i].name === name) {
-            tween1 = tween1.slice();
-            tween1.splice(i, 1);
-            break;
-          }
-        }
-      }
-
-      schedule.tween = tween1;
-    };
-  }
-
-  function tweenFunction$1(id, name, value) {
-    var tween0, tween1;
-    if (typeof value !== "function") { throw new Error; }
-    return function() {
-      var schedule = set$3(this, id),
-          tween = schedule.tween;
-
-      // If this node shared tween with the previous node,
-      // just assign the updated shared tween and we’re done!
-      // Otherwise, copy-on-write.
-      if (tween !== tween0) {
-        tween1 = (tween0 = tween).slice();
-        for (var t = {name: name, value: value}, i = 0, n = tween1.length; i < n; ++i) {
-          if (tween1[i].name === name) {
-            tween1[i] = t;
-            break;
-          }
-        }
-        if (i === n) { tween1.push(t); }
-      }
-
-      schedule.tween = tween1;
-    };
-  }
-
-  function transition_tween$1(name, value) {
-    var id = this._id;
-
-    name += "";
-
-    if (arguments.length < 2) {
-      var tween = get$2(this.node(), id).tween;
-      for (var i = 0, n = tween.length, t; i < n; ++i) {
-        if ((t = tween[i]).name === name) {
-          return t.value;
-        }
-      }
-      return null;
-    }
-
-    return this.each((value == null ? tweenRemove$1 : tweenFunction$1)(id, name, value));
-  }
-
-  function tweenValue$1(transition, name, value) {
-    var id = transition._id;
-
-    transition.each(function() {
-      var schedule = set$3(this, id);
-      (schedule.value || (schedule.value = {}))[name] = value.apply(this, arguments);
-    });
-
-    return function(node) {
-      return get$2(node, id).value[name];
-    };
-  }
-
-  function interpolate$1(a, b) {
-    var c;
-    return (typeof b === "number" ? interpolateNumber
-        : b instanceof color ? interpolateRgb
-        : (c = color(b)) ? (b = c, interpolateRgb)
-        : interpolateString)(a, b);
-  }
-
-  function attrRemove$3(name) {
-    return function() {
-      this.removeAttribute(name);
-    };
-  }
-
-  function attrRemoveNS$3(fullname) {
-    return function() {
-      this.removeAttributeNS(fullname.space, fullname.local);
-    };
-  }
-
-  function attrConstant$3(name, interpolate, value1) {
-    var value00,
-        interpolate0;
-    return function() {
-      var value0 = this.getAttribute(name);
-      return value0 === value1 ? null
-          : value0 === value00 ? interpolate0
-          : interpolate0 = interpolate(value00 = value0, value1);
-    };
-  }
-
-  function attrConstantNS$3(fullname, interpolate, value1) {
-    var value00,
-        interpolate0;
-    return function() {
-      var value0 = this.getAttributeNS(fullname.space, fullname.local);
-      return value0 === value1 ? null
-          : value0 === value00 ? interpolate0
-          : interpolate0 = interpolate(value00 = value0, value1);
-    };
-  }
-
-  function attrFunction$3(name, interpolate, value) {
-    var value00,
-        value10,
-        interpolate0;
-    return function() {
-      var value0, value1 = value(this);
-      if (value1 == null) { return void this.removeAttribute(name); }
-      value0 = this.getAttribute(name);
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate(value00 = value0, value10 = value1);
-    };
-  }
-
-  function attrFunctionNS$3(fullname, interpolate, value) {
-    var value00,
-        value10,
-        interpolate0;
-    return function() {
-      var value0, value1 = value(this);
-      if (value1 == null) { return void this.removeAttributeNS(fullname.space, fullname.local); }
-      value0 = this.getAttributeNS(fullname.space, fullname.local);
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate(value00 = value0, value10 = value1);
-    };
-  }
-
-  function transition_attr$1(name, value) {
-    var fullname = namespace$1(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate$1;
-    return this.attrTween(name, typeof value === "function"
-        ? (fullname.local ? attrFunctionNS$3 : attrFunction$3)(fullname, i, tweenValue$1(this, "attr." + name, value))
-        : value == null ? (fullname.local ? attrRemoveNS$3 : attrRemove$3)(fullname)
-        : (fullname.local ? attrConstantNS$3 : attrConstant$3)(fullname, i, value + ""));
-  }
-
-  function attrTweenNS$1(fullname, value) {
-    function tween() {
-      var node = this, i = value.apply(node, arguments);
-      return i && function(t) {
-        node.setAttributeNS(fullname.space, fullname.local, i(t));
-      };
-    }
-    tween._value = value;
-    return tween;
-  }
-
-  function attrTween$1(name, value) {
-    function tween() {
-      var node = this, i = value.apply(node, arguments);
-      return i && function(t) {
-        node.setAttribute(name, i(t));
-      };
-    }
-    tween._value = value;
-    return tween;
-  }
-
-  function transition_attrTween$1(name, value) {
-    var key = "attr." + name;
-    if (arguments.length < 2) { return (key = this.tween(key)) && key._value; }
-    if (value == null) { return this.tween(key, null); }
-    if (typeof value !== "function") { throw new Error; }
-    var fullname = namespace$1(name);
-    return this.tween(key, (fullname.local ? attrTweenNS$1 : attrTween$1)(fullname, value));
-  }
-
-  function delayFunction$1(id, value) {
-    return function() {
-      init$1(this, id).delay = +value.apply(this, arguments);
-    };
-  }
-
-  function delayConstant$1(id, value) {
-    return value = +value, function() {
-      init$1(this, id).delay = value;
-    };
-  }
-
-  function transition_delay$1(value) {
-    var id = this._id;
-
-    return arguments.length
-        ? this.each((typeof value === "function"
-            ? delayFunction$1
-            : delayConstant$1)(id, value))
-        : get$2(this.node(), id).delay;
-  }
-
-  function durationFunction$1(id, value) {
-    return function() {
-      set$3(this, id).duration = +value.apply(this, arguments);
-    };
-  }
-
-  function durationConstant$1(id, value) {
-    return value = +value, function() {
-      set$3(this, id).duration = value;
-    };
-  }
-
-  function transition_duration$1(value) {
-    var id = this._id;
-
-    return arguments.length
-        ? this.each((typeof value === "function"
-            ? durationFunction$1
-            : durationConstant$1)(id, value))
-        : get$2(this.node(), id).duration;
-  }
-
-  function easeConstant$1(id, value) {
-    if (typeof value !== "function") { throw new Error; }
-    return function() {
-      set$3(this, id).ease = value;
-    };
-  }
-
-  function transition_ease$1(value) {
-    var id = this._id;
-
-    return arguments.length
-        ? this.each(easeConstant$1(id, value))
-        : get$2(this.node(), id).ease;
-  }
-
-  function transition_filter$1(match) {
-    if (typeof match !== "function") { match = matcher$3(match); }
-
-    for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-      for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
-        if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
-          subgroup.push(node);
-        }
-      }
-    }
-
-    return new Transition$1(subgroups, this._parents, this._name, this._id);
-  }
-
-  function transition_merge$1(transition) {
-    if (transition._id !== this._id) { throw new Error; }
-
-    for (var groups0 = this._groups, groups1 = transition._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
-      for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
-        if (node = group0[i] || group1[i]) {
-          merge[i] = node;
-        }
-      }
-    }
-
-    for (; j < m0; ++j) {
-      merges[j] = groups0[j];
-    }
-
-    return new Transition$1(merges, this._parents, this._name, this._id);
-  }
-
-  function start$2(name) {
-    return (name + "").trim().split(/^|\s+/).every(function(t) {
-      var i = t.indexOf(".");
-      if (i >= 0) { t = t.slice(0, i); }
-      return !t || t === "start";
-    });
-  }
-
-  function onFunction$1(id, name, listener) {
-    var on0, on1, sit = start$2(name) ? init$1 : set$3;
-    return function() {
-      var schedule = sit(this, id),
-          on = schedule.on;
-
-      // If this node shared a dispatch with the previous node,
-      // just assign the updated shared dispatch and we’re done!
-      // Otherwise, copy-on-write.
-      if (on !== on0) { (on1 = (on0 = on).copy()).on(name, listener); }
-
-      schedule.on = on1;
-    };
-  }
-
-  function transition_on$1(name, listener) {
-    var id = this._id;
-
-    return arguments.length < 2
-        ? get$2(this.node(), id).on.on(name)
-        : this.each(onFunction$1(id, name, listener));
-  }
-
-  function removeFunction$1(id) {
-    return function() {
-      var this$1 = this;
-
-      var parent = this.parentNode;
-      for (var i in this$1.__transition) { if (+i !== id) { return; } }
-      if (parent) { parent.removeChild(this); }
-    };
-  }
-
-  function transition_remove$1() {
-    return this.on("end.remove", removeFunction$1(this._id));
-  }
-
-  function transition_select$1(select) {
-    var name = this._name,
-        id = this._id;
-
-    if (typeof select !== "function") { select = selector$1(select); }
-
-    for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
-      for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
-        if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
-          if ("__data__" in node) { subnode.__data__ = node.__data__; }
-          subgroup[i] = subnode;
-          schedule$1(subgroup[i], name, id, i, subgroup, get$2(node, id));
-        }
-      }
-    }
-
-    return new Transition$1(subgroups, this._parents, name, id);
-  }
-
-  function transition_selectAll$1(select) {
-    var name = this._name,
-        id = this._id;
-
-    if (typeof select !== "function") { select = selectorAll$1(select); }
-
-    for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
-      for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
-        if (node = group[i]) {
-          for (var children = select.call(node, node.__data__, i, group), child, inherit = get$2(node, id), k = 0, l = children.length; k < l; ++k) {
-            if (child = children[k]) {
-              schedule$1(child, name, id, k, children, inherit);
-            }
-          }
-          subgroups.push(children);
-          parents.push(node);
-        }
-      }
-    }
-
-    return new Transition$1(subgroups, parents, name, id);
-  }
-
-  var Selection$3 = selection$1.prototype.constructor;
-
-  function transition_selection$1() {
-    return new Selection$3(this._groups, this._parents);
-  }
-
-  function styleRemove$3(name, interpolate) {
-    var value00,
-        value10,
-        interpolate0;
-    return function() {
-      var value0 = styleValue$1(this, name),
-          value1 = (this.style.removeProperty(name), styleValue$1(this, name));
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate(value00 = value0, value10 = value1);
-    };
-  }
-
-  function styleRemoveEnd$1(name) {
-    return function() {
-      this.style.removeProperty(name);
-    };
-  }
-
-  function styleConstant$3(name, interpolate, value1) {
-    var value00,
-        interpolate0;
-    return function() {
-      var value0 = styleValue$1(this, name);
-      return value0 === value1 ? null
-          : value0 === value00 ? interpolate0
-          : interpolate0 = interpolate(value00 = value0, value1);
-    };
-  }
-
-  function styleFunction$3(name, interpolate, value) {
-    var value00,
-        value10,
-        interpolate0;
-    return function() {
-      var value0 = styleValue$1(this, name),
-          value1 = value(this);
-      if (value1 == null) { value1 = (this.style.removeProperty(name), styleValue$1(this, name)); }
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate(value00 = value0, value10 = value1);
-    };
-  }
-
-  function transition_style$1(name, value, priority) {
-    var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$1;
-    return value == null ? this
-            .styleTween(name, styleRemove$3(name, i))
-            .on("end.style." + name, styleRemoveEnd$1(name))
-        : this.styleTween(name, typeof value === "function"
-            ? styleFunction$3(name, i, tweenValue$1(this, "style." + name, value))
-            : styleConstant$3(name, i, value + ""), priority);
-  }
-
-  function styleTween$1(name, value, priority) {
-    function tween() {
-      var node = this, i = value.apply(node, arguments);
-      return i && function(t) {
-        node.style.setProperty(name, i(t), priority);
-      };
-    }
-    tween._value = value;
-    return tween;
-  }
-
-  function transition_styleTween$1(name, value, priority) {
-    var key = "style." + (name += "");
-    if (arguments.length < 2) { return (key = this.tween(key)) && key._value; }
-    if (value == null) { return this.tween(key, null); }
-    if (typeof value !== "function") { throw new Error; }
-    return this.tween(key, styleTween$1(name, value, priority == null ? "" : priority));
-  }
-
-  function textConstant$3(value) {
-    return function() {
-      this.textContent = value;
-    };
-  }
-
-  function textFunction$3(value) {
-    return function() {
-      var value1 = value(this);
-      this.textContent = value1 == null ? "" : value1;
-    };
-  }
-
-  function transition_text$1(value) {
-    return this.tween("text", typeof value === "function"
-        ? textFunction$3(tweenValue$1(this, "text", value))
-        : textConstant$3(value == null ? "" : value + ""));
-  }
-
-  function transition_transition$1() {
-    var name = this._name,
-        id0 = this._id,
-        id1 = newId$1();
-
-    for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
-      for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
-        if (node = group[i]) {
-          var inherit = get$2(node, id0);
-          schedule$1(node, name, id1, i, group, {
-            time: inherit.time + inherit.delay + inherit.duration,
-            delay: 0,
-            duration: inherit.duration,
-            ease: inherit.ease
-          });
-        }
-      }
-    }
-
-    return new Transition$1(groups, this._parents, name, id1);
-  }
-
-  var id$1 = 0;
-
-  function Transition$1(groups, parents, name, id) {
-    this._groups = groups;
-    this._parents = parents;
-    this._name = name;
-    this._id = id;
-  }
-
-  function transition$1(name) {
-    return selection$1().transition(name);
-  }
-
-  function newId$1() {
-    return ++id$1;
-  }
-
-  var selection_prototype$1 = selection$1.prototype;
-
-  Transition$1.prototype = transition$1.prototype = {
-    constructor: Transition$1,
-    select: transition_select$1,
-    selectAll: transition_selectAll$1,
-    filter: transition_filter$1,
-    merge: transition_merge$1,
-    selection: transition_selection$1,
-    transition: transition_transition$1,
-    call: selection_prototype$1.call,
-    nodes: selection_prototype$1.nodes,
-    node: selection_prototype$1.node,
-    size: selection_prototype$1.size,
-    empty: selection_prototype$1.empty,
-    each: selection_prototype$1.each,
-    on: transition_on$1,
-    attr: transition_attr$1,
-    attrTween: transition_attrTween$1,
-    style: transition_style$1,
-    styleTween: transition_styleTween$1,
-    text: transition_text$1,
-    remove: transition_remove$1,
-    tween: transition_tween$1,
-    delay: transition_delay$1,
-    duration: transition_duration$1,
-    ease: transition_ease$1
-  };
-
-  var defaultTiming$1 = {
-    time: null, // Set on use.
-    delay: 0,
-    duration: 250,
-    ease: cubicInOut
-  };
-
-  function inherit$1(node, id) {
-    var timing;
-    while (!(timing = node.__transition) || !(timing = timing[id])) {
-      if (!(node = node.parentNode)) {
-        return defaultTiming$1.time = now(), defaultTiming$1;
-      }
-    }
-    return timing;
-  }
-
-  function selection_transition$1(name) {
-    var id,
-        timing;
-
-    if (name instanceof Transition$1) {
-      id = name._id, name = name._name;
-    } else {
-      id = newId$1(), (timing = defaultTiming$1).time = now(), name = name == null ? null : name + "";
-    }
-
-    for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
-      for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
-        if (node = group[i]) {
-          schedule$1(node, name, id, i, group, timing || inherit$1(node, id));
-        }
-      }
-    }
-
-    return new Transition$1(groups, this._parents, name, id);
-  }
-
-  selection$1.prototype.interrupt = selection_interrupt$1;
-  selection$1.prototype.transition = selection_transition$1;
-
-  /**
-      @function textWidth
-      @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
-      @param {String|Array} text Can be either a single string or an array of strings to analyze.
-      @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
-  */
-  function measure$1(text, style) {
-
-    style = Object.assign({
-      "font-size": 10,
-      "font-family": "sans-serif",
-      "font-style": "normal",
-      "font-weight": 400,
-      "font-variant": "normal"
-    }, style);
-
-    var context = document.createElement("canvas").getContext("2d");
-
-    var font = [];
-    font.push(style["font-style"]);
-    font.push(style["font-variant"]);
-    font.push(style["font-weight"]);
-    font.push(typeof style["font-size"] === "string" ? style["font-size"] : ((style["font-size"]) + "px"));
-    // let s = `${style["font-size"]}px`;
-    // if ("line-height" in style) s += `/${style["line-height"]}px`;
-    // font.push(s);
-    font.push(style["font-family"]);
-
-    context.font = font.join(" ");
-
-    if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-    return context.measureText(text).width;
-
-  }
-
-  /**
-      @function trim
-      @desc Cross-browser implementation of [trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim).
-      @param {String} str
-  */
-  function trim$1(str) {
-    return str.replace(/^\s+|\s+$/g, "");
-  }
-
-  /**
-      @function trimRight
-      @desc Cross-browser implementation of [trimRight](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/TrimRight).
-      @param {String} str
-  */
-  function trimRight$1(str) {
-    return str.replace(/\s+$/, "");
-  }
-
-  var alpha$1 = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890",
-        checked$1 = {},
-        height$1 = 32;
-
-  var dejavu$1, macos$1, monospace$1, proportional$1;
-
-  /**
-      @function fontExists
-      @desc Given either a single font-family or a list of fonts, returns the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
-      @param {String|Array} font Can be either a valid CSS font-family string (single or comma-separated names) or an Array of string names.
-  */
-  var fontExists$1 = function (font) {
-
-    if (!dejavu$1) {
-      dejavu$1 = measure$1(alpha$1, {"font-family": "DejaVuSans", "font-size": height$1});
-      macos$1 = measure$1(alpha$1, {"font-family": "-apple-system", "font-size": height$1});
-      monospace$1 = measure$1(alpha$1, {"font-family": "monospace", "font-size": height$1});
-      proportional$1 = measure$1(alpha$1, {"font-family": "sans-serif", "font-size": height$1});
-    }
-
-    if (!(font instanceof Array)) { font = font.split(","); }
-    font = font.map(function (f) { return trim$1(f); });
-
-    for (var i = 0; i < font.length; i++) {
-      var fam = font[i];
-      if (checked$1[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
-      else if (checked$1[fam] === false) { continue; }
-      var width = measure$1(alpha$1, {"font-family": fam, "font-size": height$1});
-      checked$1[fam] = width !== monospace$1;
-      if (checked$1[fam]) { checked$1[fam] = width !== proportional$1; }
-      if (macos$1 && checked$1[fam]) { checked$1[fam] = width !== macos$1; }
-      if (dejavu$1 && checked$1[fam]) { checked$1[fam] = width !== dejavu$1; }
-      if (checked$1[fam]) { return fam; }
-    }
-
-    return false;
-
-  };
-
-  /**
-      @function rtl
-      @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
-  */
-  function detectRTL$1 () { return select$1("html").attr("dir") === "rtl" ||
-    select$1("body").attr("dir") === "rtl" ||
-    select$1("html").style("direction") === "rtl" ||
-    select$1("body").style("direction") === "rtl"; }
-
-  /**
-      @function stringify
-      @desc Coerces value into a String.
-      @param {String} value
-  */
-  function stringify$1(value) {
-    if (value === void 0) { value = "undefined"; }
-    else if (!(typeof value === "string" || value instanceof String)) { value = JSON.stringify(value); }
-    return value;
-  }
-
-  // great unicode list: http://asecuritysite.com/coding/asc2
-
-  var diacritics$1 = [
-    [/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"],
-    [/[\306]/g, "AE"], [/[\346]/g, "ae"],
-    [/[\337]/g, "B"],
-    [/[\307]/g, "C"], [/[\347]/g, "c"],
-    [/[\320\336\376]/g, "D"], [/[\360]/g, "d"],
-    [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"],
-    [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"],
-    [/[\321]/g, "N"], [/[\361]/g, "n"],
-    [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"],
-    [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"],
-    [/[\327]/g, "x"],
-    [/[\335]/g, "Y"], [/[\375\377]/g, "y"]
-  ];
-
-  /**
-      @function strip
-      @desc Removes all non ASCII characters from a string.
-      @param {String} value
-  */
-  function strip$1(value) {
-
-    return ("" + value).replace(/[^A-Za-z0-9\-_]/g, function (char) {
-
-      if (char === " ") { return "-"; }
-
-      var ret = false;
-      for (var d = 0; d < diacritics$1.length; d++) {
-        if (new RegExp(diacritics$1[d][0]).test(char)) {
-          ret = diacritics$1[d][1];
-          break;
-        }
-      }
-
-      return ret || "";
-
-    });
-  }
-
-  // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
-  // and http://www.fileformat.info/info/unicode/category/Mn/list.htm
-  // JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
-  // The following unicode characters combine to form new characters and should never be split from surrounding characters.
-  var a$2 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
-  var b$1 = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
-  var combiningMarks$1 = a$2.concat(b$1);
-
-  var splitChars$1 = ["-",  "/",  ";",  ":",  "&",
-    "u0E2F",  // thai character pairannoi
-    "u0EAF",  // lao ellipsis
-    "u0EC6",  // lao ko la (word repetition)
-    "u0ECC",  // lao cancellation mark
-    "u104A",  // myanmar sign little section
-    "u104B",  // myanmar sign section
-    "u104C",  // myanmar symbol locative
-    "u104D",  // myanmar symbol completed
-    "u104E",  // myanmar symbol aforementioned
-    "u104F",  // myanmar symbol genitive
-    "u2013",  // en dash
-    "u2014",  // em dash
-    "u2027",  // simplified chinese hyphenation point
-    "u3000",  // simplified chinese ideographic space
-    "u3001",  // simplified chinese ideographic comma
-    "u3002",  // simplified chinese ideographic full stop
-    "uFF0C",  // full-width comma
-    "uFF5E"   // wave dash
-  ];
-
-  var prefixChars$1 = ["'",  "<",  "(",  "{",  "[",
-    "u00AB",  // left-pointing double angle quotation mark
-    "u300A",  // left double angle bracket
-    "u3008"  // left angle bracket
-  ];
-
-  var suffixChars$1 = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
-    "u00BB",  // right-pointing double angle quotation mark
-    "u300B",  // right double angle bracket
-    "u3009"  // right angle bracket
-  ].concat(splitChars$1);
-
-  var burmeseRange$1 = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
-  var japaneseRange$1 = "\u3040-\u309f\u30a0-\u30ff\uff00-\uff0b\uff0d-\uff5d\uff5f-\uff9f\u3400-\u4dbf";
-  var chineseRange$1 = "\u3400-\u9FBF";
-  var laoRange$1 = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
-
-  var noSpaceRange$1 = burmeseRange$1 + chineseRange$1 + japaneseRange$1 + laoRange$1;
-
-  var splitWords$1 = new RegExp(("(\\" + (splitChars$1.join("|\\")) + ")*[^\\s|\\" + (splitChars$1.join("|\\")) + "]*(\\" + (splitChars$1.join("|\\")) + ")*"), "g");
-  var noSpaceLanguage$1 = new RegExp(("[" + noSpaceRange$1 + "]"));
-  var splitAllChars$1 = new RegExp(("(\\" + (prefixChars$1.join("|\\")) + ")*[" + noSpaceRange$1 + "](\\" + (suffixChars$1.join("|\\")) + "|\\" + (combiningMarks$1.join("|\\")) + ")*|[a-z0-9]+"), "gi");
-
-  /**
-      @function textSplit
-      @desc Splits a given sentence into an array of words.
-      @param {String} sentence
-  */
-  function textSplit$1(sentence) {
-    if (!noSpaceLanguage$1.test(sentence)) { return stringify$1(sentence).match(splitWords$1).filter(function (w) { return w.length; }); }
-    return merge(stringify$1(sentence).match(splitWords$1).map(function (d) {
-      if (noSpaceLanguage$1.test(d)) { return d.match(splitAllChars$1); }
-      return [d];
-    }));
-  }
-
-  /**
-      @function textWrap
-      @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
-  */
-  function wrap$1() {
-
-    var fontFamily = "sans-serif",
-        fontSize = 10,
-        fontWeight = 400,
-        height = 200,
-        lineHeight,
-        maxLines = null,
-        overflow = false,
-        split = textSplit$1,
-        width = 200;
-
-    /**
-        The inner return object and wraps the text and returns the line data array.
-        @private
-    */
-    function textWrap(sentence) {
-
-      sentence = stringify$1(sentence);
-
-      if (lineHeight === void 0) { lineHeight = Math.ceil(fontSize * 1.4); }
-
-      var words = split(sentence);
-
-      var style = {
-        "font-family": fontFamily,
-        "font-size": fontSize,
-        "font-weight": fontWeight,
-        "line-height": lineHeight
-      };
-
-      var line = 1,
-          textProg = "",
-          truncated = false,
-          widthProg = 0;
-
-      var lineData = [],
-            sizes = measure$1(words, style),
-            space = measure$1(" ", style);
-
-      for (var i = 0; i < words.length; i++) {
-        var word = words[i];
-        var wordWidth = sizes[words.indexOf(word)];
-        word += sentence.slice(textProg.length + word.length).match("^( |\n)*", "g")[0];
-        if (textProg.slice(-1) === "\n" || widthProg + wordWidth > width) {
-          if (!i && !overflow) {
-            truncated = true;
-            break;
-          }
-          lineData[line - 1] = trimRight$1(lineData[line - 1]);
-          line++;
-          if (lineHeight * line > height || wordWidth > width && !overflow || maxLines && line > maxLines) {
-            truncated = true;
-            break;
-          }
-          widthProg = 0;
-          lineData.push(word);
-        }
-        else if (!i) { lineData[0] = word; }
-        else { lineData[line - 1] += word; }
-        textProg += word;
-        widthProg += wordWidth;
-        widthProg += word.match(/[\s]*$/g)[0].length * space;
-      }
-
-      return {
-        lines: lineData,
-        sentence: sentence, truncated: truncated,
-        widths: measure$1(lineData, style),
-        words: words
-      };
-
-    }
-
-    /**
-        @memberof textWrap
-        @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
-        @param {Function|String} [*value* = "sans-serif"]
-    */
-    textWrap.fontFamily = function(_) {
-      return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
-    };
-
-    /**
-        @memberof textWrap
-        @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
-        @param {Function|Number} [*value* = 10]
-    */
-    textWrap.fontSize = function(_) {
-      return arguments.length ? (fontSize = _, textWrap) : fontSize;
-    };
-
-    /**
-        @memberof textWrap
-        @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
-        @param {Function|Number|String} [*value* = 400]
-    */
-    textWrap.fontWeight = function(_) {
-      return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
-    };
-
-    /**
-        @memberof textWrap
-        @desc If *value* is specified, sets height limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-        @param {Number} [*value* = 200]
-    */
-    textWrap.height = function(_) {
-      return arguments.length ? (height = _, textWrap) : height;
-    };
-
-    /**
-        @memberof textWrap
-        @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textWrap.fontSize) by default.
-        @param {Function|Number} [*value*]
-    */
-    textWrap.lineHeight = function(_) {
-      return arguments.length ? (lineHeight = _, textWrap) : lineHeight;
-    };
-
-    /**
-        @memberof textWrap
-        @desc If *value* is specified, sets the maximum number of lines allowed when wrapping.
-        @param {Function|Number} [*value*]
-    */
-    textWrap.maxLines = function(_) {
-      return arguments.length ? (maxLines = _, textWrap) : maxLines;
-    };
-
-    /**
-        @memberof textWrap
-        @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
-        @param {Boolean} [*value* = false]
-    */
-    textWrap.overflow = function(_) {
-      return arguments.length ? (overflow = _, textWrap) : overflow;
-    };
-
-    /**
-        @memberof textWrap
-        @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
-        @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to textWrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
-    */
-    textWrap.split = function(_) {
-      return arguments.length ? (split = _, textWrap) : split;
-    };
-
-    /**
-        @memberof textWrap
-        @desc If *value* is specified, sets width limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
-        @param {Number} [*value* = 200]
-    */
-    textWrap.width = function(_) {
-      return arguments.length ? (width = _, textWrap) : width;
-    };
-
-    return textWrap;
-
-  }
-
-  /**
-      @external BaseClass
-      @see https://github.com/d3plus/d3plus-common#BaseClass
-  */
-
-  /**
-      @class TextBox
-      @extends external:BaseClass
-      @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
-  */
-  var TextBox$1 = (function (BaseClass$$1) {
-    function TextBox() {
-      var this$1 = this;
-
-
-      BaseClass$$1.call(this);
-
-      this._ariaHidden = constant$2("false");
-      this._delay = 0;
-      this._duration = 0;
-      this._ellipsis = function (text, line) { return line ? ((text.replace(/\.|,$/g, "")) + "...") : ""; };
-      this._fontColor = constant$2("black");
-      this._fontFamily = constant$2(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
-      this._fontMax = constant$2(50);
-      this._fontMin = constant$2(8);
-      this._fontOpacity = constant$2(1);
-      this._fontResize = constant$2(false);
-      this._fontSize = constant$2(10);
-      this._fontWeight = constant$2(400);
-      this._height = accessor("height", 200);
-      this._id = function (d, i) { return d.id || ("" + i); };
-      this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.2; };
-      this._maxLines = constant$2(null);
-      this._on = {};
-      this._overflow = constant$2(false);
-      this._padding = constant$2(0);
-      this._pointerEvents = constant$2("auto");
-      this._rotate = constant$2(0);
-      this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
-      this._split = textSplit$1;
-      this._text = accessor("text");
-      this._textAnchor = constant$2("start");
-      this._verticalAlign = constant$2("top");
-      this._width = accessor("width", 200);
-      this._x = accessor("x", 0);
-      this._y = accessor("y", 0);
-
-    }
-
-    if ( BaseClass$$1 ) { TextBox.__proto__ = BaseClass$$1; }
-    TextBox.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
-    TextBox.prototype.constructor = TextBox;
-
-    /**
-        @memberof TextBox
-        @desc Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
-        @param {Function} [*callback* = undefined]
-    */
-    TextBox.prototype.render = function render (callback) {
-      var this$1 = this;
-
-
-      if (this._select === void 0) { this.select(select$1("body").append("svg").style("width", ((window.innerWidth) + "px")).style("height", ((window.innerHeight) + "px")).node()); }
-
-      var that = this;
-
-      var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
-
-        var t = this$1._text(d, i);
-        if (t === void 0) { return arr; }
-
-        var resize = this$1._fontResize(d, i);
-        var lHRatio = this$1._lineHeight(d, i) / this$1._fontSize(d, i);
-
-        var fS = resize ? this$1._fontMax(d, i) : this$1._fontSize(d, i),
-            lH = resize ? fS * lHRatio : this$1._lineHeight(d, i),
-            line = 1,
-            lineData = [],
-            sizes,
-            wrapResults;
-
-        var style = {
-          "font-family": fontExists$1(this$1._fontFamily(d, i)),
-          "font-size": fS,
-          "font-weight": this$1._fontWeight(d, i),
-          "line-height": lH
-        };
-
-        var padding = parseSides(this$1._padding(d, i));
-
-        var h = this$1._height(d, i) - (padding.top + padding.bottom),
-              w = this$1._width(d, i) - (padding.left + padding.right);
-
-        var wrapper = wrap$1()
-          .fontFamily(style["font-family"])
-          .fontSize(fS)
-          .fontWeight(style["font-weight"])
-          .lineHeight(lH)
-          .maxLines(this$1._maxLines(d, i))
-          .height(h)
-          .overflow(this$1._overflow(d, i))
-          .width(w);
-
-        var fMax = this$1._fontMax(d, i),
-              fMin = this$1._fontMin(d, i),
-              vA = this$1._verticalAlign(d, i),
-              words = this$1._split(t, i);
-
-        /**
-            Figures out the lineData to be used for wrapping.
-            @private
-        */
-        function checkSize() {
-          var truncate = function () {
-            if (line < 1) { lineData = [that._ellipsis("", line)]; }
-            else { lineData[line - 1] = that._ellipsis(lineData[line - 1], line); }
-          };
-
-          // Constraint the font size
-          fS = max([fS, fMin]);
-          fS = min([fS, fMax]);
-
-          if (resize) {
-            lH = fS * lHRatio;
-            wrapper
-              .fontSize(fS)
-              .lineHeight(lH);
-            style["font-size"] = fS;
-            style["line-height"] = lH;
-          }
-
-          wrapResults = wrapper(t);
-          lineData = wrapResults.lines.filter(function (l) { return l !== ""; });
-          line = lineData.length;
-
-          if (wrapResults.truncated) {
-            if (resize) {
-              fS--;
-              if (fS < fMin) {
-                fS = fMin;
-                truncate();
-                return;
-              }
-              else { checkSize(); }
-            }
-            else { truncate(); }
-          }
-        }
-
-        if (w > fMin && (h > lH || resize && h > fMin * lHRatio)) {
-
-          if (resize) {
-
-            sizes = measure$1(words, style);
-
-            var areaMod = 1.165 + w / h * 0.1,
-                  boxArea = w * h,
-                  maxWidth = max(sizes),
-                  textArea = sum(sizes, function (d) { return d * lH; }) * areaMod;
-
-            if (maxWidth > w || textArea > boxArea) {
-              var areaRatio = Math.sqrt(boxArea / textArea),
-                    widthRatio = w / maxWidth;
-              var sizeRatio = min([areaRatio, widthRatio]);
-              fS = Math.floor(fS * sizeRatio);
-            }
-
-            var heightMax = Math.floor(h * 0.8);
-            if (fS > heightMax) { fS = heightMax; }
-
-          }
-
-          checkSize();
-
-        }
-
-        if (lineData.length) {
-
-          var tH = line * lH;
-          var r = this$1._rotate(d, i);
-          var yP = r === 0 ? vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH : 0;
-          yP -= lH * 0.1;
-
-          arr.push({
-            aH: this$1._ariaHidden(d, i),
-            data: d,
-            i: i,
-            lines: lineData,
-            fC: this$1._fontColor(d, i),
-            fF: style["font-family"],
-            fO: this$1._fontOpacity(d, i),
-            fW: style["font-weight"],
-            id: this$1._id(d, i),
-            tA: this$1._textAnchor(d, i),
-            vA: this$1._verticalAlign(d, i),
-            widths: wrapResults.widths,
-            fS: fS, lH: lH, w: w, h: h, r: r,
-            x: this$1._x(d, i) + padding.left,
-            y: this$1._y(d, i) + yP + padding.top
-          });
-
-        }
-
-        return arr;
-
-      }, []), function (d) { return this$1._id(d.data, d.i); });
-
-      var t = transition$1().duration(this._duration);
-
-      if (this._duration === 0) {
-
-        boxes.exit().remove();
-
-      }
-      else {
-
-        boxes.exit().transition().delay(this._duration).remove();
-
-        boxes.exit().selectAll("text").transition(t)
-          .attr("opacity", 0)
-          .style("opacity", 0);
-
-      }
-
-      function rotate(text) {
-        text.attr("transform", function (d, i) {
-          var rotateAnchor = that._rotateAnchor(d, i);
-          return ("translate(" + (d.x) + ", " + (d.y) + ") rotate(" + (d.r) + ", " + (rotateAnchor[0]) + ", " + (rotateAnchor[1]) + ")");
-        });
-      }
-
-      var update = boxes.enter().append("g")
-          .attr("class", "d3plus-textBox")
-          .attr("id", function (d) { return ("d3plus-textBox-" + (strip$1(d.id))); })
-          .call(rotate)
-        .merge(boxes);
-
-      var rtl = detectRTL$1();
-
-      update
-        .style("pointer-events", function (d) { return this$1._pointerEvents(d.data, d.i); })
-        .each(function(d) {
-
-          /**
-              Styles to apply to each <text> element.
-              @private
-          */
-          function textStyle(text) {
-
-            text
-              .text(function (t) { return trimRight$1(t); })
-              .attr("aria-hidden", d.aH)
-              .attr("dir", rtl ? "rtl" : "ltr")
-              .attr("fill", d.fC)
-              .attr("text-anchor", d.tA)
-              .attr("font-family", d.fF)
-              .style("font-family", d.fF)
-              .attr("font-size", ((d.fS) + "px"))
-              .style("font-size", ((d.fS) + "px"))
-              .attr("font-weight", d.fW)
-              .style("font-weight", d.fW)
-              .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 2 * Math.sin(Math.PI * d.r / 180)) + "px"))
-              .attr("y", function (t, i) { return d.r === 0 || d.vA === "top" ? (((i + 1) * d.lH - (d.lH - d.fS)) + "px") : 
-                d.vA === "middle" ? 
-                  (((d.h + d.fS) / 2 - (d.lH - d.fS) + (i - d.lines.length / 2 + 0.5) * d.lH) + "px") : 
-                  ((d.h - 2 * (d.lH - d.fS) - (d.lines.length - (i + 1)) * d.lH + 2 * Math.cos(Math.PI * d.r / 180)) + "px"); });
-
-          }
-
-          var texts = select$1(this).selectAll("text").data(d.lines);
-
-          if (that._duration === 0) {
-
-            texts.call(textStyle);
-
-            texts.exit().remove();
-
-            texts.enter().append("text")
-              .attr("dominant-baseline", "alphabetic")
-              .style("baseline-shift", "0%")
-              .attr("unicode-bidi", "bidi-override")
-              .call(textStyle)
-              .attr("opacity", d.fO)
-              .style("opacity", d.fO);
-
-          }
-          else {
-
-            texts.transition(t).call(textStyle);
-
-            texts.exit().transition(t)
-              .attr("opacity", 0).remove();
-
-            texts.enter().append("text")
-                .attr("dominant-baseline", "alphabetic")
-                .style("baseline-shift", "0%")
-                .attr("opacity", 0)
-                .style("opacity", 0)
-                .call(textStyle)
-              .merge(texts).transition(t).delay(that._delay)
-                .call(textStyle)
-                .attr("opacity", d.fO)
-                .style("opacity", d.fO);
-          }
-
-        })
-        .transition(t).call(rotate);
-
-      var events = Object.keys(this._on),
-            on = events.reduce(function (obj, e) {
-              obj[e] = function (d, i) { return this$1._on[e](d.data, i); };
-              return obj;
-            }, {});
-      for (var e = 0; e < events.length; e++) { update.on(events[e], on[events[e]]); }
-
-      if (callback) { setTimeout(callback, this._duration + 100); }
-
-      return this;
-
-    };
-
-    /**
-        @memberof TextBox
-        @desc If *value* is specified, sets the aria-hidden attribute to the specified function or string and returns the current class instance.
-        @param {Function|String} *value*
-        @chainable
-    */
-    TextBox.prototype.ariaHidden = function ariaHidden (_) {
-      return _ !== undefined 
-        ? (this._ariaHidden = typeof _ === "function" ? _ : constant$2(_), this) 
-        : this._ariaHidden;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
-        @param {Array} [*data* = []]
-        @chainable
-    */
-    TextBox.prototype.data = function data (_) {
-      return arguments.length ? (this._data = _, this) : this._data;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the animation delay to the specified number in milliseconds.
-        @param {Number} [*value* = 0]
-        @chainable
-    */
-    TextBox.prototype.delay = function delay (_) {
-      return arguments.length ? (this._delay = _, this) : this._delay;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the animation duration to the specified number in milliseconds.
-        @param {Number} [*value* = 0]
-        @chainable
-    */
-    TextBox.prototype.duration = function duration (_) {
-      return arguments.length ? (this._duration = _, this) : this._duration;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the function that handles what to do when a line is truncated. It should return the new value for the line, and is passed 2 arguments: the String of text for the line in question, and the number of the line. By default, an ellipsis is added to the end of any line except if it is the first word that cannot fit (in that case, an empty string is returned).
-        @param {Function|String} [*value*]
-        @chainable
-        @example <caption>default accessor</caption>
-  function(text, line) {
-    return line ? text.replace(/\.|,$/g, "") + "..." : "";
-  }
-    */
-    TextBox.prototype.ellipsis = function ellipsis (_) {
-      return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant$2(_), this) : this._ellipsis;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
-        @param {Function|String} [*value* = "black"]
-        @chainable
-    */
-    TextBox.prototype.fontColor = function fontColor (_) {
-      return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant$2(_), this) : this._fontColor;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
-        @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
-        @chainable
-    */
-    TextBox.prototype.fontFamily = function fontFamily (_) {
-      return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant$2(_), this) : this._fontFamily;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the maximum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
-        @param {Function|Number} [*value* = 50]
-        @chainable
-    */
-    TextBox.prototype.fontMax = function fontMax (_) {
-      return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant$2(_), this) : this._fontMax;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the minimum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
-        @param {Function|Number} [*value* = 8]
-        @chainable
-    */
-    TextBox.prototype.fontMin = function fontMin (_) {
-      return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant$2(_), this) : this._fontMin;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the font opacity to the specified accessor function or static number between 0 and 1.
-        @param {Function|Number} [*value* = 1]
-        @chainable
-     */
-    TextBox.prototype.fontOpacity = function fontOpacity (_) {
-      return arguments.length ? (this._fontOpacity = typeof _ === "function" ? _ : constant$2(_), this) : this._fontOpacity;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
-        @param {Function|Boolean} [*value* = false]
-        @chainable
-    */
-    TextBox.prototype.fontResize = function fontResize (_) {
-      return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant$2(_), this) : this._fontResize;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the font size to the specified accessor function or static number (which corresponds to pixel units), which is inferred from the [DOM selection](#textBox.select) by default.
-        @param {Function|Number} [*value* = 10]
-        @chainable
-    */
-    TextBox.prototype.fontSize = function fontSize (_) {
-      return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant$2(_), this) : this._fontSize;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
-        @param {Function|Number|String} [*value* = 400]
-        @chainable
-    */
-    TextBox.prototype.fontWeight = function fontWeight (_) {
-      return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant$2(_), this) : this._fontWeight;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the height for each box to the specified accessor function or static number.
-        @param {Function|Number} [*value*]
-        @chainable
-        @example <caption>default accessor</caption>
-  function(d) {
-    return d.height || 200;
-  }
-    */
-    TextBox.prototype.height = function height (_) {
-      return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$2(_), this) : this._height;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Defines the unique id for each box to the specified accessor function or static number.
-        @param {Function|Number} [*value*]
-        @chainable
-        @example <caption>default accessor</caption>
-  function(d, i) {
-    return d.id || i + "";
-  }
-    */
-    TextBox.prototype.id = function id (_) {
-      return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$2(_), this) : this._id;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the line height to the specified accessor function or static number, which is 1.2 times the [font size](#textBox.fontSize) by default.
-        @param {Function|Number} [*value*]
-        @chainable
-    */
-    TextBox.prototype.lineHeight = function lineHeight (_) {
-      return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant$2(_), this) : this._lineHeight;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Restricts the maximum number of lines to wrap onto, which is null (unlimited) by default.
-        @param {Function|Number} [*value*]
-        @chainable
-    */
-    TextBox.prototype.maxLines = function maxLines (_) {
-      return arguments.length ? (this._maxLines = typeof _ === "function" ? _ : constant$2(_), this) : this._maxLines;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the text overflow to the specified accessor function or static boolean.
-        @param {Function|Boolean} [*value* = false]
-        @chainable
-    */
-    TextBox.prototype.overflow = function overflow (_) {
-      return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant$2(_), this) : this._overflow;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the padding to the specified accessor function, CSS shorthand string, or static number, which is 0 by default.
-        @param {Function|Number|String} [*value*]
-        @chainable
-    */
-    TextBox.prototype.padding = function padding (_) {
-      return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$2(_), this) : this._padding;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the pointer-events to the specified accessor function or static string.
-        @param {Function|String} [*value* = "auto"]
-        @chainable
-    */
-    TextBox.prototype.pointerEvents = function pointerEvents (_) {
-      return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$2(_), this) : this._pointerEvents;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the rotate percentage for each box to the specified accessor function or static string.
-        @param {Function|Number} [*value* = 0]
-        @chainable
-    */
-    TextBox.prototype.rotate = function rotate (_) {
-      return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant$2(_), this) : this._rotate;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the anchor point around which to rotate the text box.
-        @param {Function|Number[]}
-        @chainable
-     */
-    TextBox.prototype.rotateAnchor = function rotateAnchor (_) {
-      return arguments.length ? (this._rotateAnchor = typeof _ === "function" ? _ : constant$2(_), this) : this._rotateAnchor;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
-        @param {String|HTMLElement} [*selector*]
-        @chainable
-    */
-    TextBox.prototype.select = function select$1$$1 (_) {
-      return arguments.length ? (this._select = select$1(_), this) : this._select;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
-        @param {Function} [*value*]
-        @chainable
-    */
-    TextBox.prototype.split = function split (_) {
-      return arguments.length ? (this._split = _, this) : this._split;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the text for each box to the specified accessor function or static string.
-        @param {Function|String} [*value*]
-        @chainable
-        @example <caption>default accessor</caption>
-  function(d) {
-    return d.text;
-  }
-    */
-    TextBox.prototype.text = function text (_) {
-      return arguments.length ? (this._text = typeof _ === "function" ? _ : constant$2(_), this) : this._text;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
-        @param {Function|String} [*value* = "start"]
-        @chainable
-    */
-    TextBox.prototype.textAnchor = function textAnchor (_) {
-      return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant$2(_), this) : this._textAnchor;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
-        @param {Function|String} [*value* = "top"]
-        @chainable
-    */
-    TextBox.prototype.verticalAlign = function verticalAlign (_) {
-      return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant$2(_), this) : this._verticalAlign;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the width for each box to the specified accessor function or static number.
-        @param {Function|Number} [*value*]
-        @chainable
-        @example <caption>default accessor</caption>
-  function(d) {
-    return d.width || 200;
-  }
-    */
-    TextBox.prototype.width = function width (_) {
-      return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$2(_), this) : this._width;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
-        @param {Function|Number} [*value*]
-        @chainable
-        @example <caption>default accessor</caption>
-  function(d) {
-    return d.x || 0;
-  }
-    */
-    TextBox.prototype.x = function x (_) {
-      return arguments.length ? (this._x = typeof _ === "function" ? _ : constant$2(_), this) : this._x;
-    };
-
-    /**
-        @memberof TextBox
-        @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
-        @param {Function|Number} [*value*]
-        @chainable
-        @example <caption>default accessor</caption>
-  function(d) {
-    return d.y || 0;
-  }
-    */
-    TextBox.prototype.y = function y (_) {
-      return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$2(_), this) : this._y;
-    };
-
-    return TextBox;
-  }(BaseClass));
-
   /**
       @function date
       @summary Parses numbers and strings to valid Javascript Date objects.
@@ -17795,12 +15139,12 @@ if (!Array.prototype.includes) {
         labelBounds: function (d) { return d.labelBounds; },
         labelConfig: {
           fontColor: "#000",
-          fontFamily: new TextBox$1().fontFamily(),
+          fontFamily: new TextBox().fontFamily(),
           fontResize: false,
           fontSize: constant$2(10),
           padding: 0,
           textAnchor: function () {
-            var rtl$$1 = detectRTL$1();
+            var rtl$$1 = detectRTL();
             return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
               : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
               : this$1._rotateLabels ? this$1._orient === "bottom" ? "end" : "start" : "middle";
@@ -17813,7 +15157,7 @@ if (!Array.prototype.includes) {
         width: function (d) { return d.tick ? 8 : 0; }
       };
       this._tickSize = 5;
-      this._titleClass = new TextBox$1();
+      this._titleClass = new TextBox();
       this._titleConfig = {
         fontSize: 12,
         textAnchor: "middle"
@@ -17955,7 +15299,7 @@ if (!Array.prototype.includes) {
 
 
       if (this._select === void 0) {
-        this.select(select$1("body").append("svg")
+        this.select(select("body").append("svg")
           .attr("width", ((this._width) + "px"))
           .attr("height", ((this._height) + "px"))
           .node());
@@ -17972,7 +15316,7 @@ if (!Array.prototype.includes) {
             flip = ["top", "left"].includes(this._orient),
             p = this._padding,
             parent = this._select,
-            t = transition$1().duration(this._duration);
+            t = transition().duration(this._duration);
 
       var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
       if (range$$1[0] === void 0) { range$$1[0] = p; }
@@ -17989,7 +15333,7 @@ if (!Array.prototype.includes) {
         var fontFamily = ref$1.fontFamily;
         var fontSize = ref$1.fontSize;
         var lineHeight = ref$1.lineHeight;
-        var titleWrap = wrap$1()
+        var titleWrap = wrap()
           .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
           .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
           .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
@@ -18131,21 +15475,21 @@ if (!Array.prototype.includes) {
         var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
               s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-        var wrap = wrap$1()
+        var wrap$$1 = wrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
           .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
           .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
 
-        var res = wrap(tickFormat(d));
+        var res = wrap$$1(tickFormat(d));
         res.lines = res.lines.filter(function (d) { return d !== ""; });
         res.d = d;
         res.fS = s;
         res.width = res.lines.length
-          ? Math.ceil(max(res.lines.map(function (line) { return measure$1(line, {"font-family": f, "font-size": s}); }))) + s / 4
+          ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
           : 0;
-        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
+        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap$$1.lineHeight() + 1)) : 0;
         res.offset = 0;
         res.hidden = false;
         if (res.width % 2) { res.width++; }
@@ -18163,14 +15507,14 @@ if (!Array.prototype.includes) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i$1),
                 s$1 = this$1._shapeConfig.labelConfig.fontSize(d, i$1);
 
-          var wrap = wrap$1()
+          var wrap$$1 = wrap()
             .fontFamily(f)
             .fontSize(s$1)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i$1) : undefined)
             .width(this$1._space)
             .height(labelHeight);
 
-          var res = wrap(tickFormat(d));
+          var res = wrap$$1(tickFormat(d));
 
           var isTruncated = res.truncated;
 
@@ -18201,7 +15545,7 @@ if (!Array.prototype.includes) {
 
           var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.4;
 
-          var lineTest = wrap$1()
+          var lineTest = wrap()
               .fontFamily(f)
               .fontSize(s)
               .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
@@ -18692,8 +16036,8 @@ if (!Array.prototype.includes) {
         @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
         @chainable
     */
-    Axis.prototype.select = function select$1$$1 (_) {
-      return arguments.length ? (this._select = select$1(_), this) : this._select;
+    Axis.prototype.select = function select$1 (_) {
+      return arguments.length ? (this._select = select(_), this) : this._select;
     };
 
     /**
@@ -37157,7 +34501,7 @@ if (!Array.prototype.includes) {
     return 0;
   }
 
-  function constant$b(x) {
+  function constant$a(x) {
     return function() {
       return x;
     };
@@ -37197,7 +34541,7 @@ if (!Array.prototype.includes) {
     };
 
     pack.padding = function(x) {
-      return arguments.length ? (padding = typeof x === "function" ? x : constant$b(+x), pack) : padding;
+      return arguments.length ? (padding = typeof x === "function" ? x : constant$a(+x), pack) : padding;
     };
 
     return pack;
@@ -37636,7 +34980,7 @@ if (!Array.prototype.includes) {
     };
 
     treemap.paddingInner = function(x) {
-      return arguments.length ? (paddingInner = typeof x === "function" ? x : constant$b(+x), treemap) : paddingInner;
+      return arguments.length ? (paddingInner = typeof x === "function" ? x : constant$a(+x), treemap) : paddingInner;
     };
 
     treemap.paddingOuter = function(x) {
@@ -37644,19 +34988,19 @@ if (!Array.prototype.includes) {
     };
 
     treemap.paddingTop = function(x) {
-      return arguments.length ? (paddingTop = typeof x === "function" ? x : constant$b(+x), treemap) : paddingTop;
+      return arguments.length ? (paddingTop = typeof x === "function" ? x : constant$a(+x), treemap) : paddingTop;
     };
 
     treemap.paddingRight = function(x) {
-      return arguments.length ? (paddingRight = typeof x === "function" ? x : constant$b(+x), treemap) : paddingRight;
+      return arguments.length ? (paddingRight = typeof x === "function" ? x : constant$a(+x), treemap) : paddingRight;
     };
 
     treemap.paddingBottom = function(x) {
-      return arguments.length ? (paddingBottom = typeof x === "function" ? x : constant$b(+x), treemap) : paddingBottom;
+      return arguments.length ? (paddingBottom = typeof x === "function" ? x : constant$a(+x), treemap) : paddingBottom;
     };
 
     treemap.paddingLeft = function(x) {
-      return arguments.length ? (paddingLeft = typeof x === "function" ? x : constant$b(+x), treemap) : paddingLeft;
+      return arguments.length ? (paddingLeft = typeof x === "function" ? x : constant$a(+x), treemap) : paddingLeft;
     };
 
     return treemap;
