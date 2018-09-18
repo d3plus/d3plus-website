@@ -2,7 +2,7 @@
 title: Hiding Tooltip on Click
 width: 990
 height: 400
-time: 1537193935409
+time: 1537233656219
 date: September 17, 2018
 ---
 
