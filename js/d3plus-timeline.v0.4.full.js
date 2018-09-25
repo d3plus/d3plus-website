@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.4.2
+  d3plus-timeline v0.4.3
   An easy-to-use javascript timeline.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -13662,8 +13662,8 @@ var Timeline = (function (Axis$$1) {
     this._brushing = true;
     this._brushFilter = function () { return !event.button && event.detail < 2; };
     this._buttonBehavior = "auto";
+    this._buttonPadding = 10;
     this._buttonHeight = 30;
-    this._buttonPadding = 12;
     this._domain = [2001, 2010];
     this._gridSize = 0;
     this._handleConfig = {
@@ -13846,7 +13846,7 @@ var Timeline = (function (Axis$$1) {
       @private
   */
   Timeline.prototype._updateBrushLimit = function _updateBrushLimit (domain) {
-    
+
     var selection$$1 = this._buttonBehaviorCurrent === "ticks" ? domain.map(date$2).map(this._d3Scale) : domain;
 
     if (selection$$1[0] === selection$$1[1]) {
@@ -13877,11 +13877,15 @@ var Timeline = (function (Axis$$1) {
     var y = ref.y;
 
     if (this._buttonBehavior !== "ticks") {
-      var ticks$$1 = this._ticks ? this._ticks.map(date$2) : this._domain.map(date$2);
-      var d3Scale = scaleTime().domain(ticks$$1).range([0, this._width]), 
-            tickFormat = d3Scale.tickFormat();
 
+      var ticks$$1 = this._ticks ? this._ticks.map(date$2) : this._domain.map(date$2);
+
+      var d3Scale = scaleTime().domain(ticks$$1).range([0, this._width]),
+            tickFormat = d3Scale.tickFormat();
+            
       ticks$$1 = this._ticks ? ticks$$1 : d3Scale.ticks();
+
+      if (!this._tickFormat) { this._tickFormat = tickFormat; }
 
       // Measures size of ticks
       this._ticksWidth = ticks$$1.reduce(function (sum$$1, d, i) {
@@ -13905,35 +13909,31 @@ var Timeline = (function (Axis$$1) {
 
     this._buttonBehaviorCurrent = this._buttonBehavior === "auto" ? this._ticksWidth < this._width ? "buttons" : "ticks" : this._buttonBehavior;
 
-    if (this._ticks && !this._labels) {
-      if (this._buttonBehaviorCurrent === "ticks") { this._domain = [min(this._ticks), max(this._ticks)]; }
-      this.labels(this._ticks);
-    }
 
     if (this._buttonBehaviorCurrent === "buttons") {
-      if (!this._ticks) { this._ticks = Array.from(Array(this._domain[this._domain.length - 1] - this._domain[0] + 1), function (_, x) { return this$1._domain[0] + x; }); }
-      if (!this._brushing) { this._handleSize = 0; }
-
       this._scale = "ordinal";
-      this._domain = this._ticks;
-    }
+      if (!this._brushing) { this._handleSize = 0; }
+      var domain = this._domain.map(date$2).map(this._tickFormat).map(Number);
 
-    if (this._ticksWidth && this._buttonBehaviorCurrent === "buttons") {
-      var ticks$1 = this._ticks ? this._ticks.map(date$2) : this._domain.map(date$2);
-      var d3Scale$1 = scaleTime().domain(ticks$1).range([0, this._ticksWidth]);
-      ticks$1 = this._ticks ? ticks$1 : d3Scale$1.ticks();
+      this._domain = Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) { return domain[0] + x; }).map(date$2);
+      this._ticks = this._domain;
 
-      var buttonMargin = 0.5 * this._ticksWidth / ticks$1.length;
+      var buttonMargin = 0.5 * this._ticksWidth / this._ticks.length;
 
       this._marginLeft = this._align === "middle" 
         ? (this._width - this._ticksWidth) / 2 : this._align === "end" 
           ? this._width - this._ticksWidth : 0;
 
       var marginRight = this._align === "middle"
-        ? (this._width + this._ticksWidth) / 2 - buttonMargin : this._align === "start" 
-          ? this._ticksWidth - buttonMargin : undefined;
+        ? (this._width + this._ticksWidth) / 2 : this._align === "start" 
+          ? this._ticksWidth : undefined;
 
-      this._range = [this._align === "start" ? undefined : this._marginLeft + buttonMargin, marginRight]; 
+      this._range = [this._align === "start" ? undefined : this._marginLeft + buttonMargin, marginRight];
+    }
+
+    if (this._ticks && !this._labels) {
+      if (this._buttonBehaviorCurrent === "ticks") { this._domain = [min(this._ticks), max(this._ticks)]; }
+      this.labels(this._ticks);
     }
 
     Axis$$1.prototype.render.call(this, callback);
@@ -13955,8 +13955,11 @@ var Timeline = (function (Axis$$1) {
 
     var selection$$1 = this._selection === void 0 ? [latest, latest]
       : this._selection instanceof Array
-        ? this._selection.slice()
-        : [this._selection, this._selection];
+        ? this._buttonBehaviorCurrent === "buttons" 
+          ? this._selection.map(function (d) { return range$$1[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
+        : this._buttonBehaviorCurrent === "buttons" 
+          ? [range$$1[this._ticks.map(Number).indexOf(+this._selection)], range$$1[this._ticks.map(Number).indexOf(+this._selection)]]
+          : [this._selection, this._selection];
 
     this._updateBrushLimit(selection$$1);
 
@@ -13969,6 +13972,16 @@ var Timeline = (function (Axis$$1) {
 
     return this;
 
+  };
+
+  /**
+        @memberof Timeline
+        @desc If *value* is specified, sets the button padding and returns the current class instance. If *value* is not specified, returns the current button padding.
+        @param {Number} [*value* = 10]
+        @chainable
+    */
+  Timeline.prototype.buttonPadding = function buttonPadding (_) {
+    return arguments.length ? (this._buttonPadding = _, this) : this._buttonPadding;
   };
 
   /**
@@ -14013,16 +14026,6 @@ function() {
     */
   Timeline.prototype.buttonHeight = function buttonHeight (_) {
     return arguments.length ? (this._buttonHeight = _, this) : this._buttonHeight;
-  };
-
-  /**
-        @memberof Timeline
-        @desc If *value* is specified, sets the button padding and returns the current class instance. If *value* is not specified, returns the current button padding.
-        @param {Number} [*value* = 10]
-        @chainable
-    */
-  Timeline.prototype.buttonPadding = function buttonPadding (_) {
-    return arguments.length ? (this._buttonPadding = _, this) : this._buttonPadding;
   };
 
   /**
