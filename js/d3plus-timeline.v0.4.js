@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.4.3
+  d3plus-timeline v0.4.4
   An easy-to-use javascript timeline.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -90,6 +90,7 @@ var Timeline = (function (Axis) {
     });
     this._brushing = true;
     this._brushFilter = function () { return !d3Selection.event.button && d3Selection.event.detail < 2; };
+    this._buttonAlign = "middle";
     this._buttonBehavior = "auto";
     this._buttonPadding = 10;
     this._buttonHeight = 30;
@@ -113,7 +114,7 @@ var Timeline = (function (Axis) {
       fill: function () { return this$1._buttonBehaviorCurrent === "buttons" ? "#EEE" : "#444"; },
       height: function (d) { return this$1._buttonBehaviorCurrent === "buttons" ? this$1._buttonHeight : d.tick ? 10 : 0; },
       width: function (d) { return this$1._buttonBehaviorCurrent === "buttons" ? this$1._ticksWidth / this$1._availableTicks.length : d.tick ? this$1._domain.map(function (t) { return d3plusAxis.date(t).getTime(); }).includes(d.id) ? 2 : 1 : 0; },
-      y: function (d) { return this$1._buttonBehaviorCurrent === "buttons" ? this$1._height / 2 : d.y; }
+      y: function (d) { return this$1._buttonBehaviorCurrent === "buttons" ? this$1._align === "middle" ? this$1._height / 2 : this$1._align === "start" ? this$1._margin.top + this$1._buttonHeight / 2 : this$1._height - this$1._buttonHeight / 2 - this$1._margin.bottom : d.y; }
     });
     this._snapping = true;
 
@@ -209,7 +210,11 @@ var Timeline = (function (Axis) {
       .attr("height", this._buttonBehaviorCurrent === "buttons" ? this._buttonHeight : timelineHeight + this._handleSize);
 
     if (this._buttonBehaviorCurrent === "buttons") {
-      var yTransform = this._height / 2 - this._buttonHeight / 2;
+
+      var yTransform = this._align === "middle" 
+        ? this._height / 2 - this._buttonHeight / 2
+        : this._align === "start" 
+          ? this._margin.top : this._height - this._buttonHeight - this._margin.bottom;
 
       brushHandle.attr("y", yTransform);
       brushOverlay.attr("x", this._marginLeft).attr("width", this._ticksWidth);
@@ -344,20 +349,20 @@ var Timeline = (function (Axis) {
       if (!this._brushing) { this._handleSize = 0; }
       var domain = this._domain.map(d3plusAxis.date).map(this._tickFormat).map(Number);
 
-      this._domain = Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) { return domain[0] + x; }).map(d3plusAxis.date);
+      this._domain = this._ticks ? this._ticks.map(d3plusAxis.date) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) { return domain[0] + x; }).map(d3plusAxis.date);
       this._ticks = this._domain;
 
       var buttonMargin = 0.5 * this._ticksWidth / this._ticks.length;
 
-      this._marginLeft = this._align === "middle" 
-        ? (this._width - this._ticksWidth) / 2 : this._align === "end" 
+      this._marginLeft = this._buttonAlign === "middle" 
+        ? (this._width - this._ticksWidth) / 2 : this._buttonAlign === "end" 
           ? this._width - this._ticksWidth : 0;
 
-      var marginRight = this._align === "middle"
-        ? (this._width + this._ticksWidth) / 2 : this._align === "start" 
+      var marginRight = this._buttonAlign === "middle"
+        ? (this._width + this._ticksWidth) / 2 : this._buttonAlign === "start" 
           ? this._ticksWidth : undefined;
 
-      this._range = [this._align === "start" ? undefined : this._marginLeft + buttonMargin, marginRight];
+      this._range = [this._buttonAlign === "start" ? undefined : this._marginLeft + buttonMargin, marginRight];
     }
 
     if (this._ticks && !this._labels) {
@@ -435,6 +440,16 @@ function() {
   */
   Timeline.prototype.brushFilter = function brushFilter (_) {
     return arguments.length ? (this._brushFilter = _, this) : this._brushFilter;
+  };
+
+  /**
+      @memberof Timeline
+      @desc If *value* is specified, toggles the horizontal alignment of the button timeline. Accepted values are `"start"`, `"middle"` and `"end"`. If *value* is not specified, returns the current button value.
+      @param {String} [*value* = "middle"]
+      @chainable
+  */
+  Timeline.prototype.buttonAlign = function buttonAlign (_) {
+    return arguments.length ? (this._buttonAlign = _, this) : this._buttonAlign;
   };
 
   /**
