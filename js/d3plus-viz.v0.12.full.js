@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.1
+  d3plus-viz v0.12.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -10221,7 +10221,7 @@ if (!Array.prototype.includes) {
       @param {String|Array} text Can be either a single string or an array of strings to analyze.
       @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
   */
-  function textWidth(text, style) {
+  function measure(text, style) {
 
     style = Object.assign({
       "font-size": 10,
@@ -10282,10 +10282,10 @@ if (!Array.prototype.includes) {
   var fontExists = function (font) {
 
     if (!dejavu) {
-      dejavu = textWidth(alpha, {"font-family": "DejaVuSans", "font-size": height});
-      macos = textWidth(alpha, {"font-family": "-apple-system", "font-size": height});
-      monospace = textWidth(alpha, {"font-family": "monospace", "font-size": height});
-      proportional = textWidth(alpha, {"font-family": "sans-serif", "font-size": height});
+      dejavu = measure(alpha, {"font-family": "DejaVuSans", "font-size": height});
+      macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
+      monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
+      proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
     }
 
     if (!(font instanceof Array)) { font = font.split(","); }
@@ -10295,7 +10295,7 @@ if (!Array.prototype.includes) {
       var fam = font[i];
       if (checked[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
       else if (checked[fam] === false) { continue; }
-      var width = textWidth(alpha, {"font-family": fam, "font-size": height});
+      var width = measure(alpha, {"font-family": fam, "font-size": height});
       checked[fam] = width !== monospace;
       if (checked[fam]) { checked[fam] = width !== proportional; }
       if (macos && checked[fam]) { checked[fam] = width !== macos; }
@@ -10437,7 +10437,7 @@ if (!Array.prototype.includes) {
       @function textWrap
       @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
   */
-  function textWrap() {
+  function wrap() {
 
     var fontFamily = "sans-serif",
         fontSize = 10,
@@ -10474,8 +10474,8 @@ if (!Array.prototype.includes) {
           widthProg = 0;
 
       var lineData = [],
-            sizes = textWidth(words, style),
-            space = textWidth(" ", style);
+            sizes = measure(words, style),
+            space = measure(" ", style);
 
       for (var i = 0; i < words.length; i++) {
         var word = words[i];
@@ -10505,7 +10505,7 @@ if (!Array.prototype.includes) {
       return {
         lines: lineData,
         sentence: sentence, truncated: truncated,
-        widths: textWidth(lineData, style),
+        widths: measure(lineData, style),
         words: words
       };
 
@@ -10689,7 +10689,7 @@ if (!Array.prototype.includes) {
         var h = this$1._height(d, i) - (padding.top + padding.bottom),
               w = this$1._width(d, i) - (padding.left + padding.right);
 
-        var wrapper = textWrap()
+        var wrapper = wrap()
           .fontFamily(style["font-family"])
           .fontSize(fS)
           .fontWeight(style["font-weight"])
@@ -10749,7 +10749,7 @@ if (!Array.prototype.includes) {
 
           if (resize) {
 
-            sizes = textWidth(words, style);
+            sizes = measure(words, style);
 
             var areaMod = 1.165 + w / h * 0.1,
                   boxArea = w * h,
@@ -15337,7 +15337,7 @@ if (!Array.prototype.includes) {
         var fontFamily = ref$1.fontFamily;
         var fontSize = ref$1.fontSize;
         var lineHeight = ref$1.lineHeight;
-        var titleWrap = textWrap()
+        var titleWrap = wrap()
           .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
           .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
           .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
@@ -15479,21 +15479,21 @@ if (!Array.prototype.includes) {
         var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
               s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-        var wrap = textWrap()
+        var wrap$$1 = wrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
           .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
           .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
 
-        var res = wrap(tickFormat(d));
+        var res = wrap$$1(tickFormat(d));
         res.lines = res.lines.filter(function (d) { return d !== ""; });
         res.d = d;
         res.fS = s;
         res.width = res.lines.length
-          ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
+          ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
           : 0;
-        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
+        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap$$1.lineHeight() + 1)) : 0;
         res.offset = 0;
         res.hidden = false;
         if (res.width % 2) { res.width++; }
@@ -15511,14 +15511,14 @@ if (!Array.prototype.includes) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i$1),
                 s$1 = this$1._shapeConfig.labelConfig.fontSize(d, i$1);
 
-          var wrap = textWrap()
+          var wrap$$1 = wrap()
             .fontFamily(f)
             .fontSize(s$1)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i$1) : undefined)
             .width(this$1._space)
             .height(labelHeight);
 
-          var res = wrap(tickFormat(d));
+          var res = wrap$$1(tickFormat(d));
 
           var isTruncated = res.truncated;
 
@@ -15549,7 +15549,7 @@ if (!Array.prototype.includes) {
 
           var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.4;
 
-          var lineTest = textWrap()
+          var lineTest = wrap()
               .fontFamily(f)
               .fontSize(s)
               .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
@@ -17487,7 +17487,7 @@ if (!Array.prototype.includes) {
         var lH = lH = this._titleConfig.lineHeight || this._titleClass.lineHeight();
         lH = lH ? lH() : s * 1.4;
 
-        var res = textWrap()
+        var res = wrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lH)
@@ -17527,7 +17527,7 @@ if (!Array.prototype.includes) {
         var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
               w = this$1._width;
 
-        res = Object.assign(res, textWrap()
+        res = Object.assign(res, wrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lh)
@@ -17535,7 +17535,7 @@ if (!Array.prototype.includes) {
           .height(h)
           (label));
 
-        res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
+        res.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
         res.height = Math.ceil(res.lines.length * (lh + 1));
         res.og = {height: res.height, width: res.width};
         res.f = f;
@@ -17572,9 +17572,9 @@ if (!Array.prototype.includes) {
             var loop = function ( x ) {
               var label = wrappable[x];
               var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
-              var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+              var res = wrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
               if (!res.truncated) {
-                label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+                label.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
                 label.height = res.lines.length * (label.lh + 1);
               }
               else {
@@ -18169,15 +18169,15 @@ if (!Array.prototype.includes) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
                 s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-          var wrap = textWrap()
+          var wrap$$1 = wrap()
             .fontFamily(f)
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined);
     
-          var res = wrap(tickFormat(d));
+          var res = wrap$$1(tickFormat(d));
 
           var width = res.lines.length
-            ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
+            ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
             : 0;
           if (width % 2) { width++; }
           return sum$$1 + width + 2 * this$1._buttonPadding;
