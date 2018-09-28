@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.5.0
+  d3plus-network v0.5.1
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
