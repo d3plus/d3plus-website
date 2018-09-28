@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.4.5
+  d3plus-timeline v0.4.6
   An easy-to-use javascript timeline.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -15015,9 +15015,9 @@ if (!Array.prototype.includes) {
 
       if (this._buttonBehaviorCurrent === "buttons") {
 
-        var yTransform = this._align === "middle" 
+        var yTransform = this._align === "middle"
           ? this._height / 2 - this._buttonHeight / 2
-          : this._align === "start" 
+          : this._align === "start"
             ? this._margin.top : this._height - this._buttonHeight - this._margin.bottom;
 
         brushHandle.attr("y", yTransform);
@@ -15035,30 +15035,30 @@ if (!Array.prototype.includes) {
     Timeline.prototype._updateDomain = function _updateDomain () {
 
       var domain = this._buttonBehaviorCurrent === "ticks"
-        ? (event.selection && this._brushing 
-          ? event.selection 
-          : [event.sourceEvent.offsetX, event.sourceEvent.offsetX]).map(this._d3Scale.invert).map(Number) 
-        : (event.selection && this._brushing 
+        ? (event.selection && this._brushing
+          ? event.selection
+          : [event.sourceEvent.offsetX, event.sourceEvent.offsetX]).map(this._d3Scale.invert).map(Number)
+        : (event.selection && this._brushing
           ? event.selection
           : [event.sourceEvent.offsetX, event.sourceEvent.offsetX]).map(Number);
-      
+
       if (event.type === "brush" && this._brushing && this._buttonBehaviorCurrent === "buttons") {
         var diffs = event.selection.map(function (d) { return Math.abs(d - event.sourceEvent.offsetX); });
 
-        domain = diffs[1] <= diffs[0] 
+        domain = diffs[1] <= diffs[0]
           ? [event.selection[0], event.sourceEvent.offsetX].sort(function (a, b) { return a - b; })
           : [event.sourceEvent.offsetX, event.selection[1]].sort(function (a, b) { return a - b; });
 
       }
 
       var ticks$$1 = this._buttonBehaviorCurrent === "ticks"
-        ? this._availableTicks.map(Number) 
+        ? this._availableTicks.map(Number)
         : this._d3Scale.range();
 
       if (this._buttonBehaviorCurrent === "ticks") {
         domain[0] = date$3(closest(domain[0], ticks$$1));
         domain[1] = date$3(closest(domain[1], ticks$$1));
-      } 
+      }
       else {
         domain[0] = closest(domain[0], ticks$$1);
         domain[1] = closest(domain[1], ticks$$1);
@@ -15067,10 +15067,10 @@ if (!Array.prototype.includes) {
       var single = +domain[0] === +domain[1];
 
       if (event.type === "brush" || event.type === "end") {
-        this._selection = this._buttonBehaviorCurrent === "ticks" 
-          ? single ? domain[0] : domain 
-          : single 
-            ? date$3(this._availableTicks[ticks$$1.indexOf(domain[0])]) 
+        this._selection = this._buttonBehaviorCurrent === "ticks"
+          ? single ? domain[0] : domain
+          : single
+            ? date$3(this._availableTicks[ticks$$1.indexOf(domain[0])])
             : [date$3(this._availableTicks[ticks$$1.indexOf(domain[0])]), date$3(this._availableTicks[ticks$$1.indexOf(domain[1])])];
       }
 
@@ -15120,7 +15120,7 @@ if (!Array.prototype.includes) {
 
         var d3Scale = scaleTime().domain(ticks$$1).range([0, this._width]),
               tickFormat = d3Scale.tickFormat();
-              
+
         ticks$$1 = this._ticks ? ticks$$1 : d3Scale.ticks();
 
         if (!this._tickFormat) { this._tickFormat = tickFormat; }
@@ -15134,7 +15134,7 @@ if (!Array.prototype.includes) {
             .fontFamily(f)
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined);
-    
+
           var res = wrap$$1(tickFormat(d));
 
           var width = res.lines.length
@@ -15147,7 +15147,6 @@ if (!Array.prototype.includes) {
 
       this._buttonBehaviorCurrent = this._buttonBehavior === "auto" ? this._ticksWidth < this._width ? "buttons" : "ticks" : this._buttonBehavior;
 
-
       if (this._buttonBehaviorCurrent === "buttons") {
         this._scale = "ordinal";
         if (!this._brushing) { this._handleSize = 0; }
@@ -15158,24 +15157,21 @@ if (!Array.prototype.includes) {
 
         var buttonMargin = 0.5 * this._ticksWidth / this._ticks.length;
 
-        this._marginLeft = this._buttonAlign === "middle" 
-          ? (this._width - this._ticksWidth) / 2 : this._buttonAlign === "end" 
+        this._marginLeft = this._buttonAlign === "middle"
+          ? (this._width - this._ticksWidth) / 2 : this._buttonAlign === "end"
             ? this._width - this._ticksWidth : 0;
 
         var marginRight = this._buttonAlign === "middle"
-          ? (this._width + this._ticksWidth) / 2 : this._buttonAlign === "start" 
+          ? (this._width + this._ticksWidth) / 2 : this._buttonAlign === "start"
             ? this._ticksWidth : undefined;
 
         this._range = [
-          this._buttonAlign === "start" ? undefined : this._marginLeft + buttonMargin, 
+          this._buttonAlign === "start" ? undefined : this._marginLeft + buttonMargin,
           this._buttonAlign === "end" ? undefined : marginRight - buttonMargin
         ];
       }
 
-      if (this._ticks && !this._labels) {
-        if (this._buttonBehaviorCurrent === "ticks") { this._domain = [min(this._ticks), max(this._ticks)]; }
-        this.labels(this._ticks);
-      }
+      this._labels = this._ticks;
 
       Axis$$1.prototype.render.call(this, callback);
 
@@ -15196,9 +15192,9 @@ if (!Array.prototype.includes) {
 
       var selection$$1 = this._selection === void 0 ? [latest, latest]
         : this._selection instanceof Array
-          ? this._buttonBehaviorCurrent === "buttons" 
+          ? this._buttonBehaviorCurrent === "buttons"
             ? this._selection.map(function (d) { return range[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
-          : this._buttonBehaviorCurrent === "buttons" 
+          : this._buttonBehaviorCurrent === "buttons"
             ? [range[this._ticks.map(Number).indexOf(+this._selection)], range[this._ticks.map(Number).indexOf(+this._selection)]]
             : [this._selection, this._selection];
 

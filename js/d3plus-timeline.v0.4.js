@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.4.5
+  d3plus-timeline v0.4.6
   An easy-to-use javascript timeline.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -211,9 +211,9 @@ if (!Array.prototype.includes) {
 
       if (this._buttonBehaviorCurrent === "buttons") {
 
-        var yTransform = this._align === "middle" 
+        var yTransform = this._align === "middle"
           ? this._height / 2 - this._buttonHeight / 2
-          : this._align === "start" 
+          : this._align === "start"
             ? this._margin.top : this._height - this._buttonHeight - this._margin.bottom;
 
         brushHandle.attr("y", yTransform);
@@ -231,30 +231,30 @@ if (!Array.prototype.includes) {
     Timeline.prototype._updateDomain = function _updateDomain () {
 
       var domain = this._buttonBehaviorCurrent === "ticks"
-        ? (d3Selection.event.selection && this._brushing 
-          ? d3Selection.event.selection 
-          : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX]).map(this._d3Scale.invert).map(Number) 
-        : (d3Selection.event.selection && this._brushing 
+        ? (d3Selection.event.selection && this._brushing
+          ? d3Selection.event.selection
+          : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX]).map(this._d3Scale.invert).map(Number)
+        : (d3Selection.event.selection && this._brushing
           ? d3Selection.event.selection
           : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.sourceEvent.offsetX]).map(Number);
-      
+
       if (d3Selection.event.type === "brush" && this._brushing && this._buttonBehaviorCurrent === "buttons") {
         var diffs = d3Selection.event.selection.map(function (d) { return Math.abs(d - d3Selection.event.sourceEvent.offsetX); });
 
-        domain = diffs[1] <= diffs[0] 
+        domain = diffs[1] <= diffs[0]
           ? [d3Selection.event.selection[0], d3Selection.event.sourceEvent.offsetX].sort(function (a, b) { return a - b; })
           : [d3Selection.event.sourceEvent.offsetX, d3Selection.event.selection[1]].sort(function (a, b) { return a - b; });
 
       }
 
       var ticks = this._buttonBehaviorCurrent === "ticks"
-        ? this._availableTicks.map(Number) 
+        ? this._availableTicks.map(Number)
         : this._d3Scale.range();
 
       if (this._buttonBehaviorCurrent === "ticks") {
         domain[0] = d3plusAxis.date(d3plusCommon.closest(domain[0], ticks));
         domain[1] = d3plusAxis.date(d3plusCommon.closest(domain[1], ticks));
-      } 
+      }
       else {
         domain[0] = d3plusCommon.closest(domain[0], ticks);
         domain[1] = d3plusCommon.closest(domain[1], ticks);
@@ -263,10 +263,10 @@ if (!Array.prototype.includes) {
       var single = +domain[0] === +domain[1];
 
       if (d3Selection.event.type === "brush" || d3Selection.event.type === "end") {
-        this._selection = this._buttonBehaviorCurrent === "ticks" 
-          ? single ? domain[0] : domain 
-          : single 
-            ? d3plusAxis.date(this._availableTicks[ticks.indexOf(domain[0])]) 
+        this._selection = this._buttonBehaviorCurrent === "ticks"
+          ? single ? domain[0] : domain
+          : single
+            ? d3plusAxis.date(this._availableTicks[ticks.indexOf(domain[0])])
             : [d3plusAxis.date(this._availableTicks[ticks.indexOf(domain[0])]), d3plusAxis.date(this._availableTicks[ticks.indexOf(domain[1])])];
       }
 
@@ -316,7 +316,7 @@ if (!Array.prototype.includes) {
 
         var d3Scale$$1 = d3Scale.scaleTime().domain(ticks).range([0, this._width]),
               tickFormat = d3Scale$$1.tickFormat();
-              
+
         ticks = this._ticks ? ticks : d3Scale$$1.ticks();
 
         if (!this._tickFormat) { this._tickFormat = tickFormat; }
@@ -330,7 +330,7 @@ if (!Array.prototype.includes) {
             .fontFamily(f)
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined);
-    
+
           var res = wrap(tickFormat(d));
 
           var width = res.lines.length
@@ -343,7 +343,6 @@ if (!Array.prototype.includes) {
 
       this._buttonBehaviorCurrent = this._buttonBehavior === "auto" ? this._ticksWidth < this._width ? "buttons" : "ticks" : this._buttonBehavior;
 
-
       if (this._buttonBehaviorCurrent === "buttons") {
         this._scale = "ordinal";
         if (!this._brushing) { this._handleSize = 0; }
@@ -354,24 +353,21 @@ if (!Array.prototype.includes) {
 
         var buttonMargin = 0.5 * this._ticksWidth / this._ticks.length;
 
-        this._marginLeft = this._buttonAlign === "middle" 
-          ? (this._width - this._ticksWidth) / 2 : this._buttonAlign === "end" 
+        this._marginLeft = this._buttonAlign === "middle"
+          ? (this._width - this._ticksWidth) / 2 : this._buttonAlign === "end"
             ? this._width - this._ticksWidth : 0;
 
         var marginRight = this._buttonAlign === "middle"
-          ? (this._width + this._ticksWidth) / 2 : this._buttonAlign === "start" 
+          ? (this._width + this._ticksWidth) / 2 : this._buttonAlign === "start"
             ? this._ticksWidth : undefined;
 
         this._range = [
-          this._buttonAlign === "start" ? undefined : this._marginLeft + buttonMargin, 
+          this._buttonAlign === "start" ? undefined : this._marginLeft + buttonMargin,
           this._buttonAlign === "end" ? undefined : marginRight - buttonMargin
         ];
       }
 
-      if (this._ticks && !this._labels) {
-        if (this._buttonBehaviorCurrent === "ticks") { this._domain = [d3Array.min(this._ticks), d3Array.max(this._ticks)]; }
-        this.labels(this._ticks);
-      }
+      this._labels = this._ticks;
 
       Axis.prototype.render.call(this, callback);
 
@@ -392,9 +388,9 @@ if (!Array.prototype.includes) {
 
       var selection = this._selection === void 0 ? [latest, latest]
         : this._selection instanceof Array
-          ? this._buttonBehaviorCurrent === "buttons" 
+          ? this._buttonBehaviorCurrent === "buttons"
             ? this._selection.map(function (d) { return range[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
-          : this._buttonBehaviorCurrent === "buttons" 
+          : this._buttonBehaviorCurrent === "buttons"
             ? [range[this._ticks.map(Number).indexOf(+this._selection)], range[this._ticks.map(Number).indexOf(+this._selection)]]
             : [this._selection, this._selection];
 
