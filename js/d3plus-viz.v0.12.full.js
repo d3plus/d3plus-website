@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.2
+  d3plus-viz v0.12.3
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -6263,8 +6263,6 @@ if (!Array.prototype.includes) {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
-  var mondays = monday.range;
-  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -6354,8 +6352,6 @@ if (!Array.prototype.includes) {
   var utcSaturday = utcWeekday(6);
 
   var utcSundays = utcSunday.range;
-  var utcMondays = utcMonday.range;
-  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -10221,7 +10217,7 @@ if (!Array.prototype.includes) {
       @param {String|Array} text Can be either a single string or an array of strings to analyze.
       @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
   */
-  function measure(text, style) {
+  function textWidth(text, style) {
 
     style = Object.assign({
       "font-size": 10,
@@ -10282,10 +10278,10 @@ if (!Array.prototype.includes) {
   var fontExists = function (font) {
 
     if (!dejavu) {
-      dejavu = measure(alpha, {"font-family": "DejaVuSans", "font-size": height});
-      macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
-      monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
-      proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
+      dejavu = textWidth(alpha, {"font-family": "DejaVuSans", "font-size": height});
+      macos = textWidth(alpha, {"font-family": "-apple-system", "font-size": height});
+      monospace = textWidth(alpha, {"font-family": "monospace", "font-size": height});
+      proportional = textWidth(alpha, {"font-family": "sans-serif", "font-size": height});
     }
 
     if (!(font instanceof Array)) { font = font.split(","); }
@@ -10295,7 +10291,7 @@ if (!Array.prototype.includes) {
       var fam = font[i];
       if (checked[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
       else if (checked[fam] === false) { continue; }
-      var width = measure(alpha, {"font-family": fam, "font-size": height});
+      var width = textWidth(alpha, {"font-family": fam, "font-size": height});
       checked[fam] = width !== monospace;
       if (checked[fam]) { checked[fam] = width !== proportional; }
       if (macos && checked[fam]) { checked[fam] = width !== macos; }
@@ -10437,7 +10433,7 @@ if (!Array.prototype.includes) {
       @function textWrap
       @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
   */
-  function wrap() {
+  function textWrap() {
 
     var fontFamily = "sans-serif",
         fontSize = 10,
@@ -10474,8 +10470,8 @@ if (!Array.prototype.includes) {
           widthProg = 0;
 
       var lineData = [],
-            sizes = measure(words, style),
-            space = measure(" ", style);
+            sizes = textWidth(words, style),
+            space = textWidth(" ", style);
 
       for (var i = 0; i < words.length; i++) {
         var word = words[i];
@@ -10505,7 +10501,7 @@ if (!Array.prototype.includes) {
       return {
         lines: lineData,
         sentence: sentence, truncated: truncated,
-        widths: measure(lineData, style),
+        widths: textWidth(lineData, style),
         words: words
       };
 
@@ -10689,7 +10685,7 @@ if (!Array.prototype.includes) {
         var h = this$1._height(d, i) - (padding.top + padding.bottom),
               w = this$1._width(d, i) - (padding.left + padding.right);
 
-        var wrapper = wrap()
+        var wrapper = textWrap()
           .fontFamily(style["font-family"])
           .fontSize(fS)
           .fontWeight(style["font-weight"])
@@ -10749,7 +10745,7 @@ if (!Array.prototype.includes) {
 
           if (resize) {
 
-            sizes = measure(words, style);
+            sizes = textWidth(words, style);
 
             var areaMod = 1.165 + w / h * 0.1,
                   boxArea = w * h,
@@ -15337,7 +15333,7 @@ if (!Array.prototype.includes) {
         var fontFamily = ref$1.fontFamily;
         var fontSize = ref$1.fontSize;
         var lineHeight = ref$1.lineHeight;
-        var titleWrap = wrap()
+        var titleWrap = textWrap()
           .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
           .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
           .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
@@ -15479,21 +15475,21 @@ if (!Array.prototype.includes) {
         var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
               s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-        var wrap$$1 = wrap()
+        var wrap = textWrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
           .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
           .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
 
-        var res = wrap$$1(tickFormat(d));
+        var res = wrap(tickFormat(d));
         res.lines = res.lines.filter(function (d) { return d !== ""; });
         res.d = d;
         res.fS = s;
         res.width = res.lines.length
-          ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
+          ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
           : 0;
-        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap$$1.lineHeight() + 1)) : 0;
+        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
         res.offset = 0;
         res.hidden = false;
         if (res.width % 2) { res.width++; }
@@ -15511,14 +15507,14 @@ if (!Array.prototype.includes) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i$1),
                 s$1 = this$1._shapeConfig.labelConfig.fontSize(d, i$1);
 
-          var wrap$$1 = wrap()
+          var wrap = textWrap()
             .fontFamily(f)
             .fontSize(s$1)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i$1) : undefined)
             .width(this$1._space)
             .height(labelHeight);
 
-          var res = wrap$$1(tickFormat(d));
+          var res = wrap(tickFormat(d));
 
           var isTruncated = res.truncated;
 
@@ -15549,7 +15545,7 @@ if (!Array.prototype.includes) {
 
           var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.4;
 
-          var lineTest = wrap()
+          var lineTest = textWrap()
               .fontFamily(f)
               .fontSize(s)
               .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
@@ -17487,7 +17483,7 @@ if (!Array.prototype.includes) {
         var lH = lH = this._titleConfig.lineHeight || this._titleClass.lineHeight();
         lH = lH ? lH() : s * 1.4;
 
-        var res = wrap()
+        var res = textWrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lH)
@@ -17527,7 +17523,7 @@ if (!Array.prototype.includes) {
         var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
               w = this$1._width;
 
-        res = Object.assign(res, wrap()
+        res = Object.assign(res, textWrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lh)
@@ -17535,7 +17531,7 @@ if (!Array.prototype.includes) {
           .height(h)
           (label));
 
-        res.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
+        res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
         res.height = Math.ceil(res.lines.length * (lh + 1));
         res.og = {height: res.height, width: res.width};
         res.f = f;
@@ -17572,9 +17568,9 @@ if (!Array.prototype.includes) {
             var loop = function ( x ) {
               var label = wrappable[x];
               var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
-              var res = wrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+              var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
               if (!res.truncated) {
-                label.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+                label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
                 label.height = res.lines.length * (label.lh + 1);
               }
               else {
@@ -18054,9 +18050,9 @@ if (!Array.prototype.includes) {
 
       if (this._buttonBehaviorCurrent === "buttons") {
 
-        var yTransform = this._align === "middle" 
+        var yTransform = this._align === "middle"
           ? this._height / 2 - this._buttonHeight / 2
-          : this._align === "start" 
+          : this._align === "start"
             ? this._margin.top : this._height - this._buttonHeight - this._margin.bottom;
 
         brushHandle.attr("y", yTransform);
@@ -18074,30 +18070,30 @@ if (!Array.prototype.includes) {
     Timeline.prototype._updateDomain = function _updateDomain () {
 
       var domain = this._buttonBehaviorCurrent === "ticks"
-        ? (event$1.selection && this._brushing 
-          ? event$1.selection 
-          : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX]).map(this._d3Scale.invert).map(Number) 
-        : (event$1.selection && this._brushing 
+        ? (event$1.selection && this._brushing
+          ? event$1.selection
+          : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX]).map(this._d3Scale.invert).map(Number)
+        : (event$1.selection && this._brushing
           ? event$1.selection
           : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX]).map(Number);
-      
+
       if (event$1.type === "brush" && this._brushing && this._buttonBehaviorCurrent === "buttons") {
         var diffs = event$1.selection.map(function (d) { return Math.abs(d - event$1.sourceEvent.offsetX); });
 
-        domain = diffs[1] <= diffs[0] 
+        domain = diffs[1] <= diffs[0]
           ? [event$1.selection[0], event$1.sourceEvent.offsetX].sort(function (a, b) { return a - b; })
           : [event$1.sourceEvent.offsetX, event$1.selection[1]].sort(function (a, b) { return a - b; });
 
       }
 
       var ticks$$1 = this._buttonBehaviorCurrent === "ticks"
-        ? this._availableTicks.map(Number) 
+        ? this._availableTicks.map(Number)
         : this._d3Scale.range();
 
       if (this._buttonBehaviorCurrent === "ticks") {
         domain[0] = date$3(closest(domain[0], ticks$$1));
         domain[1] = date$3(closest(domain[1], ticks$$1));
-      } 
+      }
       else {
         domain[0] = closest(domain[0], ticks$$1);
         domain[1] = closest(domain[1], ticks$$1);
@@ -18106,10 +18102,10 @@ if (!Array.prototype.includes) {
       var single = +domain[0] === +domain[1];
 
       if (event$1.type === "brush" || event$1.type === "end") {
-        this._selection = this._buttonBehaviorCurrent === "ticks" 
-          ? single ? domain[0] : domain 
-          : single 
-            ? date$3(this._availableTicks[ticks$$1.indexOf(domain[0])]) 
+        this._selection = this._buttonBehaviorCurrent === "ticks"
+          ? single ? domain[0] : domain
+          : single
+            ? date$3(this._availableTicks[ticks$$1.indexOf(domain[0])])
             : [date$3(this._availableTicks[ticks$$1.indexOf(domain[0])]), date$3(this._availableTicks[ticks$$1.indexOf(domain[1])])];
       }
 
@@ -18159,7 +18155,7 @@ if (!Array.prototype.includes) {
 
         var d3Scale = scaleTime().domain(ticks$$1).range([0, this._width]),
               tickFormat = d3Scale.tickFormat();
-              
+
         ticks$$1 = this._ticks ? ticks$$1 : d3Scale.ticks();
 
         if (!this._tickFormat) { this._tickFormat = tickFormat; }
@@ -18169,15 +18165,15 @@ if (!Array.prototype.includes) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
                 s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-          var wrap$$1 = wrap()
+          var wrap = textWrap()
             .fontFamily(f)
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined);
-    
-          var res = wrap$$1(tickFormat(d));
+
+          var res = wrap(tickFormat(d));
 
           var width = res.lines.length
-            ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
+            ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
             : 0;
           if (width % 2) { width++; }
           return sum$$1 + width + 2 * this$1._buttonPadding;
@@ -18185,7 +18181,6 @@ if (!Array.prototype.includes) {
       }
 
       this._buttonBehaviorCurrent = this._buttonBehavior === "auto" ? this._ticksWidth < this._width ? "buttons" : "ticks" : this._buttonBehavior;
-
 
       if (this._buttonBehaviorCurrent === "buttons") {
         this._scale = "ordinal";
@@ -18197,24 +18192,21 @@ if (!Array.prototype.includes) {
 
         var buttonMargin = 0.5 * this._ticksWidth / this._ticks.length;
 
-        this._marginLeft = this._buttonAlign === "middle" 
-          ? (this._width - this._ticksWidth) / 2 : this._buttonAlign === "end" 
+        this._marginLeft = this._buttonAlign === "middle"
+          ? (this._width - this._ticksWidth) / 2 : this._buttonAlign === "end"
             ? this._width - this._ticksWidth : 0;
 
         var marginRight = this._buttonAlign === "middle"
-          ? (this._width + this._ticksWidth) / 2 : this._buttonAlign === "start" 
+          ? (this._width + this._ticksWidth) / 2 : this._buttonAlign === "start"
             ? this._ticksWidth : undefined;
 
         this._range = [
-          this._buttonAlign === "start" ? undefined : this._marginLeft + buttonMargin, 
+          this._buttonAlign === "start" ? undefined : this._marginLeft + buttonMargin,
           this._buttonAlign === "end" ? undefined : marginRight - buttonMargin
         ];
       }
 
-      if (this._ticks && !this._labels) {
-        if (this._buttonBehaviorCurrent === "ticks") { this._domain = [min(this._ticks), max(this._ticks)]; }
-        this.labels(this._ticks);
-      }
+      this._labels = this._ticks;
 
       Axis$$1.prototype.render.call(this, callback);
 
@@ -18235,9 +18227,9 @@ if (!Array.prototype.includes) {
 
       var selection$$1 = this._selection === void 0 ? [latest, latest]
         : this._selection instanceof Array
-          ? this._buttonBehaviorCurrent === "buttons" 
+          ? this._buttonBehaviorCurrent === "buttons"
             ? this._selection.map(function (d) { return range$$1[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
-          : this._buttonBehaviorCurrent === "buttons" 
+          : this._buttonBehaviorCurrent === "buttons"
             ? [range$$1[this._ticks.map(Number).indexOf(+this._selection)], range$$1[this._ticks.map(Number).indexOf(+this._selection)]]
             : [this._selection, this._selection];
 
@@ -32202,7 +32194,7 @@ if (!Array.prototype.includes) {
         .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right));
 
       if (timeline.selection() === undefined) {
-        this._timelineSelection = extent(data, this._time);
+        this._timelineSelection = extent(data, this._time).map(date$3);
         timeline.selection(this._timelineSelection);
       }
 
@@ -32904,7 +32896,7 @@ if (!Array.prototype.includes) {
       this._timelineClass = new Timeline().align("end");
       this._timelineConfig = {
         brushing: false,
-        padding: 0
+        padding: 5
       };
 
       this._titleClass = new TextBox();

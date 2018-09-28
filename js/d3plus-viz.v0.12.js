@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.2
+  d3plus-viz v0.12.3
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -594,7 +594,7 @@ if (!Array.prototype.includes) {
         .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right));
 
       if (timeline.selection() === undefined) {
-        this._timelineSelection = d3Array.extent(data, this._time);
+        this._timelineSelection = d3Array.extent(data, this._time).map(d3plusAxis.date);
         timeline.selection(this._timelineSelection);
       }
 
@@ -1296,7 +1296,7 @@ if (!Array.prototype.includes) {
       this._timelineClass = new d3plusTimeline.Timeline().align("end");
       this._timelineConfig = {
         brushing: false,
-        padding: 0
+        padding: 5
       };
 
       this._titleClass = new d3plusText.TextBox();
