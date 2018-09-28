@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.0
+  d3plus-viz v0.12.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -33865,7 +33865,13 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Viz.prototype.total = function total (_) {
-      return arguments.length ? (this._total = typeof _ === "function" ? _ : accessor(_), this) : this._total;
+      if (arguments.length) {
+        if (typeof _ === "function") { this._total = _; }
+        else if (_) { this._total = accessor(_); }
+        else { this._total = false; }
+        return this;
+      }
+      else { return this._total; }
     };
 
     /**
