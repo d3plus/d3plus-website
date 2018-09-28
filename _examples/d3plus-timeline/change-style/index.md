@@ -2,6 +2,8 @@
 title: Changing Styles
 width: 400
 height: 100
+time: 1538149286912
+date: September 28, 2018
 ---
 
 [width]: 400
@@ -17,6 +19,7 @@ new d3plus.Timeline()
     fill: "red",
     stroke: "black"
   })
+  .buttonBehavior("ticks")
   .shapeConfig({
     height: 6,
     fill: "red",
