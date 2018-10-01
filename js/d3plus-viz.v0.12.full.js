@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.3
+  d3plus-viz v0.12.4
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -32802,7 +32802,6 @@ if (!Array.prototype.includes) {
         selectStyle: Object.assign({margin: "5px"}, controlTest.selectStyle())
       };
       this._data = [];
-      this._svgDesc = "";
       this._detectResize = true;
       this._detectResizeDelay = 400;
       this._detectVisible = true;
@@ -32891,6 +32890,8 @@ if (!Array.prototype.includes) {
         role: "presentation",
         strokeWidth: constant$7(0)
       };
+      this._svgDesc = "";
+      this._svgTitle = "";
 
       this._timeline = true;
       this._timelineClass = new Timeline().align("end");
@@ -33159,10 +33160,9 @@ if (!Array.prototype.includes) {
         .style("height", ((this._height) + "px"));
 
       // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
-      var svgTitleText = this._title || "D3plus Visualization";
       var svgTitle = this._select.selectAll("title").data([0]);
       var svgTitleEnter = svgTitle.enter().append("title").attr("id", ((this._uuid) + "-title"));
-      svgTitle.merge(svgTitleEnter).text(svgTitleText);
+      svgTitle.merge(svgTitleEnter).text(this._svgTitle);
 
       // Updates the <desc> tag if already exists else creates a new <desc> tag on this.select.
       var svgDesc = this._select.selectAll("desc").data([0]);
@@ -33407,16 +33407,6 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.depth = function depth (_) {
       return arguments.length ? (this._depth = _, this) : this._depth;
-    };
-
-    /**
-        @memberof Viz
-        @desc If *value* is specified, sets the description accessor to the specified string and returns the current class instance.
-        @param {String} [*value*]
-        @chainable
-    */
-    Viz.prototype.desc = function desc (_) {
-      return arguments.length ? (this._svgDesc =  _, this) : this._svgDesc;
     };
 
     /**
@@ -33756,6 +33746,26 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.shapeConfig = function shapeConfig (_) {
       return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the description accessor to the specified string and returns the current class instance.
+        @param {String} [*value*]
+        @chainable
+    */
+    Viz.prototype.svgDesc = function svgDesc (_) {
+      return arguments.length ? (this._svgDesc = _, this) : this._svgDesc;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the title accessor to the specified string and returns the current class instance.
+        @param {String} [*value*]
+        @chainable
+    */
+    Viz.prototype.svgTitle = function svgTitle (_) {
+      return arguments.length ? (this._svgTitle = _, this) : this._svgTitle;
     };
 
     /**
