@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.50
+  d3plus-axis v0.3.51
   Beautiful javascript scales and axes.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -64,10 +64,10 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-scale'), require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
-  typeof define === 'function' && define.amd ? define('d3plus-axis', ['exports', 'd3-array', 'd3-scale', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
-  (factory((global.d3plus = {}),global.d3Array,global.scales,global.d3Selection,global.d3Transition,global.d3plusCommon,global.shapes,global.d3plusText));
-}(this, (function (exports,d3Array,scales,d3Selection,d3Transition,d3plusCommon,shapes,d3plusText) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-scale'), require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('d3plus-format'), require('d3plus-shape'), require('d3plus-text')) :
+  typeof define === 'function' && define.amd ? define('d3plus-axis', ['exports', 'd3-array', 'd3-scale', 'd3-selection', 'd3-transition', 'd3plus-common', 'd3plus-format', 'd3plus-shape', 'd3plus-text'], factory) :
+  (factory((global.d3plus = {}),global.d3Array,global.scales,global.d3Selection,global.d3Transition,global.d3plusCommon,global.d3plusFormat,global.shapes,global.d3plusText));
+}(this, (function (exports,d3Array,scales,d3Selection,d3Transition,d3plusCommon,d3plusFormat,shapes,d3plusText) { 'use strict';
 
   /**
       @function date
@@ -427,11 +427,21 @@ if (!Array.prototype.includes) {
         if (this$1._scale === "log") {
           var p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
           var t = Math.abs(d).toString().charAt(0);
-          var n = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
-          if (t !== "1") { n = t + " x " + n; }
-          return d < 0 ? ("-" + n) : n;
+          var n$1 = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
+          if (t !== "1") { n$1 = t + " x " + n$1; }
+          return d < 0 ? ("-" + n$1) : n$1;
+        } 
+        else if (this$1._scale === "time") {
+          return this$1._d3Scale.tickFormat(labels.length - 1)(d);
         }
-        return this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+        else if (this$1._scale === "ordinal") {
+          return d;
+        }
+
+        var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+
+        n = n.replace(/[^\d\.\-\+]/g, "") * 1;
+        return isNaN(n) ? n : d3plusFormat.formatAbbreviate(n);
       };
 
       if (this._scale === "time") {

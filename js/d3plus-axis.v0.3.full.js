@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.50
+  d3plus-axis v0.3.51
   Beautiful javascript scales and axes.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -2543,8 +2543,6 @@ if (!Array.prototype.includes) {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
-  var mondays = monday.range;
-  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -2634,8 +2632,6 @@ if (!Array.prototype.includes) {
   var utcSaturday = utcWeekday(6);
 
   var utcSundays = utcSunday.range;
-  var utcMondays = utcMonday.range;
-  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -5904,6 +5900,36 @@ if (!Array.prototype.includes) {
       @param {D3selection} elem The D3 element to apply the styles to.
       @param {Object} styles An object of key/value style pairs.
   */
+
+  /**
+      @function formatAbbreviate
+      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
+      @param {Number} n The number to be formatted.
+      @returns {String}
+  */
+  function formatAbbreviate(n) {
+    if (typeof n !== "number") { return "N/A"; }
+    var length = n.toString().split(".")[0].length;
+    var val;
+    if (n === 0) { val = "0"; }
+    else if (length >= 3) {
+      var f = format(".3s")(n)
+        .replace("G", "B")
+        .replace("T", "t")
+        .replace("P", "q")
+        .replace("E", "Q");
+      var num = f.slice(0, -1);
+      var char = f.slice(f.length - 1);
+      val = "" + (parseFloat(num)) + char;
+    }
+    else if (length === 3) { val = format(",f")(n); }
+    else if (n < 1 && n > -1) { val = format(".2g")(n); }
+    else { val = format(".3g")(n); }
+
+    return val
+      .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+      .replace(/[.]$/g, ""); // removes any trailing decimal point
+  }
 
   /**
       @class Image
@@ -13515,11 +13541,21 @@ if (!Array.prototype.includes) {
         if (this$1._scale === "log") {
           var p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
           var t = Math.abs(d).toString().charAt(0);
-          var n = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
-          if (t !== "1") { n = t + " x " + n; }
-          return d < 0 ? ("-" + n) : n;
+          var n$1 = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
+          if (t !== "1") { n$1 = t + " x " + n$1; }
+          return d < 0 ? ("-" + n$1) : n$1;
+        } 
+        else if (this$1._scale === "time") {
+          return this$1._d3Scale.tickFormat(labels.length - 1)(d);
         }
-        return this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+        else if (this$1._scale === "ordinal") {
+          return d;
+        }
+
+        var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+
+        n = n.replace(/[^\d\.\-\+]/g, "") * 1;
+        return isNaN(n) ? n : formatAbbreviate(n);
       };
 
       if (this._scale === "time") {
