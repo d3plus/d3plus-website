@@ -8684,7 +8684,7 @@ if (!Array.prototype.includes) {
       @desc Splits a given sentence into an array of words.
       @param {String} sentence
   */
-  function defaultSplit(sentence) {
+  function textSplit(sentence) {
     if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
     return merge(stringify(sentence).match(splitWords).map(function (d) {
       if (noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
@@ -8705,7 +8705,7 @@ if (!Array.prototype.includes) {
         lineHeight,
         maxLines = null,
         overflow = false,
-        split = defaultSplit,
+        split = textSplit,
         width = 200;
 
     /**
@@ -8894,7 +8894,7 @@ if (!Array.prototype.includes) {
       this._pointerEvents = constant("auto");
       this._rotate = constant(0);
       this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
-      this._split = defaultSplit;
+      this._split = textSplit;
       this._text = accessor("text");
       this._textAnchor = constant("start");
       this._verticalAlign = constant("top");
