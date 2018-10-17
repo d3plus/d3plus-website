@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.0
+  d3plus-plot v0.8.1
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -8684,7 +8684,7 @@ if (!Array.prototype.includes) {
       @desc Splits a given sentence into an array of words.
       @param {String} sentence
   */
-  function textSplit(sentence) {
+  function defaultSplit(sentence) {
     if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
     return merge(stringify(sentence).match(splitWords).map(function (d) {
       if (noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
@@ -8705,7 +8705,7 @@ if (!Array.prototype.includes) {
         lineHeight,
         maxLines = null,
         overflow = false,
-        split = textSplit,
+        split = defaultSplit,
         width = 200;
 
     /**
@@ -8894,7 +8894,7 @@ if (!Array.prototype.includes) {
       this._pointerEvents = constant("auto");
       this._rotate = constant(0);
       this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
-      this._split = textSplit;
+      this._split = defaultSplit;
       this._text = accessor("text");
       this._textAnchor = constant("start");
       this._verticalAlign = constant("top");
@@ -34411,7 +34411,7 @@ if (!Array.prototype.includes) {
       this._sizeMin = 5;
       this._sizeScale = "sqrt";
       this._stackOffset = diverging$1;
-      this._stackOrder = none$2;
+      this._stackOrder = descending$2;
       this._timelineConfig = assign(this._timelineConfig, {brushing: true});
       this._x = accessor("x");
       this._x2 = accessor("x2");

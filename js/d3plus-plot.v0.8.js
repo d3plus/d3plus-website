@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.0
+  d3plus-plot v0.8.1
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -457,7 +457,7 @@ if (!Array.prototype.includes) {
       this._sizeMin = 5;
       this._sizeScale = "sqrt";
       this._stackOffset = d3Shape.stackOffsetDiverging;
-      this._stackOrder = d3Shape.stackOrderNone;
+      this._stackOrder = d3Shape.stackOrderDescending;
       this._timelineConfig = d3plusCommon.assign(this._timelineConfig, {brushing: true});
       this._x = d3plusCommon.accessor("x");
       this._x2 = d3plusCommon.accessor("x2");
