@@ -1,5 +1,5 @@
 /*
-  d3plus-react v0.5.0
+  d3plus-react v0.5.1
   React components for d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -344,6 +344,23 @@ if (!Array.prototype.includes) {
   Priestley.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusPriestley.Priestley});
 
   /**
+      @class Radar
+      @extends Viz
+  */
+  var Radar = (function (Shell) {
+      function Radar () {
+          Shell.apply(this, arguments);
+      }if ( Shell ) Radar.__proto__ = Shell;
+      Radar.prototype = Object.create( Shell && Shell.prototype );
+      Radar.prototype.constructor = Radar;
+
+      
+
+      return Radar;
+  }(Viz));
+  Radar.defaultProps = Object.assign({}, Viz.defaultProps, {type: d3plusPlot.Radar});
+
+  /**
       @class Rings
       @extends Viz
   */
@@ -439,6 +456,7 @@ if (!Array.prototype.includes) {
   exports.Pie = Pie;
   exports.Plot = Plot;
   exports.Priestley = Priestley;
+  exports.Radar = Radar;
   exports.Rings = Rings;
   exports.Sankey = Sankey;
   exports.StackedArea = StackedArea;
