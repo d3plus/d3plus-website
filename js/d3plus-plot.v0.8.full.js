@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.1
+  d3plus-plot v0.8.2
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -8688,7 +8688,7 @@ if (!Array.prototype.includes) {
       @desc Splits a given sentence into an array of words.
       @param {String} sentence
   */
-  function textSplit(sentence) {
+  function defaultSplit(sentence) {
     if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
     return merge(stringify(sentence).match(splitWords).map(function (d) {
       if (noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
@@ -8709,7 +8709,7 @@ if (!Array.prototype.includes) {
         lineHeight,
         maxLines = null,
         overflow = false,
-        split = textSplit,
+        split = defaultSplit,
         width = 200;
 
     /**
@@ -8898,7 +8898,7 @@ if (!Array.prototype.includes) {
       this._pointerEvents = constant("auto");
       this._rotate = constant(0);
       this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
-      this._split = textSplit;
+      this._split = defaultSplit;
       this._text = accessor("text");
       this._textAnchor = constant("start");
       this._verticalAlign = constant("top");
@@ -34346,6 +34346,35 @@ if (!Array.prototype.includes) {
   }
 
   /**
+      @desc Logic for determining stackOrder ascending using groups.
+      @private
+  */
+  function stackOrderAscending(series) {
+    var sums = series.map(stackSum);
+    var keys$$1 = series.map(function (d) { return d.key.split("_")[0]; });
+    return none$2(series).sort(function (a, b) { return keys$$1[b].localeCompare(keys$$1[a]) || sums[a] - sums[b]; });
+  }
+
+  /**
+      @desc Logic for determining stackOrder descending using groups.
+      @private
+  */
+  function stackOrderDescending(series) {
+    return stackOrderAscending(series).reverse();
+  }
+
+  /**
+      @desc Logic for determining default sum of shapes using the stackSum function used in d3Shape.
+      @private
+  */
+  function stackSum(series) {
+    var i = -1, s = 0, v;
+    var n = series.length;
+    while (++i < n) { if (v = +series[i][1]) { s += v; } }
+    return s;
+  }
+
+  /**
       @class Plot
       @extends Viz
       @desc Creates an x/y plot based on an array of data.
@@ -34415,7 +34444,7 @@ if (!Array.prototype.includes) {
       this._sizeMin = 5;
       this._sizeScale = "sqrt";
       this._stackOffset = diverging$1;
-      this._stackOrder = descending$2;
+      this._stackOrder = stackOrderDescending;
       this._timelineConfig = assign(this._timelineConfig, {brushing: true});
       this._x = accessor("x");
       this._x2 = accessor("x2");
@@ -34575,6 +34604,7 @@ if (!Array.prototype.includes) {
         else {
           data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
         }
+
         var order = this._stackOrder;
 
         if (order instanceof Array) { stackKeys.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); }); }
@@ -35266,7 +35296,12 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Plot.prototype.stackOrder = function stackOrder (_) {
-      return arguments.length ? (this._stackOrder = typeof _ === "string" ? paths[("stackOrder" + (_.charAt(0).toUpperCase() + _.slice(1)))] : _, this) : this._stackOrder;
+      if (arguments.length) {
+        if (typeof _ === "string") { this._stackOrder = _ === "ascending" ? stackOrderAscending : _ === "descending" ? stackOrderDescending : paths[("stackOrder" + (_.charAt(0).toUpperCase() + _.slice(1)))]; }
+        else { this._stackOrder = _; }
+        return this;
+      }
+      else { return this._stackOrder; }
     };
 
     /**

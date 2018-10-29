@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.1
+  d3plus-plot v0.8.2
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -388,6 +388,35 @@ if (!Array.prototype.includes) {
   }
 
   /**
+      @desc Logic for determining stackOrder ascending using groups.
+      @private
+  */
+  function stackOrderAscending(series) {
+    var sums = series.map(stackSum);
+    var keys = series.map(function (d) { return d.key.split("_")[0]; });
+    return d3Shape.stackOrderNone(series).sort(function (a, b) { return keys[b].localeCompare(keys[a]) || sums[a] - sums[b]; });
+  }
+
+  /**
+      @desc Logic for determining stackOrder descending using groups.
+      @private
+  */
+  function stackOrderDescending(series) {
+    return stackOrderAscending(series).reverse();
+  }
+
+  /**
+      @desc Logic for determining default sum of shapes using the stackSum function used in d3Shape.
+      @private
+  */
+  function stackSum(series) {
+    var i = -1, s = 0, v;
+    var n = series.length;
+    while (++i < n) { if (v = +series[i][1]) { s += v; } }
+    return s;
+  }
+
+  /**
       @class Plot
       @extends Viz
       @desc Creates an x/y plot based on an array of data.
@@ -457,7 +486,7 @@ if (!Array.prototype.includes) {
       this._sizeMin = 5;
       this._sizeScale = "sqrt";
       this._stackOffset = d3Shape.stackOffsetDiverging;
-      this._stackOrder = d3Shape.stackOrderDescending;
+      this._stackOrder = stackOrderDescending;
       this._timelineConfig = d3plusCommon.assign(this._timelineConfig, {brushing: true});
       this._x = d3plusCommon.accessor("x");
       this._x2 = d3plusCommon.accessor("x2");
@@ -617,6 +646,7 @@ if (!Array.prototype.includes) {
         else {
           data.sort(function (a, b) { return a[this$1._discrete] - b[this$1._discrete]; });
         }
+
         var order = this._stackOrder;
 
         if (order instanceof Array) { stackKeys.sort(function (a, b) { return order.indexOf(a) - order.indexOf(b); }); }
@@ -1308,7 +1338,12 @@ if (!Array.prototype.includes) {
         @chainable
     */
     Plot.prototype.stackOrder = function stackOrder (_) {
-      return arguments.length ? (this._stackOrder = typeof _ === "string" ? d3Shape[("stackOrder" + (_.charAt(0).toUpperCase() + _.slice(1)))] : _, this) : this._stackOrder;
+      if (arguments.length) {
+        if (typeof _ === "string") { this._stackOrder = _ === "ascending" ? stackOrderAscending : _ === "descending" ? stackOrderDescending : d3Shape[("stackOrder" + (_.charAt(0).toUpperCase() + _.slice(1)))]; }
+        else { this._stackOrder = _; }
+        return this;
+      }
+      else { return this._stackOrder; }
     };
 
     /**
