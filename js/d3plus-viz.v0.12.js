@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.4
+  d3plus-viz v0.12.5
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -265,14 +265,14 @@ if (!Array.prototype.includes) {
 
   /**
       @function _drawColorScale
-      @desc Renders the color scale if this._colorScale is not falsy.
-      @param {Array} data The filtered data array to be displayed.
+      @desc Renders the color scale if this._colorScale is not falsey.
       @private
   */
-  function drawColorScale(data) {
+  function drawColorScale() {
     var this$1 = this;
-    if ( data === void 0 ) data = [];
 
+
+    var data = this._data;
 
     if (this._colorScale && data) {
 
