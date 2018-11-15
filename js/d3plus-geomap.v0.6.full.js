@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.6.0
+  d3plus-geomap v0.6.1
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -5721,6 +5721,8 @@ if (!Array.prototype.includes) {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
+  var mondays = monday.range;
+  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -5810,6 +5812,8 @@ if (!Array.prototype.includes) {
   var utcSaturday = utcWeekday(6);
 
   var utcSundays = utcSunday.range;
+  var utcMondays = utcMonday.range;
+  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -6970,32 +6974,7 @@ if (!Array.prototype.includes) {
           if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
           else { target[prop] = assign({}, value); }
         }
-        else if (Array.isArray(value)) {
-
-          if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
-
-            var targetArray = target[prop];
-
-            value.forEach(function (sourceItem, itemIndex) {
-
-              if (itemIndex < targetArray.length) {
-                var targetItem = targetArray[itemIndex];
-
-                if (Object.is(targetItem, sourceItem)) { return; }
-
-                if (isObject(targetItem) && isObject(sourceItem)) {
-                  targetArray[itemIndex] = assign({}, targetItem, sourceItem);
-                }
-                else { targetArray[itemIndex] = sourceItem; }
-
-              }
-              else { targetArray.push(sourceItem); }
-
-            });
-          }
-          else { target[prop] = value; }
-
-        }
+        else if (Array.isArray(value)) { target[prop] = value.slice(); }
         else { target[prop] = value; }
 
       });
@@ -11743,7 +11722,7 @@ if (!Array.prototype.includes) {
       @param {String|Array} text Can be either a single string or an array of strings to analyze.
       @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
   */
-  function measure(text, style) {
+  function textWidth(text, style) {
 
     style = Object.assign({
       "font-size": 10,
@@ -11804,10 +11783,10 @@ if (!Array.prototype.includes) {
   var fontExists = function (font) {
 
     if (!dejavu) {
-      dejavu = measure(alpha, {"font-family": "DejaVuSans", "font-size": height});
-      macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
-      monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
-      proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
+      dejavu = textWidth(alpha, {"font-family": "DejaVuSans", "font-size": height});
+      macos = textWidth(alpha, {"font-family": "-apple-system", "font-size": height});
+      monospace = textWidth(alpha, {"font-family": "monospace", "font-size": height});
+      proportional = textWidth(alpha, {"font-family": "sans-serif", "font-size": height});
     }
 
     if (!(font instanceof Array)) { font = font.split(","); }
@@ -11817,7 +11796,7 @@ if (!Array.prototype.includes) {
       var fam = font[i];
       if (checked[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
       else if (checked[fam] === false) { continue; }
-      var width = measure(alpha, {"font-family": fam, "font-size": height});
+      var width = textWidth(alpha, {"font-family": fam, "font-size": height});
       checked[fam] = width !== monospace;
       if (checked[fam]) { checked[fam] = width !== proportional; }
       if (macos && checked[fam]) { checked[fam] = width !== macos; }
@@ -11947,7 +11926,7 @@ if (!Array.prototype.includes) {
       @desc Splits a given sentence into an array of words.
       @param {String} sentence
   */
-  function defaultSplit(sentence) {
+  function textSplit(sentence) {
     if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
     return merge(stringify(sentence).match(splitWords).map(function (d) {
       if (noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
@@ -11959,7 +11938,7 @@ if (!Array.prototype.includes) {
       @function textWrap
       @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
   */
-  function wrap() {
+  function textWrap() {
 
     var fontFamily = "sans-serif",
         fontSize = 10,
@@ -11968,7 +11947,7 @@ if (!Array.prototype.includes) {
         lineHeight,
         maxLines = null,
         overflow = false,
-        split = defaultSplit,
+        split = textSplit,
         width = 200;
 
     /**
@@ -11996,8 +11975,8 @@ if (!Array.prototype.includes) {
           widthProg = 0;
 
       var lineData = [],
-            sizes = measure(words, style),
-            space = measure(" ", style);
+            sizes = textWidth(words, style),
+            space = textWidth(" ", style);
 
       for (var i = 0; i < words.length; i++) {
         var word = words[i];
@@ -12027,7 +12006,7 @@ if (!Array.prototype.includes) {
       return {
         lines: lineData,
         sentence: sentence, truncated: truncated,
-        widths: measure(lineData, style),
+        widths: textWidth(lineData, style),
         words: words
       };
 
@@ -12157,7 +12136,7 @@ if (!Array.prototype.includes) {
       this._pointerEvents = constant$4("auto");
       this._rotate = constant$4(0);
       this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
-      this._split = defaultSplit;
+      this._split = textSplit;
       this._text = accessor("text");
       this._textAnchor = constant$4("start");
       this._verticalAlign = constant$4("top");
@@ -12211,7 +12190,7 @@ if (!Array.prototype.includes) {
         var h = this$1._height(d, i) - (padding.top + padding.bottom),
               w = this$1._width(d, i) - (padding.left + padding.right);
 
-        var wrapper = wrap()
+        var wrapper = textWrap()
           .fontFamily(style["font-family"])
           .fontSize(fS)
           .fontWeight(style["font-weight"])
@@ -12271,7 +12250,7 @@ if (!Array.prototype.includes) {
 
           if (resize) {
 
-            sizes = measure(words, style);
+            sizes = textWidth(words, style);
 
             var areaMod = 1.165 + w / h * 0.1,
                   boxArea = w * h,
@@ -18313,6 +18292,36 @@ if (!Array.prototype.includes) {
   });
 
   /**
+      @function formatAbbreviate
+      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
+      @param {Number} n The number to be formatted.
+      @returns {String}
+  */
+  function formatAbbreviate(n) {
+    if (typeof n !== "number") { return "N/A"; }
+    var length = n.toString().split(".")[0].length;
+    var val;
+    if (n === 0) { val = "0"; }
+    else if (length >= 3) {
+      var f = format(".3s")(n)
+        .replace("G", "B")
+        .replace("T", "t")
+        .replace("P", "q")
+        .replace("E", "Q");
+      var num = f.slice(0, -1);
+      var char = f.slice(f.length - 1);
+      val = "" + (parseFloat(num)) + char;
+    }
+    else if (length === 3) { val = format(",f")(n); }
+    else if (n < 1 && n > -1) { val = format(".2g")(n); }
+    else { val = format(".3g")(n); }
+
+    return val
+      .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+      .replace(/[.]$/g, ""); // removes any trailing decimal point
+  }
+
+  /**
       @function date
       @summary Parses numbers and strings to valid Javascript Date objects.
       @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
@@ -18596,7 +18605,7 @@ if (!Array.prototype.includes) {
         var fontFamily = ref$1.fontFamily;
         var fontSize = ref$1.fontSize;
         var lineHeight = ref$1.lineHeight;
-        var titleWrap = wrap()
+        var titleWrap = textWrap()
           .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
           .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
           .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
@@ -18670,11 +18679,21 @@ if (!Array.prototype.includes) {
         if (this$1._scale === "log") {
           var p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
           var t = Math.abs(d).toString().charAt(0);
-          var n = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
-          if (t !== "1") { n = t + " x " + n; }
-          return d < 0 ? ("-" + n) : n;
+          var n$1 = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
+          if (t !== "1") { n$1 = t + " x " + n$1; }
+          return d < 0 ? ("-" + n$1) : n$1;
+        } 
+        else if (this$1._scale === "time") {
+          return this$1._d3Scale.tickFormat(labels.length - 1)(d);
         }
-        return this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+        else if (this$1._scale === "ordinal") {
+          return d;
+        }
+
+        var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+
+        n = n.replace(/[^\d\.\-\+]/g, "") * 1;
+        return isNaN(n) ? n : formatAbbreviate(n);
       };
 
       if (this._scale === "time") {
@@ -18738,21 +18757,21 @@ if (!Array.prototype.includes) {
         var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
               s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-        var wrap$$1 = wrap()
+        var wrap = textWrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
           .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
           .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
 
-        var res = wrap$$1(tickFormat(d));
+        var res = wrap(tickFormat(d));
         res.lines = res.lines.filter(function (d) { return d !== ""; });
         res.d = d;
         res.fS = s;
         res.width = res.lines.length
-          ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
+          ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
           : 0;
-        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap$$1.lineHeight() + 1)) : 0;
+        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
         res.offset = 0;
         res.hidden = false;
         if (res.width % 2) { res.width++; }
@@ -18770,14 +18789,14 @@ if (!Array.prototype.includes) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i$1),
                 s$1 = this$1._shapeConfig.labelConfig.fontSize(d, i$1);
 
-          var wrap$$1 = wrap()
+          var wrap = textWrap()
             .fontFamily(f)
             .fontSize(s$1)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i$1) : undefined)
             .width(this$1._space)
             .height(labelHeight);
 
-          var res = wrap$$1(tickFormat(d));
+          var res = wrap(tickFormat(d));
 
           var isTruncated = res.truncated;
 
@@ -18808,7 +18827,7 @@ if (!Array.prototype.includes) {
 
           var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.4;
 
-          var lineTest = wrap()
+          var lineTest = textWrap()
               .fontFamily(f)
               .fontSize(s)
               .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
@@ -19991,36 +20010,6 @@ if (!Array.prototype.includes) {
   }(BaseClass));
 
   /**
-      @function formatAbbreviate
-      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
-      @param {Number} n The number to be formatted.
-      @returns {String}
-  */
-  function formatAbbreviate(n) {
-    if (typeof n !== "number") { return "N/A"; }
-    var length = n.toString().split(".")[0].length;
-    var val;
-    if (n === 0) { val = "0"; }
-    else if (length >= 3) {
-      var f = format(".3s")(n)
-        .replace("G", "B")
-        .replace("T", "t")
-        .replace("P", "q")
-        .replace("E", "Q");
-      var num = f.slice(0, -1);
-      var char = f.slice(f.length - 1);
-      val = "" + (parseFloat(num)) + char;
-    }
-    else if (length === 3) { val = format(",f")(n); }
-    else if (n < 1 && n > -1) { val = format(".2g")(n); }
-    else { val = format(".3g")(n); }
-
-    return val
-      .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
-      .replace(/[.]$/g, ""); // removes any trailing decimal point
-  }
-
-  /**
       @desc Sort an array of numbers by their numeric value, ensuring that the array is not changed in place.
 
   This is necessary because the default behavior of .sort in JavaScript is to sort arrays as string values
@@ -20746,7 +20735,7 @@ if (!Array.prototype.includes) {
         var lH = lH = this._titleConfig.lineHeight || this._titleClass.lineHeight();
         lH = lH ? lH() : s * 1.4;
 
-        var res = wrap()
+        var res = textWrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lH)
@@ -20786,7 +20775,7 @@ if (!Array.prototype.includes) {
         var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
               w = this$1._width;
 
-        res = Object.assign(res, wrap()
+        res = Object.assign(res, textWrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lh)
@@ -20794,7 +20783,7 @@ if (!Array.prototype.includes) {
           .height(h)
           (label));
 
-        res.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
+        res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
         res.height = Math.ceil(res.lines.length * (lh + 1));
         res.og = {height: res.height, width: res.width};
         res.f = f;
@@ -20831,9 +20820,9 @@ if (!Array.prototype.includes) {
             var loop = function ( x ) {
               var label = wrappable[x];
               var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
-              var res = wrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+              var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
               if (!res.truncated) {
-                label.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+                label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
                 label.height = res.lines.length * (label.lh + 1);
               }
               else {
@@ -21428,15 +21417,15 @@ if (!Array.prototype.includes) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
                 s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-          var wrap$$1 = wrap()
+          var wrap = textWrap()
             .fontFamily(f)
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined);
 
-          var res = wrap$$1(tickFormat(d));
+          var res = wrap(tickFormat(d));
 
           var width = res.lines.length
-            ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
+            ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
             : 0;
           if (width % 2) { width++; }
           return sum$$1 + width + 2 * this$1._buttonPadding;
@@ -21639,7 +21628,7 @@ if (!Array.prototype.includes) {
 
   /**!
    * @fileOverview Kickass library to create and place poppers near their reference elements.
-   * @version 1.14.4
+   * @version 1.14.5
    * @license
    * Copyright (c) 2016 Federico Zivolo and contributors
    *
@@ -21736,7 +21725,8 @@ if (!Array.prototype.includes) {
       return [];
     }
     // NOTE: 1 DOM access here
-    var css = getComputedStyle(element, null);
+    var window = element.ownerDocument.defaultView;
+    var css = window.getComputedStyle(element, null);
     return property ? css[property] : css;
   }
 
@@ -21824,7 +21814,7 @@ if (!Array.prototype.includes) {
     var noOffsetParent = isIE(10) ? document.body : null;
 
     // NOTE: 1 DOM access here
-    var offsetParent = element.offsetParent;
+    var offsetParent = element.offsetParent || null;
     // Skip hidden elements which don't have an offsetParent
     while (offsetParent === noOffsetParent && element.nextElementSibling) {
       offsetParent = (element = element.nextElementSibling).offsetParent;
@@ -21836,9 +21826,9 @@ if (!Array.prototype.includes) {
       return element ? element.ownerDocument.documentElement : document.documentElement;
     }
 
-    // .offsetParent will return the closest TD or TABLE in case
+    // .offsetParent will return the closest TH, TD or TABLE in case
     // no offsetParent is present, I hate this job...
-    if (['TD', 'TABLE'].indexOf(offsetParent.nodeName) !== -1 && getStyleComputedProperty(offsetParent, 'position') === 'static') {
+    if (['TH', 'TD', 'TABLE'].indexOf(offsetParent.nodeName) !== -1 && getStyleComputedProperty(offsetParent, 'position') === 'static') {
       return getOffsetParent(offsetParent);
     }
 
@@ -22388,7 +22378,8 @@ if (!Array.prototype.includes) {
    * @returns {Object} object containing width and height properties
    */
   function getOuterSizes(element) {
-    var styles = getComputedStyle(element);
+    var window = element.ownerDocument.defaultView;
+    var styles = window.getComputedStyle(element);
     var x = parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
     var y = parseFloat(styles.marginLeft) + parseFloat(styles.marginRight);
     var result = {
@@ -24861,14 +24852,14 @@ if (!Array.prototype.includes) {
 
   /**
       @function _drawColorScale
-      @desc Renders the color scale if this._colorScale is not falsy.
-      @param {Array} data The filtered data array to be displayed.
+      @desc Renders the color scale if this._colorScale is not falsey.
       @private
   */
-  function drawColorScale(data) {
+  function drawColorScale() {
     var this$1 = this;
-    if ( data === void 0 ) { data = []; }
 
+
+    var data = this._data;
 
     if (this._colorScale && data) {
 
@@ -36065,7 +36056,6 @@ if (!Array.prototype.includes) {
         selectStyle: Object.assign({margin: "5px"}, controlTest.selectStyle())
       };
       this._data = [];
-      this._svgDesc = "";
       this._detectResize = true;
       this._detectResizeDelay = 400;
       this._detectVisible = true;
@@ -36154,6 +36144,8 @@ if (!Array.prototype.includes) {
         role: "presentation",
         strokeWidth: constant$4(0)
       };
+      this._svgDesc = "";
+      this._svgTitle = "";
 
       this._timeline = true;
       this._timelineClass = new Timeline().align("end");
@@ -36422,10 +36414,9 @@ if (!Array.prototype.includes) {
         .style("height", ((this._height) + "px"));
 
       // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
-      var svgTitleText = this._title || "D3plus Visualization";
       var svgTitle = this._select.selectAll("title").data([0]);
       var svgTitleEnter = svgTitle.enter().append("title").attr("id", ((this._uuid) + "-title"));
-      svgTitle.merge(svgTitleEnter).text(svgTitleText);
+      svgTitle.merge(svgTitleEnter).text(this._svgTitle);
 
       // Updates the <desc> tag if already exists else creates a new <desc> tag on this.select.
       var svgDesc = this._select.selectAll("desc").data([0]);
@@ -36670,16 +36661,6 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.depth = function depth (_) {
       return arguments.length ? (this._depth = _, this) : this._depth;
-    };
-
-    /**
-        @memberof Viz
-        @desc If *value* is specified, sets the description accessor to the specified string and returns the current class instance.
-        @param {String} [*value*]
-        @chainable
-    */
-    Viz.prototype.desc = function desc (_) {
-      return arguments.length ? (this._svgDesc =  _, this) : this._svgDesc;
     };
 
     /**
@@ -37019,6 +37000,26 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.shapeConfig = function shapeConfig (_) {
       return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the description accessor to the specified string and returns the current class instance.
+        @param {String} [*value*]
+        @chainable
+    */
+    Viz.prototype.svgDesc = function svgDesc (_) {
+      return arguments.length ? (this._svgDesc = _, this) : this._svgDesc;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the title accessor to the specified string and returns the current class instance.
+        @param {String} [*value*]
+        @chainable
+    */
+    Viz.prototype.svgTitle = function svgTitle (_) {
+      return arguments.length ? (this._svgTitle = _, this) : this._svgTitle;
     };
 
     /**
@@ -37546,26 +37547,22 @@ if (!Array.prototype.includes) {
               }
             };
 
-            if (d.geometry.coordinates.length > 1) {
+            if (d.geometry.type === "MultiPolygon" && d.geometry.coordinates.length > 1) {
 
               var areas = [],
                     distances = [];
 
               d.geometry.coordinates.forEach(function (c) {
-
                 reduced.geometry.coordinates = [c];
                 areas.push(path.area(reduced));
-
               });
 
               reduced.geometry.coordinates = [d.geometry.coordinates[areas.indexOf(max(areas))]];
               var center = path.centroid(reduced);
 
               d.geometry.coordinates.forEach(function (c) {
-
                 reduced.geometry.coordinates = [c];
                 distances.push(pointDistance(path.centroid(reduced), center));
-
               });
 
               var distCutoff = threshold(areas.reduce(function (arr, dist, i) {
