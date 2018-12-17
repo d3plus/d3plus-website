@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.3.51
+  d3plus-axis v0.3.52
   Beautiful javascript scales and axes.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -13291,6 +13291,7 @@ if (!Array.prototype.includes) {
         width: function (d) { return d.tick ? 8 : 0; }
       };
       this._tickSize = 5;
+      this._tickSpecifier = undefined;
       this._titleClass = new TextBox();
       this._titleConfig = {
         fontSize: 12,
@@ -13546,7 +13547,7 @@ if (!Array.prototype.includes) {
           return d < 0 ? ("-" + n$1) : n$1;
         } 
         else if (this$1._scale === "time") {
-          return this$1._d3Scale.tickFormat(labels.length - 1)(d);
+          return this$1._d3Scale.tickFormat(labels.length - 1, this$1._tickSpecifier)(d);
         }
         else if (this$1._scale === "ordinal") {
           return d;
@@ -14232,6 +14233,16 @@ if (!Array.prototype.includes) {
     */
     Axis.prototype.tickSize = function tickSize (_) {
       return arguments.length ? (this._tickSize = _, this) : this._tickSize;
+    };
+
+    /**
+        @memberof Axis
+        @desc Sets the tick specifier for the [tickFormat](https://github.com/d3/d3-scale#continuous_tickFormat) function. If this method is called without any arguments, the default tick specifier is returned.
+        @param {String} [*value* = undefined]
+        @chainable
+    */
+    Axis.prototype.tickSpecifier = function tickSpecifier (_) {
+      return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
     };
 
     /**
