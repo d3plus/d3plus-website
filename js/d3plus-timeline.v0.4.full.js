@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.4.6
+  d3plus-timeline v0.4.7
   An easy-to-use javascript timeline.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -6474,6 +6474,36 @@ if (!Array.prototype.includes) {
       @param {D3selection} elem The D3 element to apply the styles to.
       @param {Object} styles An object of key/value style pairs.
   */
+
+  /**
+      @function formatAbbreviate
+      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
+      @param {Number} n The number to be formatted.
+      @returns {String}
+  */
+  function formatAbbreviate(n) {
+    if (typeof n !== "number") { return "N/A"; }
+    var length = n.toString().split(".")[0].length;
+    var val;
+    if (n === 0) { val = "0"; }
+    else if (length >= 3) {
+      var f = format(".3s")(n)
+        .replace("G", "B")
+        .replace("T", "t")
+        .replace("P", "q")
+        .replace("E", "Q");
+      var num = f.slice(0, -1);
+      var char = f.slice(f.length - 1);
+      val = "" + (parseFloat(num)) + char;
+    }
+    else if (length === 3) { val = format(",f")(n); }
+    else if (n < 1 && n > -1) { val = format(".2g")(n); }
+    else { val = format(".3g")(n); }
+
+    return val
+      .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+      .replace(/[.]$/g, ""); // removes any trailing decimal point
+  }
 
   /**
       @class Image
@@ -13835,6 +13865,7 @@ if (!Array.prototype.includes) {
         width: function (d) { return d.tick ? 8 : 0; }
       };
       this._tickSize = 5;
+      this._tickSpecifier = undefined;
       this._titleClass = new TextBox();
       this._titleConfig = {
         fontSize: 12,
@@ -14085,11 +14116,21 @@ if (!Array.prototype.includes) {
         if (this$1._scale === "log") {
           var p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
           var t = Math.abs(d).toString().charAt(0);
-          var n = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
-          if (t !== "1") { n = t + " x " + n; }
-          return d < 0 ? ("-" + n) : n;
+          var n$1 = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
+          if (t !== "1") { n$1 = t + " x " + n$1; }
+          return d < 0 ? ("-" + n$1) : n$1;
+        } 
+        else if (this$1._scale === "time") {
+          return this$1._d3Scale.tickFormat(labels.length - 1, this$1._tickSpecifier)(d);
         }
-        return this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+        else if (this$1._scale === "ordinal") {
+          return d;
+        }
+
+        var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+
+        n = n.replace(/[^\d\.\-\+]/g, "") * 1;
+        return isNaN(n) ? n : formatAbbreviate(n);
       };
 
       if (this._scale === "time") {
@@ -14770,6 +14811,16 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Axis
+        @desc Sets the tick specifier for the [tickFormat](https://github.com/d3/d3-scale#continuous_tickFormat) function. If this method is called without any arguments, the default tick specifier is returned.
+        @param {String} [*value* = undefined]
+        @chainable
+    */
+    Axis.prototype.tickSpecifier = function tickSpecifier (_) {
+      return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
+    };
+
+    /**
+        @memberof Axis
         @desc If *value* is specified, sets the title of the axis and returns the current class instance.
         @param {String} [*value*]
         @chainable
@@ -15118,15 +15169,15 @@ if (!Array.prototype.includes) {
 
         var ticks$$1 = this._ticks ? this._ticks.map(date$3) : this._domain.map(date$3);
 
-        var d3Scale = scaleTime().domain(ticks$$1).range([0, this._width]),
-              tickFormat = d3Scale.tickFormat();
+        var d3Scale = scaleTime().domain(ticks$$1).range([0, this._width]);
 
         ticks$$1 = this._ticks ? ticks$$1 : d3Scale.ticks();
 
-        if (!this._tickFormat) { this._tickFormat = tickFormat; }
+        if (!this._tickFormat) { this._tickFormat = d3Scale.tickFormat(ticks$$1.length - 1, this._tickSpecifier); }
 
         // Measures size of ticks
-        this._ticksWidth = ticks$$1.reduce(function (sum$$1, d, i) {
+        var maxLabel = 0;
+        ticks$$1.forEach(function (d, i) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
                 s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
@@ -15135,24 +15186,27 @@ if (!Array.prototype.includes) {
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined);
 
-          var res = wrap$$1(tickFormat(d));
-
+          var res = wrap$$1(d3Scale.tickFormat(ticks$$1.length - 1, this$1._tickSpecifier)(d));
           var width = res.lines.length
             ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
             : 0;
           if (width % 2) { width++; }
-          return sum$$1 + width + 2 * this$1._buttonPadding;
-        }, 0);
+          if (maxLabel < width) { maxLabel = width + 2 * this$1._buttonPadding; }
+        });
+
+        this._ticksWidth = maxLabel * ticks$$1.length;
       }
 
       this._buttonBehaviorCurrent = this._buttonBehavior === "auto" ? this._ticksWidth < this._width ? "buttons" : "ticks" : this._buttonBehavior;
 
       if (this._buttonBehaviorCurrent === "buttons") {
         this._scale = "ordinal";
+        this._labelRotation = 0;
         if (!this._brushing) { this._handleSize = 0; }
         var domain = this._domain.map(date$3).map(this._tickFormat).map(Number);
 
         this._domain = this._ticks ? this._ticks.map(date$3) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) { return domain[0] + x; }).map(date$3);
+
         this._ticks = this._domain;
 
         var buttonMargin = 0.5 * this._ticksWidth / this._ticks.length;
@@ -15170,6 +15224,8 @@ if (!Array.prototype.includes) {
           this._buttonAlign === "end" ? undefined : marginRight - buttonMargin
         ];
       }
+
+      if (this._ticks) { this._domain = this._buttonBehavior === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(date$3); }
 
       this._labels = this._ticks;
 
@@ -15206,9 +15262,8 @@ if (!Array.prototype.includes) {
 
       this._outerBounds.y -= this._handleSize / 2;
       this._outerBounds.height += this._handleSize / 2;
-
+      
       return this;
-
     };
 
     /**

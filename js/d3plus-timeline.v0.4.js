@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.4.6
+  d3plus-timeline v0.4.7
   An easy-to-use javascript timeline.
   Copyright (c) 2018 D3plus - https://d3plus.org
   @license MIT
@@ -314,15 +314,15 @@ if (!Array.prototype.includes) {
 
         var ticks = this._ticks ? this._ticks.map(d3plusAxis.date) : this._domain.map(d3plusAxis.date);
 
-        var d3Scale$$1 = d3Scale.scaleTime().domain(ticks).range([0, this._width]),
-              tickFormat = d3Scale$$1.tickFormat();
+        var d3Scale$$1 = d3Scale.scaleTime().domain(ticks).range([0, this._width]);
 
         ticks = this._ticks ? ticks : d3Scale$$1.ticks();
 
-        if (!this._tickFormat) { this._tickFormat = tickFormat; }
+        if (!this._tickFormat) { this._tickFormat = d3Scale$$1.tickFormat(ticks.length - 1, this._tickSpecifier); }
 
         // Measures size of ticks
-        this._ticksWidth = ticks.reduce(function (sum, d, i) {
+        var maxLabel = 0;
+        ticks.forEach(function (d, i) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
                 s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
@@ -331,24 +331,27 @@ if (!Array.prototype.includes) {
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined);
 
-          var res = wrap(tickFormat(d));
-
+          var res = wrap(d3Scale$$1.tickFormat(ticks.length - 1, this$1._tickSpecifier)(d));
           var width = res.lines.length
             ? Math.ceil(d3Array.max(res.lines.map(function (line) { return d3plusText.textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
             : 0;
           if (width % 2) { width++; }
-          return sum + width + 2 * this$1._buttonPadding;
-        }, 0);
+          if (maxLabel < width) { maxLabel = width + 2 * this$1._buttonPadding; }
+        });
+
+        this._ticksWidth = maxLabel * ticks.length;
       }
 
       this._buttonBehaviorCurrent = this._buttonBehavior === "auto" ? this._ticksWidth < this._width ? "buttons" : "ticks" : this._buttonBehavior;
 
       if (this._buttonBehaviorCurrent === "buttons") {
         this._scale = "ordinal";
+        this._labelRotation = 0;
         if (!this._brushing) { this._handleSize = 0; }
         var domain = this._domain.map(d3plusAxis.date).map(this._tickFormat).map(Number);
 
         this._domain = this._ticks ? this._ticks.map(d3plusAxis.date) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) { return domain[0] + x; }).map(d3plusAxis.date);
+
         this._ticks = this._domain;
 
         var buttonMargin = 0.5 * this._ticksWidth / this._ticks.length;
@@ -366,6 +369,8 @@ if (!Array.prototype.includes) {
           this._buttonAlign === "end" ? undefined : marginRight - buttonMargin
         ];
       }
+
+      if (this._ticks) { this._domain = this._buttonBehavior === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(d3plusAxis.date); }
 
       this._labels = this._ticks;
 
@@ -402,9 +407,8 @@ if (!Array.prototype.includes) {
 
       this._outerBounds.y -= this._handleSize / 2;
       this._outerBounds.height += this._handleSize / 2;
-
+      
       return this;
-
     };
 
     /**
