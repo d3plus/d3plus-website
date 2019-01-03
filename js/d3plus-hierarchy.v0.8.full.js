@@ -1,7 +1,7 @@
 /*
-  d3plus-hierarchy v0.8.0
+  d3plus-hierarchy v0.8.1
   Nested, hierarchical, and cluster charts built on D3
-  Copyright (c) 2018 D3plus - https://d3plus.org
+  Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -6649,6 +6649,8 @@ if (!Array.prototype.includes) {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
+  var mondays = monday.range;
+  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -6738,6 +6740,8 @@ if (!Array.prototype.includes) {
   var utcSaturday = utcWeekday(6);
 
   var utcSundays = utcSunday.range;
+  var utcMondays = utcMonday.range;
+  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -34740,7 +34744,7 @@ if (!Array.prototype.includes) {
     node.y1 = Math.round(node.y1);
   }
 
-  function treemapDice(parent, x0, y0, x1, y1) {
+  function dice(parent, x0, y0, x1, y1) {
     var nodes = parent.children,
         node,
         i = -1,
@@ -34989,7 +34993,7 @@ if (!Array.prototype.includes) {
     return tree;
   }
 
-  function treemapSlice(parent, x0, y0, x1, y1) {
+  function slice$6(parent, x0, y0, x1, y1) {
     var nodes = parent.children,
         node,
         i = -1,
@@ -35045,8 +35049,8 @@ if (!Array.prototype.includes) {
 
       // Position and record the row orientation.
       rows.push(row = {value: sumValue, dice: dx < dy, children: nodes.slice(i0, i1)});
-      if (row.dice) { treemapDice(row, x0, y0, x1, value ? y0 += dy * sumValue / value : y1); }
-      else { treemapSlice(row, x0, y0, value ? x0 += dx * sumValue / value : x1, y1); }
+      if (row.dice) { dice(row, x0, y0, x1, value ? y0 += dy * sumValue / value : y1); }
+      else { slice$6(row, x0, y0, value ? x0 += dx * sumValue / value : x1, y1); }
       value -= sumValue, i0 = i1;
     }
 
