@@ -1,5 +1,5 @@
 /*
-  d3plus-dev v0.6.10
+  d3plus-dev v0.6.11
   A collection of scripts for developing D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1504,6 +1504,8 @@ if (!Array.prototype.includes) {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
+  var mondays = monday.range;
+  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -1593,6 +1595,8 @@ if (!Array.prototype.includes) {
   var utcSaturday = utcWeekday(6);
 
   var utcSundays = utcSunday.range;
+  var utcMondays = utcMonday.range;
+  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
