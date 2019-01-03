@@ -1,7 +1,7 @@
 /*
-  d3plus-tooltip v0.3.0
+  d3plus-tooltip v0.3.1
   A javascript-only tooltip.
-  Copyright (c) 2018 D3plus - https://d3plus.org
+  Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -5661,6 +5661,7 @@ if (!Array.prototype.includes) {
       this._position = function (d) { return [d.x, d.y]; };
       this._prefix = prefix$1();
       this._tableStyle = {
+        "border-collapse": "collapse",
         "border-spacing": "0",
         "width": "100%"
       };
@@ -5682,6 +5683,9 @@ if (!Array.prototype.includes) {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
         "font-size": "14px",
         "font-weight": "600"
+      };
+      this._trStyle = {
+        "border-top": "1px solid rgba(0, 0, 0, 0.1)"
       };
       this._width = constant$2("auto");
     }
@@ -5772,6 +5776,7 @@ if (!Array.prototype.includes) {
       var trEnter = tr.enter().append("tr");
       tr.exit().remove();
       var trUpdate = tr.merge(trEnter);
+      stylize(trUpdate, this._trStyle);
       var td = trUpdate.selectAll("td").data(function (d) { return d; });
       td.enter().append("td").merge(td).html(cellContent);
 
@@ -6076,6 +6081,7 @@ if (!Array.prototype.includes) {
         @param {Object} [*value*]
         @example <caption>default styles</caption>
   {
+    "border-collapse": "collapse",
     "border-spacing": "0",
     "width": "100%"
   }
@@ -6161,6 +6167,19 @@ if (!Array.prototype.includes) {
     */
     Tooltip.prototype.titleStyle = function titleStyle (_) {
       return arguments.length ? (this._titleStyle = Object.assign(this._titleStyle, _), this) : this._titleStyle;
+    };
+
+    /**
+        @memberof Tooltip
+        @desc If *value* is specified, sets the table row styles to the specified values and returns this generator. If *value* is not specified, returns the current table row styles.
+        @param {Object} [*value*]
+        @example <caption>default styles</caption>
+    {
+      "border-top": "1px solid rgba(0, 0, 0, 0.1)"
+    }
+     */
+    Tooltip.prototype.trStyle = function trStyle (_) {
+      return arguments.length ? (this._trStyle = Object.assign(this._trStyle, _), this) : this._trStyle;
     };
 
     /**
