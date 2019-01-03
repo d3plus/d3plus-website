@@ -1,7 +1,7 @@
 /*
-  d3plus-network v0.5.1
+  d3plus-network v0.5.2
   Javascript network visualizations built upon d3 modules.
-  Copyright (c) 2018 D3plus - https://d3plus.org
+  Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -149,7 +149,7 @@ if (!Array.prototype.includes) {
     return [min, max];
   }
 
-  function d3Range(start, stop, step) {
+  function range(start, stop, step) {
     start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
 
     var i = -1,
@@ -640,7 +640,7 @@ if (!Array.prototype.includes) {
       start += (stop - start - step * (n - paddingInner)) * align;
       bandwidth = step * (1 - paddingInner);
       if (round) { start = Math.round(start), bandwidth = Math.round(bandwidth); }
-      var values = d3Range(n).map(function(i) { return start + step * i; });
+      var values = range(n).map(function(i) { return start + step * i; });
       return ordinalRange(reverse ? values.reverse() : values);
     }
 
@@ -1679,15 +1679,15 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function bimap(domain, range, deinterpolate, reinterpolate) {
-    var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
+  function bimap(domain, range$$1, deinterpolate, reinterpolate) {
+    var d0 = domain[0], d1 = domain[1], r0 = range$$1[0], r1 = range$$1[1];
     if (d1 < d0) { d0 = deinterpolate(d1, d0), r0 = reinterpolate(r1, r0); }
     else { d0 = deinterpolate(d0, d1), r0 = reinterpolate(r0, r1); }
     return function(x) { return r0(d0(x)); };
   }
 
-  function polymap(domain, range, deinterpolate, reinterpolate) {
-    var j = Math.min(domain.length, range.length) - 1,
+  function polymap(domain, range$$1, deinterpolate, reinterpolate) {
+    var j = Math.min(domain.length, range$$1.length) - 1,
         d = new Array(j),
         r = new Array(j),
         i = -1;
@@ -1695,12 +1695,12 @@ if (!Array.prototype.includes) {
     // Reverse descending domains.
     if (domain[j] < domain[0]) {
       domain = domain.slice().reverse();
-      range = range.slice().reverse();
+      range$$1 = range$$1.slice().reverse();
     }
 
     while (++i < j) {
       d[i] = deinterpolate(domain[i], domain[i + 1]);
-      r[i] = reinterpolate(range[i], range[i + 1]);
+      r[i] = reinterpolate(range$$1[i], range$$1[i + 1]);
     }
 
     return function(x) {
@@ -1721,7 +1721,7 @@ if (!Array.prototype.includes) {
   // reinterpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding domain value x in [a,b].
   function continuous(deinterpolate, reinterpolate) {
     var domain = unit,
-        range = unit,
+        range$$1 = unit,
         interpolate$$1 = interpolate,
         clamp = false,
         piecewise$$1,
@@ -1729,17 +1729,17 @@ if (!Array.prototype.includes) {
         input;
 
     function rescale() {
-      piecewise$$1 = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
+      piecewise$$1 = Math.min(domain.length, range$$1.length) > 2 ? polymap : bimap;
       output = input = null;
       return scale;
     }
 
     function scale(x) {
-      return (output || (output = piecewise$$1(domain, range, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate$$1)))(+x);
+      return (output || (output = piecewise$$1(domain, range$$1, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate$$1)))(+x);
     }
 
     scale.invert = function(y) {
-      return (input || (input = piecewise$$1(range, domain, deinterpolateLinear, clamp ? reinterpolateClamp(reinterpolate) : reinterpolate)))(+y);
+      return (input || (input = piecewise$$1(range$$1, domain, deinterpolateLinear, clamp ? reinterpolateClamp(reinterpolate) : reinterpolate)))(+y);
     };
 
     scale.domain = function(_) {
@@ -1747,11 +1747,11 @@ if (!Array.prototype.includes) {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$1.call(_), rescale()) : range.slice();
+      return arguments.length ? (range$$1 = slice$1.call(_), rescale()) : range$$1.slice();
     };
 
     scale.rangeRound = function(_) {
-      return range = slice$1.call(_), interpolate$$1 = interpolateRound, rescale();
+      return range$$1 = slice$1.call(_), interpolate$$1 = interpolateRound, rescale();
     };
 
     scale.clamp = function(_) {
@@ -2363,22 +2363,22 @@ if (!Array.prototype.includes) {
 
   function quantile$$1() {
     var domain = [],
-        range = [],
+        range$$1 = [],
         thresholds = [];
 
     function rescale() {
-      var i = 0, n = Math.max(1, range.length);
+      var i = 0, n = Math.max(1, range$$1.length);
       thresholds = new Array(n - 1);
       while (++i < n) { thresholds[i - 1] = threshold(domain, i / n); }
       return scale;
     }
 
     function scale(x) {
-      if (!isNaN(x = +x)) { return range[bisectRight(thresholds, x)]; }
+      if (!isNaN(x = +x)) { return range$$1[bisectRight(thresholds, x)]; }
     }
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return i < 0 ? [NaN, NaN] : [
         i > 0 ? thresholds[i - 1] : domain[0],
         i < thresholds.length ? thresholds[i] : domain[domain.length - 1]
@@ -2394,7 +2394,7 @@ if (!Array.prototype.includes) {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$1.call(_), rescale()) : range.slice();
+      return arguments.length ? (range$$1 = slice$1.call(_), rescale()) : range$$1.slice();
     };
 
     scale.quantiles = function() {
@@ -2404,7 +2404,7 @@ if (!Array.prototype.includes) {
     scale.copy = function() {
       return quantile$$1()
           .domain(domain)
-          .range(range);
+          .range(range$$1);
     };
 
     return scale;
@@ -2415,10 +2415,10 @@ if (!Array.prototype.includes) {
         x1 = 1,
         n = 1,
         domain = [0.5],
-        range = [0, 1];
+        range$$1 = [0, 1];
 
     function scale(x) {
-      if (x <= x) { return range[bisectRight(domain, x, 0, n)]; }
+      if (x <= x) { return range$$1[bisectRight(domain, x, 0, n)]; }
     }
 
     function rescale() {
@@ -2433,11 +2433,11 @@ if (!Array.prototype.includes) {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (n = (range = slice$1.call(_)).length - 1, rescale()) : range.slice();
+      return arguments.length ? (n = (range$$1 = slice$1.call(_)).length - 1, rescale()) : range$$1.slice();
     };
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return i < 0 ? [NaN, NaN]
           : i < 1 ? [x0, domain[0]]
           : i >= n ? [domain[n - 1], x1]
@@ -2447,7 +2447,7 @@ if (!Array.prototype.includes) {
     scale.copy = function() {
       return quantize$1()
           .domain([x0, x1])
-          .range(range);
+          .range(range$$1);
     };
 
     return linearish(scale);
@@ -2455,30 +2455,30 @@ if (!Array.prototype.includes) {
 
   function threshold$1() {
     var domain = [0.5],
-        range = [0, 1],
+        range$$1 = [0, 1],
         n = 1;
 
     function scale(x) {
-      if (x <= x) { return range[bisectRight(domain, x, 0, n)]; }
+      if (x <= x) { return range$$1[bisectRight(domain, x, 0, n)]; }
     }
 
     scale.domain = function(_) {
-      return arguments.length ? (domain = slice$1.call(_), n = Math.min(domain.length, range.length - 1), scale) : domain.slice();
+      return arguments.length ? (domain = slice$1.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : domain.slice();
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$1.call(_), n = Math.min(domain.length, range.length - 1), scale) : range.slice();
+      return arguments.length ? (range$$1 = slice$1.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : range$$1.slice();
     };
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return [domain[i - 1], domain[i]];
     };
 
     scale.copy = function() {
       return threshold$1()
           .domain(domain)
-          .range(range);
+          .range(range$$1);
     };
 
     return scale;
@@ -9250,7 +9250,7 @@ if (!Array.prototype.includes) {
       @desc Splits a given sentence into an array of words.
       @param {String} sentence
   */
-  function textSplit(sentence) {
+  function defaultSplit(sentence) {
     if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
     return merge(stringify(sentence).match(splitWords).map(function (d) {
       if (noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
@@ -9271,7 +9271,7 @@ if (!Array.prototype.includes) {
         lineHeight,
         maxLines = null,
         overflow = false,
-        split = textSplit,
+        split = defaultSplit,
         width = 200;
 
     /**
@@ -9460,7 +9460,7 @@ if (!Array.prototype.includes) {
       this._pointerEvents = constant$6("auto");
       this._rotate = constant$6(0);
       this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
-      this._split = textSplit;
+      this._split = defaultSplit;
       this._text = accessor("text");
       this._textAnchor = constant$6("start");
       this._verticalAlign = constant$6("top");
@@ -12058,7 +12058,7 @@ if (!Array.prototype.includes) {
 
     // User's input normalization
     options = Object.assign({
-      angle: d3Range(-90, 90 + angleStep, angleStep),
+      angle: range(-90, 90 + angleStep, angleStep),
       cache: true,
       maxAspectRatio: 15,
       minAspectRatio: 1,
@@ -12190,7 +12190,7 @@ if (!Array.prototype.includes) {
           if (!aRatios.length) {
             var minAspectRatio = Math.max(options.minAspectRatio, options.minWidth / maxHeight, maxArea / (maxHeight * maxHeight));
             var maxAspectRatio = Math.min(options.maxAspectRatio, maxWidth / options.minHeight, maxWidth * maxWidth / maxArea);
-            aRatios = d3Range(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
+            aRatios = range(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
           }
 
           for (var a = 0; a < aRatios.length; a++) {
@@ -15366,7 +15366,7 @@ if (!Array.prototype.includes) {
       if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
       this._size = range$$1[1] - range$$1[0];
       if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
-        range$$1 = d3Range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
+        range$$1 = range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
       }
 
       var margin = this._margin = {top: 0, right: 0, bottom: 0, left: 0};
@@ -15678,7 +15678,7 @@ if (!Array.prototype.includes) {
           }
         }
 
-        if (range$$1.length > 2) { range$$1 = d3Range(this._domain.length).map(function (d) { return this$1._size * (d / (range$$1.length - 1)) + range$$1[0]; }); }
+        if (range$$1.length > 2) { range$$1 = range(this._domain.length).map(function (d) { return this$1._size * (d / (range$$1.length - 1)) + range$$1[0]; }); }
         range$$1 = range$$1.map(Math.round);
         if (this._d3ScaleNegative) {
           var negativeRange = this._d3ScaleNegative.range();
@@ -17137,7 +17137,7 @@ if (!Array.prototype.includes) {
         if (data.length <= colors.length) {
 
           var ts = linear$1()
-            .domain(d3Range(0, data.length - 1))
+            .domain(range(0, data.length - 1))
             .interpolate(interpolateHsl)
             .range(colors);
 
@@ -17162,7 +17162,7 @@ if (!Array.prototype.includes) {
       else {
 
         var step = (domain[1] - domain[0]) / (colors.length - 1);
-        var buckets = d3Range(domain[0], domain[1] + step / 2, step);
+        var buckets = range(domain[0], domain[1] + step / 2, step);
 
         if (this._scale === "buckets") { ticks$$1 = buckets; }
 
@@ -18254,10 +18254,10 @@ if (!Array.prototype.includes) {
       Axis$$1.prototype.render.call(this, callback);
 
       var offset = this._outerBounds[y],
-            range = this._d3Scale.range();
+            range$$1 = this._d3Scale.range();
 
       var brush$$1 = this._brush = brushX()
-        .extent([[range[0], offset], [range[range.length - 1], offset + this._outerBounds[height]]])
+        .extent([[range$$1[0], offset], [range$$1[range$$1.length - 1], offset + this._outerBounds[height]]])
         .filter(this._brushFilter)
         .handleSize(this._handleSize)
         .on("start", this._brushStart.bind(this))
@@ -18266,14 +18266,14 @@ if (!Array.prototype.includes) {
 
       var latest = this._buttonBehaviorCurrent === "ticks"
         ? this._availableTicks[this._availableTicks.length - 1]
-        : range[range.length - 1];
+        : range$$1[range$$1.length - 1];
 
       var selection$$1 = this._selection === void 0 ? [latest, latest]
         : this._selection instanceof Array
           ? this._buttonBehaviorCurrent === "buttons"
-            ? this._selection.map(function (d) { return range[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
+            ? this._selection.map(function (d) { return range$$1[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
           : this._buttonBehaviorCurrent === "buttons"
-            ? [range[this._ticks.map(Number).indexOf(+this._selection)], range[this._ticks.map(Number).indexOf(+this._selection)]]
+            ? [range$$1[this._ticks.map(Number).indexOf(+this._selection)], range$$1[this._ticks.map(Number).indexOf(+this._selection)]]
             : [this._selection, this._selection];
 
       this._updateBrushLimit(selection$$1);
