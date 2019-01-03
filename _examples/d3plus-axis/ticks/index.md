@@ -2,8 +2,8 @@
 title: Hiding Specific Axis Ticks
 width: 600
 height: 300
-time: 1545064731544
-date: December 17, 2018
+time: 1546556644403
+date: January 03, 2019
 ---
 
 [width]: 600
