@@ -2,8 +2,8 @@
 title: Choropleth w/ Custom Colors
 width: 990
 height: 550
-time: 1542306949278
-date: November 15, 2018
+time: 1546556316333
+date: January 03, 2019
 ---
 
 [height]: 550
