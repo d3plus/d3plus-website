@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.3
+  d3plus-plot v0.8.4
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -35772,13 +35772,13 @@ if (!Array.prototype.includes) {
       var radius = (Math.min(height, width) - this._radarPadding) / 2,
             transform = "translate(" + (width / 2) + ", " + (height / 2) + ")";
 
-      var maxValue = Math.max.apply(Math, this._data.map(function (d, i) { return this$1._value(d, i); })),
+      var maxValue = Math.max.apply(Math, this._filteredData.map(function (d, i) { return this$1._value(d, i); })),
             nestedAxisData = nest()
           .key(this._y)
-          .entries(this._data),
+          .entries(this._filteredData),
             nestedGroupData = nest()
           .key(this._x)
-          .entries(this._data);
+          .entries(this._filteredData);
 
       var circularAxis = Array.from(Array(this._levels).keys()).map(function (d) { return ({
         id: d,
