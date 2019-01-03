@@ -2,7 +2,7 @@
 title: Tooltip Anchored to an HTML Element
 width: 400
 height: 400
-time: 1546555598840
+time: 1546555893490
 date: January 03, 2019
 ---
 
@@ -11,7 +11,7 @@ date: January 03, 2019
 
 # Tooltip Anchored to an HTML Element
 
-The [`.position( )` method](https://d3plus.org/docs/#Tooltip.position) in the [Tooltip class](https://github.com/d3plus/d3plus-tooltip) accepts an array of two numbers representing x and y values (in [x, y] format), an accessor function that returns an array of two numbers, or an HTML element used as an anchor point.
+The [`.position( )` method](https://d3plus.org/docs/#Tooltip.position) in the [Tooltip class](https://github.com/d3plus/d3plus-tooltip) accepts an array of two numbers representing x and y values (in [x, y] format), an accessor function that returns an array of two numbers, an HTML element used as an anchor point, or a selection string that selects an HTML element to use as an anchor point.
 
 ```html
 <div id="square"></div>
@@ -29,10 +29,8 @@ The [`.position( )` method](https://d3plus.org/docs/#Tooltip.position) in the [T
 ```
 
 ```js
-var square = document.getElementById("square");
-
 var tip = new d3plus.Tooltip()
   .data([{title: "Test Tooltip"}])
-  .position(square)
+  .position("#square")
   .render();
 ```
