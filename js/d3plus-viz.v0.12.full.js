@@ -1,7 +1,7 @@
 /*
-  d3plus-viz v0.12.5
+  d3plus-viz v0.12.6
   Abstract ES6 class that drives d3plus visualizations.
-  Copyright (c) 2018 D3plus - https://d3plus.org
+  Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -21611,56 +21611,54 @@ if (!Array.prototype.includes) {
 
     var data = this._data;
 
-    if (this._colorScale && data) {
+    var position = this._colorScalePosition || "bottom";
+    var wide = ["top", "bottom"].includes(position);
 
-      var position = this._colorScalePosition || "bottom";
-      var wide = ["top", "bottom"].includes(position);
+    var transform = {
+      opacity: this._colorScalePosition ? 1 : 0,
+      transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")
+    };
 
-      var transform = {
-        opacity: this._colorScalePosition ? 1 : 0,
-        transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")
-      };
+    var showColorScale = this._colorScale && data && data.length > 1;
 
-      var showColorScale = this._colorScale && data && data.length > 1;
+    var scaleGroup = elem("g.d3plus-viz-colorScale", {
+      condition: showColorScale && !this._colorScaleConfig.select,
+      enter: transform,
+      parent: this._select,
+      transition: this._transition,
+      update: transform
+    }).node();
 
-      var scaleGroup = elem("g.d3plus-viz-colorScale", {
-        condition: showColorScale && !this._colorScaleConfig.select,
-        enter: transform,
-        parent: this._select,
-        transition: this._transition,
-        update: transform
-      }).node();
-
+    if (showColorScale) {
       var scaleData = data.filter(function (d, i) {
         var c = this$1._colorScale(d, i);
         return c !== undefined && c !== null;
       });
 
-      if (showColorScale) {
-        this._colorScaleClass
-          .align({bottom: "end", left: "start", right: "end", top: "start"}[position] || "bottom")
-          .duration(this._duration)
-          .data(scaleData)
-          .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
-          .orient(position)
-          .select(scaleGroup)
-          .value(this._colorScale)
-          .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
-          .config(this._colorScaleConfig)
-          .render();
+      this._colorScaleClass
+        .align({bottom: "end", left: "start", right: "end", top: "start"}[position] || "bottom")
+        .duration(this._duration)
+        .data(scaleData)
+        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
+        .orient(position)
+        .select(scaleGroup)
+        .value(this._colorScale)
+        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
+        .config(this._colorScaleConfig)
+        .render();
 
-        var scaleBounds = this._colorScaleClass.outerBounds();
-        if (this._colorScalePosition && !this._colorScaleConfig.select && scaleBounds.height) {
-          if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
-          else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
-        }
-
-      }
-      else {
-        this._colorScaleClass.config(this._colorScaleConfig);
+      var scaleBounds = this._colorScaleClass.outerBounds();
+      if (this._colorScalePosition && !this._colorScaleConfig.select && scaleBounds.height) {
+        if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
+        else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
       }
 
     }
+    else {
+      this._colorScaleClass.config(this._colorScaleConfig);
+    }
+
+    
 
   }
 
