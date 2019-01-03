@@ -1,7 +1,7 @@
 /*
-  d3plus-axis v0.3.52
+  d3plus-axis v0.3.53
   Beautiful javascript scales and axes.
-  Copyright (c) 2018 D3plus - https://d3plus.org
+  Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
