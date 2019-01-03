@@ -34333,6 +34333,8 @@ if (!Array.prototype.includes) {
 
   }
 
+  /* eslint no-cond-assign: 0 */
+
   /**
       @desc Logic for determining default sizes of shapes using the sizeScaleD3 internal function.
       @private
