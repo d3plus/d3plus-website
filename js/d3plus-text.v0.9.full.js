@@ -1,7 +1,7 @@
 /*
-  d3plus-text v0.9.33
+  d3plus-text v0.9.34
   A smart SVG text box with line wrapping and automatic font size scaling.
-  Copyright (c) 2018 D3plus - https://d3plus.org
+  Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -3864,10 +3864,10 @@ if (!Array.prototype.includes) {
               .attr("font-weight", d.fW)
               .style("font-weight", d.fW)
               .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 2 * Math.sin(Math.PI * d.r / 180)) + "px"))
-              .attr("y", function (t, i) { return d.r === 0 || d.vA === "top" ? (((i + 1) * d.lH - (d.lH - d.fS)) + "px") : 
-                d.vA === "middle" ? 
-                  (((d.h + d.fS) / 2 - (d.lH - d.fS) + (i - d.lines.length / 2 + 0.5) * d.lH) + "px") : 
-                  ((d.h - 2 * (d.lH - d.fS) - (d.lines.length - (i + 1)) * d.lH + 2 * Math.cos(Math.PI * d.r / 180)) + "px"); });
+              .attr("y", function (t, i) { return d.r === 0 || d.vA === "top" ? (((i + 1) * d.lH - (d.lH - d.fS)) + "px") 
+              : d.vA === "middle" 
+                ? (((d.h + d.fS) / 2 - (d.lH - d.fS) + (i - d.lines.length / 2 + 0.5) * d.lH) + "px") 
+                : ((d.h - 2 * (d.lH - d.fS) - (d.lines.length - (i + 1)) * d.lH + 2 * Math.cos(Math.PI * d.r / 180)) + "px"); });
 
           }
 
