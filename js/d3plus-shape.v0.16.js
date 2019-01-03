@@ -1,7 +1,7 @@
 /*
-  d3plus-shape v0.16.0
+  d3plus-shape v0.16.1
   Fancy SVG shapes for visualizations
-  Copyright (c) 2018 D3plus - https://d3plus.org
+  Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
