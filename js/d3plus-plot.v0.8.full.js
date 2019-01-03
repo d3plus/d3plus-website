@@ -1,7 +1,7 @@
 /*
-  d3plus-plot v0.8.2
+  d3plus-plot v0.8.3
   A reusable javascript x/y plot built on D3.
-  Copyright (c) 2018 D3plus - https://d3plus.org
+  Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -5004,8 +5004,6 @@ if (!Array.prototype.includes) {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
-  var mondays = monday.range;
-  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -5095,8 +5093,6 @@ if (!Array.prototype.includes) {
   var utcSaturday = utcWeekday(6);
 
   var utcSundays = utcSunday.range;
-  var utcMondays = utcMonday.range;
-  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -8688,7 +8684,7 @@ if (!Array.prototype.includes) {
       @desc Splits a given sentence into an array of words.
       @param {String} sentence
   */
-  function defaultSplit(sentence) {
+  function textSplit(sentence) {
     if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
     return merge(stringify(sentence).match(splitWords).map(function (d) {
       if (noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
@@ -8709,7 +8705,7 @@ if (!Array.prototype.includes) {
         lineHeight,
         maxLines = null,
         overflow = false,
-        split = defaultSplit,
+        split = textSplit,
         width = 200;
 
     /**
@@ -8898,7 +8894,7 @@ if (!Array.prototype.includes) {
       this._pointerEvents = constant("auto");
       this._rotate = constant(0);
       this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
-      this._split = defaultSplit;
+      this._split = textSplit;
       this._text = accessor("text");
       this._textAnchor = constant("start");
       this._verticalAlign = constant("top");
