@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.3
+  d3plus-format v0.1.4
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -369,7 +369,7 @@ if (!Array.prototype.includes) {
   */
   function abbreviate(n) {
     if (typeof n !== "number") { return "N/A"; }
-    var length = n.toString().split(".")[0].length;
+    var length = n.toString().split(".")[0].replace("-", "").length;
     var val;
     if (n === 0) { val = "0"; }
     else if (length >= 3) {
