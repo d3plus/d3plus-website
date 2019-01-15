@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.3.2
+  d3plus-tooltip v0.3.3
   A javascript-only tooltip.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -76,7 +76,7 @@ if (!Array.prototype.includes) {
       @extends BaseClass
       @desc Creates HTML tooltips in the body of a webpage.
   */
-  var Tooltip = (function (BaseClass) {
+  var Tooltip = /*@__PURE__*/(function (BaseClass) {
     function Tooltip() {
 
       BaseClass.call(this);
@@ -118,6 +118,7 @@ if (!Array.prototype.includes) {
       this._offset = d3plusCommon.constant(5);
       this._padding = d3plusCommon.constant("5px");
       this._pointerEvents = d3plusCommon.constant("auto");
+      this._popperClasses = {};
       this._position = function (d) { return [d.x, d.y]; };
       this._prefix = d3plusCommon.prefix();
       this._tableStyle = {
@@ -244,27 +245,14 @@ if (!Array.prototype.includes) {
 
       divElement("arrow");
 
-      enter.call(boxStyles);
-
-      var t = d3Transition.transition().duration(this._duration);
-
-      update
+      enter
         .attr("id", function (d, i) { return ("d3plus-tooltip-" + (d ? this$1._id(d, i) : "")); })
-        .transition(t)
-          .style("opacity", 1)
-          .call(boxStyles);
+        .call(boxStyles)
+        .each(function (d, i) {
 
-      tooltips.exit()
-        .transition(t)
-          .style("opacity", 0)
-        .remove();
-
-      for (var i = 0; i < this._data.length; i++) {
-        var d = that._data[i];
-
-        if (d) {
-          var tooltip = document.getElementById(("d3plus-tooltip-" + (that._id(d, i))));
-          var arrow = document.getElementById(("d3plus-tooltip-arrow-" + (that._id(d, i))));
+          var id = that._id(d, i);
+          var tooltip = document.getElementById(("d3plus-tooltip-" + id));
+          var arrow = document.getElementById(("d3plus-tooltip-arrow-" + id));
           var arrowHeight = arrow.offsetHeight;
           var arrowDistance = arrow.getBoundingClientRect().height / 2;
           arrow.style.bottom = "-" + (arrowHeight / 2) + "px";
@@ -283,9 +271,9 @@ if (!Array.prototype.includes) {
               height: 0
             }); }
           }
-            : that._position(d, i);
+            : position;
 
-          new Popper(referenceObject, tooltip, {
+          this$1._popperClasses[id] = new Popper(referenceObject, tooltip, {
             placement: "top",
             placements: ["top", "bottom", "left", "right"],
             modifiers: {
@@ -303,13 +291,6 @@ if (!Array.prototype.includes) {
                 boundariesElement: "viewport"
               }
             },
-            onCreate: function onCreate(ref) {
-              var instance = ref.instance;
-
-              document.onmousemove = function () {
-                instance.scheduleUpdate();
-              };
-            },
             onUpdate: function onUpdate(ref) {
               var arrowElement = ref.arrowElement;
               var flipped = ref.flipped;
@@ -322,10 +303,51 @@ if (!Array.prototype.includes) {
                 arrowElement.style.transform = "rotate(45deg)";
                 arrowElement.style.bottom = "-" + (arrowHeight / 2) + "px";
               }
-            }
+            },
+            removeOnDestroy: true
           });
-        }
-      }
+
+        });
+
+      var t = d3Transition.transition().duration(this._duration);
+
+      update
+        .each(function (d, i) {
+          var id = that._id(d, i);
+          var position = that._position(d, i);
+          var instance = this$1._popperClasses[id];
+
+          var referenceObject = Array.isArray(position) ? {
+            clientWidth: 0,
+            clientHeight: 0,
+            getBoundingClientRect: function () { return ({
+              top: position[1],
+              right: position[0],
+              bottom: position[1],
+              left: position[0],
+              width: 0,
+              height: 0
+            }); }
+          }
+            : position;
+          instance.reference = referenceObject;
+          instance.scheduleUpdate();
+
+        })
+        .transition(t)
+          .style("opacity", 1)
+          .call(boxStyles);
+
+      tooltips.exit()
+        .transition(t)
+          .style("opacity", 0)
+        .on("end", function (d, i) {
+          var id = that._id(d, i);
+          var instance = this$1._popperClasses[id];
+          delete this$1._popperClasses[id];
+          instance.destroy();
+        })
+        .remove();
 
       if (callback) { setTimeout(callback, this._duration + 100); }
 

@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.3.2
+  d3plus-tooltip v0.3.3
   A javascript-only tooltip.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -68,7 +68,6 @@ if (!Array.prototype.includes) {
   typeof define === 'function' && define.amd ? define('d3plus-tooltip', ['exports'], factory) :
   (factory((global.d3plus = {})));
 }(this, (function (exports) {
-
   var xhtml = "http://www.w3.org/1999/xhtml";
 
   var namespaces = {
@@ -795,13 +794,11 @@ if (!Array.prototype.includes) {
 
   function onRemove(typename) {
     return function() {
-      var this$1 = this;
-
       var on = this.__on;
       if (!on) { return; }
       for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
         if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-          this$1.removeEventListener(o.type, o.listener, o.capture);
+          this.removeEventListener(o.type, o.listener, o.capture);
         } else {
           on[++i] = o;
         }
@@ -814,13 +811,11 @@ if (!Array.prototype.includes) {
   function onAdd(typename, value, capture) {
     var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
     return function(d, i, group) {
-      var this$1 = this;
-
       var on = this.__on, o, listener = wrap(value, i, group);
       if (on) { for (var j = 0, m = on.length; j < m; ++j) {
         if ((o = on[j]).type === typename.type && o.name === typename.name) {
-          this$1.removeEventListener(o.type, o.listener, o.capture);
-          this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
+          this.removeEventListener(o.type, o.listener, o.capture);
+          this.addEventListener(o.type, o.listener = listener, o.capture = capture);
           o.value = value;
           return;
         }
@@ -833,8 +828,6 @@ if (!Array.prototype.includes) {
   }
 
   function selection_on(typename, value, capture) {
-    var this$1 = this;
-
     var typenames = parseTypenames(typename + ""), i, n = typenames.length, t;
 
     if (arguments.length < 2) {
@@ -851,7 +844,7 @@ if (!Array.prototype.includes) {
 
     on = value ? onAdd : onRemove;
     if (capture == null) { capture = false; }
-    for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
+    for (i = 0; i < n; ++i) { this.each(on(typenames[i], value, capture)); }
     return this;
   }
 
@@ -1512,6 +1505,9 @@ if (!Array.prototype.includes) {
     displayable: function() {
       return this.rgb().displayable();
     },
+    hex: function() {
+      return this.rgb().hex();
+    },
     toString: function() {
       return this.rgb() + "";
     }
@@ -1578,6 +1574,9 @@ if (!Array.prototype.includes) {
           && (0 <= this.b && this.b <= 255)
           && (0 <= this.opacity && this.opacity <= 1);
     },
+    hex: function() {
+      return "#" + hex(this.r) + hex(this.g) + hex(this.b);
+    },
     toString: function() {
       var a = this.opacity; a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
       return (a === 1 ? "rgb(" : "rgba(")
@@ -1587,6 +1586,11 @@ if (!Array.prototype.includes) {
           + (a === 1 ? ")" : ", " + a + ")");
     }
   }));
+
+  function hex(value) {
+    value = Math.max(0, Math.min(255, Math.round(value) || 0));
+    return (value < 16 ? "0" : "") + value.toString(16);
+  }
 
   function hsla(h, s, l, a) {
     if (a <= 0) { h = s = l = NaN; }
@@ -1672,10 +1676,11 @@ if (!Array.prototype.includes) {
   var deg2rad = Math.PI / 180;
   var rad2deg = 180 / Math.PI;
 
-  var Kn = 18,
-      Xn = 0.950470, // D65 standard referent
+  // https://beta.observablehq.com/@mbostock/lab-and-rgb
+  var K = 18,
+      Xn = 0.96422,
       Yn = 1,
-      Zn = 1.088830,
+      Zn = 0.82521,
       t0 = 4 / 29,
       t1 = 6 / 29,
       t2 = 3 * t1 * t1,
@@ -1684,16 +1689,19 @@ if (!Array.prototype.includes) {
   function labConvert(o) {
     if (o instanceof Lab) { return new Lab(o.l, o.a, o.b, o.opacity); }
     if (o instanceof Hcl) {
+      if (isNaN(o.h)) { return new Lab(o.l, 0, 0, o.opacity); }
       var h = o.h * deg2rad;
       return new Lab(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
     }
     if (!(o instanceof Rgb)) { o = rgbConvert(o); }
-    var b = rgb2xyz(o.r),
-        a = rgb2xyz(o.g),
-        l = rgb2xyz(o.b),
-        x = xyz2lab((0.4124564 * b + 0.3575761 * a + 0.1804375 * l) / Xn),
-        y = xyz2lab((0.2126729 * b + 0.7151522 * a + 0.0721750 * l) / Yn),
-        z = xyz2lab((0.0193339 * b + 0.1191920 * a + 0.9503041 * l) / Zn);
+    var r = rgb2lrgb(o.r),
+        g = rgb2lrgb(o.g),
+        b = rgb2lrgb(o.b),
+        y = xyz2lab((0.2225045 * r + 0.7168786 * g + 0.0606169 * b) / Yn), x, z;
+    if (r === g && g === b) { x = z = y; } else {
+      x = xyz2lab((0.4360747 * r + 0.3850649 * g + 0.1430804 * b) / Xn);
+      z = xyz2lab((0.0139322 * r + 0.0971045 * g + 0.7141733 * b) / Zn);
+    }
     return new Lab(116 * y - 16, 500 * (x - y), 200 * (y - z), o.opacity);
   }
 
@@ -1710,22 +1718,22 @@ if (!Array.prototype.includes) {
 
   define(Lab, lab, extend(Color, {
     brighter: function(k) {
-      return new Lab(this.l + Kn * (k == null ? 1 : k), this.a, this.b, this.opacity);
+      return new Lab(this.l + K * (k == null ? 1 : k), this.a, this.b, this.opacity);
     },
     darker: function(k) {
-      return new Lab(this.l - Kn * (k == null ? 1 : k), this.a, this.b, this.opacity);
+      return new Lab(this.l - K * (k == null ? 1 : k), this.a, this.b, this.opacity);
     },
     rgb: function() {
       var y = (this.l + 16) / 116,
           x = isNaN(this.a) ? y : y + this.a / 500,
           z = isNaN(this.b) ? y : y - this.b / 200;
-      y = Yn * lab2xyz(y);
       x = Xn * lab2xyz(x);
+      y = Yn * lab2xyz(y);
       z = Zn * lab2xyz(z);
       return new Rgb(
-        xyz2rgb( 3.2404542 * x - 1.5371385 * y - 0.4985314 * z), // D65 -> sRGB
-        xyz2rgb(-0.9692660 * x + 1.8760108 * y + 0.0415560 * z),
-        xyz2rgb( 0.0556434 * x - 0.2040259 * y + 1.0572252 * z),
+        lrgb2rgb( 3.1338561 * x - 1.6168667 * y - 0.4906146 * z),
+        lrgb2rgb(-0.9787684 * x + 1.9161415 * y + 0.0334540 * z),
+        lrgb2rgb( 0.0719453 * x - 0.2289914 * y + 1.4052427 * z),
         this.opacity
       );
     }
@@ -1739,17 +1747,18 @@ if (!Array.prototype.includes) {
     return t > t1 ? t * t * t : t2 * (t - t0);
   }
 
-  function xyz2rgb(x) {
+  function lrgb2rgb(x) {
     return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055);
   }
 
-  function rgb2xyz(x) {
+  function rgb2lrgb(x) {
     return (x /= 255) <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
   }
 
   function hclConvert(o) {
     if (o instanceof Hcl) { return new Hcl(o.h, o.c, o.l, o.opacity); }
     if (!(o instanceof Lab)) { o = labConvert(o); }
+    if (o.a === 0 && o.b === 0) { return new Hcl(NaN, 0, o.l, o.opacity); }
     var h = Math.atan2(o.b, o.a) * rad2deg;
     return new Hcl(h < 0 ? h + 360 : h, Math.sqrt(o.a * o.a + o.b * o.b), o.l, o.opacity);
   }
@@ -1767,10 +1776,10 @@ if (!Array.prototype.includes) {
 
   define(Hcl, hcl, extend(Color, {
     brighter: function(k) {
-      return new Hcl(this.h, this.c, this.l + Kn * (k == null ? 1 : k), this.opacity);
+      return new Hcl(this.h, this.c, this.l + K * (k == null ? 1 : k), this.opacity);
     },
     darker: function(k) {
-      return new Hcl(this.h, this.c, this.l - Kn * (k == null ? 1 : k), this.opacity);
+      return new Hcl(this.h, this.c, this.l - K * (k == null ? 1 : k), this.opacity);
     },
     rgb: function() {
       return labConvert(this).rgb();
@@ -1864,7 +1873,7 @@ if (!Array.prototype.includes) {
     return d ? linear(a, d) : constant$1(isNaN(a) ? b : a);
   }
 
-  var interpolateRgb = (function rgbGamma(y) {
+  var rgb$1 = (function rgbGamma(y) {
     var color$$1 = gamma(y);
 
     function rgb$$1(start, end) {
@@ -1886,7 +1895,7 @@ if (!Array.prototype.includes) {
     return rgb$$1;
   })(1);
 
-  function interpolateNumber(a, b) {
+  function number(a, b) {
     return a = +a, b -= a, function(t) {
       return a + b * t;
     };
@@ -1907,7 +1916,7 @@ if (!Array.prototype.includes) {
     };
   }
 
-  function interpolateString(a, b) {
+  function string(a, b) {
     var bi = reA.lastIndex = reB.lastIndex = 0, // scan index for next number in b
         am, // current match in a
         bm, // current match in b
@@ -1932,7 +1941,7 @@ if (!Array.prototype.includes) {
         else { s[++i] = bm; }
       } else { // interpolate non-matching numbers
         s[++i] = null;
-        q.push({i: i, x: interpolateNumber(am, bm)});
+        q.push({i: i, x: number(am, bm)});
       }
       bi = reB.lastIndex;
     }
@@ -2015,7 +2024,7 @@ if (!Array.prototype.includes) {
     function translate(xa, ya, xb, yb, s, q) {
       if (xa !== xb || ya !== yb) {
         var i = s.push("translate(", null, pxComma, null, pxParen);
-        q.push({i: i - 4, x: interpolateNumber(xa, xb)}, {i: i - 2, x: interpolateNumber(ya, yb)});
+        q.push({i: i - 4, x: number(xa, xb)}, {i: i - 2, x: number(ya, yb)});
       } else if (xb || yb) {
         s.push("translate(" + xb + pxComma + yb + pxParen);
       }
@@ -2024,7 +2033,7 @@ if (!Array.prototype.includes) {
     function rotate(a, b, s, q) {
       if (a !== b) {
         if (a - b > 180) { b += 360; } else if (b - a > 180) { a += 360; } // shortest path
-        q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: interpolateNumber(a, b)});
+        q.push({i: s.push(pop(s) + "rotate(", null, degParen) - 2, x: number(a, b)});
       } else if (b) {
         s.push(pop(s) + "rotate(" + b + degParen);
       }
@@ -2032,7 +2041,7 @@ if (!Array.prototype.includes) {
 
     function skewX(a, b, s, q) {
       if (a !== b) {
-        q.push({i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: interpolateNumber(a, b)});
+        q.push({i: s.push(pop(s) + "skewX(", null, degParen) - 2, x: number(a, b)});
       } else if (b) {
         s.push(pop(s) + "skewX(" + b + degParen);
       }
@@ -2041,7 +2050,7 @@ if (!Array.prototype.includes) {
     function scale(xa, ya, xb, yb, s, q) {
       if (xa !== xb || ya !== yb) {
         var i = s.push(pop(s) + "scale(", null, ",", null, ")");
-        q.push({i: i - 4, x: interpolateNumber(xa, xb)}, {i: i - 2, x: interpolateNumber(ya, yb)});
+        q.push({i: i - 4, x: number(xa, xb)}, {i: i - 2, x: number(ya, yb)});
       } else if (xb !== 1 || yb !== 1) {
         s.push(pop(s) + "scale(" + xb + "," + yb + ")");
       }
@@ -2151,10 +2160,10 @@ if (!Array.prototype.includes) {
 
   function interpolate(a, b) {
     var c;
-    return (typeof b === "number" ? interpolateNumber
-        : b instanceof color ? interpolateRgb
-        : (c = color(b)) ? (b = c, interpolateRgb)
-        : interpolateString)(a, b);
+    return (typeof b === "number" ? number
+        : b instanceof color ? rgb$1
+        : (c = color(b)) ? (b = c, rgb$1)
+        : string)(a, b);
   }
 
   function attrRemove$1(name) {
@@ -2382,10 +2391,8 @@ if (!Array.prototype.includes) {
 
   function removeFunction(id) {
     return function() {
-      var this$1 = this;
-
       var parent = this.parentNode;
-      for (var i in this$1.__transition) { if (+i !== id) { return; } }
+      for (var i in this.__transition) { if (+i !== id) { return; } }
       if (parent) { parent.removeChild(this); }
     };
   }
@@ -2674,7 +2681,22 @@ if (!Array.prototype.includes) {
       @param {*} item
   */
   function isObject(item) {
-    return item && typeof item === "object" && !Array.isArray(item) && item !== void 0 ? true : false;
+    return item &&
+      typeof item === "object" &&
+      (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) &&
+      !Array.isArray(item)
+      ? true : false;
+  }
+
+  /**
+      @function validObject
+      @desc Determines if the object passed is the document or window.
+      @param {Object} obj
+      @private
+  */
+  function validObject(obj) {
+    if (typeof window === "undefined") { return true; }
+    else { return obj !== window && obj !== document; }
   }
 
   /**
@@ -2702,38 +2724,11 @@ if (!Array.prototype.includes) {
 
         var value = source[prop];
 
-        if (isObject(value)) {
-
+        if (isObject(value) && validObject(value)) {
           if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
-          else { target[prop] = value; }
-
+          else { target[prop] = assign({}, value); }
         }
-        else if (Array.isArray(value)) {
-
-          if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
-
-            var targetArray = target[prop];
-
-            value.forEach(function (sourceItem, itemIndex) {
-
-              if (itemIndex < targetArray.length) {
-                var targetItem = targetArray[itemIndex];
-
-                if (Object.is(targetItem, sourceItem)) { return; }
-
-                if (isObject(targetItem) && isObject(sourceItem) || Array.isArray(targetItem) && Array.isArray(sourceItem)) {
-                  targetArray[itemIndex] = assign({}, targetItem, sourceItem);
-                }
-                else { targetArray[itemIndex] = sourceItem; }
-
-              }
-              else { targetArray.push(sourceItem); }
-
-            });
-          }
-          else { target[prop] = value; }
-
-        }
+        else if (Array.isArray(value)) { target[prop] = value.slice(); }
         else { target[prop] = value; }
 
       });
@@ -2958,48 +2953,34 @@ if (!Array.prototype.includes) {
       return property in this && delete this[property];
     },
     clear: function() {
-      var this$1 = this;
-
-      for (var property in this$1) { if (property[0] === prefix) { delete this$1[property]; } }
+      for (var property in this) { if (property[0] === prefix) { delete this[property]; } }
     },
     keys: function() {
-      var this$1 = this;
-
       var keys = [];
-      for (var property in this$1) { if (property[0] === prefix) { keys.push(property.slice(1)); } }
+      for (var property in this) { if (property[0] === prefix) { keys.push(property.slice(1)); } }
       return keys;
     },
     values: function() {
-      var this$1 = this;
-
       var values = [];
-      for (var property in this$1) { if (property[0] === prefix) { values.push(this$1[property]); } }
+      for (var property in this) { if (property[0] === prefix) { values.push(this[property]); } }
       return values;
     },
     entries: function() {
-      var this$1 = this;
-
       var entries = [];
-      for (var property in this$1) { if (property[0] === prefix) { entries.push({key: property.slice(1), value: this$1[property]}); } }
+      for (var property in this) { if (property[0] === prefix) { entries.push({key: property.slice(1), value: this[property]}); } }
       return entries;
     },
     size: function() {
-      var this$1 = this;
-
       var size = 0;
-      for (var property in this$1) { if (property[0] === prefix) { ++size; } }
+      for (var property in this) { if (property[0] === prefix) { ++size; } }
       return size;
     },
     empty: function() {
-      var this$1 = this;
-
-      for (var property in this$1) { if (property[0] === prefix) { return false; } }
+      for (var property in this) { if (property[0] === prefix) { return false; } }
       return true;
     },
     each: function(f) {
-      var this$1 = this;
-
-      for (var property in this$1) { if (property[0] === prefix) { f(this$1[property], property.slice(1), this$1); } }
+      for (var property in this) { if (property[0] === prefix) { f(this[property], property.slice(1), this); } }
     }
   };
 
@@ -3093,7 +3074,7 @@ if (!Array.prototype.includes) {
 
   /**!
    * @fileOverview Kickass library to create and place poppers near their reference elements.
-   * @version 1.14.3
+   * @version 1.14.6
    * @license
    * Copyright (c) 2016 Federico Zivolo and contributors
    *
@@ -3190,7 +3171,8 @@ if (!Array.prototype.includes) {
       return [];
     }
     // NOTE: 1 DOM access here
-    var css = getComputedStyle(element, null);
+    var window = element.ownerDocument.defaultView;
+    var css = window.getComputedStyle(element, null);
     return property ? css[property] : css;
   }
 
@@ -3278,7 +3260,7 @@ if (!Array.prototype.includes) {
     var noOffsetParent = isIE(10) ? document.body : null;
 
     // NOTE: 1 DOM access here
-    var offsetParent = element.offsetParent;
+    var offsetParent = element.offsetParent || null;
     // Skip hidden elements which don't have an offsetParent
     while (offsetParent === noOffsetParent && element.nextElementSibling) {
       offsetParent = (element = element.nextElementSibling).offsetParent;
@@ -3290,9 +3272,9 @@ if (!Array.prototype.includes) {
       return element ? element.ownerDocument.documentElement : document.documentElement;
     }
 
-    // .offsetParent will return the closest TD or TABLE in case
+    // .offsetParent will return the closest TH, TD or TABLE in case
     // no offsetParent is present, I hate this job...
-    if (['TD', 'TABLE'].indexOf(offsetParent.nodeName) !== -1 && getStyleComputedProperty(offsetParent, 'position') === 'static') {
+    if (['TH', 'TD', 'TABLE'].indexOf(offsetParent.nodeName) !== -1 && getStyleComputedProperty(offsetParent, 'position') === 'static') {
       return getOffsetParent(offsetParent);
     }
 
@@ -3430,10 +3412,10 @@ if (!Array.prototype.includes) {
   }
 
   function getSize(axis, body, html, computedStyle) {
-    return Math.max(body['offset' + axis], body['scroll' + axis], html['client' + axis], html['offset' + axis], html['scroll' + axis], isIE(10) ? html['offset' + axis] + computedStyle['margin' + (axis === 'Height' ? 'Top' : 'Left')] + computedStyle['margin' + (axis === 'Height' ? 'Bottom' : 'Right')] : 0);
+    return Math.max(body['offset' + axis], body['scroll' + axis], html['client' + axis], html['offset' + axis], html['scroll' + axis], isIE(10) ? parseInt(html['offset' + axis]) + parseInt(computedStyle['margin' + (axis === 'Height' ? 'Top' : 'Left')]) + parseInt(computedStyle['margin' + (axis === 'Height' ? 'Bottom' : 'Right')]) : 0);
   }
 
-  function getWindowSizes() {
+  function getWindowSizes(document) {
     var body = document.body;
     var html = document.documentElement;
     var computedStyle = isIE(10) && getComputedStyle(html);
@@ -3552,7 +3534,7 @@ if (!Array.prototype.includes) {
     };
 
     // subtract scrollbar size from sizes
-    var sizes = element.nodeName === 'HTML' ? getWindowSizes() : {};
+    var sizes = element.nodeName === 'HTML' ? getWindowSizes(element.ownerDocument) : {};
     var width = sizes.width || element.clientWidth || result.right - result.left;
     var height = sizes.height || element.clientHeight || result.bottom - result.top;
 
@@ -3587,7 +3569,7 @@ if (!Array.prototype.includes) {
     var borderLeftWidth = parseFloat(styles.borderLeftWidth, 10);
 
     // In cases where the parent is fixed, we must ignore negative scroll in offset calc
-    if (fixedPosition && parent.nodeName === 'HTML') {
+    if (fixedPosition && isHTML) {
       parentRect.top = Math.max(parentRect.top, 0);
       parentRect.left = Math.max(parentRect.left, 0);
     }
@@ -3725,7 +3707,7 @@ if (!Array.prototype.includes) {
 
       // In case of HTML, we need a different computation
       if (boundariesNode.nodeName === 'HTML' && !isFixed(offsetParent)) {
-        var _getWindowSizes = getWindowSizes(),
+        var _getWindowSizes = getWindowSizes(popper.ownerDocument),
             height = _getWindowSizes.height,
             width = _getWindowSizes.width;
 
@@ -3740,10 +3722,12 @@ if (!Array.prototype.includes) {
     }
 
     // Add paddings
-    boundaries.left += padding;
-    boundaries.top += padding;
-    boundaries.right -= padding;
-    boundaries.bottom -= padding;
+    padding = padding || 0;
+    var isPaddingNumber = typeof padding === 'number';
+    boundaries.left += isPaddingNumber ? padding : padding.left || 0;
+    boundaries.top += isPaddingNumber ? padding : padding.top || 0;
+    boundaries.right -= isPaddingNumber ? padding : padding.right || 0;
+    boundaries.bottom -= isPaddingNumber ? padding : padding.bottom || 0;
 
     return boundaries;
   }
@@ -3840,9 +3824,10 @@ if (!Array.prototype.includes) {
    * @returns {Object} object containing width and height properties
    */
   function getOuterSizes(element) {
-    var styles = getComputedStyle(element);
-    var x = parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
-    var y = parseFloat(styles.marginLeft) + parseFloat(styles.marginRight);
+    var window = element.ownerDocument.defaultView;
+    var styles = window.getComputedStyle(element);
+    var x = parseFloat(styles.marginTop || 0) + parseFloat(styles.marginBottom || 0);
+    var y = parseFloat(styles.marginLeft || 0) + parseFloat(styles.marginRight || 0);
     var result = {
       width: element.offsetWidth + y,
       height: element.offsetHeight + x
@@ -4068,7 +4053,7 @@ if (!Array.prototype.includes) {
   }
 
   /**
-   * Destroy the popper
+   * Destroys the popper.
    * @method
    * @memberof Popper
    */
@@ -4175,7 +4160,7 @@ if (!Array.prototype.includes) {
 
   /**
    * It will remove resize/scroll events and won't recalculate popper position
-   * when they are triggered. It also won't trigger onUpdate callback anymore,
+   * when they are triggered. It also won't trigger `onUpdate` callback anymore,
    * unless you call `update` method manually.
    * @method
    * @memberof Popper
@@ -4294,6 +4279,52 @@ if (!Array.prototype.includes) {
 
   /**
    * @function
+   * @memberof Popper.Utils
+   * @argument {Object} data - The data object generated by `update` method
+   * @argument {Boolean} shouldRound - If the offsets should be rounded at all
+   * @returns {Object} The popper's position offsets rounded
+   *
+   * The tale of pixel-perfect positioning. It's still not 100% perfect, but as
+   * good as it can be within reason.
+   * Discussion here: https://github.com/FezVrasta/popper.js/pull/715
+   *
+   * Low DPI screens cause a popper to be blurry if not using full pixels (Safari
+   * as well on High DPI screens).
+   *
+   * Firefox prefers no rounding for positioning and does not have blurriness on
+   * high DPI screens.
+   *
+   * Only horizontal placement and left/right values need to be considered.
+   */
+  function getRoundedOffsets(data, shouldRound) {
+    var _data$offsets = data.offsets,
+        popper = _data$offsets.popper,
+        reference = _data$offsets.reference;
+
+
+    var isVertical = ['left', 'right'].indexOf(data.placement) !== -1;
+    var isVariation = data.placement.indexOf('-') !== -1;
+    var sameWidthOddness = reference.width % 2 === popper.width % 2;
+    var bothOddWidth = reference.width % 2 === 1 && popper.width % 2 === 1;
+    var noRound = function noRound(v) {
+      return v;
+    };
+
+    var horizontalToInteger = !shouldRound ? noRound : isVertical || isVariation || sameWidthOddness ? Math.round : Math.floor;
+    var verticalToInteger = !shouldRound ? noRound : Math.round;
+
+    return {
+      left: horizontalToInteger(bothOddWidth && !isVariation && shouldRound ? popper.left - 1 : popper.left),
+      top: verticalToInteger(popper.top),
+      bottom: verticalToInteger(popper.bottom),
+      right: horizontalToInteger(popper.right)
+    };
+  }
+
+  var isFirefox = isBrowser && /Firefox/i.test(navigator.userAgent);
+
+  /**
+   * @function
    * @memberof Modifiers
    * @argument {Object} data - The data object generated by `update` method
    * @argument {Object} options - Modifiers configuration and options
@@ -4322,15 +4353,7 @@ if (!Array.prototype.includes) {
       position: popper.position
     };
 
-    // Avoid blurry text by using full pixel integers.
-    // For pixel-perfect positioning, top/bottom prefers rounded
-    // values, while left/right prefers floored values.
-    var offsets = {
-      left: Math.floor(popper.left),
-      top: Math.round(popper.top),
-      bottom: Math.round(popper.bottom),
-      right: Math.floor(popper.right)
-    };
+    var offsets = getRoundedOffsets(data, window.devicePixelRatio < 2 || !isFirefox);
 
     var sideA = x === 'bottom' ? 'top' : 'bottom';
     var sideB = y === 'right' ? 'left' : 'right';
@@ -4352,12 +4375,22 @@ if (!Array.prototype.includes) {
     var left = void 0,
         top = void 0;
     if (sideA === 'bottom') {
-      top = -offsetParentRect.height + offsets.bottom;
+      // when offsetParent is <html> the positioning is relative to the bottom of the screen (excluding the scrollbar)
+      // and not the bottom of the html element
+      if (offsetParent.nodeName === 'HTML') {
+        top = -offsetParent.clientHeight + offsets.bottom;
+      } else {
+        top = -offsetParentRect.height + offsets.bottom;
+      }
     } else {
       top = offsets.top;
     }
     if (sideB === 'right') {
-      left = -offsetParentRect.width + offsets.right;
+      if (offsetParent.nodeName === 'HTML') {
+        left = -offsetParent.clientWidth + offsets.right;
+      } else {
+        left = -offsetParentRect.width + offsets.right;
+      }
     } else {
       left = offsets.left;
     }
@@ -4466,7 +4499,7 @@ if (!Array.prototype.includes) {
 
     //
     // extends keepTogether behavior making sure the popper and its
-    // reference have enough pixels in conjuction
+    // reference have enough pixels in conjunction
     //
 
     // top/left side
@@ -4536,7 +4569,7 @@ if (!Array.prototype.includes) {
    * - `top-end` (on top of reference, right aligned)
    * - `right-start` (on right of reference, top aligned)
    * - `bottom` (on bottom, centered)
-   * - `auto-right` (on the side with more space available, alignment depends by placement)
+   * - `auto-end` (on the side with more space available, alignment depends by placement)
    *
    * @static
    * @type {Array}
@@ -5078,7 +5111,7 @@ if (!Array.prototype.includes) {
      * The `offset` modifier can shift your popper on both its axis.
      *
      * It accepts the following units:
-     * - `px` or unitless, interpreted as pixels
+     * - `px` or unit-less, interpreted as pixels
      * - `%` or `%r`, percentage relative to the length of the reference element
      * - `%p`, percentage relative to the length of the popper element
      * - `vw`, CSS viewport width unit
@@ -5086,7 +5119,7 @@ if (!Array.prototype.includes) {
      *
      * For length is intended the main axis relative to the placement of the popper.<br />
      * This means that if the placement is `top` or `bottom`, the length will be the
-     * `width`. In case of `left` or `right`, it will be the height.
+     * `width`. In case of `left` or `right`, it will be the `height`.
      *
      * You can provide a single value (as `Number` or `String`), or a pair of values
      * as `String` divided by a comma or one (or more) white spaces.<br />
@@ -5107,7 +5140,7 @@ if (!Array.prototype.includes) {
      * ```
      * > **NB**: If you desire to apply offsets to your poppers in a way that may make them overlap
      * > with their reference element, unfortunately, you will have to disable the `flip` modifier.
-     * > More on this [reading this issue](https://github.com/FezVrasta/popper.js/issues/373)
+     * > You can read more on this at this [issue](https://github.com/FezVrasta/popper.js/issues/373).
      *
      * @memberof modifiers
      * @inner
@@ -5128,7 +5161,7 @@ if (!Array.prototype.includes) {
     /**
      * Modifier used to prevent the popper from being positioned outside the boundary.
      *
-     * An scenario exists where the reference itself is not within the boundaries.<br />
+     * A scenario exists where the reference itself is not within the boundaries.<br />
      * We can say it has "escaped the boundaries" — or just "escaped".<br />
      * In this case we need to decide whether the popper should either:
      *
@@ -5158,23 +5191,23 @@ if (!Array.prototype.includes) {
       /**
        * @prop {number} padding=5
        * Amount of pixel used to define a minimum distance between the boundaries
-       * and the popper this makes sure the popper has always a little padding
+       * and the popper. This makes sure the popper always has a little padding
        * between the edges of its container
        */
       padding: 5,
       /**
        * @prop {String|HTMLElement} boundariesElement='scrollParent'
-       * Boundaries used by the modifier, can be `scrollParent`, `window`,
+       * Boundaries used by the modifier. Can be `scrollParent`, `window`,
        * `viewport` or any DOM element.
        */
       boundariesElement: 'scrollParent'
     },
 
     /**
-     * Modifier used to make sure the reference and its popper stay near eachothers
-     * without leaving any gap between the two. Expecially useful when the arrow is
-     * enabled and you want to assure it to point to its reference element.
-     * It cares only about the first axis, you can still have poppers with margin
+     * Modifier used to make sure the reference and its popper stay near each other
+     * without leaving any gap between the two. Especially useful when the arrow is
+     * enabled and you want to ensure that it points to its reference element.
+     * It cares only about the first axis. You can still have poppers with margin
      * between the popper and its reference element.
      * @memberof modifiers
      * @inner
@@ -5192,7 +5225,7 @@ if (!Array.prototype.includes) {
      * This modifier is used to move the `arrowElement` of the popper to make
      * sure it is positioned between the reference element and its popper element.
      * It will read the outer size of the `arrowElement` node to detect how many
-     * pixels of conjuction are needed.
+     * pixels of conjunction are needed.
      *
      * It has no effect if no `arrowElement` is provided.
      * @memberof modifiers
@@ -5231,7 +5264,7 @@ if (!Array.prototype.includes) {
        * @prop {String|Array} behavior='flip'
        * The behavior used to change the popper's placement. It can be one of
        * `flip`, `clockwise`, `counterclockwise` or an array with a list of valid
-       * placements (with optional variations).
+       * placements (with optional variations)
        */
       behavior: 'flip',
       /**
@@ -5241,9 +5274,9 @@ if (!Array.prototype.includes) {
       padding: 5,
       /**
        * @prop {String|HTMLElement} boundariesElement='viewport'
-       * The element which will define the boundaries of the popper position,
-       * the popper will never be placed outside of the defined boundaries
-       * (except if keepTogether is enabled)
+       * The element which will define the boundaries of the popper position.
+       * The popper will never be placed outside of the defined boundaries
+       * (except if `keepTogether` is enabled)
        */
       boundariesElement: 'viewport'
     },
@@ -5307,8 +5340,8 @@ if (!Array.prototype.includes) {
       fn: computeStyle,
       /**
        * @prop {Boolean} gpuAcceleration=true
-       * If true, it uses the CSS 3d transformation to position the popper.
-       * Otherwise, it will use the `top` and `left` properties.
+       * If true, it uses the CSS 3D transformation to position the popper.
+       * Otherwise, it will use the `top` and `left` properties
        */
       gpuAcceleration: true,
       /**
@@ -5335,7 +5368,7 @@ if (!Array.prototype.includes) {
      * Note that if you disable this modifier, you must make sure the popper element
      * has its position set to `absolute` before Popper.js can do its work!
      *
-     * Just disable this modifier and define you own to achieve the desired effect.
+     * Just disable this modifier and define your own to achieve the desired effect.
      *
      * @memberof modifiers
      * @inner
@@ -5352,27 +5385,27 @@ if (!Array.prototype.includes) {
       /**
        * @deprecated since version 1.10.0, the property moved to `computeStyle` modifier
        * @prop {Boolean} gpuAcceleration=true
-       * If true, it uses the CSS 3d transformation to position the popper.
-       * Otherwise, it will use the `top` and `left` properties.
+       * If true, it uses the CSS 3D transformation to position the popper.
+       * Otherwise, it will use the `top` and `left` properties
        */
       gpuAcceleration: undefined
     }
   };
 
   /**
-   * The `dataObject` is an object containing all the informations used by Popper.js
-   * this object get passed to modifiers and to the `onCreate` and `onUpdate` callbacks.
+   * The `dataObject` is an object containing all the information used by Popper.js.
+   * This object is passed to modifiers and to the `onCreate` and `onUpdate` callbacks.
    * @name dataObject
    * @property {Object} data.instance The Popper.js instance
    * @property {String} data.placement Placement applied to popper
    * @property {String} data.originalPlacement Placement originally defined on init
    * @property {Boolean} data.flipped True if popper has been flipped by flip modifier
-   * @property {Boolean} data.hide True if the reference element is out of boundaries, useful to know when to hide the popper.
+   * @property {Boolean} data.hide True if the reference element is out of boundaries, useful to know when to hide the popper
    * @property {HTMLElement} data.arrowElement Node used as arrow by arrow modifier
-   * @property {Object} data.styles Any CSS property defined here will be applied to the popper, it expects the JavaScript nomenclature (eg. `marginBottom`)
-   * @property {Object} data.arrowStyles Any CSS property defined here will be applied to the popper arrow, it expects the JavaScript nomenclature (eg. `marginBottom`)
+   * @property {Object} data.styles Any CSS property defined here will be applied to the popper. It expects the JavaScript nomenclature (eg. `marginBottom`)
+   * @property {Object} data.arrowStyles Any CSS property defined here will be applied to the popper arrow. It expects the JavaScript nomenclature (eg. `marginBottom`)
    * @property {Object} data.boundaries Offsets of the popper boundaries
-   * @property {Object} data.offsets The measurements of popper, reference and arrow elements.
+   * @property {Object} data.offsets The measurements of popper, reference and arrow elements
    * @property {Object} data.offsets.popper `top`, `left`, `width`, `height` values
    * @property {Object} data.offsets.reference `top`, `left`, `width`, `height` values
    * @property {Object} data.offsets.arrow] `top` and `left` offsets, only one of them will be different from 0
@@ -5380,9 +5413,9 @@ if (!Array.prototype.includes) {
 
   /**
    * Default options provided to Popper.js constructor.<br />
-   * These can be overriden using the `options` argument of Popper.js.<br />
-   * To override an option, simply pass as 3rd argument an object with the same
-   * structure of this object, example:
+   * These can be overridden using the `options` argument of Popper.js.<br />
+   * To override an option, simply pass an object with the same
+   * structure of the `options` object, as the 3rd argument. For example:
    * ```
    * new Popper(ref, pop, {
    *   modifiers: {
@@ -5396,7 +5429,7 @@ if (!Array.prototype.includes) {
    */
   var Defaults = {
     /**
-     * Popper's placement
+     * Popper's placement.
      * @prop {Popper.placements} placement='bottom'
      */
     placement: 'bottom',
@@ -5408,7 +5441,7 @@ if (!Array.prototype.includes) {
     positionFixed: false,
 
     /**
-     * Whether events (resize, scroll) are initially enabled
+     * Whether events (resize, scroll) are initially enabled.
      * @prop {Boolean} eventsEnabled=true
      */
     eventsEnabled: true,
@@ -5422,17 +5455,17 @@ if (!Array.prototype.includes) {
 
     /**
      * Callback called when the popper is created.<br />
-     * By default, is set to no-op.<br />
+     * By default, it is set to no-op.<br />
      * Access Popper.js instance with `data.instance`.
      * @prop {onCreate}
      */
     onCreate: function onCreate() {},
 
     /**
-     * Callback called when the popper is updated, this callback is not called
+     * Callback called when the popper is updated. This callback is not called
      * on the initialization/creation of the popper, but only on subsequent
      * updates.<br />
-     * By default, is set to no-op.<br />
+     * By default, it is set to no-op.<br />
      * Access Popper.js instance with `data.instance`.
      * @prop {onUpdate}
      */
@@ -5440,7 +5473,7 @@ if (!Array.prototype.includes) {
 
     /**
      * List of modifiers used to modify the offsets before they are applied to the popper.
-     * They provide most of the functionalities of Popper.js
+     * They provide most of the functionalities of Popper.js.
      * @prop {modifiers}
      */
     modifiers: modifiers
@@ -5460,10 +5493,10 @@ if (!Array.prototype.includes) {
   // Methods
   var Popper = function () {
     /**
-     * Create a new Popper.js instance
+     * Creates a new Popper.js instance.
      * @class Popper
      * @param {HTMLElement|referenceObject} reference - The reference element used to position the popper
-     * @param {HTMLElement} popper - The HTML element used as popper.
+     * @param {HTMLElement} popper - The HTML element used as the popper
      * @param {Object} options - Your custom options to override the ones defined in [Defaults](#defaults)
      * @return {Object} instance - The generated Popper.js instance
      */
@@ -5559,7 +5592,7 @@ if (!Array.prototype.includes) {
       }
 
       /**
-       * Schedule an update, it will run on the next UI update available
+       * Schedules an update. It will run on the next UI update available.
        * @method scheduleUpdate
        * @memberof Popper
        */
@@ -5596,7 +5629,7 @@ if (!Array.prototype.includes) {
    * new Popper(referenceObject, popperNode);
    * ```
    *
-   * NB: This feature isn't supported in Internet Explorer 10
+   * NB: This feature isn't supported in Internet Explorer 10.
    * @name referenceObject
    * @property {Function} data.getBoundingClientRect
    * A function that returns a set of coordinates compatible with the native `getBoundingClientRect` method.
@@ -5616,7 +5649,7 @@ if (!Array.prototype.includes) {
       @extends BaseClass
       @desc Creates HTML tooltips in the body of a webpage.
   */
-  var Tooltip = (function (BaseClass$$1) {
+  var Tooltip = /*@__PURE__*/(function (BaseClass$$1) {
     function Tooltip() {
 
       BaseClass$$1.call(this);
@@ -5658,6 +5691,7 @@ if (!Array.prototype.includes) {
       this._offset = constant$2(5);
       this._padding = constant$2("5px");
       this._pointerEvents = constant$2("auto");
+      this._popperClasses = {};
       this._position = function (d) { return [d.x, d.y]; };
       this._prefix = prefix$1();
       this._tableStyle = {
@@ -5784,27 +5818,14 @@ if (!Array.prototype.includes) {
 
       divElement("arrow");
 
-      enter.call(boxStyles);
-
-      var t = transition().duration(this._duration);
-
-      update
+      enter
         .attr("id", function (d, i) { return ("d3plus-tooltip-" + (d ? this$1._id(d, i) : "")); })
-        .transition(t)
-          .style("opacity", 1)
-          .call(boxStyles);
+        .call(boxStyles)
+        .each(function (d, i) {
 
-      tooltips.exit()
-        .transition(t)
-          .style("opacity", 0)
-        .remove();
-
-      for (var i = 0; i < this._data.length; i++) {
-        var d = that._data[i];
-
-        if (d) {
-          var tooltip = document.getElementById(("d3plus-tooltip-" + (that._id(d, i))));
-          var arrow = document.getElementById(("d3plus-tooltip-arrow-" + (that._id(d, i))));
+          var id = that._id(d, i);
+          var tooltip = document.getElementById(("d3plus-tooltip-" + id));
+          var arrow = document.getElementById(("d3plus-tooltip-arrow-" + id));
           var arrowHeight = arrow.offsetHeight;
           var arrowDistance = arrow.getBoundingClientRect().height / 2;
           arrow.style.bottom = "-" + (arrowHeight / 2) + "px";
@@ -5823,9 +5844,9 @@ if (!Array.prototype.includes) {
               height: 0
             }); }
           }
-            : that._position(d, i);
+            : position;
 
-          new Popper(referenceObject, tooltip, {
+          this$1._popperClasses[id] = new Popper(referenceObject, tooltip, {
             placement: "top",
             placements: ["top", "bottom", "left", "right"],
             modifiers: {
@@ -5843,13 +5864,6 @@ if (!Array.prototype.includes) {
                 boundariesElement: "viewport"
               }
             },
-            onCreate: function onCreate(ref) {
-              var instance = ref.instance;
-
-              document.onmousemove = function () {
-                instance.scheduleUpdate();
-              };
-            },
             onUpdate: function onUpdate(ref) {
               var arrowElement = ref.arrowElement;
               var flipped = ref.flipped;
@@ -5862,10 +5876,51 @@ if (!Array.prototype.includes) {
                 arrowElement.style.transform = "rotate(45deg)";
                 arrowElement.style.bottom = "-" + (arrowHeight / 2) + "px";
               }
-            }
+            },
+            removeOnDestroy: true
           });
-        }
-      }
+
+        });
+
+      var t = transition().duration(this._duration);
+
+      update
+        .each(function (d, i) {
+          var id = that._id(d, i);
+          var position = that._position(d, i);
+          var instance = this$1._popperClasses[id];
+
+          var referenceObject = Array.isArray(position) ? {
+            clientWidth: 0,
+            clientHeight: 0,
+            getBoundingClientRect: function () { return ({
+              top: position[1],
+              right: position[0],
+              bottom: position[1],
+              left: position[0],
+              width: 0,
+              height: 0
+            }); }
+          }
+            : position;
+          instance.reference = referenceObject;
+          instance.scheduleUpdate();
+
+        })
+        .transition(t)
+          .style("opacity", 1)
+          .call(boxStyles);
+
+      tooltips.exit()
+        .transition(t)
+          .style("opacity", 0)
+        .on("end", function (d, i) {
+          var id = that._id(d, i);
+          var instance = this$1._popperClasses[id];
+          delete this$1._popperClasses[id];
+          instance.destroy();
+        })
+        .remove();
 
       if (callback) { setTimeout(callback, this._duration + 100); }
 
