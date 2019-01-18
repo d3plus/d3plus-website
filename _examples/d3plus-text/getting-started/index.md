@@ -2,8 +2,8 @@
 title: Wrapping SVG Text
 width: 700
 height: 75
-time: 1546555717817
-date: January 03, 2019
+time: 1547846737705
+date: January 18, 2019
 ---
 
 [width]: 700
@@ -15,8 +15,8 @@ Without a doubt, the most commonly requested part of the [d3plus-text](https://g
 
 ```js
 var data = [
-  {text: "Here is some sample text that has been wrapped using d3plus.textBox."},
-  {text: "...and here is a second sentence!"},
+  {text: "Here is <i>some</i> sample text that has been <strong>wrapped</strong> using d3plus.textBox."},
+  {text: "...and here is a <b>second</b> sentence!"},
   {text: "这是句3号。这也即使包装没有空格！"}
 ];
 ```
