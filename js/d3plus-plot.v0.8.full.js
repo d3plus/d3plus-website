@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.5
+  d3plus-plot v0.8.6
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -35739,8 +35739,10 @@ if (!Array.prototype.includes) {
         stroke: constant("#CCC"),
         strokeWidth: constant(1)
       };
+      this._discrete = "metric";
       this._hover = true;
       this._levels = 6;
+      this._metric = accessor("metric");
       this._radarPadding = 100;
       this._shape = constant("Path");
       this._shapeConfig = assign(this._shapeConfig, {
@@ -35750,8 +35752,6 @@ if (!Array.prototype.includes) {
         Path: {}
       });
       this._value = accessor("value");
-      this._x = accessor("x");
-      this._y = accessor("y");
     }
 
     if ( Viz$$1 ) Radar.__proto__ = Viz$$1;
@@ -35772,13 +35772,15 @@ if (!Array.prototype.includes) {
       var radius = (Math.min(height, width) - this._radarPadding) / 2,
             transform = "translate(" + (width / 2) + ", " + (height / 2) + ")";
 
-      var maxValue = Math.max.apply(Math, this._filteredData.map(function (d, i) { return this$1._value(d, i); })),
-            nestedAxisData = nest()
-          .key(this._y)
+      var nestedAxisData = nest()
+          .key(this._metric)
           .entries(this._filteredData),
             nestedGroupData = nest()
-          .key(this._x)
+          .key(this._id)
+          .key(this._metric)
           .entries(this._filteredData);
+
+      var maxValue = max(nestedGroupData.map(function (h) { return h.values.map(function (d) { return sum(d.values, function (x, i) { return this$1._value(x, i); }); }); }).flat());
 
       var circularAxis = Array.from(Array(this._levels).keys()).map(function (d) { return ({
         id: d,
@@ -35882,7 +35884,8 @@ if (!Array.prototype.includes) {
 
       var groupData = nestedGroupData.map(function (h) {
         var q = h.values.map(function (d, i) {
-          var r = this$1._value(d, i) / maxValue * radius,
+          var value = sum(d.values, function (x, i) { return this$1._value(x, i); });
+          var r = value / maxValue * radius,
                 radians = tau$3 / totalAxis * i;
           return {
             x: r * Math.cos(radians),
@@ -35894,7 +35897,7 @@ if (!Array.prototype.includes) {
           .map(function (l) { return ("L " + (l.x) + " " + (l.y)); })
           .join(" ")) + " L " + (q[0].x) + " " + (q[0].y);
 
-        return {id: h.key, d: d};
+        return {id: h.key, d: d, __d3plus__: true, data: assign.apply(void 0, merge(h.values.map(function (d) { return d.values; })))};
       });
 
       this._shapes.push(
@@ -35913,6 +35916,16 @@ if (!Array.prototype.includes) {
       );
 
       return this;
+    };
+
+    /**
+        @memberof Radar
+        @desc Defines the value used as axis. If *value* is specified, sets the accessor to the specified metric function. If *value* is not specified, returns the current metric accessor.
+        @param {Function|String} *value*
+        @chainable
+    */
+    Radar.prototype.metric = function metric (_) {
+      return arguments.length ? (this._metric = typeof _ === "function" ? _ : accessor(_), this) : this._metric;
     };
 
     /**
@@ -35940,52 +35953,6 @@ if (!Array.prototype.includes) {
       return arguments.length
         ? (this._value = typeof _ === "function" ? _ : accessor(_), this)
         : this._value;
-    };
-
-    /**
-        @memberof Plot
-        @desc Sets the x accessor to the specified function or number. If *value* is not specified, returns the current x accessor.
-        @param {Function|Number} *value*
-        @chainable
-    */
-    Radar.prototype.x = function x (_) {
-      if (arguments.length) {
-        if (typeof _ === "function") { this._x = _; }
-        else {
-          this._x = accessor(_);
-          if (!this._aggs[_] && this._discrete === "x") {
-            this._aggs[_] = function (a) {
-              var v = Array.from(new Set(a));
-              return v.length === 1 ? v[0] : v;
-            };
-          }
-        }
-        return this;
-      }
-      else { return this._x; }
-    };
-
-    /**
-        @memberof Plot
-        @desc Sets the y accessor to the specified function or number. If *value* is not specified, returns the current y accessor.
-        @param {Function|Number} *value*
-        @chainable
-    */
-    Radar.prototype.y = function y (_) {
-      if (arguments.length) {
-        if (typeof _ === "function") { this._y = _; }
-        else {
-          this._y = accessor(_);
-          if (!this._aggs[_] && this._discrete === "y") {
-            this._aggs[_] = function (a) {
-              var v = Array.from(new Set(a));
-              return v.length === 1 ? v[0] : v;
-            };
-          }
-        }
-        return this;
-      }
-      else { return this._y; }
     };
 
     return Radar;
