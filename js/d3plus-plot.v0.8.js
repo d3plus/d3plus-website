@@ -423,7 +423,7 @@ if (!Array.prototype.includes) {
       @extends Viz
       @desc Creates an x/y plot based on an array of data.
   */
-  var Plot = (function (Viz) {
+  var Plot = /*@__PURE__*/(function (Viz) {
     function Plot() {
       var this$1 = this;
 
@@ -586,7 +586,7 @@ if (!Array.prototype.includes) {
         if (x2Time) { d.x2 = d3plusAxis.date(d.x2); }
         if (yTime) { d.y = d3plusAxis.date(d.y); }
         if (y2Time) { d.y2 = d3plusAxis.date(d.y2); }
-        d.discrete = d.shape === "Bar" ? ((d[this$1._discrete]) + "_" + (d.group)) : ("" + (d[this$1._discrete]));
+        d.discrete = d.shape === "Bar" ? ((d[this._discrete]) + "_" + (d.group)) : ("" + (d[this._discrete]));
       }
 
       var discreteKeys, domains, stackData, stackKeys;
@@ -1580,7 +1580,7 @@ if (!Array.prototype.includes) {
     .discrete("x")
     .shape("Area")
   */
-  var AreaPlot = (function (Plot$$1) {
+  var AreaPlot = /*@__PURE__*/(function (Plot$$1) {
     function AreaPlot() {
 
       Plot$$1.call(this);
@@ -1608,7 +1608,7 @@ if (!Array.prototype.includes) {
     .discrete("x")
     .shape("Bar")
   */
-  var BarChart = (function (Plot$$1) {
+  var BarChart = /*@__PURE__*/(function (Plot$$1) {
     function BarChart() {
 
       Plot$$1.call(this);
@@ -1635,7 +1635,7 @@ if (!Array.prototype.includes) {
     .discrete("x")
     .shape("Box")
   */
-  var BoxWhisker = (function (Plot$$1) {
+  var BoxWhisker = /*@__PURE__*/(function (Plot$$1) {
     function BoxWhisker() {
       var this$1 = this;
 
@@ -1698,7 +1698,7 @@ if (!Array.prototype.includes) {
     .ySort((a, b) => b.y - a.y)
     .y2Sort((a, b) => b.y - a.y)
   */
-  var BumpChart = (function (Plot$$1) {
+  var BumpChart = /*@__PURE__*/(function (Plot$$1) {
     function BumpChart() {
       var this$1 = this;
 
@@ -1747,7 +1747,7 @@ if (!Array.prototype.includes) {
     .discrete("x")
     .shape("Line")
   */
-  var LinePlot = (function (Plot$$1) {
+  var LinePlot = /*@__PURE__*/(function (Plot$$1) {
     function LinePlot() {
 
       Plot$$1.call(this);
@@ -1776,7 +1776,7 @@ if (!Array.prototype.includes) {
       @extends Plot
       @desc Creates a radar visualization based on an array of data.
   */
-  var Radar = (function (Viz) {
+  var Radar = /*@__PURE__*/(function (Viz) {
     function Radar() {
       Viz.call(this);
 
@@ -2012,7 +2012,7 @@ if (!Array.prototype.includes) {
   new d3plus.AreaPlot()
     .stacked(true)
   */
-  var StackedArea = (function (AreaPlot$$1) {
+  var StackedArea = /*@__PURE__*/(function (AreaPlot$$1) {
     function StackedArea() {
 
       AreaPlot$$1.call(this);
