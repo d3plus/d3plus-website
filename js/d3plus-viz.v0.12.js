@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.7
+  d3plus-viz v0.12.8
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -516,6 +516,7 @@ if (!Array.prototype.includes) {
 
       var hidden = function (d, i) {
         var id = this$1._id(d, i);
+        if (id instanceof Array) { id = id[0]; }
         return this$1._hidden.includes(id) || this$1._solo.length && !this$1._solo.includes(id);
       };
 
@@ -808,27 +809,34 @@ if (!Array.prototype.includes) {
       @private
   */
   function clickLegend(d, i) {
+    var this$1 = this;
+
 
     this._select.style("cursor", "auto");
     if (this._tooltip) { this._tooltipClass.data([]).render(); }
 
     var id = this._id(d, i);
-    var hiddenIndex = this._hidden.indexOf(id);
-    var soloIndex = this._solo.indexOf(id);
-    var dataLength = this._legendClass.data().length;
+    if (!(id instanceof Array)) { id = [id]; }
+    var hiddenIndex = this._hidden.indexOf(id[0]);
+    var soloIndex = this._solo.indexOf(id[0]);
+    var dataLength = d3Array.merge(this._legendClass.data().map(function (d, i) {
+      var id = this$1._id(d, i);
+      if (!(id instanceof Array)) { id = [id]; }
+      return id;
+    })).length;
 
     if (d3Selection.event.shiftKey) {
       if (soloIndex < 0) {
-        this._solo = [id];
+        this._solo = id;
         this._hidden = [];
         this.render();
       }
     }
     else {
-      if (soloIndex >= 0) { this._solo.splice(soloIndex, 1); }
-      else if (this._solo.length) { this._solo.push(id); }
-      else if (hiddenIndex >= 0) { this._hidden.splice(hiddenIndex, 1); }
-      else { this._hidden.push(id); }
+      if (soloIndex >= 0) { this._solo.splice(soloIndex, id.length); }
+      else if (this._solo.length) { this._solo = this._solo.concat(id); }
+      else if (hiddenIndex >= 0) { this._hidden.splice(hiddenIndex, id.length); }
+      else { this._hidden = this._hidden.concat(id); }
       if (this._solo.length === dataLength) { this._solo = []; }
       if (this._hidden.length === dataLength) { this._hidden = []; }
       this.render();
@@ -878,11 +886,20 @@ if (!Array.prototype.includes) {
       @private
   */
   function mousemoveLegend(d, i) {
+    var this$1 = this;
+
     var position = d3Selection.event.touches ? [d3Selection.event.touches[0].clientX, d3Selection.event.touches[0].clientY] : [d3Selection.event.clientX, d3Selection.event.clientY];
-    var dataLength = this._legendClass.data().length;
+    var dataLength = d3Array.merge(this._legendClass.data().map(function (d, i) {
+      var id = this$1._id(d, i);
+      if (!(id instanceof Array)) { id = [id]; }
+      return id;
+    })).length;
 
     if (this._tooltip && d) {
+
       var id = this._id(d, i);
+      if (id instanceof Array) { id = id[0]; }
+
       this._select.style("cursor", "pointer");
       this._tooltipClass.data([d])
         .footer(this._solo.length && !this._solo.includes(id) ? "Click to Show<br />Shift+Click to Solo"
@@ -894,6 +911,7 @@ if (!Array.prototype.includes) {
         .config(this._tooltipConfig)
         .config(this._legendTooltip)
         .render();
+
     }
 
   }
