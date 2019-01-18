@@ -2,7 +2,7 @@
   title: Changing the Stroke Width of a Line Plot
   width: NaN
   height: NaN
-  time: 1547829433631
+  time: 1547829589388
   date: January 18, 2019
   ---
 
