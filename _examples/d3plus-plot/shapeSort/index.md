@@ -1,10 +1,10 @@
 ---
-title: Sorting Shapes on an X/Y Plot
-width: 990
-height: 400
-time: 1546556695456
-date: January 03, 2019
----
+  title: Sorting Shapes on an X/Y Plot
+  width: NaN
+  height: NaN
+  time: 1547829019968
+  date: January 18, 2019
+  ---
 
 # Sorting Shapes on an X/Y Plot
 

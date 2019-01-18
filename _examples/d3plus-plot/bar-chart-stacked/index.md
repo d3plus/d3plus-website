@@ -1,10 +1,10 @@
 ---
-title: Stacked Bar Chart
-width: 990
-height: 400
-time: 1546556695456
-date: January 03, 2019
----
+  title: Stacked Bar Chart
+  width: NaN
+  height: NaN
+  time: 1547829019968
+  date: January 18, 2019
+  ---
 
 # Stacked Bar Chart
 

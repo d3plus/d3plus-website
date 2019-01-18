@@ -1,10 +1,10 @@
 ---
-title: Line Plot
-width: 990
-height: 400
-time: 1546556695456
-date: January 03, 2019
----
+  title: Line Plot
+  width: NaN
+  height: NaN
+  time: 1547829019968
+  date: January 18, 2019
+  ---
 
 # Line Plot
 
