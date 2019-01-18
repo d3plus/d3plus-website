@@ -1,8 +1,8 @@
 ---
   title: Secondary Axis Only
-  width: NaN
-  height: NaN
-  time: 1547829608588
+  width: 0
+  height: 0
+  time: 1547829666209
   date: January 18, 2019
   ---
 

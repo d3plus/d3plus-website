@@ -1,8 +1,8 @@
 ---
   title: Radar Chart
-  width: NaN
-  height: NaN
-  time: 1547829608588
+  width: 990
+  height: 400
+  time: 1547829666209
   date: January 18, 2019
   ---
 
