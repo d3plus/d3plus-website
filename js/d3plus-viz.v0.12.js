@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.8
+  d3plus-viz v0.12.9
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -2014,6 +2014,26 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.height = function height (_) {
       return arguments.length ? (this._height = _, this) : this._height;
+    };
+
+    /**
+        @memberof Viz
+        @desc Defines the color used for legend shapes when the corresponding grouping is hidden from display (by clicking on the legend).
+        @param {Function|String} [*value* = "#aaa"]
+        @chainable
+    */
+    Viz.prototype.hiddenColor = function hiddenColor (_) {
+      return arguments.length ? (this._hiddenColor = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._hiddenColor;
+    };
+
+    /**
+        @memberof Viz
+        @desc Defines the opacity used for legend labels when the corresponding grouping is hidden from display (by clicking on the legend).
+        @param {Function|Number} [*value* = 0.5]
+        @chainable
+    */
+    Viz.prototype.hiddenOpacity = function hiddenOpacity (_) {
+      return arguments.length ? (this._hiddenOpacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._hiddenOpacity;
     };
 
     /**
