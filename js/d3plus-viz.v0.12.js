@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.6
+  d3plus-viz v0.12.7
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -513,7 +513,12 @@ if (!Array.prototype.includes) {
         .key(fill)
         .rollup(function (leaves) { return legendData.push(d3plusCommon.merge(leaves, this$1._aggs)); })
         .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
-      
+
+      var hidden = function (d, i) {
+        var id = this$1._id(d, i);
+        return this$1._hidden.includes(id) || this$1._solo.length && !this$1._solo.includes(id);
+      };
+
       this._legendClass
         .id(fill)
         .align(wide ? "center" : position)
@@ -526,7 +531,13 @@ if (!Array.prototype.includes) {
         .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
         .shapeConfig(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "legend"))
         .config(this._legendConfig)
-        .shapeConfig({fill: color, opacity: opacity})
+        .shapeConfig({
+          fill: function (d, i) { return hidden(d, i) ? this$1._hiddenColor(d, i) : color(d, i); },
+          labelConfig: {
+            fontOpacity: function (d, i) { return hidden(d, i) ? this$1._hiddenOpacity(d, i) : 1; }
+          },
+          opacity: opacity
+        })
         .render();
 
       if (!this._legendConfig.select && legendBounds.height) {
@@ -764,7 +775,7 @@ if (!Array.prototype.includes) {
       @param {Number} *i* The index of the data object being interacted with.
       @private
   */
-  function click(d, i) {
+  function clickShape(d, i) {
 
     this._select.style("cursor", "auto");
     
@@ -786,6 +797,41 @@ if (!Array.prototype.includes) {
         filter: function (f, x) { return filterGroup(f, x) === filterId; }
       }).render();
 
+    }
+
+  }
+
+  /**
+      @desc On click event for all legend shapes in a Viz.
+      @param {Object} *d* The data object being interacted with.
+      @param {Number} *i* The index of the data object being interacted with.
+      @private
+  */
+  function clickLegend(d, i) {
+
+    this._select.style("cursor", "auto");
+    if (this._tooltip) { this._tooltipClass.data([]).render(); }
+
+    var id = this._id(d, i);
+    var hiddenIndex = this._hidden.indexOf(id);
+    var soloIndex = this._solo.indexOf(id);
+    var dataLength = this._legendClass.data().length;
+
+    if (d3Selection.event.shiftKey) {
+      if (soloIndex < 0) {
+        this._solo = [id];
+        this._hidden = [];
+        this.render();
+      }
+    }
+    else {
+      if (soloIndex >= 0) { this._solo.splice(soloIndex, 1); }
+      else if (this._solo.length) { this._solo.push(id); }
+      else if (hiddenIndex >= 0) { this._hidden.splice(hiddenIndex, 1); }
+      else { this._hidden.push(id); }
+      if (this._solo.length === dataLength) { this._solo = []; }
+      if (this._hidden.length === dataLength) { this._hidden = []; }
+      this.render();
     }
 
   }
@@ -831,13 +877,18 @@ if (!Array.prototype.includes) {
       @param {Object} [*config*] Optional configuration methods for the Tooltip class.
       @private
   */
-  function mousemoveLegend(d) {
+  function mousemoveLegend(d, i) {
     var position = d3Selection.event.touches ? [d3Selection.event.touches[0].clientX, d3Selection.event.touches[0].clientY] : [d3Selection.event.clientX, d3Selection.event.clientY];
+    var dataLength = this._legendClass.data().length;
 
     if (this._tooltip && d) {
+      var id = this._id(d, i);
       this._select.style("cursor", "pointer");
       this._tooltipClass.data([d])
-        .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
+        .footer(this._solo.length && !this._solo.includes(id) ? "Click to Show<br />Shift+Click to Solo"
+        : this._solo.length === 1 && this._solo.includes(id) || this._hidden.length === dataLength - 1 ? "Click to Reset"
+        : this._solo.includes(id) ? "Click to Hide"
+        : ((this._hidden.includes(id) ? "Click to Show" : "Click to Hide") + "<br />Shift+Click to Solo"))
         .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
         .position(position)
         .config(this._tooltipConfig)
@@ -1170,7 +1221,7 @@ if (!Array.prototype.includes) {
       @extends external:BaseClass
       @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
   */
-  var Viz = (function (BaseClass) {
+  var Viz = /*@__PURE__*/(function (BaseClass) {
     function Viz() {
       var this$1 = this;
 
@@ -1208,6 +1259,9 @@ if (!Array.prototype.includes) {
       this._downloadConfig = {type: "png"};
       this._downloadPosition = "top";
       this._duration = 600;
+      this._hidden = [];
+      this._hiddenColor = d3plusCommon.constant("#aaa");
+      this._hiddenOpacity = d3plusCommon.constant(0.5);
       this._history = [];
       this._groupBy = [d3plusCommon.accessor("id")];
       this._legend = true;
@@ -1245,7 +1299,8 @@ if (!Array.prototype.includes) {
 
       this._noDataMessage = true;
       this._on = {
-        "click": click.bind(this),
+        "click.shape": clickShape.bind(this),
+        "click.legend": clickLegend.bind(this),
         "mouseenter": mouseenter.bind(this),
         "mouseleave": mouseleave.bind(this),
         "mousemove.shape": mousemoveShape.bind(this),
@@ -1288,6 +1343,7 @@ if (!Array.prototype.includes) {
         role: "presentation",
         strokeWidth: d3plusCommon.constant(0)
       };
+      this._solo = [];
       this._svgDesc = "";
       this._svgTitle = "";
 
@@ -1416,17 +1472,22 @@ if (!Array.prototype.includes) {
       }
 
       this._filteredData = [];
+      this._legendData = [];
       var flatData = [];
       if (this._data.length) {
 
         flatData = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
         if (this._filter) { flatData = flatData.filter(this._filter); }
-
         var dataNest = d3Collection.nest();
-        for (var i$1 = 0; i$1 <= this._drawDepth; i$1++) { dataNest.key(this$1._groupBy[i$1]); }
+        for (var i$1 = 0; i$1 <= this._drawDepth; i$1++) { dataNest.key(this._groupBy[i$1]); }
         if (this._discrete && ("_" + (this._discrete)) in this) { dataNest.key(this[("_" + (this._discrete))]); }
         if (this._discrete && ("_" + (this._discrete) + "2") in this) { dataNest.key(this[("_" + (this._discrete) + "2")]); }
-        dataNest.rollup(function (leaves) { return this$1._filteredData.push(d3plusCommon.merge(leaves, this$1._aggs)); }).entries(flatData);
+        dataNest.rollup(function (leaves) {
+          var d = d3plusCommon.merge(leaves, this$1._aggs);
+          var id = this$1._id(d);
+          if (!this$1._hidden.includes(id) && (!this$1._solo.length || this$1._solo.includes(id))) { this$1._filteredData.push(d); }
+          this$1._legendData.push(d);
+        }).entries(flatData);
 
       }
 
@@ -1457,24 +1518,13 @@ if (!Array.prototype.includes) {
       drawTimeline.bind(this)(this._filteredData);
       drawControls.bind(this)(this._filteredData);
 
-      if (this._legendPosition === "top" || this._legendPosition === "bottom") { drawLegend.bind(this)(this._filteredData); }
+      if (this._legendPosition === "top" || this._legendPosition === "bottom") { drawLegend.bind(this)(this._legendData); }
       if (this._colorScalePosition === "top" || this._colorScalePosition === "bottom") { drawColorScale.bind(this)(this._filteredData); }
 
       this._shapes = [];
 
       // Draws a container and zoomGroup to test functionality.
-      // this._container = this._select.selectAll("svg.d3plus-viz").data([0]);
-
-      // this._container = this._container.enter().append("svg")
-      //     .attr("class", "d3plus-viz")
-      //     .attr("width", this._width - this._margin.left - this._margin.right)
-      //     .attr("height", this._height - this._margin.top - this._margin.bottom)
-      //     .attr("x", this._margin.left)
-      //     .attr("y", this._margin.top)
-      //     .style("background-color", "transparent")
-      //   .merge(this._container);
-
-      // this._zoomGroup = this._container.selectAll("g.d3plus-viz-zoomGroup").data([0]);
+      // this._zoomGroup = this._select.selectAll("g.d3plus-viz-zoomGroup").data([0]);
       // const enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
       //   .merge(this._zoomGroup);
 
@@ -1490,12 +1540,13 @@ if (!Array.prototype.includes) {
       //     mouseleave: this._on.mouseleave,
       //     mousemove: this._on["mousemove.shape"]
       //   })
-      //   .id(d => d.group)
-      //   .x(d => d.value * 10 + 200)
-      //   .y(d => d.value * 10 + 200)
+      //   .id(this._id)
+      //   .x((d, i) => i * 100 + 200)
+      //   .y(200)
       //   .width(100)
       //   .height(100)
       //   .render());
+
     };
 
     /**
@@ -1535,6 +1586,7 @@ if (!Array.prototype.includes) {
         }
 
         svg
+          .attr("class", "d3plus-viz")
           .style("width", ((this._width) + "px"))
           .style("height", ((this._height) + "px"));
 
