@@ -1901,8 +1901,8 @@ if (!Array.prototype.includes) {
         .labelBounds(function (d) { return d.labelBounds; })
         .labelConfig({
           padding: 0,
-          textAnchor: function (d) { return d.data.textAnchor; },
-          rotateAnchor: function (d) { return d.data.data.rotateAnchor; },
+          textAnchor: function (d) { return d.textAnchor; },
+          rotateAnchor: function (d) { return d.data.rotateAnchor; },
           fontColor: "black",
           verticalAlign: "middle"
         })
