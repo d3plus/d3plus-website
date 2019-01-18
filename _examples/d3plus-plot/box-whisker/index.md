@@ -1,10 +1,10 @@
 ---
-  title: Box and Whisker Chart
-  width: 990
-  height: 400
-  time: 1547829947836
-  date: January 18, 2019
-  ---
+title: Box and Whisker Chart
+width: 990
+height: 400
+time: 1547830503439
+date: January 18, 2019
+---
 
 # Box and Whisker Chart
 
