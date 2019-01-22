@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.36
+  d3plus-text v0.9.37
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -757,7 +757,9 @@ if (!Array.prototype.includes) {
 
           if (that._duration === 0) {
 
-            texts.call(textStyle);
+            texts
+              .call(textContent)
+              .call(textStyle);
 
             texts.exit().remove();
 
@@ -765,6 +767,7 @@ if (!Array.prototype.includes) {
               .attr("dominant-baseline", "alphabetic")
               .style("baseline-shift", "0%")
               .attr("unicode-bidi", "bidi-override")
+              .call(textContent)
               .call(textStyle)
               .attr("opacity", d.fO)
               .style("opacity", d.fO);
