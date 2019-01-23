@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.9
+  d3plus-viz v0.12.10
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -64,10 +64,10 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-selection'), require('d3plus-common'), require('d3plus-export'), require('d3plus-form'), require('d3-collection'), require('d3-array'), require('d3plus-axis'), require('d3-zoom'), require('d3-brush'), require('d3-color'), require('d3-queue'), require('d3-transition'), require('lrucache'), require('d3plus-color'), require('d3plus-format'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
-  typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-selection', 'd3plus-common', 'd3plus-export', 'd3plus-form', 'd3-collection', 'd3-array', 'd3plus-axis', 'd3-zoom', 'd3-brush', 'd3-color', 'd3-queue', 'd3-transition', 'lrucache', 'd3plus-color', 'd3plus-format', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
-  (factory((global.d3plus = {}),global.d3Request,global.d3Selection,global.d3plusCommon,global.d3plusExport,global.d3plusForm,global.d3Collection,global.d3Array,global.d3plusAxis,global.d3Zoom,global.d3Brush,global.d3Color,global.d3Queue,global.d3Transition,global.lrucache,global.d3plusColor,global.d3plusFormat,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
-}(this, (function (exports,d3Request,d3Selection,d3plusCommon,d3plusExport,d3plusForm,d3Collection,d3Array,d3plusAxis,d3Zoom,d3Brush,d3Color,d3Queue,d3Transition,lrucache,d3plusColor,d3plusFormat,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-selection'), require('d3plus-common'), require('d3-array'), require('d3plus-export'), require('d3plus-form'), require('d3-collection'), require('d3plus-axis'), require('d3-zoom'), require('d3-brush'), require('d3-color'), require('d3-queue'), require('d3-transition'), require('lrucache'), require('d3plus-color'), require('d3plus-format'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
+  typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-selection', 'd3plus-common', 'd3-array', 'd3plus-export', 'd3plus-form', 'd3-collection', 'd3plus-axis', 'd3-zoom', 'd3-brush', 'd3-color', 'd3-queue', 'd3-transition', 'lrucache', 'd3plus-color', 'd3plus-format', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
+  (factory((global.d3plus = {}),global.d3Request,global.d3Selection,global.d3plusCommon,global.d3Array,global.d3plusExport,global.d3plusForm,global.d3Collection,global.d3plusAxis,global.d3Zoom,global.d3Brush,global.d3Color,global.d3Queue,global.d3Transition,global.lrucache,global.d3plusColor,global.d3plusFormat,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
+}(this, (function (exports,d3Request,d3Selection,d3plusCommon,d3Array,d3plusExport,d3plusForm,d3Collection,d3plusAxis,d3Zoom,d3Brush,d3Color,d3Queue,d3Transition,lrucache,d3plusColor,d3plusFormat,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
 
   lrucache = lrucache && lrucache.hasOwnProperty('default') ? lrucache['default'] : lrucache;
 
@@ -277,9 +277,21 @@ if (!Array.prototype.includes) {
     var position = this._colorScalePosition || "bottom";
     var wide = ["top", "bottom"].includes(position);
 
+    var availableWidth = this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right);
+
+    var width = wide
+      ? d3Array.min([this._colorScaleMaxSize, availableWidth])
+      : this._width - (this._margin.left + this._margin.right);
+
+    var availableHeight = this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top);
+
+    var height = !wide
+      ? d3Array.min([this._colorScaleMaxSize, availableHeight])
+      : this._height - (this._margin.bottom + this._margin.top);
+
     var transform = {
       opacity: this._colorScalePosition ? 1 : 0,
-      transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")
+      transform: ("translate(" + (wide ? this._margin.left + this._padding.left + (availableWidth - width) / 2 : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top + (availableHeight - height) / 2) + ")")
     };
 
     var showColorScale = this._colorScale && data && data.length > 1;
@@ -302,11 +314,11 @@ if (!Array.prototype.includes) {
         .align({bottom: "end", left: "start", right: "end", top: "start"}[position] || "bottom")
         .duration(this._duration)
         .data(scaleData)
-        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
+        .height(height)
         .orient(position)
         .select(scaleGroup)
         .value(this._colorScale)
-        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
+        .width(width)
         .config(this._colorScaleConfig)
         .render();
 
@@ -321,7 +333,7 @@ if (!Array.prototype.includes) {
       this._colorScaleClass.config(this._colorScaleConfig);
     }
 
-    
+
 
   }
 
@@ -1263,6 +1275,7 @@ if (!Array.prototype.includes) {
       this._colorScaleClass = new d3plusLegend.ColorScale();
       this._colorScaleConfig = {};
       this._colorScalePosition = "bottom";
+      this._colorScaleMaxSize = 600;
       var controlTest = new d3plusForm.Select();
       this._controlCache = {};
       this._controlConfig = {
@@ -1823,6 +1836,16 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.colorScalePosition = function colorScalePosition (_) {
       return arguments.length ? (this._colorScalePosition = _, this) : this._colorScalePosition;
+    };
+
+    /**
+        @memberof Viz
+        @desc Sets the maximum pixel size for drawing the color scale: width for horizontal scales and height for vertical scales.
+        @param {Number} [*value* = 600]
+        @chainable
+    */
+    Viz.prototype.colorScaleMaxSize = function colorScaleMaxSize (_) {
+      return arguments.length ? (this._colorScaleMaxSize = _, this) : this._colorScaleMaxSize;
     };
 
     /**

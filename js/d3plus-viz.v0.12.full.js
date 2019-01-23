@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.9
+  d3plus-viz v0.12.10
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -21550,9 +21550,21 @@ if (!Array.prototype.includes) {
     var position = this._colorScalePosition || "bottom";
     var wide = ["top", "bottom"].includes(position);
 
+    var availableWidth = this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right);
+
+    var width = wide
+      ? min([this._colorScaleMaxSize, availableWidth])
+      : this._width - (this._margin.left + this._margin.right);
+
+    var availableHeight = this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top);
+
+    var height = !wide
+      ? min([this._colorScaleMaxSize, availableHeight])
+      : this._height - (this._margin.bottom + this._margin.top);
+
     var transform = {
       opacity: this._colorScalePosition ? 1 : 0,
-      transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")
+      transform: ("translate(" + (wide ? this._margin.left + this._padding.left + (availableWidth - width) / 2 : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top + (availableHeight - height) / 2) + ")")
     };
 
     var showColorScale = this._colorScale && data && data.length > 1;
@@ -21575,11 +21587,11 @@ if (!Array.prototype.includes) {
         .align({bottom: "end", left: "start", right: "end", top: "start"}[position] || "bottom")
         .duration(this._duration)
         .data(scaleData)
-        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
+        .height(height)
         .orient(position)
         .select(scaleGroup)
         .value(this._colorScale)
-        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
+        .width(width)
         .config(this._colorScaleConfig)
         .render();
 
@@ -21594,7 +21606,7 @@ if (!Array.prototype.includes) {
       this._colorScaleClass.config(this._colorScaleConfig);
     }
 
-    
+
 
   }
 
@@ -32729,6 +32741,7 @@ if (!Array.prototype.includes) {
       this._colorScaleClass = new ColorScale();
       this._colorScaleConfig = {};
       this._colorScalePosition = "bottom";
+      this._colorScaleMaxSize = 600;
       var controlTest = new Select();
       this._controlCache = {};
       this._controlConfig = {
@@ -33289,6 +33302,16 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.colorScalePosition = function colorScalePosition (_) {
       return arguments.length ? (this._colorScalePosition = _, this) : this._colorScalePosition;
+    };
+
+    /**
+        @memberof Viz
+        @desc Sets the maximum pixel size for drawing the color scale: width for horizontal scales and height for vertical scales.
+        @param {Number} [*value* = 600]
+        @chainable
+    */
+    Viz.prototype.colorScaleMaxSize = function colorScaleMaxSize (_) {
+      return arguments.length ? (this._colorScaleMaxSize = _, this) : this._colorScaleMaxSize;
     };
 
     /**
