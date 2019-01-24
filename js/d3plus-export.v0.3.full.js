@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.7
+  d3plus-export v0.3.8
   Export methods for transforming and downloading SVG.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -10445,6 +10445,9 @@ if (!Array.prototype.includes) {
 	      if (display === "none" || visibility === "hidden" || opacity && parseFloat(opacity) === 0) { return; }
 
 	      var tag$1 = this.tagName.toLowerCase();
+
+	      if (tag$1.length && ["defs", "title", "desc"].includes(tag$1)) { return; }
+
 	      var ref = parseTransform(this);
 	      var scale = ref[0];
 	      var x = ref[1];
@@ -10455,8 +10458,7 @@ if (!Array.prototype.includes) {
 	        transform.x += x;
 	        transform.y += y;
 	      }
-
-	      if (tag$1 === "svg") {
+	      else if (tag$1 === "svg") {
 	        var rect = this.getBoundingClientRect();
 	        transform.x += rect.left - offsetX;
 	        transform.y += rect.top - offsetY;
@@ -10498,7 +10500,6 @@ if (!Array.prototype.includes) {
 
 	      }
 	    }
-	    else if (tag === "defs") { return; }
 	    else if (tag === "text") {
 	      var elem = this.cloneNode(true);
 	      select(elem).call(svgPresets);
@@ -10547,29 +10548,31 @@ if (!Array.prototype.includes) {
 	    }
 	    else if (!["svg", "g", "text"].includes(tag) && !select(this).selectAll("svg").size()) {
 
+	      var s = options.scale * ratio;
+
 	      var data$1 = {
-	        height: height,
+	        height: height + options.padding * 2 + offsetY,
 	        loaded: false,
 	        type: "html",
-	        width: width,
+	        width: width + options.padding * 2 + offsetX,
 	        x: layerX - offsetX,
 	        y: layerY - offsetY
 	      };
 
 	      var tempCanvas = document.createElement("canvas");
-	      tempCanvas.width = (width + options.padding * 2) * options.scale * ratio;
-	      tempCanvas.height = (height + options.padding * 2) * options.scale * ratio;
+	      tempCanvas.width = (width + options.padding * 2 + offsetX) * s;
+	      tempCanvas.height = (height + options.padding * 2 + offsetY) * s;
+	      tempCanvas.style.width = ((width + options.padding * 2 + offsetX) * s) + "px";
+	      tempCanvas.style.height = ((height + options.padding * 2 + offsetY) * s) + "px";
 
 	      var tempContext = tempCanvas.getContext("2d");
-	      tempContext.scale(options.scale * ratio, options.scale * ratio);
+	      tempContext.scale(s, s);
 
 	      layers.push(data$1);
 
 	      html2canvas(this, {
 	        allowTaint: true,
-	        canvas: tempCanvas,
-	        height: height,
-	        width: width
+	        canvas: tempCanvas
 	      }).then(function (c) {
 	        data$1.value = c;
 	        data$1.loaded = true;
