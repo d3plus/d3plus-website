@@ -24,21 +24,24 @@ defaults:
       layout: example2
 
 navigation:
-- text: Download
-  url: /d3plus.zip
-  icon: download
+# - text: Download
+#   url: /d3plus.zip
+#   icon: download
 - text: Examples
   url: /examples/
   icon: code
 - text: Documentation
   url: /docs/
+  icon: book
 # - text: Workshops
 #   url: /workshops/
-  icon: book
+- text: Accessibility
+  url: /accessibility/
+  icon: universal-access
 - text: Blog
   url: /blog/
   icon: rss
-- text: Source
+- text: Github
   url: https://github.com/alexandersimoes/d3plus
   icon: github
 

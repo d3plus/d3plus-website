@@ -1,0 +1,81 @@
+---
+layout: default
+title: Accessibility
+style: blog
+---
+
+<div class="post-content">
+
+  <h1>Accessibility</h1>
+
+  <p>D3plus includes many accessibility features right out of the box. These features are usually derived automatically by the provided data, but can also be overrided by the developer.</p>
+
+  <h2>SVG Attributes</h2>
+
+  <aside class="aside">
+
+    <h3>Role Attribute</h3>
+    <p>All SVG elements created by D3plus contain a <code>role</code> attribute with the value "img". This ensures that all visualizations are identified as a graphic.</p>
+
+    <h3>Title Element</h3>
+    <p>If the svgTitle method is defined, a &lt;title&gt; tag will be added to the SVG, and referenced in the SVG's <code>aria-labelledby</code> attribute.</p>
+
+    <h3>Desc Element</h3>
+    <p>If the svgDesc method is defined, a &lt;desc&gt; tag will be added to the SVG, and referenced in the SVG's <code>aria-labelledby</code> attribute.</p>
+
+  </aside>
+
+  {% highlight html %}
+  <svg class="d3plus-viz" role="img"
+    aria-labelledby="
+      48cb9407-a891-4630-878f-62f4b797a974-title
+      48cb9407-a891-4630-878f-62f4b797a974-desc
+      ">
+
+    <title id="48cb9407-a891-4630-878f-62f4b797a974-title">
+      Bar Chart of Income Over Time
+    </title>
+
+    <desc id="48cb9407-a891-4630-878f-62f4b797a974-desc">
+      The income in Massachusetts has been rising steadily over the past 10 years.
+    </desc>
+
+    ...
+
+  </svg>
+  {% endhighlight %}
+
+  <h2>Shape Attributes</h2>
+
+  <aside class="aside">
+
+      <h3>Role Attribute</h3>
+      <p>All shapes created by D3plus contain a <code>role</code> attribute with the value "presentation".</p>
+
+      <h3>Aria Label</h3>
+      <p>All shapes used for visualizing data contain an <code>aria-label</code> which describes multiple data points related to the shape. At it's minimum, the value will contain the text label of the data point, but additional information is provided depending on the visualization (in this example, both the rank and the underlying data value are provided for squares in a Treemap).</p>
+
+  </aside>
+
+  {% highlight html %}
+  <rect class="d3plus-Shape d3plus-Rect d3plus-id-alpha"
+    aria-label="2. alpha, 29."
+    role="presentation"
+    opacity="1"
+    shape-rendering="geometricPrecision"
+    pointer-events="visiblePainted"
+    width="300" height="371"
+    x="-150" y="-185.5"
+    fill="#b22200"
+    fill-opacity="1"
+    rx="0" ry="0"
+    stroke="rgb(125, 24, 0)"
+    stroke-dasharray="0"
+    stroke-linecap="butt"
+    stroke-opacity="1"
+    stroke-width="0"
+    vector-effect="non-scaling-stroke">
+  </rect>
+  {% endhighlight %}
+
+</div>
