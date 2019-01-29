@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.8
+  d3plus-export v0.3.9
   Export methods for transforming and downloading SVG.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -213,38 +213,35 @@ if (!Array.prototype.includes) {
 
         if (tag$1.length && ["defs", "title", "desc"].includes(tag$1)) { return; }
 
-        var ref = parseTransform(this);
-        var scale = ref[0];
-        var x = ref[1];
-        var y = ref[2];
+        if (tag$1 === "svg") {
 
-        if (tag$1 === "g") {
-          transform.scale *= scale;
+          // do not perform this transform for SVGs nested within other SVGs
+          if (!transform.svg) {
+            var ref = this.getBoundingClientRect();
+            var left = ref.left;
+            var top = ref.top;
+            transform.x += left - offsetX;
+            transform.y += top - offsetY;
+            transform.svg = true;
+          }
+
+          var x = d3Selection.select(this).attr("x");
+          x = x ? parseFloat(x) * transform.scale : 0;
           transform.x += x;
+          var y = d3Selection.select(this).attr("y");
+          y = y ? parseFloat(y) * transform.scale : 0;
           transform.y += y;
-        }
-        else if (tag$1 === "svg") {
-          var rect = this.getBoundingClientRect();
-          transform.x += rect.left - offsetX;
-          transform.y += rect.top - offsetY;
-
-          var x$1 = d3Selection.select(this).attr("x");
-          x$1 = x$1 ? parseFloat(x$1) * transform.scale : 0;
-          transform.x += x$1;
-          var y$1 = d3Selection.select(this).attr("y");
-          y$1 = y$1 ? parseFloat(y$1) * transform.scale : 0;
-          transform.y += y$1;
           transform.clip = {
             height: parseFloat(d3Selection.select(this).attr("height") || d3Selection.select(this).style("height")),
             width: parseFloat(d3Selection.select(this).attr("width") || d3Selection.select(this).style("width")),
-            x: x$1, y: y$1
+            x: x, y: y
           };
         }
         else {
-          var x$2 = d3Selection.select(this).attr("x");
-          if (x$2) { transform.x += parseFloat(x$2) * transform.scale; }
-          var y$2 = d3Selection.select(this).attr("y");
-          if (y$2) { transform.y += parseFloat(y$2) * transform.scale; }
+          var x$1 = d3Selection.select(this).attr("x");
+          if (x$1) { transform.x += parseFloat(x$1) * transform.scale; }
+          var y$1 = d3Selection.select(this).attr("y");
+          if (y$1) { transform.y += parseFloat(y$1) * transform.scale; }
         }
 
       }
@@ -358,7 +355,7 @@ if (!Array.prototype.includes) {
       else if (this.childNodes.length > 0) {
         checkChildren(this, transform);
       }
-      else { // catches all SVG shapes=
+      else { // catches all SVG shapes
 
         var elem$2 = this.cloneNode(true);
         d3Selection.select(elem$2).selectAll("*").each(function() {
@@ -373,10 +370,10 @@ if (!Array.prototype.includes) {
         }
         else if (tag === "path") {
           var ref$1 = parseTransform(elem$2);
-          var scale$1 = ref$1[0];
-          var x$3 = ref$1[1];
-          var y$3 = ref$1[2];
-          if (d3Selection.select(elem$2).attr("transform")) { d3Selection.select(elem$2).attr("transform", ("scale(" + scale$1 + ")translate(" + (x$3 + transform.x) + "," + (y$3 + transform.y) + ")")); }
+          var scale = ref$1[0];
+          var x$2 = ref$1[1];
+          var y$2 = ref$1[2];
+          if (d3Selection.select(elem$2).attr("transform")) { d3Selection.select(elem$2).attr("transform", ("scale(" + scale + ")translate(" + (x$2 + transform.x) + "," + (y$2 + transform.y) + ")")); }
         }
         d3Selection.select(elem$2).call(svgPresets);
 
@@ -391,12 +388,12 @@ if (!Array.prototype.includes) {
           if (defTag === "pattern") {
 
             var ref$2 = parseTransform(elem$2);
-            var scale$2 = ref$2[0];
-            var x$4 = ref$2[1];
-            var y$4 = ref$2[2];
-            transform.scale *= scale$2;
-            transform.x += x$4;
-            transform.y += y$4;
+            var scale$1 = ref$2[0];
+            var x$3 = ref$2[1];
+            var y$3 = ref$2[2];
+            transform.scale *= scale$1;
+            transform.x += x$3;
+            transform.y += y$3;
             checkChildren(def, transform);
 
           }
@@ -415,7 +412,7 @@ if (!Array.prototype.includes) {
     for (var i = 0; i < elem.length; i++) {
 
       var e = elem[i],
-          options$1 = {scale: 1, x: 0, y: 0};
+          options$1 = {scale: 1, x: 0, y: 0, svg: false};
 
       if (e.constructor === Object) {
         options$1 = Object.assign(options$1, e);
