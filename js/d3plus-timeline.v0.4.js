@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.4.8
+  d3plus-timeline v0.4.9
   An easy-to-use javascript timeline.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -348,7 +348,7 @@ if (!Array.prototype.includes) {
         this._scale = "ordinal";
         this._labelRotation = 0;
         if (!this._brushing) { this._handleSize = 0; }
-        var domain = this._domain.map(d3plusAxis.date).map(this._tickFormat).map(Number);
+        var domain = d3Scale.scaleTime().domain(this._domain.map(d3plusAxis.date)).ticks().map(this._tickFormat).map(Number);
 
         this._domain = this._ticks ? this._ticks.map(d3plusAxis.date) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) { return domain[0] + x; }).map(d3plusAxis.date);
 
@@ -370,7 +370,7 @@ if (!Array.prototype.includes) {
         ];
       }
 
-      if (this._ticks) { this._domain = this._buttonBehavior === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(d3plusAxis.date); }
+      if (this._ticks) { this._domain = this._buttonBehaviorCurrent === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(d3plusAxis.date); }
 
       this._labels = this._ticks;
 
