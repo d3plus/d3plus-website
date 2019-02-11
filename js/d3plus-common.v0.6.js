@@ -1,7 +1,7 @@
 /*
-  d3plus-common v0.6.44
+  d3plus-common v0.6.45
   Common functions and methods used across D3plus modules.
-  Copyright (c) 2018 D3plus - https://d3plus.org
+  Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -222,13 +222,11 @@ if (!Array.prototype.includes) {
       @chainable
   */
   BaseClass.prototype.config = function config (_) {
-      var this$1 = this;
-
     if (!this._configDefault) {
       var config = {};
-      for (var k in this$1.__proto__) {
+      for (var k in this.__proto__) {
         if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
-          var v = this$1[k]();
+          var v = this[k]();
           config[k] = isObject(v) ? assign({}, v) : v;
         }
       }
@@ -236,15 +234,15 @@ if (!Array.prototype.includes) {
     }
     if (arguments.length) {
       for (var k$1 in _) {
-        if ({}.hasOwnProperty.call(_, k$1) && k$1 in this$1) {
+        if ({}.hasOwnProperty.call(_, k$1) && k$1 in this) {
           var v$1 = _[k$1];
           if (v$1 === RESET) {
-            if (k$1 === "on") { this$1._on = this$1._configDefault[k$1]; }
-            else { this$1[k$1](this$1._configDefault[k$1]); }
+            if (k$1 === "on") { this._on = this._configDefault[k$1]; }
+            else { this[k$1](this._configDefault[k$1]); }
           }
           else {
-            nestedReset(v$1, this$1._configDefault[k$1]);
-            this$1[k$1](v$1);
+            nestedReset(v$1, this._configDefault[k$1]);
+            this[k$1](v$1);
           }
         }
       }
@@ -252,7 +250,7 @@ if (!Array.prototype.includes) {
     }
     else {
       var config$1 = {};
-      for (var k$2 in this$1.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this$1[k$2](); } }
+      for (var k$2 in this.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this[k$2](); } }
       return config$1;
     }
   };
