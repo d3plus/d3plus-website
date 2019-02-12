@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.38
+  d3plus-text v0.9.39
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -134,75 +134,73 @@ if (!String.prototype.startsWith) {
   });
 }
 
-if (!SVGElement.prototype.innerHTML) {
-  (function () {
-    var serializeXML = function (node, output) {
-      var nodeType = node.nodeType;
-      if (nodeType === 3) {
-        output.push(node.textContent.replace(/&/, '&amp;').replace(/</, '&lt;').replace('>', '&gt;'));
-      } else if (nodeType === 1) {
-        output.push('<', node.tagName);
-        if (node.hasAttributes()) {
-          [].forEach.call(node.attributes, function(attrNode){
-            output.push(' ', attrNode.item.name, '=\'', attrNode.item.value, '\'');
-          })
-        }
-        if (node.hasChildNodes()) {
-          output.push('>');
-          [].forEach.call(node.childNodes, function(childNode){
-            serializeXML(childNode, output);
-          })
-          output.push('</', node.tagName, '>');
-        } else {
-          output.push('/>');
-        }
-      } else if (nodeType == 8) {
-        output.push('<!--', node.nodeValue, '-->');
+(function () {
+  var serializeXML = function (node, output) {
+    var nodeType = node.nodeType;
+    if (nodeType === 3) {
+      output.push(node.textContent.replace(/&/, '&amp;').replace(/</, '&lt;').replace('>', '&gt;'));
+    } else if (nodeType === 1) {
+      output.push('<', node.tagName);
+      if (node.hasAttributes()) {
+        [].forEach.call(node.attributes, function(attrNode){
+          output.push(' ', attrNode.item.name, '=\'', attrNode.item.value, '\'');
+        })
       }
-    }
-
-    Object.defineProperty(SVGElement.prototype, 'innerHTML', {
-      get: function () {
-        var output = [];
-        var childNode = this.firstChild;
-        while (childNode) {
+      if (node.hasChildNodes()) {
+        output.push('>');
+        [].forEach.call(node.childNodes, function(childNode){
           serializeXML(childNode, output);
+        })
+        output.push('</', node.tagName, '>');
+      } else {
+        output.push('/>');
+      }
+    } else if (nodeType == 8) {
+      output.push('<!--', node.nodeValue, '-->');
+    }
+  }
+
+  Object.defineProperty(SVGElement.prototype, 'innerHTML', {
+    get: function () {
+      var output = [];
+      var childNode = this.firstChild;
+      while (childNode) {
+        serializeXML(childNode, output);
+        childNode = childNode.nextSibling;
+      }
+      return output.join('');
+    },
+    set: function (markupText) {
+      while (this.firstChild) {
+        this.removeChild(this.firstChild);
+      }
+
+      try {
+        var dXML = new DOMParser();
+        dXML.async = false;
+
+        var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markupText + '</svg>';
+        var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
+
+        var childNode = svgDocElement.firstChild;
+        while (childNode) {
+          this.appendChild(this.ownerDocument.importNode(childNode, true));
           childNode = childNode.nextSibling;
         }
-        return output.join('');
-      },
-      set: function (markupText) {
-        while (this.firstChild) {
-          this.removeChild(this.firstChild);
-        }
+      } catch (e) {};
+    }
+  });
 
-        try {
-          var dXML = new DOMParser();
-          dXML.async = false;
+  Object.defineProperty(SVGElement.prototype, 'innerSVG', {
+    get: function () {
+      return this.innerHTML;
+    },
+    set: function (markup) {
+      this.innerHTML = markup;
+    }
+  });
 
-          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markupText + '</svg>';
-          var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
-
-          var childNode = svgDocElement.firstChild;
-          while (childNode) {
-            this.appendChild(this.ownerDocument.importNode(childNode, true));
-            childNode = childNode.nextSibling;
-          }
-        } catch (e) {};
-      }
-    });
-
-    Object.defineProperty(SVGElement.prototype, 'innerSVG', {
-      get: function () {
-        return this.innerHTML;
-      },
-      set: function (markup) {
-        this.innerHTML = markup;
-      }
-    });
-
-  })();
-}
+})();
 
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-array'), require('d3-transition'), require('d3plus-common')) :
@@ -859,13 +857,13 @@ if (!SVGElement.prototype.innerHTML) {
 
             text
               [that._html ? "html" : "text"](function (t) { return trimRight(t)
-                .replace(/(<[^>^\/]+>)([^<^>]+)$/g, function (str, a, b) { return ("" + a + b + (a.replace("<", "</"))); })
-                .replace(/^([^<^>]+)(<\/[^>]+>)/g, function (str, a, b) { return ("" + (b.replace("</", "<")) + a + b); })
+                .replace(/<([^A-z^/]+)/g, function (str, a) { return ("&lt;" + a); }).replace(/<$/g, "&lt;") // replaces all non-HTML left angle brackets with escaped entity
+                .replace(/(<[^>^\/]+>)([^<^>]+)$/g, function (str, a, b) { return ("" + a + b + (a.replace("<", "</"))); }) // ands end tag to lines before mid-HTML break
+                .replace(/^([^<^>]+)(<\/[^>]+>)/g, function (str, a, b) { return ("" + (b.replace("</", "<")) + a + b); }) // ands start tag to lines after mid-HTML break
                 .replace(/<([A-z]+)[^>]*>([^<^>]+)<\/[^>]+>/g, function (str, a, b) {
                   var tag = tagLookup[a] ? ("<tspan style=\"" + (tagLookup[a]) + "\">") : "";
                   return ("" + (tag.length ? tag : "") + b + (tag.length ? "</tspan>" : ""));
-                }); }
-              );
+                }); });
 
           }
 
