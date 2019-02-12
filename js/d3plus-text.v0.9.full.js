@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.37
+  d3plus-text v0.9.38
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -61,6 +61,147 @@ if (!Array.prototype.includes) {
       return false;
     }
   });
+}
+
+if (!String.prototype.includes) {
+  Object.defineProperty(String.prototype, 'includes', {
+    value: function(search, start) {
+      if (typeof start !== 'number') {
+        start = 0
+      }
+
+      if (start + search.length > this.length) {
+        return false
+      } else {
+        return this.indexOf(search, start) !== -1
+      }
+    }
+  })
+}
+
+if (!Array.prototype.find) {
+  Object.defineProperty(Array.prototype, 'find', {
+    value: function(predicate) {
+     // 1. Let O be ? ToObject(this value).
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+      if (typeof predicate !== 'function') {
+        throw new TypeError('predicate must be a function');
+      }
+
+      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+      var thisArg = arguments[1];
+
+      // 5. Let k be 0.
+      var k = 0;
+
+      // 6. Repeat, while k < len
+      while (k < len) {
+        // a. Let Pk be ! ToString(k).
+        // b. Let kValue be ? Get(O, Pk).
+        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+        // d. If testResult is true, return kValue.
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) {
+          return kValue;
+        }
+        // e. Increase k by 1.
+        k++;
+      }
+
+      // 7. Return undefined.
+      return undefined;
+    },
+    configurable: true,
+    writable: true
+  });
+}
+
+if (!String.prototype.startsWith) {
+  Object.defineProperty(String.prototype, 'startsWith', {
+      value: function(search, pos) {
+          pos = !pos || pos < 0 ? 0 : +pos;
+          return this.substring(pos, pos + search.length) === search;
+      }
+  });
+}
+
+if (!SVGElement.prototype.innerHTML) {
+  (function () {
+    var serializeXML = function (node, output) {
+      var nodeType = node.nodeType;
+      if (nodeType === 3) {
+        output.push(node.textContent.replace(/&/, '&amp;').replace(/</, '&lt;').replace('>', '&gt;'));
+      } else if (nodeType === 1) {
+        output.push('<', node.tagName);
+        if (node.hasAttributes()) {
+          [].forEach.call(node.attributes, function(attrNode){
+            output.push(' ', attrNode.item.name, '=\'', attrNode.item.value, '\'');
+          })
+        }
+        if (node.hasChildNodes()) {
+          output.push('>');
+          [].forEach.call(node.childNodes, function(childNode){
+            serializeXML(childNode, output);
+          })
+          output.push('</', node.tagName, '>');
+        } else {
+          output.push('/>');
+        }
+      } else if (nodeType == 8) {
+        output.push('<!--', node.nodeValue, '-->');
+      }
+    }
+
+    Object.defineProperty(SVGElement.prototype, 'innerHTML', {
+      get: function () {
+        var output = [];
+        var childNode = this.firstChild;
+        while (childNode) {
+          serializeXML(childNode, output);
+          childNode = childNode.nextSibling;
+        }
+        return output.join('');
+      },
+      set: function (markupText) {
+        while (this.firstChild) {
+          this.removeChild(this.firstChild);
+        }
+
+        try {
+          var dXML = new DOMParser();
+          dXML.async = false;
+
+          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markupText + '</svg>';
+          var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
+
+          var childNode = svgDocElement.firstChild;
+          while (childNode) {
+            this.appendChild(this.ownerDocument.importNode(childNode, true));
+            childNode = childNode.nextSibling;
+          }
+        } catch (e) {};
+      }
+    });
+
+    Object.defineProperty(SVGElement.prototype, 'innerSVG', {
+      get: function () {
+        return this.innerHTML;
+      },
+      set: function (markup) {
+        this.innerHTML = markup;
+      }
+    });
+
+  })();
 }
 
 (function (global, factory) {
@@ -256,31 +397,14 @@ if (!Array.prototype.includes) {
     return new Selection(subgroups, parents);
   }
 
-  var matcher = function(selector) {
+  function matcher(selector) {
     return function() {
       return this.matches(selector);
     };
-  };
-
-  if (typeof document !== "undefined") {
-    var element = document.documentElement;
-    if (!element.matches) {
-      var vendorMatches = element.webkitMatchesSelector
-          || element.msMatchesSelector
-          || element.mozMatchesSelector
-          || element.oMatchesSelector;
-      matcher = function(selector) {
-        return function() {
-          return vendorMatches.call(this, selector);
-        };
-      };
-    }
   }
 
-  var matcher$1 = matcher;
-
   function selection_filter(match) {
-    if (typeof match !== "function") { match = matcher$1(match); }
+    if (typeof match !== "function") { match = matcher(match); }
 
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
       for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
@@ -442,6 +566,14 @@ if (!Array.prototype.includes) {
     return new Selection(this._exit || this._groups.map(sparse), this._parents);
   }
 
+  function selection_join(onenter, onupdate, onexit) {
+    var enter = this.enter(), update = this, exit = this.exit();
+    enter = typeof onenter === "function" ? onenter(enter) : enter.append(onenter + "");
+    if (onupdate != null) { update = onupdate(update); }
+    if (onexit == null) { exit.remove(); } else { onexit(exit); }
+    return enter && update ? enter.merge(update).order() : update;
+  }
+
   function selection_merge(selection$$1) {
 
     for (var groups0 = this._groups, groups1 = selection$$1._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
@@ -464,7 +596,7 @@ if (!Array.prototype.includes) {
     for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
       for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
         if (node = group[i]) {
-          if (next && next !== node.nextSibling) { next.parentNode.insertBefore(node, next); }
+          if (next && node.compareDocumentPosition(next) ^ 4) { next.parentNode.insertBefore(node, next); }
           next = node;
         }
       }
@@ -860,8 +992,8 @@ if (!Array.prototype.includes) {
   var filterEvents = {};
 
   if (typeof document !== "undefined") {
-    var element$1 = document.documentElement;
-    if (!("onmouseenter" in element$1)) {
+    var element = document.documentElement;
+    if (!("onmouseenter" in element)) {
       filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
     }
   }
@@ -1001,6 +1133,7 @@ if (!Array.prototype.includes) {
     data: selection_data,
     enter: selection_enter,
     exit: selection_exit,
+    join: selection_join,
     merge: selection_merge,
     order: selection_order,
     sort: selection_sort,
@@ -1302,7 +1435,7 @@ if (!Array.prototype.includes) {
     return t;
   }
 
-  var emptyOn = dispatch("start", "end", "interrupt");
+  var emptyOn = dispatch("start", "end", "cancel", "interrupt");
   var emptyTween = [];
 
   var CREATED = 0;
@@ -1340,7 +1473,7 @@ if (!Array.prototype.includes) {
 
   function set$1(node, id) {
     var schedule = get$1(node, id);
-    if (schedule.state > STARTING) { throw new Error("too late; already started"); }
+    if (schedule.state > STARTED) { throw new Error("too late; already running"); }
     return schedule;
   }
 
@@ -1383,7 +1516,6 @@ if (!Array.prototype.includes) {
         if (o.state === STARTED) { return timeout$1(start); }
 
         // Interrupt the active transition, if any.
-        // Dispatch the interrupt event.
         if (o.state === RUNNING) {
           o.state = ENDED;
           o.timer.stop();
@@ -1391,12 +1523,11 @@ if (!Array.prototype.includes) {
           delete schedules[i];
         }
 
-        // Cancel any pre-empted transitions. No interrupt event is dispatched
-        // because the cancelled transitions never started. Note that this also
-        // removes this transition from the pending list!
+        // Cancel any pre-empted transitions.
         else if (+i < id) {
           o.state = ENDED;
           o.timer.stop();
+          o.on.call("cancel", node, node.__data__, o.index, o.group);
           delete schedules[i];
         }
       }
@@ -1436,7 +1567,7 @@ if (!Array.prototype.includes) {
           n = tween.length;
 
       while (++i < n) {
-        tween[i].call(null, t);
+        tween[i].call(node, t);
       }
 
       // Dispatch the end event.
@@ -1471,7 +1602,7 @@ if (!Array.prototype.includes) {
       active = schedule$$1.state > STARTING && schedule$$1.state < ENDING;
       schedule$$1.state = ENDED;
       schedule$$1.timer.stop();
-      if (active) { schedule$$1.on.call("interrupt", node, node.__data__, schedule$$1.index, schedule$$1.group); }
+      schedule$$1.on.call(active ? "interrupt" : "cancel", node, node.__data__, schedule$$1.index, schedule$$1.group);
       delete schedules[i];
     }
 
@@ -2341,52 +2472,56 @@ if (!Array.prototype.includes) {
   }
 
   function attrConstant$1(name, interpolate$$1, value1) {
-    var value00,
+    var string00,
+        string1 = value1 + "",
         interpolate0;
     return function() {
-      var value0 = this.getAttribute(name);
-      return value0 === value1 ? null
-          : value0 === value00 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value1);
+      var string0 = this.getAttribute(name);
+      return string0 === string1 ? null
+          : string0 === string00 ? interpolate0
+          : interpolate0 = interpolate$$1(string00 = string0, value1);
     };
   }
 
   function attrConstantNS$1(fullname, interpolate$$1, value1) {
-    var value00,
+    var string00,
+        string1 = value1 + "",
         interpolate0;
     return function() {
-      var value0 = this.getAttributeNS(fullname.space, fullname.local);
-      return value0 === value1 ? null
-          : value0 === value00 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value1);
+      var string0 = this.getAttributeNS(fullname.space, fullname.local);
+      return string0 === string1 ? null
+          : string0 === string00 ? interpolate0
+          : interpolate0 = interpolate$$1(string00 = string0, value1);
     };
   }
 
   function attrFunction$1(name, interpolate$$1, value$$1) {
-    var value00,
-        value10,
+    var string00,
+        string10,
         interpolate0;
     return function() {
-      var value0, value1 = value$$1(this);
+      var string0, value1 = value$$1(this), string1;
       if (value1 == null) { return void this.removeAttribute(name); }
-      value0 = this.getAttribute(name);
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+      string0 = this.getAttribute(name);
+      string1 = value1 + "";
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : (string10 = string1, interpolate0 = interpolate$$1(string00 = string0, value1));
     };
   }
 
   function attrFunctionNS$1(fullname, interpolate$$1, value$$1) {
-    var value00,
-        value10,
+    var string00,
+        string10,
         interpolate0;
     return function() {
-      var value0, value1 = value$$1(this);
+      var string0, value1 = value$$1(this), string1;
       if (value1 == null) { return void this.removeAttributeNS(fullname.space, fullname.local); }
-      value0 = this.getAttributeNS(fullname.space, fullname.local);
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+      string0 = this.getAttributeNS(fullname.space, fullname.local);
+      string1 = value1 + "";
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : (string10 = string1, interpolate0 = interpolate$$1(string00 = string0, value1));
     };
   }
 
@@ -2395,26 +2530,38 @@ if (!Array.prototype.includes) {
     return this.attrTween(name, typeof value$$1 === "function"
         ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value$$1))
         : value$$1 == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
-        : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value$$1 + ""));
+        : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value$$1));
+  }
+
+  function attrInterpolate(name, i) {
+    return function(t) {
+      this.setAttribute(name, i(t));
+    };
+  }
+
+  function attrInterpolateNS(fullname, i) {
+    return function(t) {
+      this.setAttributeNS(fullname.space, fullname.local, i(t));
+    };
   }
 
   function attrTweenNS(fullname, value) {
+    var t0, i0;
     function tween() {
-      var node = this, i = value.apply(node, arguments);
-      return i && function(t) {
-        node.setAttributeNS(fullname.space, fullname.local, i(t));
-      };
+      var i = value.apply(this, arguments);
+      if (i !== i0) { t0 = (i0 = i) && attrInterpolateNS(fullname, i); }
+      return t0;
     }
     tween._value = value;
     return tween;
   }
 
   function attrTween(name, value) {
+    var t0, i0;
     function tween() {
-      var node = this, i = value.apply(node, arguments);
-      return i && function(t) {
-        node.setAttribute(name, i(t));
-      };
+      var i = value.apply(this, arguments);
+      if (i !== i0) { t0 = (i0 = i) && attrInterpolate(name, i); }
+      return t0;
     }
     tween._value = value;
     return tween;
@@ -2489,7 +2636,7 @@ if (!Array.prototype.includes) {
   }
 
   function transition_filter(match) {
-    if (typeof match !== "function") { match = matcher$1(match); }
+    if (typeof match !== "function") { match = matcher(match); }
 
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
       for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
@@ -2611,66 +2758,93 @@ if (!Array.prototype.includes) {
     return new Selection$1(this._groups, this._parents);
   }
 
-  function styleRemove$1(name, interpolate$$1) {
-    var value00,
-        value10,
+  function styleNull(name, interpolate$$1) {
+    var string00,
+        string10,
         interpolate0;
     return function() {
-      var value0 = styleValue(this, name),
-          value1 = (this.style.removeProperty(name), styleValue(this, name));
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+      var string0 = styleValue(this, name),
+          string1 = (this.style.removeProperty(name), styleValue(this, name));
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : interpolate0 = interpolate$$1(string00 = string0, string10 = string1);
     };
   }
 
-  function styleRemoveEnd(name) {
+  function styleRemove$1(name) {
     return function() {
       this.style.removeProperty(name);
     };
   }
 
   function styleConstant$1(name, interpolate$$1, value1) {
-    var value00,
+    var string00,
+        string1 = value1 + "",
         interpolate0;
     return function() {
-      var value0 = styleValue(this, name);
-      return value0 === value1 ? null
-          : value0 === value00 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value1);
+      var string0 = styleValue(this, name);
+      return string0 === string1 ? null
+          : string0 === string00 ? interpolate0
+          : interpolate0 = interpolate$$1(string00 = string0, value1);
     };
   }
 
   function styleFunction$1(name, interpolate$$1, value$$1) {
-    var value00,
-        value10,
+    var string00,
+        string10,
         interpolate0;
     return function() {
-      var value0 = styleValue(this, name),
-          value1 = value$$1(this);
-      if (value1 == null) { value1 = (this.style.removeProperty(name), styleValue(this, name)); }
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+      var string0 = styleValue(this, name),
+          value1 = value$$1(this),
+          string1 = value1 + "";
+      if (value1 == null) { string1 = value1 = (this.style.removeProperty(name), styleValue(this, name)); }
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : (string10 = string1, interpolate0 = interpolate$$1(string00 = string0, value1));
+    };
+  }
+
+  function styleMaybeRemove(id, name) {
+    var on0, on1, listener0, key = "style." + name, event$$1 = "end." + key, remove;
+    return function() {
+      var schedule$$1 = set$1(this, id),
+          on = schedule$$1.on,
+          listener = schedule$$1.value[key] == null ? remove || (remove = styleRemove$1(name)) : undefined;
+
+      // If this node shared a dispatch with the previous node,
+      // just assign the updated shared dispatch and we’re done!
+      // Otherwise, copy-on-write.
+      if (on !== on0 || listener0 !== listener) { (on1 = (on0 = on).copy()).on(event$$1, listener0 = listener); }
+
+      schedule$$1.on = on1;
     };
   }
 
   function transition_style(name, value$$1, priority) {
     var i = (name += "") === "transform" ? interpolateTransformCss : interpolate;
     return value$$1 == null ? this
-            .styleTween(name, styleRemove$1(name, i))
-            .on("end.style." + name, styleRemoveEnd(name))
-        : this.styleTween(name, typeof value$$1 === "function"
-            ? styleFunction$1(name, i, tweenValue(this, "style." + name, value$$1))
-            : styleConstant$1(name, i, value$$1 + ""), priority);
+        .styleTween(name, styleNull(name, i))
+        .on("end.style." + name, styleRemove$1(name))
+      : typeof value$$1 === "function" ? this
+        .styleTween(name, styleFunction$1(name, i, tweenValue(this, "style." + name, value$$1)))
+        .each(styleMaybeRemove(this._id, name))
+      : this
+        .styleTween(name, styleConstant$1(name, i, value$$1), priority)
+        .on("end.style." + name, null);
+  }
+
+  function styleInterpolate(name, i, priority) {
+    return function(t) {
+      this.style.setProperty(name, i(t), priority);
+    };
   }
 
   function styleTween(name, value, priority) {
+    var t, i0;
     function tween() {
-      var node = this, i = value.apply(node, arguments);
-      return i && function(t) {
-        node.style.setProperty(name, i(t), priority);
-      };
+      var i = value.apply(this, arguments);
+      if (i !== i0) { t = (i0 = i) && styleInterpolate(name, i, priority); }
+      return t;
     }
     tween._value = value;
     return tween;
@@ -2725,6 +2899,31 @@ if (!Array.prototype.includes) {
     return new Transition(groups, this._parents, name, id1);
   }
 
+  function transition_end() {
+    var on0, on1, that = this, id = that._id, size = that.size();
+    return new Promise(function(resolve, reject) {
+      var cancel = {value: reject},
+          end = {value: function() { if (--size === 0) { resolve(); } }};
+
+      that.each(function() {
+        var schedule$$1 = set$1(this, id),
+            on = schedule$$1.on;
+
+        // If this node shared a dispatch with the previous node,
+        // just assign the updated shared dispatch and we’re done!
+        // Otherwise, copy-on-write.
+        if (on !== on0) {
+          on1 = (on0 = on).copy();
+          on1._.cancel.push(cancel);
+          on1._.interrupt.push(cancel);
+          on1._.end.push(end);
+        }
+
+        schedule$$1.on = on1;
+      });
+    });
+  }
+
   var id = 0;
 
   function Transition(groups, parents, name, id) {
@@ -2768,7 +2967,8 @@ if (!Array.prototype.includes) {
     tween: transition_tween,
     delay: transition_delay,
     duration: transition_duration,
-    ease: transition_ease
+    ease: transition_ease,
+    end: transition_end
   };
 
   function cubicInOut(t) {
@@ -3121,13 +3321,11 @@ if (!Array.prototype.includes) {
       @chainable
   */
   BaseClass.prototype.config = function config (_) {
-      var this$1 = this;
-
     if (!this._configDefault) {
       var config = {};
-      for (var k in this$1.__proto__) {
+      for (var k in this.__proto__) {
         if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
-          var v = this$1[k]();
+          var v = this[k]();
           config[k] = isObject(v) ? assign({}, v) : v;
         }
       }
@@ -3135,15 +3333,15 @@ if (!Array.prototype.includes) {
     }
     if (arguments.length) {
       for (var k$1 in _) {
-        if ({}.hasOwnProperty.call(_, k$1) && k$1 in this$1) {
+        if ({}.hasOwnProperty.call(_, k$1) && k$1 in this) {
           var v$1 = _[k$1];
           if (v$1 === RESET) {
-            if (k$1 === "on") { this$1._on = this$1._configDefault[k$1]; }
-            else { this$1[k$1](this$1._configDefault[k$1]); }
+            if (k$1 === "on") { this._on = this._configDefault[k$1]; }
+            else { this[k$1](this._configDefault[k$1]); }
           }
           else {
-            nestedReset(v$1, this$1._configDefault[k$1]);
-            this$1[k$1](v$1);
+            nestedReset(v$1, this._configDefault[k$1]);
+            this[k$1](v$1);
           }
         }
       }
@@ -3151,7 +3349,7 @@ if (!Array.prototype.includes) {
     }
     else {
       var config$1 = {};
-      for (var k$2 in this$1.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this$1[k$2](); } }
+      for (var k$2 in this.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this[k$2](); } }
       return config$1;
     }
   };
@@ -3207,11 +3405,1720 @@ if (!Array.prototype.includes) {
     };
   }
 
+  var xhtml$1 = "http://www.w3.org/1999/xhtml";
+
+  var namespaces$1 = {
+    svg: "http://www.w3.org/2000/svg",
+    xhtml: xhtml$1,
+    xlink: "http://www.w3.org/1999/xlink",
+    xml: "http://www.w3.org/XML/1998/namespace",
+    xmlns: "http://www.w3.org/2000/xmlns/"
+  };
+
+  function namespace$1(name) {
+    var prefix = name += "", i = prefix.indexOf(":");
+    if (i >= 0 && (prefix = name.slice(0, i)) !== "xmlns") { name = name.slice(i + 1); }
+    return namespaces$1.hasOwnProperty(prefix) ? {space: namespaces$1[prefix], local: name} : name;
+  }
+
+  function creatorInherit$1(name) {
+    return function() {
+      var document = this.ownerDocument,
+          uri = this.namespaceURI;
+      return uri === xhtml$1 && document.documentElement.namespaceURI === xhtml$1
+          ? document.createElement(name)
+          : document.createElementNS(uri, name);
+    };
+  }
+
+  function creatorFixed$1(fullname) {
+    return function() {
+      return this.ownerDocument.createElementNS(fullname.space, fullname.local);
+    };
+  }
+
+  function creator$1(name) {
+    var fullname = namespace$1(name);
+    return (fullname.local
+        ? creatorFixed$1
+        : creatorInherit$1)(fullname);
+  }
+
+  function none$1() {}
+
+  function selector$1(selector) {
+    return selector == null ? none$1 : function() {
+      return this.querySelector(selector);
+    };
+  }
+
+  function selection_select$1(select) {
+    if (typeof select !== "function") { select = selector$1(select); }
+
+    for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
+        if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
+          if ("__data__" in node) { subnode.__data__ = node.__data__; }
+          subgroup[i] = subnode;
+        }
+      }
+    }
+
+    return new Selection$2(subgroups, this._parents);
+  }
+
+  function empty$1() {
+    return [];
+  }
+
+  function selectorAll$1(selector) {
+    return selector == null ? empty$1 : function() {
+      return this.querySelectorAll(selector);
+    };
+  }
+
+  function selection_selectAll$1(select) {
+    if (typeof select !== "function") { select = selectorAll$1(select); }
+
+    for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
+        if (node = group[i]) {
+          subgroups.push(select.call(node, node.__data__, i, group));
+          parents.push(node);
+        }
+      }
+    }
+
+    return new Selection$2(subgroups, parents);
+  }
+
+  function matcher$1(selector) {
+    return function() {
+      return this.matches(selector);
+    };
+  }
+
+  function selection_filter$1(match) {
+    if (typeof match !== "function") { match = matcher$1(match); }
+
+    for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
+        if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
+          subgroup.push(node);
+        }
+      }
+    }
+
+    return new Selection$2(subgroups, this._parents);
+  }
+
+  function sparse$1(update) {
+    return new Array(update.length);
+  }
+
+  function selection_enter$1() {
+    return new Selection$2(this._enter || this._groups.map(sparse$1), this._parents);
+  }
+
+  function EnterNode$1(parent, datum) {
+    this.ownerDocument = parent.ownerDocument;
+    this.namespaceURI = parent.namespaceURI;
+    this._next = null;
+    this._parent = parent;
+    this.__data__ = datum;
+  }
+
+  EnterNode$1.prototype = {
+    constructor: EnterNode$1,
+    appendChild: function(child) { return this._parent.insertBefore(child, this._next); },
+    insertBefore: function(child, next) { return this._parent.insertBefore(child, next); },
+    querySelector: function(selector) { return this._parent.querySelector(selector); },
+    querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
+  };
+
+  function constant$4(x) {
+    return function() {
+      return x;
+    };
+  }
+
+  var keyPrefix$1 = "$"; // Protect against keys like “__proto__”.
+
+  function bindIndex$1(parent, group, enter, update, exit, data) {
+    var i = 0,
+        node,
+        groupLength = group.length,
+        dataLength = data.length;
+
+    // Put any non-null nodes that fit into update.
+    // Put any null nodes into enter.
+    // Put any remaining data into enter.
+    for (; i < dataLength; ++i) {
+      if (node = group[i]) {
+        node.__data__ = data[i];
+        update[i] = node;
+      } else {
+        enter[i] = new EnterNode$1(parent, data[i]);
+      }
+    }
+
+    // Put any non-null nodes that don’t fit into exit.
+    for (; i < groupLength; ++i) {
+      if (node = group[i]) {
+        exit[i] = node;
+      }
+    }
+  }
+
+  function bindKey$1(parent, group, enter, update, exit, data, key) {
+    var i,
+        node,
+        nodeByKeyValue = {},
+        groupLength = group.length,
+        dataLength = data.length,
+        keyValues = new Array(groupLength),
+        keyValue;
+
+    // Compute the key for each node.
+    // If multiple nodes have the same key, the duplicates are added to exit.
+    for (i = 0; i < groupLength; ++i) {
+      if (node = group[i]) {
+        keyValues[i] = keyValue = keyPrefix$1 + key.call(node, node.__data__, i, group);
+        if (keyValue in nodeByKeyValue) {
+          exit[i] = node;
+        } else {
+          nodeByKeyValue[keyValue] = node;
+        }
+      }
+    }
+
+    // Compute the key for each datum.
+    // If there a node associated with this key, join and add it to update.
+    // If there is not (or the key is a duplicate), add it to enter.
+    for (i = 0; i < dataLength; ++i) {
+      keyValue = keyPrefix$1 + key.call(parent, data[i], i, data);
+      if (node = nodeByKeyValue[keyValue]) {
+        update[i] = node;
+        node.__data__ = data[i];
+        nodeByKeyValue[keyValue] = null;
+      } else {
+        enter[i] = new EnterNode$1(parent, data[i]);
+      }
+    }
+
+    // Add any remaining nodes that were not bound to data to exit.
+    for (i = 0; i < groupLength; ++i) {
+      if ((node = group[i]) && (nodeByKeyValue[keyValues[i]] === node)) {
+        exit[i] = node;
+      }
+    }
+  }
+
+  function selection_data$1(value, key) {
+    if (!value) {
+      data = new Array(this.size()), j = -1;
+      this.each(function(d) { data[++j] = d; });
+      return data;
+    }
+
+    var bind = key ? bindKey$1 : bindIndex$1,
+        parents = this._parents,
+        groups = this._groups;
+
+    if (typeof value !== "function") { value = constant$4(value); }
+
+    for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
+      var parent = parents[j],
+          group = groups[j],
+          groupLength = group.length,
+          data = value.call(parent, parent && parent.__data__, j, parents),
+          dataLength = data.length,
+          enterGroup = enter[j] = new Array(dataLength),
+          updateGroup = update[j] = new Array(dataLength),
+          exitGroup = exit[j] = new Array(groupLength);
+
+      bind(parent, group, enterGroup, updateGroup, exitGroup, data, key);
+
+      // Now connect the enter nodes to their following update node, such that
+      // appendChild can insert the materialized enter node before this node,
+      // rather than at the end of the parent node.
+      for (var i0 = 0, i1 = 0, previous, next; i0 < dataLength; ++i0) {
+        if (previous = enterGroup[i0]) {
+          if (i0 >= i1) { i1 = i0 + 1; }
+          while (!(next = updateGroup[i1]) && ++i1 < dataLength){ }
+          previous._next = next || null;
+        }
+      }
+    }
+
+    update = new Selection$2(update, parents);
+    update._enter = enter;
+    update._exit = exit;
+    return update;
+  }
+
+  function selection_exit$1() {
+    return new Selection$2(this._exit || this._groups.map(sparse$1), this._parents);
+  }
+
+  function selection_join$1(onenter, onupdate, onexit) {
+    var enter = this.enter(), update = this, exit = this.exit();
+    enter = typeof onenter === "function" ? onenter(enter) : enter.append(onenter + "");
+    if (onupdate != null) { update = onupdate(update); }
+    if (onexit == null) { exit.remove(); } else { onexit(exit); }
+    return enter && update ? enter.merge(update).order() : update;
+  }
+
+  function selection_merge$1(selection) {
+
+    for (var groups0 = this._groups, groups1 = selection._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
+      for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
+        if (node = group0[i] || group1[i]) {
+          merge[i] = node;
+        }
+      }
+    }
+
+    for (; j < m0; ++j) {
+      merges[j] = groups0[j];
+    }
+
+    return new Selection$2(merges, this._parents);
+  }
+
+  function selection_order$1() {
+
+    for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
+      for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
+        if (node = group[i]) {
+          if (next && node.compareDocumentPosition(next) ^ 4) { next.parentNode.insertBefore(node, next); }
+          next = node;
+        }
+      }
+    }
+
+    return this;
+  }
+
+  function selection_sort$1(compare) {
+    if (!compare) { compare = ascending$2; }
+
+    function compareNode(a, b) {
+      return a && b ? compare(a.__data__, b.__data__) : !a - !b;
+    }
+
+    for (var groups = this._groups, m = groups.length, sortgroups = new Array(m), j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, sortgroup = sortgroups[j] = new Array(n), node, i = 0; i < n; ++i) {
+        if (node = group[i]) {
+          sortgroup[i] = node;
+        }
+      }
+      sortgroup.sort(compareNode);
+    }
+
+    return new Selection$2(sortgroups, this._parents).order();
+  }
+
+  function ascending$2(a, b) {
+    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+  }
+
+  function selection_call$1() {
+    var callback = arguments[0];
+    arguments[0] = this;
+    callback.apply(null, arguments);
+    return this;
+  }
+
+  function selection_nodes$1() {
+    var nodes = new Array(this.size()), i = -1;
+    this.each(function() { nodes[++i] = this; });
+    return nodes;
+  }
+
+  function selection_node$1() {
+
+    for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
+      for (var group = groups[j], i = 0, n = group.length; i < n; ++i) {
+        var node = group[i];
+        if (node) { return node; }
+      }
+    }
+
+    return null;
+  }
+
+  function selection_size$1() {
+    var size = 0;
+    this.each(function() { ++size; });
+    return size;
+  }
+
+  function selection_empty$1() {
+    return !this.node();
+  }
+
+  function selection_each$1(callback) {
+
+    for (var groups = this._groups, j = 0, m = groups.length; j < m; ++j) {
+      for (var group = groups[j], i = 0, n = group.length, node; i < n; ++i) {
+        if (node = group[i]) { callback.call(node, node.__data__, i, group); }
+      }
+    }
+
+    return this;
+  }
+
+  function attrRemove$2(name) {
+    return function() {
+      this.removeAttribute(name);
+    };
+  }
+
+  function attrRemoveNS$2(fullname) {
+    return function() {
+      this.removeAttributeNS(fullname.space, fullname.local);
+    };
+  }
+
+  function attrConstant$2(name, value) {
+    return function() {
+      this.setAttribute(name, value);
+    };
+  }
+
+  function attrConstantNS$2(fullname, value) {
+    return function() {
+      this.setAttributeNS(fullname.space, fullname.local, value);
+    };
+  }
+
+  function attrFunction$2(name, value) {
+    return function() {
+      var v = value.apply(this, arguments);
+      if (v == null) { this.removeAttribute(name); }
+      else { this.setAttribute(name, v); }
+    };
+  }
+
+  function attrFunctionNS$2(fullname, value) {
+    return function() {
+      var v = value.apply(this, arguments);
+      if (v == null) { this.removeAttributeNS(fullname.space, fullname.local); }
+      else { this.setAttributeNS(fullname.space, fullname.local, v); }
+    };
+  }
+
+  function selection_attr$1(name, value) {
+    var fullname = namespace$1(name);
+
+    if (arguments.length < 2) {
+      var node = this.node();
+      return fullname.local
+          ? node.getAttributeNS(fullname.space, fullname.local)
+          : node.getAttribute(fullname);
+    }
+
+    return this.each((value == null
+        ? (fullname.local ? attrRemoveNS$2 : attrRemove$2) : (typeof value === "function"
+        ? (fullname.local ? attrFunctionNS$2 : attrFunction$2)
+        : (fullname.local ? attrConstantNS$2 : attrConstant$2)))(fullname, value));
+  }
+
+  function defaultView$1(node) {
+    return (node.ownerDocument && node.ownerDocument.defaultView) // node is a Node
+        || (node.document && node) // node is a Window
+        || node.defaultView; // node is a Document
+  }
+
+  function styleRemove$2(name) {
+    return function() {
+      this.style.removeProperty(name);
+    };
+  }
+
+  function styleConstant$2(name, value, priority) {
+    return function() {
+      this.style.setProperty(name, value, priority);
+    };
+  }
+
+  function styleFunction$2(name, value, priority) {
+    return function() {
+      var v = value.apply(this, arguments);
+      if (v == null) { this.style.removeProperty(name); }
+      else { this.style.setProperty(name, v, priority); }
+    };
+  }
+
+  function selection_style$1(name, value, priority) {
+    return arguments.length > 1
+        ? this.each((value == null
+              ? styleRemove$2 : typeof value === "function"
+              ? styleFunction$2
+              : styleConstant$2)(name, value, priority == null ? "" : priority))
+        : styleValue$1(this.node(), name);
+  }
+
+  function styleValue$1(node, name) {
+    return node.style.getPropertyValue(name)
+        || defaultView$1(node).getComputedStyle(node, null).getPropertyValue(name);
+  }
+
+  function propertyRemove$1(name) {
+    return function() {
+      delete this[name];
+    };
+  }
+
+  function propertyConstant$1(name, value) {
+    return function() {
+      this[name] = value;
+    };
+  }
+
+  function propertyFunction$1(name, value) {
+    return function() {
+      var v = value.apply(this, arguments);
+      if (v == null) { delete this[name]; }
+      else { this[name] = v; }
+    };
+  }
+
+  function selection_property$1(name, value) {
+    return arguments.length > 1
+        ? this.each((value == null
+            ? propertyRemove$1 : typeof value === "function"
+            ? propertyFunction$1
+            : propertyConstant$1)(name, value))
+        : this.node()[name];
+  }
+
+  function classArray$1(string) {
+    return string.trim().split(/^|\s+/);
+  }
+
+  function classList$1(node) {
+    return node.classList || new ClassList$1(node);
+  }
+
+  function ClassList$1(node) {
+    this._node = node;
+    this._names = classArray$1(node.getAttribute("class") || "");
+  }
+
+  ClassList$1.prototype = {
+    add: function(name) {
+      var i = this._names.indexOf(name);
+      if (i < 0) {
+        this._names.push(name);
+        this._node.setAttribute("class", this._names.join(" "));
+      }
+    },
+    remove: function(name) {
+      var i = this._names.indexOf(name);
+      if (i >= 0) {
+        this._names.splice(i, 1);
+        this._node.setAttribute("class", this._names.join(" "));
+      }
+    },
+    contains: function(name) {
+      return this._names.indexOf(name) >= 0;
+    }
+  };
+
+  function classedAdd$1(node, names) {
+    var list = classList$1(node), i = -1, n = names.length;
+    while (++i < n) { list.add(names[i]); }
+  }
+
+  function classedRemove$1(node, names) {
+    var list = classList$1(node), i = -1, n = names.length;
+    while (++i < n) { list.remove(names[i]); }
+  }
+
+  function classedTrue$1(names) {
+    return function() {
+      classedAdd$1(this, names);
+    };
+  }
+
+  function classedFalse$1(names) {
+    return function() {
+      classedRemove$1(this, names);
+    };
+  }
+
+  function classedFunction$1(names, value) {
+    return function() {
+      (value.apply(this, arguments) ? classedAdd$1 : classedRemove$1)(this, names);
+    };
+  }
+
+  function selection_classed$1(name, value) {
+    var names = classArray$1(name + "");
+
+    if (arguments.length < 2) {
+      var list = classList$1(this.node()), i = -1, n = names.length;
+      while (++i < n) { if (!list.contains(names[i])) { return false; } }
+      return true;
+    }
+
+    return this.each((typeof value === "function"
+        ? classedFunction$1 : value
+        ? classedTrue$1
+        : classedFalse$1)(names, value));
+  }
+
+  function textRemove$1() {
+    this.textContent = "";
+  }
+
+  function textConstant$2(value) {
+    return function() {
+      this.textContent = value;
+    };
+  }
+
+  function textFunction$2(value) {
+    return function() {
+      var v = value.apply(this, arguments);
+      this.textContent = v == null ? "" : v;
+    };
+  }
+
+  function selection_text$1(value) {
+    return arguments.length
+        ? this.each(value == null
+            ? textRemove$1 : (typeof value === "function"
+            ? textFunction$2
+            : textConstant$2)(value))
+        : this.node().textContent;
+  }
+
+  function htmlRemove$1() {
+    this.innerHTML = "";
+  }
+
+  function htmlConstant$1(value) {
+    return function() {
+      this.innerHTML = value;
+    };
+  }
+
+  function htmlFunction$1(value) {
+    return function() {
+      var v = value.apply(this, arguments);
+      this.innerHTML = v == null ? "" : v;
+    };
+  }
+
+  function selection_html$1(value) {
+    return arguments.length
+        ? this.each(value == null
+            ? htmlRemove$1 : (typeof value === "function"
+            ? htmlFunction$1
+            : htmlConstant$1)(value))
+        : this.node().innerHTML;
+  }
+
+  function raise$1() {
+    if (this.nextSibling) { this.parentNode.appendChild(this); }
+  }
+
+  function selection_raise$1() {
+    return this.each(raise$1);
+  }
+
+  function lower$1() {
+    if (this.previousSibling) { this.parentNode.insertBefore(this, this.parentNode.firstChild); }
+  }
+
+  function selection_lower$1() {
+    return this.each(lower$1);
+  }
+
+  function selection_append$1(name) {
+    var create = typeof name === "function" ? name : creator$1(name);
+    return this.select(function() {
+      return this.appendChild(create.apply(this, arguments));
+    });
+  }
+
+  function constantNull$1() {
+    return null;
+  }
+
+  function selection_insert$1(name, before) {
+    var create = typeof name === "function" ? name : creator$1(name),
+        select = before == null ? constantNull$1 : typeof before === "function" ? before : selector$1(before);
+    return this.select(function() {
+      return this.insertBefore(create.apply(this, arguments), select.apply(this, arguments) || null);
+    });
+  }
+
+  function remove$1() {
+    var parent = this.parentNode;
+    if (parent) { parent.removeChild(this); }
+  }
+
+  function selection_remove$1() {
+    return this.each(remove$1);
+  }
+
+  function selection_cloneShallow$1() {
+    return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
+  }
+
+  function selection_cloneDeep$1() {
+    return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
+  }
+
+  function selection_clone$1(deep) {
+    return this.select(deep ? selection_cloneDeep$1 : selection_cloneShallow$1);
+  }
+
+  function selection_datum$1(value) {
+    return arguments.length
+        ? this.property("__data__", value)
+        : this.node().__data__;
+  }
+
+  var filterEvents$1 = {};
+
+  if (typeof document !== "undefined") {
+    var element$1 = document.documentElement;
+    if (!("onmouseenter" in element$1)) {
+      filterEvents$1 = {mouseenter: "mouseover", mouseleave: "mouseout"};
+    }
+  }
+
+  function filterContextListener$1(listener, index, group) {
+    listener = contextListener$1(listener, index, group);
+    return function(event) {
+      var related = event.relatedTarget;
+      if (!related || (related !== this && !(related.compareDocumentPosition(this) & 8))) {
+        listener.call(this, event);
+      }
+    };
+  }
+
+  function contextListener$1(listener, index, group) {
+    return function(event1) {
+      try {
+        listener.call(this, this.__data__, index, group);
+      } finally {
+      }
+    };
+  }
+
+  function parseTypenames$2(typenames) {
+    return typenames.trim().split(/^|\s+/).map(function(t) {
+      var name = "", i = t.indexOf(".");
+      if (i >= 0) { name = t.slice(i + 1), t = t.slice(0, i); }
+      return {type: t, name: name};
+    });
+  }
+
+  function onRemove$1(typename) {
+    return function() {
+      var on = this.__on;
+      if (!on) { return; }
+      for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
+        if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
+          this.removeEventListener(o.type, o.listener, o.capture);
+        } else {
+          on[++i] = o;
+        }
+      }
+      if (++i) { on.length = i; }
+      else { delete this.__on; }
+    };
+  }
+
+  function onAdd$1(typename, value, capture) {
+    var wrap = filterEvents$1.hasOwnProperty(typename.type) ? filterContextListener$1 : contextListener$1;
+    return function(d, i, group) {
+      var on = this.__on, o, listener = wrap(value, i, group);
+      if (on) { for (var j = 0, m = on.length; j < m; ++j) {
+        if ((o = on[j]).type === typename.type && o.name === typename.name) {
+          this.removeEventListener(o.type, o.listener, o.capture);
+          this.addEventListener(o.type, o.listener = listener, o.capture = capture);
+          o.value = value;
+          return;
+        }
+      } }
+      this.addEventListener(typename.type, listener, capture);
+      o = {type: typename.type, name: typename.name, value: value, listener: listener, capture: capture};
+      if (!on) { this.__on = [o]; }
+      else { on.push(o); }
+    };
+  }
+
+  function selection_on$1(typename, value, capture) {
+    var typenames = parseTypenames$2(typename + ""), i, n = typenames.length, t;
+
+    if (arguments.length < 2) {
+      var on = this.node().__on;
+      if (on) { for (var j = 0, m = on.length, o; j < m; ++j) {
+        for (i = 0, o = on[j]; i < n; ++i) {
+          if ((t = typenames[i]).type === o.type && t.name === o.name) {
+            return o.value;
+          }
+        }
+      } }
+      return;
+    }
+
+    on = value ? onAdd$1 : onRemove$1;
+    if (capture == null) { capture = false; }
+    for (i = 0; i < n; ++i) { this.each(on(typenames[i], value, capture)); }
+    return this;
+  }
+
+  function dispatchEvent$1(node, type, params) {
+    var window = defaultView$1(node),
+        event = window.CustomEvent;
+
+    if (typeof event === "function") {
+      event = new event(type, params);
+    } else {
+      event = window.document.createEvent("Event");
+      if (params) { event.initEvent(type, params.bubbles, params.cancelable), event.detail = params.detail; }
+      else { event.initEvent(type, false, false); }
+    }
+
+    node.dispatchEvent(event);
+  }
+
+  function dispatchConstant$1(type, params) {
+    return function() {
+      return dispatchEvent$1(this, type, params);
+    };
+  }
+
+  function dispatchFunction$1(type, params) {
+    return function() {
+      return dispatchEvent$1(this, type, params.apply(this, arguments));
+    };
+  }
+
+  function selection_dispatch$1(type, params) {
+    return this.each((typeof params === "function"
+        ? dispatchFunction$1
+        : dispatchConstant$1)(type, params));
+  }
+
+  var root$2 = [null];
+
+  function Selection$2(groups, parents) {
+    this._groups = groups;
+    this._parents = parents;
+  }
+
+  function selection$1() {
+    return new Selection$2([[document.documentElement]], root$2);
+  }
+
+  Selection$2.prototype = selection$1.prototype = {
+    constructor: Selection$2,
+    select: selection_select$1,
+    selectAll: selection_selectAll$1,
+    filter: selection_filter$1,
+    data: selection_data$1,
+    enter: selection_enter$1,
+    exit: selection_exit$1,
+    join: selection_join$1,
+    merge: selection_merge$1,
+    order: selection_order$1,
+    sort: selection_sort$1,
+    call: selection_call$1,
+    nodes: selection_nodes$1,
+    node: selection_node$1,
+    size: selection_size$1,
+    empty: selection_empty$1,
+    each: selection_each$1,
+    attr: selection_attr$1,
+    style: selection_style$1,
+    property: selection_property$1,
+    classed: selection_classed$1,
+    text: selection_text$1,
+    html: selection_html$1,
+    raise: selection_raise$1,
+    lower: selection_lower$1,
+    append: selection_append$1,
+    insert: selection_insert$1,
+    remove: selection_remove$1,
+    clone: selection_clone$1,
+    datum: selection_datum$1,
+    on: selection_on$1,
+    dispatch: selection_dispatch$1
+  };
+
+  var emptyOn$1 = dispatch("start", "end", "cancel", "interrupt");
+  var emptyTween$1 = [];
+
+  var CREATED$1 = 0;
+  var SCHEDULED$1 = 1;
+  var STARTING$1 = 2;
+  var STARTED$1 = 3;
+  var RUNNING$1 = 4;
+  var ENDING$1 = 5;
+  var ENDED$1 = 6;
+
+  function schedule$1(node, name, id, index, group, timing) {
+    var schedules = node.__transition;
+    if (!schedules) { node.__transition = {}; }
+    else if (id in schedules) { return; }
+    create$3(node, id, {
+      name: name,
+      index: index, // For context during callback.
+      group: group, // For context during callback.
+      on: emptyOn$1,
+      tween: emptyTween$1,
+      time: timing.time,
+      delay: timing.delay,
+      duration: timing.duration,
+      ease: timing.ease,
+      timer: null,
+      state: CREATED$1
+    });
+  }
+
+  function init$1(node, id) {
+    var schedule = get$2(node, id);
+    if (schedule.state > CREATED$1) { throw new Error("too late; already scheduled"); }
+    return schedule;
+  }
+
+  function set$2(node, id) {
+    var schedule = get$2(node, id);
+    if (schedule.state > STARTED$1) { throw new Error("too late; already running"); }
+    return schedule;
+  }
+
+  function get$2(node, id) {
+    var schedule = node.__transition;
+    if (!schedule || !(schedule = schedule[id])) { throw new Error("transition not found"); }
+    return schedule;
+  }
+
+  function create$3(node, id, self) {
+    var schedules = node.__transition,
+        tween;
+
+    // Initialize the self timer when the transition is created.
+    // Note the actual delay is not known until the first callback!
+    schedules[id] = self;
+    self.timer = timer(schedule, 0, self.time);
+
+    function schedule(elapsed) {
+      self.state = SCHEDULED$1;
+      self.timer.restart(start, self.delay, self.time);
+
+      // If the elapsed delay is less than our first sleep, start immediately.
+      if (self.delay <= elapsed) { start(elapsed - self.delay); }
+    }
+
+    function start(elapsed) {
+      var i, j, n, o;
+
+      // If the state is not SCHEDULED, then we previously errored on start.
+      if (self.state !== SCHEDULED$1) { return stop(); }
+
+      for (i in schedules) {
+        o = schedules[i];
+        if (o.name !== self.name) { continue; }
+
+        // While this element already has a starting transition during this frame,
+        // defer starting an interrupting transition until that transition has a
+        // chance to tick (and possibly end); see d3/d3-transition#54!
+        if (o.state === STARTED$1) { return timeout$1(start); }
+
+        // Interrupt the active transition, if any.
+        if (o.state === RUNNING$1) {
+          o.state = ENDED$1;
+          o.timer.stop();
+          o.on.call("interrupt", node, node.__data__, o.index, o.group);
+          delete schedules[i];
+        }
+
+        // Cancel any pre-empted transitions.
+        else if (+i < id) {
+          o.state = ENDED$1;
+          o.timer.stop();
+          o.on.call("cancel", node, node.__data__, o.index, o.group);
+          delete schedules[i];
+        }
+      }
+
+      // Defer the first tick to end of the current frame; see d3/d3#1576.
+      // Note the transition may be canceled after start and before the first tick!
+      // Note this must be scheduled before the start event; see d3/d3-transition#16!
+      // Assuming this is successful, subsequent callbacks go straight to tick.
+      timeout$1(function() {
+        if (self.state === STARTED$1) {
+          self.state = RUNNING$1;
+          self.timer.restart(tick, self.delay, self.time);
+          tick(elapsed);
+        }
+      });
+
+      // Dispatch the start event.
+      // Note this must be done before the tween are initialized.
+      self.state = STARTING$1;
+      self.on.call("start", node, node.__data__, self.index, self.group);
+      if (self.state !== STARTING$1) { return; } // interrupted
+      self.state = STARTED$1;
+
+      // Initialize the tween, deleting null tween.
+      tween = new Array(n = self.tween.length);
+      for (i = 0, j = -1; i < n; ++i) {
+        if (o = self.tween[i].value.call(node, node.__data__, self.index, self.group)) {
+          tween[++j] = o;
+        }
+      }
+      tween.length = j + 1;
+    }
+
+    function tick(elapsed) {
+      var t = elapsed < self.duration ? self.ease.call(null, elapsed / self.duration) : (self.timer.restart(stop), self.state = ENDING$1, 1),
+          i = -1,
+          n = tween.length;
+
+      while (++i < n) {
+        tween[i].call(node, t);
+      }
+
+      // Dispatch the end event.
+      if (self.state === ENDING$1) {
+        self.on.call("end", node, node.__data__, self.index, self.group);
+        stop();
+      }
+    }
+
+    function stop() {
+      self.state = ENDED$1;
+      self.timer.stop();
+      delete schedules[id];
+      for (var i in schedules) { return; } // eslint-disable-line no-unused-vars
+      delete node.__transition;
+    }
+  }
+
+  function interrupt$1(node, name) {
+    var schedules = node.__transition,
+        schedule,
+        active,
+        empty = true,
+        i;
+
+    if (!schedules) { return; }
+
+    name = name == null ? null : name + "";
+
+    for (i in schedules) {
+      if ((schedule = schedules[i]).name !== name) { empty = false; continue; }
+      active = schedule.state > STARTING$1 && schedule.state < ENDING$1;
+      schedule.state = ENDED$1;
+      schedule.timer.stop();
+      schedule.on.call(active ? "interrupt" : "cancel", node, node.__data__, schedule.index, schedule.group);
+      delete schedules[i];
+    }
+
+    if (empty) { delete node.__transition; }
+  }
+
+  function selection_interrupt$1(name) {
+    return this.each(function() {
+      interrupt$1(this, name);
+    });
+  }
+
+  function tweenRemove$1(id, name) {
+    var tween0, tween1;
+    return function() {
+      var schedule = set$2(this, id),
+          tween = schedule.tween;
+
+      // If this node shared tween with the previous node,
+      // just assign the updated shared tween and we’re done!
+      // Otherwise, copy-on-write.
+      if (tween !== tween0) {
+        tween1 = tween0 = tween;
+        for (var i = 0, n = tween1.length; i < n; ++i) {
+          if (tween1[i].name === name) {
+            tween1 = tween1.slice();
+            tween1.splice(i, 1);
+            break;
+          }
+        }
+      }
+
+      schedule.tween = tween1;
+    };
+  }
+
+  function tweenFunction$1(id, name, value) {
+    var tween0, tween1;
+    if (typeof value !== "function") { throw new Error; }
+    return function() {
+      var schedule = set$2(this, id),
+          tween = schedule.tween;
+
+      // If this node shared tween with the previous node,
+      // just assign the updated shared tween and we’re done!
+      // Otherwise, copy-on-write.
+      if (tween !== tween0) {
+        tween1 = (tween0 = tween).slice();
+        for (var t = {name: name, value: value}, i = 0, n = tween1.length; i < n; ++i) {
+          if (tween1[i].name === name) {
+            tween1[i] = t;
+            break;
+          }
+        }
+        if (i === n) { tween1.push(t); }
+      }
+
+      schedule.tween = tween1;
+    };
+  }
+
+  function transition_tween$1(name, value) {
+    var id = this._id;
+
+    name += "";
+
+    if (arguments.length < 2) {
+      var tween = get$2(this.node(), id).tween;
+      for (var i = 0, n = tween.length, t; i < n; ++i) {
+        if ((t = tween[i]).name === name) {
+          return t.value;
+        }
+      }
+      return null;
+    }
+
+    return this.each((value == null ? tweenRemove$1 : tweenFunction$1)(id, name, value));
+  }
+
+  function tweenValue$1(transition, name, value) {
+    var id = transition._id;
+
+    transition.each(function() {
+      var schedule = set$2(this, id);
+      (schedule.value || (schedule.value = {}))[name] = value.apply(this, arguments);
+    });
+
+    return function(node) {
+      return get$2(node, id).value[name];
+    };
+  }
+
+  function interpolate$1(a, b) {
+    var c;
+    return (typeof b === "number" ? number
+        : b instanceof color ? rgb$1
+        : (c = color(b)) ? (b = c, rgb$1)
+        : string)(a, b);
+  }
+
+  function attrRemove$3(name) {
+    return function() {
+      this.removeAttribute(name);
+    };
+  }
+
+  function attrRemoveNS$3(fullname) {
+    return function() {
+      this.removeAttributeNS(fullname.space, fullname.local);
+    };
+  }
+
+  function attrConstant$3(name, interpolate, value1) {
+    var string00,
+        string1 = value1 + "",
+        interpolate0;
+    return function() {
+      var string0 = this.getAttribute(name);
+      return string0 === string1 ? null
+          : string0 === string00 ? interpolate0
+          : interpolate0 = interpolate(string00 = string0, value1);
+    };
+  }
+
+  function attrConstantNS$3(fullname, interpolate, value1) {
+    var string00,
+        string1 = value1 + "",
+        interpolate0;
+    return function() {
+      var string0 = this.getAttributeNS(fullname.space, fullname.local);
+      return string0 === string1 ? null
+          : string0 === string00 ? interpolate0
+          : interpolate0 = interpolate(string00 = string0, value1);
+    };
+  }
+
+  function attrFunction$3(name, interpolate, value$$1) {
+    var string00,
+        string10,
+        interpolate0;
+    return function() {
+      var string0, value1 = value$$1(this), string1;
+      if (value1 == null) { return void this.removeAttribute(name); }
+      string0 = this.getAttribute(name);
+      string1 = value1 + "";
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : (string10 = string1, interpolate0 = interpolate(string00 = string0, value1));
+    };
+  }
+
+  function attrFunctionNS$3(fullname, interpolate, value$$1) {
+    var string00,
+        string10,
+        interpolate0;
+    return function() {
+      var string0, value1 = value$$1(this), string1;
+      if (value1 == null) { return void this.removeAttributeNS(fullname.space, fullname.local); }
+      string0 = this.getAttributeNS(fullname.space, fullname.local);
+      string1 = value1 + "";
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : (string10 = string1, interpolate0 = interpolate(string00 = string0, value1));
+    };
+  }
+
+  function transition_attr$1(name, value$$1) {
+    var fullname = namespace$1(name), i = fullname === "transform" ? interpolateTransformSvg : interpolate$1;
+    return this.attrTween(name, typeof value$$1 === "function"
+        ? (fullname.local ? attrFunctionNS$3 : attrFunction$3)(fullname, i, tweenValue$1(this, "attr." + name, value$$1))
+        : value$$1 == null ? (fullname.local ? attrRemoveNS$3 : attrRemove$3)(fullname)
+        : (fullname.local ? attrConstantNS$3 : attrConstant$3)(fullname, i, value$$1));
+  }
+
+  function attrInterpolate$1(name, i) {
+    return function(t) {
+      this.setAttribute(name, i(t));
+    };
+  }
+
+  function attrInterpolateNS$1(fullname, i) {
+    return function(t) {
+      this.setAttributeNS(fullname.space, fullname.local, i(t));
+    };
+  }
+
+  function attrTweenNS$1(fullname, value) {
+    var t0, i0;
+    function tween() {
+      var i = value.apply(this, arguments);
+      if (i !== i0) { t0 = (i0 = i) && attrInterpolateNS$1(fullname, i); }
+      return t0;
+    }
+    tween._value = value;
+    return tween;
+  }
+
+  function attrTween$1(name, value) {
+    var t0, i0;
+    function tween() {
+      var i = value.apply(this, arguments);
+      if (i !== i0) { t0 = (i0 = i) && attrInterpolate$1(name, i); }
+      return t0;
+    }
+    tween._value = value;
+    return tween;
+  }
+
+  function transition_attrTween$1(name, value) {
+    var key = "attr." + name;
+    if (arguments.length < 2) { return (key = this.tween(key)) && key._value; }
+    if (value == null) { return this.tween(key, null); }
+    if (typeof value !== "function") { throw new Error; }
+    var fullname = namespace$1(name);
+    return this.tween(key, (fullname.local ? attrTweenNS$1 : attrTween$1)(fullname, value));
+  }
+
+  function delayFunction$1(id, value) {
+    return function() {
+      init$1(this, id).delay = +value.apply(this, arguments);
+    };
+  }
+
+  function delayConstant$1(id, value) {
+    return value = +value, function() {
+      init$1(this, id).delay = value;
+    };
+  }
+
+  function transition_delay$1(value) {
+    var id = this._id;
+
+    return arguments.length
+        ? this.each((typeof value === "function"
+            ? delayFunction$1
+            : delayConstant$1)(id, value))
+        : get$2(this.node(), id).delay;
+  }
+
+  function durationFunction$1(id, value) {
+    return function() {
+      set$2(this, id).duration = +value.apply(this, arguments);
+    };
+  }
+
+  function durationConstant$1(id, value) {
+    return value = +value, function() {
+      set$2(this, id).duration = value;
+    };
+  }
+
+  function transition_duration$1(value) {
+    var id = this._id;
+
+    return arguments.length
+        ? this.each((typeof value === "function"
+            ? durationFunction$1
+            : durationConstant$1)(id, value))
+        : get$2(this.node(), id).duration;
+  }
+
+  function easeConstant$1(id, value) {
+    if (typeof value !== "function") { throw new Error; }
+    return function() {
+      set$2(this, id).ease = value;
+    };
+  }
+
+  function transition_ease$1(value) {
+    var id = this._id;
+
+    return arguments.length
+        ? this.each(easeConstant$1(id, value))
+        : get$2(this.node(), id).ease;
+  }
+
+  function transition_filter$1(match) {
+    if (typeof match !== "function") { match = matcher$1(match); }
+
+    for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
+        if ((node = group[i]) && match.call(node, node.__data__, i, group)) {
+          subgroup.push(node);
+        }
+      }
+    }
+
+    return new Transition$1(subgroups, this._parents, this._name, this._id);
+  }
+
+  function transition_merge$1(transition) {
+    if (transition._id !== this._id) { throw new Error; }
+
+    for (var groups0 = this._groups, groups1 = transition._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
+      for (var group0 = groups0[j], group1 = groups1[j], n = group0.length, merge = merges[j] = new Array(n), node, i = 0; i < n; ++i) {
+        if (node = group0[i] || group1[i]) {
+          merge[i] = node;
+        }
+      }
+    }
+
+    for (; j < m0; ++j) {
+      merges[j] = groups0[j];
+    }
+
+    return new Transition$1(merges, this._parents, this._name, this._id);
+  }
+
+  function start$1(name) {
+    return (name + "").trim().split(/^|\s+/).every(function(t) {
+      var i = t.indexOf(".");
+      if (i >= 0) { t = t.slice(0, i); }
+      return !t || t === "start";
+    });
+  }
+
+  function onFunction$1(id, name, listener) {
+    var on0, on1, sit = start$1(name) ? init$1 : set$2;
+    return function() {
+      var schedule = sit(this, id),
+          on = schedule.on;
+
+      // If this node shared a dispatch with the previous node,
+      // just assign the updated shared dispatch and we’re done!
+      // Otherwise, copy-on-write.
+      if (on !== on0) { (on1 = (on0 = on).copy()).on(name, listener); }
+
+      schedule.on = on1;
+    };
+  }
+
+  function transition_on$1(name, listener) {
+    var id = this._id;
+
+    return arguments.length < 2
+        ? get$2(this.node(), id).on.on(name)
+        : this.each(onFunction$1(id, name, listener));
+  }
+
+  function removeFunction$1(id) {
+    return function() {
+      var parent = this.parentNode;
+      for (var i in this.__transition) { if (+i !== id) { return; } }
+      if (parent) { parent.removeChild(this); }
+    };
+  }
+
+  function transition_remove$1() {
+    return this.on("end.remove", removeFunction$1(this._id));
+  }
+
+  function transition_select$1(select) {
+    var name = this._name,
+        id = this._id;
+
+    if (typeof select !== "function") { select = selector$1(select); }
+
+    for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, subgroup = subgroups[j] = new Array(n), node, subnode, i = 0; i < n; ++i) {
+        if ((node = group[i]) && (subnode = select.call(node, node.__data__, i, group))) {
+          if ("__data__" in node) { subnode.__data__ = node.__data__; }
+          subgroup[i] = subnode;
+          schedule$1(subgroup[i], name, id, i, subgroup, get$2(node, id));
+        }
+      }
+    }
+
+    return new Transition$1(subgroups, this._parents, name, id);
+  }
+
+  function transition_selectAll$1(select) {
+    var name = this._name,
+        id = this._id;
+
+    if (typeof select !== "function") { select = selectorAll$1(select); }
+
+    for (var groups = this._groups, m = groups.length, subgroups = [], parents = [], j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
+        if (node = group[i]) {
+          for (var children = select.call(node, node.__data__, i, group), child, inherit = get$2(node, id), k = 0, l = children.length; k < l; ++k) {
+            if (child = children[k]) {
+              schedule$1(child, name, id, k, children, inherit);
+            }
+          }
+          subgroups.push(children);
+          parents.push(node);
+        }
+      }
+    }
+
+    return new Transition$1(subgroups, parents, name, id);
+  }
+
+  var Selection$3 = selection$1.prototype.constructor;
+
+  function transition_selection$1() {
+    return new Selection$3(this._groups, this._parents);
+  }
+
+  function styleNull$1(name, interpolate) {
+    var string00,
+        string10,
+        interpolate0;
+    return function() {
+      var string0 = styleValue$1(this, name),
+          string1 = (this.style.removeProperty(name), styleValue$1(this, name));
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : interpolate0 = interpolate(string00 = string0, string10 = string1);
+    };
+  }
+
+  function styleRemove$3(name) {
+    return function() {
+      this.style.removeProperty(name);
+    };
+  }
+
+  function styleConstant$3(name, interpolate, value1) {
+    var string00,
+        string1 = value1 + "",
+        interpolate0;
+    return function() {
+      var string0 = styleValue$1(this, name);
+      return string0 === string1 ? null
+          : string0 === string00 ? interpolate0
+          : interpolate0 = interpolate(string00 = string0, value1);
+    };
+  }
+
+  function styleFunction$3(name, interpolate, value$$1) {
+    var string00,
+        string10,
+        interpolate0;
+    return function() {
+      var string0 = styleValue$1(this, name),
+          value1 = value$$1(this),
+          string1 = value1 + "";
+      if (value1 == null) { string1 = value1 = (this.style.removeProperty(name), styleValue$1(this, name)); }
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : (string10 = string1, interpolate0 = interpolate(string00 = string0, value1));
+    };
+  }
+
+  function styleMaybeRemove$1(id, name) {
+    var on0, on1, listener0, key = "style." + name, event = "end." + key, remove;
+    return function() {
+      var schedule = set$2(this, id),
+          on = schedule.on,
+          listener = schedule.value[key] == null ? remove || (remove = styleRemove$3(name)) : undefined;
+
+      // If this node shared a dispatch with the previous node,
+      // just assign the updated shared dispatch and we’re done!
+      // Otherwise, copy-on-write.
+      if (on !== on0 || listener0 !== listener) { (on1 = (on0 = on).copy()).on(event, listener0 = listener); }
+
+      schedule.on = on1;
+    };
+  }
+
+  function transition_style$1(name, value$$1, priority) {
+    var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$1;
+    return value$$1 == null ? this
+        .styleTween(name, styleNull$1(name, i))
+        .on("end.style." + name, styleRemove$3(name))
+      : typeof value$$1 === "function" ? this
+        .styleTween(name, styleFunction$3(name, i, tweenValue$1(this, "style." + name, value$$1)))
+        .each(styleMaybeRemove$1(this._id, name))
+      : this
+        .styleTween(name, styleConstant$3(name, i, value$$1), priority)
+        .on("end.style." + name, null);
+  }
+
+  function styleInterpolate$1(name, i, priority) {
+    return function(t) {
+      this.style.setProperty(name, i(t), priority);
+    };
+  }
+
+  function styleTween$1(name, value, priority) {
+    var t, i0;
+    function tween() {
+      var i = value.apply(this, arguments);
+      if (i !== i0) { t = (i0 = i) && styleInterpolate$1(name, i, priority); }
+      return t;
+    }
+    tween._value = value;
+    return tween;
+  }
+
+  function transition_styleTween$1(name, value, priority) {
+    var key = "style." + (name += "");
+    if (arguments.length < 2) { return (key = this.tween(key)) && key._value; }
+    if (value == null) { return this.tween(key, null); }
+    if (typeof value !== "function") { throw new Error; }
+    return this.tween(key, styleTween$1(name, value, priority == null ? "" : priority));
+  }
+
+  function textConstant$3(value) {
+    return function() {
+      this.textContent = value;
+    };
+  }
+
+  function textFunction$3(value) {
+    return function() {
+      var value1 = value(this);
+      this.textContent = value1 == null ? "" : value1;
+    };
+  }
+
+  function transition_text$1(value) {
+    return this.tween("text", typeof value === "function"
+        ? textFunction$3(tweenValue$1(this, "text", value))
+        : textConstant$3(value == null ? "" : value + ""));
+  }
+
+  function transition_transition$1() {
+    var name = this._name,
+        id0 = this._id,
+        id1 = newId$1();
+
+    for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
+        if (node = group[i]) {
+          var inherit = get$2(node, id0);
+          schedule$1(node, name, id1, i, group, {
+            time: inherit.time + inherit.delay + inherit.duration,
+            delay: 0,
+            duration: inherit.duration,
+            ease: inherit.ease
+          });
+        }
+      }
+    }
+
+    return new Transition$1(groups, this._parents, name, id1);
+  }
+
+  function transition_end$1() {
+    var on0, on1, that = this, id = that._id, size = that.size();
+    return new Promise(function(resolve, reject) {
+      var cancel = {value: reject},
+          end = {value: function() { if (--size === 0) { resolve(); } }};
+
+      that.each(function() {
+        var schedule = set$2(this, id),
+            on = schedule.on;
+
+        // If this node shared a dispatch with the previous node,
+        // just assign the updated shared dispatch and we’re done!
+        // Otherwise, copy-on-write.
+        if (on !== on0) {
+          on1 = (on0 = on).copy();
+          on1._.cancel.push(cancel);
+          on1._.interrupt.push(cancel);
+          on1._.end.push(end);
+        }
+
+        schedule.on = on1;
+      });
+    });
+  }
+
+  var id$1 = 0;
+
+  function Transition$1(groups, parents, name, id) {
+    this._groups = groups;
+    this._parents = parents;
+    this._name = name;
+    this._id = id;
+  }
+
+  function transition$1(name) {
+    return selection$1().transition(name);
+  }
+
+  function newId$1() {
+    return ++id$1;
+  }
+
+  var selection_prototype$1 = selection$1.prototype;
+
+  Transition$1.prototype = transition$1.prototype = {
+    constructor: Transition$1,
+    select: transition_select$1,
+    selectAll: transition_selectAll$1,
+    filter: transition_filter$1,
+    merge: transition_merge$1,
+    selection: transition_selection$1,
+    transition: transition_transition$1,
+    call: selection_prototype$1.call,
+    nodes: selection_prototype$1.nodes,
+    node: selection_prototype$1.node,
+    size: selection_prototype$1.size,
+    empty: selection_prototype$1.empty,
+    each: selection_prototype$1.each,
+    on: transition_on$1,
+    attr: transition_attr$1,
+    attrTween: transition_attrTween$1,
+    style: transition_style$1,
+    styleTween: transition_styleTween$1,
+    text: transition_text$1,
+    remove: transition_remove$1,
+    tween: transition_tween$1,
+    delay: transition_delay$1,
+    duration: transition_duration$1,
+    ease: transition_ease$1,
+    end: transition_end$1
+  };
+
+  var defaultTiming$1 = {
+    time: null, // Set on use.
+    delay: 0,
+    duration: 250,
+    ease: cubicInOut
+  };
+
+  function inherit$1(node, id) {
+    var timing;
+    while (!(timing = node.__transition) || !(timing = timing[id])) {
+      if (!(node = node.parentNode)) {
+        return defaultTiming$1.time = now(), defaultTiming$1;
+      }
+    }
+    return timing;
+  }
+
+  function selection_transition$1(name) {
+    var id,
+        timing;
+
+    if (name instanceof Transition$1) {
+      id = name._id, name = name._name;
+    } else {
+      id = newId$1(), (timing = defaultTiming$1).time = now(), name = name == null ? null : name + "";
+    }
+
+    for (var groups = this._groups, m = groups.length, j = 0; j < m; ++j) {
+      for (var group = groups[j], n = group.length, node, i = 0; i < n; ++i) {
+        if (node = group[i]) {
+          schedule$1(node, name, id, i, group, timing || inherit$1(node, id));
+        }
+      }
+    }
+
+    return new Transition$1(groups, this._parents, name, id);
+  }
+
+  selection$1.prototype.interrupt = selection_interrupt$1;
+  selection$1.prototype.transition = selection_transition$1;
+
+  function ascending$3(a, b) {
+    return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+  }
+
+  function bisector$1(compare) {
+    if (compare.length === 1) { compare = ascendingComparator$1(compare); }
+    return {
+      left: function(a, x, lo, hi) {
+        if (lo == null) { lo = 0; }
+        if (hi == null) { hi = a.length; }
+        while (lo < hi) {
+          var mid = lo + hi >>> 1;
+          if (compare(a[mid], x) < 0) { lo = mid + 1; }
+          else { hi = mid; }
+        }
+        return lo;
+      },
+      right: function(a, x, lo, hi) {
+        if (lo == null) { lo = 0; }
+        if (hi == null) { hi = a.length; }
+        while (lo < hi) {
+          var mid = lo + hi >>> 1;
+          if (compare(a[mid], x) > 0) { hi = mid; }
+          else { lo = mid + 1; }
+        }
+        return lo;
+      }
+    };
+  }
+
+  function ascendingComparator$1(f) {
+    return function(d, x) {
+      return ascending$3(f(d), x);
+    };
+  }
+
+  var ascendingBisect$1 = bisector$1(ascending$3);
+
   var prefix = "$";
 
   function Map() {}
 
-  Map.prototype = map$1.prototype = {
+  Map.prototype = map$2.prototype = {
     constructor: Map,
     has: function(key) {
       return (prefix + key) in this;
@@ -3259,7 +5166,7 @@ if (!Array.prototype.includes) {
     }
   };
 
-  function map$1(object, f) {
+  function map$2(object, f) {
     var map = new Map;
 
     // Copy constructor.
@@ -3283,9 +5190,9 @@ if (!Array.prototype.includes) {
 
   function Set$1() {}
 
-  var proto = map$1.prototype;
+  var proto = map$2.prototype;
 
-  Set$1.prototype = set$2.prototype = {
+  Set$1.prototype = set$3.prototype = {
     constructor: Set$1,
     has: proto.has,
     add: function(value) {
@@ -3301,7 +5208,7 @@ if (!Array.prototype.includes) {
     each: proto.each
   };
 
-  function set$2(object, f) {
+  function set$3(object, f) {
     var set = new Set$1;
 
     // Copy constructor.
@@ -4085,7 +5992,7 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof TextBox
-        @desc Toggles the ability to render simple HTML tags (like <b> and <i>).
+        @desc Toggles the ability to render simple HTML tags. Currently supports `<b>`, `<strong>`, `<i>`, and `<em>`.
         @param {Boolean} [*value* = true]
         @chainable
     */
