@@ -1,5 +1,5 @@
 /*
-  d3plus-timeline v0.4.9
+  d3plus-timeline v0.4.10
   An easy-to-use javascript timeline.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -15085,13 +15085,11 @@ if (!Array.prototype.includes) {
     */
     Timeline.prototype._updateDomain = function _updateDomain () {
 
-      var domain = this._buttonBehaviorCurrent === "ticks"
-        ? (event.selection && this._brushing
-          ? event.selection
-          : [event.sourceEvent.offsetX, event.sourceEvent.offsetX]).map(this._d3Scale.invert).map(Number)
-        : (event.selection && this._brushing
-          ? event.selection
-          : [event.sourceEvent.offsetX, event.sourceEvent.offsetX]).map(Number);
+      var x = mouse(this._select.node())[0];
+      var domain = event.selection && this._brushing ? event.selection : [x, x];
+
+      if (this._buttonBehaviorCurrent === "ticks") { domain = domain.map(this._d3Scale.invert); }
+      domain = domain.map(Number);
 
       if (event.type === "brush" && this._brushing && this._buttonBehaviorCurrent === "buttons") {
         var diffs = event.selection.map(function (d) { return Math.abs(d - event.sourceEvent.offsetX); });
@@ -15262,7 +15260,7 @@ if (!Array.prototype.includes) {
 
       this._outerBounds.y -= this._handleSize / 2;
       this._outerBounds.height += this._handleSize / 2;
-      
+
       return this;
     };
 
