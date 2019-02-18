@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.3.3
+  d3plus-tooltip v0.3.4
   A javascript-only tooltip.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -5917,8 +5917,10 @@ if (!Array.prototype.includes) {
         .on("end", function (d, i) {
           var id = that._id(d, i);
           var instance = this$1._popperClasses[id];
-          delete this$1._popperClasses[id];
-          instance.destroy();
+          if (instance) {
+            instance.destroy();
+            delete this$1._popperClasses[id];
+          }
         })
         .remove();
 
