@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.3.4
+  d3plus-tooltip v0.3.5
   A javascript-only tooltip.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -5890,21 +5890,23 @@ if (!Array.prototype.includes) {
           var position = that._position(d, i);
           var instance = this$1._popperClasses[id];
 
-          var referenceObject = Array.isArray(position) ? {
-            clientWidth: 0,
-            clientHeight: 0,
-            getBoundingClientRect: function () { return ({
-              top: position[1],
-              right: position[0],
-              bottom: position[1],
-              left: position[0],
-              width: 0,
-              height: 0
-            }); }
+          if (instance) {
+            var referenceObject = Array.isArray(position) ? {
+              clientWidth: 0,
+              clientHeight: 0,
+              getBoundingClientRect: function () { return ({
+                top: position[1],
+                right: position[0],
+                bottom: position[1],
+                left: position[0],
+                width: 0,
+                height: 0
+              }); }
+            }
+              : position;
+            instance.reference = referenceObject;
+            instance.scheduleUpdate();
           }
-            : position;
-          instance.reference = referenceObject;
-          instance.scheduleUpdate();
 
         })
         .transition(t)
