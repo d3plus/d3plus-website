@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.10
+  d3plus-export v0.3.11
   Export methods for transforming and downloading SVG.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -10537,8 +10537,14 @@ if (typeof window !== "undefined") {
 	  var reference = elem[0];
 	  if (reference.constructor === Object) { reference = reference.element; }
 
-	  var height = options.height || parseFloat(select(reference).style("height")),
-	        width = options.width || parseFloat(select(reference).style("width"));
+	  var height = options.height ||
+	          parseFloat(select(reference).style("height")) +
+	          parseFloat(select(reference).style("padding-top")) +
+	          parseFloat(select(reference).style("padding-bottom")),
+	        width = options.width ||
+	          parseFloat(select(reference).style("width")) +
+	          parseFloat(select(reference).style("padding-left")) +
+	          parseFloat(select(reference).style("padding-right"));
 
 	  var layerX, layerY, offsetX = 0, offsetY = 0;
 	  if (reference.getBoundingClientRect) {
