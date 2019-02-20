@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.11
+  d3plus-export v0.3.12
   Export methods for transforming and downloading SVG.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -10716,7 +10716,8 @@ if (typeof window !== "undefined") {
 
 	      html2canvas(this, {
 	        allowTaint: true,
-	        canvas: tempCanvas
+	        canvas: tempCanvas,
+	        letterRendering: true
 	      }).then(function (c) {
 	        data$1.value = c;
 	        data$1.loaded = true;
