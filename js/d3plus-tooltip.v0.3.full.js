@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.3.5
+  d3plus-tooltip v0.3.6
   A javascript-only tooltip.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -932,6 +932,242 @@ if (!Array.prototype.includes) {
         : new Selection([[selector]], root);
   }
 
+  /**
+      @function accessor
+      @desc Wraps an object key in a simple accessor function.
+      @param {String} key The key to be returned from each Object passed to the function.
+      @param {*} [def] A default value to be returned if the key is not present.
+      @example <caption>this</caption>
+  accessor("id");
+      @example <caption>returns this</caption>
+  function(d) {
+    return d["id"];
+  }
+  */
+  function accessor(key, def) {
+    if (def === void 0) { return function (d) { return d[key]; }; }
+    return function (d) { return d[key] === void 0 ? def : d[key]; };
+  }
+
+  /**
+      @function isObject
+      @desc Detects if a variable is a javascript Object.
+      @param {*} item
+  */
+  function isObject(item) {
+    return item &&
+      typeof item === "object" &&
+      (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) &&
+      !Array.isArray(item)
+      ? true : false;
+  }
+
+  /**
+      @function validObject
+      @desc Determines if the object passed is the document or window.
+      @param {Object} obj
+      @private
+  */
+  function validObject(obj) {
+    if (typeof window === "undefined") { return true; }
+    else { return obj !== window && obj !== document; }
+  }
+
+  /**
+      @function assign
+      @desc A deeply recursive version of `Object.assign`.
+      @param {...Object} objects
+      @example <caption>this</caption>
+  assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
+      @example <caption>returns this</caption>
+  {id: "bar", deep: {group: "A", value: 20}}
+  */
+  function assign() {
+    var arguments$1 = arguments;
+
+    var objects = [], len = arguments.length;
+    while ( len-- ) { objects[ len ] = arguments$1[ len ]; }
+
+
+    var target = objects[0];
+    var loop = function ( i ) {
+
+      var source = objects[i];
+
+      Object.keys(source).forEach(function (prop) {
+
+        var value = source[prop];
+
+        if (isObject(value) && validObject(value)) {
+          if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
+          else { target[prop] = assign({}, value); }
+        }
+        else if (Array.isArray(value)) { target[prop] = value.slice(); }
+        else { target[prop] = value; }
+
+      });
+    };
+
+    for (var i = 1; i < objects.length; i++) { loop( i ); }
+
+    return target;
+
+  }
+
+  /**
+      @function attrize
+      @desc Applies each key/value in an object as an attr.
+      @param {D3selection} elem The D3 element to apply the styles to.
+      @param {Object} attrs An object of key/value attr pairs.
+  */
+
+  /**
+      @function s
+      @desc Returns 4 random characters, used for constructing unique identifiers.
+      @private
+  */
+  function s() {
+    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  }
+
+  /**
+      @function uuid
+      @summary Returns a unique identifier.
+  */
+  function uuid() {
+    return ("" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s()));
+  }
+
+  /**
+      @constant RESET
+      @desc String constant used to reset an individual config property.
+  */
+  var RESET = "D3PLUS-COMMON-RESET";
+
+  /**
+      @desc Recursive function that resets nested Object configs.
+      @param {Object} obj
+      @param {Object} defaults
+      @private
+  */
+  function nestedReset(obj, defaults) {
+    if (isObject(obj)) {
+      for (var nestedKey in obj) {
+        if ({}.hasOwnProperty.call(obj, nestedKey) && !nestedKey.startsWith("_")) {
+          var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
+          if (obj[nestedKey] === RESET) {
+            obj[nestedKey] = defaultValue;
+          }
+          else if (isObject(obj[nestedKey])) {
+            nestedReset(obj[nestedKey], defaultValue);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+      @class BaseClass
+      @summary An abstract class that contains some global methods and functionality.
+  */
+  var BaseClass = function BaseClass() {
+    this._on = {};
+    this._uuid = uuid();
+  };
+
+  /**
+      @memberof BaseClass
+      @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
+      @param {Object} [*value*]
+      @chainable
+  */
+  BaseClass.prototype.config = function config (_) {
+      var this$1 = this;
+
+    if (!this._configDefault) {
+      var config = {};
+      for (var k in this$1.__proto__) {
+        if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
+          var v = this$1[k]();
+          config[k] = isObject(v) ? assign({}, v) : v;
+        }
+      }
+      this._configDefault = config;
+    }
+    if (arguments.length) {
+      for (var k$1 in _) {
+        if ({}.hasOwnProperty.call(_, k$1) && k$1 in this$1) {
+          var v$1 = _[k$1];
+          if (v$1 === RESET) {
+            if (k$1 === "on") { this$1._on = this$1._configDefault[k$1]; }
+            else { this$1[k$1](this$1._configDefault[k$1]); }
+          }
+          else {
+            nestedReset(v$1, this$1._configDefault[k$1]);
+            this$1[k$1](v$1);
+          }
+        }
+      }
+      return this;
+    }
+    else {
+      var config$1 = {};
+      for (var k$2 in this$1.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this$1[k$2](); } }
+      return config$1;
+    }
+  };
+
+  /**
+      @memberof BaseClass
+      @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
+      @param {String} [*typenames*]
+      @param {Function} [*listener*]
+      @chainable
+      @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
+  new Plot
+  .on("click.Shape", function(d) {
+    console.log("data for shape clicked:", d);
+  })
+  .on("click.Legend", function(d) {
+    console.log("data for legend clicked:", d);
+  })
+  */
+  BaseClass.prototype.on = function on (_, f) {
+    return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
+  };
+
+  /**
+      @function closest
+      @desc Finds the closest numeric value in an array.
+      @param {Number} n The number value to use when searching the array.
+      @param {Array} arr The array of values to test against.
+  */
+
+  /**
+      @function configPrep
+      @desc Preps a config object for d3plus data, and optionally bubbles up a specific nested type. When using this function, you must bind a d3plus class' `this` context.
+      @param {Object} [config = this._shapeConfig] The configuration object to parse.
+      @param {String} [type = "shape"] The event classifier to user for "on" events. For example, the default event type of "shape" will apply all events in the "on" config object with that key, like "click.shape" and "mouseleave.shape", in addition to any gloval events like "click" and "mouseleave".
+      @param {String} [nest] An optional nested key to bubble up to the parent config level.
+  */
+
+  /**
+      @function constant
+      @desc Wraps non-function variables in a simple return function.
+      @param {Array|Number|Object|String} value The value to be returned from the function.
+      @example <caption>this</caption>
+  constant(42);
+      @example <caption>returns this</caption>
+  function() {
+    return 42;
+  }
+  */
+  function constant$1(value) {
+    return function constant() {
+      return value;
+    };
+  }
+
   var noop = {value: function() {}};
 
   function dispatch() {
@@ -1844,7 +2080,7 @@ if (!Array.prototype.includes) {
     }
   }));
 
-  function constant$1(x) {
+  function constant$2(x) {
     return function() {
       return x;
     };
@@ -1864,13 +2100,13 @@ if (!Array.prototype.includes) {
 
   function gamma(y) {
     return (y = +y) === 1 ? nogamma : function(a, b) {
-      return b - a ? exponential(a, b, y) : constant$1(isNaN(a) ? b : a);
+      return b - a ? exponential(a, b, y) : constant$2(isNaN(a) ? b : a);
     };
   }
 
   function nogamma(a, b) {
     var d = b - a;
-    return d ? linear(a, d) : constant$1(isNaN(a) ? b : a);
+    return d ? linear(a, d) : constant$2(isNaN(a) ? b : a);
   }
 
   var rgb$1 = (function rgbGamma(y) {
@@ -2657,242 +2893,6 @@ if (!Array.prototype.includes) {
 
   selection.prototype.interrupt = selection_interrupt;
   selection.prototype.transition = selection_transition;
-
-  /**
-      @function accessor
-      @desc Wraps an object key in a simple accessor function.
-      @param {String} key The key to be returned from each Object passed to the function.
-      @param {*} [def] A default value to be returned if the key is not present.
-      @example <caption>this</caption>
-  accessor("id");
-      @example <caption>returns this</caption>
-  function(d) {
-    return d["id"];
-  }
-  */
-  function accessor(key, def) {
-    if (def === void 0) { return function (d) { return d[key]; }; }
-    return function (d) { return d[key] === void 0 ? def : d[key]; };
-  }
-
-  /**
-      @function isObject
-      @desc Detects if a variable is a javascript Object.
-      @param {*} item
-  */
-  function isObject(item) {
-    return item &&
-      typeof item === "object" &&
-      (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) &&
-      !Array.isArray(item)
-      ? true : false;
-  }
-
-  /**
-      @function validObject
-      @desc Determines if the object passed is the document or window.
-      @param {Object} obj
-      @private
-  */
-  function validObject(obj) {
-    if (typeof window === "undefined") { return true; }
-    else { return obj !== window && obj !== document; }
-  }
-
-  /**
-      @function assign
-      @desc A deeply recursive version of `Object.assign`.
-      @param {...Object} objects
-      @example <caption>this</caption>
-  assign({id: "foo", deep: {group: "A"}}, {id: "bar", deep: {value: 20}}));
-      @example <caption>returns this</caption>
-  {id: "bar", deep: {group: "A", value: 20}}
-  */
-  function assign() {
-    var arguments$1 = arguments;
-
-    var objects = [], len = arguments.length;
-    while ( len-- ) { objects[ len ] = arguments$1[ len ]; }
-
-
-    var target = objects[0];
-    var loop = function ( i ) {
-
-      var source = objects[i];
-
-      Object.keys(source).forEach(function (prop) {
-
-        var value = source[prop];
-
-        if (isObject(value) && validObject(value)) {
-          if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
-          else { target[prop] = assign({}, value); }
-        }
-        else if (Array.isArray(value)) { target[prop] = value.slice(); }
-        else { target[prop] = value; }
-
-      });
-    };
-
-    for (var i = 1; i < objects.length; i++) { loop( i ); }
-
-    return target;
-
-  }
-
-  /**
-      @function attrize
-      @desc Applies each key/value in an object as an attr.
-      @param {D3selection} elem The D3 element to apply the styles to.
-      @param {Object} attrs An object of key/value attr pairs.
-  */
-
-  /**
-      @function s
-      @desc Returns 4 random characters, used for constructing unique identifiers.
-      @private
-  */
-  function s() {
-    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-  }
-
-  /**
-      @function uuid
-      @summary Returns a unique identifier.
-  */
-  function uuid() {
-    return ("" + (s()) + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + "-" + (s()) + (s()) + (s()));
-  }
-
-  /**
-      @constant RESET
-      @desc String constant used to reset an individual config property.
-  */
-  var RESET = "D3PLUS-COMMON-RESET";
-
-  /**
-      @desc Recursive function that resets nested Object configs.
-      @param {Object} obj
-      @param {Object} defaults
-      @private
-  */
-  function nestedReset(obj, defaults) {
-    if (isObject(obj)) {
-      for (var nestedKey in obj) {
-        if ({}.hasOwnProperty.call(obj, nestedKey) && !nestedKey.startsWith("_")) {
-          var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
-          if (obj[nestedKey] === RESET) {
-            obj[nestedKey] = defaultValue;
-          }
-          else if (isObject(obj[nestedKey])) {
-            nestedReset(obj[nestedKey], defaultValue);
-          }
-        }
-      }
-    }
-  }
-
-  /**
-      @class BaseClass
-      @summary An abstract class that contains some global methods and functionality.
-  */
-  var BaseClass = function BaseClass() {
-    this._on = {};
-    this._uuid = uuid();
-  };
-
-  /**
-      @memberof BaseClass
-      @desc If *value* is specified, sets the methods that correspond to the key/value pairs and returns this class. If *value* is not specified, returns the current configuration.
-      @param {Object} [*value*]
-      @chainable
-  */
-  BaseClass.prototype.config = function config (_) {
-      var this$1 = this;
-
-    if (!this._configDefault) {
-      var config = {};
-      for (var k in this$1.__proto__) {
-        if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
-          var v = this$1[k]();
-          config[k] = isObject(v) ? assign({}, v) : v;
-        }
-      }
-      this._configDefault = config;
-    }
-    if (arguments.length) {
-      for (var k$1 in _) {
-        if ({}.hasOwnProperty.call(_, k$1) && k$1 in this$1) {
-          var v$1 = _[k$1];
-          if (v$1 === RESET) {
-            if (k$1 === "on") { this$1._on = this$1._configDefault[k$1]; }
-            else { this$1[k$1](this$1._configDefault[k$1]); }
-          }
-          else {
-            nestedReset(v$1, this$1._configDefault[k$1]);
-            this$1[k$1](v$1);
-          }
-        }
-      }
-      return this;
-    }
-    else {
-      var config$1 = {};
-      for (var k$2 in this$1.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this$1[k$2](); } }
-      return config$1;
-    }
-  };
-
-  /**
-      @memberof BaseClass
-      @desc Adds or removes a *listener* to each object for the specified event *typenames*. If a *listener* is not specified, returns the currently assigned listener for the specified event *typename*. Mirrors the core [d3-selection](https://github.com/d3/d3-selection#selection_on) behavior.
-      @param {String} [*typenames*]
-      @param {Function} [*listener*]
-      @chainable
-      @example <caption>By default, listeners apply globally to all objects, however, passing a namespace with the class name gives control over specific elements:</caption>
-  new Plot
-  .on("click.Shape", function(d) {
-    console.log("data for shape clicked:", d);
-  })
-  .on("click.Legend", function(d) {
-    console.log("data for legend clicked:", d);
-  })
-  */
-  BaseClass.prototype.on = function on (_, f) {
-    return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
-  };
-
-  /**
-      @function closest
-      @desc Finds the closest numeric value in an array.
-      @param {Number} n The number value to use when searching the array.
-      @param {Array} arr The array of values to test against.
-  */
-
-  /**
-      @function configPrep
-      @desc Preps a config object for d3plus data, and optionally bubbles up a specific nested type. When using this function, you must bind a d3plus class' `this` context.
-      @param {Object} [config = this._shapeConfig] The configuration object to parse.
-      @param {String} [type = "shape"] The event classifier to user for "on" events. For example, the default event type of "shape" will apply all events in the "on" config object with that key, like "click.shape" and "mouseleave.shape", in addition to any gloval events like "click" and "mouseleave".
-      @param {String} [nest] An optional nested key to bubble up to the parent config level.
-  */
-
-  /**
-      @function constant
-      @desc Wraps non-function variables in a simple return function.
-      @param {Array|Number|Object|String} value The value to be returned from the function.
-      @example <caption>this</caption>
-  constant(42);
-      @example <caption>returns this</caption>
-  function() {
-    return 42;
-  }
-  */
-  function constant$2(value) {
-    return function constant() {
-      return value;
-    };
-  }
 
   function ascending$1(a, b) {
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
@@ -5666,7 +5666,7 @@ if (!Array.prototype.includes) {
         "width": "10px",
         "z-index": "-1"
       };
-      this._background = constant$2("rgba(255, 255, 255, 1)");
+      this._background = constant$1("rgba(255, 255, 255, 1)");
       this._body = accessor("body", "");
       this._bodyStyle = {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
@@ -5674,11 +5674,10 @@ if (!Array.prototype.includes) {
         "font-weight": "400",
         "z-index": "1"
       };
-      this._border = constant$2("1px solid rgba(0, 0, 0, 0.1)");
-      this._borderRadius = constant$2("2px");
+      this._border = constant$1("1px solid rgba(0, 0, 0, 0.1)");
+      this._borderRadius = constant$1("2px");
       this._className = "d3plus-tooltip";
       this._data = [];
-      this._duration = constant$2(200);
       this._footer = accessor("footer", "");
       this._footerStyle = {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
@@ -5686,11 +5685,11 @@ if (!Array.prototype.includes) {
         "font-weight": "400",
         "z-index": "1"
       };
-      this._height = constant$2("auto");
+      this._height = constant$1("auto");
       this._id = function (d, i) { return d.id || ("" + i); };
-      this._offset = constant$2(5);
-      this._padding = constant$2("5px");
-      this._pointerEvents = constant$2("auto");
+      this._offset = constant$1(5);
+      this._padding = constant$1("5px");
+      this._pointerEvents = constant$1("auto");
       this._popperClasses = {};
       this._position = function (d) { return [d.x, d.y]; };
       this._prefix = prefix$1();
@@ -5721,7 +5720,7 @@ if (!Array.prototype.includes) {
       this._trStyle = {
         "border-top": "1px solid rgba(0, 0, 0, 0.1)"
       };
-      this._width = constant$2("auto");
+      this._width = constant$1("auto");
     }
 
     if ( BaseClass$$1 ) Tooltip.__proto__ = BaseClass$$1;
@@ -5882,8 +5881,6 @@ if (!Array.prototype.includes) {
 
         });
 
-      var t = transition().duration(this._duration);
-
       update
         .each(function (d, i) {
           var id = that._id(d, i);
@@ -5909,14 +5906,10 @@ if (!Array.prototype.includes) {
           }
 
         })
-        .transition(t)
-          .style("opacity", 1)
-          .call(boxStyles);
+        .call(boxStyles);
 
       tooltips.exit()
-        .transition(t)
-          .style("opacity", 0)
-        .on("end", function (d, i) {
+        .each(function (d, i) {
           var id = that._id(d, i);
           var instance = this$1._popperClasses[id];
           if (instance) {
@@ -5926,7 +5919,7 @@ if (!Array.prototype.includes) {
         })
         .remove();
 
-      if (callback) { setTimeout(callback, this._duration + 100); }
+      if (callback) { setTimeout(callback, 100); }
 
       return this;
 
@@ -5942,7 +5935,7 @@ if (!Array.prototype.includes) {
   }
      */
     Tooltip.prototype.arrow = function arrow (_) {
-      return arguments.length ? (this._arrow = typeof _ === "function" ? _ : constant$2(_), this) : this._arrow;
+      return arguments.length ? (this._arrow = typeof _ === "function" ? _ : constant$1(_), this) : this._arrow;
     };
 
     /**
@@ -5968,7 +5961,7 @@ if (!Array.prototype.includes) {
         @param {Function|String} [*value* = "rgba(255, 255, 255, 0.75)"]
     */
     Tooltip.prototype.background = function background (_) {
-      return arguments.length ? (this._background = typeof _ === "function" ? _ : constant$2(_), this) : this._background;
+      return arguments.length ? (this._background = typeof _ === "function" ? _ : constant$1(_), this) : this._background;
     };
 
     /**
@@ -5981,7 +5974,7 @@ if (!Array.prototype.includes) {
   }
     */
     Tooltip.prototype.body = function body (_) {
-      return arguments.length ? (this._body = typeof _ === "function" ? _ : constant$2(_), this) : this._body;
+      return arguments.length ? (this._body = typeof _ === "function" ? _ : constant$1(_), this) : this._body;
     };
 
     /**
@@ -6005,7 +5998,7 @@ if (!Array.prototype.includes) {
         @param {Function|String} [*value* = "1px solid rgba(0, 0, 0, 0.1)"]
     */
     Tooltip.prototype.border = function border (_) {
-      return arguments.length ? (this._border = typeof _ === "function" ? _ : constant$2(_), this) : this._border;
+      return arguments.length ? (this._border = typeof _ === "function" ? _ : constant$1(_), this) : this._border;
     };
 
     /**
@@ -6014,7 +6007,7 @@ if (!Array.prototype.includes) {
         @param {Function|String} [*value* = "2px"]
     */
     Tooltip.prototype.borderRadius = function borderRadius (_) {
-      return arguments.length ? (this._borderRadius = typeof _ === "function" ? _ : constant$2(_), this) : this._borderRadius;
+      return arguments.length ? (this._borderRadius = typeof _ === "function" ? _ : constant$1(_), this) : this._borderRadius;
     };
 
     /**
@@ -6037,15 +6030,6 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Tooltip
-        @desc If *ms* is specified, sets the duration accessor to the specified function or number and returns this generator. If *ms* is not specified, returns the current duration accessor.
-        @param {Function|Number} [*ms* = 200]
-    */
-    Tooltip.prototype.duration = function duration (_) {
-      return arguments.length ? (this._duration = typeof _ === "function" ? _ : constant$2(_), this) : this._duration;
-    };
-
-    /**
-        @memberof Tooltip
         @desc If *value* is specified, sets the footer accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current footer accessor.
         @param {Function|String} [*value*]
         @example <caption>default accessor</caption>
@@ -6054,7 +6038,7 @@ if (!Array.prototype.includes) {
   }
     */
     Tooltip.prototype.footer = function footer (_) {
-      return arguments.length ? (this._footer = typeof _ === "function" ? _ : constant$2(_), this) : this._footer;
+      return arguments.length ? (this._footer = typeof _ === "function" ? _ : constant$1(_), this) : this._footer;
     };
 
     /**
@@ -6078,7 +6062,7 @@ if (!Array.prototype.includes) {
         @param {Function|String} [*value* = "auto"]
     */
     Tooltip.prototype.height = function height (_) {
-      return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$2(_), this) : this._height;
+      return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$1(_), this) : this._height;
     };
 
     /**
@@ -6091,7 +6075,7 @@ if (!Array.prototype.includes) {
   }
     */
     Tooltip.prototype.id = function id (_) {
-      return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$2(_), this) : this._id;
+      return arguments.length ? (this._id = typeof _ === "function" ? _ : constant$1(_), this) : this._id;
     };
 
     /**
@@ -6100,7 +6084,7 @@ if (!Array.prototype.includes) {
         @param {Function|Number} [*value* = 10]
     */
     Tooltip.prototype.offset = function offset (_) {
-      return arguments.length ? (this._offset = typeof _ === "function" ? _ : constant$2(_), this) : this._offset;
+      return arguments.length ? (this._offset = typeof _ === "function" ? _ : constant$1(_), this) : this._offset;
     };
 
     /**
@@ -6109,7 +6093,7 @@ if (!Array.prototype.includes) {
         @param {Function|String} [*value* = "5px"]
     */
     Tooltip.prototype.padding = function padding (_) {
-      return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$2(_), this) : this._padding;
+      return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant$1(_), this) : this._padding;
     };
 
     /**
@@ -6118,7 +6102,7 @@ if (!Array.prototype.includes) {
         @param {Function|String} [*value* = "auto"]
     */
     Tooltip.prototype.pointerEvents = function pointerEvents (_) {
-      return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$2(_), this) : this._pointerEvents;
+      return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant$1(_), this) : this._pointerEvents;
     };
 
     /**
@@ -6131,7 +6115,7 @@ if (!Array.prototype.includes) {
     }
      */
     Tooltip.prototype.position = function position (_) {
-      return arguments.length ? (this._position = typeof _ === "string" ? constant$2(select(_).node() || [0, 0]) : typeof _ === "function" ? _ : constant$2(_), this) : this._position;
+      return arguments.length ? (this._position = typeof _ === "string" ? constant$1(select(_).node() || [0, 0]) : typeof _ === "function" ? _ : constant$1(_), this) : this._position;
     };
 
     /**
@@ -6209,7 +6193,7 @@ if (!Array.prototype.includes) {
   }
     */
     Tooltip.prototype.title = function title (_) {
-      return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$2(_), this) : this._title;
+      return arguments.length ? (this._title = typeof _ === "function" ? _ : constant$1(_), this) : this._title;
     };
 
     /**
@@ -6247,7 +6231,7 @@ if (!Array.prototype.includes) {
         @param {Function|String} [*value* = "auto"]
     */
     Tooltip.prototype.width = function width (_) {
-      return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$2(_), this) : this._width;
+      return arguments.length ? (this._width = typeof _ === "function" ? _ : constant$1(_), this) : this._width;
     };
 
     return Tooltip;

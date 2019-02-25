@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.3.5
+  d3plus-tooltip v0.3.6
   A javascript-only tooltip.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -64,10 +64,10 @@ if (!Array.prototype.includes) {
 }
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3plus-common'), require('popper.js')) :
-  typeof define === 'function' && define.amd ? define('d3plus-tooltip', ['exports', 'd3-selection', 'd3-transition', 'd3plus-common', 'popper.js'], factory) :
-  (factory((global.d3plus = {}),global.d3Selection,global.d3Transition,global.d3plusCommon,global.Popper));
-}(this, (function (exports,d3Selection,d3Transition,d3plusCommon,Popper) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3plus-common'), require('popper.js')) :
+  typeof define === 'function' && define.amd ? define('d3plus-tooltip', ['exports', 'd3-selection', 'd3plus-common', 'popper.js'], factory) :
+  (factory((global.d3plus = {}),global.d3Selection,global.d3plusCommon,global.Popper));
+}(this, (function (exports,d3Selection,d3plusCommon,Popper) { 'use strict';
 
   Popper = Popper && Popper.hasOwnProperty('default') ? Popper['default'] : Popper;
 
@@ -105,7 +105,6 @@ if (!Array.prototype.includes) {
       this._borderRadius = d3plusCommon.constant("2px");
       this._className = "d3plus-tooltip";
       this._data = [];
-      this._duration = d3plusCommon.constant(200);
       this._footer = d3plusCommon.accessor("footer", "");
       this._footerStyle = {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
@@ -309,8 +308,6 @@ if (!Array.prototype.includes) {
 
         });
 
-      var t = d3Transition.transition().duration(this._duration);
-
       update
         .each(function (d, i) {
           var id = that._id(d, i);
@@ -336,14 +333,10 @@ if (!Array.prototype.includes) {
           }
 
         })
-        .transition(t)
-          .style("opacity", 1)
-          .call(boxStyles);
+        .call(boxStyles);
 
       tooltips.exit()
-        .transition(t)
-          .style("opacity", 0)
-        .on("end", function (d, i) {
+        .each(function (d, i) {
           var id = that._id(d, i);
           var instance = this$1._popperClasses[id];
           if (instance) {
@@ -353,7 +346,7 @@ if (!Array.prototype.includes) {
         })
         .remove();
 
-      if (callback) { setTimeout(callback, this._duration + 100); }
+      if (callback) { setTimeout(callback, 100); }
 
       return this;
 
@@ -460,15 +453,6 @@ if (!Array.prototype.includes) {
     */
     Tooltip.prototype.data = function data (_) {
       return arguments.length ? (this._data = _, this) : this._data;
-    };
-
-    /**
-        @memberof Tooltip
-        @desc If *ms* is specified, sets the duration accessor to the specified function or number and returns this generator. If *ms* is not specified, returns the current duration accessor.
-        @param {Function|Number} [*ms* = 200]
-    */
-    Tooltip.prototype.duration = function duration (_) {
-      return arguments.length ? (this._duration = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._duration;
     };
 
     /**
