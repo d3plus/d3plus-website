@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.5.2
+  d3plus-network v0.5.3
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -61,6 +61,147 @@ if (!Array.prototype.includes) {
       return false;
     }
   });
+}
+
+if (!String.prototype.includes) {
+  Object.defineProperty(String.prototype, 'includes', {
+    value: function(search, start) {
+      if (typeof start !== 'number') {
+        start = 0
+      }
+
+      if (start + search.length > this.length) {
+        return false
+      } else {
+        return this.indexOf(search, start) !== -1
+      }
+    }
+  })
+}
+
+if (!Array.prototype.find) {
+  Object.defineProperty(Array.prototype, 'find', {
+    value: function(predicate) {
+     // 1. Let O be ? ToObject(this value).
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+      if (typeof predicate !== 'function') {
+        throw new TypeError('predicate must be a function');
+      }
+
+      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+      var thisArg = arguments[1];
+
+      // 5. Let k be 0.
+      var k = 0;
+
+      // 6. Repeat, while k < len
+      while (k < len) {
+        // a. Let Pk be ! ToString(k).
+        // b. Let kValue be ? Get(O, Pk).
+        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+        // d. If testResult is true, return kValue.
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) {
+          return kValue;
+        }
+        // e. Increase k by 1.
+        k++;
+      }
+
+      // 7. Return undefined.
+      return undefined;
+    },
+    configurable: true,
+    writable: true
+  });
+}
+
+if (!String.prototype.startsWith) {
+  Object.defineProperty(String.prototype, 'startsWith', {
+      value: function(search, pos) {
+          pos = !pos || pos < 0 ? 0 : +pos;
+          return this.substring(pos, pos + search.length) === search;
+      }
+  });
+}
+
+if (typeof window !== "undefined") {
+  (function () {
+    var serializeXML = function (node, output) {
+      var nodeType = node.nodeType;
+      if (nodeType === 3) {
+        output.push(node.textContent.replace(/&/, '&amp;').replace(/</, '&lt;').replace('>', '&gt;'));
+      } else if (nodeType === 1) {
+        output.push('<', node.tagName);
+        if (node.hasAttributes()) {
+          [].forEach.call(node.attributes, function(attrNode){
+            output.push(' ', attrNode.item.name, '=\'', attrNode.item.value, '\'');
+          })
+        }
+        if (node.hasChildNodes()) {
+          output.push('>');
+          [].forEach.call(node.childNodes, function(childNode){
+            serializeXML(childNode, output);
+          })
+          output.push('</', node.tagName, '>');
+        } else {
+          output.push('/>');
+        }
+      } else if (nodeType == 8) {
+        output.push('<!--', node.nodeValue, '-->');
+      }
+    }
+
+    Object.defineProperty(SVGElement.prototype, 'innerHTML', {
+      get: function () {
+        var output = [];
+        var childNode = this.firstChild;
+        while (childNode) {
+          serializeXML(childNode, output);
+          childNode = childNode.nextSibling;
+        }
+        return output.join('');
+      },
+      set: function (markupText) {
+        while (this.firstChild) {
+          this.removeChild(this.firstChild);
+        }
+
+        try {
+          var dXML = new DOMParser();
+          dXML.async = false;
+
+          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markupText + '</svg>';
+          var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
+
+          var childNode = svgDocElement.firstChild;
+          while (childNode) {
+            this.appendChild(this.ownerDocument.importNode(childNode, true));
+            childNode = childNode.nextSibling;
+          }
+        } catch (e) {};
+      }
+    });
+
+    Object.defineProperty(SVGElement.prototype, 'innerSVG', {
+      get: function () {
+        return this.innerHTML;
+      },
+      set: function (markup) {
+        this.innerHTML = markup;
+      }
+    });
+
+  })();
 }
 
 (function (global, factory) {
@@ -386,48 +527,34 @@ if (!Array.prototype.includes) {
       return property in this && delete this[property];
     },
     clear: function() {
-      var this$1 = this;
-
-      for (var property in this$1) { if (property[0] === prefix) { delete this$1[property]; } }
+      for (var property in this) { if (property[0] === prefix) { delete this[property]; } }
     },
     keys: function() {
-      var this$1 = this;
-
       var keys = [];
-      for (var property in this$1) { if (property[0] === prefix) { keys.push(property.slice(1)); } }
+      for (var property in this) { if (property[0] === prefix) { keys.push(property.slice(1)); } }
       return keys;
     },
     values: function() {
-      var this$1 = this;
-
       var values = [];
-      for (var property in this$1) { if (property[0] === prefix) { values.push(this$1[property]); } }
+      for (var property in this) { if (property[0] === prefix) { values.push(this[property]); } }
       return values;
     },
     entries: function() {
-      var this$1 = this;
-
       var entries = [];
-      for (var property in this$1) { if (property[0] === prefix) { entries.push({key: property.slice(1), value: this$1[property]}); } }
+      for (var property in this) { if (property[0] === prefix) { entries.push({key: property.slice(1), value: this[property]}); } }
       return entries;
     },
     size: function() {
-      var this$1 = this;
-
       var size = 0;
-      for (var property in this$1) { if (property[0] === prefix) { ++size; } }
+      for (var property in this) { if (property[0] === prefix) { ++size; } }
       return size;
     },
     empty: function() {
-      var this$1 = this;
-
-      for (var property in this$1) { if (property[0] === prefix) { return false; } }
+      for (var property in this) { if (property[0] === prefix) { return false; } }
       return true;
     },
     each: function(f) {
-      var this$1 = this;
-
-      for (var property in this$1) { if (property[0] === prefix) { f(this$1[property], property.slice(1), this$1); } }
+      for (var property in this) { if (property[0] === prefix) { f(this[property], property.slice(1), this); } }
     }
   };
 
@@ -1620,33 +1747,6 @@ if (!Array.prototype.includes) {
 
   var interpolateHsl = hsl$1(hue);
 
-  function cubehelix$1(hue$$1) {
-    return (function cubehelixGamma(y) {
-      y = +y;
-
-      function cubehelix$$1(start, end) {
-        var h = hue$$1((start = cubehelix(start)).h, (end = cubehelix(end)).h),
-            s = nogamma(start.s, end.s),
-            l = nogamma(start.l, end.l),
-            opacity = nogamma(start.opacity, end.opacity);
-        return function(t) {
-          start.h = h(t);
-          start.s = s(t);
-          start.l = l(Math.pow(t, y));
-          start.opacity = opacity(t);
-          return start + "";
-        };
-      }
-
-      cubehelix$$1.gamma = cubehelixGamma;
-
-      return cubehelix$$1;
-    })(1);
-  }
-
-  cubehelix$1(hue);
-  var cubehelixLong = cubehelix$1(nogamma);
-
   function constant$2(x) {
     return function() {
       return x;
@@ -2648,8 +2748,6 @@ if (!Array.prototype.includes) {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
-  var mondays = monday.range;
-  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -2739,8 +2837,6 @@ if (!Array.prototype.includes) {
   var utcSaturday = utcWeekday(6);
 
   var utcSundays = utcSunday.range;
-  var utcMondays = utcMonday.range;
-  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -3839,31 +3935,14 @@ if (!Array.prototype.includes) {
     return new Selection(subgroups, parents);
   }
 
-  var matcher = function(selector) {
+  function matcher(selector) {
     return function() {
       return this.matches(selector);
     };
-  };
-
-  if (typeof document !== "undefined") {
-    var element = document.documentElement;
-    if (!element.matches) {
-      var vendorMatches = element.webkitMatchesSelector
-          || element.msMatchesSelector
-          || element.mozMatchesSelector
-          || element.oMatchesSelector;
-      matcher = function(selector) {
-        return function() {
-          return vendorMatches.call(this, selector);
-        };
-      };
-    }
   }
 
-  var matcher$1 = matcher;
-
   function selection_filter(match) {
-    if (typeof match !== "function") { match = matcher$1(match); }
+    if (typeof match !== "function") { match = matcher(match); }
 
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
       for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
@@ -4025,6 +4104,14 @@ if (!Array.prototype.includes) {
     return new Selection(this._exit || this._groups.map(sparse), this._parents);
   }
 
+  function selection_join(onenter, onupdate, onexit) {
+    var enter = this.enter(), update = this, exit = this.exit();
+    enter = typeof onenter === "function" ? onenter(enter) : enter.append(onenter + "");
+    if (onupdate != null) { update = onupdate(update); }
+    if (onexit == null) { exit.remove(); } else { onexit(exit); }
+    return enter && update ? enter.merge(update).order() : update;
+  }
+
   function selection_merge(selection$$1) {
 
     for (var groups0 = this._groups, groups1 = selection$$1._groups, m0 = groups0.length, m1 = groups1.length, m = Math.min(m0, m1), merges = new Array(m0), j = 0; j < m; ++j) {
@@ -4047,7 +4134,7 @@ if (!Array.prototype.includes) {
     for (var groups = this._groups, j = -1, m = groups.length; ++j < m;) {
       for (var group = groups[j], i = group.length - 1, next = group[i], node; --i >= 0;) {
         if (node = group[i]) {
-          if (next && next !== node.nextSibling) { next.parentNode.insertBefore(node, next); }
+          if (next && node.compareDocumentPosition(next) ^ 4) { next.parentNode.insertBefore(node, next); }
           next = node;
         }
       }
@@ -4445,8 +4532,8 @@ if (!Array.prototype.includes) {
   var event$1 = null;
 
   if (typeof document !== "undefined") {
-    var element$1 = document.documentElement;
-    if (!("onmouseenter" in element$1)) {
+    var element = document.documentElement;
+    if (!("onmouseenter" in element)) {
       filterEvents = {mouseenter: "mouseover", mouseleave: "mouseout"};
     }
   }
@@ -4483,13 +4570,11 @@ if (!Array.prototype.includes) {
 
   function onRemove(typename) {
     return function() {
-      var this$1 = this;
-
       var on = this.__on;
       if (!on) { return; }
       for (var j = 0, i = -1, m = on.length, o; j < m; ++j) {
         if (o = on[j], (!typename.type || o.type === typename.type) && o.name === typename.name) {
-          this$1.removeEventListener(o.type, o.listener, o.capture);
+          this.removeEventListener(o.type, o.listener, o.capture);
         } else {
           on[++i] = o;
         }
@@ -4502,13 +4587,11 @@ if (!Array.prototype.includes) {
   function onAdd(typename, value, capture) {
     var wrap = filterEvents.hasOwnProperty(typename.type) ? filterContextListener : contextListener;
     return function(d, i, group) {
-      var this$1 = this;
-
       var on = this.__on, o, listener = wrap(value, i, group);
       if (on) { for (var j = 0, m = on.length; j < m; ++j) {
         if ((o = on[j]).type === typename.type && o.name === typename.name) {
-          this$1.removeEventListener(o.type, o.listener, o.capture);
-          this$1.addEventListener(o.type, o.listener = listener, o.capture = capture);
+          this.removeEventListener(o.type, o.listener, o.capture);
+          this.addEventListener(o.type, o.listener = listener, o.capture = capture);
           o.value = value;
           return;
         }
@@ -4521,8 +4604,6 @@ if (!Array.prototype.includes) {
   }
 
   function selection_on(typename, value, capture) {
-    var this$1 = this;
-
     var typenames = parseTypenames$1(typename + ""), i, n = typenames.length, t;
 
     if (arguments.length < 2) {
@@ -4539,7 +4620,7 @@ if (!Array.prototype.includes) {
 
     on = value ? onAdd : onRemove;
     if (capture == null) { capture = false; }
-    for (i = 0; i < n; ++i) { this$1.each(on(typenames[i], value, capture)); }
+    for (i = 0; i < n; ++i) { this.each(on(typenames[i], value, capture)); }
     return this;
   }
 
@@ -4606,6 +4687,7 @@ if (!Array.prototype.includes) {
     data: selection_data,
     enter: selection_enter,
     exit: selection_exit,
+    join: selection_join,
     merge: selection_merge,
     order: selection_order,
     sort: selection_sort,
@@ -4834,7 +4916,7 @@ if (!Array.prototype.includes) {
     return t;
   }
 
-  var emptyOn = dispatch("start", "end", "interrupt");
+  var emptyOn = dispatch("start", "end", "cancel", "interrupt");
   var emptyTween = [];
 
   var CREATED = 0;
@@ -4872,7 +4954,7 @@ if (!Array.prototype.includes) {
 
   function set$2(node, id) {
     var schedule = get$1(node, id);
-    if (schedule.state > STARTING) { throw new Error("too late; already started"); }
+    if (schedule.state > STARTED) { throw new Error("too late; already running"); }
     return schedule;
   }
 
@@ -4915,7 +4997,6 @@ if (!Array.prototype.includes) {
         if (o.state === STARTED) { return timeout$1(start); }
 
         // Interrupt the active transition, if any.
-        // Dispatch the interrupt event.
         if (o.state === RUNNING) {
           o.state = ENDED;
           o.timer.stop();
@@ -4923,12 +5004,11 @@ if (!Array.prototype.includes) {
           delete schedules[i];
         }
 
-        // Cancel any pre-empted transitions. No interrupt event is dispatched
-        // because the cancelled transitions never started. Note that this also
-        // removes this transition from the pending list!
+        // Cancel any pre-empted transitions.
         else if (+i < id) {
           o.state = ENDED;
           o.timer.stop();
+          o.on.call("cancel", node, node.__data__, o.index, o.group);
           delete schedules[i];
         }
       }
@@ -4968,7 +5048,7 @@ if (!Array.prototype.includes) {
           n = tween.length;
 
       while (++i < n) {
-        tween[i].call(null, t);
+        tween[i].call(node, t);
       }
 
       // Dispatch the end event.
@@ -5003,7 +5083,7 @@ if (!Array.prototype.includes) {
       active = schedule$$1.state > STARTING && schedule$$1.state < ENDING;
       schedule$$1.state = ENDED;
       schedule$$1.timer.stop();
-      if (active) { schedule$$1.on.call("interrupt", node, node.__data__, schedule$$1.index, schedule$$1.group); }
+      schedule$$1.on.call(active ? "interrupt" : "cancel", node, node.__data__, schedule$$1.index, schedule$$1.group);
       delete schedules[i];
     }
 
@@ -5117,52 +5197,56 @@ if (!Array.prototype.includes) {
   }
 
   function attrConstant$1(name, interpolate$$1, value1) {
-    var value00,
+    var string00,
+        string1 = value1 + "",
         interpolate0;
     return function() {
-      var value0 = this.getAttribute(name);
-      return value0 === value1 ? null
-          : value0 === value00 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value1);
+      var string0 = this.getAttribute(name);
+      return string0 === string1 ? null
+          : string0 === string00 ? interpolate0
+          : interpolate0 = interpolate$$1(string00 = string0, value1);
     };
   }
 
   function attrConstantNS$1(fullname, interpolate$$1, value1) {
-    var value00,
+    var string00,
+        string1 = value1 + "",
         interpolate0;
     return function() {
-      var value0 = this.getAttributeNS(fullname.space, fullname.local);
-      return value0 === value1 ? null
-          : value0 === value00 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value1);
+      var string0 = this.getAttributeNS(fullname.space, fullname.local);
+      return string0 === string1 ? null
+          : string0 === string00 ? interpolate0
+          : interpolate0 = interpolate$$1(string00 = string0, value1);
     };
   }
 
   function attrFunction$1(name, interpolate$$1, value) {
-    var value00,
-        value10,
+    var string00,
+        string10,
         interpolate0;
     return function() {
-      var value0, value1 = value(this);
+      var string0, value1 = value(this), string1;
       if (value1 == null) { return void this.removeAttribute(name); }
-      value0 = this.getAttribute(name);
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+      string0 = this.getAttribute(name);
+      string1 = value1 + "";
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : (string10 = string1, interpolate0 = interpolate$$1(string00 = string0, value1));
     };
   }
 
   function attrFunctionNS$1(fullname, interpolate$$1, value) {
-    var value00,
-        value10,
+    var string00,
+        string10,
         interpolate0;
     return function() {
-      var value0, value1 = value(this);
+      var string0, value1 = value(this), string1;
       if (value1 == null) { return void this.removeAttributeNS(fullname.space, fullname.local); }
-      value0 = this.getAttributeNS(fullname.space, fullname.local);
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+      string0 = this.getAttributeNS(fullname.space, fullname.local);
+      string1 = value1 + "";
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : (string10 = string1, interpolate0 = interpolate$$1(string00 = string0, value1));
     };
   }
 
@@ -5171,26 +5255,38 @@ if (!Array.prototype.includes) {
     return this.attrTween(name, typeof value === "function"
         ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value))
         : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname)
-        : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value + ""));
+        : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value));
+  }
+
+  function attrInterpolate(name, i) {
+    return function(t) {
+      this.setAttribute(name, i(t));
+    };
+  }
+
+  function attrInterpolateNS(fullname, i) {
+    return function(t) {
+      this.setAttributeNS(fullname.space, fullname.local, i(t));
+    };
   }
 
   function attrTweenNS(fullname, value) {
+    var t0, i0;
     function tween() {
-      var node = this, i = value.apply(node, arguments);
-      return i && function(t) {
-        node.setAttributeNS(fullname.space, fullname.local, i(t));
-      };
+      var i = value.apply(this, arguments);
+      if (i !== i0) { t0 = (i0 = i) && attrInterpolateNS(fullname, i); }
+      return t0;
     }
     tween._value = value;
     return tween;
   }
 
   function attrTween(name, value) {
+    var t0, i0;
     function tween() {
-      var node = this, i = value.apply(node, arguments);
-      return i && function(t) {
-        node.setAttribute(name, i(t));
-      };
+      var i = value.apply(this, arguments);
+      if (i !== i0) { t0 = (i0 = i) && attrInterpolate(name, i); }
+      return t0;
     }
     tween._value = value;
     return tween;
@@ -5265,7 +5361,7 @@ if (!Array.prototype.includes) {
   }
 
   function transition_filter(match) {
-    if (typeof match !== "function") { match = matcher$1(match); }
+    if (typeof match !== "function") { match = matcher(match); }
 
     for (var groups = this._groups, m = groups.length, subgroups = new Array(m), j = 0; j < m; ++j) {
       for (var group = groups[j], n = group.length, subgroup = subgroups[j] = [], node, i = 0; i < n; ++i) {
@@ -5329,10 +5425,8 @@ if (!Array.prototype.includes) {
 
   function removeFunction(id) {
     return function() {
-      var this$1 = this;
-
       var parent = this.parentNode;
-      for (var i in this$1.__transition) { if (+i !== id) { return; } }
+      for (var i in this.__transition) { if (+i !== id) { return; } }
       if (parent) { parent.removeChild(this); }
     };
   }
@@ -5389,66 +5483,93 @@ if (!Array.prototype.includes) {
     return new Selection$1(this._groups, this._parents);
   }
 
-  function styleRemove$1(name, interpolate$$1) {
-    var value00,
-        value10,
+  function styleNull(name, interpolate$$1) {
+    var string00,
+        string10,
         interpolate0;
     return function() {
-      var value0 = styleValue(this, name),
-          value1 = (this.style.removeProperty(name), styleValue(this, name));
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+      var string0 = styleValue(this, name),
+          string1 = (this.style.removeProperty(name), styleValue(this, name));
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : interpolate0 = interpolate$$1(string00 = string0, string10 = string1);
     };
   }
 
-  function styleRemoveEnd(name) {
+  function styleRemove$1(name) {
     return function() {
       this.style.removeProperty(name);
     };
   }
 
   function styleConstant$1(name, interpolate$$1, value1) {
-    var value00,
+    var string00,
+        string1 = value1 + "",
         interpolate0;
     return function() {
-      var value0 = styleValue(this, name);
-      return value0 === value1 ? null
-          : value0 === value00 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value1);
+      var string0 = styleValue(this, name);
+      return string0 === string1 ? null
+          : string0 === string00 ? interpolate0
+          : interpolate0 = interpolate$$1(string00 = string0, value1);
     };
   }
 
   function styleFunction$1(name, interpolate$$1, value) {
-    var value00,
-        value10,
+    var string00,
+        string10,
         interpolate0;
     return function() {
-      var value0 = styleValue(this, name),
-          value1 = value(this);
-      if (value1 == null) { value1 = (this.style.removeProperty(name), styleValue(this, name)); }
-      return value0 === value1 ? null
-          : value0 === value00 && value1 === value10 ? interpolate0
-          : interpolate0 = interpolate$$1(value00 = value0, value10 = value1);
+      var string0 = styleValue(this, name),
+          value1 = value(this),
+          string1 = value1 + "";
+      if (value1 == null) { string1 = value1 = (this.style.removeProperty(name), styleValue(this, name)); }
+      return string0 === string1 ? null
+          : string0 === string00 && string1 === string10 ? interpolate0
+          : (string10 = string1, interpolate0 = interpolate$$1(string00 = string0, value1));
+    };
+  }
+
+  function styleMaybeRemove(id, name) {
+    var on0, on1, listener0, key = "style." + name, event = "end." + key, remove;
+    return function() {
+      var schedule$$1 = set$2(this, id),
+          on = schedule$$1.on,
+          listener = schedule$$1.value[key] == null ? remove || (remove = styleRemove$1(name)) : undefined;
+
+      // If this node shared a dispatch with the previous node,
+      // just assign the updated shared dispatch and we’re done!
+      // Otherwise, copy-on-write.
+      if (on !== on0 || listener0 !== listener) { (on1 = (on0 = on).copy()).on(event, listener0 = listener); }
+
+      schedule$$1.on = on1;
     };
   }
 
   function transition_style(name, value, priority) {
     var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$1;
     return value == null ? this
-            .styleTween(name, styleRemove$1(name, i))
-            .on("end.style." + name, styleRemoveEnd(name))
-        : this.styleTween(name, typeof value === "function"
-            ? styleFunction$1(name, i, tweenValue(this, "style." + name, value))
-            : styleConstant$1(name, i, value + ""), priority);
+        .styleTween(name, styleNull(name, i))
+        .on("end.style." + name, styleRemove$1(name))
+      : typeof value === "function" ? this
+        .styleTween(name, styleFunction$1(name, i, tweenValue(this, "style." + name, value)))
+        .each(styleMaybeRemove(this._id, name))
+      : this
+        .styleTween(name, styleConstant$1(name, i, value), priority)
+        .on("end.style." + name, null);
+  }
+
+  function styleInterpolate(name, i, priority) {
+    return function(t) {
+      this.style.setProperty(name, i(t), priority);
+    };
   }
 
   function styleTween(name, value, priority) {
+    var t, i0;
     function tween() {
-      var node = this, i = value.apply(node, arguments);
-      return i && function(t) {
-        node.style.setProperty(name, i(t), priority);
-      };
+      var i = value.apply(this, arguments);
+      if (i !== i0) { t = (i0 = i) && styleInterpolate(name, i, priority); }
+      return t;
     }
     tween._value = value;
     return tween;
@@ -5503,6 +5624,31 @@ if (!Array.prototype.includes) {
     return new Transition(groups, this._parents, name, id1);
   }
 
+  function transition_end() {
+    var on0, on1, that = this, id = that._id, size = that.size();
+    return new Promise(function(resolve, reject) {
+      var cancel = {value: reject},
+          end = {value: function() { if (--size === 0) { resolve(); } }};
+
+      that.each(function() {
+        var schedule$$1 = set$2(this, id),
+            on = schedule$$1.on;
+
+        // If this node shared a dispatch with the previous node,
+        // just assign the updated shared dispatch and we’re done!
+        // Otherwise, copy-on-write.
+        if (on !== on0) {
+          on1 = (on0 = on).copy();
+          on1._.cancel.push(cancel);
+          on1._.interrupt.push(cancel);
+          on1._.end.push(end);
+        }
+
+        schedule$$1.on = on1;
+      });
+    });
+  }
+
   var id = 0;
 
   function Transition(groups, parents, name, id) {
@@ -5546,7 +5692,8 @@ if (!Array.prototype.includes) {
     tween: transition_tween,
     delay: transition_delay,
     duration: transition_duration,
-    ease: transition_ease
+    ease: transition_ease,
+    end: transition_end
   };
 
   function cubicInOut(t) {
@@ -5961,8 +6108,6 @@ if (!Array.prototype.includes) {
     }
 
     function touchstarted() {
-      var this$1 = this;
-
       if (!filter.apply(this, arguments)) { return; }
       var g = gesture(this, arguments),
           touches$$1 = event$1.changedTouches,
@@ -5971,8 +6116,8 @@ if (!Array.prototype.includes) {
 
       nopropagation$1();
       for (i = 0; i < n; ++i) {
-        t = touches$$1[i], p = touch(this$1, touches$$1, t.identifier);
-        p = [p, this$1.__zoom.invert(p), t.identifier];
+        t = touches$$1[i], p = touch(this, touches$$1, t.identifier);
+        p = [p, this.__zoom.invert(p), t.identifier];
         if (!g.touch0) { g.touch0 = p, started = true; }
         else if (!g.touch1) { g.touch1 = p; }
       }
@@ -5996,8 +6141,6 @@ if (!Array.prototype.includes) {
     }
 
     function touchmoved() {
-      var this$1 = this;
-
       var g = gesture(this, arguments),
           touches$$1 = event$1.changedTouches,
           n = touches$$1.length, i, t, p, l;
@@ -6005,7 +6148,7 @@ if (!Array.prototype.includes) {
       noevent$1();
       if (touchstarting) { touchstarting = clearTimeout(touchstarting); }
       for (i = 0; i < n; ++i) {
-        t = touches$$1[i], p = touch(this$1, touches$$1, t.identifier);
+        t = touches$$1[i], p = touch(this, touches$$1, t.identifier);
         if (g.touch0 && g.touch0[2] === t.identifier) { g.touch0[0] = p; }
         else if (g.touch1 && g.touch1[2] === t.identifier) { g.touch1[0] = p; }
       }
@@ -6160,32 +6303,7 @@ if (!Array.prototype.includes) {
           if (target.hasOwnProperty(prop) && isObject(target[prop])) { target[prop] = assign({}, target[prop], value); }
           else { target[prop] = assign({}, value); }
         }
-        else if (Array.isArray(value)) {
-
-          if (target.hasOwnProperty(prop) && Array.isArray(target[prop])) {
-
-            var targetArray = target[prop];
-
-            value.forEach(function (sourceItem, itemIndex) {
-
-              if (itemIndex < targetArray.length) {
-                var targetItem = targetArray[itemIndex];
-
-                if (Object.is(targetItem, sourceItem)) { return; }
-
-                if (isObject(targetItem) && isObject(sourceItem)) {
-                  targetArray[itemIndex] = assign({}, targetItem, sourceItem);
-                }
-                else { targetArray[itemIndex] = sourceItem; }
-
-              }
-              else { targetArray.push(sourceItem); }
-
-            });
-          }
-          else { target[prop] = value; }
-
-        }
+        else if (Array.isArray(value)) { target[prop] = value.slice(); }
         else { target[prop] = value; }
 
       });
@@ -6270,13 +6388,11 @@ if (!Array.prototype.includes) {
       @chainable
   */
   BaseClass.prototype.config = function config (_) {
-      var this$1 = this;
-
     if (!this._configDefault) {
       var config = {};
-      for (var k in this$1.__proto__) {
+      for (var k in this.__proto__) {
         if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
-          var v = this$1[k]();
+          var v = this[k]();
           config[k] = isObject(v) ? assign({}, v) : v;
         }
       }
@@ -6284,15 +6400,15 @@ if (!Array.prototype.includes) {
     }
     if (arguments.length) {
       for (var k$1 in _) {
-        if ({}.hasOwnProperty.call(_, k$1) && k$1 in this$1) {
+        if ({}.hasOwnProperty.call(_, k$1) && k$1 in this) {
           var v$1 = _[k$1];
           if (v$1 === RESET) {
-            if (k$1 === "on") { this$1._on = this$1._configDefault[k$1]; }
-            else { this$1[k$1](this$1._configDefault[k$1]); }
+            if (k$1 === "on") { this._on = this._configDefault[k$1]; }
+            else { this[k$1](this._configDefault[k$1]); }
           }
           else {
-            nestedReset(v$1, this$1._configDefault[k$1]);
-            this$1[k$1](v$1);
+            nestedReset(v$1, this._configDefault[k$1]);
+            this[k$1](v$1);
           }
         }
       }
@@ -6300,7 +6416,7 @@ if (!Array.prototype.includes) {
     }
     else {
       var config$1 = {};
-      for (var k$2 in this$1.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this$1[k$2](); } }
+      for (var k$2 in this.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this[k$2](); } }
       return config$1;
     }
   };
@@ -6784,17 +6900,25 @@ if (!Array.prototype.includes) {
     return arguments.length ? (this._y = typeof _ === "function" ? _ : constant$6(_), this) : this._y;
   };
 
+  function initRange(domain, range) {
+    switch (arguments.length) {
+      case 0: break;
+      case 1: this.range(domain); break;
+      default: this.range(range).domain(domain); break;
+    }
+    return this;
+  }
+
   var array$3 = Array.prototype;
   var slice$2 = array$3.slice;
 
   var implicit$1 = {name: "implicit"};
 
-  function ordinal$1(range) {
+  function ordinal$1() {
     var index = map$1(),
         domain = [],
+        range = [],
         unknown = implicit$1;
-
-    range = range == null ? [] : slice$2.call(range);
 
     function scale(d) {
       var key = d + "", i = index.get(key);
@@ -6822,51 +6946,13 @@ if (!Array.prototype.includes) {
     };
 
     scale.copy = function() {
-      return ordinal$1()
-          .domain(domain)
-          .range(range)
-          .unknown(unknown);
+      return ordinal$1(domain, range).unknown(unknown);
     };
+
+    initRange.apply(scale, arguments);
 
     return scale;
   }
-
-  function colors(s) {
-    return s.match(/.{6}/g).map(function(x) {
-      return "#" + x;
-    });
-  }
-
-  colors("1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7fbcbd2217becf");
-
-  colors("393b795254a36b6ecf9c9ede6379398ca252b5cf6bcedb9c8c6d31bd9e39e7ba52e7cb94843c39ad494ad6616be7969c7b4173a55194ce6dbdde9ed6");
-
-  colors("3182bd6baed69ecae1c6dbefe6550dfd8d3cfdae6bfdd0a231a35474c476a1d99bc7e9c0756bb19e9ac8bcbddcdadaeb636363969696bdbdbdd9d9d9");
-
-  colors("1f77b4aec7e8ff7f0effbb782ca02c98df8ad62728ff98969467bdc5b0d58c564bc49c94e377c2f7b6d27f7f7fc7c7c7bcbd22dbdb8d17becf9edae5");
-
-  cubehelixLong(cubehelix(300, 0.5, 0.0), cubehelix(-240, 0.5, 1.0));
-
-  var warm = cubehelixLong(cubehelix(-100, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
-
-  var cool = cubehelixLong(cubehelix(260, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
-
-  var rainbow = cubehelix();
-
-  function ramp(range) {
-    var n = range.length;
-    return function(t) {
-      return range[Math.max(0, Math.min(n - 1, Math.floor(t * n)))];
-    };
-  }
-
-  ramp(colors("44015444025645045745055946075a46085c460a5d460b5e470d60470e6147106347116447136548146748166848176948186a481a6c481b6d481c6e481d6f481f70482071482173482374482475482576482677482878482979472a7a472c7a472d7b472e7c472f7d46307e46327e46337f463480453581453781453882443983443a83443b84433d84433e85423f854240864241864142874144874045884046883f47883f48893e49893e4a893e4c8a3d4d8a3d4e8a3c4f8a3c508b3b518b3b528b3a538b3a548c39558c39568c38588c38598c375a8c375b8d365c8d365d8d355e8d355f8d34608d34618d33628d33638d32648e32658e31668e31678e31688e30698e306a8e2f6b8e2f6c8e2e6d8e2e6e8e2e6f8e2d708e2d718e2c718e2c728e2c738e2b748e2b758e2a768e2a778e2a788e29798e297a8e297b8e287c8e287d8e277e8e277f8e27808e26818e26828e26828e25838e25848e25858e24868e24878e23888e23898e238a8d228b8d228c8d228d8d218e8d218f8d21908d21918c20928c20928c20938c1f948c1f958b1f968b1f978b1f988b1f998a1f9a8a1e9b8a1e9c891e9d891f9e891f9f881fa0881fa1881fa1871fa28720a38620a48621a58521a68522a78522a88423a98324aa8325ab8225ac8226ad8127ad8128ae8029af7f2ab07f2cb17e2db27d2eb37c2fb47c31b57b32b67a34b67935b77937b87838b9773aba763bbb753dbc743fbc7340bd7242be7144bf7046c06f48c16e4ac16d4cc26c4ec36b50c46a52c56954c56856c66758c7655ac8645cc8635ec96260ca6063cb5f65cb5e67cc5c69cd5b6ccd5a6ece5870cf5773d05675d05477d1537ad1517cd2507fd34e81d34d84d44b86d54989d5488bd6468ed64590d74393d74195d84098d83e9bd93c9dd93ba0da39a2da37a5db36a8db34aadc32addc30b0dd2fb2dd2db5de2bb8de29bade28bddf26c0df25c2df23c5e021c8e020cae11fcde11dd0e11cd2e21bd5e21ad8e219dae319dde318dfe318e2e418e5e419e7e419eae51aece51befe51cf1e51df4e61ef6e620f8e621fbe723fde725"));
-
-  var magma = ramp(colors("00000401000501010601010802010902020b02020d03030f03031204041405041606051806051a07061c08071e0907200a08220b09240c09260d0a290e0b2b100b2d110c2f120d31130d34140e36150e38160f3b180f3d19103f1a10421c10441d11471e114920114b21114e22115024125325125527125829115a2a115c2c115f2d11612f116331116533106734106936106b38106c390f6e3b0f703d0f713f0f72400f74420f75440f764510774710784910784a10794c117a4e117b4f127b51127c52137c54137d56147d57157e59157e5a167e5c167f5d177f5f187f601880621980641a80651a80671b80681c816a1c816b1d816d1d816e1e81701f81721f817320817521817621817822817922827b23827c23827e24828025828125818326818426818627818827818928818b29818c29818e2a81902a81912b81932b80942c80962c80982d80992d809b2e7f9c2e7f9e2f7fa02f7fa1307ea3307ea5317ea6317da8327daa337dab337cad347cae347bb0357bb2357bb3367ab5367ab73779b83779ba3878bc3978bd3977bf3a77c03a76c23b75c43c75c53c74c73d73c83e73ca3e72cc3f71cd4071cf4070d0416fd2426fd3436ed5446dd6456cd8456cd9466bdb476adc4869de4968df4a68e04c67e24d66e34e65e44f64e55064e75263e85362e95462ea5661eb5760ec5860ed5a5fee5b5eef5d5ef05f5ef1605df2625df2645cf3655cf4675cf4695cf56b5cf66c5cf66e5cf7705cf7725cf8745cf8765cf9785df9795df97b5dfa7d5efa7f5efa815ffb835ffb8560fb8761fc8961fc8a62fc8c63fc8e64fc9065fd9266fd9467fd9668fd9869fd9a6afd9b6bfe9d6cfe9f6dfea16efea36ffea571fea772fea973feaa74feac76feae77feb078feb27afeb47bfeb67cfeb77efeb97ffebb81febd82febf84fec185fec287fec488fec68afec88cfeca8dfecc8ffecd90fecf92fed194fed395fed597fed799fed89afdda9cfddc9efddea0fde0a1fde2a3fde3a5fde5a7fde7a9fde9aafdebacfcecaefceeb0fcf0b2fcf2b4fcf4b6fcf6b8fcf7b9fcf9bbfcfbbdfcfdbf"));
-
-  var inferno = ramp(colors("00000401000501010601010802010a02020c02020e03021004031204031405041706041907051b08051d09061f0a07220b07240c08260d08290e092b10092d110a30120a32140b34150b37160b39180c3c190c3e1b0c411c0c431e0c451f0c48210c4a230c4c240c4f260c51280b53290b552b0b572d0b592f0a5b310a5c320a5e340a5f3609613809623909633b09643d09653e0966400a67420a68440a68450a69470b6a490b6a4a0c6b4c0c6b4d0d6c4f0d6c510e6c520e6d540f6d550f6d57106e59106e5a116e5c126e5d126e5f136e61136e62146e64156e65156e67166e69166e6a176e6c186e6d186e6f196e71196e721a6e741a6e751b6e771c6d781c6d7a1d6d7c1d6d7d1e6d7f1e6c801f6c82206c84206b85216b87216b88226a8a226a8c23698d23698f24699025689225689326679526679727669827669a28659b29649d29649f2a63a02a63a22b62a32c61a52c60a62d60a82e5fa92e5eab2f5ead305dae305cb0315bb1325ab3325ab43359b63458b73557b93556ba3655bc3754bd3853bf3952c03a51c13a50c33b4fc43c4ec63d4dc73e4cc83f4bca404acb4149cc4248ce4347cf4446d04545d24644d34743d44842d54a41d74b3fd84c3ed94d3dda4e3cdb503bdd513ade5238df5337e05536e15635e25734e35933e45a31e55c30e65d2fe75e2ee8602de9612bea632aeb6429eb6628ec6726ed6925ee6a24ef6c23ef6e21f06f20f1711ff1731df2741cf3761bf37819f47918f57b17f57d15f67e14f68013f78212f78410f8850ff8870ef8890cf98b0bf98c0af98e09fa9008fa9207fa9407fb9606fb9706fb9906fb9b06fb9d07fc9f07fca108fca309fca50afca60cfca80dfcaa0ffcac11fcae12fcb014fcb216fcb418fbb61afbb81dfbba1ffbbc21fbbe23fac026fac228fac42afac62df9c72ff9c932f9cb35f8cd37f8cf3af7d13df7d340f6d543f6d746f5d949f5db4cf4dd4ff4df53f4e156f3e35af3e55df2e661f2e865f2ea69f1ec6df1ed71f1ef75f1f179f2f27df2f482f3f586f3f68af4f88ef5f992f6fa96f8fb9af9fc9dfafda1fcffa4"));
-
-  var plasma = ramp(colors("0d088710078813078916078a19068c1b068d1d068e20068f2206902406912605912805922a05932c05942e05952f059631059733059735049837049938049a3a049a3c049b3e049c3f049c41049d43039e44039e46039f48039f4903a04b03a14c02a14e02a25002a25102a35302a35502a45601a45801a45901a55b01a55c01a65e01a66001a66100a76300a76400a76600a76700a86900a86a00a86c00a86e00a86f00a87100a87201a87401a87501a87701a87801a87a02a87b02a87d03a87e03a88004a88104a78305a78405a78606a68707a68808a68a09a58b0aa58d0ba58e0ca48f0da4910ea3920fa39410a29511a19613a19814a099159f9a169f9c179e9d189d9e199da01a9ca11b9ba21d9aa31e9aa51f99a62098a72197a82296aa2395ab2494ac2694ad2793ae2892b02991b12a90b22b8fb32c8eb42e8db52f8cb6308bb7318ab83289ba3388bb3488bc3587bd3786be3885bf3984c03a83c13b82c23c81c33d80c43e7fc5407ec6417dc7427cc8437bc9447aca457acb4679cc4778cc4977cd4a76ce4b75cf4c74d04d73d14e72d24f71d35171d45270d5536fd5546ed6556dd7566cd8576bd9586ada5a6ada5b69db5c68dc5d67dd5e66de5f65de6164df6263e06363e16462e26561e26660e3685fe4695ee56a5de56b5de66c5ce76e5be76f5ae87059e97158e97257ea7457eb7556eb7655ec7754ed7953ed7a52ee7b51ef7c51ef7e50f07f4ff0804ef1814df1834cf2844bf3854bf3874af48849f48948f58b47f58c46f68d45f68f44f79044f79143f79342f89441f89540f9973ff9983ef99a3efa9b3dfa9c3cfa9e3bfb9f3afba139fba238fca338fca537fca636fca835fca934fdab33fdac33fdae32fdaf31fdb130fdb22ffdb42ffdb52efeb72dfeb82cfeba2cfebb2bfebd2afebe2afec029fdc229fdc328fdc527fdc627fdc827fdca26fdcb26fccd25fcce25fcd025fcd225fbd324fbd524fbd724fad824fada24f9dc24f9dd25f8df25f8e125f7e225f7e425f6e626f6e826f5e926f5eb27f4ed27f3ee27f3f027f2f227f1f426f1f525f0f724f0f921"));
 
   /**
       @namespace {Object} colorDefaults
@@ -7589,12 +7675,12 @@ if (!Array.prototype.includes) {
     return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
   }
 
-  function identity$6(d) {
+  function identity$7(d) {
     return d;
   }
 
   function pie() {
-    var value = identity$6,
+    var value = identity$7,
         sortValues = descending$1,
         sort = null,
         startAngle = constant$8(0),
@@ -8134,8 +8220,6 @@ if (!Array.prototype.includes) {
       this._basis.lineStart();
     },
     lineEnd: function() {
-      var this$1 = this;
-
       var x = this._x,
           y = this._y,
           j = x.length - 1;
@@ -8150,9 +8234,9 @@ if (!Array.prototype.includes) {
 
         while (++i <= j) {
           t = i / j;
-          this$1._basis.point(
-            this$1._beta * x[i] + (1 - this$1._beta) * (x0 + t * dx),
-            this$1._beta * y[i] + (1 - this$1._beta) * (y0 + t * dy)
+          this._basis.point(
+            this._beta * x[i] + (1 - this._beta) * (x0 + t * dx),
+            this._beta * y[i] + (1 - this._beta) * (y0 + t * dy)
           );
         }
       }
@@ -8710,8 +8794,6 @@ if (!Array.prototype.includes) {
       this._y = [];
     },
     lineEnd: function() {
-      var this$1 = this;
-
       var x = this._x,
           y = this._y,
           n = x.length;
@@ -8724,7 +8806,7 @@ if (!Array.prototype.includes) {
           var px = controlPoints(x),
               py = controlPoints(y);
           for (var i0 = 0, i1 = 1; i1 < n; ++i0, ++i1) {
-            this$1._context.bezierCurveTo(px[0][i0], py[0][i0], px[1][i0], py[1][i0], x[i1], y[i1]);
+            this._context.bezierCurveTo(px[0][i0], py[0][i0], px[1][i0], py[1][i0], x[i1], y[i1]);
           }
         }
       }
@@ -8894,7 +8976,7 @@ if (!Array.prototype.includes) {
     none$1(series, order);
   }
 
-  function diverging$1(series, order) {
+  function diverging$2(series, order) {
     if (!((n = series.length) > 1)) { return; }
     for (var i, j = 0, d, dy, yp, yn, n, m = series[order[0]].length; j < m; ++j) {
       for (yp = yn = 0, i = 0; i < n; ++i) {
@@ -9029,7 +9111,7 @@ if (!Array.prototype.includes) {
     curveStepBefore: stepBefore,
     stack: stack,
     stackOffsetExpand: expand,
-    stackOffsetDiverging: diverging$1,
+    stackOffsetDiverging: diverging$2,
     stackOffsetNone: none$1,
     stackOffsetSilhouette: silhouette,
     stackOffsetWiggle: wiggle,
@@ -9070,8 +9152,8 @@ if (!Array.prototype.includes) {
 
     context.font = font.join(" ");
 
-    if (text instanceof Array) { return text.map(function (t) { return context.measureText(t).width; }); }
-    return context.measureText(text).width;
+    if (text instanceof Array) { return text.map(function (t) { return context.measureText(t.replace(/<[^>]+>/g, "")).width; }); }
+    return context.measureText(text.replace(/<[^>]+>/g, "")).width;
 
   }
 
@@ -9201,36 +9283,36 @@ if (!Array.prototype.includes) {
   var b = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
   var combiningMarks = a$1.concat(b);
 
-  var splitChars = ["-",  "/",  ";",  ":",  "&",
-    "u0E2F",  // thai character pairannoi
-    "u0EAF",  // lao ellipsis
-    "u0EC6",  // lao ko la (word repetition)
-    "u0ECC",  // lao cancellation mark
-    "u104A",  // myanmar sign little section
-    "u104B",  // myanmar sign section
-    "u104C",  // myanmar symbol locative
-    "u104D",  // myanmar symbol completed
-    "u104E",  // myanmar symbol aforementioned
-    "u104F",  // myanmar symbol genitive
-    "u2013",  // en dash
-    "u2014",  // em dash
-    "u2027",  // simplified chinese hyphenation point
-    "u3000",  // simplified chinese ideographic space
-    "u3001",  // simplified chinese ideographic comma
-    "u3002",  // simplified chinese ideographic full stop
-    "uFF0C",  // full-width comma
-    "uFF5E"   // wave dash
+  var splitChars = ["-", ";", ":", "&",
+    "u0E2F", // thai character pairannoi
+    "u0EAF", // lao ellipsis
+    "u0EC6", // lao ko la (word repetition)
+    "u0ECC", // lao cancellation mark
+    "u104A", // myanmar sign little section
+    "u104B", // myanmar sign section
+    "u104C", // myanmar symbol locative
+    "u104D", // myanmar symbol completed
+    "u104E", // myanmar symbol aforementioned
+    "u104F", // myanmar symbol genitive
+    "u2013", // en dash
+    "u2014", // em dash
+    "u2027", // simplified chinese hyphenation point
+    "u3000", // simplified chinese ideographic space
+    "u3001", // simplified chinese ideographic comma
+    "u3002", // simplified chinese ideographic full stop
+    "uFF0C", // full-width comma
+    "uFF5E"  // wave dash
   ];
 
-  var prefixChars = ["'",  "<",  "(",  "{",  "[",
-    "u00AB",  // left-pointing double angle quotation mark
-    "u300A",  // left double angle bracket
+  var prefixChars = ["'", "<", "(", "{", "[",
+    "u00AB", // left-pointing double angle quotation mark
+    "u300A", // left double angle bracket
     "u3008"  // left angle bracket
   ];
 
-  var suffixChars = ["'",  ">",  ")",  "}",  "]",  ".",  "!",  "?",
-    "u00BB",  // right-pointing double angle quotation mark
-    "u300B",  // right double angle bracket
+  var suffixChars = ["'", ">", ")", "}", "]", ".", "!", "?", "/",
+    "u00BB", // right-pointing double angle quotation mark
+    "u300B", // right double angle bracket
     "u3009"  // right angle bracket
   ].concat(splitChars);
 
@@ -9250,7 +9332,7 @@ if (!Array.prototype.includes) {
       @desc Splits a given sentence into an array of words.
       @param {String} sentence
   */
-  function defaultSplit(sentence) {
+  function textSplit(sentence) {
     if (!noSpaceLanguage.test(sentence)) { return stringify(sentence).match(splitWords).filter(function (w) { return w.length; }); }
     return merge(stringify(sentence).match(splitWords).map(function (d) {
       if (noSpaceLanguage.test(d)) { return d.match(splitAllChars); }
@@ -9271,7 +9353,7 @@ if (!Array.prototype.includes) {
         lineHeight,
         maxLines = null,
         overflow = false,
-        split = defaultSplit,
+        split = textSplit,
         width = 200;
 
     /**
@@ -9426,12 +9508,19 @@ if (!Array.prototype.includes) {
       @see https://github.com/d3plus/d3plus-common#BaseClass
   */
 
+  var tagLookup = {
+    i: "font-style: italic;",
+    em: "font-style: italic;",
+    b: "font-weight: bold;",
+    strong: "font-weight: bold;"
+  };
+
   /**
       @class TextBox
       @extends external:BaseClass
       @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
   */
-  var TextBox = (function (BaseClass$$1) {
+  var TextBox = /*@__PURE__*/(function (BaseClass$$1) {
     function TextBox() {
       var this$1 = this;
 
@@ -9451,6 +9540,7 @@ if (!Array.prototype.includes) {
       this._fontSize = constant$6(10);
       this._fontWeight = constant$6(400);
       this._height = accessor("height", 200);
+      this._html = true;
       this._id = function (d, i) { return d.id || ("" + i); };
       this._lineHeight = function (d, i) { return this$1._fontSize(d, i) * 1.2; };
       this._maxLines = constant$6(null);
@@ -9460,7 +9550,7 @@ if (!Array.prototype.includes) {
       this._pointerEvents = constant$6("auto");
       this._rotate = constant$6(0);
       this._rotateAnchor = function (d) { return [d.w / 2, d.h / 2]; };
-      this._split = defaultSplit;
+      this._split = textSplit;
       this._text = accessor("text");
       this._textAnchor = constant$6("start");
       this._verticalAlign = constant$6("top");
@@ -9665,13 +9755,30 @@ if (!Array.prototype.includes) {
         .each(function(d) {
 
           /**
+              Sets the inner text content of each <text> element.
+              @private
+          */
+          function textContent(text) {
+
+            text
+              [that._html ? "html" : "text"](function (t) { return trimRight(t)
+                .replace(/<([^A-z^/]+)/g, function (str, a) { return ("&lt;" + a); }).replace(/<$/g, "&lt;") // replaces all non-HTML left angle brackets with escaped entity
+                .replace(/(<[^>^\/]+>)([^<^>]+)$/g, function (str, a, b) { return ("" + a + b + (a.replace("<", "</"))); }) // ands end tag to lines before mid-HTML break
+                .replace(/^([^<^>]+)(<\/[^>]+>)/g, function (str, a, b) { return ("" + (b.replace("</", "<")) + a + b); }) // ands start tag to lines after mid-HTML break
+                .replace(/<([A-z]+)[^>]*>([^<^>]+)<\/[^>]+>/g, function (str, a, b) {
+                  var tag = tagLookup[a] ? ("<tspan style=\"" + (tagLookup[a]) + "\">") : "";
+                  return ("" + (tag.length ? tag : "") + b + (tag.length ? "</tspan>" : ""));
+                }); });
+
+          }
+
+          /**
               Styles to apply to each <text> element.
               @private
           */
           function textStyle(text) {
 
             text
-              .text(function (t) { return trimRight(t); })
               .attr("aria-hidden", d.aH)
               .attr("dir", rtl ? "rtl" : "ltr")
               .attr("fill", d.fC)
@@ -9683,10 +9790,10 @@ if (!Array.prototype.includes) {
               .attr("font-weight", d.fW)
               .style("font-weight", d.fW)
               .attr("x", ((d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 2 * Math.sin(Math.PI * d.r / 180)) + "px"))
-              .attr("y", function (t, i) { return d.r === 0 || d.vA === "top" ? (((i + 1) * d.lH - (d.lH - d.fS)) + "px") : 
-                d.vA === "middle" ? 
-                  (((d.h + d.fS) / 2 - (d.lH - d.fS) + (i - d.lines.length / 2 + 0.5) * d.lH) + "px") : 
-                  ((d.h - 2 * (d.lH - d.fS) - (d.lines.length - (i + 1)) * d.lH + 2 * Math.cos(Math.PI * d.r / 180)) + "px"); });
+              .attr("y", function (t, i) { return d.r === 0 || d.vA === "top" ? (((i + 1) * d.lH - (d.lH - d.fS)) + "px")
+              : d.vA === "middle"
+                ? (((d.h + d.fS) / 2 - (d.lH - d.fS) + (i - d.lines.length / 2 + 0.5) * d.lH) + "px")
+                : ((d.h - 2 * (d.lH - d.fS) - (d.lines.length - (i + 1)) * d.lH + 2 * Math.cos(Math.PI * d.r / 180)) + "px"); });
 
           }
 
@@ -9694,7 +9801,9 @@ if (!Array.prototype.includes) {
 
           if (that._duration === 0) {
 
-            texts.call(textStyle);
+            texts
+              .call(textContent)
+              .call(textStyle);
 
             texts.exit().remove();
 
@@ -9702,6 +9811,7 @@ if (!Array.prototype.includes) {
               .attr("dominant-baseline", "alphabetic")
               .style("baseline-shift", "0%")
               .attr("unicode-bidi", "bidi-override")
+              .call(textContent)
               .call(textStyle)
               .attr("opacity", d.fO)
               .style("opacity", d.fO);
@@ -9709,7 +9819,7 @@ if (!Array.prototype.includes) {
           }
           else {
 
-            texts.transition(t).call(textStyle);
+            texts.call(textContent).transition(t).call(textStyle);
 
             texts.exit().transition(t)
               .attr("opacity", 0).remove();
@@ -9719,6 +9829,7 @@ if (!Array.prototype.includes) {
                 .style("baseline-shift", "0%")
                 .attr("opacity", 0)
                 .style("opacity", 0)
+                .call(textContent)
                 .call(textStyle)
               .merge(texts).transition(t).delay(that._delay)
                 .call(textStyle)
@@ -9749,8 +9860,8 @@ if (!Array.prototype.includes) {
         @chainable
     */
     TextBox.prototype.ariaHidden = function ariaHidden (_) {
-      return _ !== undefined 
-        ? (this._ariaHidden = typeof _ === "function" ? _ : constant$6(_), this) 
+      return _ !== undefined
+        ? (this._ariaHidden = typeof _ === "function" ? _ : constant$6(_), this)
         : this._ariaHidden;
     };
 
@@ -9890,6 +10001,16 @@ if (!Array.prototype.includes) {
     */
     TextBox.prototype.height = function height (_) {
       return arguments.length ? (this._height = typeof _ === "function" ? _ : constant$6(_), this) : this._height;
+    };
+
+    /**
+        @memberof TextBox
+        @desc Toggles the ability to render simple HTML tags. Currently supports `<b>`, `<strong>`, `<i>`, and `<em>`.
+        @param {Boolean} [*value* = true]
+        @chainable
+    */
+    TextBox.prototype.html = function html (_) {
+      return arguments.length ? (this._html = _, this) : this._html;
     };
 
     /**
@@ -10564,7 +10685,7 @@ if (!Array.prototype.includes) {
         .rotate(function (d) { return d.__d3plus__ ? d.r : d.data.r; })
         .rotateAnchor(function (d) { return d.__d3plus__ ? d.rotateAnchor : d.data.rotateAnchor; })
         .select(elem(("g.d3plus-" + (this._name) + "-text"), {parent: this._group, update: {opacity: this._active ? this._activeOpacity : 1}}).node())
-        .config(this._labelConfig)
+        .config(configPrep.bind(this)(this._labelConfig))
         .render();
 
     };
@@ -14095,6 +14216,30 @@ if (!Array.prototype.includes) {
     return columns;
   }
 
+  function pad$1(value, width) {
+    var s = value + "", length = s.length;
+    return length < width ? new Array(width - length + 1).join(0) + s : s;
+  }
+
+  function formatYear$1(year) {
+    return year < 0 ? "-" + pad$1(-year, 6)
+      : year > 9999 ? "+" + pad$1(year, 6)
+      : pad$1(year, 4);
+  }
+
+  function formatDate(date) {
+    var hours = date.getUTCHours(),
+        minutes = date.getUTCMinutes(),
+        seconds = date.getUTCSeconds(),
+        milliseconds = date.getUTCMilliseconds();
+    return isNaN(date) ? "Invalid Date"
+        : formatYear$1(date.getUTCFullYear(), 4) + "-" + pad$1(date.getUTCMonth() + 1, 2) + "-" + pad$1(date.getUTCDate(), 2)
+        + (milliseconds ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + ":" + pad$1(seconds, 2) + "." + pad$1(milliseconds, 3) + "Z"
+        : seconds ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + ":" + pad$1(seconds, 2) + "Z"
+        : minutes || hours ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + "Z"
+        : "");
+  }
+
   function dsv(delimiter) {
     var reFormat = new RegExp("[\"" + delimiter + "\n\r]"),
         DELIMITER = delimiter.charCodeAt(0);
@@ -14157,13 +14302,22 @@ if (!Array.prototype.includes) {
       return rows;
     }
 
-    function format(rows, columns) {
-      if (columns == null) { columns = inferColumns(rows); }
-      return [columns.map(formatValue).join(delimiter)].concat(rows.map(function(row) {
+    function preformatBody(rows, columns) {
+      return rows.map(function(row) {
         return columns.map(function(column) {
           return formatValue(row[column]);
         }).join(delimiter);
-      })).join("\n");
+      });
+    }
+
+    function format(rows, columns) {
+      if (columns == null) { columns = inferColumns(rows); }
+      return [columns.map(formatValue).join(delimiter)].concat(preformatBody(rows, columns)).join("\n");
+    }
+
+    function formatBody(rows, columns) {
+      if (columns == null) { columns = inferColumns(rows); }
+      return preformatBody(rows, columns).join("\n");
     }
 
     function formatRows(rows) {
@@ -14174,16 +14328,18 @@ if (!Array.prototype.includes) {
       return row.map(formatValue).join(delimiter);
     }
 
-    function formatValue(text) {
-      return text == null ? ""
-          : reFormat.test(text += "") ? "\"" + text.replace(/"/g, "\"\"") + "\""
-          : text;
+    function formatValue(value) {
+      return value == null ? ""
+          : value instanceof Date ? formatDate(value)
+          : reFormat.test(value += "") ? "\"" + value.replace(/"/g, "\"\"") + "\""
+          : value;
     }
 
     return {
       parse: parse,
       parseRows: parseRows,
       format: format,
+      formatBody: formatBody,
       formatRows: formatRows
     };
   }
@@ -14193,6 +14349,7 @@ if (!Array.prototype.includes) {
   var csvParse = csv.parse;
   var csvParseRows = csv.parseRows;
   var csvFormat = csv.format;
+  var csvFormatBody = csv.formatBody;
   var csvFormatRows = csv.formatRows;
 
   var tsv = dsv("\t");
@@ -14200,6 +14357,7 @@ if (!Array.prototype.includes) {
   var tsvParse = tsv.parse;
   var tsvParseRows = tsv.parseRows;
   var tsvFormat = tsv.format;
+  var tsvFormatBody = tsv.formatBody;
   var tsvFormatRows = tsv.formatRows;
 
   function dsv$1(defaultMimeType, parse) {
@@ -15093,6 +15251,36 @@ if (!Array.prototype.includes) {
   });
 
   /**
+      @function formatAbbreviate
+      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
+      @param {Number} n The number to be formatted.
+      @returns {String}
+  */
+  function formatAbbreviate(n) {
+    if (typeof n !== "number") { return "N/A"; }
+    var length = n.toString().split(".")[0].replace("-", "").length;
+    var val;
+    if (n === 0) { val = "0"; }
+    else if (length >= 3) {
+      var f = format(".3s")(n)
+        .replace("G", "B")
+        .replace("T", "t")
+        .replace("P", "q")
+        .replace("E", "Q");
+      var num = f.slice(0, -1);
+      var char = f.slice(f.length - 1);
+      val = "" + (parseFloat(num)) + char;
+    }
+    else if (length === 3) { val = format(",f")(n); }
+    else if (n < 1 && n > -1) { val = format(".2g")(n); }
+    else { val = format(".3g")(n); }
+
+    return val
+      .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+      .replace(/[.]$/g, ""); // removes any trailing decimal point
+  }
+
+  /**
       @function date
       @summary Parses numbers and strings to valid Javascript Date objects.
       @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
@@ -15200,6 +15388,7 @@ if (!Array.prototype.includes) {
         width: function (d) { return d.tick ? 8 : 0; }
       };
       this._tickSize = 5;
+      this._tickSpecifier = undefined;
       this._titleClass = new TextBox();
       this._titleConfig = {
         fontSize: 12,
@@ -15450,11 +15639,21 @@ if (!Array.prototype.includes) {
         if (this$1._scale === "log") {
           var p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
           var t = Math.abs(d).toString().charAt(0);
-          var n = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
-          if (t !== "1") { n = t + " x " + n; }
-          return d < 0 ? ("-" + n) : n;
+          var n$1 = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
+          if (t !== "1") { n$1 = t + " x " + n$1; }
+          return d < 0 ? ("-" + n$1) : n$1;
+        } 
+        else if (this$1._scale === "time") {
+          return this$1._d3Scale.tickFormat(labels.length - 1, this$1._tickSpecifier)(d);
         }
-        return this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+        else if (this$1._scale === "ordinal") {
+          return d;
+        }
+
+        var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
+
+        n = n.replace(/[^\d\.\-\+]/g, "") * 1;
+        return isNaN(n) ? n : formatAbbreviate(n);
       };
 
       if (this._scale === "time") {
@@ -16135,6 +16334,16 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Axis
+        @desc Sets the tick specifier for the [tickFormat](https://github.com/d3/d3-scale#continuous_tickFormat) function. If this method is called without any arguments, the default tick specifier is returned.
+        @param {String} [*value* = undefined]
+        @chainable
+    */
+    Axis.prototype.tickSpecifier = function tickSpecifier (_) {
+      return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
+    };
+
+    /**
+        @memberof Axis
         @desc If *value* is specified, sets the title of the axis and returns the current class instance.
         @param {String} [*value*]
         @chainable
@@ -16769,36 +16978,6 @@ if (!Array.prototype.includes) {
 
     return Select;
   }(BaseClass));
-
-  /**
-      @function formatAbbreviate
-      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
-      @param {Number} n The number to be formatted.
-      @returns {String}
-  */
-  function formatAbbreviate(n) {
-    if (typeof n !== "number") { return "N/A"; }
-    var length = n.toString().split(".")[0].length;
-    var val;
-    if (n === 0) { val = "0"; }
-    else if (length >= 3) {
-      var f = format(".3s")(n)
-        .replace("G", "B")
-        .replace("T", "t")
-        .replace("P", "q")
-        .replace("E", "Q");
-      var num = f.slice(0, -1);
-      var char = f.slice(f.length - 1);
-      val = "" + (parseFloat(num)) + char;
-    }
-    else if (length === 3) { val = format(",f")(n); }
-    else if (n < 1 && n > -1) { val = format(".2g")(n); }
-    else { val = format(".3g")(n); }
-
-    return val
-      .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
-      .replace(/[.]$/g, ""); // removes any trailing decimal point
-  }
 
   /**
       @desc Sort an array of numbers by their numeric value, ensuring that the array is not changed in place.
@@ -18112,13 +18291,11 @@ if (!Array.prototype.includes) {
     */
     Timeline.prototype._updateDomain = function _updateDomain () {
 
-      var domain = this._buttonBehaviorCurrent === "ticks"
-        ? (event$1.selection && this._brushing
-          ? event$1.selection
-          : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX]).map(this._d3Scale.invert).map(Number)
-        : (event$1.selection && this._brushing
-          ? event$1.selection
-          : [event$1.sourceEvent.offsetX, event$1.sourceEvent.offsetX]).map(Number);
+      var x = mouse(this._select.node())[0];
+      var domain = event$1.selection && this._brushing ? event$1.selection : [x, x];
+
+      if (this._buttonBehaviorCurrent === "ticks") { domain = domain.map(this._d3Scale.invert); }
+      domain = domain.map(Number);
 
       if (event$1.type === "brush" && this._brushing && this._buttonBehaviorCurrent === "buttons") {
         var diffs = event$1.selection.map(function (d) { return Math.abs(d - event$1.sourceEvent.offsetX); });
@@ -18196,15 +18373,15 @@ if (!Array.prototype.includes) {
 
         var ticks$$1 = this._ticks ? this._ticks.map(date$3) : this._domain.map(date$3);
 
-        var d3Scale = scaleTime().domain(ticks$$1).range([0, this._width]),
-              tickFormat = d3Scale.tickFormat();
+        var d3Scale = scaleTime().domain(ticks$$1).range([0, this._width]);
 
         ticks$$1 = this._ticks ? ticks$$1 : d3Scale.ticks();
 
-        if (!this._tickFormat) { this._tickFormat = tickFormat; }
+        if (!this._tickFormat) { this._tickFormat = d3Scale.tickFormat(ticks$$1.length - 1, this._tickSpecifier); }
 
         // Measures size of ticks
-        this._ticksWidth = ticks$$1.reduce(function (sum$$1, d, i) {
+        var maxLabel = 0;
+        ticks$$1.forEach(function (d, i) {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
                 s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
@@ -18213,24 +18390,27 @@ if (!Array.prototype.includes) {
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined);
 
-          var res = wrap(tickFormat(d));
-
+          var res = wrap(d3Scale.tickFormat(ticks$$1.length - 1, this$1._tickSpecifier)(d));
           var width = res.lines.length
             ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
             : 0;
           if (width % 2) { width++; }
-          return sum$$1 + width + 2 * this$1._buttonPadding;
-        }, 0);
+          if (maxLabel < width) { maxLabel = width + 2 * this$1._buttonPadding; }
+        });
+
+        this._ticksWidth = maxLabel * ticks$$1.length;
       }
 
       this._buttonBehaviorCurrent = this._buttonBehavior === "auto" ? this._ticksWidth < this._width ? "buttons" : "ticks" : this._buttonBehavior;
 
       if (this._buttonBehaviorCurrent === "buttons") {
         this._scale = "ordinal";
+        this._labelRotation = 0;
         if (!this._brushing) { this._handleSize = 0; }
-        var domain = this._domain.map(date$3).map(this._tickFormat).map(Number);
+        var domain = scaleTime().domain(this._domain.map(date$3)).ticks().map(this._tickFormat).map(Number);
 
         this._domain = this._ticks ? this._ticks.map(date$3) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) { return domain[0] + x; }).map(date$3);
+
         this._ticks = this._domain;
 
         var buttonMargin = 0.5 * this._ticksWidth / this._ticks.length;
@@ -18248,6 +18428,8 @@ if (!Array.prototype.includes) {
           this._buttonAlign === "end" ? undefined : marginRight - buttonMargin
         ];
       }
+
+      if (this._ticks) { this._domain = this._buttonBehaviorCurrent === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(date$3); }
 
       this._labels = this._ticks;
 
@@ -18286,7 +18468,6 @@ if (!Array.prototype.includes) {
       this._outerBounds.height += this._handleSize / 2;
 
       return this;
-
     };
 
     /**
@@ -18419,7 +18600,7 @@ if (!Array.prototype.includes) {
 
   /**!
    * @fileOverview Kickass library to create and place poppers near their reference elements.
-   * @version 1.14.4
+   * @version 1.14.7
    * @license
    * Copyright (c) 2016 Federico Zivolo and contributors
    *
@@ -18516,7 +18697,8 @@ if (!Array.prototype.includes) {
       return [];
     }
     // NOTE: 1 DOM access here
-    var css = getComputedStyle(element, null);
+    var window = element.ownerDocument.defaultView;
+    var css = window.getComputedStyle(element, null);
     return property ? css[property] : css;
   }
 
@@ -18604,7 +18786,7 @@ if (!Array.prototype.includes) {
     var noOffsetParent = isIE(10) ? document.body : null;
 
     // NOTE: 1 DOM access here
-    var offsetParent = element.offsetParent;
+    var offsetParent = element.offsetParent || null;
     // Skip hidden elements which don't have an offsetParent
     while (offsetParent === noOffsetParent && element.nextElementSibling) {
       offsetParent = (element = element.nextElementSibling).offsetParent;
@@ -18616,9 +18798,9 @@ if (!Array.prototype.includes) {
       return element ? element.ownerDocument.documentElement : document.documentElement;
     }
 
-    // .offsetParent will return the closest TD or TABLE in case
+    // .offsetParent will return the closest TH, TD or TABLE in case
     // no offsetParent is present, I hate this job...
-    if (['TD', 'TABLE'].indexOf(offsetParent.nodeName) !== -1 && getStyleComputedProperty(offsetParent, 'position') === 'static') {
+    if (['TH', 'TD', 'TABLE'].indexOf(offsetParent.nodeName) !== -1 && getStyleComputedProperty(offsetParent, 'position') === 'static') {
       return getOffsetParent(offsetParent);
     }
 
@@ -18988,7 +19170,11 @@ if (!Array.prototype.includes) {
     if (getStyleComputedProperty(element, 'position') === 'fixed') {
       return true;
     }
-    return isFixed(getParentNode(element));
+    var parentNode = getParentNode(element);
+    if (!parentNode) {
+      return false;
+    }
+    return isFixed(parentNode);
   }
 
   /**
@@ -19168,9 +19354,10 @@ if (!Array.prototype.includes) {
    * @returns {Object} object containing width and height properties
    */
   function getOuterSizes(element) {
-    var styles = getComputedStyle(element);
-    var x = parseFloat(styles.marginTop) + parseFloat(styles.marginBottom);
-    var y = parseFloat(styles.marginLeft) + parseFloat(styles.marginRight);
+    var window = element.ownerDocument.defaultView;
+    var styles = window.getComputedStyle(element);
+    var x = parseFloat(styles.marginTop || 0) + parseFloat(styles.marginBottom || 0);
+    var y = parseFloat(styles.marginLeft || 0) + parseFloat(styles.marginRight || 0);
     var result = {
       width: element.offsetWidth + y,
       height: element.offsetHeight + x
@@ -19622,6 +19809,57 @@ if (!Array.prototype.includes) {
 
   /**
    * @function
+   * @memberof Popper.Utils
+   * @argument {Object} data - The data object generated by `update` method
+   * @argument {Boolean} shouldRound - If the offsets should be rounded at all
+   * @returns {Object} The popper's position offsets rounded
+   *
+   * The tale of pixel-perfect positioning. It's still not 100% perfect, but as
+   * good as it can be within reason.
+   * Discussion here: https://github.com/FezVrasta/popper.js/pull/715
+   *
+   * Low DPI screens cause a popper to be blurry if not using full pixels (Safari
+   * as well on High DPI screens).
+   *
+   * Firefox prefers no rounding for positioning and does not have blurriness on
+   * high DPI screens.
+   *
+   * Only horizontal placement and left/right values need to be considered.
+   */
+  function getRoundedOffsets(data, shouldRound) {
+    var _data$offsets = data.offsets,
+        popper = _data$offsets.popper,
+        reference = _data$offsets.reference;
+    var round = Math.round,
+        floor = Math.floor;
+
+    var noRound = function noRound(v) {
+      return v;
+    };
+
+    var referenceWidth = round(reference.width);
+    var popperWidth = round(popper.width);
+
+    var isVertical = ['left', 'right'].indexOf(data.placement) !== -1;
+    var isVariation = data.placement.indexOf('-') !== -1;
+    var sameWidthParity = referenceWidth % 2 === popperWidth % 2;
+    var bothOddWidth = referenceWidth % 2 === 1 && popperWidth % 2 === 1;
+
+    var horizontalToInteger = !shouldRound ? noRound : isVertical || isVariation || sameWidthParity ? round : floor;
+    var verticalToInteger = !shouldRound ? noRound : round;
+
+    return {
+      left: horizontalToInteger(bothOddWidth && !isVariation && shouldRound ? popper.left - 1 : popper.left),
+      top: verticalToInteger(popper.top),
+      bottom: verticalToInteger(popper.bottom),
+      right: horizontalToInteger(popper.right)
+    };
+  }
+
+  var isFirefox = isBrowser && /Firefox/i.test(navigator.userAgent);
+
+  /**
+   * @function
    * @memberof Modifiers
    * @argument {Object} data - The data object generated by `update` method
    * @argument {Object} options - Modifiers configuration and options
@@ -19650,15 +19888,7 @@ if (!Array.prototype.includes) {
       position: popper.position
     };
 
-    // Avoid blurry text by using full pixel integers.
-    // For pixel-perfect positioning, top/bottom prefers rounded
-    // values, while left/right prefers floored values.
-    var offsets = {
-      left: Math.floor(popper.left),
-      top: Math.round(popper.top),
-      bottom: Math.round(popper.bottom),
-      right: Math.floor(popper.right)
-    };
+    var offsets = getRoundedOffsets(data, window.devicePixelRatio < 2 || !isFirefox);
 
     var sideA = x === 'bottom' ? 'top' : 'bottom';
     var sideB = y === 'right' ? 'left' : 'right';
@@ -20954,7 +21184,7 @@ if (!Array.prototype.includes) {
       @extends BaseClass
       @desc Creates HTML tooltips in the body of a webpage.
   */
-  var Tooltip = (function (BaseClass$$1) {
+  var Tooltip = /*@__PURE__*/(function (BaseClass$$1) {
     function Tooltip() {
 
       BaseClass$$1.call(this);
@@ -20983,7 +21213,6 @@ if (!Array.prototype.includes) {
       this._borderRadius = constant$6("2px");
       this._className = "d3plus-tooltip";
       this._data = [];
-      this._duration = constant$6(200);
       this._footer = accessor("footer", "");
       this._footerStyle = {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
@@ -20996,9 +21225,11 @@ if (!Array.prototype.includes) {
       this._offset = constant$6(5);
       this._padding = constant$6("5px");
       this._pointerEvents = constant$6("auto");
+      this._popperClasses = {};
       this._position = function (d) { return [d.x, d.y]; };
       this._prefix = prefix$1();
       this._tableStyle = {
+        "border-collapse": "collapse",
         "border-spacing": "0",
         "width": "100%"
       };
@@ -21020,6 +21251,9 @@ if (!Array.prototype.includes) {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
         "font-size": "14px",
         "font-weight": "600"
+      };
+      this._trStyle = {
+        "border-top": "1px solid rgba(0, 0, 0, 0.1)"
       };
       this._width = constant$6("auto");
     }
@@ -21110,6 +21344,7 @@ if (!Array.prototype.includes) {
       var trEnter = tr.enter().append("tr");
       tr.exit().remove();
       var trUpdate = tr.merge(trEnter);
+      stylize(trUpdate, this._trStyle);
       var td = trUpdate.selectAll("td").data(function (d) { return d; });
       td.enter().append("td").merge(td).html(cellContent);
 
@@ -21117,27 +21352,14 @@ if (!Array.prototype.includes) {
 
       divElement("arrow");
 
-      enter.call(boxStyles);
-
-      var t = transition().duration(this._duration);
-
-      update
+      enter
         .attr("id", function (d, i) { return ("d3plus-tooltip-" + (d ? this$1._id(d, i) : "")); })
-        .transition(t)
-          .style("opacity", 1)
-          .call(boxStyles);
+        .call(boxStyles)
+        .each(function (d, i) {
 
-      tooltips.exit()
-        .transition(t)
-          .style("opacity", 0)
-        .remove();
-
-      for (var i = 0; i < this._data.length; i++) {
-        var d = that._data[i];
-
-        if (d) {
-          var tooltip = document.getElementById(("d3plus-tooltip-" + (that._id(d, i))));
-          var arrow = document.getElementById(("d3plus-tooltip-arrow-" + (that._id(d, i))));
+          var id = that._id(d, i);
+          var tooltip = document.getElementById(("d3plus-tooltip-" + id));
+          var arrow = document.getElementById(("d3plus-tooltip-arrow-" + id));
           var arrowHeight = arrow.offsetHeight;
           var arrowDistance = arrow.getBoundingClientRect().height / 2;
           arrow.style.bottom = "-" + (arrowHeight / 2) + "px";
@@ -21156,9 +21378,9 @@ if (!Array.prototype.includes) {
               height: 0
             }); }
           }
-            : that._position(d, i);
+            : position;
 
-          new Popper(referenceObject, tooltip, {
+          this$1._popperClasses[id] = new Popper(referenceObject, tooltip, {
             placement: "top",
             placements: ["top", "bottom", "left", "right"],
             modifiers: {
@@ -21176,13 +21398,6 @@ if (!Array.prototype.includes) {
                 boundariesElement: "viewport"
               }
             },
-            onCreate: function onCreate(ref) {
-              var instance = ref.instance;
-
-              document.onmousemove = function () {
-                instance.scheduleUpdate();
-              };
-            },
             onUpdate: function onUpdate(ref) {
               var arrowElement = ref.arrowElement;
               var flipped = ref.flipped;
@@ -21195,12 +21410,51 @@ if (!Array.prototype.includes) {
                 arrowElement.style.transform = "rotate(45deg)";
                 arrowElement.style.bottom = "-" + (arrowHeight / 2) + "px";
               }
-            }
+            },
+            removeOnDestroy: true
           });
-        }
-      }
 
-      if (callback) { setTimeout(callback, this._duration + 100); }
+        });
+
+      update
+        .each(function (d, i) {
+          var id = that._id(d, i);
+          var position = that._position(d, i);
+          var instance = this$1._popperClasses[id];
+
+          if (instance) {
+            var referenceObject = Array.isArray(position) ? {
+              clientWidth: 0,
+              clientHeight: 0,
+              getBoundingClientRect: function () { return ({
+                top: position[1],
+                right: position[0],
+                bottom: position[1],
+                left: position[0],
+                width: 0,
+                height: 0
+              }); }
+            }
+              : position;
+            instance.reference = referenceObject;
+            instance.scheduleUpdate();
+          }
+
+        })
+        .call(boxStyles);
+
+      tooltips.exit()
+        .each(function (d, i) {
+          var id = that._id(d, i);
+          var instance = this$1._popperClasses[id];
+          if (instance) {
+            instance.destroy();
+            delete this$1._popperClasses[id];
+          }
+        })
+        .remove();
+
+      if (callback) { setTimeout(callback, 100); }
 
       return this;
 
@@ -21311,15 +21565,6 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Tooltip
-        @desc If *ms* is specified, sets the duration accessor to the specified function or number and returns this generator. If *ms* is not specified, returns the current duration accessor.
-        @param {Function|Number} [*ms* = 200]
-    */
-    Tooltip.prototype.duration = function duration (_) {
-      return arguments.length ? (this._duration = typeof _ === "function" ? _ : constant$6(_), this) : this._duration;
-    };
-
-    /**
-        @memberof Tooltip
         @desc If *value* is specified, sets the footer accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current footer accessor.
         @param {Function|String} [*value*]
         @example <caption>default accessor</caption>
@@ -21397,15 +21642,15 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Tooltip
-        @desc If *value* is specified, sets the position accessor to the specified function or array and returns this generator. If *value* is not specified, returns the current position accessor. If *value* is an HTMLElement, positions the Tooltip near that HTMLElement. Otherwise, coordinate points must be in reference to the client viewport, not the overall page.
-        @param {Function|Array|HTMLElement} [*value*]
+        @desc If *value* is specified, sets the position accessor to the specified function or array and returns this generator. If *value* is not specified, returns the current position accessor. If *value* is an HTMLElement, anchors the Tooltip to that HTMLElement. If *value* is a selection string, anchors the Tooltip to the HTMLElement selected by that string. Otherwise, coordinate points must be in reference to the client viewport, not the overall page.
+        @param {Function|Array|HTMLElement|String} [*value*]
         @example <caption>default accessor</caption>
      function value(d) {
       return [d.x, d.y];
     }
      */
     Tooltip.prototype.position = function position (_) {
-      return arguments.length ? (this._position = typeof _ === "function" ? _ : constant$6(_), this) : this._position;
+      return arguments.length ? (this._position = typeof _ === "string" ? constant$6(select(_).node() || [0, 0]) : typeof _ === "function" ? _ : constant$6(_), this) : this._position;
     };
 
     /**
@@ -21414,6 +21659,7 @@ if (!Array.prototype.includes) {
         @param {Object} [*value*]
         @example <caption>default styles</caption>
   {
+    "border-collapse": "collapse",
     "border-spacing": "0",
     "width": "100%"
   }
@@ -21499,6 +21745,19 @@ if (!Array.prototype.includes) {
     */
     Tooltip.prototype.titleStyle = function titleStyle (_) {
       return arguments.length ? (this._titleStyle = Object.assign(this._titleStyle, _), this) : this._titleStyle;
+    };
+
+    /**
+        @memberof Tooltip
+        @desc If *value* is specified, sets the table row styles to the specified values and returns this generator. If *value* is not specified, returns the current table row styles.
+        @param {Object} [*value*]
+        @example <caption>default styles</caption>
+    {
+      "border-top": "1px solid rgba(0, 0, 0, 0.1)"
+    }
+     */
+    Tooltip.prototype.trStyle = function trStyle (_) {
+      return arguments.length ? (this._trStyle = Object.assign(this._trStyle, _), this) : this._trStyle;
     };
 
     /**
@@ -21641,65 +21900,75 @@ if (!Array.prototype.includes) {
 
   /**
       @function _drawColorScale
-      @desc Renders the color scale if this._colorScale is not falsy.
-      @param {Array} data The filtered data array to be displayed.
+      @desc Renders the color scale if this._colorScale is not falsey.
       @private
   */
-  function drawColorScale(data) {
+  function drawColorScale() {
     var this$1 = this;
-    if ( data === void 0 ) { data = []; }
 
 
-    if (this._colorScale && data) {
+    var data = this._data;
 
-      var position = this._colorScalePosition || "bottom";
-      var wide = ["top", "bottom"].includes(position);
+    var position = this._colorScalePosition || "bottom";
+    var wide = ["top", "bottom"].includes(position);
 
-      var transform = {
-        opacity: this._colorScalePosition ? 1 : 0,
-        transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")
-      };
+    var availableWidth = this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right);
 
-      var showColorScale = this._colorScale && data && data.length > 1;
+    var width = wide
+      ? min([this._colorScaleMaxSize, availableWidth])
+      : this._width - (this._margin.left + this._margin.right);
 
-      var scaleGroup = elem("g.d3plus-viz-colorScale", {
-        condition: showColorScale && !this._colorScaleConfig.select,
-        enter: transform,
-        parent: this._select,
-        transition: this._transition,
-        update: transform
-      }).node();
+    var availableHeight = this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top);
 
+    var height = !wide
+      ? min([this._colorScaleMaxSize, availableHeight])
+      : this._height - (this._margin.bottom + this._margin.top);
+
+    var transform = {
+      opacity: this._colorScalePosition ? 1 : 0,
+      transform: ("translate(" + (wide ? this._margin.left + this._padding.left + (availableWidth - width) / 2 : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top + (availableHeight - height) / 2) + ")")
+    };
+
+    var showColorScale = this._colorScale && data && data.length > 1;
+
+    var scaleGroup = elem("g.d3plus-viz-colorScale", {
+      condition: showColorScale && !this._colorScaleConfig.select,
+      enter: transform,
+      parent: this._select,
+      transition: this._transition,
+      update: transform
+    }).node();
+
+    if (showColorScale) {
       var scaleData = data.filter(function (d, i) {
         var c = this$1._colorScale(d, i);
         return c !== undefined && c !== null;
       });
 
-      if (showColorScale) {
-        this._colorScaleClass
-          .align({bottom: "end", left: "start", right: "end", top: "start"}[position] || "bottom")
-          .duration(this._duration)
-          .data(scaleData)
-          .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
-          .orient(position)
-          .select(scaleGroup)
-          .value(this._colorScale)
-          .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
-          .config(this._colorScaleConfig)
-          .render();
+      this._colorScaleClass
+        .align({bottom: "end", left: "start", right: "end", top: "start"}[position] || "bottom")
+        .duration(this._duration)
+        .data(scaleData)
+        .height(height)
+        .orient(position)
+        .select(scaleGroup)
+        .value(this._colorScale)
+        .width(width)
+        .config(this._colorScaleConfig)
+        .render();
 
-        var scaleBounds = this._colorScaleClass.outerBounds();
-        if (this._colorScalePosition && !this._colorScaleConfig.select && scaleBounds.height) {
-          if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
-          else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
-        }
-
-      }
-      else {
-        this._colorScaleClass.config(this._colorScaleConfig);
+      var scaleBounds = this._colorScaleClass.outerBounds();
+      if (this._colorScalePosition && !this._colorScaleConfig.select && scaleBounds.height) {
+        if (wide) { this._margin[position] += scaleBounds.height + this._legendClass.padding() * 2; }
+        else { this._margin[position] += scaleBounds.width + this._legendClass.padding() * 2; }
       }
 
     }
+    else {
+      this._colorScaleClass.config(this._colorScaleConfig);
+    }
+
+
 
   }
 
@@ -23409,15 +23678,13 @@ if (!Array.prototype.includes) {
   };
 
   NodeContainer.prototype.parseTextShadows = function() {
-      var this$1 = this;
-
       var textShadow = this.css("textShadow");
       var results = [];
 
       if (textShadow && textShadow !== 'none') {
           var shadows = textShadow.match(this.TEXT_SHADOW_PROPERTY);
           for (var i = 0; shadows && (i < shadows.length); i++) {
-              var s = shadows[i].match(this$1.TEXT_SHADOW_VALUES);
+              var s = shadows[i].match(this.TEXT_SHADOW_VALUES);
               results.push({
                   color: new Color(s[0]),
                   offsetX: s[1] ? parseFloat(s[1].replace('px', '')) : 0,
@@ -25244,8 +25511,6 @@ if (!Array.prototype.includes) {
   */
 
   var rgbcolor = function(color_string) {
-      var this$1 = this;
-
       this.ok = false;
       this.alpha = 1.0;
 
@@ -25463,13 +25728,13 @@ if (!Array.prototype.includes) {
           var bits = re.exec(color_string);
           if (bits) {
               var channels = processor(bits);
-              this$1.r = channels[0];
-              this$1.g = channels[1];
-              this$1.b = channels[2];
+              this.r = channels[0];
+              this.g = channels[1];
+              this.b = channels[2];
               if (channels.length > 3) {
-                  this$1.alpha = channels[3];
+                  this.alpha = channels[3];
               }
-              this$1.ok = true;
+              this.ok = true;
           }
 
       }
@@ -26508,7 +26773,7 @@ if (!Array.prototype.includes) {
    * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
    */
 
-  function copy$2(src,dest){
+  function copy$3(src,dest){
   	for(var p in src){
   		dest[p] = src[p];
   	}
@@ -26526,7 +26791,7 @@ if (!Array.prototype.includes) {
   	if(!(pt instanceof Super)){
   		function t(){}		t.prototype = Super.prototype;
   		t = new t();
-  		copy$2(pt,t);
+  		copy$3(pt,t);
   		Class.prototype = pt = t;
   	}
   	if(pt.constructor != Class){
@@ -26586,7 +26851,7 @@ if (!Array.prototype.includes) {
   	if(message) { this.message = this.message + ": " + message; }
   	return error;
   }DOMException.prototype = Error.prototype;
-  copy$2(ExceptionCode,DOMException);
+  copy$3(ExceptionCode,DOMException);
   /**
    * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-536297177
    * The NodeList interface provides the abstraction of an ordered collection of nodes, without defining or constraining how this collection is implemented. NodeList objects in the DOM are live.
@@ -26611,10 +26876,8 @@ if (!Array.prototype.includes) {
   		return this[index] || null;
   	},
   	toString:function(isHTML,nodeFilter){
-  		var this$1 = this;
-
   		for(var buf = [], i = 0;i<this.length;i++){
-  			serializeToString(this$1[i],buf,isHTML,nodeFilter);
+  			serializeToString(this[i],buf,isHTML,nodeFilter);
   		}
   		return buf.join('');
   	}
@@ -26630,7 +26893,7 @@ if (!Array.prototype.includes) {
   		var ls = list._refresh(list._node);
   		//console.log(ls.length)
   		__set__(list,'length',ls.length);
-  		copy$2(ls,list);
+  		copy$3(ls,list);
   		list._inc = inc;
   	}
   }
@@ -26694,15 +26957,13 @@ if (!Array.prototype.includes) {
   	length:0,
   	item:NodeList.prototype.item,
   	getNamedItem: function(key) {
-  		var this$1 = this;
-
   //		if(key.indexOf(':')>0 || key == 'xmlns'){
   //			return null;
   //		}
   		//console.log()
   		var i = this.length;
   		while(i--){
-  			var attr = this$1[i];
+  			var attr = this[i];
   			//console.log(attr.nodeName,key)
   			if(attr.nodeName == key){
   				return attr;
@@ -26745,11 +27006,9 @@ if (!Array.prototype.includes) {
   		return attr;
   	},
   	getNamedItemNS: function(namespaceURI, localName) {
-  		var this$1 = this;
-
   		var i = this.length;
   		while(i--){
-  			var node = this$1[i];
+  			var node = this[i];
   			if(node.localName == localName && node.namespaceURI == namespaceURI){
   				return node;
   			}
@@ -26761,12 +27020,10 @@ if (!Array.prototype.includes) {
    * @see http://www.w3.org/TR/REC-DOM-Level-1/level-one-core.html#ID-102161490
    */
   function DOMImplementation(/* Object */ features) {
-  	var this$1 = this;
-
   	this._features = {};
   	if (features) {
   		for (var feature in features) {
-  			 this$1._features = features[feature];
+  			 this._features = features[feature];
   		}
   	}
   }
@@ -26855,13 +27112,11 @@ if (!Array.prototype.includes) {
   	},
   	// Modified in DOM Level 2:
   	normalize:function(){
-  		var this$1 = this;
-
   		var child = this.firstChild;
   		while(child){
   			var next = child.nextSibling;
   			if(next && next.nodeType == TEXT_NODE && child.nodeType == TEXT_NODE){
-  				this$1.removeChild(next);
+  				this.removeChild(next);
   				child.appendData(next.data);
   			}else{
   				child.normalize();
@@ -26925,8 +27180,8 @@ if (!Array.prototype.includes) {
   }
 
 
-  copy$2(NodeType,Node$1);
-  copy$2(NodeType,Node$1.prototype);
+  copy$3(NodeType,Node$1);
+  copy$3(NodeType,Node$1.prototype);
 
   /**
    * @param callback return true for continue,false for break
@@ -27079,14 +27334,12 @@ if (!Array.prototype.includes) {
   	documentElement :  null,
   	_inc : 1,
   	
-  	insertBefore :  function(newChild, refChild){
-  		var this$1 = this;
-  //raises 
+  	insertBefore :  function(newChild, refChild){//raises 
   		if(newChild.nodeType == DOCUMENT_FRAGMENT_NODE){
   			var child = newChild.firstChild;
   			while(child){
   				var next = child.nextSibling;
-  				this$1.insertBefore(child,refChild);
+  				this.insertBefore(child,refChild);
   				child = next;
   			}
   			return newChild;
@@ -27690,13 +27943,11 @@ if (!Array.prototype.includes) {
   				return getTextContent(this);
   			},
   			set:function(data){
-  				var this$1 = this;
-
   				switch(this.nodeType){
   				case ELEMENT_NODE:
   				case DOCUMENT_FRAGMENT_NODE:
   					while(this.firstChild){
-  						this$1.removeChild(this$1.firstChild);
+  						this.removeChild(this.firstChild);
   					}
   					if(data || String(data)){
   						this.appendChild(this.ownerDocument.createTextNode(data));
@@ -27832,8 +28083,6 @@ if (!Array.prototype.includes) {
       	}
   	},
   	startElement:function(namespaceURI, localName, qName, attrs) {
-  		var this$1 = this;
-
   		var doc = this.doc;
   	    var el = doc.createElementNS(namespaceURI, qName||localName);
   	    var len = attrs.length;
@@ -27846,7 +28095,7 @@ if (!Array.prototype.includes) {
   	        var value = attrs.getValue(i);
   	        var qName = attrs.getQName(i);
   			var attr = doc.createAttributeNS(namespaceURI, qName);
-  			this$1.locator &&position(attrs.getLocator(i),attr);
+  			this.locator &&position(attrs.getLocator(i),attr);
   			attr.value = attr.nodeValue = value;
   			el.setAttributeNode(attr);
   	    }
@@ -28544,8 +28793,6 @@ if (!Array.prototype.includes) {
   		};
 
   		this.addBezierCurve = function(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
-  			var this$1 = this;
-
   			// from http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
   			var p0 = [p0x, p0y], p1 = [p1x, p1y], p2 = [p2x, p2y], p3 = [p3x, p3y];
   			this.addPoint(p0[0], p0[1]);
@@ -28567,8 +28814,8 @@ if (!Array.prototype.includes) {
   					if (b == 0) { continue; }
   					var t = -c / b;
   					if (0 < t && t < 1) {
-  						if (i == 0) { this$1.addX(f(t)); }
-  						if (i == 1) { this$1.addY(f(t)); }
+  						if (i == 0) { this.addX(f(t)); }
+  						if (i == 1) { this.addY(f(t)); }
   					}
   					continue;
   				}
@@ -28577,13 +28824,13 @@ if (!Array.prototype.includes) {
   				if (b2ac < 0) { continue; }
   				var t1 = (-b + Math.sqrt(b2ac)) / (2 * a);
   				if (0 < t1 && t1 < 1) {
-  					if (i == 0) { this$1.addX(f(t1)); }
-  					if (i == 1) { this$1.addY(f(t1)); }
+  					if (i == 0) { this.addX(f(t1)); }
+  					if (i == 1) { this.addY(f(t1)); }
   				}
   				var t2 = (-b - Math.sqrt(b2ac)) / (2 * a);
   				if (0 < t2 && t2 < 1) {
-  					if (i == 0) { this$1.addX(f(t2)); }
-  					if (i == 1) { this$1.addY(f(t2)); }
+  					if (i == 0) { this.addX(f(t2)); }
+  					if (i == 1) { this.addY(f(t2)); }
   				}
   			}
   		};
@@ -28598,8 +28845,6 @@ if (!Array.prototype.includes) {
 
   	// transforms
   	svg.Transform = function(v) {
-  		var this$1 = this;
-
   		var that = this;
   		this.Type = {};
 
@@ -28708,26 +28953,20 @@ if (!Array.prototype.includes) {
   		this.transforms = [];
 
   		this.apply = function(ctx) {
-  			var this$1 = this;
-
   			for (var i=0; i<this.transforms.length; i++) {
-  				this$1.transforms[i].apply(ctx);
+  				this.transforms[i].apply(ctx);
   			}
   		};
 
   		this.unapply = function(ctx) {
-  			var this$1 = this;
-
   			for (var i=this.transforms.length-1; i>=0; i--) {
-  				this$1.transforms[i].unapply(ctx);
+  				this.transforms[i].unapply(ctx);
   			}
   		};
 
   		this.applyToPoint = function(p) {
-  			var this$1 = this;
-
   			for (var i=0; i<this.transforms.length; i++) {
-  				this$1.transforms[i].applyToPoint(p);
+  				this.transforms[i].applyToPoint(p);
   			}
   		};
 
@@ -28735,11 +28974,11 @@ if (!Array.prototype.includes) {
   		for (var i=0; i<data.length; i++) {
   			var type = svg.trim(data[i].split('(')[0]);
   			var s = data[i].split('(')[1].replace(')','');
-  			var transformType = this$1.Type[type];
+  			var transformType = this.Type[type];
   			if (typeof transformType != 'undefined') {
   				var transform = new transformType(s);
   				transform.type = type;
-  				this$1.transforms.push(transform);
+  				this.transforms.push(transform);
   			}
   		}
   	};
@@ -28788,8 +29027,6 @@ if (!Array.prototype.includes) {
   	svg.EmptyProperty = new svg.Property('EMPTY', '');
 
   	svg.Element.ElementBase = function(node) {
-  		var this$1 = this;
-
   		this.attributes = {};
   		this.styles = {};
   		this.stylesSpecificity = {};
@@ -28805,11 +29042,9 @@ if (!Array.prototype.includes) {
   		};
 
   		this.getHrefAttribute = function() {
-  			var this$1 = this;
-
-  			for (var a in this$1.attributes) {
+  			for (var a in this.attributes) {
   				if (a == 'href' || a.match(/:href$/)) {
-  					return this$1.attributes[a];
+  					return this.attributes[a];
   				}
   			}
   			return svg.EmptyProperty;
@@ -28877,10 +29112,8 @@ if (!Array.prototype.includes) {
 
   		// base render children
   		this.renderChildren = function(ctx) {
-  			var this$1 = this;
-
   			for (var i=0; i<this.children.length; i++) {
-  				this$1.children[i].render(ctx);
+  				this.children[i].render(ctx);
   			}
   		};
 
@@ -28892,8 +29125,6 @@ if (!Array.prototype.includes) {
   		};
 
   		this.addStylesFromStyleDefinition = function () {
-  			var this$1 = this;
-
   			// add styles
   			for (var selector in svg.Styles) {
   				if (selector[0] != '@' && matchesSelector(node, selector)) {
@@ -28901,13 +29132,13 @@ if (!Array.prototype.includes) {
   					var specificity = svg.StylesSpecificity[selector];
   					if (styles != null) {
   						for (var name in styles) {
-  							var existingSpecificity = this$1.stylesSpecificity[name];
+  							var existingSpecificity = this.stylesSpecificity[name];
   							if (typeof existingSpecificity == 'undefined') {
   								existingSpecificity = '000';
   							}
   							if (specificity > existingSpecificity) {
-  								this$1.styles[name] = styles[name];
-  								this$1.stylesSpecificity[name] = specificity;
+  								this.styles[name] = styles[name];
+  								this.stylesSpecificity[name] = specificity;
   							}
   						}
   					}
@@ -28919,7 +29150,7 @@ if (!Array.prototype.includes) {
   			// add attributes
   			for (var i=0; i<node.attributes.length; i++) {
   				var attribute = node.attributes[i];
-  				this$1.attributes[attribute.nodeName] = new svg.Property(attribute.nodeName, attribute.value);
+  				this.attributes[attribute.nodeName] = new svg.Property(attribute.nodeName, attribute.value);
   			}
 
   			this.addStylesFromStyleDefinition();
@@ -28932,7 +29163,7 @@ if (!Array.prototype.includes) {
   						var style = styles[i].split(':');
   						var name = svg.trim(style[0]);
   						var value = svg.trim(style[1]);
-  						this$1.styles[name] = new svg.Property(name, value);
+  						this.styles[name] = new svg.Property(name, value);
   					}
   				}
   			}
@@ -28947,11 +29178,11 @@ if (!Array.prototype.includes) {
   			// add children
   			for (var i=0; i<node.childNodes.length; i++) {
   				var childNode = node.childNodes[i];
-  				if (childNode.nodeType == 1) { this$1.addChild(childNode, true); } //ELEMENT_NODE
-  				if (this$1.captureTextNodes && (childNode.nodeType == 3 || childNode.nodeType == 4)) {
+  				if (childNode.nodeType == 1) { this.addChild(childNode, true); } //ELEMENT_NODE
+  				if (this.captureTextNodes && (childNode.nodeType == 3 || childNode.nodeType == 4)) {
   					var text = childNode.value || childNode.text || childNode.textContent || '';
   					if (svg.compressSpaces(text) != '') {
-  						this$1.addChild(new svg.Element.tspan(childNode), false); // TEXT_NODE
+  						this.addChild(new svg.Element.tspan(childNode), false); // TEXT_NODE
   					}
   				}
   			}
@@ -29294,26 +29525,22 @@ if (!Array.prototype.includes) {
 
   		this.points = svg.CreatePath(this.attribute('points').value);
   		this.path = function(ctx) {
-  			var this$1 = this;
-
   			var bb = new svg.BoundingBox(this.points[0].x, this.points[0].y);
   			if (ctx != null) {
   				ctx.beginPath();
   				ctx.moveTo(this.points[0].x, this.points[0].y);
   			}
   			for (var i=1; i<this.points.length; i++) {
-  				bb.addPoint(this$1.points[i].x, this$1.points[i].y);
-  				if (ctx != null) { ctx.lineTo(this$1.points[i].x, this$1.points[i].y); }
+  				bb.addPoint(this.points[i].x, this.points[i].y);
+  				if (ctx != null) { ctx.lineTo(this.points[i].x, this.points[i].y); }
   			}
   			return bb;
   		};
 
   		this.getMarkers = function() {
-  			var this$1 = this;
-
   			var markers = [];
   			for (var i=0; i<this.points.length - 1; i++) {
-  				markers.push([this$1.points[i], this$1.points[i].angleTo(this$1.points[i+1])]);
+  				markers.push([this.points[i], this.points[i].angleTo(this.points[i+1])]);
   			}
   			if (markers.length > 0) {
   				markers.push([this.points[this.points.length-1], markers[markers.length-1][1]]);
@@ -29468,13 +29695,11 @@ if (!Array.prototype.includes) {
 
   			this.getMarkerPoints = function() { return this.points; };
   			this.getMarkerAngles = function() {
-  				var this$1 = this;
-
   				for (var i=0; i<this.angles.length; i++) {
-  					if (this$1.angles[i] == null) {
+  					if (this.angles[i] == null) {
   						for (var j=i+1; j<this.angles.length; j++) {
-  							if (this$1.angles[j] != null) {
-  								this$1.angles[i] = this$1.angles[j];
+  							if (this.angles[j] != null) {
+  								this.angles[i] = this.angles[j];
   								break;
   							}
   						}
@@ -29769,15 +29994,13 @@ if (!Array.prototype.includes) {
 
   	// base for gradients
   	svg.Element.GradientBase = function(node) {
-  		var this$1 = this;
-
   		this.base = svg.Element.ElementBase;
   		this.base(node);
 
   		this.stops = [];
   		for (var i=0; i<this.children.length; i++) {
-  			var child = this$1.children[i];
-  			if (child.type == 'stop') { this$1.stops.push(child); }
+  			var child = this.children[i];
+  			if (child.type == 'stop') { this.stops.push(child); }
   		}
 
   		this.getGradient = function() {
@@ -29791,12 +30014,10 @@ if (!Array.prototype.includes) {
   		this.attributesToInherit = ['gradientUnits'];
 
   		this.inheritStopContainer = function (stopsContainer) {
-  			var this$1 = this;
-
   			for (var i=0; i<this.attributesToInherit.length; i++) {
-  				var attributeToInherit = this$1.attributesToInherit[i];
-  				if (!this$1.attribute(attributeToInherit).hasValue() && stopsContainer.attribute(attributeToInherit).hasValue()) {
-  					this$1.attribute(attributeToInherit, true).value = stopsContainer.attribute(attributeToInherit).value;
+  				var attributeToInherit = this.attributesToInherit[i];
+  				if (!this.attribute(attributeToInherit).hasValue() && stopsContainer.attribute(attributeToInherit).hasValue()) {
+  					this.attribute(attributeToInherit, true).value = stopsContainer.attribute(attributeToInherit).value;
   				}
   			}
   		};
@@ -30121,8 +30342,6 @@ if (!Array.prototype.includes) {
 
   	// font element
   	svg.Element.font = function(node) {
-  		var this$1 = this;
-
   		this.base = svg.Element.ElementBase;
   		this.base(node);
 
@@ -30134,23 +30353,23 @@ if (!Array.prototype.includes) {
   		this.missingGlyph = null;
   		this.glyphs = [];
   		for (var i=0; i<this.children.length; i++) {
-  			var child = this$1.children[i];
+  			var child = this.children[i];
   			if (child.type == 'font-face') {
-  				this$1.fontFace = child;
+  				this.fontFace = child;
   				if (child.style('font-family').hasValue()) {
-  					svg.Definitions[child.style('font-family').value] = this$1;
+  					svg.Definitions[child.style('font-family').value] = this;
   				}
   			}
-  			else if (child.type == 'missing-glyph') { this$1.missingGlyph = child; }
+  			else if (child.type == 'missing-glyph') { this.missingGlyph = child; }
   			else if (child.type == 'glyph') {
   				if (child.arabicForm != '') {
-  					this$1.isRTL = true;
-  					this$1.isArabic = true;
-  					if (typeof this$1.glyphs[child.unicode] == 'undefined') { this$1.glyphs[child.unicode] = []; }
-  					this$1.glyphs[child.unicode][child.arabicForm] = child;
+  					this.isRTL = true;
+  					this.isArabic = true;
+  					if (typeof this.glyphs[child.unicode] == 'undefined') { this.glyphs[child.unicode] = []; }
+  					this.glyphs[child.unicode][child.arabicForm] = child;
   				}
   				else {
-  					this$1.glyphs[child.unicode] = child;
+  					this.glyphs[child.unicode] = child;
   				}
   			}
   		}
@@ -30211,15 +30430,13 @@ if (!Array.prototype.includes) {
   		};
 
   		this.renderChildren = function(ctx) {
-  			var this$1 = this;
-
   			this.x = this.attribute('x').toPixels('x');
   			this.y = this.attribute('y').toPixels('y');
   			if (this.attribute('dx').hasValue()) { this.x += this.attribute('dx').toPixels('x'); }
   			if (this.attribute('dy').hasValue()) { this.y += this.attribute('dy').toPixels('y'); }
   			this.x += this.getAnchorDelta(ctx, this, 0);
   			for (var i=0; i<this.children.length; i++) {
-  				this$1.renderChild(ctx, this$1, this$1, i);
+  				this.renderChild(ctx, this, this, i);
   			}
   		};
 
@@ -30294,8 +30511,6 @@ if (!Array.prototype.includes) {
   		};
 
   		this.renderChildren = function(ctx) {
-  			var this$1 = this;
-
   			var customFont = this.parent.style('font-family').getDefinition();
   			if (customFont != null) {
   				var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
@@ -30305,9 +30520,9 @@ if (!Array.prototype.includes) {
 
   				var dx = svg.ToNumberArray(this.parent.attribute('dx').value);
   				for (var i=0; i<text.length; i++) {
-  					var glyph = this$1.getGlyph(customFont, text, i);
+  					var glyph = this.getGlyph(customFont, text, i);
   					var scale = fontSize / customFont.fontFace.unitsPerEm;
-  					ctx.translate(this$1.x, this$1.y);
+  					ctx.translate(this.x, this.y);
   					ctx.scale(scale, -scale);
   					var lw = ctx.lineWidth;
   					ctx.lineWidth = ctx.lineWidth * customFont.fontFace.unitsPerEm / fontSize;
@@ -30316,11 +30531,11 @@ if (!Array.prototype.includes) {
   					if (fontStyle == 'italic') { ctx.transform(1, 0, -.4, 1, 0, 0); }
   					ctx.lineWidth = lw;
   					ctx.scale(1/scale, -1/scale);
-  					ctx.translate(-this$1.x, -this$1.y);
+  					ctx.translate(-this.x, -this.y);
 
-  					this$1.x += fontSize * (glyph.horizAdvX || customFont.horizAdvX) / customFont.fontFace.unitsPerEm;
+  					this.x += fontSize * (glyph.horizAdvX || customFont.horizAdvX) / customFont.fontFace.unitsPerEm;
   					if (typeof dx[i] != 'undefined' && !isNaN(dx[i])) {
-  						this$1.x += dx[i];
+  						this.x += dx[i];
   					}
   				}
   				return;
@@ -30335,18 +30550,14 @@ if (!Array.prototype.includes) {
   		};
 
   		this.measureTextRecursive = function(ctx) {
-  			var this$1 = this;
-
   			var width = this.measureText(ctx);
   			for (var i=0; i<this.children.length; i++) {
-  				width += this$1.children[i].measureTextRecursive(ctx);
+  				width += this.children[i].measureTextRecursive(ctx);
   			}
   			return width;
   		};
 
   		this.measureText = function(ctx) {
-  			var this$1 = this;
-
   			var customFont = this.parent.style('font-family').getDefinition();
   			if (customFont != null) {
   				var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
@@ -30355,7 +30566,7 @@ if (!Array.prototype.includes) {
   				if (customFont.isRTL) { text = text.split("").reverse().join(""); }
   				var dx = svg.ToNumberArray(this.parent.attribute('dx').value);
   				for (var i=0; i<text.length; i++) {
-  					var glyph = this$1.getGlyph(customFont, text, i);
+  					var glyph = this.getGlyph(customFont, text, i);
   					measure += (glyph.horizAdvX || customFont.horizAdvX) * fontSize / customFont.fontFace.unitsPerEm;
   					if (typeof dx[i] != 'undefined' && !isNaN(dx[i])) {
   						measure += dx[i];
@@ -30405,14 +30616,12 @@ if (!Array.prototype.includes) {
 
   	// a element
   	svg.Element.a = function(node) {
-  		var this$1 = this;
-
   		this.base = svg.Element.TextElementBase;
   		this.base(node);
 
   		this.hasText = node.childNodes.length > 0;
   		for (var i=0; i<node.childNodes.length; i++) {
-  			if (node.childNodes[i].nodeType != 3) { this$1.hasText = false; }
+  			if (node.childNodes[i].nodeType != 3) { this.hasText = false; }
   		}
 
   		// this might contain text
@@ -30515,11 +30724,9 @@ if (!Array.prototype.includes) {
   		this.base(node);
 
   		this.getBoundingBox = function() {
-  			var this$1 = this;
-
   			var bb = new svg.BoundingBox();
   			for (var i=0; i<this.children.length; i++) {
-  				bb.addBoundingBox(this$1.children[i].getBoundingBox());
+  				bb.addBoundingBox(this.children[i].getBoundingBox());
   			}
   			return bb;
   		};
@@ -30647,8 +30854,6 @@ if (!Array.prototype.includes) {
   		this.base(node);
 
   		this.apply = function(ctx, element) {
-  			var this$1 = this;
-
   			// render as temp svg
   			var x = this.attribute('x').toPixels('x');
   			var y = this.attribute('y').toPixels('y');
@@ -30658,7 +30863,7 @@ if (!Array.prototype.includes) {
   			if (width == 0 && height == 0) {
   				var bb = new svg.BoundingBox();
   				for (var i=0; i<this.children.length; i++) {
-  					bb.addBoundingBox(this$1.children[i].getBoundingBox());
+  					bb.addBoundingBox(this.children[i].getBoundingBox());
   				}
   				var x = Math.floor(bb.x1);
   				var y = Math.floor(bb.y1);
@@ -30704,8 +30909,6 @@ if (!Array.prototype.includes) {
   		this.base(node);
 
   		this.apply = function(ctx) {
-  			var this$1 = this;
-
   			var oldBeginPath = CanvasRenderingContext2D.prototype.beginPath;
   			CanvasRenderingContext2D.prototype.beginPath = function () { };
 
@@ -30714,7 +30917,7 @@ if (!Array.prototype.includes) {
 
   			oldBeginPath.call(ctx);
   			for (var i=0; i<this.children.length; i++) {
-  				var child = this$1.children[i];
+  				var child = this.children[i];
   				if (typeof child.path != 'undefined') {
   					var transform = null;
   					if (child.style('transform', false, true).hasValue()) {
@@ -30745,8 +30948,6 @@ if (!Array.prototype.includes) {
   		this.base(node);
 
   		this.apply = function(ctx, element) {
-  			var this$1 = this;
-
   			// render as temp svg
   			var bb = element.getBoundingBox();
   			var x = Math.floor(bb.x1);
@@ -30760,7 +30961,7 @@ if (!Array.prototype.includes) {
 
   			var px = 0, py = 0;
   			for (var i=0; i<this.children.length; i++) {
-  				var efd = this$1.children[i].extraFilterDistance || 0;
+  				var efd = this.children[i].extraFilterDistance || 0;
   				px = Math.max(px, efd);
   				py = Math.max(py, efd);
   			}
@@ -30774,8 +30975,8 @@ if (!Array.prototype.includes) {
 
   			// apply filters
   			for (var i=0; i<this.children.length; i++) {
-  				if (typeof this$1.children[i].apply == 'function') {
-  					this$1.children[i].apply(tempCtx, 0, 0, width + 2*px, height + 2*py);
+  				if (typeof this.children[i].apply == 'function') {
+  					this.children[i].apply(tempCtx, 0, 0, width + 2*px, height + 2*py);
   				}
   			}
 
@@ -31095,31 +31296,25 @@ if (!Array.prototype.includes) {
   		this.eventElements = [];
 
   		this.checkPath = function(element, ctx) {
-  			var this$1 = this;
-
   			for (var i=0; i<this.events.length; i++) {
-  				var e = this$1.events[i];
-  				if (ctx.isPointInPath && ctx.isPointInPath(e.x, e.y)) { this$1.eventElements[i] = element; }
+  				var e = this.events[i];
+  				if (ctx.isPointInPath && ctx.isPointInPath(e.x, e.y)) { this.eventElements[i] = element; }
   			}
   		};
 
   		this.checkBoundingBox = function(element, bb) {
-  			var this$1 = this;
-
   			for (var i=0; i<this.events.length; i++) {
-  				var e = this$1.events[i];
-  				if (bb.isPointInBox(e.x, e.y)) { this$1.eventElements[i] = element; }
+  				var e = this.events[i];
+  				if (bb.isPointInBox(e.x, e.y)) { this.eventElements[i] = element; }
   			}
   		};
 
   		this.runEvents = function() {
-  			var this$1 = this;
-
   			svg.ctx.canvas.style.cursor = '';
 
   			for (var i=0; i<this.events.length; i++) {
-  				var e = this$1.events[i];
-  				var element = this$1.eventElements[i];
+  				var e = this.events[i];
+  				var element = this.eventElements[i];
   				while (element) {
   					e.run(element);
   					element = element.parent;
@@ -31225,8 +31420,14 @@ if (!Array.prototype.includes) {
     var reference = elem[0];
     if (reference.constructor === Object) { reference = reference.element; }
 
-    var height = options.height || parseFloat(select(reference).style("height")),
-          width = options.width || parseFloat(select(reference).style("width"));
+    var height = options.height ||
+            parseFloat(select(reference).style("height")) +
+            parseFloat(select(reference).style("padding-top")) +
+            parseFloat(select(reference).style("padding-bottom")),
+          width = options.width ||
+            parseFloat(select(reference).style("width")) +
+            parseFloat(select(reference).style("padding-left")) +
+            parseFloat(select(reference).style("padding-right"));
 
     var layerX, layerY, offsetX = 0, offsetY = 0;
     if (reference.getBoundingClientRect) {
@@ -31274,39 +31475,38 @@ if (!Array.prototype.includes) {
         if (display === "none" || visibility === "hidden" || opacity && parseFloat(opacity) === 0) { return; }
 
         var tag$1 = this.tagName.toLowerCase();
-        var ref = parseTransform(this);
-        var scale = ref[0];
-        var x = ref[1];
-        var y = ref[2];
 
-        if (tag$1 === "g") {
-          transform.scale *= scale;
-          transform.x += x;
-          transform.y += y;
-        }
+        if (tag$1.length && ["defs", "title", "desc"].includes(tag$1)) { return; }
 
         if (tag$1 === "svg") {
-          var rect = this.getBoundingClientRect();
-          transform.x += rect.left - offsetX;
-          transform.y += rect.top - offsetY;
 
-          var x$1 = select(this).attr("x");
-          x$1 = x$1 ? parseFloat(x$1) * transform.scale : 0;
-          transform.x += x$1;
-          var y$1 = select(this).attr("y");
-          y$1 = y$1 ? parseFloat(y$1) * transform.scale : 0;
-          transform.y += y$1;
+          // do not perform this transform for SVGs nested within other SVGs
+          if (!transform.svg) {
+            var ref = this.getBoundingClientRect();
+            var left = ref.left;
+            var top = ref.top;
+            transform.x += left - offsetX;
+            transform.y += top - offsetY;
+            transform.svg = true;
+          }
+
+          var x = select(this).attr("x");
+          x = x ? parseFloat(x) * transform.scale : 0;
+          transform.x += x;
+          var y = select(this).attr("y");
+          y = y ? parseFloat(y) * transform.scale : 0;
+          transform.y += y;
           transform.clip = {
             height: parseFloat(select(this).attr("height") || select(this).style("height")),
             width: parseFloat(select(this).attr("width") || select(this).style("width")),
-            x: x$1, y: y$1
+            x: x, y: y
           };
         }
         else {
-          var x$2 = select(this).attr("x");
-          if (x$2) { transform.x += parseFloat(x$2) * transform.scale; }
-          var y$2 = select(this).attr("y");
-          if (y$2) { transform.y += parseFloat(y$2) * transform.scale; }
+          var x$1 = select(this).attr("x");
+          if (x$1) { transform.x += parseFloat(x$1) * transform.scale; }
+          var y$1 = select(this).attr("y");
+          if (y$1) { transform.y += parseFloat(y$1) * transform.scale; }
         }
 
       }
@@ -31327,7 +31527,6 @@ if (!Array.prototype.includes) {
 
         }
       }
-      else if (tag === "defs") { return; }
       else if (tag === "text") {
         var elem = this.cloneNode(true);
         select(elem).call(svgPresets);
@@ -31374,30 +31573,34 @@ if (!Array.prototype.includes) {
         }
 
       }
-      else if (["div", "span"].includes(tag) && !select(this).selectAll("svg").size()) {
+      else if (!["svg", "g", "text"].includes(tag) && !select(this).selectAll("svg").size()) {
+
+        var s = options.scale * ratio;
 
         var data$1 = {
-          height: height,
+          height: Math.floor(height + options.padding * 2 + offsetY),
           loaded: false,
           type: "html",
-          width: width,
-          x: layerX - offsetX,
-          y: layerY - offsetY
+          width: Math.floor(width + options.padding * 2 + offsetX),
+          x: Math.floor(layerX - offsetX),
+          y: Math.floor(layerY - offsetY)
         };
 
         var tempCanvas = document.createElement("canvas");
-        tempCanvas.width = (width + options.padding * 2) * options.scale * ratio;
-        tempCanvas.height = (height + options.padding * 2) * options.scale * ratio;
+        tempCanvas.width = data$1.width * s;
+        tempCanvas.height = data$1.height * s;
+        tempCanvas.style.width = (data$1.width * s) + "px";
+        tempCanvas.style.height = (data$1.height * s) + "px";
 
         var tempContext = tempCanvas.getContext("2d");
-        tempContext.scale(options.scale * ratio, options.scale * ratio);
+        tempContext.scale(s, s);
 
         layers.push(data$1);
+
         html2canvas(this, {
           allowTaint: true,
           canvas: tempCanvas,
-          height: height,
-          width: width
+          letterRendering: true
         }).then(function (c) {
           data$1.value = c;
           data$1.loaded = true;
@@ -31420,8 +31623,6 @@ if (!Array.prototype.includes) {
       }
       else { // catches all SVG shapes
 
-        // console.log(this);
-
         var elem$2 = this.cloneNode(true);
         select(elem$2).selectAll("*").each(function() {
           if (select(this).attr("opacity") === "0") { this.parentNode.removeChild(this); }
@@ -31435,10 +31636,10 @@ if (!Array.prototype.includes) {
         }
         else if (tag === "path") {
           var ref$1 = parseTransform(elem$2);
-          var scale$1 = ref$1[0];
-          var x$3 = ref$1[1];
-          var y$3 = ref$1[2];
-          if (select(elem$2).attr("transform")) { select(elem$2).attr("transform", ("scale(" + scale$1 + ")translate(" + (x$3 + transform.x) + "," + (y$3 + transform.y) + ")")); }
+          var scale = ref$1[0];
+          var x$2 = ref$1[1];
+          var y$2 = ref$1[2];
+          if (select(elem$2).attr("transform")) { select(elem$2).attr("transform", ("scale(" + scale + ")translate(" + (x$2 + transform.x) + "," + (y$2 + transform.y) + ")")); }
         }
         select(elem$2).call(svgPresets);
 
@@ -31453,12 +31654,12 @@ if (!Array.prototype.includes) {
           if (defTag === "pattern") {
 
             var ref$2 = parseTransform(elem$2);
-            var scale$2 = ref$2[0];
-            var x$4 = ref$2[1];
-            var y$4 = ref$2[2];
-            transform.scale *= scale$2;
-            transform.x += x$4;
-            transform.y += y$4;
+            var scale$1 = ref$2[0];
+            var x$3 = ref$2[1];
+            var y$3 = ref$2[2];
+            transform.scale *= scale$1;
+            transform.x += x$3;
+            transform.y += y$3;
             checkChildren(def, transform);
 
           }
@@ -31477,7 +31678,7 @@ if (!Array.prototype.includes) {
     for (var i = 0; i < elem.length; i++) {
 
       var e = elem[i],
-          options$1 = {scale: 1, x: 0, y: 0};
+          options$1 = {scale: 1, x: 0, y: 0, svg: false};
 
       if (e.constructor === Object) {
         options$1 = Object.assign(options$1, e);
@@ -31560,7 +31761,7 @@ if (!Array.prototype.includes) {
           case "svg":
             var outer = IE ? (new XMLSerializer()).serializeToString(layer.value) : layer.value.outerHTML;
             context.save();
-            context.translate(options.padding + clip.x, options.padding + clip.y);
+            context.translate(options.padding + clip.x + layer.x, options.padding + clip.y + layer.y);
             context.rect(0, 0, clip.width, clip.height);
             context.clip();
             canvgBrowser(canvas, outer, Object.assign({}, canvgOptions, {offsetX: layer.x + clip.x, offsetY: layer.y + clip.y}));
@@ -31914,6 +32115,7 @@ if (!Array.prototype.includes) {
 
     if (!elem) { return; }
     options = Object.assign({}, defaultOptions$1, options);
+
     var IE = new RegExp(/(MSIE|Trident\/|Edge\/)/i).test(navigator.userAgent);
 
     if (!(elem instanceof Array) && options.type === "svg") {
@@ -31926,26 +32128,29 @@ if (!Array.prototype.includes) {
       if (renderOptions.callback) { renderOptions.callback(canvas); }
 
       if (["jpg", "png"].includes(options.type)) {
-        canvas.toBlob(function (blob) { return FileSaver_1(blob, options.filename); });
+        canvas.toBlob(function (blob) { return FileSaver_1(blob, ((options.filename) + "." + (options.type))); });
       }
       // else if (options.type === "pdf") {
-      //
+
       //   const outputHeight = 11,
-      //         outputUnit = "in",
       //         outputWidth = 8.5;
-      //
+
       //   const aspect = canvas.width / canvas.height,
       //         orientation = aspect > 1 ? "landscape" : "portrait";
-      //
-      //   const pdf = new JsPDF(orientation, outputUnit, [outputWidth, outputHeight]);
-      //
+
+      //   const pdf = new JsPDF({
+      //     orientation,
+      //     unit: "in",
+      //     format: [outputWidth, outputHeight]
+      //   });
+
       //   let h = orientation === "landscape" ? outputWidth : outputHeight,
       //       left,
       //       top,
       //       w = orientation === "landscape" ? outputHeight : outputWidth;
-      //
+
       //   const margin = 0.5;
-      //
+
       //   if (aspect < w / h) {
       //     h -= margin * 2;
       //     const tempWidth = h * aspect;
@@ -31960,10 +32165,10 @@ if (!Array.prototype.includes) {
       //     top = (h - tempHeight) / 2;
       //     h = tempHeight;
       //   }
-      //
+
       //   pdf.addImage(canvas, "canvas", left, top, w, h);
       //   pdf.save(options.filename);
-      //
+
       // }
 
     }}));
@@ -32158,7 +32363,13 @@ if (!Array.prototype.includes) {
         .key(fill)
         .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
         .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
-      
+
+      var hidden = function (d, i) {
+        var id = this$1._id(d, i);
+        if (id instanceof Array) { id = id[0]; }
+        return this$1._hidden.includes(id) || this$1._solo.length && !this$1._solo.includes(id);
+      };
+
       this._legendClass
         .id(fill)
         .align(wide ? "center" : position)
@@ -32171,7 +32382,13 @@ if (!Array.prototype.includes) {
         .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
         .shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend"))
         .config(this._legendConfig)
-        .shapeConfig({fill: color, opacity: opacity})
+        .shapeConfig({
+          fill: function (d, i) { return hidden(d, i) ? this$1._hiddenColor(d, i) : color(d, i); },
+          labelConfig: {
+            fontOpacity: function (d, i) { return hidden(d, i) ? this$1._hiddenOpacity(d, i) : 1; }
+          },
+          opacity: opacity
+        })
         .render();
 
       if (!this._legendConfig.select && legendBounds.height) {
@@ -32409,7 +32626,7 @@ if (!Array.prototype.includes) {
       @param {Number} *i* The index of the data object being interacted with.
       @private
   */
-  function click(d, i) {
+  function clickShape(d, i) {
 
     this._select.style("cursor", "auto");
     
@@ -32431,6 +32648,48 @@ if (!Array.prototype.includes) {
         filter: function (f, x) { return filterGroup(f, x) === filterId; }
       }).render();
 
+    }
+
+  }
+
+  /**
+      @desc On click event for all legend shapes in a Viz.
+      @param {Object} *d* The data object being interacted with.
+      @param {Number} *i* The index of the data object being interacted with.
+      @private
+  */
+  function clickLegend(d, i) {
+    var this$1 = this;
+
+
+    this._select.style("cursor", "auto");
+    if (this._tooltip) { this._tooltipClass.data([]).render(); }
+
+    var id = this._id(d, i);
+    if (!(id instanceof Array)) { id = [id]; }
+    var hiddenIndex = this._hidden.indexOf(id[0]);
+    var soloIndex = this._solo.indexOf(id[0]);
+    var dataLength = merge(this._legendClass.data().map(function (d, i) {
+      var id = this$1._id(d, i);
+      if (!(id instanceof Array)) { id = [id]; }
+      return id;
+    })).length;
+
+    if (event$1.shiftKey) {
+      if (soloIndex < 0) {
+        this._solo = id;
+        this._hidden = [];
+        this.render();
+      }
+    }
+    else {
+      if (soloIndex >= 0) { this._solo.splice(soloIndex, id.length); }
+      else if (this._solo.length) { this._solo = this._solo.concat(id); }
+      else if (hiddenIndex >= 0) { this._hidden.splice(hiddenIndex, id.length); }
+      else { this._hidden = this._hidden.concat(id); }
+      if (this._solo.length === dataLength) { this._solo = []; }
+      if (this._hidden.length === dataLength) { this._hidden = []; }
+      this.render();
     }
 
   }
@@ -32476,18 +32735,33 @@ if (!Array.prototype.includes) {
       @param {Object} [*config*] Optional configuration methods for the Tooltip class.
       @private
   */
-  function mousemoveLegend(d) {
+  function mousemoveLegend(d, i) {
+    var this$1 = this;
+
     var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
+    var dataLength = merge(this._legendClass.data().map(function (d, i) {
+      var id = this$1._id(d, i);
+      if (!(id instanceof Array)) { id = [id]; }
+      return id;
+    })).length;
 
     if (this._tooltip && d) {
+
+      var id = this._id(d, i);
+      if (id instanceof Array) { id = id[0]; }
+
       this._select.style("cursor", "pointer");
       this._tooltipClass.data([d])
-        .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
+        .footer(this._solo.length && !this._solo.includes(id) ? "Click to Show<br />Shift+Click to Solo"
+        : this._solo.length === 1 && this._solo.includes(id) || this._hidden.length === dataLength - 1 ? "Click to Reset"
+        : this._solo.includes(id) ? "Click to Hide"
+        : ((this._hidden.includes(id) ? "Click to Show" : "Click to Hide") + "<br />Shift+Click to Solo"))
         .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
         .position(position)
         .config(this._tooltipConfig)
         .config(this._legendTooltip)
         .render();
+
     }
 
   }
@@ -32815,7 +33089,7 @@ if (!Array.prototype.includes) {
       @extends external:BaseClass
       @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
   */
-  var Viz = (function (BaseClass$$1) {
+  var Viz = /*@__PURE__*/(function (BaseClass$$1) {
     function Viz() {
       var this$1 = this;
 
@@ -32839,13 +33113,13 @@ if (!Array.prototype.includes) {
       this._colorScaleClass = new ColorScale();
       this._colorScaleConfig = {};
       this._colorScalePosition = "bottom";
+      this._colorScaleMaxSize = 600;
       var controlTest = new Select();
       this._controlCache = {};
       this._controlConfig = {
         selectStyle: Object.assign({margin: "5px"}, controlTest.selectStyle())
       };
       this._data = [];
-      this._svgDesc = "";
       this._detectResize = true;
       this._detectResizeDelay = 400;
       this._detectVisible = true;
@@ -32854,6 +33128,9 @@ if (!Array.prototype.includes) {
       this._downloadConfig = {type: "png"};
       this._downloadPosition = "top";
       this._duration = 600;
+      this._hidden = [];
+      this._hiddenColor = constant$6("#aaa");
+      this._hiddenOpacity = constant$6(0.5);
       this._history = [];
       this._groupBy = [accessor("id")];
       this._legend = true;
@@ -32891,7 +33168,8 @@ if (!Array.prototype.includes) {
 
       this._noDataMessage = true;
       this._on = {
-        "click": click.bind(this),
+        "click.shape": clickShape.bind(this),
+        "click.legend": clickLegend.bind(this),
         "mouseenter": mouseenter.bind(this),
         "mouseleave": mouseleave.bind(this),
         "mousemove.shape": mousemoveShape.bind(this),
@@ -32934,6 +33212,9 @@ if (!Array.prototype.includes) {
         role: "presentation",
         strokeWidth: constant$6(0)
       };
+      this._solo = [];
+      this._svgDesc = "";
+      this._svgTitle = "";
 
       this._timeline = true;
       this._timelineClass = new Timeline().align("end");
@@ -33060,17 +33341,22 @@ if (!Array.prototype.includes) {
       }
 
       this._filteredData = [];
+      this._legendData = [];
       var flatData = [];
       if (this._data.length) {
 
         flatData = this._timeFilter ? this._data.filter(this._timeFilter) : this._data;
         if (this._filter) { flatData = flatData.filter(this._filter); }
-
         var dataNest = nest();
-        for (var i$1 = 0; i$1 <= this._drawDepth; i$1++) { dataNest.key(this$1._groupBy[i$1]); }
+        for (var i$1 = 0; i$1 <= this._drawDepth; i$1++) { dataNest.key(this._groupBy[i$1]); }
         if (this._discrete && ("_" + (this._discrete)) in this) { dataNest.key(this[("_" + (this._discrete))]); }
         if (this._discrete && ("_" + (this._discrete) + "2") in this) { dataNest.key(this[("_" + (this._discrete) + "2")]); }
-        dataNest.rollup(function (leaves) { return this$1._filteredData.push(objectMerge(leaves, this$1._aggs)); }).entries(flatData);
+        dataNest.rollup(function (leaves) {
+          var d = objectMerge(leaves, this$1._aggs);
+          var id = this$1._id(d);
+          if (!this$1._hidden.includes(id) && (!this$1._solo.length || this$1._solo.includes(id))) { this$1._filteredData.push(d); }
+          this$1._legendData.push(d);
+        }).entries(flatData);
 
       }
 
@@ -33101,24 +33387,13 @@ if (!Array.prototype.includes) {
       drawTimeline.bind(this)(this._filteredData);
       drawControls.bind(this)(this._filteredData);
 
-      if (this._legendPosition === "top" || this._legendPosition === "bottom") { drawLegend.bind(this)(this._filteredData); }
+      if (this._legendPosition === "top" || this._legendPosition === "bottom") { drawLegend.bind(this)(this._legendData); }
       if (this._colorScalePosition === "top" || this._colorScalePosition === "bottom") { drawColorScale.bind(this)(this._filteredData); }
 
       this._shapes = [];
 
       // Draws a container and zoomGroup to test functionality.
-      // this._container = this._select.selectAll("svg.d3plus-viz").data([0]);
-
-      // this._container = this._container.enter().append("svg")
-      //     .attr("class", "d3plus-viz")
-      //     .attr("width", this._width - this._margin.left - this._margin.right)
-      //     .attr("height", this._height - this._margin.top - this._margin.bottom)
-      //     .attr("x", this._margin.left)
-      //     .attr("y", this._margin.top)
-      //     .style("background-color", "transparent")
-      //   .merge(this._container);
-
-      // this._zoomGroup = this._container.selectAll("g.d3plus-viz-zoomGroup").data([0]);
+      // this._zoomGroup = this._select.selectAll("g.d3plus-viz-zoomGroup").data([0]);
       // const enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
       //   .merge(this._zoomGroup);
 
@@ -33134,12 +33409,13 @@ if (!Array.prototype.includes) {
       //     mouseleave: this._on.mouseleave,
       //     mousemove: this._on["mousemove.shape"]
       //   })
-      //   .id(d => d.group)
-      //   .x(d => d.value * 10 + 200)
-      //   .y(d => d.value * 10 + 200)
+      //   .id(this._id)
+      //   .x((d, i) => i * 100 + 200)
+      //   .y(200)
       //   .width(100)
       //   .height(100)
       //   .render());
+
     };
 
     /**
@@ -33179,6 +33455,7 @@ if (!Array.prototype.includes) {
         }
 
         svg
+          .attr("class", "d3plus-viz")
           .style("width", ((this._width) + "px"))
           .style("height", ((this._height) + "px"));
 
@@ -33202,10 +33479,9 @@ if (!Array.prototype.includes) {
         .style("height", ((this._height) + "px"));
 
       // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
-      var svgTitleText = this._title || "D3plus Visualization";
       var svgTitle = this._select.selectAll("title").data([0]);
       var svgTitleEnter = svgTitle.enter().append("title").attr("id", ((this._uuid) + "-title"));
-      svgTitle.merge(svgTitleEnter).text(svgTitleText);
+      svgTitle.merge(svgTitleEnter).text(this._svgTitle);
 
       // Updates the <desc> tag if already exists else creates a new <desc> tag on this.select.
       var svgDesc = this._select.selectAll("desc").data([0]);
@@ -33402,6 +33678,16 @@ if (!Array.prototype.includes) {
 
     /**
         @memberof Viz
+        @desc Sets the maximum pixel size for drawing the color scale: width for horizontal scales and height for vertical scales.
+        @param {Number} [*value* = 600]
+        @chainable
+    */
+    Viz.prototype.colorScaleMaxSize = function colorScaleMaxSize (_) {
+      return arguments.length ? (this._colorScaleMaxSize = _, this) : this._colorScaleMaxSize;
+    };
+
+    /**
+        @memberof Viz
         @desc Defines a list of controls to be rendered at the bottom of the visualization.
         @param {Array} [*value*]
         @chainable
@@ -33450,16 +33736,6 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.depth = function depth (_) {
       return arguments.length ? (this._depth = _, this) : this._depth;
-    };
-
-    /**
-        @memberof Viz
-        @desc If *value* is specified, sets the description accessor to the specified string and returns the current class instance.
-        @param {String} [*value*]
-        @chainable
-    */
-    Viz.prototype.desc = function desc (_) {
-      return arguments.length ? (this._svgDesc =  _, this) : this._svgDesc;
     };
 
     /**
@@ -33599,6 +33875,26 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.height = function height (_) {
       return arguments.length ? (this._height = _, this) : this._height;
+    };
+
+    /**
+        @memberof Viz
+        @desc Defines the color used for legend shapes when the corresponding grouping is hidden from display (by clicking on the legend).
+        @param {Function|String} [*value* = "#aaa"]
+        @chainable
+    */
+    Viz.prototype.hiddenColor = function hiddenColor (_) {
+      return arguments.length ? (this._hiddenColor = typeof _ === "function" ? _ : constant$6(_), this) : this._hiddenColor;
+    };
+
+    /**
+        @memberof Viz
+        @desc Defines the opacity used for legend labels when the corresponding grouping is hidden from display (by clicking on the legend).
+        @param {Function|Number} [*value* = 0.5]
+        @chainable
+    */
+    Viz.prototype.hiddenOpacity = function hiddenOpacity (_) {
+      return arguments.length ? (this._hiddenOpacity = typeof _ === "function" ? _ : constant$6(_), this) : this._hiddenOpacity;
     };
 
     /**
@@ -33799,6 +34095,26 @@ if (!Array.prototype.includes) {
     */
     Viz.prototype.shapeConfig = function shapeConfig (_) {
       return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the description accessor to the specified string and returns the current class instance.
+        @param {String} [*value*]
+        @chainable
+    */
+    Viz.prototype.svgDesc = function svgDesc (_) {
+      return arguments.length ? (this._svgDesc = _, this) : this._svgDesc;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the title accessor to the specified string and returns the current class instance.
+        @param {String} [*value*]
+        @chainable
+    */
+    Viz.prototype.svgTitle = function svgTitle (_) {
+      return arguments.length ? (this._svgTitle = _, this) : this._svgTitle;
     };
 
     /**
@@ -34076,7 +34392,7 @@ if (!Array.prototype.includes) {
       @extends external:Viz
       @desc Creates a network visualization based on a defined set of nodes and edges. [Click here](http://d3plus.org/examples/d3plus-network/getting-started/) for help getting started using the Network class.
   */
-  var Network = (function (Viz$$1) {
+  var Network = /*@__PURE__*/(function (Viz$$1) {
     function Network() {
       var this$1 = this;
 
@@ -34596,7 +34912,7 @@ if (!Array.prototype.includes) {
       @extends external:Viz
       @desc Creates a ring visualization based on a defined set of nodes and edges. [Click here](http://d3plus.org/examples/d3plus-network/simple-rings/) for help getting started using the Rings class.
   */
-  var Rings = (function (Viz$$1) {
+  var Rings = /*@__PURE__*/(function (Viz$$1) {
     function Rings() {
       var this$1 = this;
 
@@ -35013,11 +35329,11 @@ if (!Array.prototype.includes) {
         label: function (d) { return nodes.length <= this$1._labelCutoff || (this$1._hover && this$1._hover(d) || this$1._active && this$1._active(d)) ? this$1._drawLabel(d.data || d.node, d.i) : false; },
         labelBounds: function (d) { return d.labelBounds; },
         labelConfig: {
-          fontColor: function (d) { return d.data.id === this$1._center ? configPrep.bind(that)(that._shapeConfig, "shape", d.key).labelConfig.fontColor(d) : colorLegible(configPrep.bind(that)(that._shapeConfig, "shape", d.key).fill(d)); },
-          fontResize: function (d) { return d.data.id === this$1._center; },
+          fontColor: function (d) { return d.id === this$1._center ? configPrep.bind(that)(that._shapeConfig, "shape", d.key).labelConfig.fontColor(d) : colorLegible(configPrep.bind(that)(that._shapeConfig, "shape", d.key).fill(d)); },
+          fontResize: function (d) { return d.id === this$1._center; },
           padding: 0,
-          textAnchor: function (d) { return nodeLookup[d.data.id].textAnchor || configPrep.bind(that)(that._shapeConfig, "shape", d.key).labelConfig.textAnchor; },
-          verticalAlign: function (d) { return d.data.id === this$1._center ? "middle" : "top"; }
+          textAnchor: function (d) { return nodeLookup[d.id].textAnchor || configPrep.bind(that)(that._shapeConfig, "shape", d.key).labelConfig.textAnchor; },
+          verticalAlign: function (d) { return d.id === this$1._center ? "middle" : "top"; }
         },
         rotate: function (d) { return nodeLookup[d.id].rotate || 0; },
         select: elem("g.d3plus-rings-nodes", {parent: this._select, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node()
@@ -35509,7 +35825,7 @@ if (!Array.prototype.includes) {
       @extends external:Viz
       @desc Creates a sankey visualization based on a defined set of nodes and links. [Click here](http://d3plus.org/examples/d3plus-network/sankey-diagram/) for help getting started using the Sankey class.
   */
-  var Sankey = (function (Viz$$1) {
+  var Sankey = /*@__PURE__*/(function (Viz$$1) {
     function Sankey() {
       var this$1 = this;
 
