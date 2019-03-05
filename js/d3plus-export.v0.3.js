@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.12
+  d3plus-export v0.3.13
   Export methods for transforming and downloading SVG.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -205,17 +205,17 @@ if (typeof window !== "undefined") {
 }
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('html2canvas'), require('canvg-browser'), require('d3-selection'), require('canvas-toBlob'), require('file-saver')) :
-  typeof define === 'function' && define.amd ? define('d3plus-export', ['exports', 'html2canvas', 'canvg-browser', 'd3-selection', 'canvas-toBlob', 'file-saver'], factory) :
-  (factory((global.d3plus = {}),global.html2canvas,global.canvg,global.d3Selection,null,global.fileSaver));
-}(this, (function (exports,html2canvas,canvg,d3Selection,canvasToBlob,fileSaver) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('html2canvas'), require('canvg-browser'), require('canvas-toBlob'), require('file-saver')) :
+  typeof define === 'function' && define.amd ? define('d3plus-export', ['exports', 'd3-selection', 'html2canvas', 'canvg-browser', 'canvas-toBlob', 'file-saver'], factory) :
+  (factory((global.d3plus = {}),global.d3Selection,global.html2canvas,global.canvg,null,global.fileSaver));
+}(this, (function (exports,d3Selection,html2canvas,canvg,canvasToBlob,fileSaver) { 'use strict';
 
   html2canvas = html2canvas && html2canvas.hasOwnProperty('default') ? html2canvas['default'] : html2canvas;
   canvg = canvg && canvg.hasOwnProperty('default') ? canvg['default'] : canvg;
 
   /**
       @function svgPresets
-      @desc Adds SVG default attributes to a d3 selection in order to redner it properly.
+      @desc Adds SVG default attributes to a d3 selection in order to render it properly.
       @param {Selection} selection
   */
   function svgPresets(selection) {
@@ -228,6 +228,29 @@ if (typeof window !== "undefined") {
     var transparent = ["none", "transparent"].includes(selection.attr("fill"));
     var fillOpacity = selection.attr("fill-opacity");
     selection.attr("fill-opacity", transparent ? 0 : fillOpacity);
+
+  }
+
+  /**
+      @function htmlPresets
+      @desc Adds HTML default styles to a d3 selection in order to render it properly.
+      @param {Selection} selection
+  */
+  function htmlPresets(selection) {
+
+    selection.selectAll("*")
+      .each(function() {
+        var tag = this.tagName.toLowerCase();
+        if (!["option"].includes(tag)) {
+
+          var elem = d3Selection.select(this);
+
+          /* forces minor unnoticible letter-spacing on any element where it is not defined to fix IE */
+          var letterSpacing = elem.style("letter-spacing");
+          elem.style("letter-spacing", letterSpacing === "normal" ? "0.1px" : letterSpacing);
+
+        }
+      });
 
   }
 
@@ -478,6 +501,8 @@ if (typeof window !== "undefined") {
         tempContext.scale(s, s);
 
         layers.push(data$1);
+
+        htmlPresets(d3Selection.select(this));
 
         html2canvas(this, {
           allowTaint: true,

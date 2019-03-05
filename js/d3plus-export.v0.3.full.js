@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.12
+  d3plus-export v0.3.13
   Export methods for transforming and downloading SVG.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -10450,7 +10450,7 @@ if (typeof window !== "undefined") {
 
 	/**
 	    @function svgPresets
-	    @desc Adds SVG default attributes to a d3 selection in order to redner it properly.
+	    @desc Adds SVG default attributes to a d3 selection in order to render it properly.
 	    @param {Selection} selection
 	*/
 	function svgPresets(selection) {
@@ -10463,6 +10463,29 @@ if (typeof window !== "undefined") {
 	  var transparent = ["none", "transparent"].includes(selection.attr("fill"));
 	  var fillOpacity = selection.attr("fill-opacity");
 	  selection.attr("fill-opacity", transparent ? 0 : fillOpacity);
+
+	}
+
+	/**
+	    @function htmlPresets
+	    @desc Adds HTML default styles to a d3 selection in order to render it properly.
+	    @param {Selection} selection
+	*/
+	function htmlPresets(selection$$1) {
+
+	  selection$$1.selectAll("*")
+	    .each(function() {
+	      var tag = this.tagName.toLowerCase();
+	      if (!["option"].includes(tag)) {
+
+	        var elem = select(this);
+
+	        /* forces minor unnoticible letter-spacing on any element where it is not defined to fix IE */
+	        var letterSpacing = elem.style("letter-spacing");
+	        elem.style("letter-spacing", letterSpacing === "normal" ? "0.1px" : letterSpacing);
+
+	      }
+	    });
 
 	}
 
@@ -10713,6 +10736,8 @@ if (typeof window !== "undefined") {
 	      tempContext.scale(s, s);
 
 	      layers.push(data$1);
+
+	      htmlPresets(select(this));
 
 	      html2canvas(this, {
 	        allowTaint: true,
