@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.0
+  d3plus-axis v0.4.1
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -13831,14 +13831,19 @@ if (typeof window !== "undefined") {
         range$$1 = newRange ? newRange.slice() : [undefined, undefined];
         var minRange = rangeOuter[0];
         var maxRange = rangeOuter[1];
-        if (range$$1[0] === void 0 || range$$1[0] < minRange) { range$$1[0] = minRange; }
-        if (range$$1[1] === void 0 || range$$1[1] > maxRange) { range$$1[1] = maxRange; }
+        if (this._range) {
+          if (this._range[0] !== undefined) { minRange = this._range[0]; }
+          if (this._range[this._range.length - 1] !== undefined) { maxRange = this._range[this._range.length - 1]; }
+        }
+        if (range$$1[0] === undefined || range$$1[0] < minRange) { range$$1[0] = minRange; }
+        if (range$$1[1] === undefined || range$$1[1] > maxRange) { range$$1[1] = maxRange; }
+        var sizeInner = maxRange - minRange;
         if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
           if (newRange === this._range) {
             var buckets = this._domain.length + 1;
             range$$1 = range(buckets)
-              .map(function (d) { return sizeOuter * (d / (buckets - 1)) + range$$1[0]; })
-              .slice(1, this._domain.length + 1);
+              .map(function (d) { return range$$1[0] + sizeInner * (d / (buckets - 1)); })
+              .slice(1, buckets);
             range$$1 = range$$1.map(function (d) { return d - range$$1[0] / 2; });
           }
           else {
@@ -13849,10 +13854,9 @@ if (typeof window !== "undefined") {
           }
         }
         else if (newRange === this._range) {
-          var size$1 = range$$1[1] - range$$1[0];
           var tickScale = sqrt().domain([10, 400]).range([10, 50]);
           var domain = this._scale === "time" ? this._domain.map(date$2) : this._domain;
-          var scaleTicks = ticks(domain[0], domain[1], Math.floor(size$1 / tickScale(size$1)));
+          var scaleTicks = ticks(domain[0], domain[1], Math.floor(sizeInner / tickScale(sizeInner)));
           ticks$$1 = (this._ticks
             ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks
             : scaleTicks).slice();
@@ -13861,7 +13865,7 @@ if (typeof window !== "undefined") {
             ? this._scale === "time" ? this._labels.map(date$2) : this._labels
             : scaleTicks).slice();
           var buckets$2 = labels.length;
-          var pad = Math.ceil(size$1 / buckets$2 / 2);
+          var pad = Math.ceil(sizeInner / buckets$2 / 2);
           range$$1 = [range$$1[0] + pad, range$$1[1] - pad];
         }
 
@@ -14129,17 +14133,33 @@ if (typeof window !== "undefined") {
         spillover.push(Math.floor(spill));
         if (spillover.length === 2) { break; }
       }
-      if (spillover.some(function (d) { return d !== 0; })) {
-        var first = range$$1[0];
-        var last = range$$1[range$$1.length - 1];
-        setScale.bind(this)([first - spillover[0], last - spillover[1]]);
-        textData
-          .forEach(function (d) {
-            d.position = this$1._getPosition(d.d);
+
+      var first = range$$1[0];
+      var last = range$$1[range$$1.length - 1];
+      var newRange = [first - spillover[0], last - spillover[1]];
+      if (this._range) {
+        if (this._range[0] !== undefined) { newRange[0] = this._range[0]; }
+        if (this._range[this._range.length - 1] !== undefined) { newRange[1] = this._range[this._range.length - 1]; }
+      }
+
+      if (newRange[0] !== first || newRange[1] !== last) {
+        setScale.bind(this)(newRange);
+
+        textData = labels
+          .map(function (d, i) {
+
+            var fF = this$1._shapeConfig.labelConfig.fontFamily(d, i),
+                  fS = this$1._shapeConfig.labelConfig.fontSize(d, i),
+                  position = this$1._getPosition(d);
+
+            var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : fS * 1.4;
+            return {d: d, i: i, fF: fF, fS: fS, lineHeight: lineHeight, position: position};
+
           });
+
         textData = textData
           .map(function (datum) {
-            datum.position = this$1._getPosition(datum.d);
+            datum.rotate = this$1._rotateLabels;
             datum.space = calculateSpace.bind(this$1)(datum);
             var res = calculateLabelSize.bind(this$1)(datum);
             return Object.assign(res, datum);
