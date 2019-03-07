@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.1
+  d3plus-axis v0.4.2
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -495,7 +495,6 @@ if (typeof window !== "undefined") {
             p = this._padding,
             parent = this._select,
             rangeOuter = [p, this[("_" + width)] - p],
-            sizeOuter = rangeOuter[1] - rangeOuter[0],
             t = d3Transition.transition().duration(this._duration);
 
       var tickValue = this._shape === "Circle" ? this._shapeConfig.r
@@ -680,25 +679,6 @@ if (typeof window !== "undefined") {
       }
 
       /**
-       * Pre-calculates the size of the title, if defined, in order
-       * to adjust the internal margins.
-       */
-      if (this._title) {
-        var ref$1 = this._titleConfig;
-        var fontFamily = ref$1.fontFamily;
-        var fontSize = ref$1.fontSize;
-        var lineHeight = ref$1.lineHeight;
-        var titleWrap = d3plusText.textWrap()
-          .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
-          .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
-          .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
-          .width(sizeOuter)
-          .height(this[("_" + height)] - this._tickSize - p);
-        var lines = titleWrap(this._title).lines.length;
-        margin[this._orient] = lines * titleWrap.lineHeight() + p;
-      }
-
-      /**
        * Constructs the tick formatter function.
        */
       var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
@@ -727,6 +707,25 @@ if (typeof window !== "undefined") {
         n = n.replace(/[^\d\.\-\+]/g, "") * 1;
         return isNaN(n) ? n : d3plusFormat.formatAbbreviate(n);
       };
+
+      /**
+       * Pre-calculates the size of the title, if defined, in order
+       * to adjust the internal margins.
+       */
+      if (this._title) {
+        var ref$1 = this._titleConfig;
+        var fontFamily = ref$1.fontFamily;
+        var fontSize = ref$1.fontSize;
+        var lineHeight = ref$1.lineHeight;
+        var titleWrap = d3plusText.textWrap()
+          .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
+          .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
+          .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
+          .width(range[range.length - 1] - range[0] - p * 2)
+          .height(this[("_" + height)] - this._tickSize - p * 2);
+        var lines = titleWrap(this._title).lines.length;
+        margin[this._orient] = lines * titleWrap.lineHeight() + p;
+      }
 
       var hBuff = this._shape === "Circle"
             ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
@@ -1015,9 +1014,9 @@ if (typeof window !== "undefined") {
         .select(d3plusCommon.elem("g.d3plus-Axis-title", {parent: group}).node())
         .text(function (d) { return d.text; })
         .verticalAlign("middle")
-        .width(bounds[width])
-        .x(horizontal ? bounds.x : this._orient === "left" ? bounds.x + margin[this._orient] / 2 - bounds[width] / 2 : bounds.x + bounds.width - margin[this._orient] / 2 - bounds[width] / 2)
-        .y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom + p : bounds.y : bounds.y - margin[this._orient] / 2 + bounds[width] / 2)
+        .width(range[range.length - 1] - range[0])
+        .x(horizontal ? range[0] : this._orient === "left" ? margin[this._orient] / 2 - (range[range.length - 1] - range[0]) / 2 + p : p - margin.right / 2)
+        .y(horizontal ? this._orient === "bottom" ? bounds.height - margin.bottom + p : bounds.y : range[0] + (range[range.length - 1] - range[0]) / 2 - margin[this._orient] / 2)
         .config(this._titleConfig)
         .render();
 
