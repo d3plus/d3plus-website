@@ -5,7 +5,7 @@ kind: function
 
   <a name="textWidth"></a>
 
-### d3plus.**textWidth**(text, [style]) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/textWidth.js#L1)
+### d3plus.**textWidth**(text, [style]) [<>](https://github.com/d3plus/d3plus-text/blob/master/src/textWidth.js#L12)
 
 Given a text string, returns the predicted pixel width of the string when placed into DOM.
 
