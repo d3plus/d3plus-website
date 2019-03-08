@@ -2,8 +2,8 @@
 title: Scatter Plot/Bubble Chart
 width: 990
 height: 400
-time: 1547830503439
-date: January 18, 2019
+time: 1552063087066
+date: March 08, 2019
 ---
 
 # Scatter Plot/Bubble Chart
