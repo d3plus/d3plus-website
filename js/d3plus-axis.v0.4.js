@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.2
+  d3plus-axis v0.4.3
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -814,9 +814,10 @@ if (typeof window !== "undefined") {
        * "spillover" will contain the pixel spillover of the first and last label,
        * and then adjust the scale range accordingly.
        */
-      var spillover = [];
+      var spillover = [0, 0];
       for (var index = 0; index < 2; index++) {
         var datum = textData[index ? textData.length - 1 : 0];
+        if (!datum) { break; }
         var height$1 = datum.height;
         var position = datum.position;
         var rotate = datum.rotate;
@@ -824,8 +825,7 @@ if (typeof window !== "undefined") {
         var compPosition = index ? rangeOuter[1] : rangeOuter[0];
         var halfSpace = (rotate || !horizontal ? height$1 : width$1) / 2;
         var spill = index ? position + halfSpace - compPosition : position - halfSpace - compPosition;
-        spillover.push(Math.floor(spill));
-        if (spillover.length === 2) { break; }
+        spillover[index] = spill;
       }
 
       var first = range[0];
