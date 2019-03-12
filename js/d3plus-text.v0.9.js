@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.42
+  d3plus-text v0.9.43
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -870,7 +870,7 @@ if (typeof window !== "undefined") {
 
             text
               [that._html ? "html" : "text"](function (t) { return trimRight(t)
-                .replace(/&([^\;&]*)/g, function (str, a) { return (console.log(str, a), a === "amp" ? str : ("&amp;" + a)); }) // replaces all non-HTML ampersands with escaped entity
+                .replace(/&([^\;&]*)/g, function (str, a) { return a === "amp" ? str : ("&amp;" + a); }) // replaces all non-HTML ampersands with escaped entity
                 .replace(/<([^A-z^/]+)/g, function (str, a) { return ("&lt;" + a); }).replace(/<$/g, "&lt;") // replaces all non-HTML left angle brackets with escaped entity
                 .replace(/(<[^>^\/]+>)([^<^>]+)$/g, function (str, a, b) { return ("" + a + b + (a.replace("<", "</"))); }) // ands end tag to lines before mid-HTML break
                 .replace(/^([^<^>]+)(<\/[^>]+>)/g, function (str, a, b) { return ("" + (b.replace("</", "<")) + a + b); }) // ands start tag to lines after mid-HTML break
