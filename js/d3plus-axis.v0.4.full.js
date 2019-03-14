@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.3
+  d3plus-axis v0.4.4
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -8639,6 +8639,17 @@ if (typeof window !== "undefined") {
   });
 
   /**
+   * Strips HTML and "un-escapes" escape characters.
+   * @param {String} input
+   */
+  function htmlDecode(input) {
+    if (input === " ") { return input; }
+    var doc = new DOMParser().parseFromString(input.replace(/<[^>]+>/g, ""), "text/html");
+    return doc.documentElement.textContent;
+  }
+
+
+  /**
       @function textWidth
       @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
       @param {String|Array} text Can be either a single string or an array of strings to analyze.
@@ -8668,8 +8679,8 @@ if (typeof window !== "undefined") {
 
     context.font = font.join(" ");
 
-    if (text instanceof Array) { return text.map(function (t) { return context.measureText(t.replace(/<[^>]+>/g, "")).width; }); }
-    return context.measureText(text.replace(/<[^>]+>/g, "")).width;
+    if (text instanceof Array) { return text.map(function (t) { return context.measureText(htmlDecode(t)).width; }); }
+    return context.measureText(htmlDecode(text)).width;
 
   }
 
@@ -9278,6 +9289,7 @@ if (typeof window !== "undefined") {
 
             text
               [that._html ? "html" : "text"](function (t) { return trimRight(t)
+                .replace(/&([^\;&]*)/g, function (str, a) { return a === "amp" ? str : ("&amp;" + a); }) // replaces all non-HTML ampersands with escaped entity
                 .replace(/<([^A-z^/]+)/g, function (str, a) { return ("&lt;" + a); }).replace(/<$/g, "&lt;") // replaces all non-HTML left angle brackets with escaped entity
                 .replace(/(<[^>^\/]+>)([^<^>]+)$/g, function (str, a, b) { return ("" + a + b + (a.replace("<", "</"))); }) // ands end tag to lines before mid-HTML break
                 .replace(/^([^<^>]+)(<\/[^>]+>)/g, function (str, a, b) { return ("" + (b.replace("</", "<")) + a + b); }) // ands start tag to lines after mid-HTML break
@@ -9747,7 +9759,7 @@ if (typeof window !== "undefined") {
       @extends external:BaseClass
       @desc An abstracted class for generating shapes.
   */
-  var Shape = (function (BaseClass$$1) {
+  var Shape = /*@__PURE__*/(function (BaseClass$$1) {
     function Shape(tagName) {
       var this$1 = this;
       if ( tagName === void 0 ) { tagName = "g"; }
@@ -11765,7 +11777,7 @@ if (typeof window !== "undefined") {
     if (!origins.length) {
       // get the centroid of the polygon
       var centroid = polygonCentroid(poly);
-      if (isNaN(centroid[0])) {
+      if (isNaN(centroid[0]) || Math.abs(centroid[0]) === Infinity) {
         if (options.verbose) { console.error("cannot find centroid", poly); }
         return null;
       }
@@ -11889,7 +11901,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG areas based on an array of data.
   */
-  var Area = (function (Shape$$1) {
+  var Area = /*@__PURE__*/(function (Shape$$1) {
     function Area() {
       var this$1 = this;
 
@@ -12126,7 +12138,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG areas based on an array of data.
   */
-  var Bar = (function (Shape$$1) {
+  var Bar = /*@__PURE__*/(function (Shape$$1) {
     function Bar() {
       var this$1 = this;
 
@@ -12349,7 +12361,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG circles based on an array of data.
   */
-  var Circle = (function (Shape$$1) {
+  var Circle = /*@__PURE__*/(function (Shape$$1) {
     function Circle() {
       Shape$$1.call(this, "circle");
       this._labelBounds = function (d, i, s) { return ({width: s.r * 1.5, height: s.r * 1.5, x: -s.r * 0.75, y: -s.r * 0.75}); };
@@ -12439,7 +12451,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
   */
-  var Rect = (function (Shape$$1) {
+  var Rect = /*@__PURE__*/(function (Shape$$1) {
     function Rect() {
       Shape$$1.call(this, "rect");
       this._height = accessor("height");
@@ -12544,7 +12556,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG lines based on an array of data.
   */
-  var Line = (function (Shape$$1) {
+  var Line = /*@__PURE__*/(function (Shape$$1) {
     function Line() {
       var this$1 = this;
 
@@ -12687,7 +12699,7 @@ if (typeof window !== "undefined") {
       @extends BaseClass
       @desc Creates SVG whisker based on an array of data.
   */
-  var Whisker = (function (BaseClass$$1) {
+  var Whisker = /*@__PURE__*/(function (BaseClass$$1) {
     function Whisker() {
 
       BaseClass$$1.call(this);
@@ -12930,7 +12942,7 @@ if (typeof window !== "undefined") {
       @extends BaseClass
       @desc Creates SVG box based on an array of data.
   */
-  var Box = (function (BaseClass$$1) {
+  var Box = /*@__PURE__*/(function (BaseClass$$1) {
     function Box() {
       var this$1 = this;
 
@@ -13409,7 +13421,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG Paths based on an array of data.
   */
-  var Path$1 = (function (Shape$$1) {
+  var Path$1 = /*@__PURE__*/(function (Shape$$1) {
     function Path() {
       var this$1 = this;
 
@@ -13864,8 +13876,12 @@ if (typeof window !== "undefined") {
             ? this._scale === "time" ? this._labels.map(date$2) : this._labels
             : scaleTicks).slice();
           var buckets$2 = labels.length;
-          var pad = Math.ceil(sizeInner / buckets$2 / 2);
-          range$$1 = [range$$1[0] + pad, range$$1[1] - pad];
+
+          if (buckets$2) {
+            var pad = Math.ceil(sizeInner / buckets$2 / 2);
+            range$$1 = [range$$1[0] + pad, range$$1[1] - pad];
+          }
+
         }
 
         /**

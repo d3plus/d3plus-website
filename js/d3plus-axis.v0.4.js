@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.3
+  d3plus-axis v0.4.4
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -559,8 +559,12 @@ if (typeof window !== "undefined") {
             ? this._scale === "time" ? this._labels.map(date) : this._labels
             : scaleTicks).slice();
           var buckets$2 = labels.length;
-          var pad = Math.ceil(sizeInner / buckets$2 / 2);
-          range = [range[0] + pad, range[1] - pad];
+
+          if (buckets$2) {
+            var pad = Math.ceil(sizeInner / buckets$2 / 2);
+            range = [range[0] + pad, range[1] - pad];
+          }
+
         }
 
         /**
