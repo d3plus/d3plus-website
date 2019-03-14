@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.7
+  d3plus-plot v0.8.8
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -3499,7 +3499,7 @@ if (typeof window !== "undefined") {
     return [min, max];
   }
 
-  function d3Range(start, stop, step) {
+  function range(start, stop, step) {
     start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
 
     var i = -1,
@@ -4068,7 +4068,7 @@ if (typeof window !== "undefined") {
       start += (stop - start - step * (n - paddingInner)) * align;
       bandwidth = step * (1 - paddingInner);
       if (round) { start = Math.round(start), bandwidth = Math.round(bandwidth); }
-      var values = d3Range(n).map(function(i) { return start + step * i; });
+      var values = range(n).map(function(i) { return start + step * i; });
       return ordinalRange(reverse ? values.reverse() : values);
     }
 
@@ -4171,15 +4171,15 @@ if (typeof window !== "undefined") {
 
   // normalize(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
   // interpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding range value x in [a,b].
-  function bimap(domain, range, interpolate$$1) {
-    var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
+  function bimap(domain, range$$1, interpolate$$1) {
+    var d0 = domain[0], d1 = domain[1], r0 = range$$1[0], r1 = range$$1[1];
     if (d1 < d0) { d0 = normalize(d1, d0), r0 = interpolate$$1(r1, r0); }
     else { d0 = normalize(d0, d1), r0 = interpolate$$1(r0, r1); }
     return function(x) { return r0(d0(x)); };
   }
 
-  function polymap(domain, range, interpolate$$1) {
-    var j = Math.min(domain.length, range.length) - 1,
+  function polymap(domain, range$$1, interpolate$$1) {
+    var j = Math.min(domain.length, range$$1.length) - 1,
         d = new Array(j),
         r = new Array(j),
         i = -1;
@@ -4187,12 +4187,12 @@ if (typeof window !== "undefined") {
     // Reverse descending domains.
     if (domain[j] < domain[0]) {
       domain = domain.slice().reverse();
-      range = range.slice().reverse();
+      range$$1 = range$$1.slice().reverse();
     }
 
     while (++i < j) {
       d[i] = normalize(domain[i], domain[i + 1]);
-      r[i] = interpolate$$1(range[i], range[i + 1]);
+      r[i] = interpolate$$1(range$$1[i], range$$1[i + 1]);
     }
 
     return function(x) {
@@ -4212,7 +4212,7 @@ if (typeof window !== "undefined") {
 
   function transformer() {
     var domain = unit,
-        range = unit,
+        range$$1 = unit,
         interpolate$$1 = interpolate,
         transform,
         untransform,
@@ -4223,17 +4223,17 @@ if (typeof window !== "undefined") {
         input;
 
     function rescale() {
-      piecewise$$1 = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
+      piecewise$$1 = Math.min(domain.length, range$$1.length) > 2 ? polymap : bimap;
       output = input = null;
       return scale;
     }
 
     function scale(x) {
-      return isNaN(x = +x) ? unknown : (output || (output = piecewise$$1(domain.map(transform), range, interpolate$$1)))(transform(clamp(x)));
+      return isNaN(x = +x) ? unknown : (output || (output = piecewise$$1(domain.map(transform), range$$1, interpolate$$1)))(transform(clamp(x)));
     }
 
     scale.invert = function(y) {
-      return clamp(untransform((input || (input = piecewise$$1(range, domain.map(transform), interpolateNumber)))(y)));
+      return clamp(untransform((input || (input = piecewise$$1(range$$1, domain.map(transform), interpolateNumber)))(y)));
     };
 
     scale.domain = function(_) {
@@ -4241,11 +4241,11 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$1.call(_), rescale()) : range.slice();
+      return arguments.length ? (range$$1 = slice$1.call(_), rescale()) : range$$1.slice();
     };
 
     scale.rangeRound = function(_) {
-      return range = slice$1.call(_), interpolate$$1 = interpolateRound, rescale();
+      return range$$1 = slice$1.call(_), interpolate$$1 = interpolateRound, rescale();
     };
 
     scale.clamp = function(_) {
@@ -4936,23 +4936,23 @@ if (typeof window !== "undefined") {
 
   function quantile$1() {
     var domain = [],
-        range = [],
+        range$$1 = [],
         thresholds = [],
         unknown;
 
     function rescale() {
-      var i = 0, n = Math.max(1, range.length);
+      var i = 0, n = Math.max(1, range$$1.length);
       thresholds = new Array(n - 1);
       while (++i < n) { thresholds[i - 1] = quantile(domain, i / n); }
       return scale;
     }
 
     function scale(x) {
-      return isNaN(x = +x) ? unknown : range[bisectRight(thresholds, x)];
+      return isNaN(x = +x) ? unknown : range$$1[bisectRight(thresholds, x)];
     }
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return i < 0 ? [NaN, NaN] : [
         i > 0 ? thresholds[i - 1] : domain[0],
         i < thresholds.length ? thresholds[i] : domain[domain.length - 1]
@@ -4968,7 +4968,7 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$1.call(_), rescale()) : range.slice();
+      return arguments.length ? (range$$1 = slice$1.call(_), rescale()) : range$$1.slice();
     };
 
     scale.unknown = function(_) {
@@ -4982,7 +4982,7 @@ if (typeof window !== "undefined") {
     scale.copy = function() {
       return quantile$1()
           .domain(domain)
-          .range(range)
+          .range(range$$1)
           .unknown(unknown);
     };
 
@@ -4994,11 +4994,11 @@ if (typeof window !== "undefined") {
         x1 = 1,
         n = 1,
         domain = [0.5],
-        range = [0, 1],
+        range$$1 = [0, 1],
         unknown;
 
     function scale(x) {
-      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
+      return x <= x ? range$$1[bisectRight(domain, x, 0, n)] : unknown;
     }
 
     function rescale() {
@@ -5013,11 +5013,11 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (n = (range = slice$1.call(_)).length - 1, rescale()) : range.slice();
+      return arguments.length ? (n = (range$$1 = slice$1.call(_)).length - 1, rescale()) : range$$1.slice();
     };
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return i < 0 ? [NaN, NaN]
           : i < 1 ? [x0, domain[0]]
           : i >= n ? [domain[n - 1], x1]
@@ -5035,7 +5035,7 @@ if (typeof window !== "undefined") {
     scale.copy = function() {
       return quantize$1()
           .domain([x0, x1])
-          .range(range)
+          .range(range$$1)
           .unknown(unknown);
     };
 
@@ -5044,24 +5044,24 @@ if (typeof window !== "undefined") {
 
   function threshold() {
     var domain = [0.5],
-        range = [0, 1],
+        range$$1 = [0, 1],
         unknown,
         n = 1;
 
     function scale(x) {
-      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
+      return x <= x ? range$$1[bisectRight(domain, x, 0, n)] : unknown;
     }
 
     scale.domain = function(_) {
-      return arguments.length ? (domain = slice$1.call(_), n = Math.min(domain.length, range.length - 1), scale) : domain.slice();
+      return arguments.length ? (domain = slice$1.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : domain.slice();
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$1.call(_), n = Math.min(domain.length, range.length - 1), scale) : range.slice();
+      return arguments.length ? (range$$1 = slice$1.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : range$$1.slice();
     };
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return [domain[i - 1], domain[i]];
     };
 
@@ -5072,7 +5072,7 @@ if (typeof window !== "undefined") {
     scale.copy = function() {
       return threshold()
           .domain(domain)
-          .range(range)
+          .range(range$$1)
           .unknown(unknown);
     };
 
@@ -8817,6 +8817,17 @@ if (typeof window !== "undefined") {
   }
 
   /**
+   * Strips HTML and "un-escapes" escape characters.
+   * @param {String} input
+   */
+  function htmlDecode(input) {
+    if (input === " ") { return input; }
+    var doc = new DOMParser().parseFromString(input.replace(/<[^>]+>/g, ""), "text/html");
+    return doc.documentElement.textContent;
+  }
+
+
+  /**
       @function textWidth
       @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
       @param {String|Array} text Can be either a single string or an array of strings to analyze.
@@ -8846,8 +8857,8 @@ if (typeof window !== "undefined") {
 
     context.font = font.join(" ");
 
-    if (text instanceof Array) { return text.map(function (t) { return context.measureText(t.replace(/<[^>]+>/g, "")).width; }); }
-    return context.measureText(text.replace(/<[^>]+>/g, "")).width;
+    if (text instanceof Array) { return text.map(function (t) { return context.measureText(htmlDecode(t)).width; }); }
+    return context.measureText(htmlDecode(text)).width;
 
   }
 
@@ -9456,6 +9467,7 @@ if (typeof window !== "undefined") {
 
             text
               [that._html ? "html" : "text"](function (t) { return trimRight(t)
+                .replace(/&([^\;&]*)/g, function (str, a) { return a === "amp" ? str : ("&amp;" + a); }) // replaces all non-HTML ampersands with escaped entity
                 .replace(/<([^A-z^/]+)/g, function (str, a) { return ("&lt;" + a); }).replace(/<$/g, "&lt;") // replaces all non-HTML left angle brackets with escaped entity
                 .replace(/(<[^>^\/]+>)([^<^>]+)$/g, function (str, a, b) { return ("" + a + b + (a.replace("<", "</"))); }) // ands end tag to lines before mid-HTML break
                 .replace(/^([^<^>]+)(<\/[^>]+>)/g, function (str, a, b) { return ("" + (b.replace("</", "<")) + a + b); }) // ands start tag to lines after mid-HTML break
@@ -9925,7 +9937,7 @@ if (typeof window !== "undefined") {
       @extends external:BaseClass
       @desc An abstracted class for generating shapes.
   */
-  var Shape = (function (BaseClass$$1) {
+  var Shape = /*@__PURE__*/(function (BaseClass$$1) {
     function Shape(tagName) {
       var this$1 = this;
       if ( tagName === void 0 ) { tagName = "g"; }
@@ -11873,7 +11885,7 @@ if (typeof window !== "undefined") {
 
     // User's input normalization
     options = Object.assign({
-      angle: d3Range(-90, 90 + angleStep, angleStep),
+      angle: range(-90, 90 + angleStep, angleStep),
       cache: true,
       maxAspectRatio: 15,
       minAspectRatio: 1,
@@ -11943,7 +11955,7 @@ if (typeof window !== "undefined") {
     if (!origins.length) {
       // get the centroid of the polygon
       var centroid = polygonCentroid(poly);
-      if (isNaN(centroid[0])) {
+      if (isNaN(centroid[0]) || Math.abs(centroid[0]) === Infinity) {
         if (options.verbose) { console.error("cannot find centroid", poly); }
         return null;
       }
@@ -12005,7 +12017,7 @@ if (typeof window !== "undefined") {
           if (!aRatios.length) {
             var minAspectRatio = Math.max(options.minAspectRatio, options.minWidth / maxHeight, maxArea / (maxHeight * maxHeight));
             var maxAspectRatio = Math.min(options.maxAspectRatio, maxWidth / options.minHeight, maxWidth * maxWidth / maxArea);
-            aRatios = d3Range(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
+            aRatios = range(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
           }
 
           for (var a = 0; a < aRatios.length; a++) {
@@ -12067,7 +12079,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG areas based on an array of data.
   */
-  var Area = (function (Shape$$1) {
+  var Area = /*@__PURE__*/(function (Shape$$1) {
     function Area() {
       var this$1 = this;
 
@@ -12304,7 +12316,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG areas based on an array of data.
   */
-  var Bar = (function (Shape$$1) {
+  var Bar = /*@__PURE__*/(function (Shape$$1) {
     function Bar() {
       var this$1 = this;
 
@@ -12527,7 +12539,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG circles based on an array of data.
   */
-  var Circle = (function (Shape$$1) {
+  var Circle = /*@__PURE__*/(function (Shape$$1) {
     function Circle() {
       Shape$$1.call(this, "circle");
       this._labelBounds = function (d, i, s) { return ({width: s.r * 1.5, height: s.r * 1.5, x: -s.r * 0.75, y: -s.r * 0.75}); };
@@ -12617,7 +12629,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
   */
-  var Rect = (function (Shape$$1) {
+  var Rect = /*@__PURE__*/(function (Shape$$1) {
     function Rect() {
       Shape$$1.call(this, "rect");
       this._height = accessor("height");
@@ -12722,7 +12734,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG lines based on an array of data.
   */
-  var Line = (function (Shape$$1) {
+  var Line = /*@__PURE__*/(function (Shape$$1) {
     function Line() {
       var this$1 = this;
 
@@ -12865,7 +12877,7 @@ if (typeof window !== "undefined") {
       @extends BaseClass
       @desc Creates SVG whisker based on an array of data.
   */
-  var Whisker = (function (BaseClass$$1) {
+  var Whisker = /*@__PURE__*/(function (BaseClass$$1) {
     function Whisker() {
 
       BaseClass$$1.call(this);
@@ -13108,7 +13120,7 @@ if (typeof window !== "undefined") {
       @extends BaseClass
       @desc Creates SVG box based on an array of data.
   */
-  var Box = (function (BaseClass$$1) {
+  var Box = /*@__PURE__*/(function (BaseClass$$1) {
     function Box() {
       var this$1 = this;
 
@@ -13587,7 +13599,7 @@ if (typeof window !== "undefined") {
       @extends Shape
       @desc Creates SVG Paths based on an array of data.
   */
-  var Path$1 = (function (Shape$$1) {
+  var Path$1 = /*@__PURE__*/(function (Shape$$1) {
     function Path() {
       var this$1 = this;
 
@@ -14018,7 +14030,7 @@ if (typeof window !== "undefined") {
         if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
           if (newRange === this._range) {
             var buckets = this._domain.length + 1;
-            range$$1 = d3Range(buckets)
+            range$$1 = range(buckets)
               .map(function (d) { return range$$1[0] + sizeInner * (d / (buckets - 1)); })
               .slice(1, buckets);
             range$$1 = range$$1.map(function (d) { return d - range$$1[0] / 2; });
@@ -14026,7 +14038,7 @@ if (typeof window !== "undefined") {
           else {
             var buckets$1 = this._domain.length;
             var size = range$$1[1] - range$$1[0];
-            range$$1 = d3Range(buckets$1)
+            range$$1 = range(buckets$1)
               .map(function (d) { return range$$1[0] + size * (d / (buckets$1 - 1)); });
           }
         }
@@ -14042,8 +14054,12 @@ if (typeof window !== "undefined") {
             ? this._scale === "time" ? this._labels.map(date$2) : this._labels
             : scaleTicks).slice();
           var buckets$2 = labels.length;
-          var pad = Math.ceil(sizeInner / buckets$2 / 2);
-          range$$1 = [range$$1[0] + pad, range$$1[1] - pad];
+
+          if (buckets$2) {
+            var pad = Math.ceil(sizeInner / buckets$2 / 2);
+            range$$1 = [range$$1[0] + pad, range$$1[1] - pad];
+          }
+
         }
 
         /**
@@ -16674,1173 +16690,6 @@ if (typeof window !== "undefined") {
   });
 
   /**
-      @function date
-      @summary Parses numbers and strings to valid Javascript Date objects.
-      @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
-      @param {Number|String} *date*
-  */
-  function date$3(d) {
-
-    // returns if already Date object
-    if (d.constructor === Date) { return d; }
-    // detects if milliseconds
-    else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) { return new Date(d); }
-
-    var s = "" + d;
-    var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
-          strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s);
-
-    // tests for XX/XX/XXXX format
-    if (dayFormat) {
-      var year = dayFormat[1];
-      if (year.indexOf("-") === 0) { s = s.replace(year, year.substr(1)); }
-      var date = new Date(s);
-      date.setFullYear(year);
-      return date;
-    }
-    // tests for full Date object string format
-    else if (strFormat) {
-      var year$1 = strFormat[1];
-      if (year$1.indexOf("-") === 0) { s = s.replace(year$1, year$1.substr(1)); }
-      var date$1 = new Date(s);
-      date$1.setFullYear(year$1);
-      return date$1;
-    }
-    // detects if only passing a year value
-    else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
-      var date$2 = new Date((s + "/01/01"));
-      date$2.setFullYear(d);
-      return date$2;
-    }
-    // parses string to Date object
-    else { return new Date(s); }
-
-  }
-
-  /**
-      @external BaseClass
-      @see https://github.com/d3plus/d3plus-common#BaseClass
-  */
-
-  /**
-      @class Axis
-      @extends external:BaseClass
-      @desc Creates an SVG scale based on an array of data.
-  */
-  var Axis$1 = (function (BaseClass$$1) {
-    function Axis() {
-      var this$1 = this;
-
-
-      BaseClass$$1.call(this);
-
-      this._align = "middle";
-      this._barConfig = {
-        "stroke": "#000",
-        "stroke-width": 1
-      };
-      this._domain = [0, 10];
-      this._duration = 600;
-      this._gridConfig = {
-        "stroke": "#ccc",
-        "stroke-width": 1
-      };
-      this._gridLog = false;
-      this._height = 400;
-      this._labelOffset = false;
-      this.orient("bottom");
-      this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
-      this._padding = 5;
-      this._paddingInner = 0.1;
-      this._paddingOuter = 0.1;
-      this._rotateLabels = false;
-      this._scale = "linear";
-      this._shape = "Line";
-      this._shapeConfig = {
-        fill: "#000",
-        height: function (d) { return d.tick ? 8 : 0; },
-        label: function (d) { return d.text; },
-        labelBounds: function (d) { return d.labelBounds; },
-        labelConfig: {
-          fontColor: "#000",
-          fontFamily: new TextBox().fontFamily(),
-          fontResize: false,
-          fontSize: constant(10),
-          padding: 0,
-          textAnchor: function () {
-            var rtl$$1 = detectRTL();
-            return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
-              : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
-              : this$1._rotateLabels ? this$1._orient === "bottom" ? "end" : "start" : "middle";
-          },
-          verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
-        },
-        r: function (d) { return d.tick ? 4 : 0; },
-        stroke: "#000",
-        strokeWidth: 1,
-        width: function (d) { return d.tick ? 8 : 0; }
-      };
-      this._tickSize = 5;
-      this._tickSpecifier = undefined;
-      this._titleClass = new TextBox();
-      this._titleConfig = {
-        fontSize: 12,
-        textAnchor: "middle"
-      };
-      this._width = 400;
-
-    }
-
-    if ( BaseClass$$1 ) { Axis.__proto__ = BaseClass$$1; }
-    Axis.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
-    Axis.prototype.constructor = Axis;
-
-    /**
-        @memberof Axis
-        @desc Sets positioning for the axis bar.
-        @param {D3Selection} *bar*
-        @private
-    */
-    Axis.prototype._barPosition = function _barPosition (bar) {
-
-      var ref = this._position;
-      var height = ref.height;
-      var x = ref.x;
-      var y = ref.y;
-      var opposite = ref.opposite;
-      var domain = this._getDomain(),
-            offset = this._margin[opposite],
-            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
-
-      bar
-        .call(attrize, this._barConfig)
-        .attr((x + "1"), this._getPosition(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
-        .attr((x + "2"), this._getPosition(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
-        .attr((y + "1"), position)
-        .attr((y + "2"), position);
-
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns the scale's domain, taking into account negative and positive log scales.
-        @private
-    */
-    Axis.prototype._getDomain = function _getDomain () {
-
-      var ticks = [];
-      if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.domain(); }
-      if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.domain()); }
-
-      var domain = this._scale === "ordinal" ? ticks : extent(ticks);
-      return ticks[0] > ticks[1] ? domain.reverse() : domain;
-
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns a value's scale position, taking into account negative and positive log scales.
-        @param {Number|String} *d*
-        @private
-    */
-    Axis.prototype._getPosition = function _getPosition (d) {
-      return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : this._d3Scale(d);
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns the scale's range, taking into account negative and positive log scales.
-        @private
-    */
-    Axis.prototype._getRange = function _getRange () {
-
-      var ticks = [];
-      if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.range(); }
-      if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.range()); }
-      return ticks[0] > ticks[1] ? extent(ticks).reverse() : extent(ticks);
-
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns the scale's ticks, taking into account negative and positive log scales.
-        @private
-    */
-    Axis.prototype._getTicks = function _getTicks () {
-      var tickScale = sqrt().domain([10, 400]).range([10, 50]);
-
-      var ticks = [];
-      if (this._d3ScaleNegative) {
-        var negativeRange = this._d3ScaleNegative.range();
-        var size = negativeRange[1] - negativeRange[0];
-        ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
-      }
-      if (this._d3Scale) {
-        var positiveRange = this._d3Scale.range();
-        var size$1 = positiveRange[1] - positiveRange[0];
-        ticks = ticks.concat(this._d3Scale.ticks(Math.floor(size$1 / tickScale(size$1))));
-      }
-
-      return ticks;
-    };
-
-    /**
-        @memberof Axis
-        @desc Sets positioning for the grid lines.
-        @param {D3Selection} *lines*
-        @private
-    */
-    Axis.prototype._gridPosition = function _gridPosition (lines, last) {
-      if ( last === void 0 ) { last = false; }
-
-      var ref = this._position;
-      var height = ref.height;
-      var x = ref.x;
-      var y = ref.y;
-      var opposite = ref.opposite;
-      var offset = this._margin[opposite],
-            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
-            scale = last ? this._lastScale || this._getPosition.bind(this) : this._getPosition.bind(this),
-            size = ["top", "left"].includes(this._orient) ? offset : -offset,
-            xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
-            xPos = function (d) { return scale(d.id) + xDiff; };
-      lines
-        .call(attrize, this._gridConfig)
-        .attr((x + "1"), xPos)
-        .attr((x + "2"), xPos)
-        .attr((y + "1"), position)
-        .attr((y + "2"), last ? position : position + size);
-    };
-
-    /**
-        @memberof Axis
-        @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
-        @param {Function} [*callback* = undefined]
-        @chainable
-    */
-    Axis.prototype.render = function render (callback) {
-      var this$1 = this;
-      var obj;
-
-
-      if (this._select === void 0) {
-        this.select(select("body").append("svg")
-          .attr("width", ((this._width) + "px"))
-          .attr("height", ((this._height) + "px"))
-          .node());
-      }
-
-      var ref = this._position;
-      var width = ref.width;
-      var height = ref.height;
-      var x = ref.x;
-      var y = ref.y;
-      var horizontal = ref.horizontal;
-      var opposite = ref.opposite;
-      var clipId = "d3plus-Axis-clip-" + (this._uuid),
-            flip = ["top", "left"].includes(this._orient),
-            p = this._padding,
-            parent = this._select,
-            t = transition().duration(this._duration);
-
-      var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
-      if (range$$1[0] === void 0) { range$$1[0] = p; }
-      if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
-      this._size = range$$1[1] - range$$1[0];
-      if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
-        range$$1 = d3Range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
-      }
-
-      var margin = this._margin = {top: 0, right: 0, bottom: 0, left: 0};
-
-      if (this._title) {
-        var ref$1 = this._titleConfig;
-        var fontFamily = ref$1.fontFamily;
-        var fontSize = ref$1.fontSize;
-        var lineHeight = ref$1.lineHeight;
-        var titleWrap = textWrap()
-          .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
-          .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
-          .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
-          .width(this._size)
-          .height(this[("_" + height)] - this._tickSize - p);
-        var lines = titleWrap(this._title).lines.length;
-        margin[this._orient] = lines * titleWrap.lineHeight() + p;
-      }
-
-      this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-        .domain(this._scale === "time" ? this._domain.map(date$3) : this._domain);
-
-      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
-      else { this._d3Scale.range(range$$1); }
-
-      if (this._d3Scale.round) { this._d3Scale.round(true); }
-      if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
-      if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
-
-      this._d3ScaleNegative = null;
-      if (this._scale === "log") {
-        var domain = this._d3Scale.domain();
-        if (domain[0] === 0) { domain[0] = 1; }
-        if (domain[domain.length - 1] === 0) { domain[domain.length - 1] = -1; }
-        var range$1 = this._d3Scale.range();
-        if (domain[0] < 0 && domain[domain.length - 1] < 0) {
-          this._d3ScaleNegative = this._d3Scale.copy()
-            .domain(domain)
-            .range(range$1);
-          this._d3Scale = null;
-        }
-        else if (domain[0] > 0 && domain[domain.length - 1] > 0) {
-          this._d3Scale
-            .domain(domain)
-            .range(range$1);
-        }
-        else {
-          var percentScale = log().domain([1, domain[domain[1] > 0 ? 1 : 0]]).range([0, 1]);
-          var leftPercentage = percentScale(Math.abs(domain[domain[1] < 0 ? 1 : 0]));
-          var zero = leftPercentage / (leftPercentage + 1) * (range$1[1] - range$1[0]);
-          if (domain[0] > 0) { zero = range$1[1] - range$1[0] - zero; }
-          this._d3ScaleNegative = this._d3Scale.copy();
-          (domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative)
-            .domain([Math.sign(domain[1]), domain[1]])
-            .range([range$1[0] + zero, range$1[1]]);
-          (domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale)
-            .domain([domain[0], Math.sign(domain[0])])
-            .range([range$1[0], range$1[0] + zero]);
-        }
-      }
-
-      var ticks = this._ticks
-        ? this._scale === "time" ? this._ticks.map(date$3) : this._ticks
-        : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
-          ? this._getTicks()
-          : this._domain;
-
-      var labels = this._labels
-        ? this._scale === "time" ? this._labels.map(date$3) : this._labels
-        : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
-          ? this._getTicks()
-          : ticks;
-
-      ticks = ticks.slice();
-      labels = labels.slice();
-
-      if (this._scale === "log") { labels = labels.filter(function (t) { return Math.abs(t).toString().charAt(0) === "1" && (this$1._d3Scale ? t !== -1 : t !== 1); }); }
-
-      var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-      var tickFormat$$1 = this._tickFormat ? this._tickFormat : function (d) {
-        if (this$1._scale === "log") {
-          var p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
-          var t = Math.abs(d).toString().charAt(0);
-          var n$1 = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
-          if (t !== "1") { n$1 = t + " x " + n$1; }
-          return d < 0 ? ("-" + n$1) : n$1;
-        } 
-        else if (this$1._scale === "time") {
-          return this$1._d3Scale.tickFormat(labels.length - 1, this$1._tickSpecifier)(d);
-        }
-        else if (this$1._scale === "ordinal") {
-          return d;
-        }
-
-        var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
-
-        n = n.replace(/[^\d\.\-\+]/g, "") * 1;
-        return isNaN(n) ? n : formatAbbreviate(n);
-      };
-
-      if (this._scale === "time") {
-        ticks = ticks.map(Number);
-        labels = labels.map(Number);
-      }
-      else if (this._scale === "ordinal") {
-        labels = labels.filter(function (label) { return ticks.includes(label); });
-      }
-
-      ticks = ticks.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
-      labels = labels.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
-
-      var tickSize = this._shape === "Circle" ? this._shapeConfig.r
-        : this._shape === "Rect" ? this._shapeConfig[width]
-        : this._shapeConfig.strokeWidth;
-
-      var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
-
-      var pixels = [];
-      this._availableTicks = ticks;
-      ticks.forEach(function (d, i) {
-        var s = tickGet({id: d, tick: true}, i);
-        if (this$1._shape === "Circle") { s *= 2; }
-        var t = this$1._getPosition(d);
-        if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
-        else { pixels.push(false); }
-      });
-
-      ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
-
-      this._visibleTicks = ticks;
-
-      var hBuff = this._shape === "Circle"
-            ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
-            : this._shape === "Rect"
-              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
-              : this._tickSize,
-          wBuff = tickGet({tick: true});
-
-      if (typeof hBuff === "function") { hBuff = max(ticks.map(hBuff)); }
-      if (this._shape === "Rect") { hBuff /= 2; }
-      if (typeof wBuff === "function") { wBuff = max(ticks.map(wBuff)); }
-      if (this._shape !== "Circle") { wBuff /= 2; }
-
-      if (this._scale === "band") {
-        this._space = this._d3Scale.bandwidth();
-      }
-      else if (labels.length > 1) {
-        this._space = 0;
-        for (var i = 0; i < labels.length - 1; i++) {
-          var s = this$1._getPosition(labels[i + 1]) - this$1._getPosition(labels[i]);
-          if (s > this$1._space) { this$1._space = s; }
-        }
-      }
-      else { this._space = this._size; }
-
-      // Measures size of ticks
-      var textData = labels.map(function (d, i) {
-
-        var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
-              s = this$1._shapeConfig.labelConfig.fontSize(d, i);
-
-        var wrap = textWrap()
-          .fontFamily(f)
-          .fontSize(s)
-          .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
-          .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
-          .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
-
-        var res = wrap(tickFormat$$1(d));
-        res.lines = res.lines.filter(function (d) { return d !== ""; });
-        res.d = d;
-        res.fS = s;
-        res.width = res.lines.length
-          ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
-          : 0;
-        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
-        res.offset = 0;
-        res.hidden = false;
-        if (res.width % 2) { res.width++; }
-
-        return res;
-
-      });
-
-      var labelHeight = max(textData, function (t) { return t.height; }) || 0;
-
-      if (horizontal && typeof this._labelRotation === "undefined") {
-        for (var i$1 = 0; i$1 < labels.length; i$1++) {
-          var d = labels[i$1];
-
-          var f = this$1._shapeConfig.labelConfig.fontFamily(d, i$1),
-                s$1 = this$1._shapeConfig.labelConfig.fontSize(d, i$1);
-
-          var wrap = textWrap()
-            .fontFamily(f)
-            .fontSize(s$1)
-            .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i$1) : undefined)
-            .width(this$1._space)
-            .height(labelHeight);
-
-          var res = wrap(tickFormat$$1(d));
-
-          var isTruncated = res.truncated;
-
-          var xPos = this$1._getPosition(d);
-          var prev = labels[i$1 - 1] || false;
-          var next = labels[i$1 + 1] || false;
-
-          var maxWidth = Math.max(res.widths);
-
-          var isOverlapping = prev ? xPos - maxWidth < this$1._getPosition(prev) + maxWidth : next ? xPos + maxWidth > this$1._getPosition(next) - maxWidth : false;
-
-          var isRotated = isTruncated || isOverlapping;
-
-          if (isRotated) {
-            this$1._rotateLabels = true;
-            break;
-          }
-        }
-      }
-      else if (horizontal) { this._rotateLabels = this._labelRotation; }
-
-      if (this._rotateLabels) {
-        textData = labels.map(function (d, i) {
-          var text = textData[i];
-
-          var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
-                s = this$1._shapeConfig.labelConfig.fontSize(d, i);
-
-          var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.4;
-
-          var lineTest = textWrap()
-              .fontFamily(f)
-              .fontSize(s)
-              .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
-              .height(lineHeight * 2 + 1)
-              .width(this$1._maxSize ? this$1._maxSize - this$1._margin.top - this$1._margin.bottom - this$1._tickSize : this$1._height);
-
-          var xPos = this$1._getPosition(d);
-          var prev = labels[i - 1] || false;
-          var next = labels[i + 1] || false;
-
-          var fitsTwoLines = prev ? xPos - lineHeight * 2 > this$1._getPosition(prev) + lineHeight * 2 : next ? xPos + lineHeight * 2 < this$1._getPosition(next) - lineHeight * 2 : true;
-
-          var lineTestResult = lineTest(tickFormat$$1(d));
-
-          var isTwoLine = lineTestResult.words.length > 1 && lineTestResult.widths[0] > 80;
-          var height = fitsTwoLines && isTwoLine ? lineTestResult.widths[0] / 1.6 : lineTestResult.widths[0];
-          var width = fitsTwoLines && isTwoLine ? lineHeight * 2 : lineHeight;
-
-          return Object.assign(text, {
-            height: height || 0,
-            lineHeight: lineHeight,
-            numLines: fitsTwoLines && isTwoLine ? 2 : 1,
-            width: width || 0
-          });
-        });
-      }
-
-
-      textData.forEach(function (d, i) {
-        if (i) {
-          var prev = textData[i - 1];
-          if (!prev.offset && this$1._getPosition(d.d) - d[width] / 2 < this$1._getPosition(prev.d) + prev[width] / 2) {
-            d.offset = prev[height] + this$1._padding;
-          }
-        }
-      });
-      if (this._labelOffset) {
-        textData.forEach(function (d, i) {
-          if (i) {
-            var prev = textData[i - 1];
-            if (!prev.offset && this$1._getPosition(d.d) - d[width] / 2 < this$1._getPosition(prev.d) + prev[width] / 2) {
-              d.offset = prev[height] + this$1._padding;
-            }
-          }
-        });
-
-        var maxOffset = max(textData, function (d) { return d.offset; });
-        if (maxOffset) {
-          textData.forEach(function (d) {
-            if (d.offset) {
-              d.offset = maxOffset;
-              d[height] += maxOffset;
-            }
-          });
-        }
-      }
-
-      // Calculates new range, based on any text that may be overflowing.
-      var rangeOuter = range$$1.slice();
-      var lastI = range$$1.length - 1;
-      if (this._scale !== "band" && textData.length) {
-
-        var first = textData[0],
-              last = textData[textData.length - 1];
-
-        var firstB = min([this._getPosition(first.d) - first[width] / 2, range$$1[0] - wBuff]);
-        if (firstB < range$$1[0]) {
-          var d$1 = range$$1[0] - firstB;
-          if (this._range === void 0 || this._range[0] === void 0) {
-            this._size -= d$1;
-            range$$1[0] += d$1;
-          }
-          else if (this._range) {
-            rangeOuter[0] -= d$1;
-          }
-        }
-
-        var lastB = max([this._getPosition(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
-        if (lastB > range$$1[lastI]) {
-          var d$2 = lastB - range$$1[lastI];
-          if (this._range === void 0 || this._range[this._range.length - 1] === void 0) {
-            this._size -= d$2;
-            range$$1[lastI] -= d$2;
-          }
-          else if (this._range) {
-            rangeOuter[rangeOuter.length - 1] += d$2;
-          }
-        }
-
-        if (range$$1.length > 2) { range$$1 = d3Range(this._domain.length).map(function (d) { return this$1._size * (d / (range$$1.length - 1)) + range$$1[0]; }); }
-        range$$1 = range$$1.map(Math.round);
-        if (this._d3ScaleNegative) {
-          var negativeRange = this._d3ScaleNegative.range();
-          this._d3ScaleNegative[this._d3ScaleNegative.rangeRound ? "rangeRound" : "range"](
-            this._d3Scale && this._d3Scale.range()[0] < negativeRange[0]
-              ? [negativeRange[0], range$$1[1]]
-              : [range$$1[0], this._d3Scale ? negativeRange[1] : range$$1[1]]
-          );
-          if (this._d3Scale) {
-            var positiveRange = this._d3Scale.range();
-            this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](
-              range$$1[0] < negativeRange[0]
-                ? [range$$1[0], positiveRange[1]]
-                : [positiveRange[0], range$$1[1]]
-            );
-          }
-        }
-        else {
-          this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](range$$1);
-        }
-
-      }
-
-      if (this._scale === "band") {
-        this._space = this._d3Scale.bandwidth();
-      }
-      else if (labels.length > 1) {
-        this._space = 0;
-        for (var i$2 = 0; i$2 < labels.length - 1; i$2++) {
-          var s$2 = this$1._getPosition(labels[i$2 + 1]) - this$1._getPosition(labels[i$2]);
-          if (s$2 > this$1._space) { this$1._space = s$2; }
-        }
-      }
-      else { this._space = this._size; }
-
-      var tBuff = this._shape === "Line" ? 0 : hBuff;
-      var bounds = this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return Math.ceil(t[height]); }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
-
-      margin[this._orient] += hBuff;
-      margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - margin[this._orient] - bounds[height] - p;
-      bounds[height] += margin[opposite] + margin[this._orient];
-      bounds[y] = this._align === "start" ? this._padding
-        : this._align === "end" ? this[("_" + height)] - bounds[height] - this._padding
-        : this[("_" + height)] / 2 - bounds[height] / 2;
-
-      var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
-      this._group = group;
-
-      var grid = elem("g.grid", {parent: group}).selectAll("line")
-        .data((this._gridSize !== 0 ? this._grid || this._scale === "log" && !this._gridLog ? labels : ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
-
-      grid.exit().transition(t)
-        .attr("opacity", 0)
-        .call(this._gridPosition.bind(this))
-        .remove();
-
-      grid.enter().append("line")
-          .attr("opacity", 0)
-          .attr("clip-path", ("url(#" + clipId + ")"))
-          .call(this._gridPosition.bind(this), true)
-        .merge(grid).transition(t)
-          .attr("opacity", 1)
-          .call(this._gridPosition.bind(this));
-
-      var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); });
-
-      var tickData = ticks.concat(labelOnly)
-        .map(function (d) {
-          var data = textData.filter(function (td) { return td.d === d; });
-          var dataIndex = data.length ? textData.indexOf(data[0]) : undefined;
-          var xPos = this$1._getPosition(d);
-
-          var labelOffset = data.length && this$1._labelOffset ? data[0].offset : 0;
-
-          var labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
-
-          var prev = data.length && dataIndex > 0 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti < dataIndex; }) : false;
-          prev = prev.length ? prev[prev.length - 1] : false;
-          var next = data.length && dataIndex < textData.length - 1 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti > dataIndex; }) : false;
-          next = next.length ? next[0] : false;
-
-          var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth);
-          if (data.length && data[0].width > labelWidth) {
-            data[0].hidden = true;
-            data[0].offset = labelOffset = 0;
-          }
-
-          var offset = margin[opposite],
-                size = (hBuff + labelOffset) * (flip ? -1 : 1),
-                yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
-
-          var tickConfig = {
-            id: d,
-            labelBounds: {
-              x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
-              y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
-              width: horizontal ? space : labelWidth,
-              height: horizontal ? labelHeight : space
-            },
-            size: labels.includes(d) ? size : 0,
-            text: labels.includes(d) ? tickFormat$$1(d) : false,
-            tick: ticks.includes(d)
-          };
-          tickConfig[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0);
-          tickConfig[y] = yPos;
-
-          var text = this$1._rotateLabels && textData.find(function (val) { return val.d === d; });
-          if (text) {
-            var lineHeight = text.lineHeight;
-            var numLines = text.numLines;
-            var width = text.height;
-            var height$1 = text.width;
-
-            tickConfig = Object.assign(tickConfig, {
-              labelBounds: {
-                x: -width / 2,
-                y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : size - p * 2 - (width + lineHeight * numLines) / 2,
-                width: width,
-                height: height$1 + 1
-              }
-            });
-          }
-
-          return tickConfig;
-        });
-
-      if (this._shape === "Line") {
-        tickData = tickData.concat(tickData.map(function (d) {
-          var dupe = Object.assign({}, d);
-          dupe[y] += d.size;
-          return dupe;
-        }));
-      }
-
-      new shapes$2[this._shape]()
-        .data(tickData)
-        .duration(this._duration)
-        .labelConfig({
-          ellipsis: function (d) { return d && d.length ? (d + "...") : ""; },
-          rotate: this._rotateLabels ? -90 : 0
-        })
-        .select(elem("g.ticks", {parent: group}).node())
-        .config(this._shapeConfig)
-        .render();
-
-      var bar = group.selectAll("line.bar").data([null]);
-
-      bar.enter().append("line")
-          .attr("class", "bar")
-          .attr("opacity", 0)
-          .call(this._barPosition.bind(this))
-        .merge(bar).transition(t)
-          .attr("opacity", 1)
-          .call(this._barPosition.bind(this));
-
-      this._titleClass
-        .data(this._title ? [{text: this._title}] : [])
-        .duration(this._duration)
-        .height(margin[this._orient])
-        .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
-        .select(elem("g.d3plus-Axis-title", {parent: group}).node())
-        .text(function (d) { return d.text; })
-        .verticalAlign("middle")
-        .width(bounds[width])
-        .x(horizontal ? bounds.x : this._orient === "left" ? bounds.x + margin[this._orient] / 2 - bounds[width] / 2 : bounds.x + bounds.width - margin[this._orient] / 2 - bounds[width] / 2)
-        .y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom + p : bounds.y : bounds.y - margin[this._orient] / 2 + bounds[width] / 2)
-        .config(this._titleConfig)
-        .render();
-
-      this._lastScale = this._getPosition.bind(this);
-
-      if (callback) { setTimeout(callback, this._duration + 100); }
-
-      return this;
-
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance.
-        @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
-        @chainable
-    */
-    Axis.prototype.align = function align (_) {
-      return arguments.length ? (this._align = _, this) : this._align;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the axis line style and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.barConfig = function barConfig (_) {
-      return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance.
-        @param {Array} [*value* = [0, 10]]
-        @chainable
-    */
-    Axis.prototype.domain = function domain (_) {
-      return arguments.length ? (this._domain = _, this) : this._domain;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance.
-        @param {Number} [*value* = 600]
-        @chainable
-    */
-    Axis.prototype.duration = function duration (_) {
-      return arguments.length ? (this._duration = _, this) : this._duration;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid values of the axis and returns the current class instance.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.grid = function grid (_) {
-      return arguments.length ? (this._grid = _, this) : this._grid;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid config of the axis and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.gridConfig = function gridConfig (_) {
-      return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid behavior of the axis when scale is logarithmic and returns the current class instance.
-        @param {Boolean} [*value* = false]
-        @chainable
-    */
-    Axis.prototype.gridLog = function gridLog (_) {
-      return arguments.length ? (this._gridLog = _, this) : this._gridLog;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid size of the axis and returns the current class instance.
-        @param {Number} [*value* = undefined]
-        @chainable
-    */
-    Axis.prototype.gridSize = function gridSize (_) {
-      return arguments.length ? (this._gridSize = _, this) : this._gridSize;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the overall height of the axis and returns the current class instance.
-        @param {Number} [*value* = 100]
-        @chainable
-    */
-    Axis.prototype.height = function height (_) {
-      return arguments.length ? (this._height = _, this) : this._height;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.labels = function labels (_) {
-      return arguments.length ? (this._labels = _, this) : this._labels;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
-        @param {Boolean} [*value* = true]
-        @chainable
-     */
-    Axis.prototype.labelOffset = function labelOffset (_) {
-      return arguments.length ? (this._labelOffset = _, this) : this._labelOffset;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets whether whether horizontal axis labels are rotated -90 degrees.
-        @param {Boolean}
-        @chainable
-     */
-    Axis.prototype.labelRotation = function labelRotation (_) {
-      return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the maximum size allowed for the space that contains the axis tick labels and title.
-        @param {Number}
-        @chainable
-     */
-    Axis.prototype.maxSize = function maxSize (_) {
-      return arguments.length ? (this._maxSize = _, this) : this._maxSize;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
-        @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
-        @chainable
-    */
-    Axis.prototype.orient = function orient (_) {
-      if (arguments.length) {
-
-        var horizontal = ["top", "bottom"].includes(_),
-              opps = {top: "bottom", right: "left", bottom: "top", left: "right"};
-
-        this._position = {
-          horizontal: horizontal,
-          width: horizontal ? "width" : "height",
-          height: horizontal ? "height" : "width",
-          x: horizontal ? "x" : "y",
-          y: horizontal ? "y" : "x",
-          opposite: opps[_]
-        };
-
-        return this._orient = _, this;
-
-      }
-      return this._orient;
-    };
-
-    /**
-        @memberof Axis
-        @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the axis content.
-        @example
-  {"width": 180, "height": 24, "x": 10, "y": 20}
-    */
-    Axis.prototype.outerBounds = function outerBounds () {
-      return this._outerBounds;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance.
-        @param {Number} [*value* = 10]
-        @chainable
-    */
-    Axis.prototype.padding = function padding (_) {
-      return arguments.length ? (this._padding = _, this) : this._padding;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance.
-        @param {Number} [*value* = 0.1]
-        @chainable
-    */
-    Axis.prototype.paddingInner = function paddingInner (_) {
-      return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance.
-        @param {Number} [*value* = 0.1]
-        @chainable
-    */
-    Axis.prototype.paddingOuter = function paddingOuter (_) {
-      return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.range = function range$$1 (_) {
-      return arguments.length ? (this._range = _, this) : this._range;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the scale of the axis and returns the current class instance.
-        @param {String} [*value* = "linear"]
-        @chainable
-    */
-    Axis.prototype.scale = function scale (_) {
-      return arguments.length ? (this._scale = _, this) : this._scale;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
-        @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
-        @chainable
-    */
-    Axis.prototype.select = function select$1 (_) {
-      return arguments.length ? (this._select = select(_), this) : this._select;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick shape constructor and returns the current class instance.
-        @param {String} [*value* = "Line"]
-        @chainable
-    */
-    Axis.prototype.shape = function shape (_) {
-      return arguments.length ? (this._shape = _, this) : this._shape;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick style of the axis and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.shapeConfig = function shapeConfig (_) {
-      return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick formatter and returns the current class instance.
-        @param {Function} [*value*]
-        @chainable
-    */
-    Axis.prototype.tickFormat = function tickFormat$$1 (_) {
-      return arguments.length ? (this._tickFormat = _, this) : this._tickFormat;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick values of the axis and returns the current class instance.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.ticks = function ticks (_) {
-      return arguments.length ? (this._ticks = _, this) : this._ticks;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick size of the axis and returns the current class instance.
-        @param {Number} [*value* = 5]
-        @chainable
-    */
-    Axis.prototype.tickSize = function tickSize (_) {
-      return arguments.length ? (this._tickSize = _, this) : this._tickSize;
-    };
-
-    /**
-        @memberof Axis
-        @desc Sets the tick specifier for the [tickFormat](https://github.com/d3/d3-scale#continuous_tickFormat) function. If this method is called without any arguments, the default tick specifier is returned.
-        @param {String} [*value* = undefined]
-        @chainable
-    */
-    Axis.prototype.tickSpecifier = function tickSpecifier (_) {
-      return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the title of the axis and returns the current class instance.
-        @param {String} [*value*]
-        @chainable
-    */
-    Axis.prototype.title = function title (_) {
-      return arguments.length ? (this._title = _, this) : this._title;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.titleConfig = function titleConfig (_) {
-      return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the overall width of the axis and returns the current class instance.
-        @param {Number} [*value* = 400]
-        @chainable
-    */
-    Axis.prototype.width = function width (_) {
-      return arguments.length ? (this._width = _, this) : this._width;
-    };
-
-    return Axis;
-  }(BaseClass));
-
-  /**
-      @class AxisBottom
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn below the horizontal domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisBottom$1 = (function (Axis) {
-    function AxisBottom() {
-      Axis.call(this);
-      this.orient("bottom");
-    }
-
-    if ( Axis ) { AxisBottom.__proto__ = Axis; }
-    AxisBottom.prototype = Object.create( Axis && Axis.prototype );
-    AxisBottom.prototype.constructor = AxisBottom;
-
-    return AxisBottom;
-  }(Axis$1));
-
-  /**
-      @class AxisLeft
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn to the left of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisLeft$1 = (function (Axis) {
-    function AxisLeft() {
-      Axis.call(this);
-      this.orient("left");
-    }
-
-    if ( Axis ) { AxisLeft.__proto__ = Axis; }
-    AxisLeft.prototype = Object.create( Axis && Axis.prototype );
-    AxisLeft.prototype.constructor = AxisLeft;
-
-    return AxisLeft;
-  }(Axis$1));
-
-  /**
-      @class AxisRight
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn to the right of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisRight$1 = (function (Axis) {
-    function AxisRight() {
-      Axis.call(this);
-      this.orient("right");
-    }
-
-    if ( Axis ) { AxisRight.__proto__ = Axis; }
-    AxisRight.prototype = Object.create( Axis && Axis.prototype );
-    AxisRight.prototype.constructor = AxisRight;
-
-    return AxisRight;
-  }(Axis$1));
-
-  /**
-      @class AxisTop
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn above the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisTop$1 = (function (Axis) {
-    function AxisTop() {
-      Axis.call(this);
-      this.orient("top");
-    }
-
-    if ( Axis ) { AxisTop.__proto__ = Axis; }
-    AxisTop.prototype = Object.create( Axis && Axis.prototype );
-    AxisTop.prototype.constructor = AxisTop;
-
-    return AxisTop;
-  }(Axis$1));
-
-  /**
       @external BaseClass
       @see https://github.com/d3plus/d3plus-common#BaseClass
   */
@@ -18621,1173 +17470,6 @@ if (typeof window !== "undefined") {
   }
 
   /**
-      @function date
-      @summary Parses numbers and strings to valid Javascript Date objects.
-      @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
-      @param {Number|String} *date*
-  */
-  function date$4(d) {
-
-    // returns if already Date object
-    if (d.constructor === Date) { return d; }
-    // detects if milliseconds
-    else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) { return new Date(d); }
-
-    var s = "" + d;
-    var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
-          strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s);
-
-    // tests for XX/XX/XXXX format
-    if (dayFormat) {
-      var year = dayFormat[1];
-      if (year.indexOf("-") === 0) { s = s.replace(year, year.substr(1)); }
-      var date = new Date(s);
-      date.setFullYear(year);
-      return date;
-    }
-    // tests for full Date object string format
-    else if (strFormat) {
-      var year$1 = strFormat[1];
-      if (year$1.indexOf("-") === 0) { s = s.replace(year$1, year$1.substr(1)); }
-      var date$1 = new Date(s);
-      date$1.setFullYear(year$1);
-      return date$1;
-    }
-    // detects if only passing a year value
-    else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
-      var date$2 = new Date((s + "/01/01"));
-      date$2.setFullYear(d);
-      return date$2;
-    }
-    // parses string to Date object
-    else { return new Date(s); }
-
-  }
-
-  /**
-      @external BaseClass
-      @see https://github.com/d3plus/d3plus-common#BaseClass
-  */
-
-  /**
-      @class Axis
-      @extends external:BaseClass
-      @desc Creates an SVG scale based on an array of data.
-  */
-  var Axis$2 = (function (BaseClass$$1) {
-    function Axis() {
-      var this$1 = this;
-
-
-      BaseClass$$1.call(this);
-
-      this._align = "middle";
-      this._barConfig = {
-        "stroke": "#000",
-        "stroke-width": 1
-      };
-      this._domain = [0, 10];
-      this._duration = 600;
-      this._gridConfig = {
-        "stroke": "#ccc",
-        "stroke-width": 1
-      };
-      this._gridLog = false;
-      this._height = 400;
-      this._labelOffset = false;
-      this.orient("bottom");
-      this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
-      this._padding = 5;
-      this._paddingInner = 0.1;
-      this._paddingOuter = 0.1;
-      this._rotateLabels = false;
-      this._scale = "linear";
-      this._shape = "Line";
-      this._shapeConfig = {
-        fill: "#000",
-        height: function (d) { return d.tick ? 8 : 0; },
-        label: function (d) { return d.text; },
-        labelBounds: function (d) { return d.labelBounds; },
-        labelConfig: {
-          fontColor: "#000",
-          fontFamily: new TextBox().fontFamily(),
-          fontResize: false,
-          fontSize: constant(10),
-          padding: 0,
-          textAnchor: function () {
-            var rtl$$1 = detectRTL();
-            return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
-              : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
-              : this$1._rotateLabels ? this$1._orient === "bottom" ? "end" : "start" : "middle";
-          },
-          verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
-        },
-        r: function (d) { return d.tick ? 4 : 0; },
-        stroke: "#000",
-        strokeWidth: 1,
-        width: function (d) { return d.tick ? 8 : 0; }
-      };
-      this._tickSize = 5;
-      this._tickSpecifier = undefined;
-      this._titleClass = new TextBox();
-      this._titleConfig = {
-        fontSize: 12,
-        textAnchor: "middle"
-      };
-      this._width = 400;
-
-    }
-
-    if ( BaseClass$$1 ) { Axis.__proto__ = BaseClass$$1; }
-    Axis.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
-    Axis.prototype.constructor = Axis;
-
-    /**
-        @memberof Axis
-        @desc Sets positioning for the axis bar.
-        @param {D3Selection} *bar*
-        @private
-    */
-    Axis.prototype._barPosition = function _barPosition (bar) {
-
-      var ref = this._position;
-      var height = ref.height;
-      var x = ref.x;
-      var y = ref.y;
-      var opposite = ref.opposite;
-      var domain = this._getDomain(),
-            offset = this._margin[opposite],
-            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
-
-      bar
-        .call(attrize, this._barConfig)
-        .attr((x + "1"), this._getPosition(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
-        .attr((x + "2"), this._getPosition(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
-        .attr((y + "1"), position)
-        .attr((y + "2"), position);
-
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns the scale's domain, taking into account negative and positive log scales.
-        @private
-    */
-    Axis.prototype._getDomain = function _getDomain () {
-
-      var ticks = [];
-      if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.domain(); }
-      if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.domain()); }
-
-      var domain = this._scale === "ordinal" ? ticks : extent(ticks);
-      return ticks[0] > ticks[1] ? domain.reverse() : domain;
-
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns a value's scale position, taking into account negative and positive log scales.
-        @param {Number|String} *d*
-        @private
-    */
-    Axis.prototype._getPosition = function _getPosition (d) {
-      return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : this._d3Scale(d);
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns the scale's range, taking into account negative and positive log scales.
-        @private
-    */
-    Axis.prototype._getRange = function _getRange () {
-
-      var ticks = [];
-      if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.range(); }
-      if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.range()); }
-      return ticks[0] > ticks[1] ? extent(ticks).reverse() : extent(ticks);
-
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns the scale's ticks, taking into account negative and positive log scales.
-        @private
-    */
-    Axis.prototype._getTicks = function _getTicks () {
-      var tickScale = sqrt().domain([10, 400]).range([10, 50]);
-
-      var ticks = [];
-      if (this._d3ScaleNegative) {
-        var negativeRange = this._d3ScaleNegative.range();
-        var size = negativeRange[1] - negativeRange[0];
-        ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
-      }
-      if (this._d3Scale) {
-        var positiveRange = this._d3Scale.range();
-        var size$1 = positiveRange[1] - positiveRange[0];
-        ticks = ticks.concat(this._d3Scale.ticks(Math.floor(size$1 / tickScale(size$1))));
-      }
-
-      return ticks;
-    };
-
-    /**
-        @memberof Axis
-        @desc Sets positioning for the grid lines.
-        @param {D3Selection} *lines*
-        @private
-    */
-    Axis.prototype._gridPosition = function _gridPosition (lines, last) {
-      if ( last === void 0 ) { last = false; }
-
-      var ref = this._position;
-      var height = ref.height;
-      var x = ref.x;
-      var y = ref.y;
-      var opposite = ref.opposite;
-      var offset = this._margin[opposite],
-            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
-            scale = last ? this._lastScale || this._getPosition.bind(this) : this._getPosition.bind(this),
-            size = ["top", "left"].includes(this._orient) ? offset : -offset,
-            xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
-            xPos = function (d) { return scale(d.id) + xDiff; };
-      lines
-        .call(attrize, this._gridConfig)
-        .attr((x + "1"), xPos)
-        .attr((x + "2"), xPos)
-        .attr((y + "1"), position)
-        .attr((y + "2"), last ? position : position + size);
-    };
-
-    /**
-        @memberof Axis
-        @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
-        @param {Function} [*callback* = undefined]
-        @chainable
-    */
-    Axis.prototype.render = function render (callback) {
-      var this$1 = this;
-      var obj;
-
-
-      if (this._select === void 0) {
-        this.select(select("body").append("svg")
-          .attr("width", ((this._width) + "px"))
-          .attr("height", ((this._height) + "px"))
-          .node());
-      }
-
-      var ref = this._position;
-      var width = ref.width;
-      var height = ref.height;
-      var x = ref.x;
-      var y = ref.y;
-      var horizontal = ref.horizontal;
-      var opposite = ref.opposite;
-      var clipId = "d3plus-Axis-clip-" + (this._uuid),
-            flip = ["top", "left"].includes(this._orient),
-            p = this._padding,
-            parent = this._select,
-            t = transition().duration(this._duration);
-
-      var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
-      if (range$$1[0] === void 0) { range$$1[0] = p; }
-      if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
-      this._size = range$$1[1] - range$$1[0];
-      if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
-        range$$1 = d3Range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
-      }
-
-      var margin = this._margin = {top: 0, right: 0, bottom: 0, left: 0};
-
-      if (this._title) {
-        var ref$1 = this._titleConfig;
-        var fontFamily = ref$1.fontFamily;
-        var fontSize = ref$1.fontSize;
-        var lineHeight = ref$1.lineHeight;
-        var titleWrap = textWrap()
-          .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
-          .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
-          .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
-          .width(this._size)
-          .height(this[("_" + height)] - this._tickSize - p);
-        var lines = titleWrap(this._title).lines.length;
-        margin[this._orient] = lines * titleWrap.lineHeight() + p;
-      }
-
-      this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-        .domain(this._scale === "time" ? this._domain.map(date$4) : this._domain);
-
-      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
-      else { this._d3Scale.range(range$$1); }
-
-      if (this._d3Scale.round) { this._d3Scale.round(true); }
-      if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
-      if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
-
-      this._d3ScaleNegative = null;
-      if (this._scale === "log") {
-        var domain = this._d3Scale.domain();
-        if (domain[0] === 0) { domain[0] = 1; }
-        if (domain[domain.length - 1] === 0) { domain[domain.length - 1] = -1; }
-        var range$1 = this._d3Scale.range();
-        if (domain[0] < 0 && domain[domain.length - 1] < 0) {
-          this._d3ScaleNegative = this._d3Scale.copy()
-            .domain(domain)
-            .range(range$1);
-          this._d3Scale = null;
-        }
-        else if (domain[0] > 0 && domain[domain.length - 1] > 0) {
-          this._d3Scale
-            .domain(domain)
-            .range(range$1);
-        }
-        else {
-          var percentScale = log().domain([1, domain[domain[1] > 0 ? 1 : 0]]).range([0, 1]);
-          var leftPercentage = percentScale(Math.abs(domain[domain[1] < 0 ? 1 : 0]));
-          var zero = leftPercentage / (leftPercentage + 1) * (range$1[1] - range$1[0]);
-          if (domain[0] > 0) { zero = range$1[1] - range$1[0] - zero; }
-          this._d3ScaleNegative = this._d3Scale.copy();
-          (domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative)
-            .domain([Math.sign(domain[1]), domain[1]])
-            .range([range$1[0] + zero, range$1[1]]);
-          (domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale)
-            .domain([domain[0], Math.sign(domain[0])])
-            .range([range$1[0], range$1[0] + zero]);
-        }
-      }
-
-      var ticks = this._ticks
-        ? this._scale === "time" ? this._ticks.map(date$4) : this._ticks
-        : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
-          ? this._getTicks()
-          : this._domain;
-
-      var labels = this._labels
-        ? this._scale === "time" ? this._labels.map(date$4) : this._labels
-        : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
-          ? this._getTicks()
-          : ticks;
-
-      ticks = ticks.slice();
-      labels = labels.slice();
-
-      if (this._scale === "log") { labels = labels.filter(function (t) { return Math.abs(t).toString().charAt(0) === "1" && (this$1._d3Scale ? t !== -1 : t !== 1); }); }
-
-      var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-      var tickFormat$$1 = this._tickFormat ? this._tickFormat : function (d) {
-        if (this$1._scale === "log") {
-          var p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
-          var t = Math.abs(d).toString().charAt(0);
-          var n$1 = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
-          if (t !== "1") { n$1 = t + " x " + n$1; }
-          return d < 0 ? ("-" + n$1) : n$1;
-        } 
-        else if (this$1._scale === "time") {
-          return this$1._d3Scale.tickFormat(labels.length - 1, this$1._tickSpecifier)(d);
-        }
-        else if (this$1._scale === "ordinal") {
-          return d;
-        }
-
-        var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
-
-        n = n.replace(/[^\d\.\-\+]/g, "") * 1;
-        return isNaN(n) ? n : formatAbbreviate(n);
-      };
-
-      if (this._scale === "time") {
-        ticks = ticks.map(Number);
-        labels = labels.map(Number);
-      }
-      else if (this._scale === "ordinal") {
-        labels = labels.filter(function (label) { return ticks.includes(label); });
-      }
-
-      ticks = ticks.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
-      labels = labels.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
-
-      var tickSize = this._shape === "Circle" ? this._shapeConfig.r
-        : this._shape === "Rect" ? this._shapeConfig[width]
-        : this._shapeConfig.strokeWidth;
-
-      var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
-
-      var pixels = [];
-      this._availableTicks = ticks;
-      ticks.forEach(function (d, i) {
-        var s = tickGet({id: d, tick: true}, i);
-        if (this$1._shape === "Circle") { s *= 2; }
-        var t = this$1._getPosition(d);
-        if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
-        else { pixels.push(false); }
-      });
-
-      ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
-
-      this._visibleTicks = ticks;
-
-      var hBuff = this._shape === "Circle"
-            ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
-            : this._shape === "Rect"
-              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
-              : this._tickSize,
-          wBuff = tickGet({tick: true});
-
-      if (typeof hBuff === "function") { hBuff = max(ticks.map(hBuff)); }
-      if (this._shape === "Rect") { hBuff /= 2; }
-      if (typeof wBuff === "function") { wBuff = max(ticks.map(wBuff)); }
-      if (this._shape !== "Circle") { wBuff /= 2; }
-
-      if (this._scale === "band") {
-        this._space = this._d3Scale.bandwidth();
-      }
-      else if (labels.length > 1) {
-        this._space = 0;
-        for (var i = 0; i < labels.length - 1; i++) {
-          var s = this$1._getPosition(labels[i + 1]) - this$1._getPosition(labels[i]);
-          if (s > this$1._space) { this$1._space = s; }
-        }
-      }
-      else { this._space = this._size; }
-
-      // Measures size of ticks
-      var textData = labels.map(function (d, i) {
-
-        var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
-              s = this$1._shapeConfig.labelConfig.fontSize(d, i);
-
-        var wrap = textWrap()
-          .fontFamily(f)
-          .fontSize(s)
-          .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
-          .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
-          .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
-
-        var res = wrap(tickFormat$$1(d));
-        res.lines = res.lines.filter(function (d) { return d !== ""; });
-        res.d = d;
-        res.fS = s;
-        res.width = res.lines.length
-          ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
-          : 0;
-        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
-        res.offset = 0;
-        res.hidden = false;
-        if (res.width % 2) { res.width++; }
-
-        return res;
-
-      });
-
-      var labelHeight = max(textData, function (t) { return t.height; }) || 0;
-
-      if (horizontal && typeof this._labelRotation === "undefined") {
-        for (var i$1 = 0; i$1 < labels.length; i$1++) {
-          var d = labels[i$1];
-
-          var f = this$1._shapeConfig.labelConfig.fontFamily(d, i$1),
-                s$1 = this$1._shapeConfig.labelConfig.fontSize(d, i$1);
-
-          var wrap = textWrap()
-            .fontFamily(f)
-            .fontSize(s$1)
-            .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i$1) : undefined)
-            .width(this$1._space)
-            .height(labelHeight);
-
-          var res = wrap(tickFormat$$1(d));
-
-          var isTruncated = res.truncated;
-
-          var xPos = this$1._getPosition(d);
-          var prev = labels[i$1 - 1] || false;
-          var next = labels[i$1 + 1] || false;
-
-          var maxWidth = Math.max(res.widths);
-
-          var isOverlapping = prev ? xPos - maxWidth < this$1._getPosition(prev) + maxWidth : next ? xPos + maxWidth > this$1._getPosition(next) - maxWidth : false;
-
-          var isRotated = isTruncated || isOverlapping;
-
-          if (isRotated) {
-            this$1._rotateLabels = true;
-            break;
-          }
-        }
-      }
-      else if (horizontal) { this._rotateLabels = this._labelRotation; }
-
-      if (this._rotateLabels) {
-        textData = labels.map(function (d, i) {
-          var text = textData[i];
-
-          var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
-                s = this$1._shapeConfig.labelConfig.fontSize(d, i);
-
-          var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.4;
-
-          var lineTest = textWrap()
-              .fontFamily(f)
-              .fontSize(s)
-              .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
-              .height(lineHeight * 2 + 1)
-              .width(this$1._maxSize ? this$1._maxSize - this$1._margin.top - this$1._margin.bottom - this$1._tickSize : this$1._height);
-
-          var xPos = this$1._getPosition(d);
-          var prev = labels[i - 1] || false;
-          var next = labels[i + 1] || false;
-
-          var fitsTwoLines = prev ? xPos - lineHeight * 2 > this$1._getPosition(prev) + lineHeight * 2 : next ? xPos + lineHeight * 2 < this$1._getPosition(next) - lineHeight * 2 : true;
-
-          var lineTestResult = lineTest(tickFormat$$1(d));
-
-          var isTwoLine = lineTestResult.words.length > 1 && lineTestResult.widths[0] > 80;
-          var height = fitsTwoLines && isTwoLine ? lineTestResult.widths[0] / 1.6 : lineTestResult.widths[0];
-          var width = fitsTwoLines && isTwoLine ? lineHeight * 2 : lineHeight;
-
-          return Object.assign(text, {
-            height: height || 0,
-            lineHeight: lineHeight,
-            numLines: fitsTwoLines && isTwoLine ? 2 : 1,
-            width: width || 0
-          });
-        });
-      }
-
-
-      textData.forEach(function (d, i) {
-        if (i) {
-          var prev = textData[i - 1];
-          if (!prev.offset && this$1._getPosition(d.d) - d[width] / 2 < this$1._getPosition(prev.d) + prev[width] / 2) {
-            d.offset = prev[height] + this$1._padding;
-          }
-        }
-      });
-      if (this._labelOffset) {
-        textData.forEach(function (d, i) {
-          if (i) {
-            var prev = textData[i - 1];
-            if (!prev.offset && this$1._getPosition(d.d) - d[width] / 2 < this$1._getPosition(prev.d) + prev[width] / 2) {
-              d.offset = prev[height] + this$1._padding;
-            }
-          }
-        });
-
-        var maxOffset = max(textData, function (d) { return d.offset; });
-        if (maxOffset) {
-          textData.forEach(function (d) {
-            if (d.offset) {
-              d.offset = maxOffset;
-              d[height] += maxOffset;
-            }
-          });
-        }
-      }
-
-      // Calculates new range, based on any text that may be overflowing.
-      var rangeOuter = range$$1.slice();
-      var lastI = range$$1.length - 1;
-      if (this._scale !== "band" && textData.length) {
-
-        var first = textData[0],
-              last = textData[textData.length - 1];
-
-        var firstB = min([this._getPosition(first.d) - first[width] / 2, range$$1[0] - wBuff]);
-        if (firstB < range$$1[0]) {
-          var d$1 = range$$1[0] - firstB;
-          if (this._range === void 0 || this._range[0] === void 0) {
-            this._size -= d$1;
-            range$$1[0] += d$1;
-          }
-          else if (this._range) {
-            rangeOuter[0] -= d$1;
-          }
-        }
-
-        var lastB = max([this._getPosition(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
-        if (lastB > range$$1[lastI]) {
-          var d$2 = lastB - range$$1[lastI];
-          if (this._range === void 0 || this._range[this._range.length - 1] === void 0) {
-            this._size -= d$2;
-            range$$1[lastI] -= d$2;
-          }
-          else if (this._range) {
-            rangeOuter[rangeOuter.length - 1] += d$2;
-          }
-        }
-
-        if (range$$1.length > 2) { range$$1 = d3Range(this._domain.length).map(function (d) { return this$1._size * (d / (range$$1.length - 1)) + range$$1[0]; }); }
-        range$$1 = range$$1.map(Math.round);
-        if (this._d3ScaleNegative) {
-          var negativeRange = this._d3ScaleNegative.range();
-          this._d3ScaleNegative[this._d3ScaleNegative.rangeRound ? "rangeRound" : "range"](
-            this._d3Scale && this._d3Scale.range()[0] < negativeRange[0]
-              ? [negativeRange[0], range$$1[1]]
-              : [range$$1[0], this._d3Scale ? negativeRange[1] : range$$1[1]]
-          );
-          if (this._d3Scale) {
-            var positiveRange = this._d3Scale.range();
-            this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](
-              range$$1[0] < negativeRange[0]
-                ? [range$$1[0], positiveRange[1]]
-                : [positiveRange[0], range$$1[1]]
-            );
-          }
-        }
-        else {
-          this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](range$$1);
-        }
-
-      }
-
-      if (this._scale === "band") {
-        this._space = this._d3Scale.bandwidth();
-      }
-      else if (labels.length > 1) {
-        this._space = 0;
-        for (var i$2 = 0; i$2 < labels.length - 1; i$2++) {
-          var s$2 = this$1._getPosition(labels[i$2 + 1]) - this$1._getPosition(labels[i$2]);
-          if (s$2 > this$1._space) { this$1._space = s$2; }
-        }
-      }
-      else { this._space = this._size; }
-
-      var tBuff = this._shape === "Line" ? 0 : hBuff;
-      var bounds = this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return Math.ceil(t[height]); }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
-
-      margin[this._orient] += hBuff;
-      margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - margin[this._orient] - bounds[height] - p;
-      bounds[height] += margin[opposite] + margin[this._orient];
-      bounds[y] = this._align === "start" ? this._padding
-        : this._align === "end" ? this[("_" + height)] - bounds[height] - this._padding
-        : this[("_" + height)] / 2 - bounds[height] / 2;
-
-      var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
-      this._group = group;
-
-      var grid = elem("g.grid", {parent: group}).selectAll("line")
-        .data((this._gridSize !== 0 ? this._grid || this._scale === "log" && !this._gridLog ? labels : ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
-
-      grid.exit().transition(t)
-        .attr("opacity", 0)
-        .call(this._gridPosition.bind(this))
-        .remove();
-
-      grid.enter().append("line")
-          .attr("opacity", 0)
-          .attr("clip-path", ("url(#" + clipId + ")"))
-          .call(this._gridPosition.bind(this), true)
-        .merge(grid).transition(t)
-          .attr("opacity", 1)
-          .call(this._gridPosition.bind(this));
-
-      var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); });
-
-      var tickData = ticks.concat(labelOnly)
-        .map(function (d) {
-          var data = textData.filter(function (td) { return td.d === d; });
-          var dataIndex = data.length ? textData.indexOf(data[0]) : undefined;
-          var xPos = this$1._getPosition(d);
-
-          var labelOffset = data.length && this$1._labelOffset ? data[0].offset : 0;
-
-          var labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
-
-          var prev = data.length && dataIndex > 0 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti < dataIndex; }) : false;
-          prev = prev.length ? prev[prev.length - 1] : false;
-          var next = data.length && dataIndex < textData.length - 1 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti > dataIndex; }) : false;
-          next = next.length ? next[0] : false;
-
-          var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth);
-          if (data.length && data[0].width > labelWidth) {
-            data[0].hidden = true;
-            data[0].offset = labelOffset = 0;
-          }
-
-          var offset = margin[opposite],
-                size = (hBuff + labelOffset) * (flip ? -1 : 1),
-                yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
-
-          var tickConfig = {
-            id: d,
-            labelBounds: {
-              x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
-              y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
-              width: horizontal ? space : labelWidth,
-              height: horizontal ? labelHeight : space
-            },
-            size: labels.includes(d) ? size : 0,
-            text: labels.includes(d) ? tickFormat$$1(d) : false,
-            tick: ticks.includes(d)
-          };
-          tickConfig[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0);
-          tickConfig[y] = yPos;
-
-          var text = this$1._rotateLabels && textData.find(function (val) { return val.d === d; });
-          if (text) {
-            var lineHeight = text.lineHeight;
-            var numLines = text.numLines;
-            var width = text.height;
-            var height$1 = text.width;
-
-            tickConfig = Object.assign(tickConfig, {
-              labelBounds: {
-                x: -width / 2,
-                y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : size - p * 2 - (width + lineHeight * numLines) / 2,
-                width: width,
-                height: height$1 + 1
-              }
-            });
-          }
-
-          return tickConfig;
-        });
-
-      if (this._shape === "Line") {
-        tickData = tickData.concat(tickData.map(function (d) {
-          var dupe = Object.assign({}, d);
-          dupe[y] += d.size;
-          return dupe;
-        }));
-      }
-
-      new shapes$2[this._shape]()
-        .data(tickData)
-        .duration(this._duration)
-        .labelConfig({
-          ellipsis: function (d) { return d && d.length ? (d + "...") : ""; },
-          rotate: this._rotateLabels ? -90 : 0
-        })
-        .select(elem("g.ticks", {parent: group}).node())
-        .config(this._shapeConfig)
-        .render();
-
-      var bar = group.selectAll("line.bar").data([null]);
-
-      bar.enter().append("line")
-          .attr("class", "bar")
-          .attr("opacity", 0)
-          .call(this._barPosition.bind(this))
-        .merge(bar).transition(t)
-          .attr("opacity", 1)
-          .call(this._barPosition.bind(this));
-
-      this._titleClass
-        .data(this._title ? [{text: this._title}] : [])
-        .duration(this._duration)
-        .height(margin[this._orient])
-        .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
-        .select(elem("g.d3plus-Axis-title", {parent: group}).node())
-        .text(function (d) { return d.text; })
-        .verticalAlign("middle")
-        .width(bounds[width])
-        .x(horizontal ? bounds.x : this._orient === "left" ? bounds.x + margin[this._orient] / 2 - bounds[width] / 2 : bounds.x + bounds.width - margin[this._orient] / 2 - bounds[width] / 2)
-        .y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom + p : bounds.y : bounds.y - margin[this._orient] / 2 + bounds[width] / 2)
-        .config(this._titleConfig)
-        .render();
-
-      this._lastScale = this._getPosition.bind(this);
-
-      if (callback) { setTimeout(callback, this._duration + 100); }
-
-      return this;
-
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance.
-        @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
-        @chainable
-    */
-    Axis.prototype.align = function align (_) {
-      return arguments.length ? (this._align = _, this) : this._align;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the axis line style and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.barConfig = function barConfig (_) {
-      return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance.
-        @param {Array} [*value* = [0, 10]]
-        @chainable
-    */
-    Axis.prototype.domain = function domain (_) {
-      return arguments.length ? (this._domain = _, this) : this._domain;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance.
-        @param {Number} [*value* = 600]
-        @chainable
-    */
-    Axis.prototype.duration = function duration (_) {
-      return arguments.length ? (this._duration = _, this) : this._duration;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid values of the axis and returns the current class instance.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.grid = function grid (_) {
-      return arguments.length ? (this._grid = _, this) : this._grid;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid config of the axis and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.gridConfig = function gridConfig (_) {
-      return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid behavior of the axis when scale is logarithmic and returns the current class instance.
-        @param {Boolean} [*value* = false]
-        @chainable
-    */
-    Axis.prototype.gridLog = function gridLog (_) {
-      return arguments.length ? (this._gridLog = _, this) : this._gridLog;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid size of the axis and returns the current class instance.
-        @param {Number} [*value* = undefined]
-        @chainable
-    */
-    Axis.prototype.gridSize = function gridSize (_) {
-      return arguments.length ? (this._gridSize = _, this) : this._gridSize;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the overall height of the axis and returns the current class instance.
-        @param {Number} [*value* = 100]
-        @chainable
-    */
-    Axis.prototype.height = function height (_) {
-      return arguments.length ? (this._height = _, this) : this._height;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.labels = function labels (_) {
-      return arguments.length ? (this._labels = _, this) : this._labels;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
-        @param {Boolean} [*value* = true]
-        @chainable
-     */
-    Axis.prototype.labelOffset = function labelOffset (_) {
-      return arguments.length ? (this._labelOffset = _, this) : this._labelOffset;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets whether whether horizontal axis labels are rotated -90 degrees.
-        @param {Boolean}
-        @chainable
-     */
-    Axis.prototype.labelRotation = function labelRotation (_) {
-      return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the maximum size allowed for the space that contains the axis tick labels and title.
-        @param {Number}
-        @chainable
-     */
-    Axis.prototype.maxSize = function maxSize (_) {
-      return arguments.length ? (this._maxSize = _, this) : this._maxSize;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
-        @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
-        @chainable
-    */
-    Axis.prototype.orient = function orient (_) {
-      if (arguments.length) {
-
-        var horizontal = ["top", "bottom"].includes(_),
-              opps = {top: "bottom", right: "left", bottom: "top", left: "right"};
-
-        this._position = {
-          horizontal: horizontal,
-          width: horizontal ? "width" : "height",
-          height: horizontal ? "height" : "width",
-          x: horizontal ? "x" : "y",
-          y: horizontal ? "y" : "x",
-          opposite: opps[_]
-        };
-
-        return this._orient = _, this;
-
-      }
-      return this._orient;
-    };
-
-    /**
-        @memberof Axis
-        @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the axis content.
-        @example
-  {"width": 180, "height": 24, "x": 10, "y": 20}
-    */
-    Axis.prototype.outerBounds = function outerBounds () {
-      return this._outerBounds;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance.
-        @param {Number} [*value* = 10]
-        @chainable
-    */
-    Axis.prototype.padding = function padding (_) {
-      return arguments.length ? (this._padding = _, this) : this._padding;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance.
-        @param {Number} [*value* = 0.1]
-        @chainable
-    */
-    Axis.prototype.paddingInner = function paddingInner (_) {
-      return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance.
-        @param {Number} [*value* = 0.1]
-        @chainable
-    */
-    Axis.prototype.paddingOuter = function paddingOuter (_) {
-      return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.range = function range$$1 (_) {
-      return arguments.length ? (this._range = _, this) : this._range;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the scale of the axis and returns the current class instance.
-        @param {String} [*value* = "linear"]
-        @chainable
-    */
-    Axis.prototype.scale = function scale (_) {
-      return arguments.length ? (this._scale = _, this) : this._scale;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
-        @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
-        @chainable
-    */
-    Axis.prototype.select = function select$1 (_) {
-      return arguments.length ? (this._select = select(_), this) : this._select;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick shape constructor and returns the current class instance.
-        @param {String} [*value* = "Line"]
-        @chainable
-    */
-    Axis.prototype.shape = function shape (_) {
-      return arguments.length ? (this._shape = _, this) : this._shape;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick style of the axis and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.shapeConfig = function shapeConfig (_) {
-      return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick formatter and returns the current class instance.
-        @param {Function} [*value*]
-        @chainable
-    */
-    Axis.prototype.tickFormat = function tickFormat$$1 (_) {
-      return arguments.length ? (this._tickFormat = _, this) : this._tickFormat;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick values of the axis and returns the current class instance.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.ticks = function ticks (_) {
-      return arguments.length ? (this._ticks = _, this) : this._ticks;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick size of the axis and returns the current class instance.
-        @param {Number} [*value* = 5]
-        @chainable
-    */
-    Axis.prototype.tickSize = function tickSize (_) {
-      return arguments.length ? (this._tickSize = _, this) : this._tickSize;
-    };
-
-    /**
-        @memberof Axis
-        @desc Sets the tick specifier for the [tickFormat](https://github.com/d3/d3-scale#continuous_tickFormat) function. If this method is called without any arguments, the default tick specifier is returned.
-        @param {String} [*value* = undefined]
-        @chainable
-    */
-    Axis.prototype.tickSpecifier = function tickSpecifier (_) {
-      return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the title of the axis and returns the current class instance.
-        @param {String} [*value*]
-        @chainable
-    */
-    Axis.prototype.title = function title (_) {
-      return arguments.length ? (this._title = _, this) : this._title;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.titleConfig = function titleConfig (_) {
-      return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the overall width of the axis and returns the current class instance.
-        @param {Number} [*value* = 400]
-        @chainable
-    */
-    Axis.prototype.width = function width (_) {
-      return arguments.length ? (this._width = _, this) : this._width;
-    };
-
-    return Axis;
-  }(BaseClass));
-
-  /**
-      @class AxisBottom
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn below the horizontal domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisBottom$2 = (function (Axis) {
-    function AxisBottom() {
-      Axis.call(this);
-      this.orient("bottom");
-    }
-
-    if ( Axis ) { AxisBottom.__proto__ = Axis; }
-    AxisBottom.prototype = Object.create( Axis && Axis.prototype );
-    AxisBottom.prototype.constructor = AxisBottom;
-
-    return AxisBottom;
-  }(Axis$2));
-
-  /**
-      @class AxisLeft
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn to the left of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisLeft$2 = (function (Axis) {
-    function AxisLeft() {
-      Axis.call(this);
-      this.orient("left");
-    }
-
-    if ( Axis ) { AxisLeft.__proto__ = Axis; }
-    AxisLeft.prototype = Object.create( Axis && Axis.prototype );
-    AxisLeft.prototype.constructor = AxisLeft;
-
-    return AxisLeft;
-  }(Axis$2));
-
-  /**
-      @class AxisRight
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn to the right of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisRight$2 = (function (Axis) {
-    function AxisRight() {
-      Axis.call(this);
-      this.orient("right");
-    }
-
-    if ( Axis ) { AxisRight.__proto__ = Axis; }
-    AxisRight.prototype = Object.create( Axis && Axis.prototype );
-    AxisRight.prototype.constructor = AxisRight;
-
-    return AxisRight;
-  }(Axis$2));
-
-  /**
-      @class AxisTop
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn above the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisTop$2 = (function (Axis) {
-    function AxisTop() {
-      Axis.call(this);
-      this.orient("top");
-    }
-
-    if ( Axis ) { AxisTop.__proto__ = Axis; }
-    AxisTop.prototype = Object.create( Axis && Axis.prototype );
-    AxisTop.prototype.constructor = AxisTop;
-
-    return AxisTop;
-  }(Axis$2));
-
-  /**
       @external BaseClass
       @see https://github.com/d3plus/d3plus-common#BaseClass
   */
@@ -19797,16 +17479,16 @@ if (typeof window !== "undefined") {
       @extends external:BaseClass
       @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
   */
-  var ColorScale = (function (BaseClass$$1) {
+  var ColorScale = /*@__PURE__*/(function (BaseClass$$1) {
     function ColorScale() {
 
       BaseClass$$1.call(this);
 
-      this._axisClass = new Axis$2();
+      this._axisClass = new Axis();
       this._axisConfig = {
         gridSize: 0
       };
-      this._axisTest = new Axis$2();
+      this._axisTest = new Axis();
       this._align = "middle";
       this._color = "#0C8040";
       this._data = [];
@@ -19876,7 +17558,7 @@ if (typeof window !== "undefined") {
         if (data.length <= colors.length) {
 
           var ts = linear$2()
-            .domain(d3Range(0, data.length - 1))
+            .domain(range(0, data.length - 1))
             .interpolate(interpolateHsl)
             .range(colors);
 
@@ -19901,7 +17583,7 @@ if (typeof window !== "undefined") {
       else {
 
         var step = (domain[1] - domain[0]) / (colors.length - 1);
-        var buckets = d3Range(domain[0], domain[1] + step / 2, step);
+        var buckets = range(domain[0], domain[1] + step / 2, step);
 
         if (this._scale === "buckets") { ticks = buckets; }
 
@@ -19965,6 +17647,7 @@ if (typeof window !== "undefined") {
         .attr("offset", function (d, i) { return ((i / (colors.length - 1) * 100) + "%"); })
         .attr("stop-color", String);
 
+      /** determines the width of buckets */
       function bucketWidth(d, i) {
         var w = Math.abs(axisScale(ticks[i + 1]) - axisScale(d));
         return w || 2;
@@ -20153,7 +17836,7 @@ if (typeof window !== "undefined") {
       @extends external:BaseClass
       @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
   */
-  var Legend = (function (BaseClass$$1) {
+  var Legend = /*@__PURE__*/(function (BaseClass$$1) {
     function Legend() {
       var this$1 = this;
 
@@ -20376,32 +18059,30 @@ if (typeof window !== "undefined") {
         };
 
         this._wrapRows = function() {
-          var this$1 = this;
-
           newRows = [];
           var row = 1, rowWidth = 0;
           for (var i = 0; i < this._lineData.length; i++) {
-            var d = this$1._lineData[i],
-                  w = d.width + this$1._padding * (d.width ? 2 : 1) + d.shapeWidth;
+            var d = this._lineData[i],
+                  w = d.width + this._padding * (d.width ? 2 : 1) + d.shapeWidth;
             if (sum(newRows.map(function (row) { return max(row, function (d) { return max([d.height, d.shapeHeight]); }); })) > availableHeight) {
               newRows = [];
               break;
             }
             if (w > availableWidth) {
               newRows = [];
-              this$1._wrapLines();
+              this._wrapLines();
               break;
             }
             else if (rowWidth + w < availableWidth) {
               rowWidth += w;
             }
-            else if (this$1._direction !== "column") {
+            else if (this._direction !== "column") {
               rowWidth = w;
               row++;
             }
             if (!newRows[row - 1]) { newRows[row - 1] = []; }
             newRows[row - 1].push(d);
-            if (this$1._direction === "column") {
+            if (this._direction === "column") {
               rowWidth = 0;
               row++;
             }
@@ -20413,8 +18094,8 @@ if (typeof window !== "undefined") {
         if (!newRows.length || sum(newRows, this._rowHeight.bind(this)) + this._padding > availableHeight) {
           spaceNeeded = sum(this._lineData.map(function (d) { return d.shapeWidth + this$1._padding; })) - this._padding;
           for (var i = 0; i < this._lineData.length; i++) {
-            this$1._lineData[i].width = 0;
-            this$1._lineData[i].height = 0;
+            this._lineData[i].width = 0;
+            this._lineData[i].height = 0;
           }
           this._wrapRows();
         }
@@ -20691,1173 +18372,6 @@ if (typeof window !== "undefined") {
   }(BaseClass));
 
   /**
-      @function date
-      @summary Parses numbers and strings to valid Javascript Date objects.
-      @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
-      @param {Number|String} *date*
-  */
-  function date$5(d) {
-
-    // returns if already Date object
-    if (d.constructor === Date) { return d; }
-    // detects if milliseconds
-    else if (d.constructor === Number && ("" + d).length > 5 && d % 1 === 0) { return new Date(d); }
-
-    var s = "" + d;
-    var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
-          strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s);
-
-    // tests for XX/XX/XXXX format
-    if (dayFormat) {
-      var year = dayFormat[1];
-      if (year.indexOf("-") === 0) { s = s.replace(year, year.substr(1)); }
-      var date = new Date(s);
-      date.setFullYear(year);
-      return date;
-    }
-    // tests for full Date object string format
-    else if (strFormat) {
-      var year$1 = strFormat[1];
-      if (year$1.indexOf("-") === 0) { s = s.replace(year$1, year$1.substr(1)); }
-      var date$1 = new Date(s);
-      date$1.setFullYear(year$1);
-      return date$1;
-    }
-    // detects if only passing a year value
-    else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
-      var date$2 = new Date((s + "/01/01"));
-      date$2.setFullYear(d);
-      return date$2;
-    }
-    // parses string to Date object
-    else { return new Date(s); }
-
-  }
-
-  /**
-      @external BaseClass
-      @see https://github.com/d3plus/d3plus-common#BaseClass
-  */
-
-  /**
-      @class Axis
-      @extends external:BaseClass
-      @desc Creates an SVG scale based on an array of data.
-  */
-  var Axis$3 = (function (BaseClass$$1) {
-    function Axis() {
-      var this$1 = this;
-
-
-      BaseClass$$1.call(this);
-
-      this._align = "middle";
-      this._barConfig = {
-        "stroke": "#000",
-        "stroke-width": 1
-      };
-      this._domain = [0, 10];
-      this._duration = 600;
-      this._gridConfig = {
-        "stroke": "#ccc",
-        "stroke-width": 1
-      };
-      this._gridLog = false;
-      this._height = 400;
-      this._labelOffset = false;
-      this.orient("bottom");
-      this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
-      this._padding = 5;
-      this._paddingInner = 0.1;
-      this._paddingOuter = 0.1;
-      this._rotateLabels = false;
-      this._scale = "linear";
-      this._shape = "Line";
-      this._shapeConfig = {
-        fill: "#000",
-        height: function (d) { return d.tick ? 8 : 0; },
-        label: function (d) { return d.text; },
-        labelBounds: function (d) { return d.labelBounds; },
-        labelConfig: {
-          fontColor: "#000",
-          fontFamily: new TextBox().fontFamily(),
-          fontResize: false,
-          fontSize: constant(10),
-          padding: 0,
-          textAnchor: function () {
-            var rtl$$1 = detectRTL();
-            return this$1._orient === "left" ? rtl$$1 ? "start" : "end"
-              : this$1._orient === "right" ? rtl$$1 ? "end" : "start"
-              : this$1._rotateLabels ? this$1._orient === "bottom" ? "end" : "start" : "middle";
-          },
-          verticalAlign: function () { return this$1._orient === "bottom" ? "top" : this$1._orient === "top" ? "bottom" : "middle"; }
-        },
-        r: function (d) { return d.tick ? 4 : 0; },
-        stroke: "#000",
-        strokeWidth: 1,
-        width: function (d) { return d.tick ? 8 : 0; }
-      };
-      this._tickSize = 5;
-      this._tickSpecifier = undefined;
-      this._titleClass = new TextBox();
-      this._titleConfig = {
-        fontSize: 12,
-        textAnchor: "middle"
-      };
-      this._width = 400;
-
-    }
-
-    if ( BaseClass$$1 ) { Axis.__proto__ = BaseClass$$1; }
-    Axis.prototype = Object.create( BaseClass$$1 && BaseClass$$1.prototype );
-    Axis.prototype.constructor = Axis;
-
-    /**
-        @memberof Axis
-        @desc Sets positioning for the axis bar.
-        @param {D3Selection} *bar*
-        @private
-    */
-    Axis.prototype._barPosition = function _barPosition (bar) {
-
-      var ref = this._position;
-      var height = ref.height;
-      var x = ref.x;
-      var y = ref.y;
-      var opposite = ref.opposite;
-      var domain = this._getDomain(),
-            offset = this._margin[opposite],
-            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
-
-      bar
-        .call(attrize, this._barConfig)
-        .attr((x + "1"), this._getPosition(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0))
-        .attr((x + "2"), this._getPosition(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0))
-        .attr((y + "1"), position)
-        .attr((y + "2"), position);
-
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns the scale's domain, taking into account negative and positive log scales.
-        @private
-    */
-    Axis.prototype._getDomain = function _getDomain () {
-
-      var ticks = [];
-      if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.domain(); }
-      if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.domain()); }
-
-      var domain = this._scale === "ordinal" ? ticks : extent(ticks);
-      return ticks[0] > ticks[1] ? domain.reverse() : domain;
-
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns a value's scale position, taking into account negative and positive log scales.
-        @param {Number|String} *d*
-        @private
-    */
-    Axis.prototype._getPosition = function _getPosition (d) {
-      return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : this._d3Scale(d);
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns the scale's range, taking into account negative and positive log scales.
-        @private
-    */
-    Axis.prototype._getRange = function _getRange () {
-
-      var ticks = [];
-      if (this._d3ScaleNegative) { ticks = this._d3ScaleNegative.range(); }
-      if (this._d3Scale) { ticks = ticks.concat(this._d3Scale.range()); }
-      return ticks[0] > ticks[1] ? extent(ticks).reverse() : extent(ticks);
-
-    };
-
-    /**
-        @memberof Axis
-        @desc Returns the scale's ticks, taking into account negative and positive log scales.
-        @private
-    */
-    Axis.prototype._getTicks = function _getTicks () {
-      var tickScale = sqrt().domain([10, 400]).range([10, 50]);
-
-      var ticks = [];
-      if (this._d3ScaleNegative) {
-        var negativeRange = this._d3ScaleNegative.range();
-        var size = negativeRange[1] - negativeRange[0];
-        ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
-      }
-      if (this._d3Scale) {
-        var positiveRange = this._d3Scale.range();
-        var size$1 = positiveRange[1] - positiveRange[0];
-        ticks = ticks.concat(this._d3Scale.ticks(Math.floor(size$1 / tickScale(size$1))));
-      }
-
-      return ticks;
-    };
-
-    /**
-        @memberof Axis
-        @desc Sets positioning for the grid lines.
-        @param {D3Selection} *lines*
-        @private
-    */
-    Axis.prototype._gridPosition = function _gridPosition (lines, last) {
-      if ( last === void 0 ) { last = false; }
-
-      var ref = this._position;
-      var height = ref.height;
-      var x = ref.x;
-      var y = ref.y;
-      var opposite = ref.opposite;
-      var offset = this._margin[opposite],
-            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
-            scale = last ? this._lastScale || this._getPosition.bind(this) : this._getPosition.bind(this),
-            size = ["top", "left"].includes(this._orient) ? offset : -offset,
-            xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
-            xPos = function (d) { return scale(d.id) + xDiff; };
-      lines
-        .call(attrize, this._gridConfig)
-        .attr((x + "1"), xPos)
-        .attr((x + "2"), xPos)
-        .attr((y + "1"), position)
-        .attr((y + "2"), last ? position : position + size);
-    };
-
-    /**
-        @memberof Axis
-        @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
-        @param {Function} [*callback* = undefined]
-        @chainable
-    */
-    Axis.prototype.render = function render (callback) {
-      var this$1 = this;
-      var obj;
-
-
-      if (this._select === void 0) {
-        this.select(select("body").append("svg")
-          .attr("width", ((this._width) + "px"))
-          .attr("height", ((this._height) + "px"))
-          .node());
-      }
-
-      var ref = this._position;
-      var width = ref.width;
-      var height = ref.height;
-      var x = ref.x;
-      var y = ref.y;
-      var horizontal = ref.horizontal;
-      var opposite = ref.opposite;
-      var clipId = "d3plus-Axis-clip-" + (this._uuid),
-            flip = ["top", "left"].includes(this._orient),
-            p = this._padding,
-            parent = this._select,
-            t = transition().duration(this._duration);
-
-      var range$$1 = this._range ? this._range.slice() : [undefined, undefined];
-      if (range$$1[0] === void 0) { range$$1[0] = p; }
-      if (range$$1[1] === void 0) { range$$1[1] = this[("_" + width)] - p; }
-      this._size = range$$1[1] - range$$1[0];
-      if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
-        range$$1 = d3Range(this._domain.length).map(function (d) { return this$1._size * (d / (this$1._domain.length - 1)) + range$$1[0]; });
-      }
-
-      var margin = this._margin = {top: 0, right: 0, bottom: 0, left: 0};
-
-      if (this._title) {
-        var ref$1 = this._titleConfig;
-        var fontFamily = ref$1.fontFamily;
-        var fontSize = ref$1.fontSize;
-        var lineHeight = ref$1.lineHeight;
-        var titleWrap = textWrap()
-          .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
-          .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
-          .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
-          .width(this._size)
-          .height(this[("_" + height)] - this._tickSize - p);
-        var lines = titleWrap(this._title).lines.length;
-        margin[this._orient] = lines * titleWrap.lineHeight() + p;
-      }
-
-      this._d3Scale = scales[("scale" + (this._scale.charAt(0).toUpperCase()) + (this._scale.slice(1)))]()
-        .domain(this._scale === "time" ? this._domain.map(date$5) : this._domain);
-
-      if (this._d3Scale.rangeRound) { this._d3Scale.rangeRound(range$$1); }
-      else { this._d3Scale.range(range$$1); }
-
-      if (this._d3Scale.round) { this._d3Scale.round(true); }
-      if (this._d3Scale.paddingInner) { this._d3Scale.paddingInner(this._paddingInner); }
-      if (this._d3Scale.paddingOuter) { this._d3Scale.paddingOuter(this._paddingOuter); }
-
-      this._d3ScaleNegative = null;
-      if (this._scale === "log") {
-        var domain = this._d3Scale.domain();
-        if (domain[0] === 0) { domain[0] = 1; }
-        if (domain[domain.length - 1] === 0) { domain[domain.length - 1] = -1; }
-        var range$1 = this._d3Scale.range();
-        if (domain[0] < 0 && domain[domain.length - 1] < 0) {
-          this._d3ScaleNegative = this._d3Scale.copy()
-            .domain(domain)
-            .range(range$1);
-          this._d3Scale = null;
-        }
-        else if (domain[0] > 0 && domain[domain.length - 1] > 0) {
-          this._d3Scale
-            .domain(domain)
-            .range(range$1);
-        }
-        else {
-          var percentScale = log().domain([1, domain[domain[1] > 0 ? 1 : 0]]).range([0, 1]);
-          var leftPercentage = percentScale(Math.abs(domain[domain[1] < 0 ? 1 : 0]));
-          var zero = leftPercentage / (leftPercentage + 1) * (range$1[1] - range$1[0]);
-          if (domain[0] > 0) { zero = range$1[1] - range$1[0] - zero; }
-          this._d3ScaleNegative = this._d3Scale.copy();
-          (domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative)
-            .domain([Math.sign(domain[1]), domain[1]])
-            .range([range$1[0] + zero, range$1[1]]);
-          (domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale)
-            .domain([domain[0], Math.sign(domain[0])])
-            .range([range$1[0], range$1[0] + zero]);
-        }
-      }
-
-      var ticks = this._ticks
-        ? this._scale === "time" ? this._ticks.map(date$5) : this._ticks
-        : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
-          ? this._getTicks()
-          : this._domain;
-
-      var labels = this._labels
-        ? this._scale === "time" ? this._labels.map(date$5) : this._labels
-        : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks)
-          ? this._getTicks()
-          : ticks;
-
-      ticks = ticks.slice();
-      labels = labels.slice();
-
-      if (this._scale === "log") { labels = labels.filter(function (t) { return Math.abs(t).toString().charAt(0) === "1" && (this$1._d3Scale ? t !== -1 : t !== 1); }); }
-
-      var superscript = "⁰¹²³⁴⁵⁶⁷⁸⁹";
-      var tickFormat$$1 = this._tickFormat ? this._tickFormat : function (d) {
-        if (this$1._scale === "log") {
-          var p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
-          var t = Math.abs(d).toString().charAt(0);
-          var n$1 = "10 " + (("" + p).split("").map(function (c) { return superscript[c]; }).join(""));
-          if (t !== "1") { n$1 = t + " x " + n$1; }
-          return d < 0 ? ("-" + n$1) : n$1;
-        } 
-        else if (this$1._scale === "time") {
-          return this$1._d3Scale.tickFormat(labels.length - 1, this$1._tickSpecifier)(d);
-        }
-        else if (this$1._scale === "ordinal") {
-          return d;
-        }
-
-        var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
-
-        n = n.replace(/[^\d\.\-\+]/g, "") * 1;
-        return isNaN(n) ? n : formatAbbreviate(n);
-      };
-
-      if (this._scale === "time") {
-        ticks = ticks.map(Number);
-        labels = labels.map(Number);
-      }
-      else if (this._scale === "ordinal") {
-        labels = labels.filter(function (label) { return ticks.includes(label); });
-      }
-
-      ticks = ticks.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
-      labels = labels.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
-
-      var tickSize = this._shape === "Circle" ? this._shapeConfig.r
-        : this._shape === "Rect" ? this._shapeConfig[width]
-        : this._shapeConfig.strokeWidth;
-
-      var tickGet = typeof tickSize !== "function" ? function () { return tickSize; } : tickSize;
-
-      var pixels = [];
-      this._availableTicks = ticks;
-      ticks.forEach(function (d, i) {
-        var s = tickGet({id: d, tick: true}, i);
-        if (this$1._shape === "Circle") { s *= 2; }
-        var t = this$1._getPosition(d);
-        if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) { pixels.push(t); }
-        else { pixels.push(false); }
-      });
-
-      ticks = ticks.filter(function (d, i) { return pixels[i] !== false; });
-
-      this._visibleTicks = ticks;
-
-      var hBuff = this._shape === "Circle"
-            ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({tick: true}) : this._shapeConfig.r
-            : this._shape === "Rect"
-              ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({tick: true}) : this._shapeConfig[height]
-              : this._tickSize,
-          wBuff = tickGet({tick: true});
-
-      if (typeof hBuff === "function") { hBuff = max(ticks.map(hBuff)); }
-      if (this._shape === "Rect") { hBuff /= 2; }
-      if (typeof wBuff === "function") { wBuff = max(ticks.map(wBuff)); }
-      if (this._shape !== "Circle") { wBuff /= 2; }
-
-      if (this._scale === "band") {
-        this._space = this._d3Scale.bandwidth();
-      }
-      else if (labels.length > 1) {
-        this._space = 0;
-        for (var i = 0; i < labels.length - 1; i++) {
-          var s = this$1._getPosition(labels[i + 1]) - this$1._getPosition(labels[i]);
-          if (s > this$1._space) { this$1._space = s; }
-        }
-      }
-      else { this._space = this._size; }
-
-      // Measures size of ticks
-      var textData = labels.map(function (d, i) {
-
-        var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
-              s = this$1._shapeConfig.labelConfig.fontSize(d, i);
-
-        var wrap = textWrap()
-          .fontFamily(f)
-          .fontSize(s)
-          .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
-          .width(horizontal ? this$1._space * 2 : this$1._maxSize ? this$1._maxSize - hBuff - p - this$1._margin.left - this$1._margin.right - this$1._tickSize : this$1._width - hBuff - p)
-          .height(horizontal ? this$1._height - hBuff - p : this$1._space * 2);
-
-        var res = wrap(tickFormat$$1(d));
-        res.lines = res.lines.filter(function (d) { return d !== ""; });
-        res.d = d;
-        res.fS = s;
-        res.width = res.lines.length
-          ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
-          : 0;
-        res.height = res.lines.length ? Math.ceil(res.lines.length * (wrap.lineHeight() + 1)) : 0;
-        res.offset = 0;
-        res.hidden = false;
-        if (res.width % 2) { res.width++; }
-
-        return res;
-
-      });
-
-      var labelHeight = max(textData, function (t) { return t.height; }) || 0;
-
-      if (horizontal && typeof this._labelRotation === "undefined") {
-        for (var i$1 = 0; i$1 < labels.length; i$1++) {
-          var d = labels[i$1];
-
-          var f = this$1._shapeConfig.labelConfig.fontFamily(d, i$1),
-                s$1 = this$1._shapeConfig.labelConfig.fontSize(d, i$1);
-
-          var wrap = textWrap()
-            .fontFamily(f)
-            .fontSize(s$1)
-            .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i$1) : undefined)
-            .width(this$1._space)
-            .height(labelHeight);
-
-          var res = wrap(tickFormat$$1(d));
-
-          var isTruncated = res.truncated;
-
-          var xPos = this$1._getPosition(d);
-          var prev = labels[i$1 - 1] || false;
-          var next = labels[i$1 + 1] || false;
-
-          var maxWidth = Math.max(res.widths);
-
-          var isOverlapping = prev ? xPos - maxWidth < this$1._getPosition(prev) + maxWidth : next ? xPos + maxWidth > this$1._getPosition(next) - maxWidth : false;
-
-          var isRotated = isTruncated || isOverlapping;
-
-          if (isRotated) {
-            this$1._rotateLabels = true;
-            break;
-          }
-        }
-      }
-      else if (horizontal) { this._rotateLabels = this._labelRotation; }
-
-      if (this._rotateLabels) {
-        textData = labels.map(function (d, i) {
-          var text = textData[i];
-
-          var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
-                s = this$1._shapeConfig.labelConfig.fontSize(d, i);
-
-          var lineHeight = this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : s * 1.4;
-
-          var lineTest = textWrap()
-              .fontFamily(f)
-              .fontSize(s)
-              .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined)
-              .height(lineHeight * 2 + 1)
-              .width(this$1._maxSize ? this$1._maxSize - this$1._margin.top - this$1._margin.bottom - this$1._tickSize : this$1._height);
-
-          var xPos = this$1._getPosition(d);
-          var prev = labels[i - 1] || false;
-          var next = labels[i + 1] || false;
-
-          var fitsTwoLines = prev ? xPos - lineHeight * 2 > this$1._getPosition(prev) + lineHeight * 2 : next ? xPos + lineHeight * 2 < this$1._getPosition(next) - lineHeight * 2 : true;
-
-          var lineTestResult = lineTest(tickFormat$$1(d));
-
-          var isTwoLine = lineTestResult.words.length > 1 && lineTestResult.widths[0] > 80;
-          var height = fitsTwoLines && isTwoLine ? lineTestResult.widths[0] / 1.6 : lineTestResult.widths[0];
-          var width = fitsTwoLines && isTwoLine ? lineHeight * 2 : lineHeight;
-
-          return Object.assign(text, {
-            height: height || 0,
-            lineHeight: lineHeight,
-            numLines: fitsTwoLines && isTwoLine ? 2 : 1,
-            width: width || 0
-          });
-        });
-      }
-
-
-      textData.forEach(function (d, i) {
-        if (i) {
-          var prev = textData[i - 1];
-          if (!prev.offset && this$1._getPosition(d.d) - d[width] / 2 < this$1._getPosition(prev.d) + prev[width] / 2) {
-            d.offset = prev[height] + this$1._padding;
-          }
-        }
-      });
-      if (this._labelOffset) {
-        textData.forEach(function (d, i) {
-          if (i) {
-            var prev = textData[i - 1];
-            if (!prev.offset && this$1._getPosition(d.d) - d[width] / 2 < this$1._getPosition(prev.d) + prev[width] / 2) {
-              d.offset = prev[height] + this$1._padding;
-            }
-          }
-        });
-
-        var maxOffset = max(textData, function (d) { return d.offset; });
-        if (maxOffset) {
-          textData.forEach(function (d) {
-            if (d.offset) {
-              d.offset = maxOffset;
-              d[height] += maxOffset;
-            }
-          });
-        }
-      }
-
-      // Calculates new range, based on any text that may be overflowing.
-      var rangeOuter = range$$1.slice();
-      var lastI = range$$1.length - 1;
-      if (this._scale !== "band" && textData.length) {
-
-        var first = textData[0],
-              last = textData[textData.length - 1];
-
-        var firstB = min([this._getPosition(first.d) - first[width] / 2, range$$1[0] - wBuff]);
-        if (firstB < range$$1[0]) {
-          var d$1 = range$$1[0] - firstB;
-          if (this._range === void 0 || this._range[0] === void 0) {
-            this._size -= d$1;
-            range$$1[0] += d$1;
-          }
-          else if (this._range) {
-            rangeOuter[0] -= d$1;
-          }
-        }
-
-        var lastB = max([this._getPosition(last.d) + last[width] / 2, range$$1[lastI] + wBuff]);
-        if (lastB > range$$1[lastI]) {
-          var d$2 = lastB - range$$1[lastI];
-          if (this._range === void 0 || this._range[this._range.length - 1] === void 0) {
-            this._size -= d$2;
-            range$$1[lastI] -= d$2;
-          }
-          else if (this._range) {
-            rangeOuter[rangeOuter.length - 1] += d$2;
-          }
-        }
-
-        if (range$$1.length > 2) { range$$1 = d3Range(this._domain.length).map(function (d) { return this$1._size * (d / (range$$1.length - 1)) + range$$1[0]; }); }
-        range$$1 = range$$1.map(Math.round);
-        if (this._d3ScaleNegative) {
-          var negativeRange = this._d3ScaleNegative.range();
-          this._d3ScaleNegative[this._d3ScaleNegative.rangeRound ? "rangeRound" : "range"](
-            this._d3Scale && this._d3Scale.range()[0] < negativeRange[0]
-              ? [negativeRange[0], range$$1[1]]
-              : [range$$1[0], this._d3Scale ? negativeRange[1] : range$$1[1]]
-          );
-          if (this._d3Scale) {
-            var positiveRange = this._d3Scale.range();
-            this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](
-              range$$1[0] < negativeRange[0]
-                ? [range$$1[0], positiveRange[1]]
-                : [positiveRange[0], range$$1[1]]
-            );
-          }
-        }
-        else {
-          this._d3Scale[this._d3Scale.rangeRound ? "rangeRound" : "range"](range$$1);
-        }
-
-      }
-
-      if (this._scale === "band") {
-        this._space = this._d3Scale.bandwidth();
-      }
-      else if (labels.length > 1) {
-        this._space = 0;
-        for (var i$2 = 0; i$2 < labels.length - 1; i$2++) {
-          var s$2 = this$1._getPosition(labels[i$2 + 1]) - this$1._getPosition(labels[i$2]);
-          if (s$2 > this$1._space) { this$1._space = s$2; }
-        }
-      }
-      else { this._space = this._size; }
-
-      var tBuff = this._shape === "Line" ? 0 : hBuff;
-      var bounds = this._outerBounds = ( obj = {}, obj[height] = (max(textData, function (t) { return Math.ceil(t[height]); }) || 0) + (textData.length ? p : 0), obj[width] = rangeOuter[lastI] - rangeOuter[0], obj[x] = rangeOuter[0], obj );
-
-      margin[this._orient] += hBuff;
-      margin[opposite] = this._gridSize !== void 0 ? max([this._gridSize, tBuff]) : this[("_" + height)] - margin[this._orient] - bounds[height] - p;
-      bounds[height] += margin[opposite] + margin[this._orient];
-      bounds[y] = this._align === "start" ? this._padding
-        : this._align === "end" ? this[("_" + height)] - bounds[height] - this._padding
-        : this[("_" + height)] / 2 - bounds[height] / 2;
-
-      var group = elem(("g#d3plus-Axis-" + (this._uuid)), {parent: parent});
-      this._group = group;
-
-      var grid = elem("g.grid", {parent: group}).selectAll("line")
-        .data((this._gridSize !== 0 ? this._grid || this._scale === "log" && !this._gridLog ? labels : ticks : []).map(function (d) { return ({id: d}); }), function (d) { return d.id; });
-
-      grid.exit().transition(t)
-        .attr("opacity", 0)
-        .call(this._gridPosition.bind(this))
-        .remove();
-
-      grid.enter().append("line")
-          .attr("opacity", 0)
-          .attr("clip-path", ("url(#" + clipId + ")"))
-          .call(this._gridPosition.bind(this), true)
-        .merge(grid).transition(t)
-          .attr("opacity", 1)
-          .call(this._gridPosition.bind(this));
-
-      var labelOnly = labels.filter(function (d, i) { return textData[i].lines.length && !ticks.includes(d); });
-
-      var tickData = ticks.concat(labelOnly)
-        .map(function (d) {
-          var data = textData.filter(function (td) { return td.d === d; });
-          var dataIndex = data.length ? textData.indexOf(data[0]) : undefined;
-          var xPos = this$1._getPosition(d);
-
-          var labelOffset = data.length && this$1._labelOffset ? data[0].offset : 0;
-
-          var labelWidth = horizontal ? this$1._space : bounds.width - margin[this$1._position.opposite] - hBuff - margin[this$1._orient] + p;
-
-          var prev = data.length && dataIndex > 0 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti < dataIndex; }) : false;
-          prev = prev.length ? prev[prev.length - 1] : false;
-          var next = data.length && dataIndex < textData.length - 1 ? textData.filter(function (td, ti) { return !td.hidden && td.offset >= labelOffset && ti > dataIndex; }) : false;
-          next = next.length ? next[0] : false;
-
-          var space = Math.min(prev ? xPos - this$1._getPosition(prev.d) : labelWidth, next ? this$1._getPosition(next.d) - xPos : labelWidth);
-          if (data.length && data[0].width > labelWidth) {
-            data[0].hidden = true;
-            data[0].offset = labelOffset = 0;
-          }
-
-          var offset = margin[opposite],
-                size = (hBuff + labelOffset) * (flip ? -1 : 1),
-                yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
-
-          var tickConfig = {
-            id: d,
-            labelBounds: {
-              x: horizontal ? -space / 2 : this$1._orient === "left" ? -labelWidth - p + size : size + p,
-              y: horizontal ? this$1._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
-              width: horizontal ? space : labelWidth,
-              height: horizontal ? labelHeight : space
-            },
-            size: labels.includes(d) ? size : 0,
-            text: labels.includes(d) ? tickFormat$$1(d) : false,
-            tick: ticks.includes(d)
-          };
-          tickConfig[x] = xPos + (this$1._scale === "band" ? this$1._d3Scale.bandwidth() / 2 : 0);
-          tickConfig[y] = yPos;
-
-          var text = this$1._rotateLabels && textData.find(function (val) { return val.d === d; });
-          if (text) {
-            var lineHeight = text.lineHeight;
-            var numLines = text.numLines;
-            var width = text.height;
-            var height$1 = text.width;
-
-            tickConfig = Object.assign(tickConfig, {
-              labelBounds: {
-                x: -width / 2,
-                y: this$1._orient === "bottom" ? size + p + (width - lineHeight * numLines) / 2 : size - p * 2 - (width + lineHeight * numLines) / 2,
-                width: width,
-                height: height$1 + 1
-              }
-            });
-          }
-
-          return tickConfig;
-        });
-
-      if (this._shape === "Line") {
-        tickData = tickData.concat(tickData.map(function (d) {
-          var dupe = Object.assign({}, d);
-          dupe[y] += d.size;
-          return dupe;
-        }));
-      }
-
-      new shapes$2[this._shape]()
-        .data(tickData)
-        .duration(this._duration)
-        .labelConfig({
-          ellipsis: function (d) { return d && d.length ? (d + "...") : ""; },
-          rotate: this._rotateLabels ? -90 : 0
-        })
-        .select(elem("g.ticks", {parent: group}).node())
-        .config(this._shapeConfig)
-        .render();
-
-      var bar = group.selectAll("line.bar").data([null]);
-
-      bar.enter().append("line")
-          .attr("class", "bar")
-          .attr("opacity", 0)
-          .call(this._barPosition.bind(this))
-        .merge(bar).transition(t)
-          .attr("opacity", 1)
-          .call(this._barPosition.bind(this));
-
-      this._titleClass
-        .data(this._title ? [{text: this._title}] : [])
-        .duration(this._duration)
-        .height(margin[this._orient])
-        .rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0)
-        .select(elem("g.d3plus-Axis-title", {parent: group}).node())
-        .text(function (d) { return d.text; })
-        .verticalAlign("middle")
-        .width(bounds[width])
-        .x(horizontal ? bounds.x : this._orient === "left" ? bounds.x + margin[this._orient] / 2 - bounds[width] / 2 : bounds.x + bounds.width - margin[this._orient] / 2 - bounds[width] / 2)
-        .y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom + p : bounds.y : bounds.y - margin[this._orient] / 2 + bounds[width] / 2)
-        .config(this._titleConfig)
-        .render();
-
-      this._lastScale = this._getPosition.bind(this);
-
-      if (callback) { setTimeout(callback, this._duration + 100); }
-
-      return this;
-
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance.
-        @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
-        @chainable
-    */
-    Axis.prototype.align = function align (_) {
-      return arguments.length ? (this._align = _, this) : this._align;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the axis line style and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.barConfig = function barConfig (_) {
-      return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance.
-        @param {Array} [*value* = [0, 10]]
-        @chainable
-    */
-    Axis.prototype.domain = function domain (_) {
-      return arguments.length ? (this._domain = _, this) : this._domain;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance.
-        @param {Number} [*value* = 600]
-        @chainable
-    */
-    Axis.prototype.duration = function duration (_) {
-      return arguments.length ? (this._duration = _, this) : this._duration;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid values of the axis and returns the current class instance.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.grid = function grid (_) {
-      return arguments.length ? (this._grid = _, this) : this._grid;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid config of the axis and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.gridConfig = function gridConfig (_) {
-      return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid behavior of the axis when scale is logarithmic and returns the current class instance.
-        @param {Boolean} [*value* = false]
-        @chainable
-    */
-    Axis.prototype.gridLog = function gridLog (_) {
-      return arguments.length ? (this._gridLog = _, this) : this._gridLog;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the grid size of the axis and returns the current class instance.
-        @param {Number} [*value* = undefined]
-        @chainable
-    */
-    Axis.prototype.gridSize = function gridSize (_) {
-      return arguments.length ? (this._gridSize = _, this) : this._gridSize;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the overall height of the axis and returns the current class instance.
-        @param {Number} [*value* = 100]
-        @chainable
-    */
-    Axis.prototype.height = function height (_) {
-      return arguments.length ? (this._height = _, this) : this._height;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.labels = function labels (_) {
-      return arguments.length ? (this._labels = _, this) : this._labels;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
-        @param {Boolean} [*value* = true]
-        @chainable
-     */
-    Axis.prototype.labelOffset = function labelOffset (_) {
-      return arguments.length ? (this._labelOffset = _, this) : this._labelOffset;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets whether whether horizontal axis labels are rotated -90 degrees.
-        @param {Boolean}
-        @chainable
-     */
-    Axis.prototype.labelRotation = function labelRotation (_) {
-      return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the maximum size allowed for the space that contains the axis tick labels and title.
-        @param {Number}
-        @chainable
-     */
-    Axis.prototype.maxSize = function maxSize (_) {
-      return arguments.length ? (this._maxSize = _, this) : this._maxSize;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
-        @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
-        @chainable
-    */
-    Axis.prototype.orient = function orient (_) {
-      if (arguments.length) {
-
-        var horizontal = ["top", "bottom"].includes(_),
-              opps = {top: "bottom", right: "left", bottom: "top", left: "right"};
-
-        this._position = {
-          horizontal: horizontal,
-          width: horizontal ? "width" : "height",
-          height: horizontal ? "height" : "width",
-          x: horizontal ? "x" : "y",
-          y: horizontal ? "y" : "x",
-          opposite: opps[_]
-        };
-
-        return this._orient = _, this;
-
-      }
-      return this._orient;
-    };
-
-    /**
-        @memberof Axis
-        @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the axis content.
-        @example
-  {"width": 180, "height": 24, "x": 10, "y": 20}
-    */
-    Axis.prototype.outerBounds = function outerBounds () {
-      return this._outerBounds;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance.
-        @param {Number} [*value* = 10]
-        @chainable
-    */
-    Axis.prototype.padding = function padding (_) {
-      return arguments.length ? (this._padding = _, this) : this._padding;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance.
-        @param {Number} [*value* = 0.1]
-        @chainable
-    */
-    Axis.prototype.paddingInner = function paddingInner (_) {
-      return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance.
-        @param {Number} [*value* = 0.1]
-        @chainable
-    */
-    Axis.prototype.paddingOuter = function paddingOuter (_) {
-      return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.range = function range$$1 (_) {
-      return arguments.length ? (this._range = _, this) : this._range;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the scale of the axis and returns the current class instance.
-        @param {String} [*value* = "linear"]
-        @chainable
-    */
-    Axis.prototype.scale = function scale (_) {
-      return arguments.length ? (this._scale = _, this) : this._scale;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
-        @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
-        @chainable
-    */
-    Axis.prototype.select = function select$1 (_) {
-      return arguments.length ? (this._select = select(_), this) : this._select;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick shape constructor and returns the current class instance.
-        @param {String} [*value* = "Line"]
-        @chainable
-    */
-    Axis.prototype.shape = function shape (_) {
-      return arguments.length ? (this._shape = _, this) : this._shape;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick style of the axis and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.shapeConfig = function shapeConfig (_) {
-      return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick formatter and returns the current class instance.
-        @param {Function} [*value*]
-        @chainable
-    */
-    Axis.prototype.tickFormat = function tickFormat$$1 (_) {
-      return arguments.length ? (this._tickFormat = _, this) : this._tickFormat;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick values of the axis and returns the current class instance.
-        @param {Array} [*value*]
-        @chainable
-    */
-    Axis.prototype.ticks = function ticks (_) {
-      return arguments.length ? (this._ticks = _, this) : this._ticks;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the tick size of the axis and returns the current class instance.
-        @param {Number} [*value* = 5]
-        @chainable
-    */
-    Axis.prototype.tickSize = function tickSize (_) {
-      return arguments.length ? (this._tickSize = _, this) : this._tickSize;
-    };
-
-    /**
-        @memberof Axis
-        @desc Sets the tick specifier for the [tickFormat](https://github.com/d3/d3-scale#continuous_tickFormat) function. If this method is called without any arguments, the default tick specifier is returned.
-        @param {String} [*value* = undefined]
-        @chainable
-    */
-    Axis.prototype.tickSpecifier = function tickSpecifier (_) {
-      return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the title of the axis and returns the current class instance.
-        @param {String} [*value*]
-        @chainable
-    */
-    Axis.prototype.title = function title (_) {
-      return arguments.length ? (this._title = _, this) : this._title;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance.
-        @param {Object} [*value*]
-        @chainable
-    */
-    Axis.prototype.titleConfig = function titleConfig (_) {
-      return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
-    };
-
-    /**
-        @memberof Axis
-        @desc If *value* is specified, sets the overall width of the axis and returns the current class instance.
-        @param {Number} [*value* = 400]
-        @chainable
-    */
-    Axis.prototype.width = function width (_) {
-      return arguments.length ? (this._width = _, this) : this._width;
-    };
-
-    return Axis;
-  }(BaseClass));
-
-  /**
-      @class AxisBottom
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn below the horizontal domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisBottom$3 = (function (Axis) {
-    function AxisBottom() {
-      Axis.call(this);
-      this.orient("bottom");
-    }
-
-    if ( Axis ) { AxisBottom.__proto__ = Axis; }
-    AxisBottom.prototype = Object.create( Axis && Axis.prototype );
-    AxisBottom.prototype.constructor = AxisBottom;
-
-    return AxisBottom;
-  }(Axis$3));
-
-  /**
-      @class AxisLeft
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn to the left of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisLeft$3 = (function (Axis) {
-    function AxisLeft() {
-      Axis.call(this);
-      this.orient("left");
-    }
-
-    if ( Axis ) { AxisLeft.__proto__ = Axis; }
-    AxisLeft.prototype = Object.create( Axis && Axis.prototype );
-    AxisLeft.prototype.constructor = AxisLeft;
-
-    return AxisLeft;
-  }(Axis$3));
-
-  /**
-      @class AxisRight
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn to the right of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisRight$3 = (function (Axis) {
-    function AxisRight() {
-      Axis.call(this);
-      this.orient("right");
-    }
-
-    if ( Axis ) { AxisRight.__proto__ = Axis; }
-    AxisRight.prototype = Object.create( Axis && Axis.prototype );
-    AxisRight.prototype.constructor = AxisRight;
-
-    return AxisRight;
-  }(Axis$3));
-
-  /**
-      @class AxisTop
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn above the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-  var AxisTop$3 = (function (Axis) {
-    function AxisTop() {
-      Axis.call(this);
-      this.orient("top");
-    }
-
-    if ( Axis ) { AxisTop.__proto__ = Axis; }
-    AxisTop.prototype = Object.create( Axis && Axis.prototype );
-    AxisTop.prototype.constructor = AxisTop;
-
-    return AxisTop;
-  }(Axis$3));
-
-  /**
       @external Axis
       @see https://github.com/d3plus/d3plus-axis#Axis
   */
@@ -21866,12 +18380,12 @@ if (typeof window !== "undefined") {
       @class Timeline
       @extends external:Axis
   */
-  var Timeline = (function (Axis) {
+  var Timeline = /*@__PURE__*/(function (Axis$$1) {
     function Timeline() {
       var this$1 = this;
 
 
-      Axis.call(this);
+      Axis$$1.call(this);
 
       this._barConfig = Object.assign({}, this._barConfig, {
         "stroke-width": function () { return this$1._buttonBehaviorCurrent === "buttons" ? 0 : 1; }
@@ -21889,6 +18403,7 @@ if (typeof window !== "undefined") {
       };
       this._handleSize = 6;
       this._height = 100;
+      this._labelOffset = false;
       this._on = {};
       this.orient("bottom");
       this._scale = "time";
@@ -21901,15 +18416,15 @@ if (typeof window !== "undefined") {
         labelBounds: function (d) { return this$1._buttonBehaviorCurrent === "buttons" ? {x: d.labelBounds.x, y: -5, width: d.labelBounds.width, height: this$1._buttonHeight} : d.labelBounds; },
         fill: function () { return this$1._buttonBehaviorCurrent === "buttons" ? "#EEE" : "#444"; },
         height: function (d) { return this$1._buttonBehaviorCurrent === "buttons" ? this$1._buttonHeight : d.tick ? 10 : 0; },
-        width: function (d) { return this$1._buttonBehaviorCurrent === "buttons" ? this$1._ticksWidth / this$1._availableTicks.length : d.tick ? this$1._domain.map(function (t) { return date$5(t).getTime(); }).includes(d.id) ? 2 : 1 : 0; },
+        width: function (d) { return this$1._buttonBehaviorCurrent === "buttons" ? this$1._ticksWidth / this$1._availableTicks.length : d.tick ? this$1._domain.map(function (t) { return date$2(t).getTime(); }).includes(d.id) ? 2 : 1 : 0; },
         y: function (d) { return this$1._buttonBehaviorCurrent === "buttons" ? this$1._align === "middle" ? this$1._height / 2 : this$1._align === "start" ? this$1._margin.top + this$1._buttonHeight / 2 : this$1._height - this$1._buttonHeight / 2 - this$1._margin.bottom : d.y; }
       });
       this._snapping = true;
 
     }
 
-    if ( Axis ) { Timeline.__proto__ = Axis; }
-    Timeline.prototype = Object.create( Axis && Axis.prototype );
+    if ( Axis$$1 ) { Timeline.__proto__ = Axis$$1; }
+    Timeline.prototype = Object.create( Axis$$1 && Axis$$1.prototype );
     Timeline.prototype.constructor = Timeline;
 
 
@@ -22038,8 +18553,8 @@ if (typeof window !== "undefined") {
         : this._d3Scale.range();
 
       if (this._buttonBehaviorCurrent === "ticks") {
-        domain[0] = date$5(closest(domain[0], ticks));
-        domain[1] = date$5(closest(domain[1], ticks));
+        domain[0] = date$2(closest(domain[0], ticks));
+        domain[1] = date$2(closest(domain[1], ticks));
       }
       else {
         domain[0] = closest(domain[0], ticks);
@@ -22052,8 +18567,8 @@ if (typeof window !== "undefined") {
         this._selection = this._buttonBehaviorCurrent === "ticks"
           ? single ? domain[0] : domain
           : single
-            ? date$5(this._availableTicks[ticks.indexOf(domain[0])])
-            : [date$5(this._availableTicks[ticks.indexOf(domain[0])]), date$5(this._availableTicks[ticks.indexOf(domain[1])])];
+            ? date$2(this._availableTicks[ticks.indexOf(domain[0])])
+            : [date$2(this._availableTicks[ticks.indexOf(domain[0])]), date$2(this._availableTicks[ticks.indexOf(domain[1])])];
       }
 
       return domain;
@@ -22067,7 +18582,7 @@ if (typeof window !== "undefined") {
     */
     Timeline.prototype._updateBrushLimit = function _updateBrushLimit (domain) {
 
-      var selection$$1 = this._buttonBehaviorCurrent === "ticks" ? domain.map(date$5).map(this._d3Scale) : domain;
+      var selection$$1 = this._buttonBehaviorCurrent === "ticks" ? domain.map(date$2).map(this._d3Scale) : domain;
 
       if (selection$$1[0] === selection$$1[1]) {
         selection$$1[0] -= 0.1;
@@ -22098,7 +18613,7 @@ if (typeof window !== "undefined") {
 
       if (this._buttonBehavior !== "ticks") {
 
-        var ticks = this._ticks ? this._ticks.map(date$5) : this._domain.map(date$5);
+        var ticks = this._ticks ? this._ticks.map(date$2) : this._domain.map(date$2);
 
         var d3Scale = scaleTime().domain(ticks).range([0, this._width]);
 
@@ -22134,9 +18649,9 @@ if (typeof window !== "undefined") {
         this._scale = "ordinal";
         this._labelRotation = 0;
         if (!this._brushing) { this._handleSize = 0; }
-        var domain = scaleTime().domain(this._domain.map(date$5)).ticks().map(this._tickFormat).map(Number);
+        var domain = scaleTime().domain(this._domain.map(date$2)).ticks().map(this._tickFormat).map(Number);
 
-        this._domain = this._ticks ? this._ticks.map(date$5) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) { return domain[0] + x; }).map(date$5);
+        this._domain = this._ticks ? this._ticks.map(date$2) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) { return domain[0] + x; }).map(date$2);
 
         this._ticks = this._domain;
 
@@ -22156,17 +18671,17 @@ if (typeof window !== "undefined") {
         ];
       }
 
-      if (this._ticks) { this._domain = this._buttonBehaviorCurrent === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(date$5); }
+      if (this._ticks) { this._domain = this._buttonBehaviorCurrent === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(date$2); }
 
       this._labels = this._ticks;
 
-      Axis.prototype.render.call(this, callback);
+      Axis$$1.prototype.render.call(this, callback);
 
       var offset = this._outerBounds[y],
-            range = this._d3Scale.range();
+            range$$1 = this._d3Scale.range();
 
       var brush$$1 = this._brush = brushX()
-        .extent([[range[0], offset], [range[range.length - 1], offset + this._outerBounds[height]]])
+        .extent([[range$$1[0], offset], [range$$1[range$$1.length - 1], offset + this._outerBounds[height]]])
         .filter(this._brushFilter)
         .handleSize(this._handleSize)
         .on("start", this._brushStart.bind(this))
@@ -22175,14 +18690,14 @@ if (typeof window !== "undefined") {
 
       var latest = this._buttonBehaviorCurrent === "ticks"
         ? this._availableTicks[this._availableTicks.length - 1]
-        : range[range.length - 1];
+        : range$$1[range$$1.length - 1];
 
       var selection$$1 = this._selection === void 0 ? [latest, latest]
         : this._selection instanceof Array
           ? this._buttonBehaviorCurrent === "buttons"
-            ? this._selection.map(function (d) { return range[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
+            ? this._selection.map(function (d) { return range$$1[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
           : this._buttonBehaviorCurrent === "buttons"
-            ? [range[this._ticks.map(Number).indexOf(+this._selection)], range[this._ticks.map(Number).indexOf(+this._selection)]]
+            ? [range$$1[this._ticks.map(Number).indexOf(+this._selection)], range$$1[this._ticks.map(Number).indexOf(+this._selection)]]
             : [this._selection, this._selection];
 
       this._updateBrushLimit(selection$$1);
@@ -22323,7 +18838,7 @@ if (typeof window !== "undefined") {
     };
 
     return Timeline;
-  }(Axis$3));
+  }(Axis));
 
   /**!
    * @fileOverview Kickass library to create and place poppers near their reference elements.
@@ -36164,7 +32679,7 @@ if (typeof window !== "undefined") {
       this._timelineSelection = s;
       s = s.map(Number);
       this.timeFilter(function (d) {
-        var ms = date$3(this$1._time(d)).getTime();
+        var ms = date$2(this$1._time(d)).getTime();
         return ms >= s[0] && ms <= s[1];
       }).render();
     }
@@ -36182,7 +32697,7 @@ if (typeof window !== "undefined") {
 
 
     var timelinePossible = this._time && this._timeline;
-    var ticks = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$3) : [];
+    var ticks = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$2) : [];
     timelinePossible = timelinePossible && ticks.length > 1;
 
     var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", 0)")};
@@ -36206,7 +32721,7 @@ if (typeof window !== "undefined") {
         .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right));
 
       if (timeline.selection() === undefined) {
-        this._timelineSelection = extent(data, this._time).map(date$3);
+        this._timelineSelection = extent(data, this._time).map(date$2);
         timeline.selection(this._timelineSelection);
       }
 
@@ -36987,7 +33502,6 @@ if (typeof window !== "undefined") {
       this._tooltip = true;
       this._tooltipClass = new Tooltip();
       this._tooltipConfig = {
-        duration: 50,
         pointerEvents: "none",
         titleStyle: {
           "max-width": "200px"
@@ -37079,7 +33593,7 @@ if (typeof window !== "undefined") {
       // set the default timeFilter if it has not been specified
       if (this._time && !this._timeFilter && this._data.length) {
 
-        var dates = this._data.map(this._time).map(date$3);
+        var dates = this._data.map(this._time).map(date$2);
         var d = this._data[0], i = 0;
 
         if (this._discrete && ("_" + (this._discrete)) in this && this[("_" + (this._discrete))](d, i) === this._time(d, i)) {
@@ -37087,7 +33601,7 @@ if (typeof window !== "undefined") {
         }
         else {
           var latestTime = +max(dates);
-          this._timeFilter = function (d, i) { return +date$3(this$1._time(d, i)) === latestTime; };
+          this._timeFilter = function (d, i) { return +date$2(this$1._time(d, i)) === latestTime; };
         }
 
       }
@@ -38834,10 +35348,10 @@ if (typeof window !== "undefined") {
         }
       });
 
-      var x = scales[("scale" + xScale)]().domain(domains.x).range(d3Range(0, width + 1, width / (domains.x.length - 1))),
-          x2 = scales[("scale" + x2Scale)]().domain(domains.x2).range(d3Range(0, width + 1, width / (domains.x2.length - 1))),
-          y = scales[("scale" + yScale)]().domain(domains.y.reverse()).range(d3Range(0, height + 1, height / (domains.y.length - 1))),
-          y2 = scales[("scale" + y2Scale)]().domain(domains.y2.reverse()).range(d3Range(0, height + 1, height / (domains.y2.length - 1)));
+      var x = scales[("scale" + xScale)]().domain(domains.x).range(range(0, width + 1, width / (domains.x.length - 1))),
+          x2 = scales[("scale" + x2Scale)]().domain(domains.x2).range(range(0, width + 1, width / (domains.x2.length - 1))),
+          y = scales[("scale" + yScale)]().domain(domains.y.reverse()).range(range(0, height + 1, height / (domains.y.length - 1))),
+          y2 = scales[("scale" + y2Scale)]().domain(domains.y2.reverse()).range(range(0, height + 1, height / (domains.y2.length - 1)));
 
       var shapeData = nest()
         .key(function (d) { return d.shape; })
@@ -39163,9 +35677,9 @@ if (typeof window !== "undefined") {
           var space;
           var scale = this$1._discrete === "x" ? x : y;
           var vals = (this$1._discrete === "x" ? xDomain : yDomain).filter(function (d) { return typeof d !== "string" || d.indexOf("d3plus-buffer-") < 0; });
-          var range = this$1._discrete === "x" ? xRange : yRange;
+          var range$$1 = this$1._discrete === "x" ? xRange : yRange;
           if (vals.length > 1) { space = scale(vals[1]) - scale(vals[0]); }
-          else { space = range[range.length - 1] - range[0]; }
+          else { space = range$$1[range$$1.length - 1] - range$$1[0]; }
           space -= this$1._groupPadding;
 
           var barSize = space;
