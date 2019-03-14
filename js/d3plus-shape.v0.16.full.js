@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.16.3
+  d3plus-shape v0.16.4
   Fancy SVG shapes for visualizations
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -6829,8 +6829,6 @@ if (typeof window !== "undefined") {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
-  var mondays = monday.range;
-  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -6920,8 +6918,6 @@ if (typeof window !== "undefined") {
   var utcSaturday = utcWeekday(6);
 
   var utcSundays = utcSunday.range;
-  var utcMondays = utcMonday.range;
-  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -14722,7 +14718,7 @@ if (typeof window !== "undefined") {
     if (!origins.length) {
       // get the centroid of the polygon
       var centroid = polygonCentroid(poly);
-      if (isNaN(centroid[0]) || Math.abs(centroid[0]) === Infinity) {
+      if (isNaN(centroid[0]) || centroid[0] === Infinity || centroid[0] < 0) {
         if (options.verbose) { console.error("cannot find centroid", poly); }
         return null;
       }
