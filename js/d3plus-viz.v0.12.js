@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.12
+  d3plus-viz v0.12.13
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -527,8 +527,8 @@ if (typeof window !== "undefined") {
         width: wide ? this$1._width - (this$1._margin.left + this$1._margin.right + this$1._padding.left + this$1._padding.right) : this$1._width - (this$1._margin.left + this$1._margin.right)
       };
 
-      transform.x = (wide ? this$1._margin.left + this$1._padding.left : this$1._margin.left) + (area === "right" ? transform.width : 0);
-      transform.y = (wide ? this$1._margin.top : this$1._margin.top + this$1._padding.top)  + (area === "bottom" ? transform.height : 0);
+      transform.x = (wide ? this$1._margin.left + this$1._padding.left : this$1._margin.left) + (area === "right" ? this$1._width - this$1._margin.bottom : 0);
+      transform.y = (wide ? this$1._margin.top : this$1._margin.top + this$1._padding.top) + (area === "bottom" ? this$1._height - this$1._margin.bottom : 0);
 
       var foreign = d3plusCommon.elem(("foreignObject.d3plus-viz-controls-" + area), {
         condition: controls.length,
@@ -592,9 +592,12 @@ if (typeof window !== "undefined") {
 
         var bounds = container.node().getBoundingClientRect();
 
-        foreign.transition(this$1._transition)
+        foreign
+          .transition(this$1._transition)
           .attr("x", transform.x - (area === "right" ? bounds.width : 0))
-          .attr("y", transform.y - (area === "bottom" ? bounds.height : 0));
+          .attr("y", transform.y - (area === "bottom" ? bounds.height : 0))
+          .attr("height", wide ? bounds.height : transform.height)
+          .attr("width", wide ? transform.width : bounds.width);
 
         this$1._margin[area] += ["top", "bottom"].includes(area) ? bounds.height : bounds.width;
 
@@ -1737,16 +1740,20 @@ if (typeof window !== "undefined") {
 
       // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
       if (this._select === void 0 || this._select.node().tagName.toLowerCase() !== "svg") {
-
         var parent = this._select === void 0 ? d3Selection.select("body").append("div") : this._select;
-        var ref = getSize(parent.node());
+        var svg = parent.append("svg");
+        this.select(svg.node());
+      }
+
+      // Calculates the width and/or height of the Viz based on the this._select, if either has not been defined.
+      if ((!this._width || !this._height) && (!this._detectVisible || inViewport(this._select.node()))) {
+        var ref = getSize(this._select.node().parentNode);
         var w = ref[0];
         var h = ref[1];
-        var svg = parent.append("svg");
-        w -= parseFloat(svg.style("border-left-width"), 10);
-        w -= parseFloat(svg.style("border-right-width"), 10);
-        h -= parseFloat(svg.style("border-top-width"), 10);
-        h -= parseFloat(svg.style("border-bottom-width"), 10);
+        w -= parseFloat(this._select.style("border-left-width"), 10);
+        w -= parseFloat(this._select.style("border-right-width"), 10);
+        h -= parseFloat(this._select.style("border-top-width"), 10);
+        h -= parseFloat(this._select.style("border-bottom-width"), 10);
         if (!this._width) {
           this._autoWidth = true;
           this.width(w);
@@ -1755,25 +1762,12 @@ if (typeof window !== "undefined") {
           this._autoHeight = true;
           this.height(h);
         }
-
-        svg
-          .attr("class", "d3plus-viz")
-          .style("width", ((this._width) + "px"))
-          .style("height", ((this._height) + "px"));
-
-        this.select(svg.node());
-      }
-
-      // Calculates the width and/or height of the Viz based on the this._select, if either has not been defined.
-      if (!this._width || !this._height) {
-        var ref$1 = getSize(this._select.node());
-        var w$1 = ref$1[0];
-        var h$1 = ref$1[1];
-        if (!this._width) { this.width(w$1); }
-        if (!this._height) { this.height(h$1); }
       }
 
       this._select
+        .attr("class", "d3plus-viz")
+        .style("width", ((this._width) + "px"))
+        .style("height", ((this._height) + "px"))
         .attr("aria-labelledby", ((this._uuid) + "-title " + (this._uuid) + "-desc"))
         .attr("role", "img")
         .transition(this._transition)
