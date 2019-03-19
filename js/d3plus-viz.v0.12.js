@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.13
+  d3plus-viz v0.12.14
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1403,6 +1403,7 @@ if (typeof window !== "undefined") {
       BaseClass.call(this);
 
       this._aggs = {};
+      this._ariaHidden = false;
       this._backClass = new d3plusText.TextBox()
         .on("click", function () {
           if (this$1._history.length) { this$1.config(this$1._history.pop()).render(); }
@@ -1745,8 +1746,12 @@ if (typeof window !== "undefined") {
         this.select(svg.node());
       }
 
-      // Calculates the width and/or height of the Viz based on the this._select, if either has not been defined.
-      if ((!this._width || !this._height) && (!this._detectVisible || inViewport(this._select.node()))) {
+      /** detects width and height and sets SVG properties */
+      function setSVGSize() {
+
+        var display = this._select.style("display");
+        this._select.style("display", "none");
+
         var ref = getSize(this._select.node().parentNode);
         var w = ref[0];
         var h = ref[1];
@@ -1754,25 +1759,36 @@ if (typeof window !== "undefined") {
         w -= parseFloat(this._select.style("border-right-width"), 10);
         h -= parseFloat(this._select.style("border-top-width"), 10);
         h -= parseFloat(this._select.style("border-bottom-width"), 10);
-        if (!this._width) {
-          this._autoWidth = true;
+        this._select.style("display", display);
+
+        if (this._autoWidth) {
           this.width(w);
+          this._select.style("width", ((this._width) + "px")).attr("width", ((this._width) + "px"));
         }
-        if (!this._height) {
-          this._autoHeight = true;
+        if (this._autoHeight) {
           this.height(h);
+          this._select.style("height", ((this._height) + "px")).attr("height", ((this._height) + "px"));
         }
+
+      }
+
+      // Calculates the width and/or height of the Viz based on the this._select, if either has not been defined.
+      if ((!this._width || !this._height) && (!this._detectVisible || inViewport(this._select.node()))) {
+        this._autoWidth = this._width === undefined;
+        this._autoHeight = this._height === undefined;
+        setSVGSize.bind(this)();
       }
 
       this._select
-        .attr("class", "d3plus-viz")
-        .style("width", ((this._width) + "px"))
-        .style("height", ((this._height) + "px"))
-        .attr("aria-labelledby", ((this._uuid) + "-title " + (this._uuid) + "-desc"))
-        .attr("role", "img")
-        .transition(this._transition)
-        .style("width", ((this._width) + "px"))
-        .style("height", ((this._height) + "px"));
+          .attr("class", "d3plus-viz")
+          .attr("aria-hidden", this._ariaHidden)
+          .attr("aria-labelledby", ((this._uuid) + "-title " + (this._uuid) + "-desc"))
+          .attr("role", "img")
+        .transition(d3Transition.transition)
+          .style("width", this._width !== undefined ? ((this._width) + "px") : undefined)
+          .style("height", this._height !== undefined ? ((this._height) + "px") : undefined)
+          .attr("width", this._width !== undefined ? ((this._width) + "px") : undefined)
+          .attr("height", this._height !== undefined ? ((this._height) + "px") : undefined);
 
       // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
       var svgTitle = this._select.selectAll("title").data([0]);
@@ -1844,6 +1860,29 @@ if (typeof window !== "undefined") {
         this._queue = [];
         q.awaitAll(function () {
 
+          var columns = this$1._data instanceof Array && this$1._data.length > 0 ? Object.keys(this$1._data[0]) : [];
+          var svgTable = this$1._select.selectAll("g.data-table")
+            .data(!this$1._ariaHidden && this$1._data instanceof Array && this$1._data.length ? [0] : []);
+          var svgTableEnter = svgTable.enter().append("g")
+            .attr("class", "data-table")
+            .attr("role", "table");
+          svgTable.exit().remove();
+          var rows = svgTable.merge(svgTableEnter)
+            .selectAll("text")
+            .data(this$1._data instanceof Array ? d3Array.range(0, this$1._data.length + 1) : []);
+          rows.exit().remove();
+          var cells = rows.merge(rows.enter().append("text").attr("role", "row"))
+            .selectAll("tspan")
+            .data(function (d, i) { return columns.map(function (c) { return ({
+              role: i ? "cell" : "columnheader",
+              text: i ? this$1._data[i - 1][c] : c
+            }); }); });
+          cells.exit().remove();
+          cells.merge(cells.enter().append("tspan"))
+            .attr("role", function (d) { return d.role; })
+            .attr("dy", "-1000px")
+            .html(function (d) { return d.text; });
+
           this$1._preDraw();
           this$1._draw(callback);
           zoomControls.bind(this$1)();
@@ -1855,18 +1894,7 @@ if (typeof window !== "undefined") {
               this$1._resizePoll = clearTimeout(this$1._resizePoll);
               this$1._resizePoll = setTimeout(function () {
                 this$1._resizePoll = clearTimeout(this$1._resizePoll);
-                var display = this$1._select.style("display");
-                this$1._select.style("display", "none");
-                var ref = getSize(this$1._select.node().parentNode);
-                var w = ref[0];
-                var h = ref[1];
-                w -= parseFloat(this$1._select.style("border-left-width"), 10);
-                w -= parseFloat(this$1._select.style("border-right-width"), 10);
-                h -= parseFloat(this$1._select.style("border-top-width"), 10);
-                h -= parseFloat(this$1._select.style("border-bottom-width"), 10);
-                this$1._select.style("display", display);
-                if (this$1._autoWidth) { this$1.width(w); }
-                if (this$1._autoHeight) { this$1.height(h); }
+                setSVGSize.bind(this$1)();
                 this$1.render(callback);
               }, this$1._detectResizeDelay);
             });
@@ -1910,6 +1938,16 @@ if (typeof window !== "undefined") {
     */
     Viz.prototype.aggs = function aggs (_) {
       return arguments.length ? (this._aggs = d3plusCommon.assign(this._aggs, _), this) : this._aggs;
+    };
+
+    /**
+        @memberof Viz
+        @desc Sets the "aria-hidden" attribute of the containing SVG element. The default value is "false", but it you need to hide the SVG from screen readers set this property to "true".
+        @param {Boolean} [*value* = false]
+        @chainable
+    */
+    Viz.prototype.ariaHidden = function ariaHidden (_) {
+      return arguments.length ? (this._ariaHidden = _, this) : this._ariaHidden;
     };
 
     /**

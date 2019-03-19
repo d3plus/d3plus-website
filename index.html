@@ -122,7 +122,7 @@ style: blog
       All Examples <i class="fa fa-angle-right"></i>
     </a>
 
-    {% assign examples = (site.examples | sort: "time") | reverse %}
+    {% assign examples = site.examples | sort: "time" | reverse %}
     {% for example in examples limit:12 %}
     {% include example-tile.html example=example %}
     {% endfor %}
