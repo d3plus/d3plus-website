@@ -18,7 +18,7 @@ style: blog
 </div>
 
 <div id="examples">
-  {% assign examples = (site.examples | sort: "time") | reverse %}
+  {% assign examples = site.examples | sort: "time" | reverse %}
   {% for example in examples %}
   {% include example-tile.html example=example %}
   {% endfor %}

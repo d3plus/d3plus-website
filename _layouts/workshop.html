@@ -15,10 +15,10 @@ layout: default
 <section class="content">
   {% assign date = page.url|split:'/' %}
   {% assign date = date[2]|prepend:'nav_' %}
-  <h2>{{ site.workshops.[date].title }}</h2>
+  <h2>{{ site.workshops[date].title }}</h2>
   {% assign url = page.url|remove:'index.html' %}
   <header>
-    {% for link in site.workshops.[date].links %}
+    {% for link in site.workshops[date].links %}
       <a {% if url contains link.url %}class="active"{% endif %} href="/workshops/{{ date|remove:'nav_' }}/{{ link.url }}/">{{link.text}}</a>
     {% endfor %}
   </header>
