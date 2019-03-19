@@ -71,12 +71,21 @@ ul.posts {
 
 .post-content{
   margin: 40px 0 0 0;
-  padding: 0 200px 0 0;
+  padding: 0 225px 0 0;
   position: relative;
 }
 
 .post-content > h2 {
   margin: 50px 0 0 0;
+}
+
+.post-content .highlight {
+  margin: 10px 0 50px;
+  padding: 0;
+}
+
+.post-content pre {
+  padding: 15px;
 }
 
 table.highlighttable {
@@ -94,7 +103,7 @@ table.highlighttable {
   line-height: 1.2;
   position: absolute;
   right: 0;
-  width: 180px;
+  width: 200px;
 }
 
 .step {

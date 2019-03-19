@@ -8,7 +8,18 @@ style: blog
 
   <h1>Accessibility</h1>
 
-  <p>D3plus includes many accessibility features right out of the box. These features are usually derived automatically by the provided data, but can also be overrided by the developer.</p>
+  <p>At it's core, D3plus is a collection of tools built on top of the low-level helper functions made available by D3 to help aid in the generation of charts. While D3 itself isn't really able to be considered "accessible", as it's a low-level tool dealing with data and DOM manipulation (see <a href="https://github.com/d3/d3-shape/issues/102" target="_blank">this discussion</a>), D3plus is able to create accessible SVG visualizations that includes many accessibility features right out of the box.</p>
+
+  <h2>Optional Parameters</h2>
+
+  <p>
+    While most accessibility features are derived automatically from the provided data, the following exceptions need to be explicitly set by the user:
+  </p>
+
+  <ul>
+    <li>SVG Title - if you would like to add a &lt;title&gt; tag inside of the &lt;svg&gt; element, the <a href="/docs/#Viz.svgTitle"><code>svgTitle</code></a> method must be set.</li>
+    <li>SVG Description - if you would like to add a &lt;desc&gt; tag inside of the &lt;svg&gt; element, the <a href="/docs/#Viz.svgDesc"><code>svgDesc</code></a> method must be set.</li>
+  </ul>
 
   <h2>SVG Attributes</h2>
 
@@ -17,33 +28,62 @@ style: blog
     <h3>Role Attribute</h3>
     <p>All SVG elements created by D3plus contain a <code>role</code> attribute with the value "img". This ensures that all visualizations are identified as a graphic.</p>
 
-    <h3>Title Element</h3>
+    <h3>Title Element (optional)</h3>
     <p>If the svgTitle method is defined, a &lt;title&gt; tag will be added to the SVG, and referenced in the SVG's <code>aria-labelledby</code> attribute.</p>
 
-    <h3>Desc Element</h3>
+    <h3>Desc Element (optional)</h3>
     <p>If the svgDesc method is defined, a &lt;desc&gt; tag will be added to the SVG, and referenced in the SVG's <code>aria-labelledby</code> attribute.</p>
 
   </aside>
 
   {% highlight html %}
-  <svg class="d3plus-viz" role="img"
-    aria-labelledby="
-      48cb9407-a891-4630-878f-62f4b797a974-title
-      48cb9407-a891-4630-878f-62f4b797a974-desc
-      ">
+<svg role="img" aria-labelledby="title desc" aria-hidden="false">
 
-    <title id="48cb9407-a891-4630-878f-62f4b797a974-title">
-      Bar Chart of Income Over Time
-    </title>
+  <title id="title">
+    Bar Chart of Income Over Time
+  </title>
 
-    <desc id="48cb9407-a891-4630-878f-62f4b797a974-desc">
-      The income in Massachusetts has been rising steadily over the past 10 years.
-    </desc>
+  <desc id="desc">
+    The income in Texas has been rising steadily over the past 10 years.
+  </desc>
 
-    ...
+  ...
 
-  </svg>
-  {% endhighlight %}
+</svg>{% endhighlight %}
+
+  <h2>Inline Data Table</h2>
+
+  <aside class="aside">
+
+    <p>A visually hidden data table is automatically generated from the data used in the visualization.</p>
+
+    <h3>Example JSON Data</h3>
+    {% highlight json %}
+[
+  {
+    "Year": 2010,
+    "State": "Texas",
+    "Income": 43218
+  },
+  ...
+]{% endhighlight %}
+
+  </aside>
+
+  {% highlight html %}
+<g role="table">
+  <text role="row">
+    <tspan role="columnheader" dy="-1000px">Year</tspan>
+    <tspan role="columnheader" dy="-1000px">State</tspan>
+    <tspan role="columnheader" dy="-1000px">Income</tspan>
+  </text>
+  <text role="row">
+    <tspan role="cell" dy="-1000px">2010</tspan>
+    <tspan role="cell" dy="-1000px">Texas</tspan>
+    <tspan role="cell" dy="-1000px">43218</tspan>
+  </text>
+  ...
+</g>{% endhighlight %}
 
   <h2>Shape Attributes</h2>
 
@@ -58,24 +98,14 @@ style: blog
   </aside>
 
   {% highlight html %}
-  <rect class="d3plus-Shape d3plus-Rect d3plus-id-alpha"
-    aria-label="2. alpha, 29."
-    role="presentation"
-    opacity="1"
-    shape-rendering="geometricPrecision"
-    pointer-events="visiblePainted"
-    width="300" height="371"
-    x="-150" y="-185.5"
-    fill="#b22200"
-    fill-opacity="1"
-    rx="0" ry="0"
-    stroke="rgb(125, 24, 0)"
-    stroke-dasharray="0"
-    stroke-linecap="butt"
-    stroke-opacity="1"
-    stroke-width="0"
-    vector-effect="non-scaling-stroke">
-  </rect>
-  {% endhighlight %}
+<rect
+  aria-label="2. alpha, 29."
+  role="presentation"
+  width="300"
+  height="371"
+  x="-150"
+  y="-185.5"
+  fill="#b22200">
+</rect>{% endhighlight %}
 
 </div>
