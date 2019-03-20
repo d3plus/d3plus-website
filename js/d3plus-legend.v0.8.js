@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.20
+  d3plus-legend v0.8.21
   An easy to use javascript chart legend.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -205,10 +205,10 @@ if (typeof window !== "undefined") {
 }
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-interpolate'), require('d3-scale'), require('d3-selection'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text')) :
-  typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-interpolate', 'd3-scale', 'd3-selection', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-shape', 'd3plus-text'], factory) :
-  (factory((global.d3plus = {}),global.d3Array,global.d3Interpolate,global.d3Scale,global.d3Selection,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.shapes,global.d3plusText));
-}(this, (function (exports,d3Array,d3Interpolate,d3Scale,d3Selection,d3plusAxis,d3plusColor,d3plusCommon,shapes,d3plusText) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-selection'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text'), require('d3-scale'), require('d3plus-axis'), require('d3plus-color')) :
+  typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-selection', 'd3plus-common', 'd3plus-shape', 'd3plus-text', 'd3-scale', 'd3plus-axis', 'd3plus-color'], factory) :
+  (factory((global.d3plus = {}),global.d3Array,global.d3Selection,global.d3plusCommon,global.shapes,global.d3plusText,global.d3Scale,global.d3plusAxis,global.d3plusColor));
+}(this, (function (exports,d3Array,d3Selection,d3plusCommon,shapes,d3plusText,d3Scale,d3plusAxis,d3plusColor) { 'use strict';
 
   /**
       @desc Sort an array of numbers by their numeric value, ensuring that the array is not changed in place.
@@ -457,363 +457,6 @@ if (typeof window !== "undefined") {
     return clusters;
 
   }
-
-  /**
-      @external BaseClass
-      @see https://github.com/d3plus/d3plus-common#BaseClass
-  */
-
-  /**
-      @class ColorScale
-      @extends external:BaseClass
-      @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
-  */
-  var ColorScale = /*@__PURE__*/(function (BaseClass) {
-    function ColorScale() {
-
-      BaseClass.call(this);
-
-      this._axisClass = new d3plusAxis.Axis();
-      this._axisConfig = {
-        gridSize: 0
-      };
-      this._axisTest = new d3plusAxis.Axis();
-      this._align = "middle";
-      this._color = "#0C8040";
-      this._data = [];
-      this._duration = 600;
-      this._height = 200;
-      this._orient = "bottom";
-      this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
-      this._padding = 5;
-      this._rectClass = new shapes.Rect();
-      this._rectConfig = {
-        stroke: "#000",
-        strokeWidth: 1
-      };
-      this._scale = "linear";
-      this._size = 10;
-      this._value = d3plusCommon.accessor("value");
-      this._width = 400;
-
-    }
-
-    if ( BaseClass ) ColorScale.__proto__ = BaseClass;
-    ColorScale.prototype = Object.create( BaseClass && BaseClass.prototype );
-    ColorScale.prototype.constructor = ColorScale;
-
-    /**
-        @memberof ColorScale
-        @desc Renders the current ColorScale to the page. If a *callback* is specified, it will be called once the ColorScale is done drawing.
-        @param {Function} [*callback* = undefined]
-        @chainable
-    */
-    ColorScale.prototype.render = function render (callback) {
-      var this$1 = this;
-      var obj;
-
-
-      if (this._select === void 0) { this.select(d3Selection.select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node()); }
-
-      var horizontal = ["bottom", "top"].includes(this._orient);
-
-      var height = horizontal ? "height" : "width",
-            width = horizontal ? "width" : "height",
-            x = horizontal ? "x" : "y",
-            y = horizontal ? "y" : "x";
-
-      // Shape <g> Group
-      this._group = d3plusCommon.elem("g.d3plus-ColorScale", {parent: this._select});
-
-      var domain = d3Array.extent(this._data, this._value);
-      var colors = this._color, labels, ticks;
-
-      if (!(colors instanceof Array)) {
-        colors = [
-          d3plusColor.colorLighter(colors, 0.9),
-          d3plusColor.colorLighter(colors, 0.75),
-          d3plusColor.colorLighter(colors, 0.5),
-          d3plusColor.colorLighter(colors, 0.25),
-          colors
-        ];
-      }
-
-      if (this._scale === "jenks") {
-
-        var data = this._data
-          .map(this._value)
-          .filter(function (d) { return d !== null && typeof d === "number"; });
-
-        if (data.length <= colors.length) {
-
-          var ts = d3Scale.scaleLinear()
-            .domain(d3Array.range(0, data.length - 1))
-            .interpolate(d3Interpolate.interpolateHsl)
-            .range(colors);
-
-          colors = data.slice(0, data.length - 1).map(function (d, i) { return ts(i); });
-        }
-
-        var jenks = ckmeans(data, colors.length);
-
-        ticks = d3Array.merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
-
-        var tickSet = new Set(ticks);
-
-        if (ticks.length !== tickSet.size) {
-          labels = Array.from(tickSet);
-        }
-
-        this._colorScale = d3Scale.scaleThreshold()
-          .domain(ticks)
-          .range(["black"].concat(colors).concat(colors[colors.length - 1]));
-
-      }
-      else {
-
-        var step = (domain[1] - domain[0]) / (colors.length - 1);
-        var buckets = d3Array.range(domain[0], domain[1] + step / 2, step);
-
-        if (this._scale === "buckets") { ticks = buckets; }
-
-        this._colorScale = d3Scale.scaleLinear()
-          .domain(buckets)
-          .range(colors);
-
-      }
-
-      var axisConfig = Object.assign({
-        domain: horizontal ? domain : domain.reverse(),
-        duration: this._duration,
-        height: this._height,
-        labels: labels || ticks,
-        orient: this._orient,
-        padding: this._padding,
-        ticks: ticks,
-        width: this._width
-      }, this._axisConfig);
-
-      this._axisTest
-        .select(d3plusCommon.elem("g.d3plus-ColorScale-axisTest", {enter: {opacity: 0}, parent: this._group}).node())
-        .config(axisConfig)
-        .render();
-
-      var axisBounds = this._axisTest.outerBounds();
-
-      this._outerBounds[width] = this[("_" + width)] - this._padding * 2;
-      this._outerBounds[height] = axisBounds[height] + this._size;
-
-      this._outerBounds[x] = this._padding;
-      this._outerBounds[y] = this._padding;
-      if (this._align === "middle") { this._outerBounds[y] = (this[("_" + height)] - this._outerBounds[height]) / 2; }
-      else if (this._align === "end") { this._outerBounds[y] = this[("_" + height)] - this._padding - this._outerBounds[height]; }
-
-      var groupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
-      this._axisClass
-        .select(d3plusCommon.elem("g.d3plus-ColorScale-axis", {
-          parent: this._group,
-          update: {transform: ("translate(" + (horizontal ? 0 : groupOffset) + ", " + (horizontal ? groupOffset : 0) + ")")}
-        }).node())
-        .config(axisConfig)
-        .align("start")
-        .render();
-
-      var axisScale = this._axisTest._getPosition.bind(this._axisTest);
-      var scaleRange = this._axisTest._getRange();
-
-      var defs = this._group.selectAll("defs").data([0]);
-      var defsEnter = defs.enter().append("defs");
-      defsEnter.append("linearGradient").attr("id", ("gradient-" + (this._uuid)));
-      defs = defsEnter.merge(defs);
-      defs.select("linearGradient")
-        .attr((x + "1"), horizontal ? "0%" : "100%")
-        .attr((x + "2"), horizontal ? "100%" : "0%")
-        .attr((y + "1"), "0%")
-        .attr((y + "2"), "0%");
-      var stops = defs.select("linearGradient").selectAll("stop")
-        .data(colors);
-      stops.enter().append("stop").merge(stops)
-        .attr("offset", function (d, i) { return ((i / (colors.length - 1) * 100) + "%"); })
-        .attr("stop-color", String);
-
-      /** determines the width of buckets */
-      function bucketWidth(d, i) {
-        var w = Math.abs(axisScale(ticks[i + 1]) - axisScale(d));
-        return w || 2;
-      }
-
-      this._rectClass
-        .data(ticks ? ticks.slice(0, ticks.length - 1) : [0])
-        .id(function (d, i) { return i; })
-        .select(d3plusCommon.elem("g.d3plus-ColorScale-Rect", {parent: this._group}).node())
-        .config(( obj = {
-          fill: ticks ? function (d) { return this$1._colorScale(d); } : ("url(#gradient-" + (this._uuid) + ")")
-        }, obj[x] = ticks ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2, obj[width] = ticks ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._size, obj ))
-        .config(this._rectConfig)
-        .render();
-
-      if (callback) { setTimeout(callback, this._duration + 100); }
-
-      return this;
-
-    };
-
-    /**
-        @memberof ColorScale
-        @desc The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)). This method acts as a pass-through to the config method of the [Axis](http://d3plus.org/docs/#Axis). An example usage of this method can be seen [here](http://d3plus.org/examples/d3plus-legend/colorScale-dark/).
-        @param {Object} [*value*]
-        @chainable
-    */
-    ColorScale.prototype.axisConfig = function axisConfig (_) {
-      return arguments.length ? (this._axisConfig = Object.assign(this._axisConfig, _), this) : this._axisConfig;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
-        @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
-        @chainable
-    */
-    ColorScale.prototype.align = function align (_) {
-      return arguments.length ? (this._align = _, this) : this._align;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc Defines the color or colors to be used for the scale. If only a single color is given as a String, then the scale is interpolated by lightening that color. Otherwise, the function expects an Array of color values to be used in order for the scale.
-        @param {String|Array} [*value* = "#0C8040"]
-        @chainable
-    */
-    ColorScale.prototype.color = function color (_) {
-      return arguments.length ? (this._color = _, this) : this._color;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape key will be drawn for each object in the array.
-        @param {Array} [*data* = []]
-        @chainable
-    */
-    ColorScale.prototype.data = function data (_) {
-      return arguments.length ? (this._data = _, this) : this._data;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc If *value* is specified, sets the transition duration of the ColorScale and returns the current class instance. If *value* is not specified, returns the current duration.
-        @param {Number} [*value* = 600]
-        @chainable
-    */
-    ColorScale.prototype.duration = function duration (_) {
-      return arguments.length ? (this._duration = _, this) : this._duration;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc If *value* is specified, sets the overall height of the ColorScale and returns the current class instance. If *value* is not specified, returns the current height value.
-        @param {Number} [*value* = 100]
-        @chainable
-    */
-    ColorScale.prototype.height = function height (_) {
-      return arguments.length ? (this._height = _, this) : this._height;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc Sets the flow of the items inside the ColorScale. If no value is passed, the current flow will be returned.
-        @param {String} [*value* = "bottom"]
-        @chainable
-    */
-    ColorScale.prototype.orient = function orient (_) {
-      return arguments.length ? (this._orient = _, this) : this._orient;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the ColorScale content.
-        @example
-  {"width": 180, "height": 24, "x": 10, "y": 20}
-    */
-    ColorScale.prototype.outerBounds = function outerBounds () {
-      return this._outerBounds;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc If *value* is specified, sets the padding between each key to the specified number and returns the current class instance. If *value* is not specified, returns the current padding value.
-        @param {Number} [*value* = 10]
-        @chainable
-    */
-    ColorScale.prototype.padding = function padding (_) {
-      return arguments.length ? (this._padding = _, this) : this._padding;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)). This method acts as a pass-through to the config method of the [Rect](http://d3plus.org/docs/#Rect). An example usage of this method can be seen [here](http://d3plus.org/examples/d3plus-legend/colorScale-dark/).
-        @param {Object} [*value*]
-        @chainable
-    */
-    ColorScale.prototype.rectConfig = function rectConfig (_) {
-      return arguments.length ? (this._rectConfig = Object.assign(this._rectConfig, _), this) : this._rectConfig;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc If *value* is specified, sets the scale of the ColorScale and returns the current class instance. If *value* is not specified, returns the current scale value.
-        @param {String} [*value* = "linear"] Can either be "linear", "jenks", or "buckets".
-        @chainable
-    */
-    ColorScale.prototype.scale = function scale (_) {
-      return arguments.length ? (this._scale = _, this) : this._scale;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
-        @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
-        @chainable
-    */
-    ColorScale.prototype.select = function select$1 (_) {
-      return arguments.length ? (this._select = d3Selection.select(_), this) : this._select;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc The height of horizontal color scales, and width when positioned vertical.
-        @param {Number} [*value* = 10]
-        @chainable
-    */
-    ColorScale.prototype.size = function size (_) {
-      return arguments.length ? (this._size = _, this) : this._size;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc If *value* is specified, sets the value accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current value accessor.
-        @param {Function|String} [*value*]
-        @chainable
-        @example
-  function value(d) {
-    return d.value;
-  }
-    */
-    ColorScale.prototype.value = function value (_) {
-      return arguments.length ? (this._value = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._value;
-    };
-
-    /**
-        @memberof ColorScale
-        @desc If *value* is specified, sets the overall width of the ColorScale and returns the current class instance. If *value* is not specified, returns the current width value.
-        @param {Number} [*value* = 400]
-        @chainable
-    */
-    ColorScale.prototype.width = function width (_) {
-      return arguments.length ? (this._width = _, this) : this._width;
-    };
-
-    return ColorScale;
-  }(d3plusCommon.BaseClass));
 
   /**
       @external BaseClass
@@ -1358,6 +1001,438 @@ if (typeof window !== "undefined") {
     };
 
     return Legend;
+  }(d3plusCommon.BaseClass));
+
+  /**
+      @external BaseClass
+      @see https://github.com/d3plus/d3plus-common#BaseClass
+  */
+
+  /**
+      @class ColorScale
+      @extends external:BaseClass
+      @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
+  */
+  var ColorScale = /*@__PURE__*/(function (BaseClass) {
+    function ColorScale() {
+
+      BaseClass.call(this);
+
+      this._axisClass = new d3plusAxis.Axis();
+      this._axisConfig = {
+        gridSize: 0,
+        shapeConfig: {
+          labelConfig: {
+            fontColor: "#222"
+          }
+        }
+      };
+      this._axisTest = new d3plusAxis.Axis();
+      this._align = "middle";
+      this._bucketAxis = false;
+      this._color = "#0C8040";
+      this._data = [];
+      this._duration = 600;
+      this._height = 200;
+      this._legendClass = new Legend();
+      this._legendConfig = {
+        shapeConfig: {
+          labelConfig: {
+            fontColor: "#222"
+          },
+          stroke: "#444",
+          strokeWidth: 1
+        }
+      };
+      this._orient = "bottom";
+      this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
+      this._padding = 5;
+      this._rectClass = new shapes.Rect();
+      this._rectConfig = {
+        stroke: "#444",
+        strokeWidth: 1
+      };
+      this._scale = "linear";
+      this._size = 10;
+      this._value = d3plusCommon.accessor("value");
+      this._width = 400;
+
+    }
+
+    if ( BaseClass ) ColorScale.__proto__ = BaseClass;
+    ColorScale.prototype = Object.create( BaseClass && BaseClass.prototype );
+    ColorScale.prototype.constructor = ColorScale;
+
+    /**
+        @memberof ColorScale
+        @desc Renders the current ColorScale to the page. If a *callback* is specified, it will be called once the ColorScale is done drawing.
+        @param {Function} [*callback* = undefined]
+        @chainable
+    */
+    ColorScale.prototype.render = function render (callback) {
+      var this$1 = this;
+      var obj;
+
+
+      if (this._select === void 0) { this.select(d3Selection.select("body").append("svg").attr("width", ((this._width) + "px")).attr("height", ((this._height) + "px")).node()); }
+
+      var horizontal = ["bottom", "top"].includes(this._orient);
+
+      var height = horizontal ? "height" : "width",
+            width = horizontal ? "width" : "height",
+            x = horizontal ? "x" : "y",
+            y = horizontal ? "y" : "x";
+
+      // Shape <g> Group
+      this._group = d3plusCommon.elem("g.d3plus-ColorScale", {parent: this._select});
+
+      var domain = d3Array.extent(this._data, this._value);
+      var colors = this._color, labels, ticks;
+
+      if (!(colors instanceof Array)) {
+        colors = [
+          d3plusColor.colorLighter(colors, 0.9),
+          d3plusColor.colorLighter(colors, 0.75),
+          d3plusColor.colorLighter(colors, 0.5),
+          d3plusColor.colorLighter(colors, 0.25),
+          colors
+        ];
+      }
+
+      if (this._scale === "jenks") {
+
+        var data = this._data
+          .map(this._value)
+          .filter(function (d) { return d !== null && typeof d === "number"; });
+
+        if (data.length <= colors.length) {
+          colors = colors.slice(colors.length - data.length);
+        }
+
+        var jenks = ckmeans(data, colors.length);
+
+        ticks = d3Array.merge(jenks.map(function (c, i) { return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]]; }));
+
+        var tickSet = new Set(ticks);
+
+        if (ticks.length !== tickSet.size) {
+          labels = Array.from(tickSet);
+        }
+
+        this._colorScale = d3Scale.scaleThreshold()
+          .domain(ticks)
+          .range(["black"].concat(colors).concat(colors[colors.length - 1]));
+
+      }
+      else {
+
+        var step = (domain[1] - domain[0]) / (colors.length - 1);
+        var buckets = d3Array.range(domain[0], domain[1] + step / 2, step);
+
+        if (this._scale === "buckets") { ticks = buckets; }
+
+        this._colorScale = d3Scale.scaleLinear()
+          .domain(buckets)
+          .range(colors);
+
+      }
+
+      if (this._bucketAxis || !["buckets", "jenks"].includes(this._scale)) {
+
+        var axisConfig = d3plusCommon.assign({
+          domain: horizontal ? domain : domain.reverse(),
+          duration: this._duration,
+          height: this._height,
+          labels: labels || ticks,
+          orient: this._orient,
+          padding: this._padding,
+          ticks: ticks,
+          width: this._width
+        }, this._axisConfig);
+
+        this._axisTest
+          .select(d3plusCommon.elem("g.d3plus-ColorScale-axisTest", {enter: {opacity: 0}, parent: this._group}).node())
+          .config(axisConfig)
+          .duration(0)
+          .render();
+
+        var axisBounds = this._axisTest.outerBounds();
+
+        this._outerBounds[width] = this[("_" + width)] - this._padding * 2;
+        this._outerBounds[height] = axisBounds[height] + this._size;
+
+        this._outerBounds[x] = this._padding;
+        this._outerBounds[y] = this._padding;
+        if (this._align === "middle") { this._outerBounds[y] = (this[("_" + height)] - this._outerBounds[height]) / 2; }
+        else if (this._align === "end") { this._outerBounds[y] = this[("_" + height)] - this._padding - this._outerBounds[height]; }
+
+        var groupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
+        this._axisClass
+          .select(d3plusCommon.elem("g.d3plus-ColorScale-axis", {
+            parent: this._group,
+            update: {transform: ("translate(" + (horizontal ? 0 : groupOffset) + ", " + (horizontal ? groupOffset : 0) + ")")}
+          }).node())
+          .config(axisConfig)
+          .align("start")
+          .render();
+
+        var axisScale = this._axisTest._getPosition.bind(this._axisTest);
+        var scaleRange = this._axisTest._getRange();
+
+        var defs = this._group.selectAll("defs").data([0]);
+        var defsEnter = defs.enter().append("defs");
+        defsEnter.append("linearGradient").attr("id", ("gradient-" + (this._uuid)));
+        defs = defsEnter.merge(defs);
+        defs.select("linearGradient")
+          .attr((x + "1"), horizontal ? "0%" : "100%")
+          .attr((x + "2"), horizontal ? "100%" : "0%")
+          .attr((y + "1"), "0%")
+          .attr((y + "2"), "0%");
+        var stops = defs.select("linearGradient").selectAll("stop")
+          .data(colors);
+        stops.enter().append("stop").merge(stops)
+          .attr("offset", function (d, i) { return ((i / (colors.length - 1) * 100) + "%"); })
+          .attr("stop-color", String);
+
+        /** determines the width of buckets */
+        var bucketWidth = function (d, i) {
+          var w = Math.abs(axisScale(ticks[i + 1]) - axisScale(d));
+          return w || 2;
+        };
+
+        this._rectClass
+          .data(ticks ? ticks.slice(0, ticks.length - 1) : [0])
+          .id(function (d, i) { return i; })
+          .select(d3plusCommon.elem("g.d3plus-ColorScale-Rect", {parent: this._group}).node())
+          .config(( obj = {
+            duration: this._duration,
+            fill: ticks ? function (d) { return this$1._colorScale(d); } : ("url(#gradient-" + (this._uuid) + ")")
+          }, obj[x] = ticks ? function (d, i) { return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(this$1._orient) ? bucketWidth(d, i) : 0); } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2, obj[y] = this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2, obj[width] = ticks ? bucketWidth : scaleRange[1] - scaleRange[0], obj[height] = this._size, obj ))
+          .config(this._rectConfig)
+          .render();
+      }
+      else {
+
+        var format = this._axisConfig.tickFormat
+          ? this._axisConfig.tickFormat : function (d) { return d; };
+
+        var data$1 = ticks.reduce(function (arr, tick, i) {
+          if (i !== ticks.length - 1) {
+            var next = ticks[i + 1];
+            arr.push({
+              color: colors[i],
+              id: tick === next ? ((format(tick)) + "+") : ((format(tick)) + " - " + (format(next)))
+            });
+          }
+          return arr;
+        }, []);
+
+        var legendConfig = d3plusCommon.assign({
+          align: horizontal ? "center" : {start: "left", middle: "center", end: "right"}[this._align],
+          direction: horizontal ? "row" : "column",
+          duration: this._duration,
+          height: this._height,
+          padding: this._padding,
+          shapeConfig: {
+            duration: this._duration
+          },
+          width: this._width,
+          verticalAlign: horizontal ? {start: "top", middle: "middle", end: "bottom"}[this._align] : "middle"
+        }, this._legendConfig);
+
+        this._legendClass
+          .data(data$1)
+          .select(d3plusCommon.elem("g.d3plus-ColorScale-legend", {
+            parent: this._group
+          }).node())
+          .config(legendConfig)
+          .render();
+
+        this._outerBounds = this._legendClass.outerBounds();
+
+      }
+
+      if (callback) { setTimeout(callback, this._duration + 100); }
+
+      return this;
+
+    };
+
+    /**
+        @memberof ColorScale
+        @desc The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)). This method acts as a pass-through to the config method of the [Axis](http://d3plus.org/docs/#Axis). An example usage of this method can be seen [here](http://d3plus.org/examples/d3plus-legend/colorScale-dark/).
+        @param {Object} [*value*]
+        @chainable
+    */
+    ColorScale.prototype.axisConfig = function axisConfig (_) {
+      return arguments.length ? (this._axisConfig = d3plusCommon.assign(this._axisConfig, _), this) : this._axisConfig;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance. If *value* is not specified, returns the current horizontal alignment.
+        @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
+        @chainable
+    */
+    ColorScale.prototype.align = function align (_) {
+      return arguments.length ? (this._align = _, this) : this._align;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc Determines whether or not to use an Axis to display bucket scales (both "buckets" and "jenks"). When set to `false`, bucketed scales will use the `Legend` class to display squares for each range of data. When set to `true`, bucketed scales will be displayed on an `Axis`, similar to "linear" scales.
+        @param {Boolean} [*value* = false]
+        @chainable
+    */
+    ColorScale.prototype.bucketAxis = function bucketAxis (_) {
+      return arguments.length ? (this._bucketAxis = _, this) : this._bucketAxis;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc Defines the color or colors to be used for the scale. If only a single color is given as a String, then the scale is interpolated by lightening that color. Otherwise, the function expects an Array of color values to be used in order for the scale.
+        @param {String|Array} [*value* = "#0C8040"]
+        @chainable
+    */
+    ColorScale.prototype.color = function color (_) {
+      return arguments.length ? (this._color = _, this) : this._color;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. A shape key will be drawn for each object in the array.
+        @param {Array} [*data* = []]
+        @chainable
+    */
+    ColorScale.prototype.data = function data (_) {
+      return arguments.length ? (this._data = _, this) : this._data;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc If *value* is specified, sets the transition duration of the ColorScale and returns the current class instance. If *value* is not specified, returns the current duration.
+        @param {Number} [*value* = 600]
+        @chainable
+    */
+    ColorScale.prototype.duration = function duration (_) {
+      return arguments.length ? (this._duration = _, this) : this._duration;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc If *value* is specified, sets the overall height of the ColorScale and returns the current class instance. If *value* is not specified, returns the current height value.
+        @param {Number} [*value* = 100]
+        @chainable
+    */
+    ColorScale.prototype.height = function height (_) {
+      return arguments.length ? (this._height = _, this) : this._height;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)). This method acts as a pass-through to the config method of the [Axis](http://d3plus.org/docs/#Axis). An example usage of this method can be seen [here](http://d3plus.org/examples/d3plus-legend/colorScale-dark/).
+        @param {Object} [*value*]
+        @chainable
+    */
+    ColorScale.prototype.legendConfig = function legendConfig (_) {
+      return arguments.length ? (this._legendConfig = d3plusCommon.assign(this._legendConfig, _), this) : this._legendConfig;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc Sets the flow of the items inside the ColorScale. If no value is passed, the current flow will be returned.
+        @param {String} [*value* = "bottom"]
+        @chainable
+    */
+    ColorScale.prototype.orient = function orient (_) {
+      return arguments.length ? (this._orient = _, this) : this._orient;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the ColorScale content.
+        @example
+  {"width": 180, "height": 24, "x": 10, "y": 20}
+    */
+    ColorScale.prototype.outerBounds = function outerBounds () {
+      return this._outerBounds;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc If *value* is specified, sets the padding between each key to the specified number and returns the current class instance. If *value* is not specified, returns the current padding value.
+        @param {Number} [*value* = 10]
+        @chainable
+    */
+    ColorScale.prototype.padding = function padding (_) {
+      return arguments.length ? (this._padding = _, this) : this._padding;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)). This method acts as a pass-through to the config method of the [Rect](http://d3plus.org/docs/#Rect). An example usage of this method can be seen [here](http://d3plus.org/examples/d3plus-legend/colorScale-dark/).
+        @param {Object} [*value*]
+        @chainable
+    */
+    ColorScale.prototype.rectConfig = function rectConfig (_) {
+      return arguments.length ? (this._rectConfig = d3plusCommon.assign(this._rectConfig, _), this) : this._rectConfig;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc If *value* is specified, sets the scale of the ColorScale and returns the current class instance. If *value* is not specified, returns the current scale value.
+        @param {String} [*value* = "linear"] Can either be "linear", "jenks", or "buckets".
+        @chainable
+    */
+    ColorScale.prototype.scale = function scale (_) {
+      return arguments.length ? (this._scale = _, this) : this._scale;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+        @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+        @chainable
+    */
+    ColorScale.prototype.select = function select$1 (_) {
+      return arguments.length ? (this._select = d3Selection.select(_), this) : this._select;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc The height of horizontal color scales, and width when positioned vertical.
+        @param {Number} [*value* = 10]
+        @chainable
+    */
+    ColorScale.prototype.size = function size (_) {
+      return arguments.length ? (this._size = _, this) : this._size;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc If *value* is specified, sets the value accessor to the specified function or string and returns the current class instance. If *value* is not specified, returns the current value accessor.
+        @param {Function|String} [*value*]
+        @chainable
+        @example
+  function value(d) {
+    return d.value;
+  }
+    */
+    ColorScale.prototype.value = function value (_) {
+      return arguments.length ? (this._value = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._value;
+    };
+
+    /**
+        @memberof ColorScale
+        @desc If *value* is specified, sets the overall width of the ColorScale and returns the current class instance. If *value* is not specified, returns the current width value.
+        @param {Number} [*value* = 400]
+        @chainable
+    */
+    ColorScale.prototype.width = function width (_) {
+      return arguments.length ? (this._width = _, this) : this._width;
+    };
+
+    return ColorScale;
   }(d3plusCommon.BaseClass));
 
   exports.ckmeans = ckmeans;
