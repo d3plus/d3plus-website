@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.21
+  d3plus-legend v0.8.22
   An easy to use javascript chart legend.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -573,6 +573,7 @@ if (typeof window !== "undefined") {
 
       var availableHeight = this._height;
       this._titleHeight = 0;
+      this._titleWidth = 0;
       if (this._title) {
 
         var f = this._titleConfig.fontFamily || this._titleClass.fontFamily()(),
@@ -588,6 +589,7 @@ if (typeof window !== "undefined") {
           .height(this._height)
           (this._title);
         this._titleHeight = lH + res.lines.length + this._padding;
+        this._titleWidth = d3Array.max(res.widths);
         availableHeight -= this._titleHeight;
       }
 
@@ -745,7 +747,7 @@ if (typeof window !== "undefined") {
       }
 
       var innerHeight = d3Array.max(this._lineData, function (d, i) { return d3Array.max([d.height, this$1._fetchConfig("height", d.data, i)]) + d.y; }) + this._titleHeight,
-            innerWidth = spaceNeeded;
+            innerWidth = d3Array.max([spaceNeeded, this._titleWidth]);
 
       this._outerBounds.width = innerWidth;
       this._outerBounds.height = innerHeight;
@@ -1025,6 +1027,9 @@ if (typeof window !== "undefined") {
           labelConfig: {
             fontColor: "#222"
           }
+        },
+        titleConfig: {
+          fontSize: 12
         }
       };
       this._axisTest = new d3plusAxis.Axis();
@@ -1233,9 +1238,11 @@ if (typeof window !== "undefined") {
           duration: this._duration,
           height: this._height,
           padding: this._padding,
-          shapeConfig: {
+          shapeConfig: d3plusCommon.assign({
             duration: this._duration
-          },
+          }, this._axisConfig.shapeConfig || {}),
+          title: this._axisConfig.title,
+          titleConfig: this._axisConfig.titleConfig || {},
           width: this._width,
           verticalAlign: horizontal ? {start: "top", middle: "middle", end: "bottom"}[this._align] : "middle"
         }, this._legendConfig);
