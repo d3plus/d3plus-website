@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.9
+  d3plus-plot v0.8.10
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -36396,7 +36396,7 @@ if (typeof window !== "undefined") {
       var height = this._height - this._margin.top - this._margin.bottom,
             width = this._width - this._margin.left - this._margin.right;
 
-      var radius = (min([height, width]) - this._outerPadding) / 2,
+      var radius = min([height, width]) / 2 - this._outerPadding,
             transform = "translate(" + (width / 2) + ", " + (height / 2) + ")";
 
       var nestedAxisData = nest()
