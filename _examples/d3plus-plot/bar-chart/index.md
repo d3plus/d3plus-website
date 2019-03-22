@@ -2,8 +2,8 @@
 title: Bar Chart
 width: 990
 height: 400
-time: 1552577294262
-date: March 14, 2019
+time: 1553269716547
+date: March 22, 2019
 ---
 
 # Bar Chart
