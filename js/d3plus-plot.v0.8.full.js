@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.8
+  d3plus-plot v0.8.9
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -36352,7 +36352,7 @@ if (typeof window !== "undefined") {
 
   /**
       @class Radar
-      @extends Plot
+      @extends Viz
       @desc Creates a radar visualization based on an array of data.
   */
   var Radar = /*@__PURE__*/(function (Viz$$1) {
@@ -36360,22 +36360,24 @@ if (typeof window !== "undefined") {
       Viz$$1.call(this);
 
       this._axisConfig = {
-        fill: constant("none"),
-        stroke: constant("#CCC"),
-        strokeWidth: constant(1)
+        shapeConfig: {
+          fill: constant("none"),
+          labelConfig: {
+            fontColor: "#000",
+            padding: 0,
+            textAnchor: function (d) { return d.textAnchor; },
+            rotateAnchor: function (d) { return d.data.rotateAnchor; },
+            verticalAlign: "middle"
+          },
+          stroke: "#ccc",
+          strokeWidth: constant(1)
+        }
       };
       this._discrete = "metric";
-      this._hover = true;
       this._levels = 6;
       this._metric = accessor("metric");
-      this._radarPadding = 100;
+      this._outerPadding = 100;
       this._shape = constant("Path");
-      this._shapeConfig = assign(this._shapeConfig, {
-        Circle: {
-          r: accessor("r", 0)
-        },
-        Path: {}
-      });
       this._value = accessor("value");
     }
 
@@ -36384,7 +36386,7 @@ if (typeof window !== "undefined") {
     Radar.prototype.constructor = Radar;
 
     /**
-        Extends the draw behavior of the abstract Plot class.
+        Extends the draw behavior of the abstract Viz class.
         @private
     */
     Radar.prototype._draw = function _draw (callback) {
@@ -36394,7 +36396,7 @@ if (typeof window !== "undefined") {
       var height = this._height - this._margin.top - this._margin.bottom,
             width = this._width - this._margin.left - this._margin.right;
 
-      var radius = (Math.min(height, width) - this._radarPadding) / 2,
+      var radius = (min([height, width]) - this._outerPadding) / 2,
             transform = "translate(" + (width / 2) + ", " + (height / 2) + ")";
 
       var nestedAxisData = nest()
@@ -36421,13 +36423,13 @@ if (typeof window !== "undefined") {
             update: {transform: transform}
           }).node()
         )
-        .config(this._axisConfig)
+        .config(configPrep.bind(this)(this._axisConfig.shapeConfig, "shape", "Circle"))
         .render();
 
       var totalAxis = nestedAxisData.length;
       var polarAxis = nestedAxisData
         .map(function (d, i) {
-          var width = 100;
+          var width = this$1._outerPadding;
           var fontSize =
             this$1._shapeConfig.labelConfig.fontSize &&
               this$1._shapeConfig.labelConfig.fontSize(d, i) ||
@@ -36478,13 +36480,7 @@ if (typeof window !== "undefined") {
         .y(function (d) { return d.y; })
         .label(function (d) { return d.id; })
         .labelBounds(function (d) { return d.labelBounds; })
-        .labelConfig({
-          padding: 0,
-          textAnchor: function (d) { return d.textAnchor; },
-          rotateAnchor: function (d) { return d.data.rotateAnchor; },
-          fontColor: "black",
-          verticalAlign: "middle"
-        })
+        .labelConfig(this._axisConfig.shapeConfig.labelConfig)
         .select(
           elem("g.d3plus-Radar-text", {
             parent: this._select,
@@ -36504,10 +36500,11 @@ if (typeof window !== "undefined") {
             update: {transform: transform}
           }).node()
         )
-        .config(this._axisConfig)
+        .config(configPrep.bind(this)(this._axisConfig.shapeConfig, "shape", "Path"))
         .render();
 
       var groupData = nestedGroupData.map(function (h) {
+
         var q = h.values.map(function (d, i) {
           var value = sum(d.values, function (x, i) { return this$1._value(x, i); });
           var r = value / maxValue * radius,
@@ -36522,8 +36519,34 @@ if (typeof window !== "undefined") {
           .map(function (l) { return ("L " + (l.x) + " " + (l.y)); })
           .join(" ")) + " L " + (q[0].x) + " " + (q[0].y);
 
-        return {id: h.key, d: d, __d3plus__: true, data: assign.apply(void 0, merge(h.values.map(function (d) { return d.values; })))};
+        return {
+          arr: h.values.map(function (d) { return objectMerge(d.values); }),
+          id: h.key,
+          points: q,
+          d: d,
+          __d3plus__: true,
+          data: objectMerge(h.values.map(function (d) { return objectMerge(d.values); }))
+        };
+
       });
+
+      var pathConfig = configPrep.bind(this)(this._shapeConfig, "shape", "Path");
+      var events = Object.keys(pathConfig.on);
+      pathConfig.on = {};
+      var loop = function ( e ) {
+        var event = events[e];
+        pathConfig.on[event] = function (d, i) {
+          var x = d.points.map(function (p) { return p.x + width / 2; });
+          var y = d.points.map(function (p) { return p.y + height / 2; });
+          var cursor = mouse(this$1._select.node());
+          var xDist = x.map(function (p) { return Math.abs(p - cursor[0]); });
+          var yDist = y.map(function (p) { return Math.abs(p - cursor[1]); });
+          var dists = xDist.map(function (d, i) { return d + yDist[i]; });
+          this$1._on[event].bind(this$1)(d.arr[dists.indexOf(min(dists))], i);
+        };
+      };
+
+      for (var e = 0; e < events.length; e++) loop( e );
 
       this._shapes.push(
         new Path$1()
@@ -36536,11 +36559,21 @@ if (typeof window !== "undefined") {
               update: {transform: transform}
             }).node()
           )
-          .config(configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
+          .config(pathConfig)
           .render()
       );
 
       return this;
+    };
+
+    /**
+        @memberof Radar
+        @desc Sets the config method used for the radial spokes, circles, and labels.
+        @param {Object} *value*
+        @chainable
+    */
+    Radar.prototype.axisConfig = function axisConfig (_) {
+      return arguments.length ? (this._axisConfig = assign(this._axisConfig, _), this) : this._axisConfig;
     };
 
     /**
@@ -36555,14 +36588,12 @@ if (typeof window !== "undefined") {
 
     /**
         @memberof Radar
-        @desc If *value* is specified, sets the padding of the chart and returns the current class instance. If *value* is not specified, returns the current radarPadding. By default, the radarPadding is 100.
+        @desc Determines how much pixel spaces to give the outer labels.
         @param {Number} [*value* = 100]
         @chainable
     */
-    Radar.prototype.radarPadding = function radarPadding (_) {
-      return arguments.length
-        ? (this._radarPadding = _, this)
-        : this._radarPadding;
+    Radar.prototype.outerPadding = function outerPadding (_) {
+      return arguments.length ? (this._outerPadding = _, this) : this._outerPadding;
     };
 
     /**
@@ -36575,9 +36606,7 @@ if (typeof window !== "undefined") {
   }
     */
     Radar.prototype.value = function value (_) {
-      return arguments.length
-        ? (this._value = typeof _ === "function" ? _ : accessor(_), this)
-        : this._value;
+      return arguments.length ? (this._value = typeof _ === "function" ? _ : accessor(_), this) : this._value;
     };
 
     return Radar;

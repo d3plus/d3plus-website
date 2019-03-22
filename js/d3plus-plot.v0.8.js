@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.8
+  d3plus-plot v0.8.9
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -205,10 +205,10 @@ if (typeof window !== "undefined") {
 }
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-shape'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
-  typeof define === 'function' && define.amd ? define('d3plus-plot', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3-shape', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-  (factory((global.d3plus = {}),global.d3Array,global.d3Collection,global.scales,global.d3Shape,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.shapes,global.d3plusViz));
-}(this, (function (exports,d3Array,d3Collection,scales,d3Shape,d3plusAxis,d3plusColor,d3plusCommon,shapes,d3plusViz) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-shape'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3-selection')) :
+  typeof define === 'function' && define.amd ? define('d3plus-plot', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3-shape', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3-selection'], factory) :
+  (factory((global.d3plus = {}),global.d3Array,global.d3Collection,global.scales,global.d3Shape,global.d3plusAxis,global.d3plusColor,global.d3plusCommon,global.shapes,global.d3plusViz,global.d3Selection));
+}(this, (function (exports,d3Array,d3Collection,scales,d3Shape,d3plusAxis,d3plusColor,d3plusCommon,shapes,d3plusViz,d3Selection) { 'use strict';
 
   /**
       Adds buffers in between ordinal axis ticks.
@@ -1914,7 +1914,7 @@ if (typeof window !== "undefined") {
 
   /**
       @class Radar
-      @extends Plot
+      @extends Viz
       @desc Creates a radar visualization based on an array of data.
   */
   var Radar = /*@__PURE__*/(function (Viz) {
@@ -1922,22 +1922,24 @@ if (typeof window !== "undefined") {
       Viz.call(this);
 
       this._axisConfig = {
-        fill: d3plusCommon.constant("none"),
-        stroke: d3plusCommon.constant("#CCC"),
-        strokeWidth: d3plusCommon.constant(1)
+        shapeConfig: {
+          fill: d3plusCommon.constant("none"),
+          labelConfig: {
+            fontColor: "#000",
+            padding: 0,
+            textAnchor: function (d) { return d.textAnchor; },
+            rotateAnchor: function (d) { return d.data.rotateAnchor; },
+            verticalAlign: "middle"
+          },
+          stroke: "#ccc",
+          strokeWidth: d3plusCommon.constant(1)
+        }
       };
       this._discrete = "metric";
-      this._hover = true;
       this._levels = 6;
       this._metric = d3plusCommon.accessor("metric");
-      this._radarPadding = 100;
+      this._outerPadding = 100;
       this._shape = d3plusCommon.constant("Path");
-      this._shapeConfig = d3plusCommon.assign(this._shapeConfig, {
-        Circle: {
-          r: d3plusCommon.accessor("r", 0)
-        },
-        Path: {}
-      });
       this._value = d3plusCommon.accessor("value");
     }
 
@@ -1946,7 +1948,7 @@ if (typeof window !== "undefined") {
     Radar.prototype.constructor = Radar;
 
     /**
-        Extends the draw behavior of the abstract Plot class.
+        Extends the draw behavior of the abstract Viz class.
         @private
     */
     Radar.prototype._draw = function _draw (callback) {
@@ -1956,7 +1958,7 @@ if (typeof window !== "undefined") {
       var height = this._height - this._margin.top - this._margin.bottom,
             width = this._width - this._margin.left - this._margin.right;
 
-      var radius = (Math.min(height, width) - this._radarPadding) / 2,
+      var radius = (d3Array.min([height, width]) - this._outerPadding) / 2,
             transform = "translate(" + (width / 2) + ", " + (height / 2) + ")";
 
       var nestedAxisData = d3Collection.nest()
@@ -1983,13 +1985,13 @@ if (typeof window !== "undefined") {
             update: {transform: transform}
           }).node()
         )
-        .config(this._axisConfig)
+        .config(d3plusCommon.configPrep.bind(this)(this._axisConfig.shapeConfig, "shape", "Circle"))
         .render();
 
       var totalAxis = nestedAxisData.length;
       var polarAxis = nestedAxisData
         .map(function (d, i) {
-          var width = 100;
+          var width = this$1._outerPadding;
           var fontSize =
             this$1._shapeConfig.labelConfig.fontSize &&
               this$1._shapeConfig.labelConfig.fontSize(d, i) ||
@@ -2040,13 +2042,7 @@ if (typeof window !== "undefined") {
         .y(function (d) { return d.y; })
         .label(function (d) { return d.id; })
         .labelBounds(function (d) { return d.labelBounds; })
-        .labelConfig({
-          padding: 0,
-          textAnchor: function (d) { return d.textAnchor; },
-          rotateAnchor: function (d) { return d.data.rotateAnchor; },
-          fontColor: "black",
-          verticalAlign: "middle"
-        })
+        .labelConfig(this._axisConfig.shapeConfig.labelConfig)
         .select(
           d3plusCommon.elem("g.d3plus-Radar-text", {
             parent: this._select,
@@ -2066,10 +2062,11 @@ if (typeof window !== "undefined") {
             update: {transform: transform}
           }).node()
         )
-        .config(this._axisConfig)
+        .config(d3plusCommon.configPrep.bind(this)(this._axisConfig.shapeConfig, "shape", "Path"))
         .render();
 
       var groupData = nestedGroupData.map(function (h) {
+
         var q = h.values.map(function (d, i) {
           var value = d3Array.sum(d.values, function (x, i) { return this$1._value(x, i); });
           var r = value / maxValue * radius,
@@ -2084,8 +2081,34 @@ if (typeof window !== "undefined") {
           .map(function (l) { return ("L " + (l.x) + " " + (l.y)); })
           .join(" ")) + " L " + (q[0].x) + " " + (q[0].y);
 
-        return {id: h.key, d: d, __d3plus__: true, data: d3plusCommon.assign.apply(void 0, d3Array.merge(h.values.map(function (d) { return d.values; })))};
+        return {
+          arr: h.values.map(function (d) { return d3plusCommon.merge(d.values); }),
+          id: h.key,
+          points: q,
+          d: d,
+          __d3plus__: true,
+          data: d3plusCommon.merge(h.values.map(function (d) { return d3plusCommon.merge(d.values); }))
+        };
+
       });
+
+      var pathConfig = d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path");
+      var events = Object.keys(pathConfig.on);
+      pathConfig.on = {};
+      var loop = function ( e ) {
+        var event = events[e];
+        pathConfig.on[event] = function (d, i) {
+          var x = d.points.map(function (p) { return p.x + width / 2; });
+          var y = d.points.map(function (p) { return p.y + height / 2; });
+          var cursor = d3Selection.mouse(this$1._select.node());
+          var xDist = x.map(function (p) { return Math.abs(p - cursor[0]); });
+          var yDist = y.map(function (p) { return Math.abs(p - cursor[1]); });
+          var dists = xDist.map(function (d, i) { return d + yDist[i]; });
+          this$1._on[event].bind(this$1)(d.arr[dists.indexOf(d3Array.min(dists))], i);
+        };
+      };
+
+      for (var e = 0; e < events.length; e++) loop( e );
 
       this._shapes.push(
         new shapes.Path()
@@ -2098,11 +2121,21 @@ if (typeof window !== "undefined") {
               update: {transform: transform}
             }).node()
           )
-          .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
+          .config(pathConfig)
           .render()
       );
 
       return this;
+    };
+
+    /**
+        @memberof Radar
+        @desc Sets the config method used for the radial spokes, circles, and labels.
+        @param {Object} *value*
+        @chainable
+    */
+    Radar.prototype.axisConfig = function axisConfig (_) {
+      return arguments.length ? (this._axisConfig = d3plusCommon.assign(this._axisConfig, _), this) : this._axisConfig;
     };
 
     /**
@@ -2117,14 +2150,12 @@ if (typeof window !== "undefined") {
 
     /**
         @memberof Radar
-        @desc If *value* is specified, sets the padding of the chart and returns the current class instance. If *value* is not specified, returns the current radarPadding. By default, the radarPadding is 100.
+        @desc Determines how much pixel spaces to give the outer labels.
         @param {Number} [*value* = 100]
         @chainable
     */
-    Radar.prototype.radarPadding = function radarPadding (_) {
-      return arguments.length
-        ? (this._radarPadding = _, this)
-        : this._radarPadding;
+    Radar.prototype.outerPadding = function outerPadding (_) {
+      return arguments.length ? (this._outerPadding = _, this) : this._outerPadding;
     };
 
     /**
@@ -2137,9 +2168,7 @@ if (typeof window !== "undefined") {
   }
     */
     Radar.prototype.value = function value (_) {
-      return arguments.length
-        ? (this._value = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this)
-        : this._value;
+      return arguments.length ? (this._value = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._value;
     };
 
     return Radar;
