@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.16.5
+  d3plus-shape v0.16.6
   Fancy SVG shapes for visualizations
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -14723,12 +14723,17 @@ if (typeof window !== "undefined") {
         return null;
       }
       if (polygonContains(poly, centroid)) { origins.push(centroid); }
+
+      var nTries = options.nTries;
       // get few more points inside the polygon
-      while (origins.length < options.nTries) {
+      while (nTries) {
         var rndX = Math.random() * boxWidth + minx;
         var rndY = Math.random() * boxHeight + miny;
         var rndPoint = [rndX, rndY];
-        if (polygonContains(poly, rndPoint)) { origins.push(rndPoint); }
+        if (polygonContains(poly, rndPoint)) {
+          origins.push(rndPoint);
+        }
+        nTries--;
       }
     }
     if (options.events) { events.push({type: "origins", points: origins}); }
