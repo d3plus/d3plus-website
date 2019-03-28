@@ -8,12 +8,22 @@ style: blog
 
   <h1>Accessibility</h1>
 
-  <p>At it's core, D3plus is a collection of tools built on top of the low-level helper functions made available by D3 to help aid in the generation of charts. While D3 itself isn't really able to be considered "accessible", as it's a low-level tool dealing with data and DOM manipulation (see <a href="https://github.com/d3/d3-shape/issues/102" target="_blank">this discussion</a>), D3plus is able to create accessible SVG visualizations that includes many accessibility features right out of the box.</p>
+  <p>D3plus is a collection of tools built on top of the low-level helper functions made available by D3 to help aid in the generation of charts. While D3 itself can be considered accessible out of the box, as it doesn't actively add any elements to a webpage (see <a href="https://github.com/d3/d3-shape/issues/102" target="_blank">this discussion</a>), D3plus makes sure that the SVG elements that get added to the page include accessibility features automatically.</p>
 
-  <h2>Optional Parameters</h2>
+  <h2>Automatic Features</h2>
+
+  <ul>
+    <li>SVG "role" - All SVG elements created by D3plus contain a <code>role</code> attribute with the value "img". This ensures that all visualizations are identified as a graphic.</li>
+    <li>Inline data table - D3plus takes the data used to create the visualization and appends an SVG table to the DOM for screen readers to pick up.</li>
+    <li>SVG "role" - All SVG elements created by D3plus contain a <code>role</code> attribute with the value "img". This ensures that all visualizations are identified as a graphic.</li>
+    <li>Shape "role" - All shapes created by D3plus contain a <code>role</code> attribute with the value "presentation".</li>
+    <li>Aria Label - All shapes used for visualizing data contain an <code>aria-label</code> which describes multiple data points related to the shape. At it's minimum, the value will contain the text label of the data point, but additional information is provided depending on the visualization.</li>
+  </ul>
+
+  <h2>Optional Features</h2>
 
   <p>
-    While most accessibility features are derived automatically from the provided data, the following exceptions need to be explicitly set by the user:
+    While the above accessibility features are derived automatically for each visualization from the provided data, the following exceptions need to be explicitly set by the user:
   </p>
 
   <ul>
@@ -21,7 +31,7 @@ style: blog
     <li>SVG Description - if you would like to add a &lt;desc&gt; tag inside of the &lt;svg&gt; element, the <a href="/docs/#Viz.svgDesc"><code>svgDesc</code></a> method must be set.</li>
   </ul>
 
-  <h2>SVG Attributes</h2>
+  <h2>Example SVG Attributes</h2>
 
   <aside class="aside">
 
@@ -51,7 +61,7 @@ style: blog
 
 </svg>{% endhighlight %}
 
-  <h2>Inline Data Table</h2>
+  <h2>Example Inline Data Table</h2>
 
   <aside class="aside">
 
@@ -85,7 +95,7 @@ style: blog
   ...
 </g>{% endhighlight %}
 
-  <h2>Shape Attributes</h2>
+  <h2>Example Shape Attributes</h2>
 
   <aside class="aside">
 
