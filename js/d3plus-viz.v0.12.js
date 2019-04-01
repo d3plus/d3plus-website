@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.14
+  d3plus-viz v0.12.15
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -841,7 +841,7 @@ if (typeof window !== "undefined") {
     var visible = typeof total === "number";
 
     this._totalClass
-      .data(visible ? [{text: ("Total: " + (this._totalFormat(total)))}] : [])
+      .data(visible ? [{text: this._totalFormat(total)}] : [])
       .select(group)
       .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._totalConfig)
@@ -1555,7 +1555,7 @@ if (typeof window !== "undefined") {
         resize: false,
         textAnchor: "middle"
       };
-      this._totalFormat = d3plusFormat.formatAbbreviate;
+      this._totalFormat = function (d) { return ("Total: " + (d3plusFormat.formatAbbreviate(d))); };
 
       this._zoom = false;
       this._zoomBehavior = d3Zoom.zoom();

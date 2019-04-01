@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.14
+  d3plus-viz v0.12.15
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -5388,6 +5388,7 @@ if (typeof window !== "undefined") {
       return (end - start) / k;
     });
   };
+  var milliseconds = millisecond.range;
 
   var durationSecond = 1e3;
   var durationMinute = 6e4;
@@ -5404,6 +5405,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCSeconds();
   });
+  var seconds = second.range;
 
   var minute = newInterval(function(date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond);
@@ -5414,6 +5416,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getMinutes();
   });
+  var minutes = minute.range;
 
   var hour = newInterval(function(date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond - date.getMinutes() * durationMinute);
@@ -5424,6 +5427,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getHours();
   });
+  var hours = hour.range;
 
   var day = newInterval(function(date) {
     date.setHours(0, 0, 0, 0);
@@ -5434,6 +5438,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getDate() - 1;
   });
+  var days = day.range;
 
   function weekday(i) {
     return newInterval(function(date) {
@@ -5466,6 +5471,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getMonth();
   });
+  var months = month.range;
 
   var year = newInterval(function(date) {
     date.setMonth(0, 1);
@@ -5488,6 +5494,7 @@ if (typeof window !== "undefined") {
       date.setFullYear(date.getFullYear() + step * k);
     });
   };
+  var years = year.range;
 
   var utcMinute = newInterval(function(date) {
     date.setUTCSeconds(0, 0);
@@ -5498,6 +5505,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCMinutes();
   });
+  var utcMinutes = utcMinute.range;
 
   var utcHour = newInterval(function(date) {
     date.setUTCMinutes(0, 0, 0);
@@ -5508,6 +5516,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCHours();
   });
+  var utcHours = utcHour.range;
 
   var utcDay = newInterval(function(date) {
     date.setUTCHours(0, 0, 0, 0);
@@ -5518,6 +5527,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCDate() - 1;
   });
+  var utcDays = utcDay.range;
 
   function utcWeekday(i) {
     return newInterval(function(date) {
@@ -5538,6 +5548,8 @@ if (typeof window !== "undefined") {
   var utcFriday = utcWeekday(5);
   var utcSaturday = utcWeekday(6);
 
+  var utcSundays = utcSunday.range;
+
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
@@ -5548,6 +5560,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCMonth();
   });
+  var utcMonths = utcMonth.range;
 
   var utcYear = newInterval(function(date) {
     date.setUTCMonth(0, 1);
@@ -5570,6 +5583,7 @@ if (typeof window !== "undefined") {
       date.setUTCFullYear(date.getUTCFullYear() + step * k);
     });
   };
+  var utcYears = utcYear.range;
 
   function localDate(d) {
     if (0 <= d.y && d.y < 100) {
@@ -32791,7 +32805,7 @@ if (typeof window !== "undefined") {
     var visible = typeof total === "number";
 
     this._totalClass
-      .data(visible ? [{text: ("Total: " + (this._totalFormat(total)))}] : [])
+      .data(visible ? [{text: this._totalFormat(total)}] : [])
       .select(group)
       .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
       .config(this._totalConfig)
@@ -33505,7 +33519,7 @@ if (typeof window !== "undefined") {
         resize: false,
         textAnchor: "middle"
       };
-      this._totalFormat = formatAbbreviate;
+      this._totalFormat = function (d) { return ("Total: " + (formatAbbreviate(d))); };
 
       this._zoom = false;
       this._zoomBehavior = zoom();
