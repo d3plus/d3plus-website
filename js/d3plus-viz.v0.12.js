@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.15
+  d3plus-viz v0.12.16
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -982,19 +982,29 @@ if (typeof window !== "undefined") {
     })).length;
 
     if (d3Selection.event.shiftKey) {
-      if (soloIndex < 0) {
-        this._solo = id;
+
+      if (hiddenIndex < 0 && !this._solo.length) {
+        this._hidden = this._hidden.concat(id);
+        if (this._solo.length === dataLength) { this._solo = []; }
+        if (this._hidden.length === dataLength) { this._hidden = []; }
+        this.render();
+      }
+      else if (soloIndex >= 0) {
+        this._solo = [];
         this._hidden = [];
         this.render();
       }
+
     }
     else {
-      if (soloIndex >= 0) { this._solo.splice(soloIndex, id.length); }
-      else if (this._solo.length) { this._solo = this._solo.concat(id); }
-      else if (hiddenIndex >= 0) { this._hidden.splice(hiddenIndex, id.length); }
-      else { this._hidden = this._hidden.concat(id); }
-      if (this._solo.length === dataLength) { this._solo = []; }
-      if (this._hidden.length === dataLength) { this._hidden = []; }
+      if (soloIndex < 0 && this._hidden.length < dataLength - 1) {
+        this._solo = id;
+        this._hidden = [];
+      }
+      else {
+        this._solo = [];
+        this._hidden = [];
+      }
       this.render();
     }
 
@@ -1058,10 +1068,13 @@ if (typeof window !== "undefined") {
 
       this._select.style("cursor", "pointer");
       this._tooltipClass.data([d])
-        .footer(this._solo.length && !this._solo.includes(id) ? "Click to Show<br />Shift+Click to Solo"
-        : this._solo.length === 1 && this._solo.includes(id) || this._hidden.length === dataLength - 1 ? "Click to Reset"
-        : this._solo.includes(id) ? "Click to Hide"
-        : ((this._hidden.includes(id) ? "Click to Show" : "Click to Hide") + "<br />Shift+Click to Solo"))
+        .footer(
+          this._solo.length && !this._solo.includes(id) ? "Click to Highlight"
+          : this._solo.length === 1 && this._solo.includes(id) || this._hidden.length === dataLength - 1 ? "Click to Reset"
+          : this._solo.includes(id) ? "Click to Hide"
+          : this._hidden.includes(id) ? "Click to Highlight"
+          : "Click to Highlight<br />Shift+Click to Hide"
+        )
         .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
         .position(position)
         .config(this._tooltipConfig)

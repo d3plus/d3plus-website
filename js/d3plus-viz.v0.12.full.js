@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.15
+  d3plus-viz v0.12.16
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -5388,7 +5388,6 @@ if (typeof window !== "undefined") {
       return (end - start) / k;
     });
   };
-  var milliseconds = millisecond.range;
 
   var durationSecond = 1e3;
   var durationMinute = 6e4;
@@ -5405,7 +5404,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCSeconds();
   });
-  var seconds = second.range;
 
   var minute = newInterval(function(date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond);
@@ -5416,7 +5414,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getMinutes();
   });
-  var minutes = minute.range;
 
   var hour = newInterval(function(date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond - date.getMinutes() * durationMinute);
@@ -5427,7 +5424,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getHours();
   });
-  var hours = hour.range;
 
   var day = newInterval(function(date) {
     date.setHours(0, 0, 0, 0);
@@ -5438,7 +5434,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getDate() - 1;
   });
-  var days = day.range;
 
   function weekday(i) {
     return newInterval(function(date) {
@@ -5460,6 +5455,8 @@ if (typeof window !== "undefined") {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
+  var mondays = monday.range;
+  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -5471,7 +5468,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getMonth();
   });
-  var months = month.range;
 
   var year = newInterval(function(date) {
     date.setMonth(0, 1);
@@ -5494,7 +5490,6 @@ if (typeof window !== "undefined") {
       date.setFullYear(date.getFullYear() + step * k);
     });
   };
-  var years = year.range;
 
   var utcMinute = newInterval(function(date) {
     date.setUTCSeconds(0, 0);
@@ -5505,7 +5500,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCMinutes();
   });
-  var utcMinutes = utcMinute.range;
 
   var utcHour = newInterval(function(date) {
     date.setUTCMinutes(0, 0, 0);
@@ -5516,7 +5510,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCHours();
   });
-  var utcHours = utcHour.range;
 
   var utcDay = newInterval(function(date) {
     date.setUTCHours(0, 0, 0, 0);
@@ -5527,7 +5520,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCDate() - 1;
   });
-  var utcDays = utcDay.range;
 
   function utcWeekday(i) {
     return newInterval(function(date) {
@@ -5549,6 +5541,8 @@ if (typeof window !== "undefined") {
   var utcSaturday = utcWeekday(6);
 
   var utcSundays = utcSunday.range;
+  var utcMondays = utcMonday.range;
+  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -5560,7 +5554,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCMonth();
   });
-  var utcMonths = utcMonth.range;
 
   var utcYear = newInterval(function(date) {
     date.setUTCMonth(0, 1);
@@ -5583,7 +5576,6 @@ if (typeof window !== "undefined") {
       date.setUTCFullYear(date.getUTCFullYear() + step * k);
     });
   };
-  var utcYears = utcYear.range;
 
   function localDate(d) {
     if (0 <= d.y && d.y < 100) {
@@ -32946,19 +32938,29 @@ if (typeof window !== "undefined") {
     })).length;
 
     if (event$1.shiftKey) {
-      if (soloIndex < 0) {
-        this._solo = id;
+
+      if (hiddenIndex < 0 && !this._solo.length) {
+        this._hidden = this._hidden.concat(id);
+        if (this._solo.length === dataLength) { this._solo = []; }
+        if (this._hidden.length === dataLength) { this._hidden = []; }
+        this.render();
+      }
+      else if (soloIndex >= 0) {
+        this._solo = [];
         this._hidden = [];
         this.render();
       }
+
     }
     else {
-      if (soloIndex >= 0) { this._solo.splice(soloIndex, id.length); }
-      else if (this._solo.length) { this._solo = this._solo.concat(id); }
-      else if (hiddenIndex >= 0) { this._hidden.splice(hiddenIndex, id.length); }
-      else { this._hidden = this._hidden.concat(id); }
-      if (this._solo.length === dataLength) { this._solo = []; }
-      if (this._hidden.length === dataLength) { this._hidden = []; }
+      if (soloIndex < 0 && this._hidden.length < dataLength - 1) {
+        this._solo = id;
+        this._hidden = [];
+      }
+      else {
+        this._solo = [];
+        this._hidden = [];
+      }
       this.render();
     }
 
@@ -33022,10 +33024,13 @@ if (typeof window !== "undefined") {
 
       this._select.style("cursor", "pointer");
       this._tooltipClass.data([d])
-        .footer(this._solo.length && !this._solo.includes(id) ? "Click to Show<br />Shift+Click to Solo"
-        : this._solo.length === 1 && this._solo.includes(id) || this._hidden.length === dataLength - 1 ? "Click to Reset"
-        : this._solo.includes(id) ? "Click to Hide"
-        : ((this._hidden.includes(id) ? "Click to Show" : "Click to Hide") + "<br />Shift+Click to Solo"))
+        .footer(
+          this._solo.length && !this._solo.includes(id) ? "Click to Highlight"
+          : this._solo.length === 1 && this._solo.includes(id) || this._hidden.length === dataLength - 1 ? "Click to Reset"
+          : this._solo.includes(id) ? "Click to Hide"
+          : this._hidden.includes(id) ? "Click to Highlight"
+          : "Click to Highlight<br />Shift+Click to Hide"
+        )
         .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
         .position(position)
         .config(this._tooltipConfig)
