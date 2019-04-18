@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.4
+  d3plus-axis v0.4.5
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -639,6 +639,8 @@ if (typeof window !== "undefined") {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
+  var mondays = monday.range;
+  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -721,6 +723,10 @@ if (typeof window !== "undefined") {
   var utcThursday = utcWeekday(4);
   var utcFriday = utcWeekday(5);
   var utcSaturday = utcWeekday(6);
+
+  var utcSundays = utcSunday.range;
+  var utcMondays = utcMonday.range;
+  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -6268,30 +6274,138 @@ if (typeof window !== "undefined") {
       @param {Object} styles An object of key/value style pairs.
   */
 
+  var defaultLocale$2 = {
+    "en-GB": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["£", ""]
+    },
+    "en-US": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["$", ""]
+    },
+    "es-ES": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "mm", "b", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ".",
+        decimal: ","
+      },
+      currency: ["€", ""]
+    },
+    "es-CL": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ".",
+        decimal: ","
+      },
+      currency: ["$", ""]
+    },
+    "et-EE": {
+      separator: " ",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuh", "mln", "mld", "trl", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: " ",
+        decimal: ","
+      },
+      currency: ["€", ""]
+    },
+    "fr-FR": {
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "m", "b", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: " ",
+        decimal: ","
+      },
+      currency: ["€", ""]
+    }
+  };
+
+  var round = function (x, n) { return parseFloat(Math.round(x * Math.pow(10, n)) / Math.pow(10, n)).toFixed(n); };
+
+  /**
+   * @private
+  */
+  function formatSuffix(value, precision, suffixes) {
+    var i = 0;
+    if (value) {
+      if (value < 0) { value *= -1; }
+      i = 1 + Math.floor(1e-12 + Math.log(value) / Math.LN10);
+      i = Math.max(-24, Math.min(24, Math.floor((i - 1) / 3) * 3));
+    }
+    var d = suffixes[8 + i / 3];
+
+    return {
+      number: round(d.scale(value), precision),
+      symbol: d.symbol
+    };
+  }
+
+  /**
+   * @private
+  */
+  function parseSuffixes(d, i) {
+    var k = Math.pow(10, Math.abs(8 - i) * 3);
+    return {
+      scale: i > 8 ? function (d) { return d / k; } : function (d) { return d * k; },
+      symbol: d
+    };
+  }
+
+
   /**
       @function formatAbbreviate
       @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
-      @param {Number} n The number to be formatted.
+      @param {Number|String} n The number to be formatted.
+      @param {Object|String} locale The locale config to be used. If *value* is an object, the function will format the numbers according the object. The object must include `suffixes`, `delimiter` and `currency` properties.
       @returns {String}
   */
-  function formatAbbreviate(n) {
-    if (typeof n !== "number") { return "N/A"; }
-    var length = n.toString().split(".")[0].replace("-", "").length;
+  function formatAbbreviate(n, locale) {
+    if ( locale === void 0 ) { locale = "en-US"; }
+
+    if (isFinite(n)) { n *= 1; }
+    else { return "N/A"; }
+
+    var length = n.toString().split(".")[0].replace("-", "").length,
+          localeConfig = typeof locale === "object" ? locale : defaultLocale$2[locale] || defaultLocale$2["en-US"],
+          suffixes = localeConfig.suffixes.map(parseSuffixes);
+
+    var decimal = localeConfig.delimiters.decimal || ".",
+          separator = localeConfig.separator || "";
+
+    var d3plusFormatLocale = formatLocale$1({
+      currency: localeConfig.currency || ["$", ""],
+      decimal: decimal,
+      grouping: localeConfig.grouping || [3],
+      thousands: localeConfig.delimiters.thousands || ","
+    });
+
     var val;
     if (n === 0) { val = "0"; }
     else if (length >= 3) {
-      var f = format(".3s")(n)
-        .replace("G", "B")
-        .replace("T", "t")
-        .replace("P", "q")
-        .replace("E", "Q");
-      var num = f.slice(0, -1);
-      var char = f.slice(f.length - 1);
-      val = "" + (parseFloat(num)) + char;
+      var f = formatSuffix(d3plusFormatLocale.format(".3r")(n), 2, suffixes);
+      var num = parseFloat(f.number).toString().replace(".", decimal);
+      var char = f.symbol;
+      val = "" + num + separator + char;
     }
-    else if (length === 3) { val = format(",f")(n); }
-    else if (n < 1 && n > -1) { val = format(".2g")(n); }
-    else { val = format(".3g")(n); }
+    else if (length === 3) { val = d3plusFormatLocale.format(",f")(n); }
+    else if (n < 1 && n > -1) { val = d3plusFormatLocale.format(".2g")(n); }
+    else { val = d3plusFormatLocale.format(".3g")(n); }
 
     return val
       .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
@@ -13611,6 +13725,7 @@ if (typeof window !== "undefined") {
       this._gridLog = false;
       this._height = 400;
       this._labelOffset = true;
+      this._locale = "en-US";
       this.orient("bottom");
       this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
       this._padding = 5;
@@ -14026,7 +14141,7 @@ if (typeof window !== "undefined") {
         var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
 
         n = n.replace(/[^\d\.\-\+]/g, "") * 1;
-        return isNaN(n) ? n : formatAbbreviate(n);
+        return isNaN(n) ? n : formatAbbreviate(n, this$1._locale);
       };
 
       /**
@@ -14467,6 +14582,16 @@ if (typeof window !== "undefined") {
      */
     Axis.prototype.labelRotation = function labelRotation (_) {
       return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the locale to the specified string and returns the current class instance.
+        @param {String} [*value* = "en-US"]
+        @chainable
+    */
+    Axis.prototype.locale = function locale (_) {
+      return arguments.length ? (this._locale = _, this) : this._locale;
     };
 
     /**

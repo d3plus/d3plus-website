@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.4
+  d3plus-axis v0.4.5
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -294,6 +294,7 @@ if (typeof window !== "undefined") {
       this._gridLog = false;
       this._height = 400;
       this._labelOffset = true;
+      this._locale = "en-US";
       this.orient("bottom");
       this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
       this._padding = 5;
@@ -709,7 +710,7 @@ if (typeof window !== "undefined") {
         var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
 
         n = n.replace(/[^\d\.\-\+]/g, "") * 1;
-        return isNaN(n) ? n : d3plusFormat.formatAbbreviate(n);
+        return isNaN(n) ? n : d3plusFormat.formatAbbreviate(n, this$1._locale);
       };
 
       /**
@@ -1150,6 +1151,16 @@ if (typeof window !== "undefined") {
      */
     Axis.prototype.labelRotation = function labelRotation (_) {
       return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the locale to the specified string and returns the current class instance.
+        @param {String} [*value* = "en-US"]
+        @chainable
+    */
+    Axis.prototype.locale = function locale (_) {
+      return arguments.length ? (this._locale = _, this) : this._locale;
     };
 
     /**
