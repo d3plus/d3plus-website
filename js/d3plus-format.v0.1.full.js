@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.5
+  d3plus-format v0.1.6
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -362,12 +362,65 @@ if (!Array.prototype.includes) {
   }
 
   var defaultLocale$1 = {
-  	"en-GB": {"separator":"","suffixes":["y","z","a","f","p","n","µ","m","","k","M","B","t","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":",","decimal":"."},"currency":["£",""]},
-  	"en-US": {"separator":"","suffixes":["y","z","a","f","p","n","µ","m","","k","M","B","t","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":",","decimal":"."},"currency":["$",""]},
-  	"es-ES": {"separator":"","suffixes":["y","z","a","f","p","n","µ","m","","k","mm","b","t","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":".","decimal":","},"currency":["€",""]},
-  	"es-CL": {"separator":"","suffixes":["y","z","a","f","p","n","µ","m","","k","M","B","t","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":".","decimal":","},"currency":["$",""]},
-  	"et-EE": {"separator":" ","suffixes":["y","z","a","f","p","n","µ","m","","tuh","mln","mld","trl","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":" ","decimal":","},"currency":["€",""]},
-  	"fr-FR": {"suffixes":["y","z","a","f","p","n","µ","m","","k","m","b","t","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":" ","decimal":","},"currency":["€",""]}
+    "en-GB": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["£", ""]
+    },
+    "en-US": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["$", ""]
+    },
+    "es-ES": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "mm", "b", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ".",
+        decimal: ","
+      },
+      currency: ["€", ""]
+    },
+    "es-CL": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ".",
+        decimal: ","
+      },
+      currency: ["$", ""]
+    },
+    "et-EE": {
+      separator: " ",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuh", "mln", "mld", "trl", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: " ",
+        decimal: ","
+      },
+      currency: ["€", ""]
+    },
+    "fr-FR": {
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "m", "b", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: " ",
+        decimal: ","
+      },
+      currency: ["€", ""]
+    }
   };
 
   var round = function (x, n) { return parseFloat(Math.round(x * Math.pow(10, n)) / Math.pow(10, n)).toFixed(n); };
@@ -381,7 +434,7 @@ if (!Array.prototype.includes) {
       i = Math.max(-24, Math.min(24, Math.floor((i - 1) / 3) * 3));
     }
     var d = suffixes[8 + i / 3];
-    
+
     return {
       number: round(d.scale(value), precision),
       symbol: d.symbol
