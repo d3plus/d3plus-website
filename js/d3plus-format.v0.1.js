@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.6
+  d3plus-format v0.1.7
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -133,7 +133,9 @@ if (!Array.prototype.includes) {
 
   var round = function (x, n) { return parseFloat(Math.round(x * Math.pow(10, n)) / Math.pow(10, n)).toFixed(n); };
 
-  /** */
+  /**
+   * @private
+  */
   function formatSuffix(value, precision, suffixes) {
     var i = 0;
     if (value) {
@@ -149,7 +151,9 @@ if (!Array.prototype.includes) {
     };
   }
 
-  /** */
+  /**
+   * @private
+  */
   function parseSuffixes(d, i) {
     var k = Math.pow(10, Math.abs(8 - i) * 3);
     return {
