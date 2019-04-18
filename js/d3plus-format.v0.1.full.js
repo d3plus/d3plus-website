@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.4
+  d3plus-format v0.1.5
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -361,30 +361,81 @@ if (!Array.prototype.includes) {
     return locale;
   }
 
+  var defaultLocale$1 = {
+  	"en-GB": {"separator":"","suffixes":["y","z","a","f","p","n","µ","m","","k","M","B","t","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":",","decimal":"."},"currency":["£",""]},
+  	"en-US": {"separator":"","suffixes":["y","z","a","f","p","n","µ","m","","k","M","B","t","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":",","decimal":"."},"currency":["$",""]},
+  	"es-ES": {"separator":"","suffixes":["y","z","a","f","p","n","µ","m","","k","mm","b","t","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":".","decimal":","},"currency":["€",""]},
+  	"es-CL": {"separator":"","suffixes":["y","z","a","f","p","n","µ","m","","k","M","B","t","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":".","decimal":","},"currency":["$",""]},
+  	"et-EE": {"separator":" ","suffixes":["y","z","a","f","p","n","µ","m","","tuh","mln","mld","trl","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":" ","decimal":","},"currency":["€",""]},
+  	"fr-FR": {"suffixes":["y","z","a","f","p","n","µ","m","","k","m","b","t","q","Q","Z","Y"],"grouping":[3],"delimiters":{"thousands":" ","decimal":","},"currency":["€",""]}
+  };
+
+  var round = function (x, n) { return parseFloat(Math.round(x * Math.pow(10, n)) / Math.pow(10, n)).toFixed(n); };
+
+  /** */
+  function formatSuffix(value, precision, suffixes) {
+    var i = 0;
+    if (value) {
+      if (value < 0) { value *= -1; }
+      i = 1 + Math.floor(1e-12 + Math.log(value) / Math.LN10);
+      i = Math.max(-24, Math.min(24, Math.floor((i - 1) / 3) * 3));
+    }
+    var d = suffixes[8 + i / 3];
+    
+    return {
+      number: round(d.scale(value), precision),
+      symbol: d.symbol
+    };
+  }
+
+  /** */
+  function parseSuffixes(d, i) {
+    var k = Math.pow(10, Math.abs(8 - i) * 3);
+    return {
+      scale: i > 8 ? function (d) { return d / k; } : function (d) { return d * k; },
+      symbol: d
+    };
+  }
+
+
   /**
       @function formatAbbreviate
       @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
-      @param {Number} n The number to be formatted.
+      @param {Number|String} n The number to be formatted.
+      @param {Object|String} locale The locale config to be used. If *value* is an object, the function will format the numbers according the object. The object must include `suffixes`, `delimiter` and `currency` properties.
       @returns {String}
   */
-  function abbreviate(n) {
-    if (typeof n !== "number") { return "N/A"; }
-    var length = n.toString().split(".")[0].replace("-", "").length;
+  function abbreviate(n, locale) {
+    if ( locale === void 0 ) locale = "en-US";
+
+    if (isFinite(n)) { n *= 1; }
+    else { return "N/A"; }
+
+    var length = n.toString().split(".")[0].replace("-", "").length,
+          localeConfig = typeof locale === "object" ? locale : defaultLocale$1[locale] || defaultLocale$1["en-US"],
+          suffixes = localeConfig.suffixes.map(parseSuffixes);
+
+    var decimal = localeConfig.delimiters.decimal || ".",
+          separator = localeConfig.separator || "";
+
+    var d3plusFormatLocale = formatLocale({
+      currency: localeConfig.currency || ["$", ""],
+      decimal: decimal,
+      grouping: localeConfig.grouping || [3],
+      thousands: localeConfig.delimiters.thousands || ","
+    });
+
     var val;
     if (n === 0) { val = "0"; }
     else if (length >= 3) {
-      var f = format(".3s")(n)
-        .replace("G", "B")
-        .replace("T", "t")
-        .replace("P", "q")
-        .replace("E", "Q");
-      var num = f.slice(0, -1);
-      var char = f.slice(f.length - 1);
-      val = "" + (parseFloat(num)) + char;
+      var f = formatSuffix(d3plusFormatLocale.format(".3r")(n), 2, suffixes);
+      var num = parseFloat(f.number).toString().replace(".", decimal);
+      var char = f.symbol;
+      val = "" + num + separator + char;
     }
-    else if (length === 3) { val = format(",f")(n); }
-    else if (n < 1 && n > -1) { val = format(".2g")(n); }
-    else { val = format(".3g")(n); }
+    else if (length === 3) { val = d3plusFormatLocale.format(",f")(n); }
+    else if (n < 1 && n > -1) { val = d3plusFormatLocale.format(".2g")(n); }
+    else { val = d3plusFormatLocale.format(".3g")(n); }
 
     return val
       .replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
