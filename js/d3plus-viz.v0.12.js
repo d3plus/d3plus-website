@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.19
+  d3plus-viz v0.12.20
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1427,7 +1427,7 @@ if (typeof window !== "undefined") {
       BaseClass.call(this);
 
       this._aggs = {};
-      this._ariaHidden = false;
+      this._ariaHidden = true;
       this._backClass = new d3plusText.TextBox()
         .on("click", function () {
           if (this$1._history.length) { this$1.config(this$1._history.pop()).render(); }
@@ -1994,7 +1994,7 @@ if (typeof window !== "undefined") {
     /**
         @memberof Viz
         @desc Sets the "aria-hidden" attribute of the containing SVG element. The default value is "false", but it you need to hide the SVG from screen readers set this property to "true".
-        @param {Boolean} [*value* = false]
+        @param {Boolean} [*value* = true]
         @chainable
     */
     Viz.prototype.ariaHidden = function ariaHidden (_) {
