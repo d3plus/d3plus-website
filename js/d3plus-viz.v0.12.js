@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.17
+  d3plus-viz v0.12.18
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1020,13 +1020,17 @@ if (typeof window !== "undefined") {
     var this$1 = this;
 
 
-    var filterId = this._ids(d, i);
+    if (this._shapeConfig.hoverOpacity !== 1) {
 
-    this.hover(function (h, x) {
-      var ids = this$1._ids(h, x);
-      var index = d3Array.min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
-      return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
-    });
+      var filterId = this._ids(d, i);
+
+      this.hover(function (h, x) {
+        var ids = this$1._ids(h, x);
+        var index = d3Array.min([ids.length - 1, filterId.length - 1, this$1._drawDepth]);
+        return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
+      });
+
+    }
 
   }
 
@@ -1036,9 +1040,18 @@ if (typeof window !== "undefined") {
       @param {Number} *i* The index of the data object being interacted with.
       @private
   */
-  function mouseleave() {
+  function mouseleave(d, i) {
+    var this$1 = this;
 
-    this.hover(false);
+
+    if (this._shapeConfig.hoverOpacity !== 1) {
+      setTimeout(function () {
+        if (this$1._hover ? this$1._hover(d, i) : true) {
+          this$1.hover(false);
+        }
+      }, 100);
+    }
+
     this._select.style("cursor", "auto");
     if (this._tooltip) { this._tooltipClass.data([]).render(); }
 
@@ -1093,10 +1106,10 @@ if (typeof window !== "undefined") {
       @private
   */
   function mousemoveShape(d) {
-    var position = d3Selection.event.touches ? [d3Selection.event.touches[0].clientX, d3Selection.event.touches[0].clientY] : [d3Selection.event.clientX, d3Selection.event.clientY];
 
     if (this._tooltip && d) {
       this._select.style("cursor", "pointer");
+      var position = d3Selection.event.touches ? [d3Selection.event.touches[0].clientX, d3Selection.event.touches[0].clientY] : [d3Selection.event.clientX, d3Selection.event.clientY];
       this._tooltipClass.data([d])
         .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
         .title(this._drawLabel)
@@ -1440,6 +1453,7 @@ if (typeof window !== "undefined") {
         selectStyle: Object.assign({margin: "5px"}, controlTest.selectStyle())
       };
       this._data = [];
+      this._dataCutoff = 50;
       this._detectResize = true;
       this._detectResizeDelay = 400;
       this._detectVisible = true;
@@ -1679,6 +1693,15 @@ if (typeof window !== "undefined") {
 
       }
 
+      // overrides the hoverOpacity of shapes if data is larger than cutoff
+      if (this._filteredData.length > this._dataCutoff) {
+        if (this._userHover === undefined) { this._userHover = this._shapeConfig.hoverOpacity || 0.5; }
+        this._shapeConfig.hoverOpacity = 1;
+      }
+      else if (this._userHover !== undefined) {
+        this._shapeConfig.hoverOpacity = this._userHover;
+      }
+
       if (this._noDataMessage && !this._filteredData.length) {
         this._messageClass.render({
           container: this._select.node().parentNode,
@@ -1734,6 +1757,7 @@ if (typeof window !== "undefined") {
 
       // this._zoomGroup = enter.merge(this._zoomGroup);
 
+      // const testWidth = 5;
       // this._shapes.push(new Rect()
       //   .config(this._shapeConfig)
       //   .data(this._filteredData)
@@ -1745,9 +1769,9 @@ if (typeof window !== "undefined") {
       //     mousemove: this._on["mousemove.shape"]
       //   })
       //   .id(this._id)
-      //   .x((d, i) => i * 100 + 200)
+      //   .x((d, i) => i * testWidth)
       //   .y(200)
-      //   .width(100)
+      //   .width(testWidth)
       //   .height(100)
       //   .render());
 
