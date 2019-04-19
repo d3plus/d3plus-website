@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.3.6
+  d3plus-tooltip v0.3.7
   A javascript-only tooltip.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -63,6 +63,147 @@ if (!Array.prototype.includes) {
   });
 }
 
+if (!String.prototype.includes) {
+  Object.defineProperty(String.prototype, 'includes', {
+    value: function(search, start) {
+      if (typeof start !== 'number') {
+        start = 0
+      }
+
+      if (start + search.length > this.length) {
+        return false
+      } else {
+        return this.indexOf(search, start) !== -1
+      }
+    }
+  })
+}
+
+if (!Array.prototype.find) {
+  Object.defineProperty(Array.prototype, 'find', {
+    value: function(predicate) {
+     // 1. Let O be ? ToObject(this value).
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+      if (typeof predicate !== 'function') {
+        throw new TypeError('predicate must be a function');
+      }
+
+      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+      var thisArg = arguments[1];
+
+      // 5. Let k be 0.
+      var k = 0;
+
+      // 6. Repeat, while k < len
+      while (k < len) {
+        // a. Let Pk be ! ToString(k).
+        // b. Let kValue be ? Get(O, Pk).
+        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+        // d. If testResult is true, return kValue.
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) {
+          return kValue;
+        }
+        // e. Increase k by 1.
+        k++;
+      }
+
+      // 7. Return undefined.
+      return undefined;
+    },
+    configurable: true,
+    writable: true
+  });
+}
+
+if (!String.prototype.startsWith) {
+  Object.defineProperty(String.prototype, 'startsWith', {
+      value: function(search, pos) {
+          pos = !pos || pos < 0 ? 0 : +pos;
+          return this.substring(pos, pos + search.length) === search;
+      }
+  });
+}
+
+if (typeof window !== "undefined") {
+  (function () {
+    var serializeXML = function (node, output) {
+      var nodeType = node.nodeType;
+      if (nodeType === 3) {
+        output.push(node.textContent.replace(/&/, '&amp;').replace(/</, '&lt;').replace('>', '&gt;'));
+      } else if (nodeType === 1) {
+        output.push('<', node.tagName);
+        if (node.hasAttributes()) {
+          [].forEach.call(node.attributes, function(attrNode){
+            output.push(' ', attrNode.item.name, '=\'', attrNode.item.value, '\'');
+          })
+        }
+        if (node.hasChildNodes()) {
+          output.push('>');
+          [].forEach.call(node.childNodes, function(childNode){
+            serializeXML(childNode, output);
+          })
+          output.push('</', node.tagName, '>');
+        } else {
+          output.push('/>');
+        }
+      } else if (nodeType == 8) {
+        output.push('<!--', node.nodeValue, '-->');
+      }
+    }
+
+    Object.defineProperty(SVGElement.prototype, 'innerHTML', {
+      get: function () {
+        var output = [];
+        var childNode = this.firstChild;
+        while (childNode) {
+          serializeXML(childNode, output);
+          childNode = childNode.nextSibling;
+        }
+        return output.join('');
+      },
+      set: function (markupText) {
+        while (this.firstChild) {
+          this.removeChild(this.firstChild);
+        }
+
+        try {
+          var dXML = new DOMParser();
+          dXML.async = false;
+
+          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markupText + '</svg>';
+          var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
+
+          var childNode = svgDocElement.firstChild;
+          while (childNode) {
+            this.appendChild(this.ownerDocument.importNode(childNode, true));
+            childNode = childNode.nextSibling;
+          }
+        } catch (e) {};
+      }
+    });
+
+    Object.defineProperty(SVGElement.prototype, 'innerSVG', {
+      get: function () {
+        return this.innerHTML;
+      },
+      set: function (markup) {
+        this.innerHTML = markup;
+      }
+    });
+
+  })();
+}
+
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3plus-common'), require('popper.js')) :
   typeof define === 'function' && define.amd ? define('d3plus-tooltip', ['exports', 'd3-selection', 'd3plus-common', 'popper.js'], factory) :
@@ -113,7 +254,7 @@ if (!Array.prototype.includes) {
         "z-index": "1"
       };
       this._height = d3plusCommon.constant("auto");
-      this._id = function (d, i) { return d.id || ("" + i); };
+      this._id = function (d, i) { return ("" + i); };
       this._offset = d3plusCommon.constant(5);
       this._padding = d3plusCommon.constant("5px");
       this._pointerEvents = d3plusCommon.constant("auto");
