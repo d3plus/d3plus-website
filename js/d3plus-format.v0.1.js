@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.7
+  d3plus-format v0.1.8
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -112,13 +112,13 @@ if (!Array.prototype.includes) {
     },
     "et-EE": {
       separator: " ",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuh", "mln", "mld", "trl", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuhat", "miljonit", "miljardit", "triljonit", "q", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: " ",
         decimal: ","
       },
-      currency: ["€", ""]
+      currency: ["", "eurot"]
     },
     "fr-FR": {
       suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "m", "b", "t", "q", "Q", "Z", "Y"],
