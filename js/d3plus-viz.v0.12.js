@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.20
+  d3plus-viz v0.12.21
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1048,7 +1048,7 @@ if (typeof window !== "undefined") {
       if (this$1._shapeConfig.hoverOpacity !== 1 && this$1._hover ? this$1._hover(d, i) : true) {
         this$1.hover(false);
       }
-      if (this$1._tooltip && this$1._tooltipClass.data()[0] === d) { this$1._tooltipClass.data([]).render(); }
+      if (this$1._tooltip && this$1._id(this$1._tooltipClass.data()[0]) === this$1._id(d)) { this$1._tooltipClass.data([]).render(); }
     }, 50);
 
     this._select.style("cursor", "auto");
