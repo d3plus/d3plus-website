@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.22
+  d3plus-viz v0.12.23
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1520,9 +1520,11 @@ if (typeof window !== "undefined") {
           }
           if (this$1._colorScale) {
             var c$1 = this$1._colorScale(d, i);
-            var scale = this$1._colorScaleClass._colorScale;
-            if (c$1 !== undefined && c$1 !== null && scale) {
-              if (!scale.domain().length) { return scale.range()[scale.range().length - 1]; }
+            if (c$1 !== undefined && c$1 !== null) {
+              var scale = this$1._colorScaleClass._colorScale;
+              var colors = this$1._colorScaleClass.color();
+              if (!scale) { return colors instanceof Array ? colors[colors.length - 1] : colors; }
+              else if (!scale.domain().length) { return scale.range()[scale.range().length - 1]; }
               return scale(c$1);
             }
           }
