@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.21
+  d3plus-viz v0.12.22
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -5365,6 +5365,7 @@ if (typeof window !== "undefined") {
       return (end - start) / k;
     });
   };
+  var milliseconds = millisecond.range;
 
   var durationSecond = 1e3;
   var durationMinute = 6e4;
@@ -5381,6 +5382,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCSeconds();
   });
+  var seconds = second.range;
 
   var minute = newInterval(function(date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond);
@@ -5391,6 +5393,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getMinutes();
   });
+  var minutes = minute.range;
 
   var hour = newInterval(function(date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond - date.getMinutes() * durationMinute);
@@ -5401,6 +5404,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getHours();
   });
+  var hours = hour.range;
 
   var day = newInterval(function(date) {
     date.setHours(0, 0, 0, 0);
@@ -5411,6 +5415,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getDate() - 1;
   });
+  var days = day.range;
 
   function weekday(i) {
     return newInterval(function(date) {
@@ -5443,6 +5448,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getMonth();
   });
+  var months = month.range;
 
   var year = newInterval(function(date) {
     date.setMonth(0, 1);
@@ -5465,6 +5471,7 @@ if (typeof window !== "undefined") {
       date.setFullYear(date.getFullYear() + step * k);
     });
   };
+  var years = year.range;
 
   var utcMinute = newInterval(function(date) {
     date.setUTCSeconds(0, 0);
@@ -5475,6 +5482,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCMinutes();
   });
+  var utcMinutes = utcMinute.range;
 
   var utcHour = newInterval(function(date) {
     date.setUTCMinutes(0, 0, 0);
@@ -5485,6 +5493,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCHours();
   });
+  var utcHours = utcHour.range;
 
   var utcDay = newInterval(function(date) {
     date.setUTCHours(0, 0, 0, 0);
@@ -5495,6 +5504,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCDate() - 1;
   });
+  var utcDays = utcDay.range;
 
   function utcWeekday(i) {
     return newInterval(function(date) {
@@ -5515,6 +5525,8 @@ if (typeof window !== "undefined") {
   var utcFriday = utcWeekday(5);
   var utcSaturday = utcWeekday(6);
 
+  var utcSundays = utcSunday.range;
+
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
@@ -5525,6 +5537,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCMonth();
   });
+  var utcMonths = utcMonth.range;
 
   var utcYear = newInterval(function(date) {
     date.setUTCMonth(0, 1);
@@ -5547,6 +5560,7 @@ if (typeof window !== "undefined") {
       date.setUTCFullYear(date.getUTCFullYear() + step * k);
     });
   };
+  var utcYears = utcYear.range;
 
   function localDate(d) {
     if (0 <= d.y && d.y < 100) {
@@ -33676,8 +33690,8 @@ if (typeof window !== "undefined") {
           }
           if (this$1._colorScale) {
             var c$1 = this$1._colorScale(d, i);
-            if (c$1 !== undefined && c$1 !== null) {
-              var scale = this$1._colorScaleClass._colorScale;
+            var scale = this$1._colorScaleClass._colorScale;
+            if (c$1 !== undefined && c$1 !== null && scale) {
               if (!scale.domain().length) { return scale.range()[scale.range().length - 1]; }
               return scale(c$1);
             }
