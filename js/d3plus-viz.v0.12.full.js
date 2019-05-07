@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.24
+  d3plus-viz v0.12.25
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -5365,6 +5365,7 @@ if (typeof window !== "undefined") {
       return (end - start) / k;
     });
   };
+  var milliseconds = millisecond.range;
 
   var durationSecond = 1e3;
   var durationMinute = 6e4;
@@ -5381,6 +5382,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCSeconds();
   });
+  var seconds = second.range;
 
   var minute = newInterval(function(date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond);
@@ -5391,6 +5393,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getMinutes();
   });
+  var minutes = minute.range;
 
   var hour = newInterval(function(date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond - date.getMinutes() * durationMinute);
@@ -5401,6 +5404,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getHours();
   });
+  var hours = hour.range;
 
   var day = newInterval(function(date) {
     date.setHours(0, 0, 0, 0);
@@ -5411,6 +5415,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getDate() - 1;
   });
+  var days = day.range;
 
   function weekday(i) {
     return newInterval(function(date) {
@@ -5432,6 +5437,8 @@ if (typeof window !== "undefined") {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
+  var mondays = monday.range;
+  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -5443,6 +5450,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getMonth();
   });
+  var months = month.range;
 
   var year = newInterval(function(date) {
     date.setMonth(0, 1);
@@ -5465,6 +5473,7 @@ if (typeof window !== "undefined") {
       date.setFullYear(date.getFullYear() + step * k);
     });
   };
+  var years = year.range;
 
   var utcMinute = newInterval(function(date) {
     date.setUTCSeconds(0, 0);
@@ -5475,6 +5484,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCMinutes();
   });
+  var utcMinutes = utcMinute.range;
 
   var utcHour = newInterval(function(date) {
     date.setUTCMinutes(0, 0, 0);
@@ -5485,6 +5495,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCHours();
   });
+  var utcHours = utcHour.range;
 
   var utcDay = newInterval(function(date) {
     date.setUTCHours(0, 0, 0, 0);
@@ -5495,6 +5506,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCDate() - 1;
   });
+  var utcDays = utcDay.range;
 
   function utcWeekday(i) {
     return newInterval(function(date) {
@@ -5515,6 +5527,10 @@ if (typeof window !== "undefined") {
   var utcFriday = utcWeekday(5);
   var utcSaturday = utcWeekday(6);
 
+  var utcSundays = utcSunday.range;
+  var utcMondays = utcMonday.range;
+  var utcThursdays = utcThursday.range;
+
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
     date.setUTCHours(0, 0, 0, 0);
@@ -5525,6 +5541,7 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCMonth();
   });
+  var utcMonths = utcMonth.range;
 
   var utcYear = newInterval(function(date) {
     date.setUTCMonth(0, 1);
@@ -5547,6 +5564,7 @@ if (typeof window !== "undefined") {
       date.setUTCFullYear(date.getUTCFullYear() + step * k);
     });
   };
+  var utcYears = utcYear.range;
 
   function localDate(d) {
     if (0 <= d.y && d.y < 100) {
@@ -22345,14 +22363,15 @@ if (typeof window !== "undefined") {
 
     var position = this._colorScalePosition || "bottom";
     var wide = ["top", "bottom"].includes(position);
+    var padding = this._colorScalePadding() ? this._padding : {top: 0, right: 0, bottom: 0, left: 0};
 
-    var availableWidth = this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right);
+    var availableWidth = this._width - (this._margin.left + this._margin.right + padding.left + padding.right);
 
     var width = wide
       ? min([this._colorScaleMaxSize, availableWidth])
       : this._width - (this._margin.left + this._margin.right);
 
-    var availableHeight = this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top);
+    var availableHeight = this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top);
 
     var height = !wide
       ? min([this._colorScaleMaxSize, availableHeight])
@@ -22360,7 +22379,7 @@ if (typeof window !== "undefined") {
 
     var transform = {
       opacity: this._colorScalePosition ? 1 : 0,
-      transform: ("translate(" + (wide ? this._margin.left + this._padding.left + (availableWidth - width) / 2 : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top + (availableHeight - height) / 2) + ")")
+      transform: ("translate(" + (wide ? this._margin.left + padding.left + (availableWidth - width) / 2 : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + padding.top + (availableHeight - height) / 2) + ")")
     };
 
     var showColorScale = this._colorScale && data && data.length > 1;
@@ -32647,6 +32666,7 @@ if (typeof window !== "undefined") {
 
 
     var that = this;
+    var padding = this._controlPadding() ? this._padding : {top: 0, right: 0, bottom: 0, left: 0};
 
     var areas = ["left", "right", "top", "bottom"];
     var loop = function ( a ) {
@@ -32679,12 +32699,12 @@ if (typeof window !== "undefined") {
       var wide = area === "top" || area === "bottom";
 
       var transform = {
-        height: wide ? this$1._height - (this$1._margin.top + this$1._margin.bottom) : this$1._height - (this$1._margin.top + this$1._margin.bottom + this$1._padding.top + this$1._padding.bottom),
-        width: wide ? this$1._width - (this$1._margin.left + this$1._margin.right + this$1._padding.left + this$1._padding.right) : this$1._width - (this$1._margin.left + this$1._margin.right)
+        height: wide ? this$1._height - (this$1._margin.top + this$1._margin.bottom) : this$1._height - (this$1._margin.top + this$1._margin.bottom + padding.top + padding.bottom),
+        width: wide ? this$1._width - (this$1._margin.left + this$1._margin.right + padding.left + padding.right) : this$1._width - (this$1._margin.left + this$1._margin.right)
       };
 
-      transform.x = (wide ? this$1._margin.left + this$1._padding.left : this$1._margin.left) + (area === "right" ? this$1._width - this$1._margin.bottom : 0);
-      transform.y = (wide ? this$1._margin.top : this$1._margin.top + this$1._padding.top) + (area === "bottom" ? this$1._height - this$1._margin.bottom : 0);
+      transform.x = (wide ? this$1._margin.left + padding.left : this$1._margin.left) + (area === "right" ? this$1._width - this$1._margin.bottom : 0);
+      transform.y = (wide ? this$1._margin.top : this$1._margin.top + padding.top) + (area === "bottom" ? this$1._height - this$1._margin.bottom : 0);
 
       var foreign = elem(("foreignObject.d3plus-viz-controls-" + area), {
         condition: controls.length,
@@ -32791,8 +32811,9 @@ if (typeof window !== "undefined") {
       var legendBounds = this._legendClass.outerBounds();
       var position = this._legendPosition;
       var wide = ["top", "bottom"].includes(position);
+      var padding = this._legendPadding() ? this._padding : {top: 0, right: 0, bottom: 0, left: 0};
 
-      var transform = {transform: ("translate(" + (wide ? this._margin.left + this._padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + this._padding.top) + ")")};
+      var transform = {transform: ("translate(" + (wide ? this._margin.left + padding.left : this._margin.left) + ", " + (wide ? this._margin.top : this._margin.top + padding.top) + ")")};
 
       var legendGroup = elem("g.d3plus-viz-legend", {
         condition: this._legend && !this._legendConfig.select,
@@ -32838,10 +32859,10 @@ if (typeof window !== "undefined") {
         .direction(wide ? "row" : "column")
         .duration(this._duration)
         .data(legendData.length > 1 || this._colorScale ? legendData : [])
-        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + this._padding.bottom + this._padding.top))
+        .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top))
         .select(legendGroup)
         .verticalAlign(!wide ? "middle" : position)
-        .width(wide ? this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right) : this._width - (this._margin.left + this._margin.right))
+        .width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right))
         .shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend"))
         .config(this._legendConfig)
         .shapeConfig({
@@ -32894,8 +32915,9 @@ if (typeof window !== "undefined") {
     var timelinePossible = this._time && this._timeline;
     var ticks$$1 = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$2) : [];
     timelinePossible = timelinePossible && ticks$$1.length > 1;
+    var padding = this._timelinePadding() ? this._padding : {top: 0, right: 0, bottom: 0, left: 0};
 
-    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", 0)")};
+    var transform = {transform: ("translate(" + (this._margin.left + padding.left) + ", 0)")};
 
     var timelineGroup = elem("g.d3plus-viz-timeline", {
       condition: timelinePossible,
@@ -32913,7 +32935,7 @@ if (typeof window !== "undefined") {
         .height(this._height - this._margin.bottom)
         .select(timelineGroup)
         .ticks(ticks$$1.sort(function (a, b) { return +a - +b; }))
-        .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right));
+        .width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right));
 
       if (timeline.selection() === undefined) {
         this._timelineSelection = extent(data, this._time).map(date$2);
@@ -32951,8 +32973,9 @@ if (typeof window !== "undefined") {
 
 
     var text = this._title ? this._title(data) : false;
+    var padding = this._titlePadding() ? this._padding : {top: 0, right: 0, bottom: 0, left: 0};
 
-    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", " + (this._margin.top) + ")")};
+    var transform = {transform: ("translate(" + (this._margin.left + padding.left) + ", " + (this._margin.top) + ")")};
 
     var group = elem("g.d3plus-viz-title", {
       enter: transform,
@@ -32964,7 +32987,7 @@ if (typeof window !== "undefined") {
     this._titleClass
       .data(text ? [{text: text}] : [])
       .select(group)
-      .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
+      .width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right))
       .config(this._titleConfig)
       .render();
 
@@ -32985,7 +33008,9 @@ if (typeof window !== "undefined") {
     var total = typeof this._total === "function" ? sum(data.map(this._total))
       : this._total === true && this._size ? sum(data.map(this._size)) : false;
 
-    var transform = {transform: ("translate(" + (this._margin.left + this._padding.left) + ", " + (this._margin.top) + ")")};
+    var padding = this._totalPadding() ? this._padding : {top: 0, right: 0, bottom: 0, left: 0};
+
+    var transform = {transform: ("translate(" + (this._margin.left + padding.left) + ", " + (this._margin.top) + ")")};
 
     var group = elem("g.d3plus-viz-total", {
       enter: transform,
@@ -32999,7 +33024,7 @@ if (typeof window !== "undefined") {
     this._totalClass
       .data(visible ? [{text: this._totalFormat(total)}] : [])
       .select(group)
-      .width(this._width - (this._margin.left + this._margin.right + this._padding.left + this._padding.right))
+      .width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right))
       .config(this._totalConfig)
       .render();
 
@@ -33571,6 +33596,13 @@ if (typeof window !== "undefined") {
   */
 
   /**
+   * Default padding logic that will return false if the screen is less than 600 pixels wide.
+   */
+  function defaultPadding() {
+    return typeof window !== "undefined" ? window.innerWidth > 600 : true;
+  }
+
+  /**
       @class Viz
       @extends external:BaseClass
       @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
@@ -33596,16 +33628,21 @@ if (typeof window !== "undefined") {
         resize: false
       };
       this._cache = true;
+
       this._color = function (d, i) { return this$1._groupBy[0](d, i); };
       this._colorScaleClass = new ColorScale();
       this._colorScaleConfig = {};
+      this._colorScalePadding = defaultPadding;
       this._colorScalePosition = "bottom";
       this._colorScaleMaxSize = 600;
+
       var controlTest = new Select();
       this._controlCache = {};
       this._controlConfig = {
         selectStyle: Object.assign({margin: "5px"}, controlTest.selectStyle())
       };
+      this._controlPadding = defaultPadding;
+
       this._data = [];
       this._dataCutoff = 100;
       this._detectResize = true;
@@ -33621,7 +33658,9 @@ if (typeof window !== "undefined") {
       this._hiddenOpacity = constant$7(0.5);
       this._history = [];
       this._groupBy = [accessor("id")];
+
       this._legend = true;
+      this._legendClass = new Legend();
       this._legendConfig = {
         label: legendLabel.bind(this),
         shapeConfig: {
@@ -33633,9 +33672,9 @@ if (typeof window !== "undefined") {
           }
         }
       };
-      this._legendTooltip = {};
-      this._legendClass = new Legend();
+      this._legendPadding = defaultPadding;
       this._legendPosition = "bottom";
+      this._legendTooltip = {};
 
       this._loadingHTML = constant$7("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
 
@@ -33712,6 +33751,7 @@ if (typeof window !== "undefined") {
         brushing: false,
         padding: 5
       };
+      this._timelinePadding = defaultPadding;
 
       this._threshold = constant$7(0.0001);
       this._thresholdKey = undefined;
@@ -33725,6 +33765,7 @@ if (typeof window !== "undefined") {
         resize: false,
         textAnchor: "middle"
       };
+      this._titlePadding = defaultPadding;
 
       this._tooltip = true;
       this._tooltipClass = new Tooltip();
@@ -33743,6 +33784,7 @@ if (typeof window !== "undefined") {
         textAnchor: "middle"
       };
       this._totalFormat = function (d) { return ("Total: " + (formatAbbreviate(d, this$1._locale))); };
+      this._totalPadding = defaultPadding;
 
       this._zoom = false;
       this._zoomBehavior = zoom();
@@ -34229,6 +34271,16 @@ if (typeof window !== "undefined") {
 
     /**
         @memberof Viz
+        @desc Tells the colorScale whether or not to use the internal padding defined by the visualization in it's positioning. For example, d3plus-plot will add padding on the left so that the colorScale appears centered above the x-axis. By default, this padding is only applied on screens larger than 600 pixels wide.
+        @param {Boolean|Function} [*value*]
+        @chainable
+    */
+    Viz.prototype.colorScalePadding = function colorScalePadding (_) {
+      return arguments.length ? (this._colorScalePadding = typeof _ === "function" ? _ : constant$7(_), this) : this._colorScalePadding;
+    };
+
+    /**
+        @memberof Viz
         @desc Defines which side of the visualization to anchor the color scale. Acceptable values are `"top"`, `"bottom"`, `"left"`, `"right"`, and `false`. A `false` value will cause the color scale to not be displayed, but will still color shapes based on the scale.
         @param {String|Boolean} [*value* = "bottom"]
         @chainable
@@ -34265,6 +34317,16 @@ if (typeof window !== "undefined") {
     */
     Viz.prototype.controlConfig = function controlConfig (_) {
       return arguments.length ? (this._controlConfig = assign(this._controlConfig, _), this) : this._controlConfig;
+    };
+
+    /**
+        @memberof Viz
+        @desc Tells the controls whether or not to use the internal padding defined by the visualization in it's positioning. For example, d3plus-plot will add padding on the left so that the controls appears centered above the x-axis. By default, this padding is only applied on screens larger than 600 pixels wide.
+        @param {Boolean|Function} [*value*]
+        @chainable
+    */
+    Viz.prototype.controlPadding = function controlPadding (_) {
+      return arguments.length ? (this._controlPadding = typeof _ === "function" ? _ : constant$7(_), this) : this._controlPadding;
     };
 
     /**
@@ -34540,6 +34602,16 @@ if (typeof window !== "undefined") {
 
     /**
         @memberof Viz
+        @desc Tells the legend whether or not to use the internal padding defined by the visualization in it's positioning. For example, d3plus-plot will add padding on the left so that the legend appears centered underneath the x-axis. By default, this padding is only applied on screens larger than 600 pixels wide.
+        @param {Boolean|Function} [*value*]
+        @chainable
+    */
+    Viz.prototype.legendPadding = function legendPadding (_) {
+      return arguments.length ? (this._legendPadding = typeof _ === "function" ? _ : constant$7(_), this) : this._legendPadding;
+    };
+
+    /**
+        @memberof Viz
         @desc Defines which side of the visualization to anchor the legend. Expected values are `"top"`, `"bottom"`, `"left"`, and `"right"`.
         @param {String} [*value* = "bottom"]
         @chainable
@@ -34784,6 +34856,16 @@ if (typeof window !== "undefined") {
 
     /**
         @memberof Viz
+        @desc Tells the timeline whether or not to use the internal padding defined by the visualization in it's positioning. For example, d3plus-plot will add padding on the left so that the timeline appears centered underneath the x-axis. By default, this padding is only applied on screens larger than 600 pixels wide.
+        @param {Boolean|Function} [*value*]
+        @chainable
+    */
+    Viz.prototype.timelinePadding = function timelinePadding (_) {
+      return arguments.length ? (this._timelinePadding = typeof _ === "function" ? _ : constant$7(_), this) : this._timelinePadding;
+    };
+
+    /**
+        @memberof Viz
         @desc If *value* is specified, sets the title accessor to the specified function or string and returns the current class instance.
         @param {Function|String} [*value*]
         @chainable
@@ -34800,6 +34882,16 @@ if (typeof window !== "undefined") {
     */
     Viz.prototype.titleConfig = function titleConfig (_) {
       return arguments.length ? (this._titleConfig = assign(this._titleConfig, _), this) : this._titleConfig;
+    };
+
+    /**
+        @memberof Viz
+        @desc Tells the title whether or not to use the internal padding defined by the visualization in it's positioning. For example, d3plus-plot will add padding on the left so that the title appears centered above the x-axis. By default, this padding is only applied on screens larger than 600 pixels wide.
+        @param {Boolean|Function} [*value*]
+        @chainable
+    */
+    Viz.prototype.titlePadding = function titlePadding (_) {
+      return arguments.length ? (this._titlePadding = typeof _ === "function" ? _ : constant$7(_), this) : this._titlePadding;
     };
 
     /**
@@ -34856,6 +34948,16 @@ if (typeof window !== "undefined") {
     */
     Viz.prototype.totalFormat = function totalFormat (_) {
       return arguments.length ? (this._totalFormat = _, this) : this._totalFormat;
+    };
+
+    /**
+        @memberof Viz
+        @desc Tells the total whether or not to use the internal padding defined by the visualization in it's positioning. For example, d3plus-plot will add padding on the left so that the total appears centered above the x-axis. By default, this padding is only applied on screens larger than 600 pixels wide.
+        @param {Boolean|Function} [*value*]
+        @chainable
+    */
+    Viz.prototype.totalPadding = function totalPadding (_) {
+      return arguments.length ? (this._totalPadding = typeof _ === "function" ? _ : constant$7(_), this) : this._totalPadding;
     };
 
     /**
