@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.16.6
+  d3plus-shape v0.16.7
   Fancy SVG shapes for visualizations
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -14718,7 +14718,7 @@ if (typeof window !== "undefined") {
     if (!origins.length) {
       // get the centroid of the polygon
       var centroid = polygonCentroid(poly);
-      if (isNaN(centroid[0]) || centroid[0] === Infinity || [-1, -0].includes(Math.sign(centroid[0]))) {
+      if (!isFinite(centroid[0])) {
         if (options.verbose) { console.error("cannot find centroid", poly); }
         return null;
       }
