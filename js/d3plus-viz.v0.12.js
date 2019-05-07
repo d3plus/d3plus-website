@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.23
+  d3plus-viz v0.12.24
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1557,6 +1557,10 @@ if (typeof window !== "undefined") {
         padding: 5
       };
 
+      this._threshold = d3plusCommon.constant(0.0001);
+      this._thresholdKey = undefined;
+      this._thresholdName = "Values";
+
       this._titleClass = new d3plusText.TextBox();
       this._titleConfig = {
         ariaHidden: true,
@@ -1648,6 +1652,9 @@ if (typeof window !== "undefined") {
 
       this._drawLabel = function (d, i) {
         if (!d) { return ""; }
+        if (d._isAggregation) {
+          return ((this$1._thresholdName) + " < " + (d3plusFormat.formatAbbreviate(d._threshold * 100)) + "%");
+        }
         while (d.__d3plus__ && d.data) {
           d = d.data;
           i = d.i;
@@ -1684,12 +1691,15 @@ if (typeof window !== "undefined") {
         for (var i$1 = 0; i$1 <= this._drawDepth; i$1++) { dataNest.key(this._groupBy[i$1]); }
         if (this._discrete && ("_" + (this._discrete)) in this) { dataNest.key(this[("_" + (this._discrete))]); }
         if (this._discrete && ("_" + (this._discrete) + "2") in this) { dataNest.key(this[("_" + (this._discrete) + "2")]); }
-        dataNest.rollup(function (leaves) {
+
+        var tree = dataNest.rollup(function (leaves) {
           var d = d3plusCommon.merge(leaves, this$1._aggs);
           var id = this$1._id(d);
           if (!this$1._hidden.includes(id) && (!this$1._solo.length || this$1._solo.includes(id))) { this$1._filteredData.push(d); }
           this$1._legendData.push(d);
         }).entries(flatData);
+
+        this._filteredData = this._thresholdFunction(this._filteredData, tree);
 
       }
 
@@ -1775,6 +1785,14 @@ if (typeof window !== "undefined") {
       //   .height(100)
       //   .render());
 
+    };
+
+    /**
+     * Applies the threshold algorithm according to the type of chart used.
+     * @param {Array} data The data to process.
+     */
+    Viz.prototype._thresholdFunction = function _thresholdFunction (data) {
+      return data;
     };
 
     /**
@@ -2502,6 +2520,54 @@ if (typeof window !== "undefined") {
     */
     Viz.prototype.svgTitle = function svgTitle (_) {
       return arguments.length ? (this._svgTitle = _, this) : this._svgTitle;
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the threshold for buckets to the specified function or string, and returns the current class instance.
+        @param {Function|Number} [value]
+        @chainable
+     */
+    Viz.prototype.threshold = function threshold (_) {
+      if (arguments.length) {
+        if (typeof _ === "function") {
+          this._threshold = _;
+        }
+        else if (isFinite(_) && !isNaN(_)) {
+          this._threshold = d3plusCommon.constant(_ * 1);
+        }
+        return this;
+      }
+      else { return this._threshold; }
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the accesor for the value used in the threshold algorithm, and returns the current class instance.
+        @param {Function|Number} [value]
+        @chainable
+     */
+    Viz.prototype.thresholdKey = function thresholdKey (key) {
+      if (arguments.length) {
+        if (typeof key === "function") {
+          this._thresholdKey = key;
+        }
+        else {
+          this._thresholdKey = d3plusCommon.accessor(key);
+        }
+        return this;
+      }
+      else { return this._thresholdKey; }
+    };
+
+    /**
+        @memberof Viz
+        @desc If *value* is specified, sets the label for the bucket item, and returns the current class instance.
+        @param {String} [value]
+        @chainable
+     */
+    Viz.prototype.thresholdName = function thresholdName (_) {
+      return arguments.length ? (this._thresholdName = _, this) : this._thresholdName;
     };
 
     /**
