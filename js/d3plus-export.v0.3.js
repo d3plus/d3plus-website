@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.13
+  d3plus-export v0.3.14
   Export methods for transforming and downloading SVG.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -224,10 +224,16 @@ if (typeof window !== "undefined") {
     var strokeWidth = selection.attr("stroke-width");
     selection.attr("stroke-width", !strokeWidth ? 0 : strokeWidth);
 
+    // if there is no stroke, set the stroke color to "transparent" (fixes weird text rendering)
+    if (!strokeWidth) { selection.attr("stroke", "transparent"); }
+
     // sets "fill-opacity" attribute to `0` if fill is "transparent" or "none"
     var transparent = ["none", "transparent"].includes(selection.attr("fill"));
     var fillOpacity = selection.attr("fill-opacity");
     selection.attr("fill-opacity", transparent ? 0 : fillOpacity);
+
+    // "aria-label" properties interfere with text labels ¯\_(ツ)_/¯
+    selection.attr("aria-label", null);
 
   }
 
@@ -526,6 +532,13 @@ if (typeof window !== "undefined") {
 
       }
       else if (this.childNodes.length > 0) {
+        var ref$1 = parseTransform(this);
+        var scale = ref$1[0];
+        var x$2 = ref$1[1];
+        var y$2 = ref$1[2];
+        transform.scale *= scale;
+        transform.x += x$2;
+        transform.y += y$2;
         checkChildren(this, transform);
       }
       else { // catches all SVG shapes
@@ -542,11 +555,11 @@ if (typeof window !== "undefined") {
           d3Selection.select(elem$2).attr("y2", parseFloat(d3Selection.select(elem$2).attr("y2")) + transform.y);
         }
         else if (tag === "path") {
-          var ref$1 = parseTransform(elem$2);
-          var scale = ref$1[0];
-          var x$2 = ref$1[1];
-          var y$2 = ref$1[2];
-          if (d3Selection.select(elem$2).attr("transform")) { d3Selection.select(elem$2).attr("transform", ("scale(" + scale + ")translate(" + (x$2 + transform.x) + "," + (y$2 + transform.y) + ")")); }
+          var ref$2 = parseTransform(elem$2);
+          var scale$1 = ref$2[0];
+          var x$3 = ref$2[1];
+          var y$3 = ref$2[2];
+          if (d3Selection.select(elem$2).attr("transform")) { d3Selection.select(elem$2).attr("transform", ("scale(" + scale$1 + ")translate(" + (x$3 + transform.x) + "," + (y$3 + transform.y) + ")")); }
         }
         d3Selection.select(elem$2).call(svgPresets);
 
@@ -560,13 +573,13 @@ if (typeof window !== "undefined") {
           var defTag = (def.tagName || "").toLowerCase();
           if (defTag === "pattern") {
 
-            var ref$2 = parseTransform(elem$2);
-            var scale$1 = ref$2[0];
-            var x$3 = ref$2[1];
-            var y$3 = ref$2[2];
-            transform.scale *= scale$1;
-            transform.x += x$3;
-            transform.y += y$3;
+            var ref$3 = parseTransform(elem$2);
+            var scale$2 = ref$3[0];
+            var x$4 = ref$3[1];
+            var y$4 = ref$3[2];
+            transform.scale *= scale$2;
+            transform.x += x$4;
+            transform.y += y$4;
             checkChildren(def, transform);
 
           }
