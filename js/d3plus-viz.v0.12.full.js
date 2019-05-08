@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.25
+  d3plus-viz v0.12.26
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -5365,7 +5365,6 @@ if (typeof window !== "undefined") {
       return (end - start) / k;
     });
   };
-  var milliseconds = millisecond.range;
 
   var durationSecond = 1e3;
   var durationMinute = 6e4;
@@ -5382,7 +5381,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCSeconds();
   });
-  var seconds = second.range;
 
   var minute = newInterval(function(date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond);
@@ -5393,7 +5391,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getMinutes();
   });
-  var minutes = minute.range;
 
   var hour = newInterval(function(date) {
     date.setTime(date - date.getMilliseconds() - date.getSeconds() * durationSecond - date.getMinutes() * durationMinute);
@@ -5404,7 +5401,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getHours();
   });
-  var hours = hour.range;
 
   var day = newInterval(function(date) {
     date.setHours(0, 0, 0, 0);
@@ -5415,7 +5411,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getDate() - 1;
   });
-  var days = day.range;
 
   function weekday(i) {
     return newInterval(function(date) {
@@ -5450,7 +5445,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getMonth();
   });
-  var months = month.range;
 
   var year = newInterval(function(date) {
     date.setMonth(0, 1);
@@ -5473,7 +5467,6 @@ if (typeof window !== "undefined") {
       date.setFullYear(date.getFullYear() + step * k);
     });
   };
-  var years = year.range;
 
   var utcMinute = newInterval(function(date) {
     date.setUTCSeconds(0, 0);
@@ -5484,7 +5477,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCMinutes();
   });
-  var utcMinutes = utcMinute.range;
 
   var utcHour = newInterval(function(date) {
     date.setUTCMinutes(0, 0, 0);
@@ -5495,7 +5487,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCHours();
   });
-  var utcHours = utcHour.range;
 
   var utcDay = newInterval(function(date) {
     date.setUTCHours(0, 0, 0, 0);
@@ -5506,7 +5497,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCDate() - 1;
   });
-  var utcDays = utcDay.range;
 
   function utcWeekday(i) {
     return newInterval(function(date) {
@@ -5541,7 +5531,6 @@ if (typeof window !== "undefined") {
   }, function(date) {
     return date.getUTCMonth();
   });
-  var utcMonths = utcMonth.range;
 
   var utcYear = newInterval(function(date) {
     date.setUTCMonth(0, 1);
@@ -5564,7 +5553,6 @@ if (typeof window !== "undefined") {
       date.setUTCFullYear(date.getUTCFullYear() + step * k);
     });
   };
-  var utcYears = utcYear.range;
 
   function localDate(d) {
     if (0 <= d.y && d.y < 100) {
@@ -8154,6 +8142,19 @@ if (typeof window !== "undefined") {
     for (var k in s) { if ({}.hasOwnProperty.call(s, k)) { e.style(k, s[k]); } }
   }
 
+  /**
+      @namespace {Object} formatLocale
+      @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
+        *
+        * | Name | Default | Description |
+        * |---|---|---|
+        * | separator | "" | Separation between the number with the suffix. |
+        * | suffixes | [] | List of suffixes used to format numbers. |
+        * | grouping | [3] | The array of group sizes, |
+        * | delimiters | {thousands: ",", decimal: "."} | Decimal and group separators. |
+        * | currency | ["$", ""] | The currency prefix and suffix. |
+  */
+
   var defaultLocale$2 = {
     "en-GB": {
       separator: "",
@@ -8197,13 +8198,13 @@ if (typeof window !== "undefined") {
     },
     "et-EE": {
       separator: " ",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuh", "mln", "mld", "trl", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuhat", "miljonit", "miljardit", "triljonit", "q", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: " ",
         decimal: ","
       },
-      currency: ["€", ""]
+      currency: ["", "eurot"]
     },
     "fr-FR": {
       suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "m", "b", "t", "q", "Q", "Z", "Y"],
@@ -13814,7 +13815,7 @@ if (typeof window !== "undefined") {
     if (!origins.length) {
       // get the centroid of the polygon
       var centroid = polygonCentroid(poly);
-      if (isNaN(centroid[0]) || centroid[0] === Infinity || [-1, -0].includes(Math.sign(centroid[0]))) {
+      if (!isFinite(centroid[0])) {
         if (options.verbose) { console.error("cannot find centroid", poly); }
         return null;
       }
@@ -33229,7 +33230,8 @@ if (typeof window !== "undefined") {
       if (this$1._shapeConfig.hoverOpacity !== 1 && this$1._hover ? this$1._hover(d, i) : true) {
         this$1.hover(false);
       }
-      if (this$1._tooltip && this$1._id(this$1._tooltipClass.data()[0]) === this$1._id(d)) { this$1._tooltipClass.data([]).render(); }
+      var tooltipData = this$1._tooltipClass.data();
+      if (tooltipData.length && this$1._tooltip && this$1._id(this$1._tooltipClass.data()[0]) === this$1._id(d)) { this$1._tooltipClass.data([]).render(); }
     }, 50);
 
     this._select.style("cursor", "auto");
@@ -33902,7 +33904,8 @@ if (typeof window !== "undefined") {
       }
 
       // overrides the hoverOpacity of shapes if data is larger than cutoff
-      if (this._filteredData.length > this._dataCutoff) {
+      var uniqueIds = nest().key(this._id).entries(this._filteredData).length;
+      if (uniqueIds > this._dataCutoff) {
         if (this._userHover === undefined) { this._userHover = this._shapeConfig.hoverOpacity || 0.5; }
         this._shapeConfig.hoverOpacity = 1;
       }
@@ -34349,6 +34352,16 @@ if (typeof window !== "undefined") {
         return this;
       }
       return this._data;
+    };
+
+    /**
+        @memberof Viz
+        @desc If the number of visible data points exceeds this number, the default hover behavior will be disabled (helpful for very large visualizations bogging down the DOM with opacity updates).
+        @param {Number} [*value* = 100]
+        @chainable
+    */
+    Viz.prototype.dataCutoff = function dataCutoff (_) {
+      return arguments.length ? (this._dataCutoff = _, this) : this._dataCutoff;
     };
 
     /**

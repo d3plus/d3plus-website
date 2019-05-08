@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.25
+  d3plus-viz v0.12.26
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1055,7 +1055,8 @@ if (typeof window !== "undefined") {
       if (this$1._shapeConfig.hoverOpacity !== 1 && this$1._hover ? this$1._hover(d, i) : true) {
         this$1.hover(false);
       }
-      if (this$1._tooltip && this$1._id(this$1._tooltipClass.data()[0]) === this$1._id(d)) { this$1._tooltipClass.data([]).render(); }
+      var tooltipData = this$1._tooltipClass.data();
+      if (tooltipData.length && this$1._tooltip && this$1._id(this$1._tooltipClass.data()[0]) === this$1._id(d)) { this$1._tooltipClass.data([]).render(); }
     }, 50);
 
     this._select.style("cursor", "auto");
@@ -1728,7 +1729,8 @@ if (typeof window !== "undefined") {
       }
 
       // overrides the hoverOpacity of shapes if data is larger than cutoff
-      if (this._filteredData.length > this._dataCutoff) {
+      var uniqueIds = d3Collection.nest().key(this._id).entries(this._filteredData).length;
+      if (uniqueIds > this._dataCutoff) {
         if (this._userHover === undefined) { this._userHover = this._shapeConfig.hoverOpacity || 0.5; }
         this._shapeConfig.hoverOpacity = 1;
       }
@@ -2175,6 +2177,16 @@ if (typeof window !== "undefined") {
         return this;
       }
       return this._data;
+    };
+
+    /**
+        @memberof Viz
+        @desc If the number of visible data points exceeds this number, the default hover behavior will be disabled (helpful for very large visualizations bogging down the DOM with opacity updates).
+        @param {Number} [*value* = 100]
+        @chainable
+    */
+    Viz.prototype.dataCutoff = function dataCutoff (_) {
+      return arguments.length ? (this._dataCutoff = _, this) : this._dataCutoff;
     };
 
     /**
