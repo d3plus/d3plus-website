@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.8.1
+  d3plus-hierarchy v0.8.2
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -63,6 +63,147 @@ if (!Array.prototype.includes) {
   });
 }
 
+if (!String.prototype.includes) {
+  Object.defineProperty(String.prototype, 'includes', {
+    value: function(search, start) {
+      if (typeof start !== 'number') {
+        start = 0
+      }
+
+      if (start + search.length > this.length) {
+        return false
+      } else {
+        return this.indexOf(search, start) !== -1
+      }
+    }
+  })
+}
+
+if (!Array.prototype.find) {
+  Object.defineProperty(Array.prototype, 'find', {
+    value: function(predicate) {
+     // 1. Let O be ? ToObject(this value).
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
+
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+      if (typeof predicate !== 'function') {
+        throw new TypeError('predicate must be a function');
+      }
+
+      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+      var thisArg = arguments[1];
+
+      // 5. Let k be 0.
+      var k = 0;
+
+      // 6. Repeat, while k < len
+      while (k < len) {
+        // a. Let Pk be ! ToString(k).
+        // b. Let kValue be ? Get(O, Pk).
+        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+        // d. If testResult is true, return kValue.
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) {
+          return kValue;
+        }
+        // e. Increase k by 1.
+        k++;
+      }
+
+      // 7. Return undefined.
+      return undefined;
+    },
+    configurable: true,
+    writable: true
+  });
+}
+
+if (!String.prototype.startsWith) {
+  Object.defineProperty(String.prototype, 'startsWith', {
+      value: function(search, pos) {
+          pos = !pos || pos < 0 ? 0 : +pos;
+          return this.substring(pos, pos + search.length) === search;
+      }
+  });
+}
+
+if (typeof window !== "undefined") {
+  (function () {
+    var serializeXML = function (node, output) {
+      var nodeType = node.nodeType;
+      if (nodeType === 3) {
+        output.push(node.textContent.replace(/&/, '&amp;').replace(/</, '&lt;').replace('>', '&gt;'));
+      } else if (nodeType === 1) {
+        output.push('<', node.tagName);
+        if (node.hasAttributes()) {
+          [].forEach.call(node.attributes, function(attrNode){
+            output.push(' ', attrNode.item.name, '=\'', attrNode.item.value, '\'');
+          })
+        }
+        if (node.hasChildNodes()) {
+          output.push('>');
+          [].forEach.call(node.childNodes, function(childNode){
+            serializeXML(childNode, output);
+          })
+          output.push('</', node.tagName, '>');
+        } else {
+          output.push('/>');
+        }
+      } else if (nodeType == 8) {
+        output.push('<!--', node.nodeValue, '-->');
+      }
+    }
+
+    Object.defineProperty(SVGElement.prototype, 'innerHTML', {
+      get: function () {
+        var output = [];
+        var childNode = this.firstChild;
+        while (childNode) {
+          serializeXML(childNode, output);
+          childNode = childNode.nextSibling;
+        }
+        return output.join('');
+      },
+      set: function (markupText) {
+        while (this.firstChild) {
+          this.removeChild(this.firstChild);
+        }
+
+        try {
+          var dXML = new DOMParser();
+          dXML.async = false;
+
+          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markupText + '</svg>';
+          var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
+
+          var childNode = svgDocElement.firstChild;
+          while (childNode) {
+            this.appendChild(this.ownerDocument.importNode(childNode, true));
+            childNode = childNode.nextSibling;
+          }
+        } catch (e) {};
+      }
+    });
+
+    Object.defineProperty(SVGElement.prototype, 'innerSVG', {
+      get: function () {
+        return this.innerHTML;
+      },
+      set: function (markup) {
+        this.innerHTML = markup;
+      }
+    });
+
+  })();
+}
+
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-shape'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3-collection'), require('d3-hierarchy'), require('d3-scale')) :
   typeof define === 'function' && define.amd ? define('d3plus-hierarchy', ['exports', 'd3-array', 'd3-shape', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3-collection', 'd3-hierarchy', 'd3-scale'], factory) :
@@ -74,7 +215,7 @@ if (!Array.prototype.includes) {
       @extends Viz
       @desc Uses the [d3 pie layout](https://github.com/d3/d3-shape#pies) to creates SVG arcs based on an array of data.
   */
-  var Pie = (function (Viz) {
+  var Pie = /*@__PURE__*/(function (Viz) {
     function Pie() {
       var this$1 = this;
 
@@ -144,6 +285,7 @@ if (!Array.prototype.includes) {
           x: 0,
           y: 0
         })
+        .label(this._drawLabel)
         .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Path"))
         .render());
 
@@ -211,7 +353,7 @@ if (!Array.prototype.includes) {
       @extends Pie
       @desc Extends the Pie visualization to create a donut chart.
   */
-  var Donut = (function (Pie$$1) {
+  var Donut = /*@__PURE__*/(function (Pie$$1) {
     function Donut() {
       var this$1 = this;
 
@@ -258,7 +400,7 @@ if (!Array.prototype.includes) {
       @extends Viz
       @desc Uses the [d3 pack layout](https://github.com/d3/d3-hierarchy#pack) to creates Circle Packing chart based on an array of data.
   */
-  var Pack = (function (Viz) {
+  var Pack = /*@__PURE__*/(function (Viz) {
     function Pack() {
       var this$1 = this;
 
@@ -327,7 +469,7 @@ if (!Array.prototype.includes) {
       var transform = "translate(" + ((width - diameter) / 2) + ", " + ((height - diameter) / 2) + ")";
 
       var nestedData = d3Collection.nest();
-      for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this$1._groupBy[i]); }
+      for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this._groupBy[i]); }
       nestedData = nestedData.entries(this._filteredData);
 
       var packData = this._pack
@@ -466,7 +608,7 @@ if (!Array.prototype.includes) {
       @extends Viz
       @desc Uses d3's [tree layout](https://github.com/d3/d3-hierarchy#tree) to create a tidy tree chart based on an array of data.
   */
-  var Tree = (function (Viz) {
+  var Tree = /*@__PURE__*/(function (Viz) {
     function Tree() {
       var this$1 = this;
 
@@ -685,7 +827,7 @@ if (!Array.prototype.includes) {
       @extends Viz
       @desc Uses the [d3 treemap layout](https://github.com/mbostock/d3/wiki/Treemap-Layout) to creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-hierarchy/getting-started/) for help getting started using the treemap generator.
   */
-  var Treemap = (function (Viz) {
+  var Treemap = /*@__PURE__*/(function (Viz) {
     function Treemap() {
       var this$1 = this;
 
@@ -704,10 +846,17 @@ if (!Array.prototype.includes) {
           padding: 15
         }
       });
-      this._sort = function (a, b) { return b.value - a.value; };
+      this._sort = function (a, b) {
+        var aggA = isAggregated(a);
+        var aggB = isAggregated(b);
+        return aggA && !aggB ? 1 : !aggA && aggB ? -1 : b.value - a.value;
+      };
       this._sum = d3plusCommon.accessor("value");
+      this._thresholdKey = this._sum;
       this._tile = d3Hierarchy.treemapSquarify;
       this._treemap = d3Hierarchy.treemap().round(true);
+
+      var isAggregated = function (leaf) { return leaf.children && leaf.children.length === 1 && leaf.children[0].data._isAggregation; };
 
     }
 
@@ -725,9 +874,9 @@ if (!Array.prototype.includes) {
 
 
       Viz.prototype._draw.call(this, callback);
-      
+
       var nestedData = d3Collection.nest();
-      for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this$1._groupBy[i]); }
+      for (var i = 0; i <= this._drawDepth; i++) { nestedData.key(this._groupBy[i]); }
       nestedData = nestedData.entries(this._filteredData);
 
       var tmapData = this._treemap
@@ -751,9 +900,10 @@ if (!Array.prototype.includes) {
           var node = children[i];
           if (node.depth <= that._drawDepth) { extractLayout(node.children); }
           else {
+            var index = node.data.values.length === 1 ? that._filteredData.indexOf(node.data.values[0]) : undefined;
             node.__d3plus__ = true;
             node.id = node.data.key;
-            node.i = node.data.values.length === 1 && that._filteredData.includes(node.data.values[0]) ? that._filteredData.indexOf(node.data.values[0]) : undefined;
+            node.i = index > -1 ? index : undefined;
             node.data = d3plusCommon.merge(node.data.values);
             node.x = node.x0 + (node.x1 - node.x0) / 2;
             node.y = node.y0 + (node.y1 - node.y0) / 2;
@@ -802,6 +952,85 @@ if (!Array.prototype.includes) {
     };
 
     /**
+     * Applies the threshold algorithm for Treemaps.
+     * @param {Array} data The data to process.
+     */
+    Treemap.prototype._thresholdFunction = function _thresholdFunction (data, tree) {
+      var aggs = this._aggs;
+      var drawDepth = this._drawDepth;
+      var groupBy = this._groupBy;
+      var threshold = this._threshold;
+      var thresholdKey = this._thresholdKey;
+
+      if (threshold && thresholdKey) {
+        var finalDataset = data.slice();
+        var totalSum = d3Array.sum(finalDataset, this._thresholdKey);
+
+        var n = tree.length;
+        while (n--) {
+          var branch = tree[n];
+          thresholdByDepth(finalDataset, totalSum, data, branch, 0);
+        }
+
+        return finalDataset;
+      }
+
+      /**
+       * @memberof Treemap
+       * @desc Explores the data tree recursively and merges elements under the indicated threshold.
+       * @param {object[]} finalDataset The array of data that will be returned after modifications.
+       * @param {number} totalSum The total sum of the values in the initial dataset.
+       * @param {object[]} currentDataset The current subset of the dataset to work on.
+       * @param {object} branch The branch of the dataset tree to explore.
+       * @param {number} depth The depth of the current branch.
+       * @private
+       */
+      function thresholdByDepth(finalDataset, totalSum, currentDataset, branch, depth) {
+        if (depth >= drawDepth) { return; }
+
+        var currentAccesor = groupBy[depth];
+        var nextDataset = currentDataset.filter(
+          function (item) { return currentAccesor(item) === branch.key; }
+        );
+
+        if (depth + 1 === drawDepth) {
+          var removedItems = [];
+          var thresholdPercent = Math.min(1, Math.max(0, threshold(nextDataset)));
+
+          if (!isFinite(thresholdPercent) || isNaN(thresholdPercent)) { return; }
+
+          var thresholdValue = thresholdPercent * totalSum;
+
+          var n = nextDataset.length;
+          while (n--) {
+            var item = nextDataset[n];
+            if (thresholdKey(item) < thresholdValue) {
+              var index = finalDataset.indexOf(item);
+              finalDataset.splice(index, 1);
+              removedItems.push(item);
+            }
+          }
+
+          if (removedItems.length > 0) {
+            var mergedItem = d3plusCommon.merge(removedItems, aggs);
+            mergedItem._isAggregation = true;
+            mergedItem._threshold = thresholdPercent;
+            finalDataset.push(mergedItem);
+          }
+        }
+        else {
+          var leaves = branch.values;
+          var n$1 = leaves.length;
+          while (n$1--) {
+            thresholdByDepth(finalDataset, totalSum, nextDataset, leaves[n$1], depth + 1);
+          }
+        }
+      }
+
+      return data;
+    };
+
+    /**
         @memberof Treemap
         @desc If *value* is specified, sets the inner and outer padding accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current padding accessor.
         @param {Function|Number} [*value*]
@@ -833,7 +1062,12 @@ if (!Array.prototype.includes) {
   }
     */
     Treemap.prototype.sum = function sum (_) {
-      return arguments.length ? (this._sum = typeof _ === "function" ? _ : d3plusCommon.accessor(_), this) : this._sum;
+      if (arguments.length) {
+        this._sum = typeof _ === "function" ? _ : d3plusCommon.accessor(_);
+        this._thresholdKey = this._sum;
+        return this;
+      }
+      else { return this._sum; }
     };
 
     /**
