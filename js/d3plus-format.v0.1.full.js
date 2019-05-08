@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.8
+  d3plus-format v0.1.9
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -361,6 +361,19 @@ if (!Array.prototype.includes) {
     return locale;
   }
 
+  /**
+      @namespace {Object} formatLocale
+      @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
+        *
+        * | Name | Default | Description |
+        * |---|---|---|
+        * | separator | "" | Separation between the number with the suffix. |
+        * | suffixes | [] | List of suffixes used to format numbers. |
+        * | grouping | [3] | The array of group sizes, |
+        * | delimiters | {thousands: ",", decimal: "."} | Decimal and group separators. |
+        * | currency | ["$", ""] | The currency prefix and suffix. |
+  */
+
   var defaultLocale$1 = {
     "en-GB": {
       separator: "",
@@ -500,6 +513,7 @@ if (!Array.prototype.includes) {
   }
 
   exports.formatAbbreviate = abbreviate;
+  exports.formatLocale = defaultLocale$1;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
