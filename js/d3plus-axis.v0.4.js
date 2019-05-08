@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.5
+  d3plus-axis v0.4.6
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -329,6 +329,8 @@ if (typeof window !== "undefined") {
       };
       this._tickSize = 5;
       this._tickSpecifier = undefined;
+      this._tickSuffix = "normal";
+      this._tickUnit = 0;
       this._titleClass = new d3plusText.TextBox();
       this._titleConfig = {
         fontSize: 12,
@@ -645,6 +647,27 @@ if (typeof window !== "undefined") {
         labels = labels.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
 
         /**
+         * Get the smallest suffix.
+         */
+        if (this._scale === "linear" && this._tickSuffix === "smallest") {
+          var suffixes = labels.filter(function (d) { return d >= 1000; });
+          if (suffixes.length > 0) {
+            var min = Math.min.apply(Math, suffixes);
+            var i = 1;
+            while (i && i < 7) {
+              var n = Math.pow(10, 3 * i);
+              if (min / n >= 1) {
+                this._tickUnit = i;
+                i += 1;
+              }
+              else {
+                break;
+              }
+            }
+          }
+        }
+
+        /**
          * Removes ticks when they overlap other ticks.
          */
         var pixels = [];
@@ -708,9 +731,22 @@ if (typeof window !== "undefined") {
         }
 
         var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
-
         n = n.replace(/[^\d\.\-\+]/g, "") * 1;
-        return isNaN(n) ? n : d3plusFormat.formatAbbreviate(n, this$1._locale);
+
+        if (isNaN(n)) {
+          return n;
+        }
+        else if (this$1._scale === "linear" && this$1._tickSuffix === "smallest") {
+          var locale = d3plusFormat.formatLocale[this$1._locale];
+          var separator = locale.separator;
+          var suffixes = locale.suffixes;
+          var suff = n >= 1000 ? suffixes[this$1._tickUnit + 8] : "";
+          var number = n > 1 ? this$1._d3Scale.tickFormat()(n / Math.pow(10, 3 * this$1._tickUnit)) : n;
+          return ("" + number + separator + suff);
+        }
+        else {
+          return d3plusFormat.formatAbbreviate(n, this$1._locale);
+        }
       };
 
       /**
@@ -1328,6 +1364,16 @@ if (typeof window !== "undefined") {
     */
     Axis.prototype.tickSpecifier = function tickSpecifier (_) {
       return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
+    };
+
+    /**
+        @memberof Axis
+        @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick). 
+        @param {String} [*value* = "normal"]
+        @chainable
+    */
+    Axis.prototype.tickSuffix = function tickSuffix (_) {
+      return arguments.length ? (this._tickSuffix = _, this) : this._tickSuffix;
     };
 
     /**

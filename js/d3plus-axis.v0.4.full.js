@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.5
+  d3plus-axis v0.4.6
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -639,8 +639,6 @@ if (typeof window !== "undefined") {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
-  var mondays = monday.range;
-  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -723,10 +721,6 @@ if (typeof window !== "undefined") {
   var utcThursday = utcWeekday(4);
   var utcFriday = utcWeekday(5);
   var utcSaturday = utcWeekday(6);
-
-  var utcSundays = utcSunday.range;
-  var utcMondays = utcMonday.range;
-  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -6274,6 +6268,19 @@ if (typeof window !== "undefined") {
       @param {Object} styles An object of key/value style pairs.
   */
 
+  /**
+      @namespace {Object} formatLocale
+      @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
+        *
+        * | Name | Default | Description |
+        * |---|---|---|
+        * | separator | "" | Separation between the number with the suffix. |
+        * | suffixes | [] | List of suffixes used to format numbers. |
+        * | grouping | [3] | The array of group sizes, |
+        * | delimiters | {thousands: ",", decimal: "."} | Decimal and group separators. |
+        * | currency | ["$", ""] | The currency prefix and suffix. |
+  */
+
   var defaultLocale$2 = {
     "en-GB": {
       separator: "",
@@ -6317,13 +6324,13 @@ if (typeof window !== "undefined") {
     },
     "et-EE": {
       separator: " ",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuh", "mln", "mld", "trl", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuhat", "miljonit", "miljardit", "triljonit", "q", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: " ",
         decimal: ","
       },
-      currency: ["€", ""]
+      currency: ["", "eurot"]
     },
     "fr-FR": {
       suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "m", "b", "t", "q", "Q", "Z", "Y"],
@@ -8595,7 +8602,7 @@ if (typeof window !== "undefined") {
   }
 
   function diverging$1(series, order) {
-    if (!((n = series.length) > 1)) { return; }
+    if (!((n = series.length) > 0)) { return; }
     for (var i, j = 0, d, dy, yp, yn, n, m = series[order[0]].length; j < m; ++j) {
       for (yp = yn = 0, i = 0; i < n; ++i) {
         if ((dy = (d = series[order[i]][j])[1] - d[0]) >= 0) {
@@ -11891,17 +11898,22 @@ if (typeof window !== "undefined") {
     if (!origins.length) {
       // get the centroid of the polygon
       var centroid = polygonCentroid(poly);
-      if (isNaN(centroid[0]) || Math.abs(centroid[0]) === Infinity) {
+      if (!isFinite(centroid[0])) {
         if (options.verbose) { console.error("cannot find centroid", poly); }
         return null;
       }
       if (polygonContains(poly, centroid)) { origins.push(centroid); }
+
+      var nTries = options.nTries;
       // get few more points inside the polygon
-      while (origins.length < options.nTries) {
+      while (nTries) {
         var rndX = Math.random() * boxWidth + minx;
         var rndY = Math.random() * boxHeight + miny;
         var rndPoint = [rndX, rndY];
-        if (polygonContains(poly, rndPoint)) { origins.push(rndPoint); }
+        if (polygonContains(poly, rndPoint)) {
+          origins.push(rndPoint);
+        }
+        nTries--;
       }
     }
     if (options.events) { events.push({type: "origins", points: origins}); }
@@ -13760,6 +13772,8 @@ if (typeof window !== "undefined") {
       };
       this._tickSize = 5;
       this._tickSpecifier = undefined;
+      this._tickSuffix = "normal";
+      this._tickUnit = 0;
       this._titleClass = new TextBox();
       this._titleConfig = {
         fontSize: 12,
@@ -14076,6 +14090,27 @@ if (typeof window !== "undefined") {
         labels = labels.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
 
         /**
+         * Get the smallest suffix.
+         */
+        if (this._scale === "linear" && this._tickSuffix === "smallest") {
+          var suffixes = labels.filter(function (d) { return d >= 1000; });
+          if (suffixes.length > 0) {
+            var min$$1 = Math.min.apply(Math, suffixes);
+            var i = 1;
+            while (i && i < 7) {
+              var n = Math.pow(10, 3 * i);
+              if (min$$1 / n >= 1) {
+                this._tickUnit = i;
+                i += 1;
+              }
+              else {
+                break;
+              }
+            }
+          }
+        }
+
+        /**
          * Removes ticks when they overlap other ticks.
          */
         var pixels = [];
@@ -14139,9 +14174,22 @@ if (typeof window !== "undefined") {
         }
 
         var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
-
         n = n.replace(/[^\d\.\-\+]/g, "") * 1;
-        return isNaN(n) ? n : formatAbbreviate(n, this$1._locale);
+
+        if (isNaN(n)) {
+          return n;
+        }
+        else if (this$1._scale === "linear" && this$1._tickSuffix === "smallest") {
+          var locale = defaultLocale$2[this$1._locale];
+          var separator = locale.separator;
+          var suffixes = locale.suffixes;
+          var suff = n >= 1000 ? suffixes[this$1._tickUnit + 8] : "";
+          var number = n > 1 ? this$1._d3Scale.tickFormat()(n / Math.pow(10, 3 * this$1._tickUnit)) : n;
+          return ("" + number + separator + suff);
+        }
+        else {
+          return formatAbbreviate(n, this$1._locale);
+        }
       };
 
       /**
@@ -14759,6 +14807,16 @@ if (typeof window !== "undefined") {
     */
     Axis.prototype.tickSpecifier = function tickSpecifier (_) {
       return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
+    };
+
+    /**
+        @memberof Axis
+        @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick). 
+        @param {String} [*value* = "normal"]
+        @chainable
+    */
+    Axis.prototype.tickSuffix = function tickSuffix (_) {
+      return arguments.length ? (this._tickSuffix = _, this) : this._tickSuffix;
     };
 
     /**
