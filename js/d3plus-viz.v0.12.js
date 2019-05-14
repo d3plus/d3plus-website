@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.26
+  d3plus-viz v0.12.27
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -684,7 +684,7 @@ if (typeof window !== "undefined") {
         .align(wide ? "center" : position)
         .direction(wide ? "row" : "column")
         .duration(this._duration)
-        .data(legendData.length > 1 || this._colorScale ? legendData : [])
+        .data(legendData.length > this._legendCutoff || this._colorScale ? legendData : [])
         .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top))
         .select(legendGroup)
         .verticalAlign(!wide ? "middle" : position)
@@ -1499,6 +1499,7 @@ if (typeof window !== "undefined") {
           }
         }
       };
+      this._legendCutoff = 1;
       this._legendPadding = defaultPadding;
       this._legendPosition = "bottom";
       this._legendTooltip = {};
@@ -2426,6 +2427,16 @@ if (typeof window !== "undefined") {
     */
     Viz.prototype.legendConfig = function legendConfig (_) {
       return arguments.length ? (this._legendConfig = d3plusCommon.assign(this._legendConfig, _), this) : this._legendConfig;
+    };
+
+    /**
+     * @memberof Viz
+     * @desc If *value* is specified, sets the cutoff for the amount of categories in the legend.
+     * @param {Number} [*value* = 1]
+     * @chainable
+     */
+    Viz.prototype.legendCutoff = function legendCutoff (_) {
+      return arguments.length ? (this._legendCutoff = _, this) : this._legendCutoff;
     };
 
     /**
