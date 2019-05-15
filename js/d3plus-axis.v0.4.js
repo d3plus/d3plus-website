@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.6
+  d3plus-axis v0.4.7
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -737,7 +737,7 @@ if (typeof window !== "undefined") {
           return n;
         }
         else if (this$1._scale === "linear" && this$1._tickSuffix === "smallest") {
-          var locale = d3plusFormat.formatLocale[this$1._locale];
+          var locale = typeof this$1._locale === "object" ? this$1._locale : d3plusFormat.formatLocale[this$1._locale];
           var separator = locale.separator;
           var suffixes = locale.suffixes;
           var suff = n >= 1000 ? suffixes[this$1._tickUnit + 8] : "";
@@ -1192,7 +1192,7 @@ if (typeof window !== "undefined") {
     /**
         @memberof Viz
         @desc If *value* is specified, sets the locale to the specified string and returns the current class instance.
-        @param {String} [*value* = "en-US"]
+        @param {Object|String} [*value* = "en-US"]
         @chainable
     */
     Axis.prototype.locale = function locale (_) {
