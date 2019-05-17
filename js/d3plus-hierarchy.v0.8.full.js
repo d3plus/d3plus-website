@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.8.2
+  d3plus-hierarchy v0.8.3
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -2791,11 +2791,14 @@ if (typeof window !== "undefined") {
     var newConfig = {duration: this._duration, on: {}};
 
     var wrapFunction = function (func) { return function (d, i, s) {
+      var parent;
       while (d.__d3plus__) {
+        if (parent) { d.__d3plusParent__ = parent; }
+        parent = d;
         i = d.i;
         d = d.data || d.feature;
       }
-      return func.bind(this$1)(d, i, s);
+      return func.bind(this$1)(d, i, s || parent);
     }; };
 
     var parseEvents = function (newObj, on) {
@@ -8780,7 +8783,7 @@ if (typeof window !== "undefined") {
       @param {String|Array} text Can be either a single string or an array of strings to analyze.
       @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
   */
-  function textWidth(text, style) {
+  function measure(text, style) {
 
     style = Object.assign({
       "font-size": 10,
@@ -8841,10 +8844,10 @@ if (typeof window !== "undefined") {
   var fontExists = function (font) {
 
     if (!dejavu) {
-      dejavu = textWidth(alpha, {"font-family": "DejaVuSans", "font-size": height});
-      macos = textWidth(alpha, {"font-family": "-apple-system", "font-size": height});
-      monospace = textWidth(alpha, {"font-family": "monospace", "font-size": height});
-      proportional = textWidth(alpha, {"font-family": "sans-serif", "font-size": height});
+      dejavu = measure(alpha, {"font-family": "DejaVuSans", "font-size": height});
+      macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
+      monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
+      proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
     }
 
     if (!(font instanceof Array)) { font = font.split(","); }
@@ -8854,7 +8857,7 @@ if (typeof window !== "undefined") {
       var fam = font[i];
       if (checked[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
       else if (checked[fam] === false) { continue; }
-      var width = textWidth(alpha, {"font-family": fam, "font-size": height});
+      var width = measure(alpha, {"font-family": fam, "font-size": height});
       checked[fam] = width !== monospace;
       if (checked[fam]) { checked[fam] = width !== proportional; }
       if (macos && checked[fam]) { checked[fam] = width !== macos; }
@@ -8996,7 +8999,7 @@ if (typeof window !== "undefined") {
       @function textWrap
       @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
   */
-  function textWrap() {
+  function wrap() {
 
     var fontFamily = "sans-serif",
         fontSize = 10,
@@ -9033,8 +9036,8 @@ if (typeof window !== "undefined") {
           widthProg = 0;
 
       var lineData = [],
-            sizes = textWidth(words, style),
-            space = textWidth(" ", style);
+            sizes = measure(words, style),
+            space = measure(" ", style);
 
       for (var i = 0; i < words.length; i++) {
         var word = words[i];
@@ -9064,7 +9067,7 @@ if (typeof window !== "undefined") {
       return {
         lines: lineData,
         sentence: sentence, truncated: truncated,
-        widths: textWidth(lineData, style),
+        widths: measure(lineData, style),
         words: words
       };
 
@@ -9256,7 +9259,7 @@ if (typeof window !== "undefined") {
         var h = this$1._height(d, i) - (padding.top + padding.bottom),
               w = this$1._width(d, i) - (padding.left + padding.right);
 
-        var wrapper = textWrap()
+        var wrapper = wrap()
           .fontFamily(style["font-family"])
           .fontSize(fS)
           .fontWeight(style["font-weight"])
@@ -9316,7 +9319,7 @@ if (typeof window !== "undefined") {
 
           if (resize) {
 
-            sizes = textWidth(words, style);
+            sizes = measure(words, style);
 
             var areaMod = 1.165 + w / h * 0.1,
                   boxArea = w * h,
@@ -15697,6 +15700,8 @@ if (typeof window !== "undefined") {
       };
       this._tickSize = 5;
       this._tickSpecifier = undefined;
+      this._tickSuffix = "normal";
+      this._tickUnit = 0;
       this._titleClass = new TextBox();
       this._titleConfig = {
         fontSize: 12,
@@ -16013,6 +16018,27 @@ if (typeof window !== "undefined") {
         labels = labels.sort(function (a, b) { return this$1._getPosition(a) - this$1._getPosition(b); });
 
         /**
+         * Get the smallest suffix.
+         */
+        if (this._scale === "linear" && this._tickSuffix === "smallest") {
+          var suffixes = labels.filter(function (d) { return d >= 1000; });
+          if (suffixes.length > 0) {
+            var min$$1 = Math.min.apply(Math, suffixes);
+            var i = 1;
+            while (i && i < 7) {
+              var n = Math.pow(10, 3 * i);
+              if (min$$1 / n >= 1) {
+                this._tickUnit = i;
+                i += 1;
+              }
+              else {
+                break;
+              }
+            }
+          }
+        }
+
+        /**
          * Removes ticks when they overlap other ticks.
          */
         var pixels = [];
@@ -16076,9 +16102,22 @@ if (typeof window !== "undefined") {
         }
 
         var n = this$1._d3Scale.tickFormat ? this$1._d3Scale.tickFormat(labels.length - 1)(d) : d;
-
         n = n.replace(/[^\d\.\-\+]/g, "") * 1;
-        return isNaN(n) ? n : formatAbbreviate(n, this$1._locale);
+
+        if (isNaN(n)) {
+          return n;
+        }
+        else if (this$1._scale === "linear" && this$1._tickSuffix === "smallest") {
+          var locale = defaultLocale$2[this$1._locale];
+          var separator = locale.separator;
+          var suffixes = locale.suffixes;
+          var suff = n >= 1000 ? suffixes[this$1._tickUnit + 8] : "";
+          var number = n > 1 ? this$1._d3Scale.tickFormat()(n / Math.pow(10, 3 * this$1._tickUnit)) : n;
+          return ("" + number + separator + suff);
+        }
+        else {
+          return formatAbbreviate(n, this$1._locale);
+        }
       };
 
       /**
@@ -16090,7 +16129,7 @@ if (typeof window !== "undefined") {
         var fontFamily = ref$1.fontFamily;
         var fontSize = ref$1.fontSize;
         var lineHeight = ref$1.lineHeight;
-        var titleWrap = textWrap()
+        var titleWrap = wrap()
           .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
           .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
           .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
@@ -16143,20 +16182,20 @@ if (typeof window !== "undefined") {
         var h = rotate ? "width" : "height",
               w = rotate ? "height" : "width";
 
-        var wrap = textWrap()
+        var wrap$$1 = wrap()
           .fontFamily(fF)
           .fontSize(fS)
           .lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)
           [w](horizontal ? space : min([this._maxSize, this._width]) - hBuff - p - this._margin.left - this._margin.right)
           [h](horizontal ? min([this._maxSize, this._height]) - hBuff - p - this._margin.top - this._margin.bottom : space);
 
-        var res = wrap(tickFormat$$1(d));
+        var res = wrap$$1(tickFormat$$1(d));
         res.lines = res.lines.filter(function (d) { return d !== ""; });
 
         res.width = res.lines.length ? Math.ceil(max(res.widths)) + fS / 4 : 0;
         if (res.width % 2) { res.width++; }
 
-        res.height = res.lines.length ? Math.ceil(res.lines.length * wrap.lineHeight()) + fS / 4 : 0;
+        res.height = res.lines.length ? Math.ceil(res.lines.length * wrap$$1.lineHeight()) + fS / 4 : 0;
         if (res.height % 2) { res.height++; }
 
         return res;
@@ -16696,6 +16735,16 @@ if (typeof window !== "undefined") {
     */
     Axis.prototype.tickSpecifier = function tickSpecifier (_) {
       return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
+    };
+
+    /**
+        @memberof Axis
+        @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick). 
+        @param {String} [*value* = "normal"]
+        @chainable
+    */
+    Axis.prototype.tickSuffix = function tickSuffix (_) {
+      return arguments.length ? (this._tickSuffix = _, this) : this._tickSuffix;
     };
 
     /**
@@ -17706,7 +17755,7 @@ if (typeof window !== "undefined") {
         var lH = lH = this._titleConfig.lineHeight || this._titleClass.lineHeight();
         lH = lH ? lH() : s * 1.4;
 
-        var res = textWrap()
+        var res = wrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lH)
@@ -17747,7 +17796,7 @@ if (typeof window !== "undefined") {
         var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
               w = this$1._width;
 
-        res = Object.assign(res, textWrap()
+        res = Object.assign(res, wrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lh)
@@ -17755,7 +17804,7 @@ if (typeof window !== "undefined") {
           .height(h)
           (label));
 
-        res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
+        res.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
         res.height = Math.ceil(res.lines.length * (lh + 1));
         res.og = {height: res.height, width: res.width};
         res.f = f;
@@ -17792,9 +17841,9 @@ if (typeof window !== "undefined") {
             var loop = function ( x ) {
               var label = wrappable[x];
               var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
-              var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+              var res = wrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
               if (!res.truncated) {
-                label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+                label.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
                 label.height = res.lines.length * (label.lh + 1);
               }
               else {
@@ -18823,14 +18872,14 @@ if (typeof window !== "undefined") {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
                 s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-          var wrap = textWrap()
+          var wrap$$1 = wrap()
             .fontFamily(f)
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined);
 
-          var res = wrap(d3Scale.tickFormat(ticks.length - 1, this$1._tickSpecifier)(d));
+          var res = wrap$$1(d3Scale.tickFormat(ticks.length - 1, this$1._tickSpecifier)(d));
           var width = res.lines.length
-            ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
+            ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
             : 0;
           if (width % 2) { width++; }
           if (maxLabel < width) { maxLabel = width + 2 * this$1._buttonPadding; }
@@ -31804,10 +31853,16 @@ if (typeof window !== "undefined") {
     var strokeWidth = selection.attr("stroke-width");
     selection.attr("stroke-width", !strokeWidth ? 0 : strokeWidth);
 
+    // if there is no stroke, set the stroke color to "transparent" (fixes weird text rendering)
+    if (!strokeWidth) { selection.attr("stroke", "transparent"); }
+
     // sets "fill-opacity" attribute to `0` if fill is "transparent" or "none"
     var transparent = ["none", "transparent"].includes(selection.attr("fill"));
     var fillOpacity = selection.attr("fill-opacity");
     selection.attr("fill-opacity", transparent ? 0 : fillOpacity);
+
+    // "aria-label" properties interfere with text labels ¯\_(ツ)_/¯
+    selection.attr("aria-label", null);
 
   }
 
@@ -32106,6 +32161,13 @@ if (typeof window !== "undefined") {
 
       }
       else if (this.childNodes.length > 0) {
+        var ref$1 = parseTransform(this);
+        var scale = ref$1[0];
+        var x$2 = ref$1[1];
+        var y$2 = ref$1[2];
+        transform.scale *= scale;
+        transform.x += x$2;
+        transform.y += y$2;
         checkChildren(this, transform);
       }
       else { // catches all SVG shapes
@@ -32122,11 +32184,11 @@ if (typeof window !== "undefined") {
           select(elem$2).attr("y2", parseFloat(select(elem$2).attr("y2")) + transform.y);
         }
         else if (tag === "path") {
-          var ref$1 = parseTransform(elem$2);
-          var scale = ref$1[0];
-          var x$2 = ref$1[1];
-          var y$2 = ref$1[2];
-          if (select(elem$2).attr("transform")) { select(elem$2).attr("transform", ("scale(" + scale + ")translate(" + (x$2 + transform.x) + "," + (y$2 + transform.y) + ")")); }
+          var ref$2 = parseTransform(elem$2);
+          var scale$1 = ref$2[0];
+          var x$3 = ref$2[1];
+          var y$3 = ref$2[2];
+          if (select(elem$2).attr("transform")) { select(elem$2).attr("transform", ("scale(" + scale$1 + ")translate(" + (x$3 + transform.x) + "," + (y$3 + transform.y) + ")")); }
         }
         select(elem$2).call(svgPresets);
 
@@ -32140,13 +32202,13 @@ if (typeof window !== "undefined") {
           var defTag = (def.tagName || "").toLowerCase();
           if (defTag === "pattern") {
 
-            var ref$2 = parseTransform(elem$2);
-            var scale$1 = ref$2[0];
-            var x$3 = ref$2[1];
-            var y$3 = ref$2[2];
-            transform.scale *= scale$1;
-            transform.x += x$3;
-            transform.y += y$3;
+            var ref$3 = parseTransform(elem$2);
+            var scale$2 = ref$3[0];
+            var x$4 = ref$3[1];
+            var y$4 = ref$3[2];
+            transform.scale *= scale$2;
+            transform.x += x$4;
+            transform.y += y$4;
             checkChildren(def, transform);
 
           }
@@ -33238,7 +33300,8 @@ if (typeof window !== "undefined") {
       if (this$1._shapeConfig.hoverOpacity !== 1 && this$1._hover ? this$1._hover(d, i) : true) {
         this$1.hover(false);
       }
-      if (this$1._tooltip && this$1._id(this$1._tooltipClass.data()[0]) === this$1._id(d)) { this$1._tooltipClass.data([]).render(); }
+      var tooltipData = this$1._tooltipClass.data();
+      if (tooltipData.length && this$1._tooltip && this$1._id(this$1._tooltipClass.data()[0]) === this$1._id(d)) { this$1._tooltipClass.data([]).render(); }
     }, 50);
 
     this._select.style("cursor", "auto");
@@ -33911,7 +33974,8 @@ if (typeof window !== "undefined") {
       }
 
       // overrides the hoverOpacity of shapes if data is larger than cutoff
-      if (this._filteredData.length > this._dataCutoff) {
+      var uniqueIds = nest().key(this._id).entries(this._filteredData).length;
+      if (uniqueIds > this._dataCutoff) {
         if (this._userHover === undefined) { this._userHover = this._shapeConfig.hoverOpacity || 0.5; }
         this._shapeConfig.hoverOpacity = 1;
       }
@@ -34358,6 +34422,16 @@ if (typeof window !== "undefined") {
         return this;
       }
       return this._data;
+    };
+
+    /**
+        @memberof Viz
+        @desc If the number of visible data points exceeds this number, the default hover behavior will be disabled (helpful for very large visualizations bogging down the DOM with opacity updates).
+        @param {Number} [*value* = 100]
+        @chainable
+    */
+    Viz.prototype.dataCutoff = function dataCutoff (_) {
+      return arguments.length ? (this._dataCutoff = _, this) : this._dataCutoff;
     };
 
     /**
@@ -36800,8 +36874,22 @@ if (typeof window !== "undefined") {
             ];
           },
           labelConfig: {
-            textAnchor: function (d) { return d.l ? "middle" : "start"; },
-            verticalAlign: function (d) { return d.l ? "bottom" : "top"; }
+            textAnchor: function (d, i, x) {
+              var line, parent = x;
+              while (typeof line === "undefined" && parent) {
+                if (typeof parent.l !== "undefined") { line = parent.l; }
+                parent = parent.__d3plusParent__;
+              }
+              return line ? "middle" : "start";
+            },
+            verticalAlign: function (d, i, x) {
+              var line, parent = x;
+              while (typeof line === "undefined" && parent) {
+                if (typeof parent.l !== "undefined") { line = parent.l; }
+                parent = parent.__d3plusParent__;
+              }
+              return line ? "bottom" : "top";
+            }
           },
           width: function (d) { return d.x1 - d.x0; }
         })

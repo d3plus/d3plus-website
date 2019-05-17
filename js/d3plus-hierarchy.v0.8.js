@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.8.2
+  d3plus-hierarchy v0.8.3
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -939,8 +939,22 @@ if (typeof window !== "undefined") {
             ];
           },
           labelConfig: {
-            textAnchor: function (d) { return d.l ? "middle" : "start"; },
-            verticalAlign: function (d) { return d.l ? "bottom" : "top"; }
+            textAnchor: function (d, i, x) {
+              var line, parent = x;
+              while (typeof line === "undefined" && parent) {
+                if (typeof parent.l !== "undefined") { line = parent.l; }
+                parent = parent.__d3plusParent__;
+              }
+              return line ? "middle" : "start";
+            },
+            verticalAlign: function (d, i, x) {
+              var line, parent = x;
+              while (typeof line === "undefined" && parent) {
+                if (typeof parent.l !== "undefined") { line = parent.l; }
+                parent = parent.__d3plusParent__;
+              }
+              return line ? "bottom" : "top";
+            }
           },
           width: function (d) { return d.x1 - d.x0; }
         })
