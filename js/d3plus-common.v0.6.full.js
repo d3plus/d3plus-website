@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.46
+  d3plus-common v0.6.47
   Common functions and methods used across D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -446,6 +446,7 @@ if (typeof window !== "undefined") {
     var wrapFunction = function (func) { return function (d, i, s) {
       var parent;
       while (d.__d3plus__) {
+        if (parent) { d.__d3plusParent__ = parent; }
         parent = d;
         i = d.i;
         d = d.data || d.feature;
