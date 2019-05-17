@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var myData = [
+    {"Travel Time": "< 5 Minutes",     "Population Percentage":  2},
+    {"Travel Time": "15 - 24 Minutes", "Population Percentage": 30},
+    {"Travel Time": "35 - 44 Minutes", "Population Percentage":  7},
+    {"Travel Time": "45 - 89 Minutes", "Population Percentage": 11},
+    {"Travel Time": "5 - 14 Minutes",  "Population Percentage": 20},
+    {"Travel Time": "90+ Minutes",     "Population Percentage":  5},
+    {"Travel Time": "25 - 34 Minutes", "Population Percentage": 25}
+  ];
+  
+  new d3plus.BarChart()
+    .config({
+      data: myData,
+      groupBy: "Travel Time",
+      x: "Travel Time",
+      y: "Population Percentage",
+      tooltipConfig: {
+        title: function(d) {
+          return "Commute Time: " + d["Travel Time"];
+        },
+        tbody: [
+          ["Percentage", function(d) { return d["Population Percentage"] + "%" }]
+        ]
+      },
+      legend: false
+    })
+    .render();
+
+</script>
+
+</html>

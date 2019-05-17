@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var myData = [
+    {id: "alpha", x: 5, y: 25},
+    {id: "alpha", x: 6, y: 13},
+    {id: "beta",  x: 4, y: 17},
+    {id: "beta",  x: 5, y:  8}
+  ];
+
+  new d3plus.BarChart()
+    .config({
+      data: myData,
+      discrete: "y",
+      groupBy: "id",
+      x: "y",
+      y: "x",
+      xConfig: {
+        title: "X - Axis",
+        titleConfig: {
+          fontColor: "green"  
+        },
+      },
+      yConfig: {
+        title: "Y - Axis",
+        titleConfig: {
+          fontColor: "green"
+        }
+      }
+    })
+    .render();
+
+</script>
+
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var myData = [
+    {id: "alpha", x: 4, y:  7},
+    {id: "alpha", x: 5, y: 25},
+    {id: "alpha", x: 6, y: 13},
+    {id: "beta",  x: 4, y: 17},
+    {id: "beta",  x: 5, y:  8},
+    {id: "beta",  x: 6, y: 13},
+    {id: "gamma", x: 4, y: 10},
+    {id: "gamma", x: 5, y: 18},
+    {id: "gamma", x: 6, y:  5}
+  ];
+  
+  new d3plus.StackedArea()
+    .config({
+      data: myData,
+      groupBy: "id",
+      stackOffset: "expand"
+    })
+    .render();
+
+</script>
+
+</html>
