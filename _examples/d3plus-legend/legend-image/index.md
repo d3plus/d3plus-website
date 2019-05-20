@@ -2,8 +2,8 @@
 title: Images in Legends
 width: 400
 height: 200
-time: 1553097749498
-date: March 20, 2019
+time: 1558362394860
+date: May 20, 2019
 ---
 
 [width]: 400
@@ -15,9 +15,9 @@ Each pair of square and text in a Legend is just an extension of the [Shape](htt
 
 ```js
 var data = [
-  {id: "Apple", color: "orange", image: "https://datausa.io/static/img/attrs/thing_apple.png"},
-  {id: "Fish", color: "blue", image: "https://datausa.io/static/img/attrs/thing_fish.png"},
-  {id: "Tomato", color: "red", image: "https://datausa.io/static/img/attrs/thing_tomato.png"}
+  {id: "Apple", color: "orange", image: "https://datausa.io/images/attrs/thing_apple.png"},
+  {id: "Fish", color: "blue", image: "https://datausa.io/images/attrs/thing_fish.png"},
+  {id: "Tomato", color: "red", image: "https://datausa.io/images/attrs/thing_tomato.png"}
 ];
 
 var legend = new d3plus.Legend()
