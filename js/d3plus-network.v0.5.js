@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.5.3
+  d3plus-network v0.5.4
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -226,8 +226,10 @@ if (typeof window !== "undefined") {
 
 
       Viz.call(this);
-      this._labelCutoff = 100;
       this._links = [];
+      this._linkSize = d3plusCommon.constant(1);
+      this._linkSizeMin = 1;
+      this._linkSizeScale = "sqrt";
       this._noDataMessage = false;
       this._nodes = [];
       this._on["click.shape"] = function (d, i) {
@@ -356,8 +358,7 @@ if (typeof window !== "undefined") {
         Path: {
           fill: "none",
           label: false,
-          stroke: "#eee",
-          strokeWidth: 1
+          stroke: "#eee"
         }
       });
       this._x = d3plusCommon.accessor("x");
@@ -492,6 +493,7 @@ if (typeof window !== "undefined") {
 
       var nodeIndices = nodes.map(function (n) { return n.node; });
       var links = this._links.map(function (l) { return ({
+        size: this$1._linkSize(l),
         source: typeof l.source === "number"
           ? nodes[nodeIndices.indexOf(this$1._nodes[l.source])]
           : nodeLookup[l.source.id],
@@ -547,16 +549,29 @@ if (typeof window !== "undefined") {
           .attr("class", "d3plus-network-zoomGroup")
         .merge(this._zoomGroup);
 
+      var strokeExtent = d3Array.extent(links, function (d) { return d.size; });
+      if (strokeExtent[0] !== strokeExtent[1]) {
+        var strokeScale = scales[("scale" + (this._linkSizeScale.charAt(0).toUpperCase()) + (this._linkSizeScale.slice(1)))]()
+          .domain(strokeExtent)
+          .range([this._linkSizeMin, r.range()[0]]);
+        links.forEach(function (link) {
+          link.size = strokeScale(link.size);
+        });
+      }
+
       this._shapes.push(new shapes.Path()
-        .config(this._shapeConfig)
-        .config(this._shapeConfig.Path)
+        .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "edge", "Path"))
+        .strokeWidth(function (d) { return d.size; })
+        .activeStyle({
+          "stroke-width": function (d) { return d.size; }
+        })
         .d(function (d) { return ("M" + (d.source.x) + "," + (d.source.y) + " " + (d.target.x) + "," + (d.target.y)); })
         .data(links)
         .select(d3plusCommon.elem("g.d3plus-network-links", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node())
         .render());
 
       var shapeConfig = {
-        label: function (d) { return nodes.length <= this$1._labelCutoff || (this$1._hover && this$1._hover(d) || this$1._active && this$1._active(d)) ? this$1._drawLabel(d.data || d.node, d.i) : false; },
+        label: function (d) { return nodes.length <= this$1._dataCutoff || (this$1._hover && this$1._hover(d) || this$1._active && this$1._active(d)) ? this$1._drawLabel(d.data || d.node, d.i) : false; },
         select: d3plusCommon.elem("g.d3plus-network-nodes", {parent: parent, transition: transition, enter: {transform: transform}, update: {transform: transform}}).node()
       };
 
@@ -571,16 +586,6 @@ if (typeof window !== "undefined") {
 
       return this;
 
-    };
-
-    /**
-        @memberof Network
-        @desc Defines the maximum number of nodes that allow all labels to be shown. When the number of nodes is over this amount, labels will only be shown on hover and click.
-        @param {Number} *value* = 100
-        @chainable
-    */
-    Network.prototype.labelCutoff = function labelCutoff (_) {
-      return arguments.length ? (this._labelCutoff = _, this) : this._labelCutoff;
     };
 
     /**
@@ -604,6 +609,36 @@ if (typeof window !== "undefined") {
         return this;
       }
       return this._links;
+    };
+
+    /**
+        @memberof Network
+        @desc Defines the thickness of the links connecting each node. The value provided can be either a pixel Number to be used for all links, or an accessor function that returns a specific data value to be used in an automatically calculated linear scale.
+        @param {Function|Name} [*value* = 1]
+        @chainable
+    */
+    Network.prototype.linkSize = function linkSize (_) {
+      return arguments.length ? (this._linkSize = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._linkSize;
+    };
+
+    /**
+        @memberof Network
+        @desc Defines the minimum pixel stroke width used in link sizing.
+        @param {Number} [*value* = 2]
+        @chainable
+    */
+    Network.prototype.linkSizeMin = function linkSizeMin (_) {
+      return arguments.length ? (this._linkSizeMin = _, this) : this._linkSizeMin;
+    };
+
+    /**
+        @memberof Network
+        @desc Sets the specific type of [continuous d3-scale](https://github.com/d3/d3-scale#continuous-scales) used when calculating the pixel size of links in the network.
+        @param {String} [*value* = "sqrt"]
+        @chainable
+    */
+    Network.prototype.linkSizeScale = function linkSizeScale (_) {
+      return arguments.length ? (this._linkSizeScale = _, this) : this._linkSizeScale;
     };
 
     /**
@@ -663,7 +698,7 @@ if (typeof window !== "undefined") {
 
     /**
         @memberof Network
-        @desc If *value* is specified, sets the size scale maximum to the specified number and returns the current class instance. If *value* is not specified, returns the current size scale maximum. By default, the maximum size is determined by half the distance of the two closest nodes.
+        @desc Defines the maximum pixel radius used in size scaling. By default, the maximum size is determined by half the distance of the two closest nodes.
         @param {Number} [*value*]
         @chainable
     */
@@ -673,7 +708,7 @@ if (typeof window !== "undefined") {
 
     /**
         @memberof Network
-        @desc If *value* is specified, sets the size scale minimum to the specified number and returns the current class instance. If *value* is not specified, returns the current size scale minimum.
+        @desc Defines the minimum pixel radius used in size scaling.
         @param {Number} [*value* = 5]
         @chainable
     */
@@ -683,7 +718,7 @@ if (typeof window !== "undefined") {
 
     /**
         @memberof Network
-        @desc If *value* is specified, sets the size scale to the specified string and returns the current class instance. If *value* is not specified, returns the current size scale.
+        @desc Sets the specific type of [continuous d3-scale](https://github.com/d3/d3-scale#continuous-scales) used when calculating the pixel size of nodes in the network.
         @param {String} [*value* = "sqrt"]
         @chainable
     */
@@ -746,8 +781,10 @@ if (typeof window !== "undefined") {
 
 
       Viz.call(this);
-      this._labelCutoff = 100;
       this._links = [];
+      this._linkSize = d3plusCommon.constant(1);
+      this._linkSizeMin = 1;
+      this._linkSizeScale = "sqrt";
       this._noDataMessage = false;
       this._nodes = [];
       this._on.mouseenter = function () {};
@@ -871,10 +908,12 @@ if (typeof window !== "undefined") {
 
       var links = this._links.map(function (link) {
         var check = ["source", "target"];
-        return check.reduce(function (result, check) {
+        var edge = check.reduce(function (result, check) {
           result[check] = typeof link[check] === "number" ? nodes[link[check]] : nodeLookup[link[check].id || link[check]];
           return result;
         }, {});
+        edge.size = this$1._linkSize(link);
+        return edge;
       });
 
       var linkMap = links.reduce(function (map, link) {
@@ -1143,8 +1182,20 @@ if (typeof window !== "undefined") {
         return obj;
       }, {});
 
+      var strokeExtent = d3Array.extent(links, function (d) { return d.size; });
+      if (strokeExtent[0] !== strokeExtent[1]) {
+        var radius$1 = d3Array.min(nodes, function (d) { return d.r; });
+        var strokeScale = scales[("scale" + (this._linkSizeScale.charAt(0).toUpperCase()) + (this._linkSizeScale.slice(1)))]()
+          .domain(strokeExtent)
+          .range([this._linkSizeMin, radius$1]);
+        links.forEach(function (link) {
+          link.size = strokeScale(link.size);
+        });
+      }
+
       this._shapes.push(new shapes.Path()
         .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "edge", "Path"))
+        .strokeWidth(function (d) { return d.size; })
         .id(function (d) { return ((d.source.id) + "_" + (d.target.id)); })
         .d(function (d) { return d.spline ? ("M" + (d.sourceX) + "," + (d.sourceY) + "C" + (d.sourceBisectX) + "," + (d.sourceBisectY) + " " + (d.targetBisectX) + "," + (d.targetBisectY) + " " + (d.targetX) + "," + (d.targetY)) : ("M" + (d.source.x) + "," + (d.source.y) + " " + (d.target.x) + "," + (d.target.y)); })
         .data(edges)
@@ -1154,7 +1205,7 @@ if (typeof window !== "undefined") {
       var that = this;
 
       var shapeConfig = {
-        label: function (d) { return nodes.length <= this$1._labelCutoff || (this$1._hover && this$1._hover(d) || this$1._active && this$1._active(d)) ? this$1._drawLabel(d.data || d.node, d.i) : false; },
+        label: function (d) { return nodes.length <= this$1._dataCutoff || (this$1._hover && this$1._hover(d) || this$1._active && this$1._active(d)) ? this$1._drawLabel(d.data || d.node, d.i) : false; },
         labelBounds: function (d) { return d.labelBounds; },
         labelConfig: {
           fontColor: function (d) { return d.id === this$1._center ? d3plusCommon.configPrep.bind(that)(that._shapeConfig, "shape", d.key).labelConfig.fontColor(d) : d3plusColor.colorLegible(d3plusCommon.configPrep.bind(that)(that._shapeConfig, "shape", d.key).fill(d)); },
@@ -1225,6 +1276,36 @@ if (typeof window !== "undefined") {
         return this;
       }
       return this._links;
+    };
+
+    /**
+        @memberof Network
+        @desc Defines the thickness of the links connecting each node. The value provided can be either a pixel Number to be used for all links, or an accessor function that returns a specific data value to be used in an automatically calculated linear scale.
+        @param {Function|Name} [*value* = 1]
+        @chainable
+    */
+    Rings.prototype.linkSize = function linkSize (_) {
+      return arguments.length ? (this._linkSize = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._linkSize;
+    };
+
+    /**
+        @memberof Network
+        @desc Defines the minimum pixel stroke width used in link sizing.
+        @param {Number} [*value* = 2]
+        @chainable
+    */
+    Rings.prototype.linkSizeMin = function linkSizeMin (_) {
+      return arguments.length ? (this._linkSizeMin = _, this) : this._linkSizeMin;
+    };
+
+    /**
+        @memberof Network
+        @desc Sets the specific type of [continuous d3-scale](https://github.com/d3/d3-scale#continuous-scales) used when calculating the pixel size of links in the network.
+        @param {String} [*value* = "sqrt"]
+        @chainable
+    */
+    Rings.prototype.linkSizeScale = function linkSizeScale (_) {
+      return arguments.length ? (this._linkSizeScale = _, this) : this._linkSizeScale;
     };
 
     /**
