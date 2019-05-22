@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.27
+  d3plus-viz v0.12.28
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -672,6 +672,8 @@ if (typeof window !== "undefined") {
         .key(fill)
         .rollup(function (leaves) { return legendData.push(d3plusCommon.merge(leaves, this$1._aggs)); })
         .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
+
+      legendData.sort(this._legendSort);
 
       var hidden = function (d, i) {
         var id = this$1._id(d, i);
@@ -1502,6 +1504,7 @@ if (typeof window !== "undefined") {
       this._legendCutoff = 1;
       this._legendPadding = defaultPadding;
       this._legendPosition = "bottom";
+      this._legendSort = function (a, b) { return this$1._drawLabel(a).localeCompare(this$1._drawLabel(b)); };
       this._legendTooltip = {};
 
       this._loadingHTML = d3plusCommon.constant("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
@@ -2467,6 +2470,16 @@ if (typeof window !== "undefined") {
     */
     Viz.prototype.legendPosition = function legendPosition (_) {
       return arguments.length ? (this._legendPosition = _, this) : this._legendPosition;
+    };
+
+    /**
+        @memberof Viz
+        @desc A JavaScript [sort comparator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) used to sort the legend.
+        @param {Function} *value*
+        @chainable
+    */
+    Viz.prototype.legendSort = function legendSort (_) {
+      return arguments.length ? (this._legendSort = _, this) : this._legendSort;
     };
 
     /**
