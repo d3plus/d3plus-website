@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.16.7
+  d3plus-shape v0.16.8
   Fancy SVG shapes for visualizations
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -3579,7 +3579,7 @@ if (typeof window !== "undefined") {
       this._d = d3plusCommon.accessor("path");
       this._labelBounds = function (d, i, aes) {
         var r = largestRect(aes.points, {angle: this$1._labelConfig.rotate ? this$1._labelConfig.rotate(d, i) : 0});
-        return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2};
+        return r ? {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2} : false;
       };
       this._name = "Path";
       this._labelConfig = Object.assign(this._labelConfig, {
