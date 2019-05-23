@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.5.4
+  d3plus-network v0.5.5
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -559,8 +559,11 @@ if (typeof window !== "undefined") {
         });
       }
 
+      var linkConfig = d3plusCommon.configPrep.bind(this)(this._shapeConfig, "edge", "Path");
+      delete linkConfig.on;
+
       this._shapes.push(new shapes.Path()
-        .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "edge", "Path"))
+        .config(linkConfig)
         .strokeWidth(function (d) { return d.size; })
         .activeStyle({
           "stroke-width": function (d) { return d.size; }
@@ -1193,8 +1196,11 @@ if (typeof window !== "undefined") {
         });
       }
 
+      var linkConfig = d3plusCommon.configPrep.bind(this)(this._shapeConfig, "edge", "Path");
+      delete linkConfig.on;
+
       this._shapes.push(new shapes.Path()
-        .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "edge", "Path"))
+        .config(linkConfig)
         .strokeWidth(function (d) { return d.size; })
         .id(function (d) { return ((d.source.id) + "_" + (d.target.id)); })
         .d(function (d) { return d.spline ? ("M" + (d.sourceX) + "," + (d.sourceY) + "C" + (d.sourceBisectX) + "," + (d.sourceBisectY) + " " + (d.targetBisectX) + "," + (d.targetBisectY) + " " + (d.targetX) + "," + (d.targetY)) : ("M" + (d.source.x) + "," + (d.source.y) + " " + (d.target.x) + "," + (d.target.y)); })
