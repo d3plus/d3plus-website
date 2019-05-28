@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.8.3
+  d3plus-hierarchy v0.8.4
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -290,7 +290,7 @@ if (typeof window !== "undefined") {
     return [min, max];
   }
 
-  function range(start, stop, step) {
+  function d3Range(start, stop, step) {
     start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
 
     var i = -1,
@@ -6336,7 +6336,7 @@ if (typeof window !== "undefined") {
       start += (stop - start - step * (n - paddingInner)) * align;
       bandwidth = step * (1 - paddingInner);
       if (round) { start = Math.round(start), bandwidth = Math.round(bandwidth); }
-      var values = range(n).map(function(i) { return start + step * i; });
+      var values = d3Range(n).map(function(i) { return start + step * i; });
       return ordinalRange(reverse ? values.reverse() : values);
     }
 
@@ -6439,15 +6439,15 @@ if (typeof window !== "undefined") {
 
   // normalize(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
   // interpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding range value x in [a,b].
-  function bimap(domain, range$$1, interpolate$$1) {
-    var d0 = domain[0], d1 = domain[1], r0 = range$$1[0], r1 = range$$1[1];
+  function bimap(domain, range, interpolate$$1) {
+    var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
     if (d1 < d0) { d0 = normalize(d1, d0), r0 = interpolate$$1(r1, r0); }
     else { d0 = normalize(d0, d1), r0 = interpolate$$1(r0, r1); }
     return function(x) { return r0(d0(x)); };
   }
 
-  function polymap(domain, range$$1, interpolate$$1) {
-    var j = Math.min(domain.length, range$$1.length) - 1,
+  function polymap(domain, range, interpolate$$1) {
+    var j = Math.min(domain.length, range.length) - 1,
         d = new Array(j),
         r = new Array(j),
         i = -1;
@@ -6455,12 +6455,12 @@ if (typeof window !== "undefined") {
     // Reverse descending domains.
     if (domain[j] < domain[0]) {
       domain = domain.slice().reverse();
-      range$$1 = range$$1.slice().reverse();
+      range = range.slice().reverse();
     }
 
     while (++i < j) {
       d[i] = normalize(domain[i], domain[i + 1]);
-      r[i] = interpolate$$1(range$$1[i], range$$1[i + 1]);
+      r[i] = interpolate$$1(range[i], range[i + 1]);
     }
 
     return function(x) {
@@ -6480,7 +6480,7 @@ if (typeof window !== "undefined") {
 
   function transformer() {
     var domain = unit,
-        range$$1 = unit,
+        range = unit,
         interpolate$$1 = interpolate,
         transform,
         untransform,
@@ -6491,17 +6491,17 @@ if (typeof window !== "undefined") {
         input;
 
     function rescale() {
-      piecewise$$1 = Math.min(domain.length, range$$1.length) > 2 ? polymap : bimap;
+      piecewise$$1 = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
       output = input = null;
       return scale;
     }
 
     function scale(x) {
-      return isNaN(x = +x) ? unknown : (output || (output = piecewise$$1(domain.map(transform), range$$1, interpolate$$1)))(transform(clamp(x)));
+      return isNaN(x = +x) ? unknown : (output || (output = piecewise$$1(domain.map(transform), range, interpolate$$1)))(transform(clamp(x)));
     }
 
     scale.invert = function(y) {
-      return clamp(untransform((input || (input = piecewise$$1(range$$1, domain.map(transform), interpolateNumber)))(y)));
+      return clamp(untransform((input || (input = piecewise$$1(range, domain.map(transform), interpolateNumber)))(y)));
     };
 
     scale.domain = function(_) {
@@ -6509,11 +6509,11 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range$$1 = slice$2.call(_), rescale()) : range$$1.slice();
+      return arguments.length ? (range = slice$2.call(_), rescale()) : range.slice();
     };
 
     scale.rangeRound = function(_) {
-      return range$$1 = slice$2.call(_), interpolate$$1 = interpolateRound, rescale();
+      return range = slice$2.call(_), interpolate$$1 = interpolateRound, rescale();
     };
 
     scale.clamp = function(_) {
@@ -7204,23 +7204,23 @@ if (typeof window !== "undefined") {
 
   function quantile$1() {
     var domain = [],
-        range$$1 = [],
+        range = [],
         thresholds = [],
         unknown;
 
     function rescale() {
-      var i = 0, n = Math.max(1, range$$1.length);
+      var i = 0, n = Math.max(1, range.length);
       thresholds = new Array(n - 1);
       while (++i < n) { thresholds[i - 1] = quantile(domain, i / n); }
       return scale;
     }
 
     function scale(x) {
-      return isNaN(x = +x) ? unknown : range$$1[bisectRight(thresholds, x)];
+      return isNaN(x = +x) ? unknown : range[bisectRight(thresholds, x)];
     }
 
     scale.invertExtent = function(y) {
-      var i = range$$1.indexOf(y);
+      var i = range.indexOf(y);
       return i < 0 ? [NaN, NaN] : [
         i > 0 ? thresholds[i - 1] : domain[0],
         i < thresholds.length ? thresholds[i] : domain[domain.length - 1]
@@ -7236,7 +7236,7 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range$$1 = slice$2.call(_), rescale()) : range$$1.slice();
+      return arguments.length ? (range = slice$2.call(_), rescale()) : range.slice();
     };
 
     scale.unknown = function(_) {
@@ -7250,7 +7250,7 @@ if (typeof window !== "undefined") {
     scale.copy = function() {
       return quantile$1()
           .domain(domain)
-          .range(range$$1)
+          .range(range)
           .unknown(unknown);
     };
 
@@ -7262,11 +7262,11 @@ if (typeof window !== "undefined") {
         x1 = 1,
         n = 1,
         domain = [0.5],
-        range$$1 = [0, 1],
+        range = [0, 1],
         unknown;
 
     function scale(x) {
-      return x <= x ? range$$1[bisectRight(domain, x, 0, n)] : unknown;
+      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
     }
 
     function rescale() {
@@ -7281,11 +7281,11 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (n = (range$$1 = slice$2.call(_)).length - 1, rescale()) : range$$1.slice();
+      return arguments.length ? (n = (range = slice$2.call(_)).length - 1, rescale()) : range.slice();
     };
 
     scale.invertExtent = function(y) {
-      var i = range$$1.indexOf(y);
+      var i = range.indexOf(y);
       return i < 0 ? [NaN, NaN]
           : i < 1 ? [x0, domain[0]]
           : i >= n ? [domain[n - 1], x1]
@@ -7303,7 +7303,7 @@ if (typeof window !== "undefined") {
     scale.copy = function() {
       return quantize$1()
           .domain([x0, x1])
-          .range(range$$1)
+          .range(range)
           .unknown(unknown);
     };
 
@@ -7312,24 +7312,24 @@ if (typeof window !== "undefined") {
 
   function threshold() {
     var domain = [0.5],
-        range$$1 = [0, 1],
+        range = [0, 1],
         unknown,
         n = 1;
 
     function scale(x) {
-      return x <= x ? range$$1[bisectRight(domain, x, 0, n)] : unknown;
+      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
     }
 
     scale.domain = function(_) {
-      return arguments.length ? (domain = slice$2.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : domain.slice();
+      return arguments.length ? (domain = slice$2.call(_), n = Math.min(domain.length, range.length - 1), scale) : domain.slice();
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range$$1 = slice$2.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : range$$1.slice();
+      return arguments.length ? (range = slice$2.call(_), n = Math.min(domain.length, range.length - 1), scale) : range.slice();
     };
 
     scale.invertExtent = function(y) {
-      var i = range$$1.indexOf(y);
+      var i = range.indexOf(y);
       return [domain[i - 1], domain[i]];
     };
 
@@ -7340,7 +7340,7 @@ if (typeof window !== "undefined") {
     scale.copy = function() {
       return threshold()
           .domain(domain)
-          .range(range$$1)
+          .range(range)
           .unknown(unknown);
     };
 
@@ -11835,7 +11835,7 @@ if (typeof window !== "undefined") {
 
     // User's input normalization
     options = Object.assign({
-      angle: range(-90, 90 + angleStep, angleStep),
+      angle: d3Range(-90, 90 + angleStep, angleStep),
       cache: true,
       maxAspectRatio: 15,
       minAspectRatio: 1,
@@ -11972,7 +11972,7 @@ if (typeof window !== "undefined") {
           if (!aRatios.length) {
             var minAspectRatio = Math.max(options.minAspectRatio, options.minWidth / maxHeight, maxArea / (maxHeight * maxHeight));
             var maxAspectRatio = Math.min(options.maxAspectRatio, maxWidth / options.minHeight, maxWidth * maxWidth / maxArea);
-            aRatios = range(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
+            aRatios = d3Range(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
           }
 
           for (var a = 0; a < aRatios.length; a++) {
@@ -15443,7 +15443,7 @@ if (typeof window !== "undefined") {
         * | currency | ["$", ""] | The currency prefix and suffix. |
   */
 
-  var defaultLocale$2 = {
+  var formatLocale$2 = {
     "en-GB": {
       separator: "",
       suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
@@ -15551,7 +15551,7 @@ if (typeof window !== "undefined") {
     else { return "N/A"; }
 
     var length = n.toString().split(".")[0].replace("-", "").length,
-          localeConfig = typeof locale === "object" ? locale : defaultLocale$2[locale] || defaultLocale$2["en-US"],
+          localeConfig = typeof locale === "object" ? locale : formatLocale$2[locale] || formatLocale$2["en-US"],
           suffixes = localeConfig.suffixes.map(parseSuffixes);
 
     var decimal = localeConfig.delimiters.decimal || ".",
@@ -15909,7 +15909,7 @@ if (typeof window !== "undefined") {
         if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
           if (newRange === this._range) {
             var buckets = this._domain.length + 1;
-            range$$1 = range(buckets)
+            range$$1 = d3Range(buckets)
               .map(function (d) { return range$$1[0] + sizeInner * (d / (buckets - 1)); })
               .slice(1, buckets);
             range$$1 = range$$1.map(function (d) { return d - range$$1[0] / 2; });
@@ -15917,7 +15917,7 @@ if (typeof window !== "undefined") {
           else {
             var buckets$1 = this._domain.length;
             var size = range$$1[1] - range$$1[0];
-            range$$1 = range(buckets$1)
+            range$$1 = d3Range(buckets$1)
               .map(function (d) { return range$$1[0] + size * (d / (buckets$1 - 1)); });
           }
         }
@@ -16108,7 +16108,7 @@ if (typeof window !== "undefined") {
           return n;
         }
         else if (this$1._scale === "linear" && this$1._tickSuffix === "smallest") {
-          var locale = defaultLocale$2[this$1._locale];
+          var locale = typeof this$1._locale === "object" ? this$1._locale : formatLocale$2[this$1._locale];
           var separator = locale.separator;
           var suffixes = locale.suffixes;
           var suff = n >= 1000 ? suffixes[this$1._tickUnit + 8] : "";
@@ -16563,7 +16563,7 @@ if (typeof window !== "undefined") {
     /**
         @memberof Viz
         @desc If *value* is specified, sets the locale to the specified string and returns the current class instance.
-        @param {String} [*value* = "en-US"]
+        @param {Object|String} [*value* = "en-US"]
         @chainable
     */
     Axis.prototype.locale = function locale (_) {
@@ -18306,7 +18306,7 @@ if (typeof window !== "undefined") {
       else {
 
         var step = (domain[1] - domain[0]) / (colors.length - 1);
-        var buckets = range(domain[0], domain[1] + step / 2, step);
+        var buckets = d3Range(domain[0], domain[1] + step / 2, step);
 
         if (this._scale === "buckets") { ticks = buckets; }
 
@@ -18923,10 +18923,10 @@ if (typeof window !== "undefined") {
       Axis$$1.prototype.render.call(this, callback);
 
       var offset = this._outerBounds[y],
-            range$$1 = this._d3Scale.range();
+            range = this._d3Scale.range();
 
       var brush$$1 = this._brush = brushX()
-        .extent([[range$$1[0], offset], [range$$1[range$$1.length - 1], offset + this._outerBounds[height]]])
+        .extent([[range[0], offset], [range[range.length - 1], offset + this._outerBounds[height]]])
         .filter(this._brushFilter)
         .handleSize(this._handleSize)
         .on("start", this._brushStart.bind(this))
@@ -18935,14 +18935,14 @@ if (typeof window !== "undefined") {
 
       var latest = this._buttonBehaviorCurrent === "ticks"
         ? this._availableTicks[this._availableTicks.length - 1]
-        : range$$1[range$$1.length - 1];
+        : range[range.length - 1];
 
       var selection$$1 = this._selection === void 0 ? [latest, latest]
         : this._selection instanceof Array
           ? this._buttonBehaviorCurrent === "buttons"
-            ? this._selection.map(function (d) { return range$$1[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
+            ? this._selection.map(function (d) { return range[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
           : this._buttonBehaviorCurrent === "buttons"
-            ? [range$$1[this._ticks.map(Number).indexOf(+this._selection)], range$$1[this._ticks.map(Number).indexOf(+this._selection)]]
+            ? [range[this._ticks.map(Number).indexOf(+this._selection)], range[this._ticks.map(Number).indexOf(+this._selection)]]
             : [this._selection, this._selection];
 
       this._updateBrushLimit(selection$$1);
@@ -32918,6 +32918,8 @@ if (typeof window !== "undefined") {
         .rollup(function (leaves) { return legendData.push(objectMerge(leaves, this$1._aggs)); })
         .entries(this._colorScale ? data.filter(function (d, i) { return this$1._colorScale(d, i) === undefined; }) : data);
 
+      legendData.sort(this._legendSort);
+
       var hidden = function (d, i) {
         var id = this$1._id(d, i);
         if (id instanceof Array) { id = id[0]; }
@@ -32929,7 +32931,7 @@ if (typeof window !== "undefined") {
         .align(wide ? "center" : position)
         .direction(wide ? "row" : "column")
         .duration(this._duration)
-        .data(legendData.length > 1 || this._colorScale ? legendData : [])
+        .data(legendData.length > this._legendCutoff || this._colorScale ? legendData : [])
         .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top))
         .select(legendGroup)
         .verticalAlign(!wide ? "middle" : position)
@@ -33744,8 +33746,10 @@ if (typeof window !== "undefined") {
           }
         }
       };
+      this._legendCutoff = 1;
       this._legendPadding = defaultPadding;
       this._legendPosition = "bottom";
+      this._legendSort = function (a, b) { return this$1._drawLabel(a).localeCompare(this$1._drawLabel(b)); };
       this._legendTooltip = {};
 
       this._loadingHTML = constant$2("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
@@ -34211,7 +34215,7 @@ if (typeof window !== "undefined") {
           svgTable.exit().remove();
           var rows = svgTable.merge(svgTableEnter)
             .selectAll("text")
-            .data(this$1._data instanceof Array ? range(0, this$1._data.length + 1) : []);
+            .data(this$1._data instanceof Array ? d3Range(0, this$1._data.length + 1) : []);
           rows.exit().remove();
           var cells = rows.merge(rows.enter().append("text").attr("role", "row"))
             .selectAll("tspan")
@@ -34674,6 +34678,16 @@ if (typeof window !== "undefined") {
     };
 
     /**
+     * @memberof Viz
+     * @desc If *value* is specified, sets the cutoff for the amount of categories in the legend.
+     * @param {Number} [*value* = 1]
+     * @chainable
+     */
+    Viz.prototype.legendCutoff = function legendCutoff (_) {
+      return arguments.length ? (this._legendCutoff = _, this) : this._legendCutoff;
+    };
+
+    /**
         @memberof Viz
         @desc If *value* is specified, sets the config method for the legend tooltip and returns the current class instance.
         @param {Object} [*value* = {}]
@@ -34701,6 +34715,16 @@ if (typeof window !== "undefined") {
     */
     Viz.prototype.legendPosition = function legendPosition (_) {
       return arguments.length ? (this._legendPosition = _, this) : this._legendPosition;
+    };
+
+    /**
+        @memberof Viz
+        @desc A JavaScript [sort comparator function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) used to sort the legend.
+        @param {Function} *value*
+        @chainable
+    */
+    Viz.prototype.legendSort = function legendSort (_) {
+      return arguments.length ? (this._legendSort = _, this) : this._legendSort;
     };
 
     /**
@@ -35197,6 +35221,7 @@ if (typeof window !== "undefined") {
         }
       });
       this._innerRadius = 0;
+      this._legendSort = function (a, b) { return this$1._value(b) - this$1._value(a); };
       this._padPixel = 0;
       this._pie = pie();
       this._sort = function (a, b) { return this$1._value(b) - this$1._value(a); };
@@ -36770,6 +36795,7 @@ if (typeof window !== "undefined") {
       Viz$$1.call(this);
 
       this._layoutPadding = 1;
+      this._legendSort = function (a, b) { return this$1._sum(b) - this$1._sum(a); };
       this._shapeConfig = assign({}, this._shapeConfig, {
         ariaLabel: function (d, i) {
           var rank = this$1._rankData ? ((this$1._rankData.indexOf(d) + 1) + ". ") : "";
@@ -36777,8 +36803,9 @@ if (typeof window !== "undefined") {
         },
         labelConfig: {
           fontMax: 20,
+          fontMin: 8,
           fontResize: true,
-          padding: 15
+          padding: 5
         }
       });
       this._sort = function (a, b) {
@@ -36852,11 +36879,14 @@ if (typeof window !== "undefined") {
       var total = tmapData.value;
 
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
+      var rectConfig = configPrep.bind(this)(this._shapeConfig, "shape", "Rect");
+      var fontMin = rectConfig.labelConfig.fontMin;
+      var padding = rectConfig.labelConfig.padding;
       this._shapes.push(new Rect()
         .data(shapeData)
         .label(function (d) { return [
           this$1._drawLabel(d.data, d.i),
-          ((Math.round(this$1._sum(d.data, d.i) / total * 100)) + "%")
+          ((formatAbbreviate(this$1._sum(d.data, d.i) / total * 100)) + "%")
         ]; })
         .select(elem("g.d3plus-Treemap", {
           parent: this._select,
@@ -36867,10 +36897,11 @@ if (typeof window !== "undefined") {
           height: function (d) { return d.y1 - d.y0; },
           labelBounds: function (d, i, s) {
             var h = s.height;
-            var sh = Math.min(50, h * 0.25);
+            var sh = Math.min(50, (h - padding * 2) * 0.5);
+            if (sh < fontMin) { sh = 0; }
             return [
               {width: s.width, height: h - sh, x: -s.width / 2, y: -h / 2},
-              {width: s.width, height: sh, x: -s.width / 2, y: h / 2 - sh}
+              {width: s.width, height: sh + padding * 2, x: -s.width / 2, y: h / 2 - sh - padding * 2}
             ];
           },
           labelConfig: {
@@ -36893,7 +36924,7 @@ if (typeof window !== "undefined") {
           },
           width: function (d) { return d.x1 - d.x0; }
         })
-        .config(configPrep.bind(this)(this._shapeConfig, "shape", "Rect"))
+        .config(rectConfig)
         .render());
 
       return this;

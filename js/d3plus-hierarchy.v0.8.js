@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.8.3
+  d3plus-hierarchy v0.8.4
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -205,10 +205,10 @@ if (typeof window !== "undefined") {
 }
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-shape'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3-collection'), require('d3-hierarchy'), require('d3-scale')) :
-  typeof define === 'function' && define.amd ? define('d3plus-hierarchy', ['exports', 'd3-array', 'd3-shape', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3-collection', 'd3-hierarchy', 'd3-scale'], factory) :
-  (factory((global.d3plus = {}),global.d3Array,global.d3Shape,global.d3plusCommon,global.d3plusShape,global.d3plusViz,global.d3Collection,global.d3Hierarchy,global.d3Scale));
-}(this, (function (exports,d3Array,d3Shape,d3plusCommon,d3plusShape,d3plusViz,d3Collection,d3Hierarchy,d3Scale) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-shape'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3-collection'), require('d3-hierarchy'), require('d3-scale'), require('d3plus-format')) :
+  typeof define === 'function' && define.amd ? define('d3plus-hierarchy', ['exports', 'd3-array', 'd3-shape', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3-collection', 'd3-hierarchy', 'd3-scale', 'd3plus-format'], factory) :
+  (factory((global.d3plus = {}),global.d3Array,global.d3Shape,global.d3plusCommon,global.d3plusShape,global.d3plusViz,global.d3Collection,global.d3Hierarchy,global.d3Scale,global.d3plusFormat));
+}(this, (function (exports,d3Array,d3Shape,d3plusCommon,d3plusShape,d3plusViz,d3Collection,d3Hierarchy,d3Scale,d3plusFormat) { 'use strict';
 
   /**
       @class Pie
@@ -231,6 +231,7 @@ if (typeof window !== "undefined") {
         }
       });
       this._innerRadius = 0;
+      this._legendSort = function (a, b) { return this$1._value(b) - this$1._value(a); };
       this._padPixel = 0;
       this._pie = d3Shape.pie();
       this._sort = function (a, b) { return this$1._value(b) - this$1._value(a); };
@@ -835,6 +836,7 @@ if (typeof window !== "undefined") {
       Viz.call(this);
 
       this._layoutPadding = 1;
+      this._legendSort = function (a, b) { return this$1._sum(b) - this$1._sum(a); };
       this._shapeConfig = d3plusCommon.assign({}, this._shapeConfig, {
         ariaLabel: function (d, i) {
           var rank = this$1._rankData ? ((this$1._rankData.indexOf(d) + 1) + ". ") : "";
@@ -842,8 +844,9 @@ if (typeof window !== "undefined") {
         },
         labelConfig: {
           fontMax: 20,
+          fontMin: 8,
           fontResize: true,
-          padding: 15
+          padding: 5
         }
       });
       this._sort = function (a, b) {
@@ -917,11 +920,14 @@ if (typeof window !== "undefined") {
       var total = tmapData.value;
 
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
+      var rectConfig = d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Rect");
+      var fontMin = rectConfig.labelConfig.fontMin;
+      var padding = rectConfig.labelConfig.padding;
       this._shapes.push(new d3plusShape.Rect()
         .data(shapeData)
         .label(function (d) { return [
           this$1._drawLabel(d.data, d.i),
-          ((Math.round(this$1._sum(d.data, d.i) / total * 100)) + "%")
+          ((d3plusFormat.formatAbbreviate(this$1._sum(d.data, d.i) / total * 100)) + "%")
         ]; })
         .select(d3plusCommon.elem("g.d3plus-Treemap", {
           parent: this._select,
@@ -932,10 +938,11 @@ if (typeof window !== "undefined") {
           height: function (d) { return d.y1 - d.y0; },
           labelBounds: function (d, i, s) {
             var h = s.height;
-            var sh = Math.min(50, h * 0.25);
+            var sh = Math.min(50, (h - padding * 2) * 0.5);
+            if (sh < fontMin) { sh = 0; }
             return [
               {width: s.width, height: h - sh, x: -s.width / 2, y: -h / 2},
-              {width: s.width, height: sh, x: -s.width / 2, y: h / 2 - sh}
+              {width: s.width, height: sh + padding * 2, x: -s.width / 2, y: h / 2 - sh - padding * 2}
             ];
           },
           labelConfig: {
@@ -958,7 +965,7 @@ if (typeof window !== "undefined") {
           },
           width: function (d) { return d.x1 - d.x0; }
         })
-        .config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Rect"))
+        .config(rectConfig)
         .render());
 
       return this;
