@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.28
+  d3plus-viz v0.12.29
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1432,6 +1432,19 @@ if (typeof window !== "undefined") {
   }
 
   /**
+   * Turns an array of values into a list string.
+   */
+  function listify(n) {
+    return n.reduce(function (str, item, i) {
+      if (!i) { str += item; }
+      else if (i === n.length - 1 && i === 1) { str += " and " + item; }
+      else if (i === n.length - 1) { str += ", and " + item; }
+      else { str += ", " + item; }
+      return str;
+    }, "");
+  }
+
+  /**
       @class Viz
       @extends external:BaseClass
       @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
@@ -1677,7 +1690,7 @@ if (typeof window !== "undefined") {
       this._id = this._groupBy[this._drawDepth];
       this._ids = function (d, i) { return this$1._groupBy
         .map(function (g) { return !d || d.__d3plus__ && !d.data ? undefined : g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
-        .filter(function (g) { return g !== undefined && g !== null && g.constructor !== Array; }); };
+        .filter(function (g) { return g !== undefined && g !== null; }); };
 
       this._drawLabel = function (d, i) {
         if (!d) { return ""; }
@@ -1690,7 +1703,8 @@ if (typeof window !== "undefined") {
         }
         if (this$1._label) { return this$1._label(d, i); }
         var l = that._ids(d, i).slice(0, this$1._drawDepth + 1);
-        return l[l.length - 1];
+        var n = l.reverse().find(function (ll) { return !(ll instanceof Array); }) || l[l.length - 1];
+        return n instanceof Array ? listify(n) : n;
       };
 
       // set the default timeFilter if it has not been specified
