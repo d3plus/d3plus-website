@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.5.5
+  d3plus-network v0.5.6
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -35046,7 +35046,9 @@ if (typeof window !== "undefined") {
 
         if (this$1._hover && this$1._drawDepth >= this$1._groupBy.length - 1) {
 
-          if (this$1._focus && this$1._focus === d.id) {
+          var id = "" + (this$1._nodeGroupBy && this$1._nodeGroupBy[this$1._drawDepth](d, i) ? this$1._nodeGroupBy[this$1._drawDepth](d, i) : this$1._id(d, i));
+
+          if (this$1._focus && this$1._focus === id) {
 
             this$1.active(false);
             this$1._on.mouseenter.bind(this$1)(d, i);
@@ -35059,11 +35061,10 @@ if (typeof window !== "undefined") {
 
             this$1.hover(false);
 
-            var id = this$1._nodeGroupBy && this$1._nodeGroupBy[this$1._drawDepth](d, i) ? this$1._nodeGroupBy[this$1._drawDepth](d, i) : this$1._id(d, i),
-                  links = this$1._linkLookup[id],
+            var links = this$1._linkLookup[id],
                   node = this$1._nodeLookup[id];
 
-            var filterIds = [node.id];
+            var filterIds = [id];
             var xDomain = [node.x - node.r, node.x + node.r],
                 yDomain = [node.y - node.r, node.y + node.r];
 
@@ -35076,11 +35077,11 @@ if (typeof window !== "undefined") {
             });
 
             this$1.active(function (h, x) {
-              if (h.source && h.target) { return h.source.id === node.id || h.target.id === node.id; }
-              else { return filterIds.includes(this$1._ids(h, x)[this$1._drawDepth]); }
+              if (h.source && h.target) { return h.source.id === id || h.target.id === id; }
+              else { return filterIds.includes(("" + (this$1._ids(h, x)[this$1._drawDepth]))); }
             });
 
-            this$1._focus = d.id;
+            this$1._focus = id;
             var t = transform(this$1._container.node());
             xDomain = xDomain.map(function (d) { return d * t.k + t.x; });
             yDomain = yDomain.map(function (d) { return d * t.k + t.y; });
@@ -35102,7 +35103,6 @@ if (typeof window !== "undefined") {
           if (this$1._focus && this$1._focus === ids) {
 
             this$1.active(false);
-            this$1._on.mouseenter.bind(this$1)(d, i);
 
             this$1._focus = undefined;
             this$1._zoomToBounds(null);
@@ -35114,7 +35114,7 @@ if (typeof window !== "undefined") {
 
             var nodes = ids.map(function (id) { return this$1._nodeLookup[id]; });
 
-            var filterIds = [id];
+            var filterIds = [("" + id)];
             var xDomain = [nodes[0].x - nodes[0].r, nodes[0].x + nodes[0].r],
                 yDomain = [nodes[0].y - nodes[0].r, nodes[0].y + nodes[0].r];
 
@@ -35130,7 +35130,7 @@ if (typeof window !== "undefined") {
               if (h.source && h.target) { return filterIds.includes(h.source.id) && filterIds.includes(h.target.id); }
               else {
                 var myIds = this$1._ids(h, x);
-                return filterIds.includes(myIds[myIds.length - 1]);
+                return filterIds.includes(("" + (myIds[myIds.length - 1])));
               }
             });
 
@@ -35142,10 +35142,39 @@ if (typeof window !== "undefined") {
 
           }
 
+          this$1._on.mouseenter.bind(this$1)(d, i);
           this$1._on["mousemove.legend"].bind(this$1)(d, i);
 
         }
 
+      };
+      this._on.mouseenter = function () {};
+      this._on["mouseleave.shape"] = function () {
+        this$1.hover(false);
+      };
+      var defaultMouseMove = this._on["mousemove.shape"];
+      this._on["mousemove.shape"] = function (d, i) {
+        defaultMouseMove(d, i);
+        var id = "" + (this$1._nodeGroupBy && this$1._nodeGroupBy[this$1._drawDepth](d, i) ? this$1._nodeGroupBy[this$1._drawDepth](d, i) : this$1._id(d, i)),
+              links = this$1._linkLookup[id],
+              node = this$1._nodeLookup[id];
+
+        var filterIds = [id];
+        var xDomain = [node.x - node.r, node.x + node.r],
+              yDomain = [node.y - node.r, node.y + node.r];
+
+        links.forEach(function (l) {
+          filterIds.push(l.id);
+          if (l.x - l.r < xDomain[0]) { xDomain[0] = l.x - l.r; }
+          if (l.x + l.r > xDomain[1]) { xDomain[1] = l.x + l.r; }
+          if (l.y - l.r < yDomain[0]) { yDomain[0] = l.y - l.r; }
+          if (l.y + l.r > yDomain[1]) { yDomain[1] = l.y + l.r; }
+        });
+
+        this$1.hover(function (h, x) {
+          if (h.source && h.target) { return h.source.id === id || h.target.id === id; }
+          else { return filterIds.includes(("" + (this$1._ids(h, x)[this$1._drawDepth]))); }
+        });
       };
       this._sizeMin = 5;
       this._sizeScale = "sqrt";
@@ -35397,6 +35426,23 @@ if (typeof window !== "undefined") {
 
       return this;
 
+    };
+
+    /**
+        @memberof Network
+        @desc If *value* is specified, sets the hover method to the specified function and returns the current class instance.
+        @param {Function} [*value*]
+        @chainable
+     */
+    Network.prototype.hover = function hover (_) {
+      this._hover = _;
+
+      if (this._nodes.length < this._dataCutoff) {
+        this._shapes.forEach(function (s) { return s.hover(_); });
+        if (this._legend) { this._legendClass.hover(_); }
+      }
+
+      return this;
     };
 
     /**
