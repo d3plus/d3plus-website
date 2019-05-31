@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.3.7
+  d3plus-tooltip v0.3.8
   A javascript-only tooltip.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1204,6 +1204,7 @@ if (typeof window !== "undefined") {
       @summary An abstract class that contains some global methods and functionality.
   */
   var BaseClass = function BaseClass() {
+    this._locale = "en-US";
     this._on = {};
     this._uuid = uuid();
   };
@@ -1246,6 +1247,27 @@ if (typeof window !== "undefined") {
       for (var k$2 in this.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this[k$2](); } }
       return config$1;
     }
+  };
+
+  /**
+      @memberof BaseClass
+      @desc If *value* is specified, sets the locale to the specified string and returns the current class instance. This method supports the locales defined in [d3plus-format](https://github.com/d3plus/d3plus-format/blob/master/src/locale.js). In another case, you can define an Object with a custom locale.
+      @param {Object|String} [*value* = "en-US"]
+      @chainable
+      @example
+      {
+        separator: "",
+        suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+        grouping: [3],
+        delimiters: {
+          thousands: ",",
+          decimal: "."
+        },
+        currency: ["$", ""]
+      }
+  */
+  BaseClass.prototype.locale = function locale (_) {
+    return arguments.length ? (this._locale = _, this) : this._locale;
   };
 
   /**
@@ -5980,11 +6002,16 @@ if (typeof window !== "undefined") {
           @private
       */
       function divElement(cat) {
-        enter.append("div").attr("class", ("d3plus-tooltip-" + cat))
-                           .attr("id", function (d, i) { return ("d3plus-tooltip-" + cat + "-" + (d ? that._id(d, i) : "")); });
 
-        var div = update.select((".d3plus-tooltip-" + cat)).html(that[("_" + cat)]);
+        enter.append("div")
+          .attr("class", ("d3plus-tooltip-" + cat))
+          .attr("id", function (d, i) { return ("d3plus-tooltip-" + cat + "-" + (d ? that._id(d, i) : "")); });
+
+        var div = update.select((".d3plus-tooltip-" + cat))
+          .html(function (d, i) { return that[("_" + cat)](d, i); });
+
         stylize(div, that[("_" + cat + "Style")]);
+
       }
 
       /**

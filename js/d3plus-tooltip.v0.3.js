@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.3.7
+  d3plus-tooltip v0.3.8
   A javascript-only tooltip.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -318,11 +318,16 @@ if (typeof window !== "undefined") {
           @private
       */
       function divElement(cat) {
-        enter.append("div").attr("class", ("d3plus-tooltip-" + cat))
-                           .attr("id", function (d, i) { return ("d3plus-tooltip-" + cat + "-" + (d ? that._id(d, i) : "")); });
 
-        var div = update.select((".d3plus-tooltip-" + cat)).html(that[("_" + cat)]);
+        enter.append("div")
+          .attr("class", ("d3plus-tooltip-" + cat))
+          .attr("id", function (d, i) { return ("d3plus-tooltip-" + cat + "-" + (d ? that._id(d, i) : "")); });
+
+        var div = update.select((".d3plus-tooltip-" + cat))
+          .html(function (d, i) { return that[("_" + cat)](d, i); });
+
         d3plusCommon.stylize(div, that[("_" + cat + "Style")]);
+
       }
 
       /**
