@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.30
+  d3plus-viz v0.12.31
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -25936,6 +25936,7 @@ if (typeof window !== "undefined") {
         .duration(this._duration)
         .data(scaleData)
         .height(height)
+        .locale(this._locale)
         .orient(position)
         .select(scaleGroup)
         .value(this._colorScale)
@@ -36408,6 +36409,7 @@ if (typeof window !== "undefined") {
         .duration(this._duration)
         .data(legendData.length > this._legendCutoff || this._colorScale ? legendData : [])
         .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top))
+        .locale(this._locale)
         .select(legendGroup)
         .verticalAlign(!wide ? "middle" : position)
         .width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right))
@@ -36481,6 +36483,7 @@ if (typeof window !== "undefined") {
         .domain(extent(ticks$$1))
         .duration(this._duration)
         .height(this._height - this._margin.bottom)
+        .locale(this._locale)
         .select(timelineGroup)
         .ticks(ticks$$1.sort(function (a, b) { return +a - +b; }))
         .width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right));
@@ -36534,6 +36537,7 @@ if (typeof window !== "undefined") {
 
     this._titleClass
       .data(text ? [{text: text}] : [])
+      .locale(this._locale)
       .select(group)
       .width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right))
       .config(this._titleConfig)
@@ -36571,6 +36575,7 @@ if (typeof window !== "undefined") {
 
     this._totalClass
       .data(visible ? [{text: this._totalFormat(total)}] : [])
+      .locale(this._locale)
       .select(group)
       .width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right))
       .config(this._totalConfig)
@@ -37248,7 +37253,6 @@ if (typeof window !== "undefined") {
       this._loadingHTML = constant$7("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
 
       this._loadingMessage = true;
-      this._locale = "en-US";
       this._lrucache = lrucache(10);
       this._messageClass = new Message();
       this._messageMask = "rgba(0, 0, 0, 0.1)";
@@ -37420,7 +37424,7 @@ if (typeof window !== "undefined") {
       this._drawLabel = function (d, i) {
         if (!d) { return ""; }
         if (d._isAggregation) {
-          return ((this$1._thresholdName) + " < " + (formatAbbreviate(d._threshold * 100)) + "%");
+          return ((this$1._thresholdName) + " < " + (formatAbbreviate(d._threshold * 100, this$1._locale)) + "%");
         }
         while (d.__d3plus__ && d.data) {
           d = d.data;
@@ -38241,16 +38245,6 @@ if (typeof window !== "undefined") {
     */
     Viz.prototype.loadingMessage = function loadingMessage (_) {
       return arguments.length ? (this._loadingMessage = _, this) : this._loadingMessage;
-    };
-
-    /**
-        @memberof Viz
-        @desc If *value* is specified, sets the locale to the specified string and returns the current class instance.
-        @param {String} [*value* = "en-US"]
-        @chainable
-    */
-    Viz.prototype.locale = function locale (_) {
-      return arguments.length ? (this._locale = _, this) : this._locale;
     };
 
     /**
