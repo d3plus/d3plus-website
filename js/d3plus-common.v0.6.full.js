@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.48
+  d3plus-common v0.6.49
   Common functions and methods used across D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -488,6 +488,13 @@ if (typeof window !== "undefined") {
 
     };
 
+    var arrayEval = function (arr) { return arr.map(function (d) {
+      if (d instanceof Array) { return arrayEval(d); }
+      else if (typeof d === "object") { return keyEval({}, d); }
+      else if (typeof d === "function") { return wrapFunction(d); }
+      else { return d; }
+    }); };
+
     var keyEval = function (newObj, obj) {
 
       for (var key in obj) {
@@ -498,7 +505,10 @@ if (typeof window !== "undefined") {
           else if (typeof obj[key] === "function") {
             newObj[key] = wrapFunction(obj[key]);
           }
-          else if (typeof obj[key] === "object" && !(obj instanceof Array)) {
+          else if (obj[key] instanceof Array) {
+            newObj[key] = arrayEval(obj[key]);
+          }
+          else if (typeof obj[key] === "object") {
             newObj[key] = {on: {}};
             keyEval(newObj[key], obj[key]);
           }
