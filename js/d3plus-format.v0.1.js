@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.9
+  d3plus-format v0.1.10
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -194,20 +194,21 @@ if (!Array.prototype.includes) {
           suffixes = localeConfig.suffixes.map(parseSuffixes);
 
     var decimal = localeConfig.delimiters.decimal || ".",
-          separator = localeConfig.separator || "";
+          separator = localeConfig.separator || "",
+          thousands = localeConfig.delimiters.decimal || ",";
 
     var d3plusFormatLocale = d3Format.formatLocale({
       currency: localeConfig.currency || ["$", ""],
       decimal: decimal,
       grouping: localeConfig.grouping || [3],
-      thousands: localeConfig.delimiters.thousands || ","
+      thousands: thousands
     });
 
     var val;
     if (n === 0) { val = "0"; }
     else if (length >= 3) {
       var f = formatSuffix(d3plusFormatLocale.format(".3r")(n), 2, suffixes);
-      var num = parseFloat(f.number).toString().replace(".", decimal);
+      var num = parseFloat(f.number).toString().replace(".", thousands);
       var char = f.symbol;
       val = "" + num + separator + char;
     }
