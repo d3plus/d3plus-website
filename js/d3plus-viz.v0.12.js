@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.31
+  d3plus-viz v0.12.32
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -205,10 +205,10 @@ if (typeof window !== "undefined") {
 }
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-selection'), require('d3plus-common'), require('d3-array'), require('d3plus-export'), require('d3plus-form'), require('d3-collection'), require('d3plus-axis'), require('d3-zoom'), require('d3-brush'), require('d3-color'), require('d3-queue'), require('d3-transition'), require('lrucache'), require('d3plus-color'), require('d3plus-format'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip'), require('d3plus-shape')) :
-  typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-selection', 'd3plus-common', 'd3-array', 'd3plus-export', 'd3plus-form', 'd3-collection', 'd3plus-axis', 'd3-zoom', 'd3-brush', 'd3-color', 'd3-queue', 'd3-transition', 'lrucache', 'd3plus-color', 'd3plus-format', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip', 'd3plus-shape'], factory) :
-  (factory((global.d3plus = {}),global.d3Request,global.d3Selection,global.d3plusCommon,global.d3Array,global.d3plusExport,global.d3plusForm,global.d3Collection,global.d3plusAxis,global.d3Zoom,global.d3Brush,global.d3Color,global.d3Queue,global.d3Transition,global.lrucache,global.d3plusColor,global.d3plusFormat,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip,global.d3plusShape));
-}(this, (function (exports,d3Request,d3Selection,d3plusCommon,d3Array,d3plusExport,d3plusForm,d3Collection,d3plusAxis,d3Zoom,d3Brush,d3Color,d3Queue,d3Transition,lrucache,d3plusColor,d3plusFormat,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip,d3plusShape) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-selection'), require('d3plus-common'), require('d3-array'), require('d3plus-export'), require('d3plus-form'), require('d3-collection'), require('d3plus-axis'), require('d3-zoom'), require('d3-brush'), require('d3-color'), require('d3-queue'), require('d3-transition'), require('lrucache'), require('d3plus-color'), require('d3plus-format'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip')) :
+  typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-selection', 'd3plus-common', 'd3-array', 'd3plus-export', 'd3plus-form', 'd3-collection', 'd3plus-axis', 'd3-zoom', 'd3-brush', 'd3-color', 'd3-queue', 'd3-transition', 'lrucache', 'd3plus-color', 'd3plus-format', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip'], factory) :
+  (factory((global.d3plus = {}),global.d3Request,global.d3Selection,global.d3plusCommon,global.d3Array,global.d3plusExport,global.d3plusForm,global.d3Collection,global.d3plusAxis,global.d3Zoom,global.d3Brush,global.d3Color,global.d3Queue,global.d3Transition,global.lrucache,global.d3plusColor,global.d3plusFormat,global.d3plusLegend,global.d3plusText,global.d3plusTimeline,global.d3plusTooltip));
+}(this, (function (exports,d3Request,d3Selection,d3plusCommon,d3Array,d3plusExport,d3plusForm,d3Collection,d3plusAxis,d3Zoom,d3Brush,d3Color,d3Queue,d3Transition,lrucache,d3plusColor,d3plusFormat,d3plusLegend,d3plusText,d3plusTimeline,d3plusTooltip) { 'use strict';
 
   lrucache = lrucache && lrucache.hasOwnProperty('default') ? lrucache['default'] : lrucache;
 
@@ -1798,47 +1798,47 @@ if (typeof window !== "undefined") {
       this._shapes = [];
 
       // Draws a container and zoomGroup to test functionality.
-      this._testGroup = this._select.selectAll("g.d3plus-viz-testGroup").data([0]);
-      var enterTest = this._testGroup.enter().append("g").attr("class", "d3plus-viz-testGroup")
-        .merge(this._testGroup);
-      this._testGroup = enterTest.merge(this._testGroup);
-      var bgHeight = this._height - this._margin.top - this._margin.bottom;
-      var bgWidth = this._width - this._margin.left - this._margin.right;
-      new d3plusShape.Rect()
-        .data([{id: "background"}])
-        .select(this._testGroup.node())
-        .x(bgWidth / 2 + this._margin.left)
-        .y(bgHeight / 2 + this._margin.top)
-        .width(bgWidth)
-        .height(bgHeight)
-        .fill("#ccc")
-        .render();
+      // this._testGroup = this._select.selectAll("g.d3plus-viz-testGroup").data([0]);
+      // const enterTest = this._testGroup.enter().append("g").attr("class", "d3plus-viz-testGroup")
+      //   .merge(this._testGroup);
+      // this._testGroup = enterTest.merge(this._testGroup);
+      // const bgHeight = this._height - this._margin.top - this._margin.bottom;
+      // const bgWidth = this._width - this._margin.left - this._margin.right;
+      // new Rect()
+      //   .data([{id: "background"}])
+      //   .select(this._testGroup.node())
+      //   .x(bgWidth / 2 + this._margin.left)
+      //   .y(bgHeight / 2 + this._margin.top)
+      //   .width(bgWidth)
+      //   .height(bgHeight)
+      //   .fill("#ccc")
+      //   .render();
 
-      this._zoomGroup = this._select.selectAll("g.d3plus-viz-zoomGroup").data([0]);
-      var enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
-        .merge(this._zoomGroup);
+      // this._zoomGroup = this._select.selectAll("g.d3plus-viz-zoomGroup").data([0]);
+      // const enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
+      //   .merge(this._zoomGroup);
 
-      this._zoomGroup = enter.merge(this._zoomGroup);
-      var testConfig = {
-        on: {
-          mouseenter: this._on.mouseenter,
-          mouseleave: this._on.mouseleave,
-          mousemove: this._on["mousemove.shape"]
-        }
-      };
-      var testWidth = 5;
-      this._shapes.push(new d3plusShape.Rect()
-        .config(this._shapeConfig)
-        .config(d3plusCommon.configPrep(testConfig))
-        .data(this._filteredData)
-        .label("Test Label")
-        .select(this._zoomGroup.node())
-        .id(this._id)
-        .x(function (d, i) { return i * testWidth; })
-        .y(200)
-        .width(testWidth)
-        .height(100)
-        .render());
+      // this._zoomGroup = enter.merge(this._zoomGroup);
+      // const testConfig = {
+      //   on: {
+      //     mouseenter: this._on.mouseenter,
+      //     mouseleave: this._on.mouseleave,
+      //     mousemove: this._on["mousemove.shape"]
+      //   }
+      // };
+      // const testWidth = 5;
+      // this._shapes.push(new Rect()
+      //   .config(this._shapeConfig)
+      //   .config(configPrep(testConfig))
+      //   .data(this._filteredData)
+      //   .label("Test Label")
+      //   .select(this._zoomGroup.node())
+      //   .id(this._id)
+      //   .x((d, i) => i * testWidth)
+      //   .y(200)
+      //   .width(testWidth)
+      //   .height(100)
+      //   .render());
 
     };
 

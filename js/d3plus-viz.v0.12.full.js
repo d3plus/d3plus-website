@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.31
+  d3plus-viz v0.12.32
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -998,7 +998,7 @@ if (typeof window !== "undefined") {
     return [min, max];
   }
 
-  function sequence(start, stop, step) {
+  function range(start, stop, step) {
     start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
 
     var i = -1,
@@ -1064,7 +1064,7 @@ if (typeof window !== "undefined") {
     return stop < start ? -step1 : step1;
   }
 
-  function threshold(values, p, valueof) {
+  function quantile(values, p, valueof) {
     if (valueof == null) { valueof = number; }
     if (!(n = values.length)) { return; }
     if ((p = +p) <= 0 || n < 2) { return +valueof(values[0], 0, values); }
@@ -5432,8 +5432,6 @@ if (typeof window !== "undefined") {
   var saturday = weekday(6);
 
   var sundays = sunday.range;
-  var mondays = monday.range;
-  var thursdays = thursday.range;
 
   var month = newInterval(function(date) {
     date.setDate(1);
@@ -5516,10 +5514,6 @@ if (typeof window !== "undefined") {
   var utcThursday = utcWeekday(4);
   var utcFriday = utcWeekday(5);
   var utcSaturday = utcWeekday(6);
-
-  var utcSundays = utcSunday.range;
-  var utcMondays = utcMonday.range;
-  var utcThursdays = utcThursday.range;
 
   var utcMonth = newInterval(function(date) {
     date.setUTCDate(1);
@@ -6316,7 +6310,7 @@ if (typeof window !== "undefined") {
       start += (stop - start - step * (n - paddingInner)) * align;
       bandwidth = step * (1 - paddingInner);
       if (round) { start = Math.round(start), bandwidth = Math.round(bandwidth); }
-      var values = sequence(n).map(function(i) { return start + step * i; });
+      var values = range(n).map(function(i) { return start + step * i; });
       return ordinalRange(reverse ? values.reverse() : values);
     }
 
@@ -6419,15 +6413,15 @@ if (typeof window !== "undefined") {
 
   // normalize(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
   // interpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding range value x in [a,b].
-  function bimap(domain, range, interpolate$$1) {
-    var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
+  function bimap(domain, range$$1, interpolate$$1) {
+    var d0 = domain[0], d1 = domain[1], r0 = range$$1[0], r1 = range$$1[1];
     if (d1 < d0) { d0 = normalize(d1, d0), r0 = interpolate$$1(r1, r0); }
     else { d0 = normalize(d0, d1), r0 = interpolate$$1(r0, r1); }
     return function(x) { return r0(d0(x)); };
   }
 
-  function polymap(domain, range, interpolate$$1) {
-    var j = Math.min(domain.length, range.length) - 1,
+  function polymap(domain, range$$1, interpolate$$1) {
+    var j = Math.min(domain.length, range$$1.length) - 1,
         d = new Array(j),
         r = new Array(j),
         i = -1;
@@ -6435,12 +6429,12 @@ if (typeof window !== "undefined") {
     // Reverse descending domains.
     if (domain[j] < domain[0]) {
       domain = domain.slice().reverse();
-      range = range.slice().reverse();
+      range$$1 = range$$1.slice().reverse();
     }
 
     while (++i < j) {
       d[i] = normalize(domain[i], domain[i + 1]);
-      r[i] = interpolate$$1(range[i], range[i + 1]);
+      r[i] = interpolate$$1(range$$1[i], range$$1[i + 1]);
     }
 
     return function(x) {
@@ -6460,7 +6454,7 @@ if (typeof window !== "undefined") {
 
   function transformer() {
     var domain = unit,
-        range = unit,
+        range$$1 = unit,
         interpolate$$1 = interpolateValue,
         transform,
         untransform,
@@ -6471,17 +6465,17 @@ if (typeof window !== "undefined") {
         input;
 
     function rescale() {
-      piecewise$$1 = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
+      piecewise$$1 = Math.min(domain.length, range$$1.length) > 2 ? polymap : bimap;
       output = input = null;
       return scale;
     }
 
     function scale(x) {
-      return isNaN(x = +x) ? unknown : (output || (output = piecewise$$1(domain.map(transform), range, interpolate$$1)))(transform(clamp(x)));
+      return isNaN(x = +x) ? unknown : (output || (output = piecewise$$1(domain.map(transform), range$$1, interpolate$$1)))(transform(clamp(x)));
     }
 
     scale.invert = function(y) {
-      return clamp(untransform((input || (input = piecewise$$1(range, domain.map(transform), interpolateNumber)))(y)));
+      return clamp(untransform((input || (input = piecewise$$1(range$$1, domain.map(transform), interpolateNumber)))(y)));
     };
 
     scale.domain = function(_) {
@@ -6489,11 +6483,11 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$2.call(_), rescale()) : range.slice();
+      return arguments.length ? (range$$1 = slice$2.call(_), rescale()) : range$$1.slice();
     };
 
     scale.rangeRound = function(_) {
-      return range = slice$2.call(_), interpolate$$1 = interpolateRound, rescale();
+      return range$$1 = slice$2.call(_), interpolate$$1 = interpolateRound, rescale();
     };
 
     scale.clamp = function(_) {
@@ -7182,25 +7176,25 @@ if (typeof window !== "undefined") {
     return pow.apply(null, arguments).exponent(0.5);
   }
 
-  function quantile$$1() {
+  function quantile$1() {
     var domain = [],
-        range = [],
+        range$$1 = [],
         thresholds = [],
         unknown;
 
     function rescale() {
-      var i = 0, n = Math.max(1, range.length);
+      var i = 0, n = Math.max(1, range$$1.length);
       thresholds = new Array(n - 1);
-      while (++i < n) { thresholds[i - 1] = threshold(domain, i / n); }
+      while (++i < n) { thresholds[i - 1] = quantile(domain, i / n); }
       return scale;
     }
 
     function scale(x) {
-      return isNaN(x = +x) ? unknown : range[bisectRight(thresholds, x)];
+      return isNaN(x = +x) ? unknown : range$$1[bisectRight(thresholds, x)];
     }
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return i < 0 ? [NaN, NaN] : [
         i > 0 ? thresholds[i - 1] : domain[0],
         i < thresholds.length ? thresholds[i] : domain[domain.length - 1]
@@ -7216,7 +7210,7 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$2.call(_), rescale()) : range.slice();
+      return arguments.length ? (range$$1 = slice$2.call(_), rescale()) : range$$1.slice();
     };
 
     scale.unknown = function(_) {
@@ -7228,9 +7222,9 @@ if (typeof window !== "undefined") {
     };
 
     scale.copy = function() {
-      return quantile$$1()
+      return quantile$1()
           .domain(domain)
-          .range(range)
+          .range(range$$1)
           .unknown(unknown);
     };
 
@@ -7242,11 +7236,11 @@ if (typeof window !== "undefined") {
         x1 = 1,
         n = 1,
         domain = [0.5],
-        range = [0, 1],
+        range$$1 = [0, 1],
         unknown;
 
     function scale(x) {
-      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
+      return x <= x ? range$$1[bisectRight(domain, x, 0, n)] : unknown;
     }
 
     function rescale() {
@@ -7261,11 +7255,11 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (n = (range = slice$2.call(_)).length - 1, rescale()) : range.slice();
+      return arguments.length ? (n = (range$$1 = slice$2.call(_)).length - 1, rescale()) : range$$1.slice();
     };
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return i < 0 ? [NaN, NaN]
           : i < 1 ? [x0, domain[0]]
           : i >= n ? [domain[n - 1], x1]
@@ -7283,33 +7277,33 @@ if (typeof window !== "undefined") {
     scale.copy = function() {
       return quantize$1()
           .domain([x0, x1])
-          .range(range)
+          .range(range$$1)
           .unknown(unknown);
     };
 
     return initRange.apply(linearish(scale), arguments);
   }
 
-  function threshold$1() {
+  function threshold() {
     var domain = [0.5],
-        range = [0, 1],
+        range$$1 = [0, 1],
         unknown,
         n = 1;
 
     function scale(x) {
-      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
+      return x <= x ? range$$1[bisectRight(domain, x, 0, n)] : unknown;
     }
 
     scale.domain = function(_) {
-      return arguments.length ? (domain = slice$2.call(_), n = Math.min(domain.length, range.length - 1), scale) : domain.slice();
+      return arguments.length ? (domain = slice$2.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : domain.slice();
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$2.call(_), n = Math.min(domain.length, range.length - 1), scale) : range.slice();
+      return arguments.length ? (range$$1 = slice$2.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : range$$1.slice();
     };
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return [domain[i - 1], domain[i]];
     };
 
@@ -7318,9 +7312,9 @@ if (typeof window !== "undefined") {
     };
 
     scale.copy = function() {
-      return threshold$1()
+      return threshold()
           .domain(domain)
-          .range(range)
+          .range(range$$1)
           .unknown(unknown);
     };
 
@@ -7672,9 +7666,9 @@ if (typeof window !== "undefined") {
     scaleImplicit: implicit,
     scalePow: pow,
     scaleSqrt: sqrt,
-    scaleQuantile: quantile$$1,
+    scaleQuantile: quantile$1,
     scaleQuantize: quantize$1,
-    scaleThreshold: threshold$1,
+    scaleThreshold: threshold,
     scaleTime: scaleTime,
     scaleUtc: utcTime,
     scaleSequential: sequential,
@@ -13770,7 +13764,7 @@ if (typeof window !== "undefined") {
 
     // User's input normalization
     options = Object.assign({
-      angle: sequence(-90, 90 + angleStep, angleStep),
+      angle: range(-90, 90 + angleStep, angleStep),
       cache: true,
       maxAspectRatio: 15,
       minAspectRatio: 1,
@@ -13907,7 +13901,7 @@ if (typeof window !== "undefined") {
           if (!aRatios.length) {
             var minAspectRatio = Math.max(options.minAspectRatio, options.minWidth / maxHeight, maxArea / (maxHeight * maxHeight));
             var maxAspectRatio = Math.min(options.maxAspectRatio, maxWidth / options.minHeight, maxWidth * maxWidth / maxArea);
-            aRatios = sequence(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
+            aRatios = range(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
           }
 
           for (var a = 0; a < aRatios.length; a++) {
@@ -15077,9 +15071,9 @@ if (typeof window !== "undefined") {
           var values$$1 = d.values.map(d.orient === "vertical" ? this$1._y : this$1._x);
           values$$1.sort(function (a, b) { return a - b; });
 
-          d.first = threshold(values$$1, 0.25);
-          d.median = threshold(values$$1, 0.50);
-          d.third = threshold(values$$1, 0.75);
+          d.first = quantile(values$$1, 0.25);
+          d.median = quantile(values$$1, 0.50);
+          d.third = quantile(values$$1, 0.75);
 
           var mode = this$1._whiskerMode;
 
@@ -15088,14 +15082,14 @@ if (typeof window !== "undefined") {
             if (d.lowerLimit < min(values$$1)) { d.lowerLimit = min(values$$1); }
           }
           else if (mode[0] === "extent") { d.lowerLimit = min(values$$1); }
-          else if (typeof mode[0] === "number") { d.lowerLimit = threshold(values$$1, mode[0]); }
+          else if (typeof mode[0] === "number") { d.lowerLimit = quantile(values$$1, mode[0]); }
 
           if (mode[1] === "tukey") {
             d.upperLimit = d.third + (d.third - d.first) * 1.5;
             if (d.upperLimit > max(values$$1)) { d.upperLimit = max(values$$1); }
           }
           else if (mode[1] === "extent") { d.upperLimit = max(values$$1); }
-          else if (typeof mode[1] === "number") { d.upperLimit = threshold(values$$1, mode[1]); }
+          else if (typeof mode[1] === "number") { d.upperLimit = quantile(values$$1, mode[1]); }
 
           var rectLength = d.third - d.first;
 
@@ -15922,7 +15916,7 @@ if (typeof window !== "undefined") {
         if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
           if (newRange === this._range) {
             var buckets = this._domain.length + 1;
-            range$$1 = sequence(buckets)
+            range$$1 = range(buckets)
               .map(function (d) { return range$$1[0] + sizeInner * (d / (buckets - 1)); })
               .slice(1, buckets);
             range$$1 = range$$1.map(function (d) { return d - range$$1[0] / 2; });
@@ -15930,7 +15924,7 @@ if (typeof window !== "undefined") {
           else {
             var buckets$1 = this._domain.length;
             var size = range$$1[1] - range$$1[0];
-            range$$1 = sequence(buckets$1)
+            range$$1 = range(buckets$1)
               .map(function (d) { return range$$1[0] + size * (d / (buckets$1 - 1)); });
           }
         }
@@ -19277,7 +19271,7 @@ if (typeof window !== "undefined") {
 
     // User's input normalization
     options = Object.assign({
-      angle: sequence(-90, 90 + angleStep$1, angleStep$1),
+      angle: range(-90, 90 + angleStep$1, angleStep$1),
       cache: true,
       maxAspectRatio: 15,
       minAspectRatio: 1,
@@ -19414,7 +19408,7 @@ if (typeof window !== "undefined") {
           if (!aRatios.length) {
             var minAspectRatio = Math.max(options.minAspectRatio, options.minWidth / maxHeight, maxArea / (maxHeight * maxHeight));
             var maxAspectRatio = Math.min(options.maxAspectRatio, maxWidth / options.minHeight, maxWidth * maxWidth / maxArea);
-            aRatios = sequence(minAspectRatio, maxAspectRatio + aspectRatioStep$1, aspectRatioStep$1);
+            aRatios = range(minAspectRatio, maxAspectRatio + aspectRatioStep$1, aspectRatioStep$1);
           }
 
           for (var a = 0; a < aRatios.length; a++) {
@@ -20584,9 +20578,9 @@ if (typeof window !== "undefined") {
           var values$$1 = d.values.map(d.orient === "vertical" ? this$1._y : this$1._x);
           values$$1.sort(function (a, b) { return a - b; });
 
-          d.first = threshold(values$$1, 0.25);
-          d.median = threshold(values$$1, 0.50);
-          d.third = threshold(values$$1, 0.75);
+          d.first = quantile(values$$1, 0.25);
+          d.median = quantile(values$$1, 0.50);
+          d.third = quantile(values$$1, 0.75);
 
           var mode = this$1._whiskerMode;
 
@@ -20595,14 +20589,14 @@ if (typeof window !== "undefined") {
             if (d.lowerLimit < min(values$$1)) { d.lowerLimit = min(values$$1); }
           }
           else if (mode[0] === "extent") { d.lowerLimit = min(values$$1); }
-          else if (typeof mode[0] === "number") { d.lowerLimit = threshold(values$$1, mode[0]); }
+          else if (typeof mode[0] === "number") { d.lowerLimit = quantile(values$$1, mode[0]); }
 
           if (mode[1] === "tukey") {
             d.upperLimit = d.third + (d.third - d.first) * 1.5;
             if (d.upperLimit > max(values$$1)) { d.upperLimit = max(values$$1); }
           }
           else if (mode[1] === "extent") { d.upperLimit = max(values$$1); }
-          else if (typeof mode[1] === "number") { d.upperLimit = threshold(values$$1, mode[1]); }
+          else if (typeof mode[1] === "number") { d.upperLimit = quantile(values$$1, mode[1]); }
 
           var rectLength = d.third - d.first;
 
@@ -21768,7 +21762,7 @@ if (typeof window !== "undefined") {
           labels = Array.from(tickSet);
         }
 
-        this._colorScale = threshold$1()
+        this._colorScale = threshold()
           .domain(ticks$$1)
           .range(["black"].concat(colors).concat(colors[colors.length - 1]));
 
@@ -21776,7 +21770,7 @@ if (typeof window !== "undefined") {
       else {
 
         var step = (domain[1] - domain[0]) / (colors.length - 1);
-        var buckets = sequence(domain[0], domain[1] + step / 2, step);
+        var buckets = range(domain[0], domain[1] + step / 2, step);
 
         if (this._scale === "buckets") { ticks$$1 = buckets; }
 
@@ -22393,10 +22387,10 @@ if (typeof window !== "undefined") {
       Axis$$1.prototype.render.call(this, callback);
 
       var offset = this._outerBounds[y],
-            range = this._d3Scale.range();
+            range$$1 = this._d3Scale.range();
 
       var brush$$1 = this._brush = brushX()
-        .extent([[range[0], offset], [range[range.length - 1], offset + this._outerBounds[height]]])
+        .extent([[range$$1[0], offset], [range$$1[range$$1.length - 1], offset + this._outerBounds[height]]])
         .filter(this._brushFilter)
         .handleSize(this._handleSize)
         .on("start", this._brushStart.bind(this))
@@ -22405,14 +22399,14 @@ if (typeof window !== "undefined") {
 
       var latest = this._buttonBehaviorCurrent === "ticks"
         ? this._availableTicks[this._availableTicks.length - 1]
-        : range[range.length - 1];
+        : range$$1[range$$1.length - 1];
 
       var selection$$1 = this._selection === void 0 ? [latest, latest]
         : this._selection instanceof Array
           ? this._buttonBehaviorCurrent === "buttons"
-            ? this._selection.map(function (d) { return range[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
+            ? this._selection.map(function (d) { return range$$1[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
           : this._buttonBehaviorCurrent === "buttons"
-            ? [range[this._ticks.map(Number).indexOf(+this._selection)], range[this._ticks.map(Number).indexOf(+this._selection)]]
+            ? [range$$1[this._ticks.map(Number).indexOf(+this._selection)], range$$1[this._ticks.map(Number).indexOf(+this._selection)]]
             : [this._selection, this._selection];
 
       this._updateBrushLimit(selection$$1);
@@ -37518,47 +37512,47 @@ if (typeof window !== "undefined") {
       this._shapes = [];
 
       // Draws a container and zoomGroup to test functionality.
-      this._testGroup = this._select.selectAll("g.d3plus-viz-testGroup").data([0]);
-      var enterTest = this._testGroup.enter().append("g").attr("class", "d3plus-viz-testGroup")
-        .merge(this._testGroup);
-      this._testGroup = enterTest.merge(this._testGroup);
-      var bgHeight = this._height - this._margin.top - this._margin.bottom;
-      var bgWidth = this._width - this._margin.left - this._margin.right;
-      new Rect$1()
-        .data([{id: "background"}])
-        .select(this._testGroup.node())
-        .x(bgWidth / 2 + this._margin.left)
-        .y(bgHeight / 2 + this._margin.top)
-        .width(bgWidth)
-        .height(bgHeight)
-        .fill("#ccc")
-        .render();
+      // this._testGroup = this._select.selectAll("g.d3plus-viz-testGroup").data([0]);
+      // const enterTest = this._testGroup.enter().append("g").attr("class", "d3plus-viz-testGroup")
+      //   .merge(this._testGroup);
+      // this._testGroup = enterTest.merge(this._testGroup);
+      // const bgHeight = this._height - this._margin.top - this._margin.bottom;
+      // const bgWidth = this._width - this._margin.left - this._margin.right;
+      // new Rect()
+      //   .data([{id: "background"}])
+      //   .select(this._testGroup.node())
+      //   .x(bgWidth / 2 + this._margin.left)
+      //   .y(bgHeight / 2 + this._margin.top)
+      //   .width(bgWidth)
+      //   .height(bgHeight)
+      //   .fill("#ccc")
+      //   .render();
 
-      this._zoomGroup = this._select.selectAll("g.d3plus-viz-zoomGroup").data([0]);
-      var enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
-        .merge(this._zoomGroup);
+      // this._zoomGroup = this._select.selectAll("g.d3plus-viz-zoomGroup").data([0]);
+      // const enter = this._zoomGroup.enter().append("g").attr("class", "d3plus-viz-zoomGroup")
+      //   .merge(this._zoomGroup);
 
-      this._zoomGroup = enter.merge(this._zoomGroup);
-      var testConfig = {
-        on: {
-          mouseenter: this._on.mouseenter,
-          mouseleave: this._on.mouseleave,
-          mousemove: this._on["mousemove.shape"]
-        }
-      };
-      var testWidth = 5;
-      this._shapes.push(new Rect$1()
-        .config(this._shapeConfig)
-        .config(configPrep(testConfig))
-        .data(this._filteredData)
-        .label("Test Label")
-        .select(this._zoomGroup.node())
-        .id(this._id)
-        .x(function (d, i) { return i * testWidth; })
-        .y(200)
-        .width(testWidth)
-        .height(100)
-        .render());
+      // this._zoomGroup = enter.merge(this._zoomGroup);
+      // const testConfig = {
+      //   on: {
+      //     mouseenter: this._on.mouseenter,
+      //     mouseleave: this._on.mouseleave,
+      //     mousemove: this._on["mousemove.shape"]
+      //   }
+      // };
+      // const testWidth = 5;
+      // this._shapes.push(new Rect()
+      //   .config(this._shapeConfig)
+      //   .config(configPrep(testConfig))
+      //   .data(this._filteredData)
+      //   .label("Test Label")
+      //   .select(this._zoomGroup.node())
+      //   .id(this._id)
+      //   .x((d, i) => i * testWidth)
+      //   .y(200)
+      //   .width(testWidth)
+      //   .height(100)
+      //   .render());
 
     };
 
@@ -37715,7 +37709,7 @@ if (typeof window !== "undefined") {
           svgTable.exit().remove();
           var rows = svgTable.merge(svgTableEnter)
             .selectAll("text")
-            .data(this$1._data instanceof Array ? sequence(0, this$1._data.length + 1) : []);
+            .data(this$1._data instanceof Array ? range(0, this$1._data.length + 1) : []);
           rows.exit().remove();
           var cells = rows.merge(rows.enter().append("text").attr("role", "row"))
             .selectAll("tspan")
@@ -38353,7 +38347,7 @@ if (typeof window !== "undefined") {
         @param {Function|Number} [value]
         @chainable
      */
-    Viz.prototype.threshold = function threshold$$1 (_) {
+    Viz.prototype.threshold = function threshold (_) {
       if (arguments.length) {
         if (typeof _ === "function") {
           this._threshold = _;
