@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.8.4
+  d3plus-hierarchy v0.8.5
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -290,7 +290,7 @@ if (typeof window !== "undefined") {
     return [min, max];
   }
 
-  function d3Range(start, stop, step) {
+  function range(start, stop, step) {
     start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
 
     var i = -1,
@@ -2698,6 +2698,7 @@ if (typeof window !== "undefined") {
       @summary An abstract class that contains some global methods and functionality.
   */
   var BaseClass = function BaseClass() {
+    this._locale = "en-US";
     this._on = {};
     this._uuid = uuid();
   };
@@ -2740,6 +2741,27 @@ if (typeof window !== "undefined") {
       for (var k$2 in this.__proto__) { if (k$2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k$2)) { config$1[k$2] = this[k$2](); } }
       return config$1;
     }
+  };
+
+  /**
+      @memberof BaseClass
+      @desc If *value* is specified, sets the locale to the specified string and returns the current class instance. This method supports the locales defined in [d3plus-format](https://github.com/d3plus/d3plus-format/blob/master/src/locale.js). In another case, you can define an Object with a custom locale.
+      @param {Object|String} [*value* = "en-US"]
+      @chainable
+      @example
+      {
+        separator: "",
+        suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+        grouping: [3],
+        delimiters: {
+          thousands: ",",
+          decimal: "."
+        },
+        currency: ["$", ""]
+      }
+  */
+  BaseClass.prototype.locale = function locale (_) {
+    return arguments.length ? (this._locale = _, this) : this._locale;
   };
 
   /**
@@ -2813,6 +2835,13 @@ if (typeof window !== "undefined") {
 
     };
 
+    var arrayEval = function (arr) { return arr.map(function (d) {
+      if (d instanceof Array) { return arrayEval(d); }
+      else if (typeof d === "object") { return keyEval({}, d); }
+      else if (typeof d === "function") { return wrapFunction(d); }
+      else { return d; }
+    }); };
+
     var keyEval = function (newObj, obj) {
 
       for (var key in obj) {
@@ -2823,7 +2852,10 @@ if (typeof window !== "undefined") {
           else if (typeof obj[key] === "function") {
             newObj[key] = wrapFunction(obj[key]);
           }
-          else if (typeof obj[key] === "object" && !(obj instanceof Array)) {
+          else if (obj[key] instanceof Array) {
+            newObj[key] = arrayEval(obj[key]);
+          }
+          else if (typeof obj[key] === "object") {
             newObj[key] = {on: {}};
             keyEval(newObj[key], obj[key]);
           }
@@ -6336,7 +6368,7 @@ if (typeof window !== "undefined") {
       start += (stop - start - step * (n - paddingInner)) * align;
       bandwidth = step * (1 - paddingInner);
       if (round) { start = Math.round(start), bandwidth = Math.round(bandwidth); }
-      var values = d3Range(n).map(function(i) { return start + step * i; });
+      var values = range(n).map(function(i) { return start + step * i; });
       return ordinalRange(reverse ? values.reverse() : values);
     }
 
@@ -6439,15 +6471,15 @@ if (typeof window !== "undefined") {
 
   // normalize(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
   // interpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding range value x in [a,b].
-  function bimap(domain, range, interpolate$$1) {
-    var d0 = domain[0], d1 = domain[1], r0 = range[0], r1 = range[1];
+  function bimap(domain, range$$1, interpolate$$1) {
+    var d0 = domain[0], d1 = domain[1], r0 = range$$1[0], r1 = range$$1[1];
     if (d1 < d0) { d0 = normalize(d1, d0), r0 = interpolate$$1(r1, r0); }
     else { d0 = normalize(d0, d1), r0 = interpolate$$1(r0, r1); }
     return function(x) { return r0(d0(x)); };
   }
 
-  function polymap(domain, range, interpolate$$1) {
-    var j = Math.min(domain.length, range.length) - 1,
+  function polymap(domain, range$$1, interpolate$$1) {
+    var j = Math.min(domain.length, range$$1.length) - 1,
         d = new Array(j),
         r = new Array(j),
         i = -1;
@@ -6455,12 +6487,12 @@ if (typeof window !== "undefined") {
     // Reverse descending domains.
     if (domain[j] < domain[0]) {
       domain = domain.slice().reverse();
-      range = range.slice().reverse();
+      range$$1 = range$$1.slice().reverse();
     }
 
     while (++i < j) {
       d[i] = normalize(domain[i], domain[i + 1]);
-      r[i] = interpolate$$1(range[i], range[i + 1]);
+      r[i] = interpolate$$1(range$$1[i], range$$1[i + 1]);
     }
 
     return function(x) {
@@ -6480,7 +6512,7 @@ if (typeof window !== "undefined") {
 
   function transformer() {
     var domain = unit,
-        range = unit,
+        range$$1 = unit,
         interpolate$$1 = interpolate,
         transform,
         untransform,
@@ -6491,17 +6523,17 @@ if (typeof window !== "undefined") {
         input;
 
     function rescale() {
-      piecewise$$1 = Math.min(domain.length, range.length) > 2 ? polymap : bimap;
+      piecewise$$1 = Math.min(domain.length, range$$1.length) > 2 ? polymap : bimap;
       output = input = null;
       return scale;
     }
 
     function scale(x) {
-      return isNaN(x = +x) ? unknown : (output || (output = piecewise$$1(domain.map(transform), range, interpolate$$1)))(transform(clamp(x)));
+      return isNaN(x = +x) ? unknown : (output || (output = piecewise$$1(domain.map(transform), range$$1, interpolate$$1)))(transform(clamp(x)));
     }
 
     scale.invert = function(y) {
-      return clamp(untransform((input || (input = piecewise$$1(range, domain.map(transform), interpolateNumber)))(y)));
+      return clamp(untransform((input || (input = piecewise$$1(range$$1, domain.map(transform), interpolateNumber)))(y)));
     };
 
     scale.domain = function(_) {
@@ -6509,11 +6541,11 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$2.call(_), rescale()) : range.slice();
+      return arguments.length ? (range$$1 = slice$2.call(_), rescale()) : range$$1.slice();
     };
 
     scale.rangeRound = function(_) {
-      return range = slice$2.call(_), interpolate$$1 = interpolateRound, rescale();
+      return range$$1 = slice$2.call(_), interpolate$$1 = interpolateRound, rescale();
     };
 
     scale.clamp = function(_) {
@@ -7204,23 +7236,23 @@ if (typeof window !== "undefined") {
 
   function quantile$1() {
     var domain = [],
-        range = [],
+        range$$1 = [],
         thresholds = [],
         unknown;
 
     function rescale() {
-      var i = 0, n = Math.max(1, range.length);
+      var i = 0, n = Math.max(1, range$$1.length);
       thresholds = new Array(n - 1);
       while (++i < n) { thresholds[i - 1] = quantile(domain, i / n); }
       return scale;
     }
 
     function scale(x) {
-      return isNaN(x = +x) ? unknown : range[bisectRight(thresholds, x)];
+      return isNaN(x = +x) ? unknown : range$$1[bisectRight(thresholds, x)];
     }
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return i < 0 ? [NaN, NaN] : [
         i > 0 ? thresholds[i - 1] : domain[0],
         i < thresholds.length ? thresholds[i] : domain[domain.length - 1]
@@ -7236,7 +7268,7 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$2.call(_), rescale()) : range.slice();
+      return arguments.length ? (range$$1 = slice$2.call(_), rescale()) : range$$1.slice();
     };
 
     scale.unknown = function(_) {
@@ -7250,7 +7282,7 @@ if (typeof window !== "undefined") {
     scale.copy = function() {
       return quantile$1()
           .domain(domain)
-          .range(range)
+          .range(range$$1)
           .unknown(unknown);
     };
 
@@ -7262,11 +7294,11 @@ if (typeof window !== "undefined") {
         x1 = 1,
         n = 1,
         domain = [0.5],
-        range = [0, 1],
+        range$$1 = [0, 1],
         unknown;
 
     function scale(x) {
-      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
+      return x <= x ? range$$1[bisectRight(domain, x, 0, n)] : unknown;
     }
 
     function rescale() {
@@ -7281,11 +7313,11 @@ if (typeof window !== "undefined") {
     };
 
     scale.range = function(_) {
-      return arguments.length ? (n = (range = slice$2.call(_)).length - 1, rescale()) : range.slice();
+      return arguments.length ? (n = (range$$1 = slice$2.call(_)).length - 1, rescale()) : range$$1.slice();
     };
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return i < 0 ? [NaN, NaN]
           : i < 1 ? [x0, domain[0]]
           : i >= n ? [domain[n - 1], x1]
@@ -7303,7 +7335,7 @@ if (typeof window !== "undefined") {
     scale.copy = function() {
       return quantize$1()
           .domain([x0, x1])
-          .range(range)
+          .range(range$$1)
           .unknown(unknown);
     };
 
@@ -7312,24 +7344,24 @@ if (typeof window !== "undefined") {
 
   function threshold() {
     var domain = [0.5],
-        range = [0, 1],
+        range$$1 = [0, 1],
         unknown,
         n = 1;
 
     function scale(x) {
-      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
+      return x <= x ? range$$1[bisectRight(domain, x, 0, n)] : unknown;
     }
 
     scale.domain = function(_) {
-      return arguments.length ? (domain = slice$2.call(_), n = Math.min(domain.length, range.length - 1), scale) : domain.slice();
+      return arguments.length ? (domain = slice$2.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : domain.slice();
     };
 
     scale.range = function(_) {
-      return arguments.length ? (range = slice$2.call(_), n = Math.min(domain.length, range.length - 1), scale) : range.slice();
+      return arguments.length ? (range$$1 = slice$2.call(_), n = Math.min(domain.length, range$$1.length - 1), scale) : range$$1.slice();
     };
 
     scale.invertExtent = function(y) {
-      var i = range.indexOf(y);
+      var i = range$$1.indexOf(y);
       return [domain[i - 1], domain[i]];
     };
 
@@ -7340,7 +7372,7 @@ if (typeof window !== "undefined") {
     scale.copy = function() {
       return threshold()
           .domain(domain)
-          .range(range)
+          .range(range$$1)
           .unknown(unknown);
     };
 
@@ -8783,7 +8815,7 @@ if (typeof window !== "undefined") {
       @param {String|Array} text Can be either a single string or an array of strings to analyze.
       @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
   */
-  function measure(text, style) {
+  function textWidth(text, style) {
 
     style = Object.assign({
       "font-size": 10,
@@ -8844,10 +8876,10 @@ if (typeof window !== "undefined") {
   var fontExists = function (font) {
 
     if (!dejavu) {
-      dejavu = measure(alpha, {"font-family": "DejaVuSans", "font-size": height});
-      macos = measure(alpha, {"font-family": "-apple-system", "font-size": height});
-      monospace = measure(alpha, {"font-family": "monospace", "font-size": height});
-      proportional = measure(alpha, {"font-family": "sans-serif", "font-size": height});
+      dejavu = textWidth(alpha, {"font-family": "DejaVuSans", "font-size": height});
+      macos = textWidth(alpha, {"font-family": "-apple-system", "font-size": height});
+      monospace = textWidth(alpha, {"font-family": "monospace", "font-size": height});
+      proportional = textWidth(alpha, {"font-family": "sans-serif", "font-size": height});
     }
 
     if (!(font instanceof Array)) { font = font.split(","); }
@@ -8857,7 +8889,7 @@ if (typeof window !== "undefined") {
       var fam = font[i];
       if (checked[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) { return fam; }
       else if (checked[fam] === false) { continue; }
-      var width = measure(alpha, {"font-family": fam, "font-size": height});
+      var width = textWidth(alpha, {"font-family": fam, "font-size": height});
       checked[fam] = width !== monospace;
       if (checked[fam]) { checked[fam] = width !== proportional; }
       if (macos && checked[fam]) { checked[fam] = width !== macos; }
@@ -8999,7 +9031,7 @@ if (typeof window !== "undefined") {
       @function textWrap
       @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
   */
-  function wrap() {
+  function textWrap() {
 
     var fontFamily = "sans-serif",
         fontSize = 10,
@@ -9036,8 +9068,8 @@ if (typeof window !== "undefined") {
           widthProg = 0;
 
       var lineData = [],
-            sizes = measure(words, style),
-            space = measure(" ", style);
+            sizes = textWidth(words, style),
+            space = textWidth(" ", style);
 
       for (var i = 0; i < words.length; i++) {
         var word = words[i];
@@ -9067,7 +9099,7 @@ if (typeof window !== "undefined") {
       return {
         lines: lineData,
         sentence: sentence, truncated: truncated,
-        widths: measure(lineData, style),
+        widths: textWidth(lineData, style),
         words: words
       };
 
@@ -9259,7 +9291,7 @@ if (typeof window !== "undefined") {
         var h = this$1._height(d, i) - (padding.top + padding.bottom),
               w = this$1._width(d, i) - (padding.left + padding.right);
 
-        var wrapper = wrap()
+        var wrapper = textWrap()
           .fontFamily(style["font-family"])
           .fontSize(fS)
           .fontWeight(style["font-weight"])
@@ -9319,7 +9351,7 @@ if (typeof window !== "undefined") {
 
           if (resize) {
 
-            sizes = measure(words, style);
+            sizes = textWidth(words, style);
 
             var areaMod = 1.165 + w / h * 0.1,
                   boxArea = w * h,
@@ -11835,7 +11867,7 @@ if (typeof window !== "undefined") {
 
     // User's input normalization
     options = Object.assign({
-      angle: d3Range(-90, 90 + angleStep, angleStep),
+      angle: range(-90, 90 + angleStep, angleStep),
       cache: true,
       maxAspectRatio: 15,
       minAspectRatio: 1,
@@ -11972,7 +12004,7 @@ if (typeof window !== "undefined") {
           if (!aRatios.length) {
             var minAspectRatio = Math.max(options.minAspectRatio, options.minWidth / maxHeight, maxArea / (maxHeight * maxHeight));
             var maxAspectRatio = Math.min(options.maxAspectRatio, maxWidth / options.minHeight, maxWidth * maxWidth / maxArea);
-            aRatios = d3Range(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
+            aRatios = range(minAspectRatio, maxAspectRatio + aspectRatioStep, aspectRatioStep);
           }
 
           for (var a = 0; a < aRatios.length; a++) {
@@ -13562,7 +13594,7 @@ if (typeof window !== "undefined") {
       this._d = accessor("path");
       this._labelBounds = function (d, i, aes) {
         var r = largestRect(aes.points, {angle: this$1._labelConfig.rotate ? this$1._labelConfig.rotate(d, i) : 0});
-        return {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2};
+        return r ? {angle: r.angle, width: r.width, height: r.height, x: r.cx - r.width / 2, y: r.cy - r.height / 2} : false;
       };
       this._name = "Path";
       this._labelConfig = Object.assign(this._labelConfig, {
@@ -15665,7 +15697,6 @@ if (typeof window !== "undefined") {
       this._gridLog = false;
       this._height = 400;
       this._labelOffset = true;
-      this._locale = "en-US";
       this.orient("bottom");
       this._outerBounds = {width: 0, height: 0, x: 0, y: 0};
       this._padding = 5;
@@ -15909,7 +15940,7 @@ if (typeof window !== "undefined") {
         if (this._scale === "ordinal" && this._domain.length > range$$1.length) {
           if (newRange === this._range) {
             var buckets = this._domain.length + 1;
-            range$$1 = d3Range(buckets)
+            range$$1 = range(buckets)
               .map(function (d) { return range$$1[0] + sizeInner * (d / (buckets - 1)); })
               .slice(1, buckets);
             range$$1 = range$$1.map(function (d) { return d - range$$1[0] / 2; });
@@ -15917,7 +15948,7 @@ if (typeof window !== "undefined") {
           else {
             var buckets$1 = this._domain.length;
             var size = range$$1[1] - range$$1[0];
-            range$$1 = d3Range(buckets$1)
+            range$$1 = range(buckets$1)
               .map(function (d) { return range$$1[0] + size * (d / (buckets$1 - 1)); });
           }
         }
@@ -16129,7 +16160,7 @@ if (typeof window !== "undefined") {
         var fontFamily = ref$1.fontFamily;
         var fontSize = ref$1.fontSize;
         var lineHeight = ref$1.lineHeight;
-        var titleWrap = wrap()
+        var titleWrap = textWrap()
           .fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily)
           .fontSize(typeof fontSize === "function" ? fontSize() : fontSize)
           .lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight)
@@ -16182,20 +16213,20 @@ if (typeof window !== "undefined") {
         var h = rotate ? "width" : "height",
               w = rotate ? "height" : "width";
 
-        var wrap$$1 = wrap()
+        var wrap = textWrap()
           .fontFamily(fF)
           .fontSize(fS)
           .lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)
           [w](horizontal ? space : min([this._maxSize, this._width]) - hBuff - p - this._margin.left - this._margin.right)
           [h](horizontal ? min([this._maxSize, this._height]) - hBuff - p - this._margin.top - this._margin.bottom : space);
 
-        var res = wrap$$1(tickFormat$$1(d));
+        var res = wrap(tickFormat$$1(d));
         res.lines = res.lines.filter(function (d) { return d !== ""; });
 
         res.width = res.lines.length ? Math.ceil(max(res.widths)) + fS / 4 : 0;
         if (res.width % 2) { res.width++; }
 
-        res.height = res.lines.length ? Math.ceil(res.lines.length * wrap$$1.lineHeight()) + fS / 4 : 0;
+        res.height = res.lines.length ? Math.ceil(res.lines.length * wrap.lineHeight()) + fS / 4 : 0;
         if (res.height % 2) { res.height++; }
 
         return res;
@@ -16558,16 +16589,6 @@ if (typeof window !== "undefined") {
      */
     Axis.prototype.labelRotation = function labelRotation (_) {
       return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
-    };
-
-    /**
-        @memberof Viz
-        @desc If *value* is specified, sets the locale to the specified string and returns the current class instance.
-        @param {Object|String} [*value* = "en-US"]
-        @chainable
-    */
-    Axis.prototype.locale = function locale (_) {
-      return arguments.length ? (this._locale = _, this) : this._locale;
     };
 
     /**
@@ -17755,7 +17776,7 @@ if (typeof window !== "undefined") {
         var lH = lH = this._titleConfig.lineHeight || this._titleClass.lineHeight();
         lH = lH ? lH() : s * 1.4;
 
-        var res = wrap()
+        var res = textWrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lH)
@@ -17796,7 +17817,7 @@ if (typeof window !== "undefined") {
         var h = availableHeight - (this$1._data.length + 1) * this$1._padding,
               w = this$1._width;
 
-        res = Object.assign(res, wrap()
+        res = Object.assign(res, textWrap()
           .fontFamily(f)
           .fontSize(s)
           .lineHeight(lh)
@@ -17804,7 +17825,7 @@ if (typeof window !== "undefined") {
           .height(h)
           (label));
 
-        res.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
+        res.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": f, "font-size": s}); }))) + s * 0.75;
         res.height = Math.ceil(res.lines.length * (lh + 1));
         res.og = {height: res.height, width: res.width};
         res.f = f;
@@ -17841,9 +17862,9 @@ if (typeof window !== "undefined") {
             var loop = function ( x ) {
               var label = wrappable[x];
               var h = label.og.height * lines, w = label.og.width * (1.5 * (1 / lines));
-              var res = wrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
+              var res = textWrap().fontFamily(label.f).fontSize(label.s).lineHeight(label.lh).width(w).height(h)(label.sentence);
               if (!res.truncated) {
-                label.width = Math.ceil(max(res.lines.map(function (t) { return measure(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
+                label.width = Math.ceil(max(res.lines.map(function (t) { return textWidth(t, {"font-family": label.f, "font-size": label.s}); }))) + label.s;
                 label.height = res.lines.length * (label.lh + 1);
               }
               else {
@@ -18306,7 +18327,7 @@ if (typeof window !== "undefined") {
       else {
 
         var step = (domain[1] - domain[0]) / (colors.length - 1);
-        var buckets = d3Range(domain[0], domain[1] + step / 2, step);
+        var buckets = range(domain[0], domain[1] + step / 2, step);
 
         if (this._scale === "buckets") { ticks = buckets; }
 
@@ -18872,14 +18893,14 @@ if (typeof window !== "undefined") {
           var f = this$1._shapeConfig.labelConfig.fontFamily(d, i),
                 s = this$1._shapeConfig.labelConfig.fontSize(d, i);
 
-          var wrap$$1 = wrap()
+          var wrap = textWrap()
             .fontFamily(f)
             .fontSize(s)
             .lineHeight(this$1._shapeConfig.lineHeight ? this$1._shapeConfig.lineHeight(d, i) : undefined);
 
-          var res = wrap$$1(d3Scale.tickFormat(ticks.length - 1, this$1._tickSpecifier)(d));
+          var res = wrap(d3Scale.tickFormat(ticks.length - 1, this$1._tickSpecifier)(d));
           var width = res.lines.length
-            ? Math.ceil(max(res.lines.map(function (line) { return measure(line, {"font-family": f, "font-size": s}); }))) + s / 4
+            ? Math.ceil(max(res.lines.map(function (line) { return textWidth(line, {"font-family": f, "font-size": s}); }))) + s / 4
             : 0;
           if (width % 2) { width++; }
           if (maxLabel < width) { maxLabel = width + 2 * this$1._buttonPadding; }
@@ -18923,10 +18944,10 @@ if (typeof window !== "undefined") {
       Axis$$1.prototype.render.call(this, callback);
 
       var offset = this._outerBounds[y],
-            range = this._d3Scale.range();
+            range$$1 = this._d3Scale.range();
 
       var brush$$1 = this._brush = brushX()
-        .extent([[range[0], offset], [range[range.length - 1], offset + this._outerBounds[height]]])
+        .extent([[range$$1[0], offset], [range$$1[range$$1.length - 1], offset + this._outerBounds[height]]])
         .filter(this._brushFilter)
         .handleSize(this._handleSize)
         .on("start", this._brushStart.bind(this))
@@ -18935,14 +18956,14 @@ if (typeof window !== "undefined") {
 
       var latest = this._buttonBehaviorCurrent === "ticks"
         ? this._availableTicks[this._availableTicks.length - 1]
-        : range[range.length - 1];
+        : range$$1[range$$1.length - 1];
 
       var selection$$1 = this._selection === void 0 ? [latest, latest]
         : this._selection instanceof Array
           ? this._buttonBehaviorCurrent === "buttons"
-            ? this._selection.map(function (d) { return range[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
+            ? this._selection.map(function (d) { return range$$1[this$1._ticks.map(Number).indexOf(+d)]; }).slice() : this._selection.slice()
           : this._buttonBehaviorCurrent === "buttons"
-            ? [range[this._ticks.map(Number).indexOf(+this._selection)], range[this._ticks.map(Number).indexOf(+this._selection)]]
+            ? [range$$1[this._ticks.map(Number).indexOf(+this._selection)], range$$1[this._ticks.map(Number).indexOf(+this._selection)]]
             : [this._selection, this._selection];
 
       this._updateBrushLimit(selection$$1);
@@ -21795,11 +21816,16 @@ if (typeof window !== "undefined") {
           @private
       */
       function divElement(cat) {
-        enter.append("div").attr("class", ("d3plus-tooltip-" + cat))
-                           .attr("id", function (d, i) { return ("d3plus-tooltip-" + cat + "-" + (d ? that._id(d, i) : "")); });
 
-        var div = update.select((".d3plus-tooltip-" + cat)).html(that[("_" + cat)]);
+        enter.append("div")
+          .attr("class", ("d3plus-tooltip-" + cat))
+          .attr("id", function (d, i) { return ("d3plus-tooltip-" + cat + "-" + (d ? that._id(d, i) : "")); });
+
+        var div = update.select((".d3plus-tooltip-" + cat))
+          .html(function (d, i) { return that[("_" + cat)](d, i); });
+
         stylize(div, that[("_" + cat + "Style")]);
+
       }
 
       /**
@@ -22461,6 +22487,7 @@ if (typeof window !== "undefined") {
         .duration(this._duration)
         .data(scaleData)
         .height(height)
+        .locale(this._locale)
         .orient(position)
         .select(scaleGroup)
         .value(this._colorScale)
@@ -32933,6 +32960,7 @@ if (typeof window !== "undefined") {
         .duration(this._duration)
         .data(legendData.length > this._legendCutoff || this._colorScale ? legendData : [])
         .height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top))
+        .locale(this._locale)
         .select(legendGroup)
         .verticalAlign(!wide ? "middle" : position)
         .width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right))
@@ -33006,6 +33034,7 @@ if (typeof window !== "undefined") {
         .domain(extent(ticks))
         .duration(this._duration)
         .height(this._height - this._margin.bottom)
+        .locale(this._locale)
         .select(timelineGroup)
         .ticks(ticks.sort(function (a, b) { return +a - +b; }))
         .width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right));
@@ -33059,6 +33088,7 @@ if (typeof window !== "undefined") {
 
     this._titleClass
       .data(text ? [{text: text}] : [])
+      .locale(this._locale)
       .select(group)
       .width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right))
       .config(this._titleConfig)
@@ -33096,6 +33126,7 @@ if (typeof window !== "undefined") {
 
     this._totalClass
       .data(visible ? [{text: this._totalFormat(total)}] : [])
+      .locale(this._locale)
       .select(group)
       .width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right))
       .config(this._totalConfig)
@@ -33303,7 +33334,11 @@ if (typeof window !== "undefined") {
         this$1.hover(false);
       }
       var tooltipData = this$1._tooltipClass.data();
-      if (tooltipData.length && this$1._tooltip && this$1._id(this$1._tooltipClass.data()[0]) === this$1._id(d)) { this$1._tooltipClass.data([]).render(); }
+      if (tooltipData.length && this$1._tooltip) {
+        var tooltipDatum = tooltipData[0];
+        while (tooltipDatum.__d3plus__ && tooltipDatum.data) { tooltipDatum = tooltipDatum.data; }
+        if (this$1._id(tooltipDatum) === this$1._id(d)) { this$1._tooltipClass.data([]).render(); }
+      }
     }, 50);
 
     this._select.style("cursor", "auto");
@@ -33317,8 +33352,9 @@ if (typeof window !== "undefined") {
       @param {Object} [*config*] Optional configuration methods for the Tooltip class.
       @private
   */
-  function mousemoveLegend(d, i) {
+  function mousemoveLegend(d, i, x) {
     var this$1 = this;
+
 
     var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
     var dataLength = merge(this._legendClass.data().map(function (d, i) {
@@ -33333,7 +33369,7 @@ if (typeof window !== "undefined") {
       if (id instanceof Array) { id = id[0]; }
 
       this._select.style("cursor", "pointer");
-      this._tooltipClass.data([d])
+      this._tooltipClass.data([x || d])
         .footer(
           this._solo.length && !this._solo.includes(id) ? "Click to Highlight"
           : this._solo.length === 1 && this._solo.includes(id) || this._hidden.length === dataLength - 1 ? "Click to Reset"
@@ -33343,8 +33379,8 @@ if (typeof window !== "undefined") {
         )
         .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
         .position(position)
-        .config(this._tooltipConfig)
-        .config(this._legendTooltip)
+        .config(configPrep.bind(this)(this._tooltipConfig))
+        .config(configPrep.bind(this)(this._legendConfig))
         .render();
 
     }
@@ -33358,16 +33394,16 @@ if (typeof window !== "undefined") {
       @param {Object} [*config*] Optional configuration methods for the Tooltip class.
       @private
   */
-  function mousemoveShape(d) {
+  function mousemoveShape(d, i, x) {
 
     if (this._tooltip && d) {
       this._select.style("cursor", "pointer");
       var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
-      this._tooltipClass.data([d])
+      this._tooltipClass.data([x || d])
         .footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "")
         .title(this._drawLabel)
         .position(position)
-        .config(this._tooltipConfig)
+        .config(configPrep.bind(this)(this._tooltipConfig))
         .render();
     }
 
@@ -33677,6 +33713,19 @@ if (typeof window !== "undefined") {
   }
 
   /**
+   * Turns an array of values into a list string.
+   */
+  function listify(n) {
+    return n.reduce(function (str, item, i) {
+      if (!i) { str += item; }
+      else if (i === n.length - 1 && i === 1) { str += " and " + item; }
+      else if (i === n.length - 1) { str += ", and " + item; }
+      else { str += ", " + item; }
+      return str;
+    }, "");
+  }
+
+  /**
       @class Viz
       @extends external:BaseClass
       @desc Creates an x/y plot based on an array of data. If *data* is specified, immediately draws the tree map based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#treemap.data) method. See [this example](https://d3plus.org/examples/d3plus-treemap/getting-started/) for help getting started using the treemap generator.
@@ -33755,7 +33804,6 @@ if (typeof window !== "undefined") {
       this._loadingHTML = constant$2("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
 
       this._loadingMessage = true;
-      this._locale = "en-US";
       this._lrucache = lrucache(10);
       this._messageClass = new Message();
       this._messageMask = "rgba(0, 0, 0, 0.1)";
@@ -33922,12 +33970,12 @@ if (typeof window !== "undefined") {
       this._id = this._groupBy[this._drawDepth];
       this._ids = function (d, i) { return this$1._groupBy
         .map(function (g) { return !d || d.__d3plus__ && !d.data ? undefined : g(d.__d3plus__ ? d.data : d, d.__d3plus__ ? d.i : i); })
-        .filter(function (g) { return g !== undefined && g !== null && g.constructor !== Array; }); };
+        .filter(function (g) { return g !== undefined && g !== null; }); };
 
       this._drawLabel = function (d, i) {
         if (!d) { return ""; }
         if (d._isAggregation) {
-          return ((this$1._thresholdName) + " < " + (formatAbbreviate(d._threshold * 100)) + "%");
+          return ((this$1._thresholdName) + " < " + (formatAbbreviate(d._threshold * 100, this$1._locale)) + "%");
         }
         while (d.__d3plus__ && d.data) {
           d = d.data;
@@ -33935,7 +33983,8 @@ if (typeof window !== "undefined") {
         }
         if (this$1._label) { return this$1._label(d, i); }
         var l = that._ids(d, i).slice(0, this$1._drawDepth + 1);
-        return l[l.length - 1];
+        var n = l.reverse().find(function (ll) { return !(ll instanceof Array); }) || l[l.length - 1];
+        return n instanceof Array ? listify(n) : n;
       };
 
       // set the default timeFilter if it has not been specified
@@ -34041,18 +34090,20 @@ if (typeof window !== "undefined") {
       //   .merge(this._zoomGroup);
 
       // this._zoomGroup = enter.merge(this._zoomGroup);
-
-      // const testWidth = 5;
-      // this._shapes.push(new Rect()
-      //   .config(this._shapeConfig)
-      //   .data(this._filteredData)
-      //   .label("Test Label")
-      //   .select(this._zoomGroup.node())
-      //   .on({
+      // const testConfig = {
+      //   on: {
       //     mouseenter: this._on.mouseenter,
       //     mouseleave: this._on.mouseleave,
       //     mousemove: this._on["mousemove.shape"]
-      //   })
+      //   }
+      // };
+      // const testWidth = 5;
+      // this._shapes.push(new Rect()
+      //   .config(this._shapeConfig)
+      //   .config(configPrep(testConfig))
+      //   .data(this._filteredData)
+      //   .label("Test Label")
+      //   .select(this._zoomGroup.node())
       //   .id(this._id)
       //   .x((d, i) => i * testWidth)
       //   .y(200)
@@ -34215,7 +34266,7 @@ if (typeof window !== "undefined") {
           svgTable.exit().remove();
           var rows = svgTable.merge(svgTableEnter)
             .selectAll("text")
-            .data(this$1._data instanceof Array ? d3Range(0, this$1._data.length + 1) : []);
+            .data(this$1._data instanceof Array ? range(0, this$1._data.length + 1) : []);
           rows.exit().remove();
           var cells = rows.merge(rows.enter().append("text").attr("role", "row"))
             .selectAll("tspan")
@@ -34745,16 +34796,6 @@ if (typeof window !== "undefined") {
     */
     Viz.prototype.loadingMessage = function loadingMessage (_) {
       return arguments.length ? (this._loadingMessage = _, this) : this._loadingMessage;
-    };
-
-    /**
-        @memberof Viz
-        @desc If *value* is specified, sets the locale to the specified string and returns the current class instance.
-        @param {String} [*value* = "en-US"]
-        @chainable
-    */
-    Viz.prototype.locale = function locale (_) {
-      return arguments.length ? (this._locale = _, this) : this._locale;
     };
 
     /**
@@ -36816,6 +36857,11 @@ if (typeof window !== "undefined") {
       this._sum = accessor("value");
       this._thresholdKey = this._sum;
       this._tile = squarify;
+      this._tooltipConfig = assign({}, this._tooltipConfig, {
+        tbody: [
+          ["Share", function (d, i, x) { return ((formatAbbreviate(x.share * 100, this$1._locale)) + "%"); }]
+        ]
+      });
       this._treemap = treemap().round(true);
 
       var isAggregated = function (leaf) { return leaf.children && leaf.children.length === 1 && leaf.children[0].data._isAggregation; };
@@ -36877,16 +36923,20 @@ if (typeof window !== "undefined") {
 
       this._rankData = shapeData.sort(this._sort).map(function (d) { return d.data; });
       var total = tmapData.value;
+      shapeData.forEach(function (d) {
+        d.share = this$1._sum(d.data, d.i) / total;
+      });
 
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
       var rectConfig = configPrep.bind(this)(this._shapeConfig, "shape", "Rect");
       var fontMin = rectConfig.labelConfig.fontMin;
       var padding = rectConfig.labelConfig.padding;
+
       this._shapes.push(new Rect()
         .data(shapeData)
         .label(function (d) { return [
           this$1._drawLabel(d.data, d.i),
-          ((formatAbbreviate(this$1._sum(d.data, d.i) / total * 100)) + "%")
+          ((formatAbbreviate(d.share * 100, this$1._locale)) + "%")
         ]; })
         .select(elem("g.d3plus-Treemap", {
           parent: this._select,

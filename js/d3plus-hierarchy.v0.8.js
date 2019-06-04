@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.8.4
+  d3plus-hierarchy v0.8.5
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -857,6 +857,11 @@ if (typeof window !== "undefined") {
       this._sum = d3plusCommon.accessor("value");
       this._thresholdKey = this._sum;
       this._tile = d3Hierarchy.treemapSquarify;
+      this._tooltipConfig = d3plusCommon.assign({}, this._tooltipConfig, {
+        tbody: [
+          ["Share", function (d, i, x) { return ((d3plusFormat.formatAbbreviate(x.share * 100, this$1._locale)) + "%"); }]
+        ]
+      });
       this._treemap = d3Hierarchy.treemap().round(true);
 
       var isAggregated = function (leaf) { return leaf.children && leaf.children.length === 1 && leaf.children[0].data._isAggregation; };
@@ -918,16 +923,20 @@ if (typeof window !== "undefined") {
 
       this._rankData = shapeData.sort(this._sort).map(function (d) { return d.data; });
       var total = tmapData.value;
+      shapeData.forEach(function (d) {
+        d.share = this$1._sum(d.data, d.i) / total;
+      });
 
       var transform = "translate(" + (this._margin.left) + ", " + (this._margin.top) + ")";
       var rectConfig = d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Rect");
       var fontMin = rectConfig.labelConfig.fontMin;
       var padding = rectConfig.labelConfig.padding;
+
       this._shapes.push(new d3plusShape.Rect()
         .data(shapeData)
         .label(function (d) { return [
           this$1._drawLabel(d.data, d.i),
-          ((d3plusFormat.formatAbbreviate(this$1._sum(d.data, d.i) / total * 100)) + "%")
+          ((d3plusFormat.formatAbbreviate(d.share * 100, this$1._locale)) + "%")
         ]; })
         .select(d3plusCommon.elem("g.d3plus-Treemap", {
           parent: this._select,
