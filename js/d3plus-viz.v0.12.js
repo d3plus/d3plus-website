@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.32
+  d3plus-viz v0.12.33
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1109,7 +1109,7 @@ if (typeof window !== "undefined") {
         .title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this))
         .position(position)
         .config(d3plusCommon.configPrep.bind(this)(this._tooltipConfig))
-        .config(d3plusCommon.configPrep.bind(this)(this._legendConfig))
+        .config(d3plusCommon.configPrep.bind(this)(this._legendTooltip))
         .render();
 
     }
@@ -2203,6 +2203,8 @@ if (typeof window !== "undefined") {
         var d = [load.bind(this), _, f, "data"];
         if (prev) { this._queue[this._queue.indexOf(prev)] = d; }
         else { this._queue.push(d); }
+        this._hidden = [];
+        this._solo = [];
         return this;
       }
       return this._data;
