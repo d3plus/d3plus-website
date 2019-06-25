@@ -2,7 +2,7 @@
 title: Bar Chart Axis and Grid Styling
 width: 990
 height: 400
-time: 1561481789593
+time: 1561482614163
 date: June 25, 2019
 ---
 
