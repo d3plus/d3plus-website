@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.10
+  d3plus-format v0.1.11
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -475,8 +475,9 @@ if (!Array.prototype.includes) {
       @param {Object|String} locale The locale config to be used. If *value* is an object, the function will format the numbers according the object. The object must include `suffixes`, `delimiter` and `currency` properties.
       @returns {String}
   */
-  function abbreviate(n, locale) {
+  function abbreviate(n, locale, precision) {
     if ( locale === void 0 ) locale = "en-US";
+    if ( precision === void 0 ) precision = undefined;
 
     if (isFinite(n)) { n *= 1; }
     else { return "N/A"; }
@@ -487,7 +488,7 @@ if (!Array.prototype.includes) {
 
     var decimal = localeConfig.delimiters.decimal || ".",
           separator = localeConfig.separator || "",
-          thousands = localeConfig.delimiters.decimal || ",";
+          thousands = localeConfig.delimiters.thousands || ",";
 
     var d3plusFormatLocale = formatLocale({
       currency: localeConfig.currency || ["$", ""],
@@ -497,10 +498,11 @@ if (!Array.prototype.includes) {
     });
 
     var val;
-    if (n === 0) { val = "0"; }
+    if (precision) { val = d3plusFormatLocale.format(precision)(n); }
+    else if (n === 0) { val = "0"; }
     else if (length >= 3) {
       var f = formatSuffix(d3plusFormatLocale.format(".3r")(n), 2, suffixes);
-      var num = parseFloat(f.number).toString().replace(".", thousands);
+      var num = parseFloat(f.number).toString().replace(".", decimal);
       var char = f.symbol;
       val = "" + num + separator + char;
     }
