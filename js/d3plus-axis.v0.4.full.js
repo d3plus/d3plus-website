@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.8
+  d3plus-axis v0.4.9
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -6407,8 +6407,9 @@ if (typeof window !== "undefined") {
       @param {Object|String} locale The locale config to be used. If *value* is an object, the function will format the numbers according the object. The object must include `suffixes`, `delimiter` and `currency` properties.
       @returns {String}
   */
-  function formatAbbreviate(n, locale) {
+  function formatAbbreviate(n, locale, precision) {
     if ( locale === void 0 ) { locale = "en-US"; }
+    if ( precision === void 0 ) { precision = undefined; }
 
     if (isFinite(n)) { n *= 1; }
     else { return "N/A"; }
@@ -6418,17 +6419,19 @@ if (typeof window !== "undefined") {
           suffixes = localeConfig.suffixes.map(parseSuffixes);
 
     var decimal = localeConfig.delimiters.decimal || ".",
-          separator = localeConfig.separator || "";
+          separator = localeConfig.separator || "",
+          thousands = localeConfig.delimiters.thousands || ",";
 
     var d3plusFormatLocale = formatLocale$1({
       currency: localeConfig.currency || ["$", ""],
       decimal: decimal,
       grouping: localeConfig.grouping || [3],
-      thousands: localeConfig.delimiters.thousands || ","
+      thousands: thousands
     });
 
     var val;
-    if (n === 0) { val = "0"; }
+    if (precision) { val = d3plusFormatLocale.format(precision)(n); }
+    else if (n === 0) { val = "0"; }
     else if (length >= 3) {
       var f = formatSuffix(d3plusFormatLocale.format(".3r")(n), 2, suffixes);
       var num = parseFloat(f.number).toString().replace(".", decimal);
@@ -14208,7 +14211,8 @@ if (typeof window !== "undefined") {
           var separator = locale.separator;
           var suffixes = locale.suffixes;
           var suff = n >= 1000 ? suffixes[this$1._tickUnit + 8] : "";
-          var number = n > 1 ? this$1._d3Scale.tickFormat()(n / Math.pow(10, 3 * this$1._tickUnit)) : n;
+          var tick = n / Math.pow(10, 3 * this$1._tickUnit);
+          var number = formatAbbreviate(tick, locale, (",." + (tick.toString().length) + "r"));
           return ("" + number + separator + suff);
         }
         else {

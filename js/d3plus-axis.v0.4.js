@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.8
+  d3plus-axis v0.4.9
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -740,7 +740,8 @@ if (typeof window !== "undefined") {
           var separator = locale.separator;
           var suffixes = locale.suffixes;
           var suff = n >= 1000 ? suffixes[this$1._tickUnit + 8] : "";
-          var number = n > 1 ? this$1._d3Scale.tickFormat()(n / Math.pow(10, 3 * this$1._tickUnit)) : n;
+          var tick = n / Math.pow(10, 3 * this$1._tickUnit);
+          var number = d3plusFormat.formatAbbreviate(tick, locale, (",." + (tick.toString().length) + "r"));
           return ("" + number + separator + suff);
         }
         else {
