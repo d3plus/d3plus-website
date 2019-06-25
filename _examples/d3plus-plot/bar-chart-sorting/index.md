@@ -2,8 +2,8 @@
 title: Bar Chart Sorting
 width: 990
 height: 400
-time: 1558107811755
-date: May 17, 2019
+time: 1561481789593
+date: June 25, 2019
 ---
 
 # Bar Chart Sorting

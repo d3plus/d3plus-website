@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var myData = [
+    {"value": 100, "weight": .45,  "name": "alpha"},
+    {"value": 70,  "weight": .60,  "name": "beta"},
+    {"value": 40,  "weight": -.2,  "name": "gamma"},
+    {"value": 15,  "weight": .1,   "name": "delta"},
+    {"value": 5,   "weight": -.43, "name": "epsilon"},
+    {"value": 1,   "weight": 0,    "name": "zeta"}
+  ]
+  
+  new d3plus.Plot()
+    .config({
+      data: myData,
+      groupBy: "name",
+      shape: function(d) {
+        if (d.name === "alpha" || d.name === "delta" || d.name === "epsilon") return "Rect";
+        return "Circle";
+      },
+      size: "value",
+      x: "value",
+      y: "weight"
+    })
+    .render();
+
+</script>
+
+</html>
