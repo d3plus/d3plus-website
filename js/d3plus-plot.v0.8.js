@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.10
+  d3plus-plot v0.8.11
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1362,7 +1362,7 @@ if (typeof window !== "undefined") {
          .confidence(["lci", "hci"])
      */
     Plot.prototype.confidence = function confidence (_) {
-      if (arguments.length) {
+      if (arguments.length && arguments instanceof Array) {
         this._confidence = [];
         var lower = _[0];
         this._confidence[0] = typeof lower === "function" || !lower ? lower : d3plusCommon.accessor(lower);
