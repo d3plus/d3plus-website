@@ -2,8 +2,8 @@
 title: Creating a Color Scale
 width: 400
 height: 200
-time: 1558362394860
-date: May 20, 2019
+time: 1562621810511
+date: July 08, 2019
 ---
 
 [width]: 400
