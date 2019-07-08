@@ -2,8 +2,8 @@
 title: Defining Custom Colors for a Visualization
 width: 990
 height: 400
-time: 1559665089587
-date: June 04, 2019
+time: 1562622314965
+date: July 08, 2019
 ---
 
 # Defining Custom Colors for a Visualization
