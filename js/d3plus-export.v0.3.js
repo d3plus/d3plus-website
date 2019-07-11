@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.15
+  d3plus-export v0.3.16
   Export methods for transforming and downloading SVG.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
