@@ -1,5 +1,5 @@
 /*
-  d3plus-priestley v0.3.3
+  d3plus-priestley v0.3.4
   A reusable Priestley timeline built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
