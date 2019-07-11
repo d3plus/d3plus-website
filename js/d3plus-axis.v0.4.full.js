@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.10
+  d3plus-axis v0.4.11
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -76,16 +76,17 @@
 
   function _objectSpread2(target) {
     for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+
       if (i % 2) {
-        var source = arguments[i] != null ? arguments[i] : {};
         ownKeys(source, true).forEach(function (key) {
           _defineProperty(target, key, source[key]);
         });
       } else if (Object.getOwnPropertyDescriptors) {
-        Object.defineProperties(target, Object.getOwnPropertyDescriptors(arguments[i]));
+        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
       } else {
         ownKeys(source).forEach(function (key) {
-          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(arguments[i], key));
+          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
         });
       }
     }
@@ -140,40 +141,6 @@
     return _assertThisInitialized(self);
   }
 
-  function _superPropBase(object, property) {
-    while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf(object);
-      if (object === null) break;
-    }
-
-    return object;
-  }
-
-  function _get(target, property, receiver) {
-    if (typeof Reflect !== "undefined" && Reflect.get) {
-      _get = Reflect.get;
-    } else {
-      _get = function _get(target, property, receiver) {
-        var base = _superPropBase(target, property);
-
-        if (!base) return;
-        var desc = Object.getOwnPropertyDescriptor(base, property);
-
-        if (desc.get) {
-          return desc.get.call(receiver);
-        }
-
-        return desc.value;
-      };
-    }
-
-    return _get(target, property, receiver || target);
-  }
-
-  function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
-  }
-
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
   }
@@ -186,46 +153,12 @@
     }
   }
 
-  function _arrayWithHoles(arr) {
-    if (Array.isArray(arr)) return arr;
-  }
-
   function _iterableToArray(iter) {
     if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
   }
 
-  function _iterableToArrayLimit(arr, i) {
-    var _arr = [];
-    var _n = true;
-    var _d = false;
-    var _e = undefined;
-
-    try {
-      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-        _arr.push(_s.value);
-
-        if (i && _arr.length === i) break;
-      }
-    } catch (err) {
-      _d = true;
-      _e = err;
-    } finally {
-      try {
-        if (!_n && _i["return"] != null) _i["return"]();
-      } finally {
-        if (_d) throw _e;
-      }
-    }
-
-    return _arr;
-  }
-
   function _nonIterableSpread() {
     throw new TypeError("Invalid attempt to spread non-iterable instance");
-  }
-
-  function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
   function ascending (a, b) {
@@ -5968,13 +5901,28 @@
     };
   }
 
+  function _typeof$1(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$1 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$1 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$1(obj);
+  }
   /**
       @function isObject
       @desc Detects if a variable is a javascript Object.
       @param {*} item
   */
+
+
   function isObject (item) {
-    return item && _typeof(item) === "object" && (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) && !Array.isArray(item) ? true : false;
+    return item && _typeof$1(item) === "object" && (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) && !Array.isArray(item) ? true : false;
   }
 
   /**
@@ -6058,6 +6006,27 @@
   */
   var RESET = "D3PLUS-COMMON-RESET";
 
+  function _classCallCheck$1(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$1(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$1(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$1(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$1(Constructor, staticProps);
+    return Constructor;
+  }
   /**
       @desc Recursive function that resets nested Object configs.
       @param {Object} obj
@@ -6095,7 +6064,7 @@
         @private
     */
     function BaseClass() {
-      _classCallCheck(this, BaseClass);
+      _classCallCheck$1(this, BaseClass);
 
       this._locale = "en-US";
       this._on = {};
@@ -6109,7 +6078,7 @@
     */
 
 
-    _createClass(BaseClass, [{
+    _createClass$1(BaseClass, [{
       key: "config",
       value: function config(_) {
         if (!this._configDefault) {
@@ -6214,6 +6183,19 @@
     });
   }
 
+  function _typeof$2(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$2 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$2 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$2(obj);
+  }
   /**
       @function configPrep
       @desc Preps a config object for d3plus data, and optionally bubbles up a specific nested type. When using this function, you must bind a d3plus class' `this` context.
@@ -6221,6 +6203,8 @@
       @param {String} [type = "shape"] The event classifier to user for "on" events. For example, the default event type of "shape" will apply all events in the "on" config object with that key, like "click.shape" and "mouseleave.shape", in addition to any gloval events like "click" and "mouseleave".
       @param {String} [nest] An optional nested key to bubble up to the parent config level.
   */
+
+
   function configPrep() {
     var _this = this;
 
@@ -6257,7 +6241,7 @@
 
     var arrayEval = function arrayEval(arr) {
       return arr.map(function (d) {
-        if (d instanceof Array) return arrayEval(d);else if (_typeof(d) === "object") return keyEval({}, d);else if (typeof d === "function") return wrapFunction(d);else return d;
+        if (d instanceof Array) return arrayEval(d);else if (_typeof$2(d) === "object") return keyEval({}, d);else if (typeof d === "function") return wrapFunction(d);else return d;
       });
     };
 
@@ -6268,7 +6252,7 @@
             newObj[key] = wrapFunction(obj[key]);
           } else if (obj[key] instanceof Array) {
             newObj[key] = arrayEval(obj[key]);
-          } else if (_typeof(obj[key]) === "object") {
+          } else if (_typeof$2(obj[key]) === "object") {
             newObj[key] = {
               on: {}
             };
@@ -6486,6 +6470,20 @@
     }
   };
 
+  function _typeof$3(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$3 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$3 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$3(obj);
+  }
+
   var round = function round(x, n) {
     return parseFloat(Math.round(x * Math.pow(10, n)) / Math.pow(10, n)).toFixed(n);
   };
@@ -6539,7 +6537,7 @@
     var precision = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
     if (isFinite(n)) n *= 1;else return "N/A";
     var length = n.toString().split(".")[0].replace("-", "").length,
-        localeConfig = _typeof(locale) === "object" ? locale : formatLocale$2[locale] || formatLocale$2["en-US"],
+        localeConfig = _typeof$3(locale) === "object" ? locale : formatLocale$2[locale] || formatLocale$2["en-US"],
         suffixes = localeConfig.suffixes.map(parseSuffixes);
     var decimal = localeConfig.delimiters.decimal || ".",
         separator = localeConfig.separator || "",
@@ -6561,6 +6559,27 @@
     .replace(/[.]$/g, ""); // removes any trailing decimal point
   }
 
+  function _classCallCheck$2(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$2(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$2(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$2(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$2(Constructor, staticProps);
+    return Constructor;
+  }
   /**
       @class Image
       @desc Creates SVG images based on an array of data.
@@ -6585,7 +6604,7 @@
         @private
     */
     function Image() {
-      _classCallCheck(this, Image);
+      _classCallCheck$2(this, Image);
 
       this._duration = 600;
       this._height = accessor("height");
@@ -6605,7 +6624,7 @@
     */
 
 
-    _createClass(Image, [{
+    _createClass$2(Image, [{
       key: "render",
       value: function render(callback) {
         var _this = this;
@@ -10492,6 +10511,88 @@
     return textWrap;
   }
 
+  function _typeof$4(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$4 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$4 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$4(obj);
+  }
+
+  function _classCallCheck$3(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$3(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$3(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$3(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$3(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$1(self, call) {
+    if (call && (_typeof$4(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$1(self);
+  }
+
+  function _assertThisInitialized$1(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _getPrototypeOf$1(o) {
+    _getPrototypeOf$1 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$1(o);
+  }
+
+  function _inherits$1(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$1(subClass, superClass);
+  }
+
+  function _setPrototypeOf$1(o, p) {
+    _setPrototypeOf$1 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$1(o, p);
+  }
   var tagLookup = {
     i: "font-style: italic;",
     em: "font-style: italic;",
@@ -10507,19 +10608,20 @@
   var TextBox =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits(TextBox, _BaseClass);
-
+    _inherits$1(TextBox, _BaseClass);
     /**
         @memberof TextBox
         @desc Invoked when creating a new class instance, and sets any default parameters.
         @private
     */
+
+
     function TextBox() {
       var _this;
 
-      _classCallCheck(this, TextBox);
+      _classCallCheck$3(this, TextBox);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(TextBox).call(this));
+      _this = _possibleConstructorReturn$1(this, _getPrototypeOf$1(TextBox).call(this));
       _this._ariaHidden = constant$3("false");
       _this._delay = 0;
       _this._duration = 0;
@@ -10574,7 +10676,7 @@
     */
 
 
-    _createClass(TextBox, [{
+    _createClass$3(TextBox, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
@@ -11236,6 +11338,88 @@
     return Math.sqrt(pointDistanceSquared(p1, p2));
   });
 
+  function _typeof$5(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$5 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$5 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$5(obj);
+  }
+
+  function _classCallCheck$4(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$4(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$4(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$4(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$4(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$2(self, call) {
+    if (call && (_typeof$5(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$2(self);
+  }
+
+  function _assertThisInitialized$2(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _getPrototypeOf$2(o) {
+    _getPrototypeOf$2 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$2(o);
+  }
+
+  function _inherits$2(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$2(subClass, superClass);
+  }
+
+  function _setPrototypeOf$2(o, p) {
+    _setPrototypeOf$2 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$2(o, p);
+  }
   /**
       @class Shape
       @extends external:BaseClass
@@ -11245,21 +11429,22 @@
   var Shape =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits(Shape, _BaseClass);
-
+    _inherits$2(Shape, _BaseClass);
     /**
         @memberof Shape
         @desc Invoked when creating a new class instance, and sets any default parameters.
         @private
     */
+
+
     function Shape() {
       var _this;
 
       var tagName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "g";
 
-      _classCallCheck(this, Shape);
+      _classCallCheck$4(this, Shape);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Shape).call(this));
+      _this = _possibleConstructorReturn$2(this, _getPrototypeOf$2(Shape).call(this));
       _this._activeOpacity = 0.25;
       _this._activeStyle = {
         "stroke": function stroke(d, i) {
@@ -11342,7 +11527,7 @@
     */
 
 
-    _createClass(Shape, [{
+    _createClass$4(Shape, [{
       key: "_aes",
       value: function _aes() {
         return {};
@@ -12895,6 +13080,43 @@
     return [px, py];
   }
 
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
   /**
       @function segmentBoxContains
       @desc Checks whether a point is inside the bounding box of a line segment.
@@ -12903,6 +13125,8 @@
       @param {Array} p The point to be checked, which should always be an `[x, y]` formatted Array.
       @returns {Boolean}
   */
+
+
   function segmentBoxContains (s1, s2, p) {
     var eps = 1e-9,
         _p = _slicedToArray(p, 2),
@@ -12958,6 +13182,43 @@
     return polygonContains(polyB, polyA[0]);
   }
 
+  function _slicedToArray$1(arr, i) {
+    return _arrayWithHoles$1(arr) || _iterableToArrayLimit$1(arr, i) || _nonIterableRest$1();
+  }
+
+  function _nonIterableRest$1() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  }
+
+  function _iterableToArrayLimit$1(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _arrayWithHoles$1(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
   /**
       @function polygonRayCast
       @desc Gives the two closest intersection points between a ray cast from a point inside a polygon. The two points should lie on opposite sides of the origin.
@@ -12973,7 +13234,7 @@
     origin = [origin[0] + eps * Math.cos(alpha), origin[1] + eps * Math.sin(alpha)];
 
     var _origin = origin,
-        _origin2 = _slicedToArray(_origin, 2),
+        _origin2 = _slicedToArray$1(_origin, 2),
         x0 = _origin2[0],
         y0 = _origin2[1];
 
@@ -13166,6 +13427,44 @@
     return poly;
   });
 
+  function _slicedToArray$2(arr, i) {
+    return _arrayWithHoles$2(arr) || _iterableToArrayLimit$2(arr, i) || _nonIterableRest$2();
+  }
+
+  function _nonIterableRest$2() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  }
+
+  function _iterableToArrayLimit$2(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _arrayWithHoles$2(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
   var aspectRatioStep = 0.5; // step size for the aspect ratio
 
   var angleStep = 5; // step size for angles (in degrees); has linear impact on running time
@@ -13251,14 +13550,14 @@
     var _extent = extent(poly, function (d) {
       return d[0];
     }),
-        _extent2 = _slicedToArray(_extent, 2),
+        _extent2 = _slicedToArray$2(_extent, 2),
         minx = _extent2[0],
         maxx = _extent2[1];
 
     var _extent3 = extent(poly, function (d) {
       return d[1];
     }),
-        _extent4 = _slicedToArray(_extent3, 2),
+        _extent4 = _slicedToArray$2(_extent3, 2),
         miny = _extent4[0],
         maxy = _extent4[1]; // simplify polygon
 
@@ -13274,7 +13573,7 @@
       return d[0];
     });
 
-    var _extent6 = _slicedToArray(_extent5, 2);
+    var _extent6 = _slicedToArray$2(_extent5, 2);
 
     minx = _extent6[0];
     maxx = _extent6[1];
@@ -13283,7 +13582,7 @@
       return d[1];
     });
 
-    var _extent8 = _slicedToArray(_extent7, 2);
+    var _extent8 = _slicedToArray$2(_extent7, 2);
 
     miny = _extent8[0];
     maxy = _extent8[1];
@@ -13336,12 +13635,12 @@
         var origOrigin = origins[i]; // generate improved origins
 
         var _polygonRayCast = polygonRayCast(poly, origOrigin, angleRad),
-            _polygonRayCast2 = _slicedToArray(_polygonRayCast, 2),
+            _polygonRayCast2 = _slicedToArray$2(_polygonRayCast, 2),
             p1W = _polygonRayCast2[0],
             p2W = _polygonRayCast2[1];
 
         var _polygonRayCast3 = polygonRayCast(poly, origOrigin, angleRad + Math.PI / 2),
-            _polygonRayCast4 = _slicedToArray(_polygonRayCast3, 2),
+            _polygonRayCast4 = _slicedToArray$2(_polygonRayCast3, 2),
             p1H = _polygonRayCast4[0],
             p2H = _polygonRayCast4[1];
 
@@ -13360,8 +13659,8 @@
           modifOrigins: modifOrigins
         });
 
-        for (var _i = 0; _i < modifOrigins.length; _i++) {
-          var origin = modifOrigins[_i];
+        for (var _i2 = 0; _i2 < modifOrigins.length; _i2++) {
+          var origin = modifOrigins[_i2];
           if (options.events) events.push({
             type: "origin",
             cx: origin[0],
@@ -13369,7 +13668,7 @@
           });
 
           var _polygonRayCast5 = polygonRayCast(poly, origin, angleRad),
-              _polygonRayCast6 = _slicedToArray(_polygonRayCast5, 2),
+              _polygonRayCast6 = _slicedToArray$2(_polygonRayCast5, 2),
               _p1W = _polygonRayCast6[0],
               _p2W = _polygonRayCast6[1];
 
@@ -13378,7 +13677,7 @@
           var maxWidth = 2 * Math.sqrt(minSqDistW);
 
           var _polygonRayCast7 = polygonRayCast(poly, origin, angleRad + Math.PI / 2),
-              _polygonRayCast8 = _slicedToArray(_polygonRayCast7, 2),
+              _polygonRayCast8 = _slicedToArray$2(_polygonRayCast7, 2),
               _p1H = _polygonRayCast8[0],
               _p2H = _polygonRayCast8[1];
 
@@ -13409,7 +13708,7 @@
               var width = (left + right) / 2;
               var height = width / aRatio;
 
-              var _origin = _slicedToArray(origin, 2),
+              var _origin = _slicedToArray$2(origin, 2),
                   cx = _origin[0],
                   cy = _origin[1];
 
@@ -13460,6 +13759,118 @@
     }) : maxRect;
   }
 
+  function _typeof$6(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$6 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$6 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$6(obj);
+  }
+
+  function _classCallCheck$5(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$5(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$5(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$5(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$5(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$3(self, call) {
+    if (call && (_typeof$6(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$3(self);
+  }
+
+  function _assertThisInitialized$3(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _get(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get = Reflect.get;
+    } else {
+      _get = function _get(target, property, receiver) {
+        var base = _superPropBase(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get(target, property, receiver || target);
+  }
+
+  function _superPropBase(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf$3(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _getPrototypeOf$3(o) {
+    _getPrototypeOf$3 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$3(o);
+  }
+
+  function _inherits$3(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$3(subClass, superClass);
+  }
+
+  function _setPrototypeOf$3(o, p) {
+    _setPrototypeOf$3 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$3(o, p);
+  }
   /**
       @class Area
       @extends Shape
@@ -13469,19 +13880,20 @@
   var Area =
   /*#__PURE__*/
   function (_Shape) {
-    _inherits(Area, _Shape);
-
+    _inherits$3(Area, _Shape);
     /**
         @memberof Area
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
         @private
     */
+
+
     function Area() {
       var _this;
 
-      _classCallCheck(this, Area);
+      _classCallCheck$5(this, Area);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Area).call(this));
+      _this = _possibleConstructorReturn$3(this, _getPrototypeOf$3(Area).call(this));
       _this._curve = "linear";
 
       _this._defined = function () {
@@ -13522,7 +13934,7 @@
     */
 
 
-    _createClass(Area, [{
+    _createClass$5(Area, [{
       key: "_aes",
       value: function _aes(d) {
         var _this2 = this;
@@ -13588,7 +14000,7 @@
     }, {
       key: "render",
       value: function render(callback) {
-        _get(_getPrototypeOf(Area.prototype), "render", this).call(this, callback);
+        _get(_getPrototypeOf$3(Area.prototype), "render", this).call(this, callback);
 
         var path = this._path = area().defined(this._defined).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
         var exitPath = area().defined(function (d) {
@@ -13726,6 +14138,118 @@
     return Area;
   }(Shape);
 
+  function _typeof$7(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$7 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$7 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$7(obj);
+  }
+
+  function _classCallCheck$6(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$6(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$6(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$6(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$6(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$4(self, call) {
+    if (call && (_typeof$7(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$4(self);
+  }
+
+  function _assertThisInitialized$4(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _get$1(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get$1 = Reflect.get;
+    } else {
+      _get$1 = function _get(target, property, receiver) {
+        var base = _superPropBase$1(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get$1(target, property, receiver || target);
+  }
+
+  function _superPropBase$1(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf$4(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _getPrototypeOf$4(o) {
+    _getPrototypeOf$4 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$4(o);
+  }
+
+  function _inherits$4(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$4(subClass, superClass);
+  }
+
+  function _setPrototypeOf$4(o, p) {
+    _setPrototypeOf$4 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$4(o, p);
+  }
   /**
       @class Bar
       @extends Shape
@@ -13735,19 +14259,20 @@
   var Bar =
   /*#__PURE__*/
   function (_Shape) {
-    _inherits(Bar, _Shape);
-
+    _inherits$4(Bar, _Shape);
     /**
         @memberof Bar
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
         @private
     */
+
+
     function Bar() {
       var _this;
 
-      _classCallCheck(this, Bar);
+      _classCallCheck$6(this, Bar);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Bar).call(this, "rect"));
+      _this = _possibleConstructorReturn$4(this, _getPrototypeOf$4(Bar).call(this, "rect"));
       _this._name = "Bar";
       _this._height = constant$3(10);
 
@@ -13777,12 +14302,12 @@
     */
 
 
-    _createClass(Bar, [{
+    _createClass$6(Bar, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
 
-        _get(_getPrototypeOf(Bar.prototype), "render", this).call(this, callback);
+        _get$1(_getPrototypeOf$4(Bar.prototype), "render", this).call(this, callback);
 
         this._enter.attr("width", function (d, i) {
           return _this2._x1 === null ? _this2._getWidth(d, i) : 0;
@@ -13993,6 +14518,118 @@
     return Bar;
   }(Shape);
 
+  function _typeof$8(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$8 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$8 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$8(obj);
+  }
+
+  function _classCallCheck$7(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$7(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$7(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$7(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$7(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$5(self, call) {
+    if (call && (_typeof$8(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$5(self);
+  }
+
+  function _assertThisInitialized$5(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _get$2(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get$2 = Reflect.get;
+    } else {
+      _get$2 = function _get(target, property, receiver) {
+        var base = _superPropBase$2(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get$2(target, property, receiver || target);
+  }
+
+  function _superPropBase$2(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf$5(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _getPrototypeOf$5(o) {
+    _getPrototypeOf$5 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$5(o);
+  }
+
+  function _inherits$5(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$5(subClass, superClass);
+  }
+
+  function _setPrototypeOf$5(o, p) {
+    _setPrototypeOf$5 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$5(o, p);
+  }
   /**
       @class Circle
       @extends Shape
@@ -14002,19 +14639,20 @@
   var Circle =
   /*#__PURE__*/
   function (_Shape) {
-    _inherits(Circle, _Shape);
-
+    _inherits$5(Circle, _Shape);
     /**
         @memberof Circle
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
         @private
     */
+
+
     function Circle() {
       var _this;
 
-      _classCallCheck(this, Circle);
+      _classCallCheck$7(this, Circle);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Circle).call(this, "circle"));
+      _this = _possibleConstructorReturn$5(this, _getPrototypeOf$5(Circle).call(this, "circle"));
 
       _this._labelBounds = function (d, i, s) {
         return {
@@ -14040,7 +14678,7 @@
     */
 
 
-    _createClass(Circle, [{
+    _createClass$7(Circle, [{
       key: "_applyPosition",
       value: function _applyPosition(elem) {
         var _this2 = this;
@@ -14063,7 +14701,7 @@
     }, {
       key: "render",
       value: function render(callback) {
-        _get(_getPrototypeOf(Circle.prototype), "render", this).call(this, callback);
+        _get$2(_getPrototypeOf$5(Circle.prototype), "render", this).call(this, callback);
 
         this._enter.attr("r", 0).attr("x", 0).attr("y", 0).call(this._applyStyle.bind(this)).transition(this._transition).call(this._applyPosition.bind(this));
 
@@ -14109,6 +14747,118 @@
     return Circle;
   }(Shape);
 
+  function _typeof$9(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$9 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$9 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$9(obj);
+  }
+
+  function _classCallCheck$8(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$8(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$8(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$8(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$8(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$6(self, call) {
+    if (call && (_typeof$9(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$6(self);
+  }
+
+  function _assertThisInitialized$6(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _get$3(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get$3 = Reflect.get;
+    } else {
+      _get$3 = function _get(target, property, receiver) {
+        var base = _superPropBase$3(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get$3(target, property, receiver || target);
+  }
+
+  function _superPropBase$3(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf$6(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _getPrototypeOf$6(o) {
+    _getPrototypeOf$6 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$6(o);
+  }
+
+  function _inherits$6(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$6(subClass, superClass);
+  }
+
+  function _setPrototypeOf$6(o, p) {
+    _setPrototypeOf$6 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$6(o, p);
+  }
   /**
       @class Rect
       @extends Shape
@@ -14118,19 +14868,20 @@
   var Rect =
   /*#__PURE__*/
   function (_Shape) {
-    _inherits(Rect, _Shape);
-
+    _inherits$6(Rect, _Shape);
     /**
         @memberof Rect
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
         @private
     */
+
+
     function Rect() {
       var _this;
 
-      _classCallCheck(this, Rect);
+      _classCallCheck$8(this, Rect);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Rect).call(this, "rect"));
+      _this = _possibleConstructorReturn$6(this, _getPrototypeOf$6(Rect).call(this, "rect"));
       _this._height = accessor("height");
 
       _this._labelBounds = function (d, i, s) {
@@ -14154,10 +14905,10 @@
     */
 
 
-    _createClass(Rect, [{
+    _createClass$8(Rect, [{
       key: "render",
       value: function render(callback) {
-        _get(_getPrototypeOf(Rect.prototype), "render", this).call(this, callback);
+        _get$3(_getPrototypeOf$6(Rect.prototype), "render", this).call(this, callback);
 
         this._enter.attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0).call(this._applyStyle.bind(this)).transition(this._transition).call(this._applyPosition.bind(this));
 
@@ -14242,6 +14993,118 @@
     return Rect;
   }(Shape);
 
+  function _typeof$a(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$a = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$a = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$a(obj);
+  }
+
+  function _classCallCheck$9(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$9(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$9(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$9(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$9(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$7(self, call) {
+    if (call && (_typeof$a(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$7(self);
+  }
+
+  function _assertThisInitialized$7(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _get$4(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get$4 = Reflect.get;
+    } else {
+      _get$4 = function _get(target, property, receiver) {
+        var base = _superPropBase$4(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get$4(target, property, receiver || target);
+  }
+
+  function _superPropBase$4(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf$7(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _getPrototypeOf$7(o) {
+    _getPrototypeOf$7 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$7(o);
+  }
+
+  function _inherits$7(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$7(subClass, superClass);
+  }
+
+  function _setPrototypeOf$7(o, p) {
+    _setPrototypeOf$7 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$7(o, p);
+  }
   /**
       @class Line
       @extends Shape
@@ -14251,19 +15114,20 @@
   var Line =
   /*#__PURE__*/
   function (_Shape) {
-    _inherits(Line, _Shape);
-
+    _inherits$7(Line, _Shape);
     /**
         @memberof Line
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
         @private
     */
+
+
     function Line() {
       var _this;
 
-      _classCallCheck(this, Line);
+      _classCallCheck$9(this, Line);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Line).call(this));
+      _this = _possibleConstructorReturn$7(this, _getPrototypeOf$7(Line).call(this));
       _this._curve = "linear";
 
       _this._defined = function (d) {
@@ -14293,7 +15157,7 @@
     */
 
 
-    _createClass(Line, [{
+    _createClass$9(Line, [{
       key: "_dataFilter",
       value: function _dataFilter(data) {
         var _this2 = this;
@@ -14333,7 +15197,7 @@
       value: function render(callback) {
         var _this3 = this;
 
-        _get(_getPrototypeOf(Line.prototype), "render", this).call(this, callback);
+        _get$4(_getPrototypeOf$7(Line.prototype), "render", this).call(this, callback);
 
         var that = this;
 
@@ -14401,6 +15265,88 @@
     return Line;
   }(Shape);
 
+  function _typeof$b(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$b = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$b = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$b(obj);
+  }
+
+  function _classCallCheck$a(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$a(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$a(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$a(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$a(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$8(self, call) {
+    if (call && (_typeof$b(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$8(self);
+  }
+
+  function _assertThisInitialized$8(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _getPrototypeOf$8(o) {
+    _getPrototypeOf$8 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$8(o);
+  }
+
+  function _inherits$8(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$8(subClass, superClass);
+  }
+
+  function _setPrototypeOf$8(o, p) {
+    _setPrototypeOf$8 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$8(o, p);
+  }
   var shapes = {
     Circle: Circle,
     Rect: Rect
@@ -14414,19 +15360,20 @@
   var Whisker =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits(Whisker, _BaseClass);
-
+    _inherits$8(Whisker, _BaseClass);
     /**
         @memberof Whisker
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from BaseClass.
         @private
     */
+
+
     function Whisker() {
       var _this;
 
-      _classCallCheck(this, Whisker);
+      _classCallCheck$a(this, Whisker);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Whisker).call(this));
+      _this = _possibleConstructorReturn$8(this, _getPrototypeOf$8(Whisker).call(this));
       _this._endpoint = accessor("endpoint", "Rect");
       _this._endpointConfig = {
         Circle: {
@@ -14448,7 +15395,7 @@
     */
 
 
-    _createClass(Whisker, [{
+    _createClass$a(Whisker, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
@@ -14685,6 +15632,88 @@
     return Whisker;
   }(BaseClass);
 
+  function _typeof$c(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$c = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$c = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$c(obj);
+  }
+
+  function _classCallCheck$b(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$b(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$b(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$b(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$b(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$9(self, call) {
+    if (call && (_typeof$c(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$9(self);
+  }
+
+  function _assertThisInitialized$9(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _getPrototypeOf$9(o) {
+    _getPrototypeOf$9 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$9(o);
+  }
+
+  function _inherits$9(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$9(subClass, superClass);
+  }
+
+  function _setPrototypeOf$9(o, p) {
+    _setPrototypeOf$9 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$9(o, p);
+  }
   var shapes$1 = {
     Circle: Circle,
     Rect: Rect
@@ -14698,19 +15727,20 @@
   var Box =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits(Box, _BaseClass);
-
+    _inherits$9(Box, _BaseClass);
     /**
         @memberof Box
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from BaseClass.
         @private
     */
+
+
     function Box() {
       var _this;
 
-      _classCallCheck(this, Box);
+      _classCallCheck$b(this, Box);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Box).call(this));
+      _this = _possibleConstructorReturn$9(this, _getPrototypeOf$9(Box).call(this));
       _this._medianConfig = {
         fill: constant$3("black")
       };
@@ -14749,7 +15779,7 @@
     */
 
 
-    _createClass(Box, [{
+    _createClass$b(Box, [{
       key: "render",
       value: function render() {
         var _this2 = this;
@@ -15195,6 +16225,118 @@
     return poly;
   });
 
+  function _typeof$d(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$d = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$d = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$d(obj);
+  }
+
+  function _classCallCheck$c(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$c(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$c(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$c(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$c(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$a(self, call) {
+    if (call && (_typeof$d(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$a(self);
+  }
+
+  function _assertThisInitialized$a(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _get$5(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get$5 = Reflect.get;
+    } else {
+      _get$5 = function _get(target, property, receiver) {
+        var base = _superPropBase$5(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get$5(target, property, receiver || target);
+  }
+
+  function _superPropBase$5(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf$a(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _getPrototypeOf$a(o) {
+    _getPrototypeOf$a = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$a(o);
+  }
+
+  function _inherits$a(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$a(subClass, superClass);
+  }
+
+  function _setPrototypeOf$a(o, p) {
+    _setPrototypeOf$a = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$a(o, p);
+  }
   /**
       @class Path
       @extends Shape
@@ -15204,19 +16346,20 @@
   var Path$1 =
   /*#__PURE__*/
   function (_Shape) {
-    _inherits(Path, _Shape);
-
+    _inherits$a(Path, _Shape);
     /**
         @memberof Path
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Shape.
         @private
     */
+
+
     function Path() {
       var _this;
 
-      _classCallCheck(this, Path);
+      _classCallCheck$c(this, Path);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Path).call(this, "path"));
+      _this = _possibleConstructorReturn$a(this, _getPrototypeOf$a(Path).call(this, "path"));
       _this._d = accessor("path");
 
       _this._labelBounds = function (d, i, aes) {
@@ -15248,7 +16391,7 @@
     */
 
 
-    _createClass(Path, [{
+    _createClass$c(Path, [{
       key: "_aes",
       value: function _aes(d, i) {
         return {
@@ -15265,7 +16408,7 @@
     }, {
       key: "render",
       value: function render(callback) {
-        _get(_getPrototypeOf(Path.prototype), "render", this).call(this, callback);
+        _get$5(_getPrototypeOf$a(Path.prototype), "render", this).call(this, callback);
 
         this._enter.attr("opacity", 0).attr("d", this._d).call(this._applyStyle.bind(this)).transition(this._transition).attr("opacity", 1);
 
