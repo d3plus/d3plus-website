@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.16.9
+  d3plus-shape v0.16.10
   Fancy SVG shapes for visualizations
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -76,16 +76,17 @@
 
   function _objectSpread2(target) {
     for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i] != null ? arguments[i] : {};
+
       if (i % 2) {
-        var source = arguments[i] != null ? arguments[i] : {};
         ownKeys(source, true).forEach(function (key) {
           _defineProperty(target, key, source[key]);
         });
       } else if (Object.getOwnPropertyDescriptors) {
-        Object.defineProperties(target, Object.getOwnPropertyDescriptors(arguments[i]));
+        Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
       } else {
         ownKeys(source).forEach(function (key) {
-          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(arguments[i], key));
+          Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
         });
       }
     }
@@ -2932,13 +2933,28 @@
     };
   }
 
+  function _typeof$1(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$1 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$1 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$1(obj);
+  }
   /**
       @function isObject
       @desc Detects if a variable is a javascript Object.
       @param {*} item
   */
+
+
   function isObject (item) {
-    return item && _typeof(item) === "object" && (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) && !Array.isArray(item) ? true : false;
+    return item && _typeof$1(item) === "object" && (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) && !Array.isArray(item) ? true : false;
   }
 
   /**
@@ -3022,6 +3038,27 @@
   */
   var RESET = "D3PLUS-COMMON-RESET";
 
+  function _classCallCheck$1(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$1(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$1(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$1(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$1(Constructor, staticProps);
+    return Constructor;
+  }
   /**
       @desc Recursive function that resets nested Object configs.
       @param {Object} obj
@@ -3059,7 +3096,7 @@
         @private
     */
     function BaseClass() {
-      _classCallCheck(this, BaseClass);
+      _classCallCheck$1(this, BaseClass);
 
       this._locale = "en-US";
       this._on = {};
@@ -3073,7 +3110,7 @@
     */
 
 
-    _createClass(BaseClass, [{
+    _createClass$1(BaseClass, [{
       key: "config",
       value: function config(_) {
         if (!this._configDefault) {
@@ -3164,6 +3201,19 @@
     return BaseClass;
   }();
 
+  function _typeof$2(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$2 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$2 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$2(obj);
+  }
   /**
       @function configPrep
       @desc Preps a config object for d3plus data, and optionally bubbles up a specific nested type. When using this function, you must bind a d3plus class' `this` context.
@@ -3171,6 +3221,8 @@
       @param {String} [type = "shape"] The event classifier to user for "on" events. For example, the default event type of "shape" will apply all events in the "on" config object with that key, like "click.shape" and "mouseleave.shape", in addition to any gloval events like "click" and "mouseleave".
       @param {String} [nest] An optional nested key to bubble up to the parent config level.
   */
+
+
   function configPrep() {
     var _this = this;
 
@@ -3207,7 +3259,7 @@
 
     var arrayEval = function arrayEval(arr) {
       return arr.map(function (d) {
-        if (d instanceof Array) return arrayEval(d);else if (_typeof(d) === "object") return keyEval({}, d);else if (typeof d === "function") return wrapFunction(d);else return d;
+        if (d instanceof Array) return arrayEval(d);else if (_typeof$2(d) === "object") return keyEval({}, d);else if (typeof d === "function") return wrapFunction(d);else return d;
       });
     };
 
@@ -3218,7 +3270,7 @@
             newObj[key] = wrapFunction(obj[key]);
           } else if (obj[key] instanceof Array) {
             newObj[key] = arrayEval(obj[key]);
-          } else if (_typeof(obj[key]) === "object") {
+          } else if (_typeof$2(obj[key]) === "object") {
             newObj[key] = {
               on: {}
             };
@@ -8144,6 +8196,88 @@
     return textWrap;
   }
 
+  function _typeof$3(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$3 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$3 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$3(obj);
+  }
+
+  function _classCallCheck$2(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$2(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$2(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$2(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$2(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$1(self, call) {
+    if (call && (_typeof$3(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$1(self);
+  }
+
+  function _assertThisInitialized$1(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _getPrototypeOf$1(o) {
+    _getPrototypeOf$1 = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$1(o);
+  }
+
+  function _inherits$1(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$1(subClass, superClass);
+  }
+
+  function _setPrototypeOf$1(o, p) {
+    _setPrototypeOf$1 = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$1(o, p);
+  }
   var tagLookup = {
     i: "font-style: italic;",
     em: "font-style: italic;",
@@ -8159,19 +8293,20 @@
   var TextBox =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits(TextBox, _BaseClass);
-
+    _inherits$1(TextBox, _BaseClass);
     /**
         @memberof TextBox
         @desc Invoked when creating a new class instance, and sets any default parameters.
         @private
     */
+
+
     function TextBox() {
       var _this;
 
-      _classCallCheck(this, TextBox);
+      _classCallCheck$2(this, TextBox);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(TextBox).call(this));
+      _this = _possibleConstructorReturn$1(this, _getPrototypeOf$1(TextBox).call(this));
       _this._ariaHidden = constant$2("false");
       _this._delay = 0;
       _this._duration = 0;
@@ -8226,7 +8361,7 @@
     */
 
 
-    _createClass(TextBox, [{
+    _createClass$2(TextBox, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
