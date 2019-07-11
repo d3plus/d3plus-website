@@ -1,5 +1,5 @@
 /*
-  d3plus-form v0.2.7
+  d3plus-form v0.2.8
   Javascript rendered input forms.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -985,13 +985,28 @@
     };
   }
 
+  function _typeof$1(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$1 = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$1 = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$1(obj);
+  }
   /**
       @function isObject
       @desc Detects if a variable is a javascript Object.
       @param {*} item
   */
+
+
   function isObject (item) {
-    return item && _typeof(item) === "object" && (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) && !Array.isArray(item) ? true : false;
+    return item && _typeof$1(item) === "object" && (typeof window === "undefined" || item !== window && item !== window.document && !(item instanceof Element)) && !Array.isArray(item) ? true : false;
   }
 
   /**
@@ -1061,6 +1076,27 @@
   */
   var RESET = "D3PLUS-COMMON-RESET";
 
+  function _classCallCheck$1(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$1(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$1(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$1(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$1(Constructor, staticProps);
+    return Constructor;
+  }
   /**
       @desc Recursive function that resets nested Object configs.
       @param {Object} obj
@@ -1098,7 +1134,7 @@
         @private
     */
     function BaseClass() {
-      _classCallCheck(this, BaseClass);
+      _classCallCheck$1(this, BaseClass);
 
       this._locale = "en-US";
       this._on = {};
@@ -1112,7 +1148,7 @@
     */
 
 
-    _createClass(BaseClass, [{
+    _createClass$1(BaseClass, [{
       key: "config",
       value: function config(_) {
         if (!this._configDefault) {

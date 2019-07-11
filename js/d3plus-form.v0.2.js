@@ -1,5 +1,5 @@
 /*
-  d3plus-form v0.2.7
+  d3plus-form v0.2.8
   Javascript rendered input forms.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
