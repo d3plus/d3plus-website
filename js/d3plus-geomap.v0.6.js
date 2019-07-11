@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.6.4
+  d3plus-geomap v0.6.5
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -461,9 +461,9 @@
       key: "fitFilter",
       value: function fitFilter(_) {
         if (arguments.length) {
+          this._zoomSet = false;
           if (typeof _ === "function") return this._fitFilter = _, this;
           if (!(_ instanceof Array)) _ = [_];
-          this._zoomSet = false;
           return this._fitFilter = function (d) {
             return _.includes(d.id);
           }, this;
@@ -672,9 +672,9 @@
       key: "topojsonFilter",
       value: function topojsonFilter(_) {
         if (arguments.length) {
+          this._zoomSet = false;
           if (typeof _ === "function") return this._topojsonFilter = _, this;
           if (!(_ instanceof Array)) _ = [_];
-          this._zoomSet = false;
           return this._topojsonFilter = function (d) {
             return _.includes(d.id);
           }, this;
