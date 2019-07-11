@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.12
+  d3plus-format v0.1.13
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
