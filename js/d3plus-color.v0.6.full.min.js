@@ -1,5 +1,5 @@
 /*
-  d3plus-color v0.6.5
+  d3plus-color v0.6.6
   Color functions that extent the ability of d3-color.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
