@@ -5,7 +5,7 @@ kind: function
 
   <a name="merge"></a>
 
-### d3plus.**merge**(objects, aggs) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/merge.js#L4)
+### d3plus.**merge**(objects, aggs) [<>](https://github.com/d3plus/d3plus-common/blob/master/src/merge.js#L5)
 
 Combines an Array of Objects together and returns a new Object.
 
