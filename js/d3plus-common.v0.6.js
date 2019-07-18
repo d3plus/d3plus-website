@@ -471,7 +471,7 @@
   {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
   */
 
-  function merge (objects) {
+  function objectMerge(objects) {
     var aggs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     var availableKeys = unique(d3Array.merge(objects.map(function (o) {
       return d3Collection.keys(o);
@@ -559,7 +559,7 @@
   exports.constant = constant;
   exports.elem = elem;
   exports.isObject = isObject;
-  exports.merge = merge;
+  exports.merge = objectMerge;
   exports.parseSides = parseSides;
   exports.prefix = prefix;
   exports.stylize = stylize;

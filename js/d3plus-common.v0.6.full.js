@@ -3364,7 +3364,7 @@
   {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
   */
 
-  function merge$1 (objects) {
+  function objectMerge(objects) {
     var aggs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
     var availableKeys = unique(merge(objects.map(function (o) {
       return keys(o);
@@ -3452,7 +3452,7 @@
   exports.constant = constant;
   exports.elem = elem;
   exports.isObject = isObject;
-  exports.merge = merge$1;
+  exports.merge = objectMerge;
   exports.parseSides = parseSides;
   exports.prefix = prefix$1;
   exports.stylize = stylize;
