@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.8.7
+  d3plus-hierarchy v0.8.8
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -65,12 +65,13 @@
     var keys = Object.keys(object);
 
     if (Object.getOwnPropertySymbols) {
-      keys.push.apply(keys, Object.getOwnPropertySymbols(object));
+      var symbols = Object.getOwnPropertySymbols(object);
+      if (enumerableOnly) symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      });
+      keys.push.apply(keys, symbols);
     }
 
-    if (enumerableOnly) keys = keys.filter(function (sym) {
-      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-    });
     return keys;
   }
 
@@ -6300,6 +6301,21 @@
   }
 
   /**
+      @function unique
+      @desc ES5 implementation to reduce an Array of values to unique instances.
+      @param {Array} objects The Array of objects to be filtered.
+      @example <caption>this</caption>
+  unique(["apple", "banana", "apple"]);
+      @example <caption>returns this</caption>
+  ["apple", "banana"]
+  */
+  function unique (arr) {
+    return arr.filter(function (k, i, a) {
+      return a.indexOf(k) === i;
+    });
+  }
+
+  /**
       @function merge
       @desc Combines an Array of Objects together and returns a new Object.
       @param {Array} objects The Array of objects to be merged together.
@@ -6315,7 +6331,7 @@
 
   function objectMerge(objects) {
     var aggs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var availableKeys = new Set(arrayMerge(objects.map(function (o) {
+    var availableKeys = unique(arrayMerge(objects.map(function (o) {
       return keys(o);
     }))),
         newObject = {};
@@ -6334,17 +6350,17 @@
           value = arrayMerge(values.map(function (v) {
             return v instanceof Array ? v : [v];
           }));
-          value = Array.from(new Set(value));
+          value = unique(value);
           if (value.length === 1) value = value[0];
         } else if (types.indexOf(String) >= 0) {
-          value = Array.from(new Set(values));
+          value = unique(values);
           if (value.length === 1) value = value[0];
         } else if (types.indexOf(Number) >= 0) value = sum(values);else if (types.indexOf(Object) >= 0) value = objectMerge(values.filter(function (v) {
           return v;
         }));else {
-          value = Array.from(new Set(values.filter(function (v) {
+          value = unique(values.filter(function (v) {
             return v !== void 0;
-          })));
+          }));
           if (value.length === 1) value = value[0];
         }
       }
@@ -38027,7 +38043,7 @@
 
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var timelinePossible = this._time && this._timeline;
-    var ticks = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$2) : [];
+    var ticks = timelinePossible ? unique(this._data.map(this._time)).map(date$2) : [];
     timelinePossible = timelinePossible && ticks.length > 1;
     var padding = this._timelinePadding() ? this._padding : {
       top: 0,
@@ -39797,7 +39813,7 @@
           if (typeof k === "function") return k;else {
             if (!_this4._aggs[k]) {
               _this4._aggs[k] = function (a) {
-                var v = Array.from(new Set(a));
+                var v = unique(a);
                 return v.length === 1 ? v[0] : v;
               };
             }
@@ -40196,7 +40212,7 @@
 
             if (!this._aggs[_]) {
               this._aggs[_] = function (a) {
-                var v = Array.from(new Set(a));
+                var v = unique(a);
                 return v.length === 1 ? v[0] : v;
               };
             }
@@ -42288,6 +42304,9 @@
         return _this._sum(b) - _this._sum(a);
       };
 
+      _this._legendTooltip = assign({}, _this._legendTooltip, {
+        tbody: []
+      });
       _this._shapeConfig = assign({}, _this._shapeConfig, {
         ariaLabel: function ariaLabel(d, i) {
           var rank = _this._rankData ? "".concat(_this._rankData.indexOf(d) + 1, ". ") : "";
@@ -43428,6 +43447,15 @@
 	    } catch (f) { /* empty */ }
 	  } return false;
 	};
+
+	// `String.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
+	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
+	  includes: function includes(searchString /* , position = 0 */) {
+	    return !!~String(requireObjectCoercible(this))
+	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
 
 	var nativeStartsWith = ''.startsWith;
 	var min$2 = Math.min;

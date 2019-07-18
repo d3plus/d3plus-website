@@ -1,5 +1,5 @@
 /*
-  d3plus-hierarchy v0.8.7
+  d3plus-hierarchy v0.8.8
   Nested, hierarchical, and cluster charts built on D3
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -850,6 +850,9 @@
         return _this._sum(b) - _this._sum(a);
       };
 
+      _this._legendTooltip = d3plusCommon.assign({}, _this._legendTooltip, {
+        tbody: []
+      });
       _this._shapeConfig = d3plusCommon.assign({}, _this._shapeConfig, {
         ariaLabel: function ariaLabel(d, i) {
           var rank = _this._rankData ? "".concat(_this._rankData.indexOf(d) + 1, ". ") : "";
@@ -1990,6 +1993,15 @@
 	    } catch (f) { /* empty */ }
 	  } return false;
 	};
+
+	// `String.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
+	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
+	  includes: function includes(searchString /* , position = 0 */) {
+	    return !!~String(requireObjectCoercible(this))
+	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
 
 	var nativeStartsWith = ''.startsWith;
 	var min$2 = Math.min;
