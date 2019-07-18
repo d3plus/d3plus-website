@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.51
+  d3plus-common v0.6.52
   Common functions and methods used across D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -443,6 +443,21 @@
   }
 
   /**
+      @function unique
+      @desc ES5 implementation to reduce an Array of values to unique instances.
+      @param {Array} objects The Array of objects to be filtered.
+      @example <caption>this</caption>
+  unique(["apple", "banana", "apple"]);
+      @example <caption>returns this</caption>
+  ["apple", "banana"]
+  */
+  function unique (arr) {
+    return arr.filter(function (k, i, a) {
+      return a.indexOf(k) === i;
+    });
+  }
+
+  /**
       @function merge
       @desc Combines an Array of Objects together and returns a new Object.
       @param {Array} objects The Array of objects to be merged together.
@@ -456,9 +471,9 @@
   {id: ["bar", "foo"], group: "A", value: 30, links: [1, 2, 3]}
   */
 
-  function objectMerge(objects) {
+  function merge (objects) {
     var aggs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var availableKeys = new Set(d3Array.merge(objects.map(function (o) {
+    var availableKeys = unique(d3Array.merge(objects.map(function (o) {
       return d3Collection.keys(o);
     }))),
         newObject = {};
@@ -477,17 +492,17 @@
           value = d3Array.merge(values.map(function (v) {
             return v instanceof Array ? v : [v];
           }));
-          value = Array.from(new Set(value));
+          value = unique(value);
           if (value.length === 1) value = value[0];
         } else if (types.indexOf(String) >= 0) {
-          value = Array.from(new Set(values));
+          value = unique(values);
           if (value.length === 1) value = value[0];
         } else if (types.indexOf(Number) >= 0) value = d3Array.sum(values);else if (types.indexOf(Object) >= 0) value = objectMerge(values.filter(function (v) {
           return v;
         }));else {
-          value = Array.from(new Set(values.filter(function (v) {
+          value = unique(values.filter(function (v) {
             return v !== void 0;
-          })));
+          }));
           if (value.length === 1) value = value[0];
         }
       }
@@ -544,10 +559,11 @@
   exports.constant = constant;
   exports.elem = elem;
   exports.isObject = isObject;
-  exports.merge = objectMerge;
+  exports.merge = merge;
   exports.parseSides = parseSides;
   exports.prefix = prefix;
   exports.stylize = stylize;
+  exports.unique = unique;
   exports.uuid = uuid;
 
   Object.defineProperty(exports, '__esModule', { value: true });
