@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.14
+  d3plus-plot v0.8.15
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -497,6 +497,10 @@
 
       _this = _possibleConstructorReturn(this, _getPrototypeOf(Plot).call(this));
       _this._annotations = [];
+      _this._backgroundConfig = {
+        duration: 0,
+        fill: "transparent"
+      };
       _this._barPadding = 0;
       _this._buffer = {
         Bar: BarBuffer,
@@ -508,6 +512,7 @@
       _this._confidenceConfig = {
         fillOpacity: d3plusCommon.constant(0.5)
       };
+      _this._discreteCutoff = 100;
       _this._groupPadding = 5;
       _this._shape = d3plusCommon.constant("Circle");
       _this._shapeConfig = d3plusCommon.assign(_this._shapeConfig, {
@@ -575,21 +580,19 @@
         brushing: true
       });
       _this._x = d3plusCommon.accessor("x");
-      _this._x2 = d3plusCommon.accessor("x2");
       _this._xAxis = new d3plusAxis.AxisBottom().align("end");
-      _this._x2Axis = new d3plusAxis.AxisTop().align("start");
       _this._xTest = new d3plusAxis.AxisBottom().align("end").gridSize(0);
-      _this._x2Test = new d3plusAxis.AxisTop().align("start").gridSize(0);
       _this._xConfig = {};
+      _this._xCutoff = 150;
+      _this._x2 = d3plusCommon.accessor("x2");
+      _this._x2Axis = new d3plusAxis.AxisTop().align("start");
+      _this._x2Test = new d3plusAxis.AxisTop().align("start").gridSize(0);
       _this._x2Config = {
         padding: 0
       };
       _this._y = d3plusCommon.accessor("y");
-      _this._y2 = d3plusCommon.accessor("y2");
       _this._yAxis = new d3plusAxis.AxisLeft().align("start");
       _this._yTest = new d3plusAxis.AxisLeft().align("start").gridSize(0);
-      _this._y2Axis = new d3plusAxis.AxisRight().align("end");
-      _this._y2Test = new d3plusAxis.AxisLeft().align("end").gridSize(0);
       _this._yConfig = {
         gridConfig: {
           stroke: function stroke(d) {
@@ -599,6 +602,10 @@
           }
         }
       };
+      _this._yCutoff = 150;
+      _this._y2 = d3plusCommon.accessor("y2");
+      _this._y2Axis = new d3plusAxis.AxisRight().align("end");
+      _this._y2Test = new d3plusAxis.AxisLeft().align("end").gridSize(0);
       _this._y2Config = {};
       return _this;
     }
@@ -994,21 +1001,6 @@
         x2Domain = x2.domain();
         yDomain = _y2.domain();
         y2Domain = y2.domain();
-        var testGroup = d3plusCommon.elem("g.d3plus-plot-test", {
-          enter: {
-            opacity: 0
-          },
-          parent: this._select
-        }),
-            x2Ticks = this._discrete === "x" && !x2Time ? domains.x2 : undefined,
-            xTicks = this._discrete === "x" && !xTime ? domains.x : undefined,
-            y2Ticks = this._discrete === "y" && !y2Time ? domains.y2 : undefined,
-            yTicks = this._discrete === "y" && !yTime ? domains.y : undefined;
-        var yC = {
-          gridConfig: {
-            stroke: !this._discrete || this._discrete === "x" ? this._yTest.gridConfig().stroke : "transparent"
-          }
-        };
         var defaultConfig = {
           barConfig: {
             "stroke-width": 0
@@ -1020,8 +1012,59 @@
         };
         var defaultX2Config = x2Exists ? {} : defaultConfig;
         var defaultY2Config = y2Exists ? {} : defaultConfig;
+        var showX = this._discrete === "x" && this._width > this._discreteCutoff || this._width > this._xCutoff;
+        var showY = this._discrete === "y" && this._height > this._discreteCutoff || this._height > this._yCutoff;
+        var yC = {
+          gridConfig: {
+            stroke: !this._discrete || this._discrete === "x" ? this._yTest.gridConfig().stroke : "transparent"
+          },
+          locale: this._locale
+        };
 
-        this._yTest.domain(yDomain).height(height).maxSize(width / 2).range([undefined, undefined]).scale(yScale.toLowerCase()).select(testGroup.node()).ticks(yTicks).width(width).config(yC).config(this._yConfig).render();
+        if (!showX) {
+          yC.barConfig = {
+            stroke: "transparent"
+          };
+          yC.tickSize = 0;
+          yC.shapeConfig = {
+            labelBounds: function labelBounds(d, i) {
+              var _d$labelBounds = d.labelBounds,
+                  width = _d$labelBounds.width,
+                  y = _d$labelBounds.y;
+              var height = _this2._height / 2;
+              var x = i ? -height : 0;
+              return {
+                x: x,
+                y: y,
+                width: width,
+                height: height
+              };
+            },
+            labelConfig: {
+              padding: 0,
+              rotate: 0,
+              verticalAlign: function verticalAlign(d) {
+                return d.id === yTicks[0] ? "top" : "bottom";
+              }
+            },
+            labelRotation: false
+          };
+        }
+
+        var testGroup = d3plusCommon.elem("g.d3plus-plot-test", {
+          enter: {
+            opacity: 0
+          },
+          parent: this._select
+        }),
+            x2Ticks = this._discrete === "x" && !x2Time ? domains.x2 : undefined,
+            xTicks = !showY ? d3Array.extent(domains.x) : this._discrete === "x" && !xTime ? domains.x : undefined,
+            y2Ticks = this._discrete === "y" && !y2Time ? domains.y2 : undefined,
+            yTicks = !showX ? d3Array.extent(domains.y) : this._discrete === "y" && !yTime ? domains.y : undefined;
+
+        if (showY) {
+          this._yTest.domain(yDomain).height(height).maxSize(width / 2).range([undefined, undefined]).scale(yScale.toLowerCase()).select(testGroup.node()).ticks(yTicks).width(width).config(yC).config(this._yConfig).render();
+        }
 
         var yBounds = this._yTest.outerBounds();
 
@@ -1037,10 +1080,43 @@
         var xC = {
           gridConfig: {
             stroke: !this._discrete || this._discrete === "y" ? this._xTest.gridConfig().stroke : "transparent"
-          }
+          },
+          locale: this._locale
         };
 
-        this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, undefined]).scale(xScale.toLowerCase()).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).render();
+        if (!showY) {
+          xC.barConfig = {
+            stroke: "transparent"
+          };
+          xC.tickSize = 0;
+          xC.shapeConfig = {
+            labelBounds: function labelBounds(d, i) {
+              var _d$labelBounds2 = d.labelBounds,
+                  height = _d$labelBounds2.height,
+                  y = _d$labelBounds2.y;
+              var width = _this2._width / 2;
+              var x = i ? -width : 0;
+              return {
+                x: x,
+                y: y,
+                width: width,
+                height: height
+              };
+            },
+            labelConfig: {
+              padding: 0,
+              rotate: 0,
+              textAnchor: function textAnchor(d) {
+                return d.id === xTicks[0] ? "start" : "end";
+              }
+            },
+            labelRotation: false
+          };
+        }
+
+        if (showX) {
+          this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, undefined]).scale(xScale.toLowerCase()).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).render();
+        }
 
         if (x2Exists) {
           this._x2Test.domain(x2Domain).height(height).range([undefined, undefined]).scale(x2Scale.toLowerCase()).select(testGroup.node()).ticks(x2Ticks).width(width).config(xC).tickSize(0).config(defaultX2Config).config(this._x2Config).render();
@@ -1052,19 +1128,19 @@
 
         var x2Bounds = this._x2Test.outerBounds();
 
-        var x2Height = x2Bounds.height + this._x2Test.padding();
-
+        var x2Height = x2Exists ? x2Bounds.height + this._x2Test.padding() : 0;
         var xOffsetLeft = d3Array.max([yWidth, xTestRange[0], x2TestRange[0]]);
 
-        this._xTest.range([xOffsetLeft, undefined]).render();
+        if (showX) {
+          this._xTest.range([xOffsetLeft, undefined]).render();
+        }
 
-        var topOffset = this._yTest.shapeConfig().labelConfig.fontSize() / 2;
+        var topOffset = showY ? this._yTest.shapeConfig().labelConfig.fontSize() / 2 : 0;
         var xOffsetRight = d3Array.max([y2Width, width - xTestRange[1], width - x2TestRange[1]]);
 
         var xBounds = this._xTest.outerBounds();
 
-        var xHeight = xBounds.height + this._xTest.padding();
-
+        var xHeight = xBounds.height + (showY ? this._xTest.padding() : 0);
         this._padding.left += xOffsetLeft;
         this._padding.right += xOffsetRight;
         this._padding.bottom += xHeight;
@@ -1074,23 +1150,31 @@
 
         var horizontalMargin = this._margin.left + this._margin.right;
         var verticalMargin = this._margin.top + this._margin.bottom;
+        var yRange = [x2Height, height - (xHeight + topOffset + verticalMargin)];
 
-        this._yTest.domain(yDomain).height(height).maxSize(width / 2).range([x2Height, height - (xHeight + topOffset + verticalMargin)]).scale(yScale.toLowerCase()).select(testGroup.node()).ticks(yTicks).width(width).config(yC).config(this._yConfig).render();
+        if (showY) {
+          this._yTest.domain(yDomain).height(height).maxSize(width / 2).range(yRange).scale(yScale.toLowerCase()).select(testGroup.node()).ticks(yTicks).width(width).config(yC).config(this._yConfig).render();
+        }
 
         yBounds = this._yTest.outerBounds();
         yWidth = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
         xOffsetLeft = d3Array.max([yWidth, xTestRange[0], x2TestRange[0]]);
 
         if (y2Exists) {
-          this._y2Test.config(yC).domain(y2Domain).gridSize(0).height(height).range([x2Height, height - (xHeight + topOffset + verticalMargin)]).scale(y2Scale.toLowerCase()).select(testGroup.node()).width(width - d3Array.max([0, xOffsetRight - y2Width])).title(false).config(this._y2Config).config(defaultY2Config).render();
+          this._y2Test.config(yC).domain(y2Domain).gridSize(0).height(height).range(yRange).scale(y2Scale.toLowerCase()).select(testGroup.node()).width(width - d3Array.max([0, xOffsetRight - y2Width])).title(false).config(this._y2Config).config(defaultY2Config).render();
         }
 
         y2Bounds = this._y2Test.outerBounds();
         y2Width = y2Bounds.width ? y2Bounds.width + this._y2Test.padding() : undefined;
-        xOffsetRight = d3Array.max([y2Width, width - xTestRange[1], width - x2TestRange[1]]);
+        xOffsetRight = d3Array.max([0, y2Width, width - xTestRange[1], width - x2TestRange[1]]);
+        var xRange = [xOffsetLeft, width - (xOffsetRight + horizontalMargin)];
+        var rectGroup = d3plusCommon.elem("g.d3plus-plot-background", {
+          parent: parent,
+          transition: transition
+        });
         var transform = "translate(".concat(this._margin.left, ", ").concat(this._margin.top + x2Height + topOffset, ")");
         var x2Transform = "translate(".concat(this._margin.left, ", ").concat(this._margin.top + topOffset, ")");
-        var xGroup = d3plusCommon.elem("g.d3plus-plot-x-axis", {
+        var xGroup = showX && d3plusCommon.elem("g.d3plus-plot-x-axis", {
           parent: parent,
           transition: transition,
           enter: {
@@ -1100,7 +1184,7 @@
             transform: transform
           }
         });
-        var x2Group = d3plusCommon.elem("g.d3plus-plot-x2-axis", {
+        var x2Group = x2Exists && d3plusCommon.elem("g.d3plus-plot-x2-axis", {
           parent: parent,
           transition: transition,
           enter: {
@@ -1112,7 +1196,7 @@
         });
         var xTrans = xOffsetLeft > yWidth ? xOffsetLeft - yWidth : 0;
         var yTransform = "translate(".concat(this._margin.left + xTrans, ", ").concat(this._margin.top + topOffset, ")");
-        var yGroup = d3plusCommon.elem("g.d3plus-plot-y-axis", {
+        var yGroup = showY && d3plusCommon.elem("g.d3plus-plot-y-axis", {
           parent: parent,
           transition: transition,
           enter: {
@@ -1123,7 +1207,7 @@
           }
         });
         var y2Transform = "translate(-".concat(this._margin.right, ", ").concat(this._margin.top + topOffset, ")");
-        var y2Group = d3plusCommon.elem("g.d3plus-plot-y2-axis", {
+        var y2Group = y2Exists && d3plusCommon.elem("g.d3plus-plot-y2-axis", {
           parent: parent,
           transition: transition,
           enter: {
@@ -1134,10 +1218,10 @@
           }
         });
 
-        this._xAxis.domain(xDomain).height(height - (x2Height + topOffset + verticalMargin)).maxSize(height / 2).range([xOffsetLeft, width - (xOffsetRight + horizontalMargin)]).scale(xScale.toLowerCase()).select(xGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).render();
+        this._xAxis.domain(xDomain).height(height - (x2Height + topOffset + verticalMargin)).maxSize(height / 2).range(xRange).scale(xScale.toLowerCase()).select(showX ? xGroup.node() : undefined).ticks(xTicks).width(width).config(xC).config(this._xConfig).render();
 
         if (x2Exists) {
-          this._x2Axis.domain(x2Domain).height(height - (xHeight + topOffset + verticalMargin)).range([xOffsetLeft, width - (xOffsetRight + horizontalMargin)]).scale(x2Scale.toLowerCase()).select(x2Group.node()).ticks(x2Ticks).width(width).config(xC).config(defaultX2Config).config(this._x2Config).render();
+          this._x2Axis.domain(x2Domain).height(height - (xHeight + topOffset + verticalMargin)).range(xRange).scale(x2Scale.toLowerCase()).select(x2Group.node()).ticks(x2Ticks).width(width).config(xC).config(defaultX2Config).config(this._x2Config).render();
         }
 
         _x2 = function x(d, _x) {
@@ -1150,12 +1234,12 @@
           }
         };
 
-        var xRange = this._xAxis._getRange();
+        yRange = [this._xAxis.outerBounds().y + x2Height, height - (xHeight + topOffset + verticalMargin)];
 
-        this._yAxis.domain(yDomain).height(height).maxSize(width / 2).range([this._xAxis.outerBounds().y + x2Height, height - (xHeight + topOffset + verticalMargin)]).scale(yScale.toLowerCase()).select(yGroup.node()).ticks(yTicks).width(xRange[xRange.length - 1]).config(yC).config(this._yConfig).render();
+        this._yAxis.domain(yDomain).height(height).maxSize(width / 2).range(yRange).scale(yScale.toLowerCase()).select(showY ? yGroup.node() : undefined).ticks(yTicks).width(xRange[xRange.length - 1]).config(yC).config(this._yConfig).render();
 
         if (y2Exists) {
-          this._y2Axis.config(yC).domain(y2Exists ? y2Domain : yDomain).gridSize(0).height(height).range([this._xAxis.outerBounds().y + x2Height, height - (xHeight + topOffset + verticalMargin)]).scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase()).select(y2Group.node()).width(width - d3Array.max([0, xOffsetRight - y2Width])).title(false).config(this._y2Config).config(defaultY2Config).render();
+          this._y2Axis.config(yC).domain(y2Exists ? y2Domain : yDomain).gridSize(0).height(height).range(yRange).scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase()).select(y2Group.node()).width(width - d3Array.max([0, xOffsetRight - y2Width])).title(false).config(this._y2Config).config(defaultY2Config).render();
         }
 
         _y2 = function y(d, _y) {
@@ -1168,8 +1252,7 @@
           }
         };
 
-        var yRange = this._yAxis._getRange();
-
+        new shapes.Rect().data([{}]).select(rectGroup.node()).x(xRange[0] + (xRange[1] - xRange[0]) / 2).width(xRange[1] - xRange[0]).y(topOffset + yRange[0] + (yRange[1] - yRange[0]) / 2).height(yRange[1] - yRange[0]).config(this._backgroundConfig).render();
         var annotationGroup = d3plusCommon.elem("g.d3plus-plot-annotations", {
           parent: parent,
           transition: transition,
@@ -1385,6 +1468,18 @@
         return arguments.length ? (this._annotations = _ instanceof Array ? _ : [_], this) : this._annotations;
       }
       /**
+           @memberof Plot
+           @desc A d3plus-shape configuration Object used for styling the background rectangle of the inner x/y plot (behind all of the shapes and gridlines).
+           @param {Object} [*value*]
+           @chainable
+       */
+
+    }, {
+      key: "backgroundConfig",
+      value: function backgroundConfig(_) {
+        return arguments.length ? (this._backgroundConfig = d3plusCommon.assign(this._backgroundConfig, _), this) : this._backgroundConfig;
+      }
+      /**
           @memberof Plot
           @desc Sets the pixel space between each bar in a group of bars.
           @param {Number} *value* = 0
@@ -1457,6 +1552,18 @@
       key: "discrete",
       value: function discrete(_) {
         return arguments.length ? (this._discrete = _, this) : this._discrete;
+      }
+      /**
+          @memberof Plot
+          @desc When the width or height of the chart is less than or equal to this pixel value, the discrete axis will not be shown. This helps produce slick sparklines. Set this value to `0` to disable the behavior entirely.
+          @param {Number} *value*
+          @chainable
+      */
+
+    }, {
+      key: "discreteCutoff",
+      value: function discreteCutoff(_) {
+        return arguments.length ? (this._discreteCutoff = _, this) : this._discreteCutoff;
       }
       /**
           @memberof Plot
@@ -1631,6 +1738,18 @@
       }
       /**
           @memberof Plot
+          @desc When the width of the chart is less than or equal to this pixel value, and the x-axis is not the discrete axis, it will not be shown. This helps produce slick sparklines. Set this value to `0` to disable the behavior entirely.
+          @param {Number} *value*
+          @chainable
+      */
+
+    }, {
+      key: "xCutoff",
+      value: function xCutoff(_) {
+        return arguments.length ? (this._xCutoff = _, this) : this._xCutoff;
+      }
+      /**
+          @memberof Plot
           @desc Sets the config method for the secondary x-axis. If *value* is not specified, returns the current secondary x-axis configuration.
           @param {Object} *value*
           @chainable
@@ -1755,6 +1874,18 @@
         }
 
         return this._yConfig;
+      }
+      /**
+          @memberof Plot
+          @desc When the height of the chart is less than or equal to this pixel value, and the y-axis is not the discrete axis, it will not be shown. This helps produce slick sparklines. Set this value to `0` to disable the behavior entirely.
+          @param {Number} *value*
+          @chainable
+      */
+
+    }, {
+      key: "yCutoff",
+      value: function yCutoff(_) {
+        return arguments.length ? (this._yCutoff = _, this) : this._yCutoff;
       }
       /**
           @memberof Plot
