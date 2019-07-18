@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.35
+  d3plus-viz v0.12.36
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -655,7 +655,7 @@
 
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var timelinePossible = this._time && this._timeline;
-    var ticks = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(d3plusAxis.date) : [];
+    var ticks = timelinePossible ? d3plusCommon.unique(this._data.map(this._time)).map(d3plusAxis.date) : [];
     timelinePossible = timelinePossible && ticks.length > 1;
     var padding = this._timelinePadding() ? this._padding : {
       top: 0,
@@ -2246,7 +2246,7 @@
           if (typeof k === "function") return k;else {
             if (!_this4._aggs[k]) {
               _this4._aggs[k] = function (a) {
-                var v = Array.from(new Set(a));
+                var v = d3plusCommon.unique(a);
                 return v.length === 1 ? v[0] : v;
               };
             }
@@ -2645,7 +2645,7 @@
 
             if (!this._aggs[_]) {
               this._aggs[_] = function (a) {
-                var v = Array.from(new Set(a));
+                var v = d3plusCommon.unique(a);
                 return v.length === 1 ? v[0] : v;
               };
             }
@@ -3811,6 +3811,15 @@
 	    } catch (f) { /* empty */ }
 	  } return false;
 	};
+
+	// `String.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
+	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
+	  includes: function includes(searchString /* , position = 0 */) {
+	    return !!~String(requireObjectCoercible(this))
+	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
 
 	var nativeStartsWith = ''.startsWith;
 	var min$2 = Math.min;
