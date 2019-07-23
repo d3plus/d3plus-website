@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.15
+  d3plus-plot v0.8.16
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -42025,7 +42025,7 @@
           }
         };
 
-        new Rect().data([{}]).select(rectGroup.node()).x(xRange[0] + (xRange[1] - xRange[0]) / 2).width(xRange[1] - xRange[0]).y(topOffset + yRange[0] + (yRange[1] - yRange[0]) / 2).height(yRange[1] - yRange[0]).config(this._backgroundConfig).render();
+        new Rect().data([{}]).select(rectGroup.node()).x(xRange[0] + (xRange[1] - xRange[0]) / 2).width(xRange[1] - xRange[0]).y(this._margin.top + topOffset + yRange[0] + (yRange[1] - yRange[0]) / 2).height(yRange[1] - yRange[0]).config(this._backgroundConfig).render();
         var annotationGroup = elem("g.d3plus-plot-annotations", {
           parent: parent,
           transition: transition,
