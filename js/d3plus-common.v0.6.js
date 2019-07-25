@@ -1,15 +1,15 @@
 /*
-  d3plus-common v0.6.52
+  d3plus-common v0.6.53
   Common functions and methods used across D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-selection'), require('d3-transition'), require('d3-array'), require('d3-collection')) :
-  typeof define === 'function' && define.amd ? define('d3plus-common', ['exports', 'd3-selection', 'd3-transition', 'd3-array', 'd3-collection'], factory) :
-  (global = global || self, factory(global.d3plus = {}, global.d3Selection, global.d3Transition, global.d3Array, global.d3Collection));
-}(this, function (exports, d3Selection, d3Transition, d3Array, d3Collection) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('locale-codes'), require('d3-selection'), require('d3-transition'), require('d3-array'), require('d3-collection')) :
+  typeof define === 'function' && define.amd ? define('d3plus-common', ['exports', 'locale-codes', 'd3-selection', 'd3-transition', 'd3-array', 'd3-collection'], factory) :
+  (global = global || self, factory(global.d3plus = {}, global.localeCodes, global.d3Selection, global.d3Transition, global.d3Array, global.d3Collection));
+}(this, function (exports, localeCodes, d3Selection, d3Transition, d3Array, d3Collection) { 'use strict';
 
   /**
       @function accessor
@@ -134,6 +134,35 @@
     }
   }
 
+  var locales = localeCodes.all.filter(function (d) {
+    return d.location && d["iso639-1"];
+  });
+  var defaultLocales = {
+    ar: "ar-SA",
+    ca: "ca-ES",
+    da: "da-DK",
+    en: "en-US",
+    ko: "ko-KR",
+    pa: "pa-IN",
+    pt: "pt-BR",
+    sv: "sv-SE"
+  };
+  /**
+   * Converts a 2-digit language into a full language-LOCATION locale.
+   * @param {String} locale
+   */
+
+  function findLocale (locale) {
+    if (typeof locale !== "string" || locale.length === 5) return locale;
+    if (defaultLocales[locale]) return defaultLocales[locale];
+    var list = locales.filter(function (d) {
+      return d["iso639-1"] === locale;
+    });
+    if (!list.length) return locale;else if (list.length === 1) return list[0].tag;else if (list.find(function (d) {
+      return d.tag === "".concat(locale, "-").concat(locale.toUpperCase());
+    })) return "".concat(locale, "-").concat(locale.toUpperCase());else return list[0].tag;
+  }
+
   /**
       @function s
       @desc Returns 4 random characters, used for constructing unique identifiers.
@@ -253,7 +282,7 @@
       }
       /**
           @memberof BaseClass
-          @desc If *value* is specified, sets the locale to the specified string and returns the current class instance. This method supports the locales defined in [d3plus-format](https://github.com/d3plus/d3plus-format/blob/master/src/locale.js). In another case, you can define an Object with a custom locale.
+          @desc Sets the locale used for all text and number formatting. This method supports the locales defined in [d3plus-format](https://github.com/d3plus/d3plus-format/blob/master/src/locale.js). The locale can be defined as a complex Object (like in d3plus-format), a locale code (like "en-US"), or a 2-digit language code (like "en"). If a 2-digit code is provided, the "findLocale" function is used to identify the most approximate locale from d3plus-format.
           @param {Object|String} [*value* = "en-US"]
           @chainable
           @example
@@ -272,7 +301,7 @@
     }, {
       key: "locale",
       value: function locale(_) {
-        return arguments.length ? (this._locale = _, this) : this._locale;
+        return arguments.length ? (this._locale = findLocale(_), this) : this._locale;
       }
       /**
           @memberof BaseClass
@@ -558,6 +587,7 @@
   exports.configPrep = configPrep;
   exports.constant = constant;
   exports.elem = elem;
+  exports.findLocale = findLocale;
   exports.isObject = isObject;
   exports.merge = objectMerge;
   exports.parseSides = parseSides;
