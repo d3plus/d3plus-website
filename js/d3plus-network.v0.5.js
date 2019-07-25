@@ -1,15 +1,15 @@
 /*
-  d3plus-network v0.5.8
+  d3plus-network v0.5.9
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-zoom'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3plus-color'), require('d3-sankey')) :
-  typeof define === 'function' && define.amd ? define('d3plus-network', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3-zoom', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3plus-color', 'd3-sankey'], factory) :
-  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Collection, global.scales, global.d3Zoom, global.d3plusCommon, global.shapes, global.d3plusViz, global.d3plusColor, global.d3Sankey));
-}(this, function (exports, d3Array, d3Collection, scales, d3Zoom, d3plusCommon, shapes, d3plusViz, d3plusColor, d3Sankey) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-force'), require('d3-polygon'), require('d3-scale'), require('d3-zoom'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz'), require('d3plus-color'), require('d3-sankey')) :
+  typeof define === 'function' && define.amd ? define('d3plus-network', ['exports', 'd3-array', 'd3-collection', 'd3-force', 'd3-polygon', 'd3-scale', 'd3-zoom', 'd3plus-common', 'd3plus-shape', 'd3plus-viz', 'd3plus-color', 'd3-sankey'], factory) :
+  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Collection, global.d3Force, global.d3Polygon, global.scales, global.d3Zoom, global.d3plusCommon, global.shapes, global.d3plusViz, global.d3plusColor, global.d3Sankey));
+}(this, function (exports, d3Array, d3Collection, d3Force, d3Polygon, scales, d3Zoom, d3plusCommon, shapes, d3plusViz, d3plusColor, d3Sankey) { 'use strict';
 
   function _typeof(obj) {
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -360,6 +360,69 @@
         }).filter(function (n) {
           return n;
         });
+        var nodeLookup = this._nodeLookup = nodes.reduce(function (obj, d) {
+          obj[d.id] = d;
+          return obj;
+        }, {});
+        var nodeIndices = nodes.map(function (n) {
+          return n.node;
+        });
+
+        var links = this._links.map(function (l) {
+          var referenceType = _typeof(l.source);
+
+          return {
+            size: _this2._linkSize(l),
+            source: referenceType === "number" ? nodes[nodeIndices.indexOf(_this2._nodes[l.source])] : referenceType === "string" ? nodeLookup[l.source] : nodeLookup[l.source.id],
+            target: referenceType === "number" ? nodes[nodeIndices.indexOf(_this2._nodes[l.target])] : referenceType === "string" ? nodeLookup[l.target] : nodeLookup[l.target.id]
+          };
+        });
+
+        this._linkLookup = links.reduce(function (obj, d) {
+          if (!obj[d.source.id]) obj[d.source.id] = [];
+          obj[d.source.id].push(d.target);
+          if (!obj[d.target.id]) obj[d.target.id] = [];
+          obj[d.target.id].push(d.source);
+          return obj;
+        }, {});
+        var missingCoords = nodes.some(function (n) {
+          return n.fx === undefined || n.fy === undefined;
+        });
+
+        if (missingCoords) {
+          var linkStrength = scales.scaleLinear().domain(d3Array.extent(links, function (d) {
+            return d.size;
+          })).range([0.1, 0.5]);
+          var simulation = d3Force.forceSimulation().force("link", d3Force.forceLink(links).id(function (d) {
+            return d.id;
+          }).distance(1).strength(function (d) {
+            return linkStrength(d.size);
+          }).iterations(4)).force("charge", d3Force.forceManyBody().strength(-1)).stop();
+          var iterations = 300;
+          var alphaMin = 0.001;
+          var alphaDecay = 1 - Math.pow(alphaMin, 1 / iterations);
+          simulation.velocityDecay(0);
+          simulation.alphaMin(alphaMin);
+          simulation.alphaDecay(alphaDecay);
+          simulation.alphaDecay(0);
+          simulation.nodes(nodes);
+          simulation.tick(iterations).stop();
+          var hull = d3Polygon.polygonHull(nodes.map(function (n) {
+            return [n.vx, n.vy];
+          }));
+
+          var _shapes$largestRect = shapes.largestRect(hull),
+              angle = _shapes$largestRect.angle,
+              cx = _shapes$largestRect.cx,
+              cy = _shapes$largestRect.cy;
+
+          nodes.forEach(function (n) {
+            var p = shapes.pointRotate([n.vx, n.vy], -1 * (Math.PI / 180 * angle), [cx, cy]);
+            n.fx = p[0];
+            n.fy = p[1];
+          });
+        }
+
         var xExtent = d3Array.extent(nodes.map(function (n) {
           return n.fx;
         })),
@@ -386,11 +449,11 @@
         var rExtent = d3Array.extent(nodes.map(function (n) {
           return n.r;
         }));
-        var rMax = this._sizeMax || d3Array.min(d3Array.merge(nodes.map(function (n1) {
+        var rMax = this._sizeMax || d3Array.max([1, d3Array.min(d3Array.merge(nodes.map(function (n1) {
           return nodes.map(function (n2) {
             return n1 === n2 ? null : shapes.pointDistance([n1.x, n1.y], [n2.x, n2.y]);
           });
-        }))) / 2;
+        }))) / 2]);
         var r = scales["scale".concat(this._sizeScale.charAt(0).toUpperCase()).concat(this._sizeScale.slice(1))]().domain(rExtent).range([rExtent[0] === rExtent[1] ? rMax : d3Array.min([rMax / 2, this._sizeMin]), rMax]),
             xDomain = x.domain(),
             yDomain = y.domain();
@@ -418,31 +481,6 @@
           n.width = n.r * 2;
           n.height = n.r * 2;
         });
-        var nodeLookup = this._nodeLookup = nodes.reduce(function (obj, d) {
-          obj[d.id] = d;
-          return obj;
-        }, {}); // forceSimulation(nodes)
-        //   .on("tick", () => this._shapes.forEach(s => s.render()));
-
-        var nodeIndices = nodes.map(function (n) {
-          return n.node;
-        });
-
-        var links = this._links.map(function (l) {
-          return {
-            size: _this2._linkSize(l),
-            source: typeof l.source === "number" ? nodes[nodeIndices.indexOf(_this2._nodes[l.source])] : nodeLookup[l.source.id],
-            target: typeof l.target === "number" ? nodes[nodeIndices.indexOf(_this2._nodes[l.target])] : nodeLookup[l.target.id]
-          };
-        });
-
-        this._linkLookup = links.reduce(function (obj, d) {
-          if (!obj[d.source.id]) obj[d.source.id] = [];
-          obj[d.source.id].push(d.target);
-          if (!obj[d.target.id]) obj[d.target.id] = [];
-          obj[d.target.id].push(d.source);
-          return obj;
-        }, {});
         this._container = this._select.selectAll("svg.d3plus-network").data([0]);
         this._container = this._container.enter().append("svg").attr("class", "d3plus-network").attr("opacity", 0).attr("width", width).attr("height", height).attr("x", this._margin.left).attr("y", this._margin.top).style("background-color", "transparent").merge(this._container);
 
@@ -2590,6 +2628,15 @@
 	    } catch (f) { /* empty */ }
 	  } return false;
 	};
+
+	// `String.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
+	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
+	  includes: function includes(searchString /* , position = 0 */) {
+	    return !!~String(requireObjectCoercible(this))
+	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
 
 	var nativeStartsWith = ''.startsWith;
 	var min$2 = Math.min;
