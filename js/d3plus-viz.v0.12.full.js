@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.36
+  d3plus-viz v0.12.37
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -25107,7 +25107,7 @@
             _ref2$html = _ref2.html,
             html = _ref2$html === void 0 ? "Please Wait" : _ref2$html,
             _ref2$mask = _ref2.mask,
-            mask = _ref2$mask === void 0 ? "rgba(0, 0, 0, 0.1)" : _ref2$mask,
+            mask = _ref2$mask === void 0 ? "rgba(0, 0, 0, 0.05)" : _ref2$mask,
             _ref2$style = _ref2.style,
             style = _ref2$style === void 0 ? {} : _ref2$style;
 
@@ -37274,19 +37274,20 @@
       };
 
       _this._legendTooltip = {};
-      _this._loadingHTML = constant$5("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
+      _this._loadingHTML = constant$5("\n    <div style=\"left: 50%; top: 50%; position: absolute; transform: translate(-50%, -50%); font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"bottom: 0; display: block; line-height: 1; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
       _this._loadingMessage = true;
       _this._lrucache = lrucache(10);
       _this._messageClass = new Message();
-      _this._messageMask = "rgba(0, 0, 0, 0.1)";
+      _this._messageMask = "rgba(0, 0, 0, 0.05)";
       _this._messageStyle = {
-        "left": "0px",
+        "bottom": "0",
+        "left": "0",
         "position": "absolute",
+        "right": "0",
         "text-align": "center",
-        "top": "45%",
-        "width": "100%"
+        "top": "0"
       };
-      _this._noDataHTML = constant$5("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>No Data Available</strong>\n    </div>");
+      _this._noDataHTML = constant$5("\n    <div style=\"left: 50%; top: 50%; position: absolute; transform: translate(-50%, -50%); font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>No Data Available</strong>\n    </div>");
       _this._noDataMessage = true;
       _this._on = {
         "click.shape": clickShape.bind(_assertThisInitialized(_this)),
@@ -37533,7 +37534,7 @@
           this._messageClass.render({
             container: this._select.node().parentNode,
             html: this._noDataHTML(this),
-            mask: this._messageMask,
+            mask: false,
             style: this._messageStyle
           });
         }
@@ -37736,7 +37737,7 @@
             this._messageClass.render({
               container: this._select.node().parentNode,
               html: this._loadingHTML(this),
-              mask: this._messageMask,
+              mask: this._filteredData ? this._messageMask : false,
               style: this._messageStyle
             });
           }
