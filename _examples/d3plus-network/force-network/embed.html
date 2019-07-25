@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+  <script src="https://d3plus.org/js/d3plus-network.v0.5.full.min.js"></script>
+
+  <style>
+
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+
+  </style>
+
+</head>
+
+<body></body>
+
+<script>
+
+  var nodeArray = [
+    {id: "alpha"},
+    {id: "beta"},
+    {id: "gamma"},
+    {id: "epsilon"},
+    {id: "zeta"},
+    {id: "theta"}
+  ];
+  
+  var linkArray = [
+    {source: 0, target: 1, weight: 10},
+    {source: 0, target: 2, weight: 10},
+    {source: 3, target: 4, weight: 10},
+    {source: 3, target: 5, weight: 5},
+    {source: 5, target: 0, weight: 20},
+    {source: 2, target: 1, weight: 12},
+    {source: 4, target: 5, weight: 12}
+  ];
+
+  const network = new d3plus.Network()
+    .config({
+      links: linkArray,
+      linkSize: function(d) { return d.weight; },
+      nodes: nodeArray
+    })
+    .render();
+
+</script>
+
+</html>
