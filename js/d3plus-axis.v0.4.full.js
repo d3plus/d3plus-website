@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.11
+  d3plus-axis v0.4.12
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -16508,14 +16508,89 @@
         else return new Date(s);
   }
 
-  var formatDay = timeFormat("%a %d"),
-      formatHour = timeFormat("%I %p"),
-      formatMillisecond = timeFormat(".%L"),
-      formatMinute = timeFormat("%I:%M"),
-      formatMonth = timeFormat("%b"),
-      formatSecond = timeFormat(":%S"),
-      formatWeek = timeFormat("%b %d"),
-      formatYear$1 = timeFormat("%Y");
+  var locale$2 = {
+    "de-DE": {
+      dateTime: "%A, der %e. %B %Y, %X",
+      date: "%d.%m.%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    },
+    "en-GB": {
+      dateTime: "%a %e %b %X %Y",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "en-US": {
+      dateTime: "%x, %X",
+      date: "%-m/%-d/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "es-ES": {
+      dateTime: "%A, %e de %B de %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "es-MX": {
+      dateTime: "%x, %X",
+      date: "%d/%m/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "fr-FR": {
+      dateTime: "%A, le %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+      shortDays: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
+      months: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+      shortMonths: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."]
+    },
+    "it-IT": {
+      dateTime: "%A %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+      shortDays: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
+      months: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+      shortMonths: ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
+    },
+    "pt-BR": {
+      dateTime: "%A, %e de %B de %Y. %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"],
+      shortDays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+      months: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+      shortMonths: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+    }
+  };
+
   /**
       @class Axis
       @extends external:BaseClass
@@ -16605,6 +16680,7 @@
       _this._tickSpecifier = undefined;
       _this._tickSuffix = "normal";
       _this._tickUnit = 0;
+      _this._timeLocale = undefined;
       _this._titleClass = new TextBox();
       _this._titleConfig = {
         fontSize: 12,
@@ -16753,10 +16829,20 @@
         if (this._select === void 0) {
           this.select(_select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node());
         }
+
+        var timeLocale = this._timeLocale || locale$2[this._locale] || locale$2["en-US"];
+        defaultLocale(timeLocale).format();
+        var formatDay = timeFormat("%a %d"),
+            formatHour = timeFormat("%I %p"),
+            formatMillisecond = timeFormat(".%L"),
+            formatMinute = timeFormat("%I:%M"),
+            formatMonth = timeFormat("%b"),
+            formatSecond = timeFormat(":%S"),
+            formatWeek = timeFormat("%b %d"),
+            formatYear = timeFormat("%Y");
         /**
          * Declares some commonly used variables.
          */
-
 
         var _this$_position3 = this._position,
             width = _this$_position3.width,
@@ -16996,7 +17082,7 @@
             if (_t !== "1") _n = "".concat(_t, " x ").concat(_n);
             return d < 0 ? "-".concat(_n) : _n;
           } else if (_this3._scale === "time") {
-            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear$1)(d);
+            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear)(d);
           } else if (_this3._scale === "ordinal") {
             return d;
           }
@@ -17007,12 +17093,13 @@
           if (isNaN(n)) {
             return n;
           } else if (_this3._scale === "linear" && _this3._tickSuffix === "smallest") {
-            var locale = _typeof(_this3._locale) === "object" ? _this3._locale : formatLocale$2[_this3._locale];
-            var separator = locale.separator,
-                suffixes = locale.suffixes;
+            var _locale = _typeof(_this3._locale) === "object" ? _this3._locale : formatLocale$2[_this3._locale];
+
+            var separator = _locale.separator,
+                suffixes = _locale.suffixes;
             var suff = n >= 1000 ? suffixes[_this3._tickUnit + 8] : "";
             var tick = n / Math.pow(10, 3 * _this3._tickUnit);
-            var number = formatAbbreviate(tick, locale, ",.".concat(tick.toString().length, "r"));
+            var number = formatAbbreviate(tick, _locale, ",.".concat(tick.toString().length, "r"));
             return "".concat(number).concat(separator).concat(suff);
           } else {
             return formatAbbreviate(n, _this3._locale);
@@ -17656,6 +17743,18 @@
       key: "tickSuffix",
       value: function tickSuffix(_) {
         return arguments.length ? (this._tickSuffix = _, this) : this._tickSuffix;
+      }
+      /**
+          @memberof Axis
+          @desc Defines a custom locale object to be used in time scale. This object must include the following properties: dateTime, date, time, periods, days, shortDays, months, shortMonths. For more information, you can revise [d3p.d3-time-format](https://github.com/d3/d3-time-format/blob/master/README.md#timeFormatLocale).
+          @param {Object} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "timeLocale",
+      value: function timeLocale(_) {
+        return arguments.length ? (this._timeLocale = _, this) : this._timeLocale;
       }
       /**
           @memberof Axis
