@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.46
+  d3plus-text v0.9.47
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -351,7 +351,7 @@
             break;
           }
 
-          if (lineData.length) lineData[line - 1] = trimRight(lineData[line - 1]);
+          if (lineData.length >= line) lineData[line - 1] = trimRight(lineData[line - 1]);
           line++;
 
           if (lineHeight * line > height || wordWidth > width && !overflow || maxLines && line > maxLines) {
