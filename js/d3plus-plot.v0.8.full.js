@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.16
+  d3plus-plot v0.8.17
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -42044,7 +42044,7 @@
             },
             x0: _this2._discrete === "x" ? function (d) {
               return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
-            } : _x2(0),
+            } : _x2(domains.x[0]),
             x1: _this2._discrete === "x" ? null : function (d) {
               return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
             },
@@ -42053,7 +42053,7 @@
             },
             y0: _this2._discrete === "y" ? function (d) {
               return d.y2 ? _y2(d.y2, "y2") : _y2(d.y);
-            } : _y2(0) - yOffset,
+            } : _y2(domains.y[1]) - yOffset,
             y1: _this2._discrete === "y" ? null : function (d) {
               return d.y2 ? _y2(d.y2, "y2") : _y2(d.y) - yOffset;
             }
@@ -42083,7 +42083,7 @@
           },
           x0: this._discrete === "x" ? function (d) {
             return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
-          } : _x2(0),
+          } : _x2(domains.x[0]),
           x1: this._discrete === "x" ? null : function (d) {
             return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
           },
@@ -42092,7 +42092,7 @@
           },
           y0: this._discrete === "y" ? function (d) {
             return d.y2 ? _y2(d.y2, "y2") : _y2(d.y);
-          } : _y2(0) - yOffset,
+          } : _y2(domains.y[1]) - yOffset,
           y1: this._discrete === "y" ? null : function (d) {
             return d.y2 ? _y2(d.y2, "y2") : _y2(d.y) - yOffset;
           }
@@ -42104,13 +42104,13 @@
           shapeConfig["".concat(opp)] = shapeConfig["".concat(opp, "0")] = function (d) {
             var dataIndex = stackKeys.indexOf(d.id),
                 discreteIndex = discreteKeys.indexOf(d.discrete);
-            return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][0]) : scale(0);
+            return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][0]) : scale(domains[opp][opp === "x" ? 0 : 1]);
           };
 
           shapeConfig["".concat(opp, "1")] = function (d) {
             var dataIndex = stackKeys.indexOf(d.id),
                 discreteIndex = discreteKeys.indexOf(d.discrete);
-            return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][1]) : scale(0);
+            return dataIndex >= 0 ? scale(stackData[dataIndex][discreteIndex][1]) : scale(domains[opp][opp === "x" ? 0 : 1]);
           };
         }
 
