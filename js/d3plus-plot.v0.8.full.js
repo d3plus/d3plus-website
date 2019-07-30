@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.17
+  d3plus-plot v0.8.18
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -41724,7 +41724,12 @@
           y2: y2Domain || yDomain
         };
         opps.forEach(function (opp) {
-          if (opp && _this2._baseline !== void 0) {
+          if (_this2["_".concat(opp, "Config")].domain) {
+            var _d2 = _this2["_".concat(opp, "Config")].domain;
+
+            if (_this2._discrete === "x") _d2.reverse();
+            domains[opp] = _d2;
+          } else if (opp && _this2._baseline !== void 0) {
             var b = _this2._baseline;
             if (domains[opp] && domains[opp][0] > b) domains[opp][0] = b;else if (domains[opp] && domains[opp][1] < b) domains[opp][1] = b;
           }
