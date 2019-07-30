@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.47
+  d3plus-text v0.9.48
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -56,7 +56,7 @@
       @param {String} str
   */
   function trim(str) {
-    return str.replace(/^\s+|\s+$/g, "");
+    return str.toString().replace(/^\s+|\s+$/g, "");
   }
   /**
       @function trimLeft
@@ -66,7 +66,7 @@
 
 
   function trimLeft(str) {
-    return str.replace(/^\s+/, "");
+    return str.toString().replace(/^\s+/, "");
   }
   /**
       @function trimRight
@@ -76,7 +76,7 @@
 
 
   function trimRight(str) {
-    return str.replace(/\s+$/, "");
+    return str.toString().replace(/\s+$/, "");
   }
 
   var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890",
