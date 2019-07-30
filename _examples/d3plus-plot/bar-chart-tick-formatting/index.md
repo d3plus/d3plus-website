@@ -2,7 +2,7 @@
 title: Bar Chart Tick Formatting
 width: 990
 height: 400
-time: 1564497911946
+time: 1564498910364
 date: July 30, 2019
 ---
 
