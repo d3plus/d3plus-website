@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.12
+  d3plus-axis v0.4.13
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1045,7 +1045,7 @@
           parent: group
         }).node()).text(function (d) {
           return d.text;
-        }).verticalAlign("middle").width(range[range.length - 1] - range[0]).x(horizontal ? range[0] : this._orient === "left" ? margin[this._orient] / 2 - (range[range.length - 1] - range[0]) / 2 + p : p - margin.right / 2).y(horizontal ? this._orient === "bottom" ? bounds.height - margin.bottom + p : bounds.y : range[0] + (range[range.length - 1] - range[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
+        }).verticalAlign("middle").width(range[range.length - 1] - range[0]).x(horizontal ? range[0] : this._orient === "left" ? margin.left / 2 - (range[range.length - 1] - range[0]) / 2 + p : bounds.width - (range[range.length - 1] - range[0]) / 2 - margin.right / 2).y(horizontal ? this._orient === "bottom" ? bounds.height - margin.bottom + p : bounds.y : range[0] + (range[range.length - 1] - range[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
 
         this._lastScale = this._getPosition.bind(this);
         if (callback) setTimeout(callback, this._duration + 100);
@@ -1396,7 +1396,7 @@
       }
       /**
           @memberof Axis
-          @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick). 
+          @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick).
           @param {String} [*value* = "normal"]
           @chainable
       */
