@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.15
+  d3plus-axis v0.4.16
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -27830,6 +27830,7 @@
       _this._paddingOuter = 0.1;
       _this._rotateLabels = false;
       _this._scale = "linear";
+      _this._scalePadding = 0.5;
       _this._shape = "Line";
       _this._shapeConfig = {
         fill: "#000",
@@ -28090,7 +28091,7 @@
           if (range[1] === undefined || range[1] > maxRange) range[1] = maxRange;
           var sizeInner = maxRange - minRange;
 
-          if (["band", "ordinal", "point"].includes(this._scale) && this._domain.length > range.length) {
+          if (this._scale === "ordinal" && this._domain.length > range.length) {
             if (newRange === this._range) {
               var buckets = this._domain.length + 1;
               range = d3Range(buckets).map(function (d) {
@@ -28127,7 +28128,7 @@
 
           this._d3Scale = scales["scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1))]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
           if (this._d3Scale.round) this._d3Scale.round(true);
-          if (this._d3Scale.padding) this._d3Scale.padding(0.5);
+          if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
           if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
           if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
           if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range);else this._d3Scale.range(range);
@@ -28839,6 +28840,18 @@
       key: "scale",
       value: function scale(_) {
         return arguments.length ? (this._scale = _, this) : this._scale;
+      }
+      /**
+          @memberof Axis
+          @desc Sets the "padding" property of the scale, often used in point scales.
+          @param {Number} [*value* = 0.5]
+          @chainable
+      */
+
+    }, {
+      key: "scalePadding",
+      value: function scalePadding(_) {
+        return arguments.length ? (this._scalePadding = _, this) : this._scalePadding;
       }
       /**
           @memberof Axis
