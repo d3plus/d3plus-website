@@ -1,15 +1,18 @@
 /*
-  d3plus-common v0.6.53
+  d3plus-common v0.6.54
   Common functions and methods used across D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('locale-codes'), require('d3-selection'), require('d3-transition'), require('d3-array'), require('d3-collection')) :
-  typeof define === 'function' && define.amd ? define('d3plus-common', ['exports', 'locale-codes', 'd3-selection', 'd3-transition', 'd3-array', 'd3-collection'], factory) :
-  (global = global || self, factory(global.d3plus = {}, global.localeCodes, global.d3Selection, global.d3Transition, global.d3Array, global.d3Collection));
-}(this, function (exports, localeCodes, d3Selection, d3Transition, d3Array, d3Collection) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('windows-locale'), require('iso639-codes'), require('d3-selection'), require('d3-transition'), require('d3-array'), require('d3-collection')) :
+  typeof define === 'function' && define.amd ? define('d3plus-common', ['exports', 'windows-locale', 'iso639-codes', 'd3-selection', 'd3-transition', 'd3-array', 'd3-collection'], factory) :
+  (global = global || self, factory(global.d3plus = {}, global.lcid, global.iso, global.d3Selection, global.d3Transition, global.d3Array, global.d3Collection));
+}(this, function (exports, lcid, iso, d3Selection, d3Transition, d3Array, d3Collection) { 'use strict';
+
+  lcid = lcid && lcid.hasOwnProperty('default') ? lcid['default'] : lcid;
+  iso = iso && iso.hasOwnProperty('default') ? iso['default'] : iso;
 
   /**
       @function accessor
@@ -66,6 +69,21 @@
     if (protoProps) _defineProperties(Constructor.prototype, protoProps);
     if (staticProps) _defineProperties(Constructor, staticProps);
     return Constructor;
+  }
+
+  function _defineProperty(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
   }
 
   /**
@@ -134,8 +152,19 @@
     }
   }
 
-  var locales = localeCodes.all.filter(function (d) {
-    return d.location && d["iso639-1"];
+  var locales = [];
+  var isoKeys = Object.keys(iso);
+  Object.keys(lcid).map(function (id) {
+    var locale = lcid[id];
+    var isoLanguage = isoKeys.find(function (name) {
+      return name.toLowerCase() === locale.language.toLowerCase();
+    });
+
+    if (locale.location && isoLanguage) {
+      var _locales$push;
+
+      locales.push((_locales$push = {}, _defineProperty(_locales$push, "name", locale.language), _defineProperty(_locales$push, "location", locale.location), _defineProperty(_locales$push, "tag", locale.tag), _defineProperty(_locales$push, "lcid", locale.id), _defineProperty(_locales$push, "iso639-2", iso[isoLanguage]["iso639-2"]), _defineProperty(_locales$push, "iso639-1", iso[isoLanguage]["iso639-1"]), _locales$push));
+    }
   });
   var defaultLocales = {
     ar: "ar-SA",
