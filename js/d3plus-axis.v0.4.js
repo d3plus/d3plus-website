@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.14
+  d3plus-axis v0.4.15
   Beautiful javascript scales and axes.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -371,7 +371,9 @@
             offset = this._margin[opposite],
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
 
-        bar.call(d3plusCommon.attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0)).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0)).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
+        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        bar.call(d3plusCommon.attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**
           @memberof Axis
@@ -385,7 +387,7 @@
         var ticks = [];
         if (this._d3ScaleNegative) ticks = this._d3ScaleNegative.domain();
         if (this._d3Scale) ticks = ticks.concat(this._d3Scale.domain());
-        var domain = this._scale === "ordinal" ? ticks : d3Array.extent(ticks);
+        var domain = ["band", "ordinal", "point"].includes(this._scale) ? ticks : d3Array.extent(ticks);
         return ticks[0] > ticks[1] ? domain.reverse() : domain;
       }
       /**
@@ -561,7 +563,7 @@
           if (range[1] === undefined || range[1] > maxRange) range[1] = maxRange;
           var sizeInner = maxRange - minRange;
 
-          if (this._scale === "ordinal" && this._domain.length > range.length) {
+          if (["band", "ordinal", "point"].includes(this._scale) && this._domain.length > range.length) {
             if (newRange === this._range) {
               var buckets = this._domain.length + 1;
               range = d3Array.range(buckets).map(function (d) {
@@ -598,6 +600,7 @@
 
           this._d3Scale = scales["scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1))]().domain(this._scale === "time" ? this._domain.map(date) : this._domain);
           if (this._d3Scale.round) this._d3Scale.round(true);
+          if (this._d3Scale.padding) this._d3Scale.padding(0.5);
           if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
           if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
           if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range);else this._d3Scale.range(range);
@@ -745,7 +748,7 @@
             return d < 0 ? "-".concat(_n) : _n;
           } else if (_this3._scale === "time") {
             return (d3Time.timeSecond(d) < d ? formatMillisecond : d3Time.timeMinute(d) < d ? formatSecond : d3Time.timeHour(d) < d ? formatMinute : d3Time.timeDay(d) < d ? formatHour : d3Time.timeMonth(d) < d ? d3Time.timeWeek(d) < d ? formatDay : formatWeek : d3Time.timeYear(d) < d ? formatMonth : formatYear)(d);
-          } else if (_this3._scale === "ordinal") {
+          } else if (["band", "ordinal", "point"].includes(_this3._scale)) {
             return d;
           }
 
@@ -1045,7 +1048,7 @@
           parent: group
         }).node()).text(function (d) {
           return d.text;
-        }).verticalAlign("middle").width(range[range.length - 1] - range[0]).x(horizontal ? range[0] : this._orient === "left" ? margin.left / 2 - (range[range.length - 1] - range[0]) / 2 + p : bounds.x + bounds.width - margin.right / 2 - (range[range.length - 1] - range[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.height - margin.bottom + p : bounds.y : range[0] + (range[range.length - 1] - range[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
+        }).verticalAlign("middle").width(range[range.length - 1] - range[0]).x(horizontal ? range[0] : this._orient === "left" ? margin.left / 2 - (range[range.length - 1] - range[0]) / 2 + p : bounds.x + bounds.width - margin.right / 2 - (range[range.length - 1] - range[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom - p : bounds.y : range[0] + (range[range.length - 1] - range[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
 
         this._lastScale = this._getPosition.bind(this);
         if (callback) setTimeout(callback, this._duration + 100);
@@ -2422,6 +2425,15 @@
 	    } catch (f) { /* empty */ }
 	  } return false;
 	};
+
+	// `String.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
+	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
+	  includes: function includes(searchString /* , position = 0 */) {
+	    return !!~String(requireObjectCoercible(this))
+	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
 
 	var nativeStartsWith = ''.startsWith;
 	var min$2 = Math.min;
