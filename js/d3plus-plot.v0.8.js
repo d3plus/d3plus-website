@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.18
+  d3plus-plot v0.8.19
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -126,19 +126,26 @@
   }
 
   /**
-      Adds buffers in between ordinal axis ticks.
-      @param {Array} domain
-      @private
-  */
-  function ordinalBuffer (domain) {
-    if (domain.includes("d3plus-buffer-start")) return domain;
-    var newDomain = ["d3plus-buffer-start"];
-    domain.forEach(function (b) {
-      newDomain.push(b);
-      newDomain.push("d3plus-buffer-".concat(b));
-    });
-    return newDomain;
-  }
+   * Adds left/right padding to a point or time scale.
+   * @private
+   */
+  var discreteBuffer = (function (scale, data, discrete) {
+    if (scale.padding) scale.padding(0.5);else {
+      var closest = data.map(function (d) {
+        return d[discrete];
+      }).reduce(function (acc, curr, i, arr) {
+        if (!i) return acc;
+        var prev = arr[i - 1];
+        if (!acc || curr - prev < acc) return curr - prev;else return acc;
+      }, 0);
+      var domain = scale.domain().slice();
+      if (discrete === "y") domain.reverse();
+      domain[0] = new Date(+domain[0] - closest / 2);
+      domain[1] = new Date(+domain[1] + closest / 2);
+      if (discrete === "y") domain.reverse();
+      scale.domain(domain);
+    }
+  });
 
   /**
       Adds a buffer to either side of the non-discrete axis.
@@ -203,8 +210,7 @@
     if (bMin < oppDomain[0]) oppDomain[0] = bMin;
     if (isDiscreteX) oppDomain.reverse();
     oppScale.domain(oppDomain);
-    var discreteScale = isDiscreteX ? x : y;
-    discreteScale.domain(ordinalBuffer(discreteScale.domain()));
+    discreteBuffer(isDiscreteX ? x : y, data, this._discrete);
     return [x, y];
   }
 
@@ -271,8 +277,7 @@
     if (bMin < oppDomain[0]) oppDomain[0] = bMin;
     if (isDiscreteX) oppDomain.reverse();
     oppScale.domain(oppDomain);
-    var discreteScale = isDiscreteX ? x : y;
-    discreteScale.domain(ordinalBuffer(discreteScale.domain()));
+    discreteBuffer(isDiscreteX ? x : y, data, this._discrete);
     return [x, y];
   }
 
@@ -300,8 +305,8 @@
         yD = y.domain().slice();
     var xR = x.range(),
         yR = y.range();
-    if (!x.invert) xD = ordinalBuffer(xD);
-    if (!y.invert) yD = ordinalBuffer(yD);
+    if (!x.invert && x.padding) discreteBuffer(x, data, this._discrete);
+    if (!y.invert && y.padding) discreteBuffer(y, data, this._discrete);
     data.forEach(function (d) {
       var s = buffer ? buffer : config.r(d.data, d.i) * 2;
 
@@ -389,8 +394,8 @@
         yD = y.domain().slice();
     var xR = x.range(),
         yR = y.range();
-    if (!x.invert) xD = ordinalBuffer(xD);
-    if (!y.invert) yD = ordinalBuffer(yD);
+    if (!x.invert && x.padding) discreteBuffer(x, data, this._discrete);
+    if (!y.invert && y.padding) discreteBuffer(y, data, this._discrete);
     data.forEach(function (d) {
       var h = config.height(d.data, d.i),
           w = config.width(d.data, d.i);
@@ -875,7 +880,7 @@
         }
 
         var xDomain = this._xDomain ? this._xDomain.slice() : domains.x,
-            xScale = this._xSort ? "Ordinal" : "Linear";
+            xScale = this._xSort ? "Point" : "Linear";
         if (xDomain[0] === void 0) xDomain[0] = domains.x[0];
         if (xDomain[1] === void 0) xDomain[1] = domains.x[1];
 
@@ -890,11 +895,11 @@
           }).map(function (d) {
             return d.x;
           })));
-          xScale = "Ordinal";
+          xScale = "Point";
         }
 
         var x2Domain = this._x2Domain ? this._x2Domain.slice() : domains.x2,
-            x2Scale = this._x2Sort ? "Ordinal" : "Linear";
+            x2Scale = this._x2Sort ? "Point" : "Linear";
         if (x2Domain && x2Domain[0] === void 0) x2Domain[0] = domains.x2[0];
         if (x2Domain && x2Domain[1] === void 0) x2Domain[1] = domains.x2[1];
 
@@ -909,15 +914,15 @@
           }).map(function (d) {
             return d.x2;
           })));
-          x2Scale = "Ordinal";
+          x2Scale = "Point";
         }
 
         var yDomain = this._yDomain ? this._yDomain.slice() : domains.y,
-            yScale = this._ySort ? "Ordinal" : "Linear";
+            yScale = this._ySort ? "Point" : "Linear";
         if (yDomain[0] === void 0) yDomain[0] = domains.y[0];
         if (yDomain[1] === void 0) yDomain[1] = domains.y[1];
         var y2Domain = this._y2Domain ? this._y2Domain.slice() : domains.y2,
-            y2Scale = this._y2Sort ? "Ordinal" : "Linear";
+            y2Scale = this._y2Sort ? "Point" : "Linear";
         if (y2Domain && y2Domain[0] === void 0) y2Domain[0] = domains.y2[0];
         if (y2Domain && y2Domain[1] === void 0) y2Domain[1] = domains.y2[1];
 
@@ -930,13 +935,13 @@
           }).map(function (d) {
             return d.y;
           })));
-          yScale = "Ordinal";
+          yScale = "Point";
           y2Domain = Array.from(new Set(data.sort(function (a, b) {
             return _this2._y2Sort ? _this2._y2Sort(a.data, b.data) : a.y2 - b.y2;
           }).map(function (d) {
             return d.y2;
           })));
-          y2Scale = "Ordinal";
+          y2Scale = "Point";
         }
 
         if (y2Time) {
@@ -974,7 +979,7 @@
         });
         var oppScale = this._discrete === "x" ? yScale : xScale;
 
-        if (this._xConfig.scale !== "log" && this._yConfig.scale !== "log" && oppScale !== "Ordinal") {
+        if (this._xConfig.scale !== "log" && this._yConfig.scale !== "log" && oppScale !== "Point") {
           shapeData.forEach(function (d) {
             if (_this2._buffer[d.key]) {
               var res = _this2._buffer[d.key].bind(_this2)({
@@ -1023,7 +1028,8 @@
           gridConfig: {
             stroke: !this._discrete || this._discrete === "x" ? this._yTest.gridConfig().stroke : "transparent"
           },
-          locale: this._locale
+          locale: this._locale,
+          scalePadding: _y2.padding ? _y2.padding() : 0
         };
 
         if (!showX) {
@@ -1086,7 +1092,8 @@
           gridConfig: {
             stroke: !this._discrete || this._discrete === "y" ? this._xTest.gridConfig().stroke : "transparent"
           },
-          locale: this._locale
+          locale: this._locale,
+          scalePadding: _x2.padding ? _x2.padding() : 0
         };
 
         if (!showY) {
@@ -1355,15 +1362,17 @@
 
             var _scale = _this2._discrete === "x" ? _x2 : _y2;
 
-            var vals = (_this2._discrete === "x" ? xDomain : yDomain).filter(function (d) {
-              return typeof d !== "string" || d.indexOf("d3plus-buffer-") < 0;
-            });
+            var scaleType = _this2._discrete === "x" ? xScale : yScale;
+            var vals = _this2._discrete === "x" ? xDomain : yDomain;
 
             var _range = _this2._discrete === "x" ? xRange : yRange;
 
-            if (vals.length > 1) space = _scale(vals[1]) - _scale(vals[0]);else space = _range[_range.length - 1] - _range[0];
-            space -= _this2._groupPadding;
-            var barSize = space;
+            if (scaleType !== "Point" && vals.length === 2) {
+              space = (_scale(d.values[_this2._discrete === "x" ? 0 : d.values.length - 1][_this2._discrete]) - _scale(vals[0])) * 2;
+            } else if (vals.length > 1) space = _scale(vals[1]) - _scale(vals[0]);else space = _range[_range.length - 1] - _range[0];
+
+            if (_this2._groupPadding < space) space -= _this2._groupPadding;
+            var barSize = space || 1;
             var groups = d3Collection.nest().key(function (d) {
               return d[_this2._discrete];
             }).key(function (d) {
@@ -3387,6 +3396,15 @@
 	    } catch (f) { /* empty */ }
 	  } return false;
 	};
+
+	// `String.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
+	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
+	  includes: function includes(searchString /* , position = 0 */) {
+	    return !!~String(requireObjectCoercible(this))
+	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
 
 	var nativeStartsWith = ''.startsWith;
 	var min$2 = Math.min;

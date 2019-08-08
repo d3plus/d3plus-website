@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.18
+  d3plus-plot v0.8.19
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -65,12 +65,13 @@
     var keys = Object.keys(object);
 
     if (Object.getOwnPropertySymbols) {
-      keys.push.apply(keys, Object.getOwnPropertySymbols(object));
+      var symbols = Object.getOwnPropertySymbols(object);
+      if (enumerableOnly) symbols = symbols.filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+      });
+      keys.push.apply(keys, symbols);
     }
 
-    if (enumerableOnly) keys = keys.filter(function (sym) {
-      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-    });
     return keys;
   }
 
@@ -273,6 +274,11178 @@
     }
   }
 
+  var aa = {
+  	language: "Afar",
+  	location: null,
+  	id: 4096,
+  	tag: "aa",
+  	version: "Release 10"
+  };
+  var af = {
+  	language: "Afrikaans",
+  	location: null,
+  	id: 54,
+  	tag: "af",
+  	version: "Release 7"
+  };
+  var agq = {
+  	language: "Aghem",
+  	location: null,
+  	id: 4096,
+  	tag: "agq",
+  	version: "Release 10"
+  };
+  var ak = {
+  	language: "Akan",
+  	location: null,
+  	id: 4096,
+  	tag: "ak",
+  	version: "Release 10"
+  };
+  var sq = {
+  	language: "Albanian",
+  	location: null,
+  	id: 28,
+  	tag: "sq",
+  	version: "Release 7"
+  };
+  var gsw = {
+  	language: "Alsatian",
+  	location: null,
+  	id: 132,
+  	tag: "gsw",
+  	version: "Release 7"
+  };
+  var am = {
+  	language: "Amharic",
+  	location: null,
+  	id: 94,
+  	tag: "am",
+  	version: "Release 7"
+  };
+  var ar = {
+  	language: "Arabic",
+  	location: null,
+  	id: 1,
+  	tag: "ar",
+  	version: "Release 7"
+  };
+  var hy = {
+  	language: "Armenian",
+  	location: null,
+  	id: 43,
+  	tag: "hy",
+  	version: "Release 7"
+  };
+  var as = {
+  	language: "Assamese",
+  	location: null,
+  	id: 77,
+  	tag: "as",
+  	version: "Release 7"
+  };
+  var ast = {
+  	language: "Asturian",
+  	location: null,
+  	id: 4096,
+  	tag: "ast",
+  	version: "Release 10"
+  };
+  var asa = {
+  	language: "Asu",
+  	location: null,
+  	id: 4096,
+  	tag: "asa",
+  	version: "Release 10"
+  };
+  var az = {
+  	language: "Azerbaijani (Latin)",
+  	location: null,
+  	id: 44,
+  	tag: "az",
+  	version: "Release 7"
+  };
+  var ksf = {
+  	language: "Bafia",
+  	location: null,
+  	id: 4096,
+  	tag: "ksf",
+  	version: "Release 10"
+  };
+  var bm = {
+  	language: "Bamanankan",
+  	location: null,
+  	id: 4096,
+  	tag: "bm",
+  	version: "Release 10"
+  };
+  var bn = {
+  	language: "Bangla",
+  	location: null,
+  	id: 69,
+  	tag: "bn",
+  	version: "Release 7"
+  };
+  var bas = {
+  	language: "Basaa",
+  	location: null,
+  	id: 4096,
+  	tag: "bas",
+  	version: "Release 10"
+  };
+  var ba = {
+  	language: "Bashkir",
+  	location: null,
+  	id: 109,
+  	tag: "ba",
+  	version: "Release 7"
+  };
+  var eu = {
+  	language: "Basque",
+  	location: null,
+  	id: 45,
+  	tag: "eu",
+  	version: "Release 7"
+  };
+  var be = {
+  	language: "Belarusian",
+  	location: null,
+  	id: 35,
+  	tag: "be",
+  	version: "Release 7"
+  };
+  var bem = {
+  	language: "Bemba",
+  	location: null,
+  	id: 4096,
+  	tag: "bem",
+  	version: "Release 10"
+  };
+  var bez = {
+  	language: "Bena",
+  	location: null,
+  	id: 4096,
+  	tag: "bez",
+  	version: "Release 10"
+  };
+  var byn = {
+  	language: "Blin",
+  	location: null,
+  	id: 4096,
+  	tag: "byn",
+  	version: "Release 10"
+  };
+  var brx = {
+  	language: "Bodo",
+  	location: null,
+  	id: 4096,
+  	tag: "brx",
+  	version: "Release 10"
+  };
+  var bs = {
+  	language: "Bosnian (Latin)",
+  	location: null,
+  	id: 30746,
+  	tag: "bs",
+  	version: "Release 7"
+  };
+  var br = {
+  	language: "Breton",
+  	location: null,
+  	id: 126,
+  	tag: "br",
+  	version: "Release 7"
+  };
+  var bg = {
+  	language: "Bulgarian",
+  	location: null,
+  	id: 2,
+  	tag: "bg",
+  	version: "Release 7"
+  };
+  var my = {
+  	language: "Burmese",
+  	location: null,
+  	id: 85,
+  	tag: "my",
+  	version: "Release 8.1"
+  };
+  var ca = {
+  	language: "Catalan",
+  	location: null,
+  	id: 3,
+  	tag: "ca",
+  	version: "Release 7"
+  };
+  var ku = {
+  	language: "Central Kurdish",
+  	location: null,
+  	id: 146,
+  	tag: "ku",
+  	version: "Release 8"
+  };
+  var chr = {
+  	language: "Cherokee",
+  	location: null,
+  	id: 92,
+  	tag: "chr",
+  	version: "Release 8"
+  };
+  var cgg = {
+  	language: "Chiga",
+  	location: null,
+  	id: 4096,
+  	tag: "cgg",
+  	version: "Release 10"
+  };
+  var zh = {
+  	language: "Chinese (Simplified)",
+  	location: null,
+  	id: 30724,
+  	tag: "zh",
+  	version: "Windows 7"
+  };
+  var swc = {
+  	language: "Congo Swahili",
+  	location: null,
+  	id: 4096,
+  	tag: "swc",
+  	version: "Release 10"
+  };
+  var kw = {
+  	language: "Cornish",
+  	location: null,
+  	id: 4096,
+  	tag: "kw",
+  	version: "Release 10"
+  };
+  var co = {
+  	language: "Corsican",
+  	location: null,
+  	id: 131,
+  	tag: "co",
+  	version: "Release 7"
+  };
+  var cs = {
+  	language: "Czech",
+  	location: null,
+  	id: 5,
+  	tag: "cs",
+  	version: "Release 7"
+  };
+  var da = {
+  	language: "Danish",
+  	location: null,
+  	id: 6,
+  	tag: "da",
+  	version: "Release 7"
+  };
+  var prs = {
+  	language: "Dari",
+  	location: null,
+  	id: 140,
+  	tag: "prs",
+  	version: "Release 7"
+  };
+  var dv = {
+  	language: "Divehi",
+  	location: null,
+  	id: 101,
+  	tag: "dv",
+  	version: "Release 7"
+  };
+  var dua = {
+  	language: "Duala",
+  	location: null,
+  	id: 4096,
+  	tag: "dua",
+  	version: "Release 10"
+  };
+  var nl = {
+  	language: "Dutch",
+  	location: null,
+  	id: 19,
+  	tag: "nl",
+  	version: "Release 7"
+  };
+  var dz = {
+  	language: "Dzongkha",
+  	location: null,
+  	id: 4096,
+  	tag: "dz",
+  	version: "Release 10"
+  };
+  var ebu = {
+  	language: "Embu",
+  	location: null,
+  	id: 4096,
+  	tag: "ebu",
+  	version: "Release 10"
+  };
+  var en = {
+  	language: "English",
+  	location: null,
+  	id: 9,
+  	tag: "en",
+  	version: "Release 7"
+  };
+  var eo = {
+  	language: "Esperanto",
+  	location: null,
+  	id: 4096,
+  	tag: "eo",
+  	version: "Release 10"
+  };
+  var et = {
+  	language: "Estonian",
+  	location: null,
+  	id: 37,
+  	tag: "et",
+  	version: "Release 7"
+  };
+  var ee = {
+  	language: "Ewe",
+  	location: null,
+  	id: 4096,
+  	tag: "ee",
+  	version: "Release 10"
+  };
+  var ewo = {
+  	language: "Ewondo",
+  	location: null,
+  	id: 4096,
+  	tag: "ewo",
+  	version: "Release 10"
+  };
+  var fo = {
+  	language: "Faroese",
+  	location: null,
+  	id: 56,
+  	tag: "fo",
+  	version: "Release 7"
+  };
+  var fil = {
+  	language: "Filipino",
+  	location: null,
+  	id: 100,
+  	tag: "fil",
+  	version: "Release 7"
+  };
+  var fi = {
+  	language: "Finnish",
+  	location: null,
+  	id: 11,
+  	tag: "fi",
+  	version: "Release 7"
+  };
+  var fr = {
+  	language: "French",
+  	location: null,
+  	id: 12,
+  	tag: "fr",
+  	version: "Release 7"
+  };
+  var fy = {
+  	language: "Frisian",
+  	location: null,
+  	id: 98,
+  	tag: "fy",
+  	version: "Release 7"
+  };
+  var fur = {
+  	language: "Friulian",
+  	location: null,
+  	id: 4096,
+  	tag: "fur",
+  	version: "Release 10"
+  };
+  var ff = {
+  	language: "Fulah",
+  	location: null,
+  	id: 103,
+  	tag: "ff",
+  	version: "Release 8"
+  };
+  var gl = {
+  	language: "Galician",
+  	location: null,
+  	id: 86,
+  	tag: "gl",
+  	version: "Release 7"
+  };
+  var lg = {
+  	language: "Ganda",
+  	location: null,
+  	id: 4096,
+  	tag: "lg",
+  	version: "Release 10"
+  };
+  var ka = {
+  	language: "Georgian",
+  	location: null,
+  	id: 55,
+  	tag: "ka",
+  	version: "Release 7"
+  };
+  var de = {
+  	language: "German",
+  	location: null,
+  	id: 7,
+  	tag: "de",
+  	version: "Release 7"
+  };
+  var el = {
+  	language: "Greek",
+  	location: null,
+  	id: 8,
+  	tag: "el",
+  	version: "Release 7"
+  };
+  var kl = {
+  	language: "Greenlandic",
+  	location: null,
+  	id: 111,
+  	tag: "kl",
+  	version: "Release 7"
+  };
+  var gn = {
+  	language: "Guarani",
+  	location: null,
+  	id: 116,
+  	tag: "gn",
+  	version: "Release 8.1"
+  };
+  var gu = {
+  	language: "Gujarati",
+  	location: null,
+  	id: 71,
+  	tag: "gu",
+  	version: "Release 7"
+  };
+  var guz = {
+  	language: "Gusii",
+  	location: null,
+  	id: 4096,
+  	tag: "guz",
+  	version: "Release 10"
+  };
+  var ha = {
+  	language: "Hausa (Latin)",
+  	location: null,
+  	id: 104,
+  	tag: "ha",
+  	version: "Release 7"
+  };
+  var haw = {
+  	language: "Hawaiian",
+  	location: null,
+  	id: 117,
+  	tag: "haw",
+  	version: "Release 8"
+  };
+  var he = {
+  	language: "Hebrew",
+  	location: null,
+  	id: 13,
+  	tag: "he",
+  	version: "Release 7"
+  };
+  var hi = {
+  	language: "Hindi",
+  	location: null,
+  	id: 57,
+  	tag: "hi",
+  	version: "Release 7"
+  };
+  var hu = {
+  	language: "Hungarian",
+  	location: null,
+  	id: 14,
+  	tag: "hu",
+  	version: "Release 7"
+  };
+  var is = {
+  	language: "Icelandic",
+  	location: null,
+  	id: 15,
+  	tag: "is",
+  	version: "Release 7"
+  };
+  var ig = {
+  	language: "Igbo",
+  	location: null,
+  	id: 112,
+  	tag: "ig",
+  	version: "Release 7"
+  };
+  var id = {
+  	language: "Indonesian",
+  	location: null,
+  	id: 33,
+  	tag: "id",
+  	version: "Release 7"
+  };
+  var ia = {
+  	language: "Interlingua",
+  	location: null,
+  	id: 4096,
+  	tag: "ia",
+  	version: "Release 10"
+  };
+  var iu = {
+  	language: "Inuktitut (Latin)",
+  	location: null,
+  	id: 93,
+  	tag: "iu",
+  	version: "Release 7"
+  };
+  var ga = {
+  	language: "Irish",
+  	location: null,
+  	id: 60,
+  	tag: "ga",
+  	version: "Windows 7"
+  };
+  var it = {
+  	language: "Italian",
+  	location: null,
+  	id: 16,
+  	tag: "it",
+  	version: "Release 7"
+  };
+  var ja = {
+  	language: "Japanese",
+  	location: null,
+  	id: 17,
+  	tag: "ja",
+  	version: "Release 7"
+  };
+  var jv = {
+  	language: "Javanese",
+  	location: null,
+  	id: 4096,
+  	tag: "jv",
+  	version: "Release 8.1"
+  };
+  var dyo = {
+  	language: "Jola-Fonyi",
+  	location: null,
+  	id: 4096,
+  	tag: "dyo",
+  	version: "Release 10"
+  };
+  var kea = {
+  	language: "Kabuverdianu",
+  	location: null,
+  	id: 4096,
+  	tag: "kea",
+  	version: "Release 10"
+  };
+  var kab = {
+  	language: "Kabyle",
+  	location: null,
+  	id: 4096,
+  	tag: "kab",
+  	version: "Release 10"
+  };
+  var kkj = {
+  	language: "Kako",
+  	location: null,
+  	id: 4096,
+  	tag: "kkj",
+  	version: "Release 10"
+  };
+  var kln = {
+  	language: "Kalenjin",
+  	location: null,
+  	id: 4096,
+  	tag: "kln",
+  	version: "Release 10"
+  };
+  var kam = {
+  	language: "Kamba",
+  	location: null,
+  	id: 4096,
+  	tag: "kam",
+  	version: "Release 10"
+  };
+  var kn = {
+  	language: "Kannada",
+  	location: null,
+  	id: 75,
+  	tag: "kn",
+  	version: "Release 7"
+  };
+  var ks = {
+  	language: "Kashmiri",
+  	location: null,
+  	id: 96,
+  	tag: "ks",
+  	version: "Release 10"
+  };
+  var kk = {
+  	language: "Kazakh",
+  	location: null,
+  	id: 63,
+  	tag: "kk",
+  	version: "Release 7"
+  };
+  var km = {
+  	language: "Khmer",
+  	location: null,
+  	id: 83,
+  	tag: "km",
+  	version: "Release 7"
+  };
+  var quc = {
+  	language: "K'iche",
+  	location: null,
+  	id: 134,
+  	tag: "quc",
+  	version: "Release 10"
+  };
+  var ki = {
+  	language: "Kikuyu",
+  	location: null,
+  	id: 4096,
+  	tag: "ki",
+  	version: "Release 10"
+  };
+  var rw = {
+  	language: "Kinyarwanda",
+  	location: null,
+  	id: 135,
+  	tag: "rw",
+  	version: "Release 7"
+  };
+  var sw = {
+  	language: "Kiswahili",
+  	location: null,
+  	id: 65,
+  	tag: "sw",
+  	version: "Release 7"
+  };
+  var kok = {
+  	language: "Konkani",
+  	location: null,
+  	id: 87,
+  	tag: "kok",
+  	version: "Release 7"
+  };
+  var ko = {
+  	language: "Korean",
+  	location: null,
+  	id: 18,
+  	tag: "ko",
+  	version: "Release 7"
+  };
+  var khq = {
+  	language: "Koyra Chiini",
+  	location: null,
+  	id: 4096,
+  	tag: "khq",
+  	version: "Release 10"
+  };
+  var ses = {
+  	language: "Koyraboro Senni",
+  	location: null,
+  	id: 4096,
+  	tag: "ses",
+  	version: "Release 10"
+  };
+  var nmg = {
+  	language: "Kwasio",
+  	location: null,
+  	id: 4096,
+  	tag: "nmg",
+  	version: "Release 10"
+  };
+  var ky = {
+  	language: "Kyrgyz",
+  	location: null,
+  	id: 64,
+  	tag: "ky",
+  	version: "Release 7"
+  };
+  var lkt = {
+  	language: "Lakota",
+  	location: null,
+  	id: 4096,
+  	tag: "lkt",
+  	version: "Release 10"
+  };
+  var lag = {
+  	language: "Langi",
+  	location: null,
+  	id: 4096,
+  	tag: "lag",
+  	version: "Release 10"
+  };
+  var lo = {
+  	language: "Lao",
+  	location: null,
+  	id: 84,
+  	tag: "lo",
+  	version: "Release 7"
+  };
+  var lv = {
+  	language: "Latvian",
+  	location: null,
+  	id: 38,
+  	tag: "lv",
+  	version: "Release 7"
+  };
+  var ln = {
+  	language: "Lingala",
+  	location: null,
+  	id: 4096,
+  	tag: "ln",
+  	version: "Release 10"
+  };
+  var lt = {
+  	language: "Lithuanian",
+  	location: null,
+  	id: 39,
+  	tag: "lt",
+  	version: "Release 7"
+  };
+  var nds = {
+  	language: "Low German",
+  	location: null,
+  	id: 4096,
+  	tag: "nds",
+  	version: "Release 10.2"
+  };
+  var dsb = {
+  	language: "Lower Sorbian",
+  	location: null,
+  	id: 31790,
+  	tag: "dsb",
+  	version: "Windows 7"
+  };
+  var lu = {
+  	language: "Luba-Katanga",
+  	location: null,
+  	id: 4096,
+  	tag: "lu",
+  	version: "Release 10"
+  };
+  var luo = {
+  	language: "Luo",
+  	location: null,
+  	id: 4096,
+  	tag: "luo",
+  	version: "Release 10"
+  };
+  var lb = {
+  	language: "Luxembourgish",
+  	location: null,
+  	id: 110,
+  	tag: "lb",
+  	version: "Release 7"
+  };
+  var luy = {
+  	language: "Luyia",
+  	location: null,
+  	id: 4096,
+  	tag: "luy",
+  	version: "Release 10"
+  };
+  var mk = {
+  	language: "Macedonian",
+  	location: null,
+  	id: 47,
+  	tag: "mk",
+  	version: "Release 7"
+  };
+  var jmc = {
+  	language: "Machame",
+  	location: null,
+  	id: 4096,
+  	tag: "jmc",
+  	version: "Release 10"
+  };
+  var mgh = {
+  	language: "Makhuwa-Meetto",
+  	location: null,
+  	id: 4096,
+  	tag: "mgh",
+  	version: "Release 10"
+  };
+  var kde = {
+  	language: "Makonde",
+  	location: null,
+  	id: 4096,
+  	tag: "kde",
+  	version: "Release 10"
+  };
+  var mg = {
+  	language: "Malagasy",
+  	location: null,
+  	id: 4096,
+  	tag: "mg",
+  	version: "Release 8.1"
+  };
+  var ms = {
+  	language: "Malay",
+  	location: null,
+  	id: 62,
+  	tag: "ms",
+  	version: "Release 7"
+  };
+  var ml = {
+  	language: "Malayalam",
+  	location: null,
+  	id: 76,
+  	tag: "ml",
+  	version: "Release 7"
+  };
+  var mt = {
+  	language: "Maltese",
+  	location: null,
+  	id: 58,
+  	tag: "mt",
+  	version: "Release 7"
+  };
+  var gv = {
+  	language: "Manx",
+  	location: null,
+  	id: 4096,
+  	tag: "gv",
+  	version: "Release 10"
+  };
+  var mi = {
+  	language: "Maori",
+  	location: null,
+  	id: 129,
+  	tag: "mi",
+  	version: "Release 7"
+  };
+  var arn = {
+  	language: "Mapudungun",
+  	location: null,
+  	id: 122,
+  	tag: "arn",
+  	version: "Release 7"
+  };
+  var mr = {
+  	language: "Marathi",
+  	location: null,
+  	id: 78,
+  	tag: "mr",
+  	version: "Release 7"
+  };
+  var mas = {
+  	language: "Masai",
+  	location: null,
+  	id: 4096,
+  	tag: "mas",
+  	version: "Release 10"
+  };
+  var mer = {
+  	language: "Meru",
+  	location: null,
+  	id: 4096,
+  	tag: "mer",
+  	version: "Release 10"
+  };
+  var mgo = {
+  	language: "Meta'",
+  	location: null,
+  	id: 4096,
+  	tag: "mgo",
+  	version: "Release 10"
+  };
+  var moh = {
+  	language: "Mohawk",
+  	location: null,
+  	id: 124,
+  	tag: "moh",
+  	version: "Release 7"
+  };
+  var mn = {
+  	language: "Mongolian (Cyrillic)",
+  	location: null,
+  	id: 80,
+  	tag: "mn",
+  	version: "Release 7"
+  };
+  var mfe = {
+  	language: "Morisyen",
+  	location: null,
+  	id: 4096,
+  	tag: "mfe",
+  	version: "Release 10"
+  };
+  var mua = {
+  	language: "Mundang",
+  	location: null,
+  	id: 4096,
+  	tag: "mua",
+  	version: "Release 10"
+  };
+  var nqo = {
+  	language: "N'ko",
+  	location: null,
+  	id: 4096,
+  	tag: "nqo",
+  	version: "Release 8.1"
+  };
+  var naq = {
+  	language: "Nama",
+  	location: null,
+  	id: 4096,
+  	tag: "naq",
+  	version: "Release 10"
+  };
+  var ne = {
+  	language: "Nepali",
+  	location: null,
+  	id: 97,
+  	tag: "ne",
+  	version: "Release 7"
+  };
+  var nnh = {
+  	language: "Ngiemboon",
+  	location: null,
+  	id: 4096,
+  	tag: "nnh",
+  	version: "Release 10"
+  };
+  var jgo = {
+  	language: "Ngomba",
+  	location: null,
+  	id: 4096,
+  	tag: "jgo",
+  	version: "Release 10"
+  };
+  var nd = {
+  	language: "North Ndebele",
+  	location: null,
+  	id: 4096,
+  	tag: "nd",
+  	version: "Release 10"
+  };
+  var no = {
+  	language: "Norwegian (Bokmal)",
+  	location: null,
+  	id: 20,
+  	tag: "no",
+  	version: "Release 7"
+  };
+  var nb = {
+  	language: "Norwegian (Bokmal)",
+  	location: null,
+  	id: 31764,
+  	tag: "nb",
+  	version: "Release 7"
+  };
+  var nn = {
+  	language: "Norwegian (Nynorsk)",
+  	location: null,
+  	id: 30740,
+  	tag: "nn",
+  	version: "Release 7"
+  };
+  var nus = {
+  	language: "Nuer",
+  	location: null,
+  	id: 4096,
+  	tag: "nus",
+  	version: "Release 10"
+  };
+  var nyn = {
+  	language: "Nyankole",
+  	location: null,
+  	id: 4096,
+  	tag: "nyn",
+  	version: "Release 10"
+  };
+  var oc = {
+  	language: "Occitan",
+  	location: null,
+  	id: 130,
+  	tag: "oc",
+  	version: "Release 7"
+  };
+  var or = {
+  	language: "Odia",
+  	location: null,
+  	id: 72,
+  	tag: "or",
+  	version: "Release 7"
+  };
+  var om = {
+  	language: "Oromo",
+  	location: null,
+  	id: 114,
+  	tag: "om",
+  	version: "Release 8.1"
+  };
+  var os = {
+  	language: "Ossetian",
+  	location: null,
+  	id: 4096,
+  	tag: "os",
+  	version: "Release 10"
+  };
+  var ps = {
+  	language: "Pashto",
+  	location: null,
+  	id: 99,
+  	tag: "ps",
+  	version: "Release 7"
+  };
+  var fa = {
+  	language: "Persian",
+  	location: null,
+  	id: 41,
+  	tag: "fa",
+  	version: "Release 7"
+  };
+  var pl = {
+  	language: "Polish",
+  	location: null,
+  	id: 21,
+  	tag: "pl",
+  	version: "Release 7"
+  };
+  var pt = {
+  	language: "Portuguese",
+  	location: null,
+  	id: 22,
+  	tag: "pt",
+  	version: "Release 7"
+  };
+  var pa = {
+  	language: "Punjabi",
+  	location: null,
+  	id: 70,
+  	tag: "pa",
+  	version: "Release 7"
+  };
+  var quz = {
+  	language: "Quechua",
+  	location: null,
+  	id: 107,
+  	tag: "quz",
+  	version: "Release 7"
+  };
+  var ksh = {
+  	language: "Ripuarian",
+  	location: null,
+  	id: 4096,
+  	tag: "ksh",
+  	version: "Release 10"
+  };
+  var ro = {
+  	language: "Romanian",
+  	location: null,
+  	id: 24,
+  	tag: "ro",
+  	version: "Release 7"
+  };
+  var rm = {
+  	language: "Romansh",
+  	location: null,
+  	id: 23,
+  	tag: "rm",
+  	version: "Release 7"
+  };
+  var rof = {
+  	language: "Rombo",
+  	location: null,
+  	id: 4096,
+  	tag: "rof",
+  	version: "Release 10"
+  };
+  var rn = {
+  	language: "Rundi",
+  	location: null,
+  	id: 4096,
+  	tag: "rn",
+  	version: "Release 10"
+  };
+  var ru = {
+  	language: "Russian",
+  	location: null,
+  	id: 25,
+  	tag: "ru",
+  	version: "Release 7"
+  };
+  var rwk = {
+  	language: "Rwa",
+  	location: null,
+  	id: 4096,
+  	tag: "rwk",
+  	version: "Release 10"
+  };
+  var ssy = {
+  	language: "Saho",
+  	location: null,
+  	id: 4096,
+  	tag: "ssy",
+  	version: "Release 10"
+  };
+  var sah = {
+  	language: "Sakha",
+  	location: null,
+  	id: 133,
+  	tag: "sah",
+  	version: "Release 7"
+  };
+  var saq = {
+  	language: "Samburu",
+  	location: null,
+  	id: 4096,
+  	tag: "saq",
+  	version: "Release 10"
+  };
+  var smn = {
+  	language: "Sami (Inari)",
+  	location: null,
+  	id: 28731,
+  	tag: "smn",
+  	version: "Windows 7"
+  };
+  var smj = {
+  	language: "Sami (Lule)",
+  	location: null,
+  	id: 31803,
+  	tag: "smj",
+  	version: "Windows 7"
+  };
+  var se = {
+  	language: "Sami (Northern)",
+  	location: null,
+  	id: 59,
+  	tag: "se",
+  	version: "Release 7"
+  };
+  var sms = {
+  	language: "Sami (Skolt)",
+  	location: null,
+  	id: 29755,
+  	tag: "sms",
+  	version: "Windows 7"
+  };
+  var sma = {
+  	language: "Sami (Southern)",
+  	location: null,
+  	id: 30779,
+  	tag: "sma",
+  	version: "Windows 7"
+  };
+  var sg = {
+  	language: "Sango",
+  	location: null,
+  	id: 4096,
+  	tag: "sg",
+  	version: "Release 10"
+  };
+  var sbp = {
+  	language: "Sangu",
+  	location: null,
+  	id: 4096,
+  	tag: "sbp",
+  	version: "Release 10"
+  };
+  var sa = {
+  	language: "Sanskrit",
+  	location: null,
+  	id: 79,
+  	tag: "sa",
+  	version: "Release 7"
+  };
+  var gd = {
+  	language: "Scottish Gaelic",
+  	location: null,
+  	id: 145,
+  	tag: "gd",
+  	version: "Windows 7"
+  };
+  var seh = {
+  	language: "Sena",
+  	location: null,
+  	id: 4096,
+  	tag: "seh",
+  	version: "Release 10"
+  };
+  var sr = {
+  	language: "Serbian (Latin)",
+  	location: null,
+  	id: 31770,
+  	tag: "sr",
+  	version: "Release 7"
+  };
+  var nso = {
+  	language: "Sesotho sa Leboa",
+  	location: null,
+  	id: 108,
+  	tag: "nso",
+  	version: "Release 7"
+  };
+  var tn = {
+  	language: "Setswana",
+  	location: null,
+  	id: 50,
+  	tag: "tn",
+  	version: "Release 7"
+  };
+  var ksb = {
+  	language: "Shambala",
+  	location: null,
+  	id: 4096,
+  	tag: "ksb",
+  	version: "Release 10"
+  };
+  var sn = {
+  	language: "Shona",
+  	location: null,
+  	id: 4096,
+  	tag: "sn",
+  	version: "Release 8.1"
+  };
+  var sd = {
+  	language: "Sindhi",
+  	location: null,
+  	id: 89,
+  	tag: "sd",
+  	version: "Release 8"
+  };
+  var si = {
+  	language: "Sinhala",
+  	location: null,
+  	id: 91,
+  	tag: "si",
+  	version: "Release 7"
+  };
+  var sk = {
+  	language: "Slovak",
+  	location: null,
+  	id: 27,
+  	tag: "sk",
+  	version: "Release 7"
+  };
+  var sl = {
+  	language: "Slovenian",
+  	location: null,
+  	id: 36,
+  	tag: "sl",
+  	version: "Release 7"
+  };
+  var xog = {
+  	language: "Soga",
+  	location: null,
+  	id: 4096,
+  	tag: "xog",
+  	version: "Release 10"
+  };
+  var so = {
+  	language: "Somali",
+  	location: null,
+  	id: 119,
+  	tag: "so",
+  	version: "Release 8.1"
+  };
+  var st = {
+  	language: "Sotho",
+  	location: null,
+  	id: 48,
+  	tag: "st",
+  	version: "Release 8.1"
+  };
+  var nr = {
+  	language: "South Ndebele",
+  	location: null,
+  	id: 4096,
+  	tag: "nr",
+  	version: "Release 10"
+  };
+  var es = {
+  	language: "Spanish",
+  	location: null,
+  	id: 10,
+  	tag: "es",
+  	version: "Release 7"
+  };
+  var zgh = {
+  	language: "Standard Moroccan ",
+  	location: null,
+  	id: 4096,
+  	tag: "zgh",
+  	version: "Release 8.1"
+  };
+  var ss = {
+  	language: "Swati",
+  	location: null,
+  	id: 4096,
+  	tag: "ss",
+  	version: "Release 10"
+  };
+  var sv = {
+  	language: "Swedish",
+  	location: null,
+  	id: 29,
+  	tag: "sv",
+  	version: "Release 7"
+  };
+  var syr = {
+  	language: "Syriac",
+  	location: null,
+  	id: 90,
+  	tag: "syr",
+  	version: "Release 7"
+  };
+  var shi = {
+  	language: "Tachelhit",
+  	location: null,
+  	id: 4096,
+  	tag: "shi",
+  	version: "Release 10"
+  };
+  var dav = {
+  	language: "Taita",
+  	location: null,
+  	id: 4096,
+  	tag: "dav",
+  	version: "Release 10"
+  };
+  var tg = {
+  	language: "Tajik (Cyrillic)",
+  	location: null,
+  	id: 40,
+  	tag: "tg",
+  	version: "Release 7"
+  };
+  var tzm = {
+  	language: "Tamazight (Latin)",
+  	location: null,
+  	id: 95,
+  	tag: "tzm",
+  	version: "Release 7"
+  };
+  var ta = {
+  	language: "Tamil",
+  	location: null,
+  	id: 73,
+  	tag: "ta",
+  	version: "Release 7"
+  };
+  var twq = {
+  	language: "Tasawaq",
+  	location: null,
+  	id: 4096,
+  	tag: "twq",
+  	version: "Release 10"
+  };
+  var tt = {
+  	language: "Tatar",
+  	location: null,
+  	id: 68,
+  	tag: "tt",
+  	version: "Release 7"
+  };
+  var te = {
+  	language: "Telugu",
+  	location: null,
+  	id: 74,
+  	tag: "te",
+  	version: "Release 7"
+  };
+  var teo = {
+  	language: "Teso",
+  	location: null,
+  	id: 4096,
+  	tag: "teo",
+  	version: "Release 10"
+  };
+  var th = {
+  	language: "Thai",
+  	location: null,
+  	id: 30,
+  	tag: "th",
+  	version: "Release 7"
+  };
+  var bo = {
+  	language: "Tibetan",
+  	location: null,
+  	id: 81,
+  	tag: "bo",
+  	version: "Release 7"
+  };
+  var tig = {
+  	language: "Tigre",
+  	location: null,
+  	id: 4096,
+  	tag: "tig",
+  	version: "Release 10"
+  };
+  var ti = {
+  	language: "Tigrinya",
+  	location: null,
+  	id: 115,
+  	tag: "ti",
+  	version: "Release 8"
+  };
+  var to = {
+  	language: "Tongan",
+  	location: null,
+  	id: 4096,
+  	tag: "to",
+  	version: "Release 10"
+  };
+  var ts = {
+  	language: "Tsonga",
+  	location: null,
+  	id: 49,
+  	tag: "ts",
+  	version: "Release 8.1"
+  };
+  var tr = {
+  	language: "Turkish",
+  	location: null,
+  	id: 31,
+  	tag: "tr",
+  	version: "Release 7"
+  };
+  var tk = {
+  	language: "Turkmen",
+  	location: null,
+  	id: 66,
+  	tag: "tk",
+  	version: "Release 7"
+  };
+  var uk = {
+  	language: "Ukrainian",
+  	location: null,
+  	id: 34,
+  	tag: "uk",
+  	version: "Release 7"
+  };
+  var hsb = {
+  	language: "Upper Sorbian",
+  	location: null,
+  	id: 46,
+  	tag: "hsb",
+  	version: "Release 7"
+  };
+  var ur = {
+  	language: "Urdu",
+  	location: null,
+  	id: 32,
+  	tag: "ur",
+  	version: "Release 7"
+  };
+  var ug = {
+  	language: "Uyghur",
+  	location: null,
+  	id: 128,
+  	tag: "ug",
+  	version: "Release 7"
+  };
+  var uz = {
+  	language: "Uzbek (Latin)",
+  	location: null,
+  	id: 67,
+  	tag: "uz",
+  	version: "Release 7"
+  };
+  var vai = {
+  	language: "Vai",
+  	location: null,
+  	id: 4096,
+  	tag: "vai",
+  	version: "Release 10"
+  };
+  var ve = {
+  	language: "Venda",
+  	location: null,
+  	id: 51,
+  	tag: "ve",
+  	version: "Release 10"
+  };
+  var vi = {
+  	language: "Vietnamese",
+  	location: null,
+  	id: 42,
+  	tag: "vi",
+  	version: "Release 7"
+  };
+  var vo = {
+  	language: "Volapük",
+  	location: null,
+  	id: 4096,
+  	tag: "vo",
+  	version: "Release 10"
+  };
+  var vun = {
+  	language: "Vunjo",
+  	location: null,
+  	id: 4096,
+  	tag: "vun",
+  	version: "Release 10"
+  };
+  var wae = {
+  	language: "Walser",
+  	location: null,
+  	id: 4096,
+  	tag: "wae",
+  	version: "Release 10"
+  };
+  var cy = {
+  	language: "Welsh",
+  	location: null,
+  	id: 82,
+  	tag: "cy",
+  	version: "Release 7"
+  };
+  var wal = {
+  	language: "Wolaytta",
+  	location: null,
+  	id: 4096,
+  	tag: "wal",
+  	version: "Release 10"
+  };
+  var wo = {
+  	language: "Wolof",
+  	location: null,
+  	id: 136,
+  	tag: "wo",
+  	version: "Release 7"
+  };
+  var xh = {
+  	language: "Xhosa",
+  	location: null,
+  	id: 52,
+  	tag: "xh",
+  	version: "Release 7"
+  };
+  var yav = {
+  	language: "Yangben",
+  	location: null,
+  	id: 4096,
+  	tag: "yav",
+  	version: "Release 10"
+  };
+  var ii = {
+  	language: "Yi",
+  	location: null,
+  	id: 120,
+  	tag: "ii",
+  	version: "Release 7"
+  };
+  var yo = {
+  	language: "Yoruba",
+  	location: null,
+  	id: 106,
+  	tag: "yo",
+  	version: "Release 7"
+  };
+  var dje = {
+  	language: "Zarma",
+  	location: null,
+  	id: 4096,
+  	tag: "dje",
+  	version: "Release 10"
+  };
+  var zu = {
+  	language: "Zulu",
+  	location: null,
+  	id: 53,
+  	tag: "zu",
+  	version: "Release 7"
+  };
+  var lcid = {
+  	aa: aa,
+  	"aa-dj": {
+  	language: "Afar",
+  	location: "Djibouti",
+  	id: 4096,
+  	tag: "aa-DJ",
+  	version: "Release 10"
+  },
+  	"aa-er": {
+  	language: "Afar",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "aa-ER",
+  	version: "Release 10"
+  },
+  	"aa-et": {
+  	language: "Afar",
+  	location: "Ethiopia",
+  	id: 4096,
+  	tag: "aa-ET",
+  	version: "Release 10"
+  },
+  	af: af,
+  	"af-na": {
+  	language: "Afrikaans",
+  	location: "Namibia",
+  	id: 4096,
+  	tag: "af-NA",
+  	version: "Release 10"
+  },
+  	"af-za": {
+  	language: "Afrikaans",
+  	location: "South Africa",
+  	id: 1078,
+  	tag: "af-ZA",
+  	version: "Release B"
+  },
+  	agq: agq,
+  	"agq-cm": {
+  	language: "Aghem",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "agq-CM",
+  	version: "Release 10"
+  },
+  	ak: ak,
+  	"ak-gh": {
+  	language: "Akan",
+  	location: "Ghana",
+  	id: 4096,
+  	tag: "ak-GH",
+  	version: "Release 10"
+  },
+  	sq: sq,
+  	"sq-al": {
+  	language: "Albanian",
+  	location: "Albania",
+  	id: 1052,
+  	tag: "sq-AL",
+  	version: "Release B"
+  },
+  	"sq-mk": {
+  	language: "Albanian",
+  	location: "North Macedonia",
+  	id: 4096,
+  	tag: "sq-MK",
+  	version: "Release 10"
+  },
+  	gsw: gsw,
+  	"gsw-fr": {
+  	language: "Alsatian",
+  	location: "France",
+  	id: 1156,
+  	tag: "gsw-FR",
+  	version: "Release V"
+  },
+  	"gsw-li": {
+  	language: "Alsatian",
+  	location: "Liechtenstein",
+  	id: 4096,
+  	tag: "gsw-LI",
+  	version: "Release 10"
+  },
+  	"gsw-ch": {
+  	language: "Alsatian",
+  	location: "Switzerland",
+  	id: 4096,
+  	tag: "gsw-CH",
+  	version: "Release 10"
+  },
+  	am: am,
+  	"am-et": {
+  	language: "Amharic",
+  	location: "Ethiopia",
+  	id: 1118,
+  	tag: "am-ET",
+  	version: "Release V"
+  },
+  	ar: ar,
+  	"ar-dz": {
+  	language: "Arabic",
+  	location: "Algeria",
+  	id: 5121,
+  	tag: "ar-DZ",
+  	version: "Release B"
+  },
+  	"ar-bh": {
+  	language: "Arabic",
+  	location: "Bahrain",
+  	id: 15361,
+  	tag: "ar-BH",
+  	version: "Release B"
+  },
+  	"ar-td": {
+  	language: "Arabic",
+  	location: "Chad",
+  	id: 4096,
+  	tag: "ar-TD",
+  	version: "Release 10"
+  },
+  	"ar-km": {
+  	language: "Arabic",
+  	location: "Comoros",
+  	id: 4096,
+  	tag: "ar-KM",
+  	version: "Release 10"
+  },
+  	"ar-dj": {
+  	language: "Arabic",
+  	location: "Djibouti",
+  	id: 4096,
+  	tag: "ar-DJ",
+  	version: "Release 10"
+  },
+  	"ar-eg": {
+  	language: "Arabic",
+  	location: "Egypt",
+  	id: 3073,
+  	tag: "ar-EG",
+  	version: "Release B"
+  },
+  	"ar-er": {
+  	language: "Arabic",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "ar-ER",
+  	version: "Release 10"
+  },
+  	"ar-iq": {
+  	language: "Arabic",
+  	location: "Iraq",
+  	id: 2049,
+  	tag: "ar-IQ",
+  	version: "Release B"
+  },
+  	"ar-il": {
+  	language: "Arabic",
+  	location: "Israel",
+  	id: 4096,
+  	tag: "ar-IL",
+  	version: "Release 10"
+  },
+  	"ar-jo": {
+  	language: "Arabic",
+  	location: "Jordan",
+  	id: 11265,
+  	tag: "ar-JO",
+  	version: "Release B"
+  },
+  	"ar-kw": {
+  	language: "Arabic",
+  	location: "Kuwait",
+  	id: 13313,
+  	tag: "ar-KW",
+  	version: "Release B"
+  },
+  	"ar-lb": {
+  	language: "Arabic",
+  	location: "Lebanon",
+  	id: 12289,
+  	tag: "ar-LB",
+  	version: "Release B"
+  },
+  	"ar-ly": {
+  	language: "Arabic",
+  	location: "Libya",
+  	id: 4097,
+  	tag: "ar-LY",
+  	version: "Release B"
+  },
+  	"ar-mr": {
+  	language: "Arabic",
+  	location: "Mauritania",
+  	id: 4096,
+  	tag: "ar-MR",
+  	version: "Release 10"
+  },
+  	"ar-ma": {
+  	language: "Arabic",
+  	location: "Morocco",
+  	id: 6145,
+  	tag: "ar-MA",
+  	version: "Release B"
+  },
+  	"ar-om": {
+  	language: "Arabic",
+  	location: "Oman",
+  	id: 8193,
+  	tag: "ar-OM",
+  	version: "Release B"
+  },
+  	"ar-ps": {
+  	language: "Arabic",
+  	location: "Palestinian Authority",
+  	id: 4096,
+  	tag: "ar-PS",
+  	version: "Release 10"
+  },
+  	"ar-qa": {
+  	language: "Arabic",
+  	location: "Qatar",
+  	id: 16385,
+  	tag: "ar-QA",
+  	version: "Release B"
+  },
+  	"ar-sa": {
+  	language: "Arabic",
+  	location: "Saudi Arabia",
+  	id: 1025,
+  	tag: "ar-SA",
+  	version: "Release B"
+  },
+  	"ar-so": {
+  	language: "Arabic",
+  	location: "Somalia",
+  	id: 4096,
+  	tag: "ar-SO",
+  	version: "Release 10"
+  },
+  	"ar-ss": {
+  	language: "Arabic",
+  	location: "South Sudan",
+  	id: 4096,
+  	tag: "ar-SS",
+  	version: "Release 10"
+  },
+  	"ar-sd": {
+  	language: "Arabic",
+  	location: "Sudan",
+  	id: 4096,
+  	tag: "ar-SD",
+  	version: "Release 10"
+  },
+  	"ar-sy": {
+  	language: "Arabic",
+  	location: "Syria",
+  	id: 10241,
+  	tag: "ar-SY",
+  	version: "Release B"
+  },
+  	"ar-tn": {
+  	language: "Arabic",
+  	location: "Tunisia",
+  	id: 7169,
+  	tag: "ar-TN",
+  	version: "Release B"
+  },
+  	"ar-ae": {
+  	language: "Arabic",
+  	location: "U.A.E.",
+  	id: 14337,
+  	tag: "ar-AE",
+  	version: "Release B"
+  },
+  	"ar-001": {
+  	language: "Arabic",
+  	location: "World",
+  	id: 4096,
+  	tag: "ar-001",
+  	version: "Release 10"
+  },
+  	"ar-ye": {
+  	language: "Arabic",
+  	location: "Yemen",
+  	id: 9217,
+  	tag: "ar-YE",
+  	version: "Release B"
+  },
+  	hy: hy,
+  	"hy-am": {
+  	language: "Armenian",
+  	location: "Armenia",
+  	id: 1067,
+  	tag: "hy-AM",
+  	version: "Release C"
+  },
+  	as: as,
+  	"as-in": {
+  	language: "Assamese",
+  	location: "India",
+  	id: 1101,
+  	tag: "as-IN",
+  	version: "Release V"
+  },
+  	ast: ast,
+  	"ast-es": {
+  	language: "Asturian",
+  	location: "Spain",
+  	id: 4096,
+  	tag: "ast-ES",
+  	version: "Release 10"
+  },
+  	asa: asa,
+  	"asa-tz": {
+  	language: "Asu",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "asa-TZ",
+  	version: "Release 10"
+  },
+  	"az-cyrl": {
+  	language: "Azerbaijani (Cyrillic)",
+  	location: null,
+  	id: 29740,
+  	tag: "az-Cyrl",
+  	version: "Windows 7"
+  },
+  	"az-cyrl-az": {
+  	language: "Azerbaijani (Cyrillic)",
+  	location: "Azerbaijan",
+  	id: 2092,
+  	tag: "az-Cyrl-AZ",
+  	version: "Release C"
+  },
+  	az: az,
+  	"az-latn": {
+  	language: "Azerbaijani (Latin)",
+  	location: null,
+  	id: 30764,
+  	tag: "az-Latn",
+  	version: "Windows 7"
+  },
+  	"az-latn-az": {
+  	language: "Azerbaijani (Latin)",
+  	location: "Azerbaijan",
+  	id: 1068,
+  	tag: "az-Latn-AZ",
+  	version: "Release C"
+  },
+  	ksf: ksf,
+  	"ksf-cm": {
+  	language: "Bafia",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "ksf-CM",
+  	version: "Release 10"
+  },
+  	bm: bm,
+  	"bm-latn-ml": {
+  	language: "Bamanankan (Latin)",
+  	location: "Mali",
+  	id: 4096,
+  	tag: "bm-Latn-ML",
+  	version: "Release 10"
+  },
+  	bn: bn,
+  	"bn-bd": {
+  	language: "Bangla",
+  	location: "Bangladesh",
+  	id: 2117,
+  	tag: "bn-BD",
+  	version: "Release V"
+  },
+  	"bn-in": {
+  	language: "Bangla",
+  	location: "India",
+  	id: 1093,
+  	tag: "bn-IN",
+  	version: "Release E1"
+  },
+  	bas: bas,
+  	"bas-cm": {
+  	language: "Basaa",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "bas-CM",
+  	version: "Release 10"
+  },
+  	ba: ba,
+  	"ba-ru": {
+  	language: "Bashkir",
+  	location: "Russia",
+  	id: 1133,
+  	tag: "ba-RU",
+  	version: "Release V"
+  },
+  	eu: eu,
+  	"eu-es": {
+  	language: "Basque",
+  	location: "Spain",
+  	id: 1069,
+  	tag: "eu-ES",
+  	version: "Release B"
+  },
+  	be: be,
+  	"be-by": {
+  	language: "Belarusian",
+  	location: "Belarus",
+  	id: 1059,
+  	tag: "be-BY",
+  	version: "Release B"
+  },
+  	bem: bem,
+  	"bem-zm": {
+  	language: "Bemba",
+  	location: "Zambia",
+  	id: 4096,
+  	tag: "bem-ZM",
+  	version: "Release 10"
+  },
+  	bez: bez,
+  	"bez-tz": {
+  	language: "Bena",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "bez-TZ",
+  	version: "Release 10"
+  },
+  	byn: byn,
+  	"byn-er": {
+  	language: "Blin",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "byn-ER",
+  	version: "Release 10"
+  },
+  	brx: brx,
+  	"brx-in": {
+  	language: "Bodo",
+  	location: "India",
+  	id: 4096,
+  	tag: "brx-IN",
+  	version: "Release 10"
+  },
+  	"bs-cyrl": {
+  	language: "Bosnian (Cyrillic)",
+  	location: null,
+  	id: 25626,
+  	tag: "bs-Cyrl",
+  	version: "Windows 7"
+  },
+  	"bs-cyrl-ba": {
+  	language: "Bosnian (Cyrillic)",
+  	location: "Bosnia and Herzegovina",
+  	id: 8218,
+  	tag: "bs-Cyrl-BA",
+  	version: "Release E1"
+  },
+  	"bs-latn": {
+  	language: "Bosnian (Latin)",
+  	location: null,
+  	id: 26650,
+  	tag: "bs-Latn",
+  	version: "Windows 7"
+  },
+  	bs: bs,
+  	"bs-latn-ba": {
+  	language: "Bosnian (Latin)",
+  	location: "Bosnia and Herzegovina",
+  	id: 5146,
+  	tag: "bs-Latn-BA",
+  	version: "Release E1"
+  },
+  	br: br,
+  	"br-fr": {
+  	language: "Breton",
+  	location: "France",
+  	id: 1150,
+  	tag: "br-FR",
+  	version: "Release V"
+  },
+  	bg: bg,
+  	"bg-bg": {
+  	language: "Bulgarian",
+  	location: "Bulgaria",
+  	id: 1026,
+  	tag: "bg-BG",
+  	version: "Release B"
+  },
+  	my: my,
+  	"my-mm": {
+  	language: "Burmese",
+  	location: "Myanmar",
+  	id: 1109,
+  	tag: "my-MM",
+  	version: "Release 8.1"
+  },
+  	ca: ca,
+  	"ca-ad": {
+  	language: "Catalan",
+  	location: "Andorra",
+  	id: 4096,
+  	tag: "ca-AD",
+  	version: "Release 10"
+  },
+  	"ca-fr": {
+  	language: "Catalan",
+  	location: "France",
+  	id: 4096,
+  	tag: "ca-FR",
+  	version: "Release 10"
+  },
+  	"ca-it": {
+  	language: "Catalan",
+  	location: "Italy",
+  	id: 4096,
+  	tag: "ca-IT",
+  	version: "Release 10"
+  },
+  	"ca-es": {
+  	language: "Catalan",
+  	location: "Spain",
+  	id: 1027,
+  	tag: "ca-ES",
+  	version: "Release B"
+  },
+  	"tzm-latn-": {
+  	language: "Central Atlas Tamazight ",
+  	location: "Morocco",
+  	id: 4096,
+  	tag: "tzm-Latn-",
+  	version: "Release 10"
+  },
+  	ku: ku,
+  	"ku-arab": {
+  	language: "Central Kurdish",
+  	location: null,
+  	id: 31890,
+  	tag: "ku-Arab",
+  	version: "Release 8"
+  },
+  	"ku-arab-iq": {
+  	language: "Central Kurdish",
+  	location: "Iraq",
+  	id: 1170,
+  	tag: "ku-Arab-IQ",
+  	version: "Release 8"
+  },
+  	"cd-ru": {
+  	language: "Chechen",
+  	location: "Russia",
+  	id: 4096,
+  	tag: "cd-RU",
+  	version: "Release 10.1"
+  },
+  	chr: chr,
+  	"chr-cher": {
+  	language: "Cherokee",
+  	location: null,
+  	id: 31836,
+  	tag: "chr-Cher",
+  	version: "Release 8"
+  },
+  	"chr-cher-us": {
+  	language: "Cherokee",
+  	location: "United States",
+  	id: 1116,
+  	tag: "chr-Cher-US",
+  	version: "Release 8"
+  },
+  	cgg: cgg,
+  	"cgg-ug": {
+  	language: "Chiga",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "cgg-UG",
+  	version: "Release 10"
+  },
+  	"zh-hans": {
+  	language: "Chinese (Simplified)",
+  	location: null,
+  	id: 4,
+  	tag: "zh-Hans",
+  	version: "Release A"
+  },
+  	zh: zh,
+  	"zh-cn": {
+  	language: "Chinese (Simplified)",
+  	location: "People's Republic of China",
+  	id: 2052,
+  	tag: "zh-CN",
+  	version: "Release A"
+  },
+  	"zh-sg": {
+  	language: "Chinese (Simplified)",
+  	location: "Singapore",
+  	id: 4100,
+  	tag: "zh-SG",
+  	version: "Release A"
+  },
+  	"zh-hant": {
+  	language: "Chinese (Traditional)",
+  	location: null,
+  	id: 31748,
+  	tag: "zh-Hant",
+  	version: "Release A"
+  },
+  	"zh-hk": {
+  	language: "Chinese (Traditional)",
+  	location: "Hong Kong S.A.R.",
+  	id: 3076,
+  	tag: "zh-HK",
+  	version: "Release A"
+  },
+  	"zh-mo": {
+  	language: "Chinese (Traditional)",
+  	location: "Macao S.A.R.",
+  	id: 5124,
+  	tag: "zh-MO",
+  	version: "Release D"
+  },
+  	"zh-tw": {
+  	language: "Chinese (Traditional)",
+  	location: "Taiwan",
+  	id: 1028,
+  	tag: "zh-TW",
+  	version: "Release A"
+  },
+  	"cu-ru": {
+  	language: "Church Slavic",
+  	location: "Russia",
+  	id: 4096,
+  	tag: "cu-RU",
+  	version: "Release 10.1"
+  },
+  	swc: swc,
+  	"swc-cd": {
+  	language: "Congo Swahili",
+  	location: "Congo DRC",
+  	id: 4096,
+  	tag: "swc-CD",
+  	version: "Release 10"
+  },
+  	kw: kw,
+  	"kw-gb": {
+  	language: "Cornish",
+  	location: "United Kingdom",
+  	id: 4096,
+  	tag: "kw-GB",
+  	version: "Release 10"
+  },
+  	co: co,
+  	"co-fr": {
+  	language: "Corsican",
+  	location: "France",
+  	id: 1155,
+  	tag: "co-FR",
+  	version: "Release V"
+  },
+  	"hr,": {
+  	language: "Croatian",
+  	location: null,
+  	id: 26,
+  	tag: "hr,",
+  	version: "Release 7"
+  },
+  	"hr-hr": {
+  	language: "Croatian",
+  	location: "Croatia",
+  	id: 1050,
+  	tag: "hr-HR",
+  	version: "Release A"
+  },
+  	"hr-ba": {
+  	language: "Croatian (Latin)",
+  	location: "Bosnia and Herzegovina",
+  	id: 4122,
+  	tag: "hr-BA",
+  	version: "Release E1"
+  },
+  	cs: cs,
+  	"cs-cz": {
+  	language: "Czech",
+  	location: "Czech Republic",
+  	id: 1029,
+  	tag: "cs-CZ",
+  	version: "Release A"
+  },
+  	da: da,
+  	"da-dk": {
+  	language: "Danish",
+  	location: "Denmark",
+  	id: 1030,
+  	tag: "da-DK",
+  	version: "Release A"
+  },
+  	"da-gl": {
+  	language: "Danish",
+  	location: "Greenland",
+  	id: 4096,
+  	tag: "da-GL",
+  	version: "Release 10"
+  },
+  	prs: prs,
+  	"prs-af": {
+  	language: "Dari",
+  	location: "Afghanistan",
+  	id: 1164,
+  	tag: "prs-AF",
+  	version: "Release V"
+  },
+  	dv: dv,
+  	"dv-mv": {
+  	language: "Divehi",
+  	location: "Maldives",
+  	id: 1125,
+  	tag: "dv-MV",
+  	version: "ReleaseD"
+  },
+  	dua: dua,
+  	"dua-cm": {
+  	language: "Duala",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "dua-CM",
+  	version: "Release 10"
+  },
+  	nl: nl,
+  	"nl-aw": {
+  	language: "Dutch",
+  	location: "Aruba",
+  	id: 4096,
+  	tag: "nl-AW",
+  	version: "Release 10"
+  },
+  	"nl-be": {
+  	language: "Dutch",
+  	location: "Belgium",
+  	id: 2067,
+  	tag: "nl-BE",
+  	version: "Release A"
+  },
+  	"nl-bq": {
+  	language: "Dutch",
+  	location: "Bonaire, Sint Eustatius and Saba",
+  	id: 4096,
+  	tag: "nl-BQ",
+  	version: "Release 10"
+  },
+  	"nl-cw": {
+  	language: "Dutch",
+  	location: "Curaçao",
+  	id: 4096,
+  	tag: "nl-CW",
+  	version: "Release 10"
+  },
+  	"nl-nl": {
+  	language: "Dutch",
+  	location: "Netherlands",
+  	id: 1043,
+  	tag: "nl-NL",
+  	version: "Release A"
+  },
+  	"nl-sx": {
+  	language: "Dutch",
+  	location: "Sint Maarten",
+  	id: 4096,
+  	tag: "nl-SX",
+  	version: "Release 10"
+  },
+  	"nl-sr": {
+  	language: "Dutch",
+  	location: "Suriname",
+  	id: 4096,
+  	tag: "nl-SR",
+  	version: "Release 10"
+  },
+  	dz: dz,
+  	"dz-bt": {
+  	language: "Dzongkha",
+  	location: "Bhutan",
+  	id: 3153,
+  	tag: "dz-BT",
+  	version: "Release 10"
+  },
+  	ebu: ebu,
+  	"ebu-ke": {
+  	language: "Embu",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "ebu-KE",
+  	version: "Release 10"
+  },
+  	en: en,
+  	"en-as": {
+  	language: "English",
+  	location: "American Samoa",
+  	id: 4096,
+  	tag: "en-AS",
+  	version: "Release 10"
+  },
+  	"en-ai": {
+  	language: "English",
+  	location: "Anguilla",
+  	id: 4096,
+  	tag: "en-AI",
+  	version: "Release 10"
+  },
+  	"en-ag": {
+  	language: "English",
+  	location: "Antigua and Barbuda",
+  	id: 4096,
+  	tag: "en-AG",
+  	version: "Release 10"
+  },
+  	"en-au": {
+  	language: "English",
+  	location: "Australia",
+  	id: 3081,
+  	tag: "en-AU",
+  	version: "Release A"
+  },
+  	"en-at": {
+  	language: "English",
+  	location: "Austria",
+  	id: 4096,
+  	tag: "en-AT",
+  	version: "Release 10.1"
+  },
+  	"en-bs": {
+  	language: "English",
+  	location: "Bahamas",
+  	id: 4096,
+  	tag: "en-BS",
+  	version: "Release 10"
+  },
+  	"en-bb": {
+  	language: "English",
+  	location: "Barbados",
+  	id: 4096,
+  	tag: "en-BB",
+  	version: "Release 10"
+  },
+  	"en-be": {
+  	language: "English",
+  	location: "Belgium",
+  	id: 4096,
+  	tag: "en-BE",
+  	version: "Release 10"
+  },
+  	"en-bz": {
+  	language: "English",
+  	location: "Belize",
+  	id: 10249,
+  	tag: "en-BZ",
+  	version: "Release B"
+  },
+  	"en-bm": {
+  	language: "English",
+  	location: "Bermuda",
+  	id: 4096,
+  	tag: "en-BM",
+  	version: "Release 10"
+  },
+  	"en-bw": {
+  	language: "English",
+  	location: "Botswana",
+  	id: 4096,
+  	tag: "en-BW",
+  	version: "Release 10"
+  },
+  	"en-io": {
+  	language: "English",
+  	location: "British Indian Ocean Territory",
+  	id: 4096,
+  	tag: "en-IO",
+  	version: "Release 10"
+  },
+  	"en-vg": {
+  	language: "English",
+  	location: "British Virgin Islands",
+  	id: 4096,
+  	tag: "en-VG",
+  	version: "Release 10"
+  },
+  	"en-bi": {
+  	language: "English",
+  	location: "Burundi",
+  	id: 4096,
+  	tag: "en-BI",
+  	version: "Release 10.1"
+  },
+  	"en-cm": {
+  	language: "English",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "en-CM",
+  	version: "Release 10"
+  },
+  	"en-ca": {
+  	language: "English",
+  	location: "Canada",
+  	id: 4105,
+  	tag: "en-CA",
+  	version: "Release A"
+  },
+  	"en-029": {
+  	language: "English",
+  	location: "Caribbean",
+  	id: 9225,
+  	tag: "en-029",
+  	version: "Release B"
+  },
+  	"en-ky": {
+  	language: "English",
+  	location: "Cayman Islands",
+  	id: 4096,
+  	tag: "en-KY",
+  	version: "Release 10"
+  },
+  	"en-cx": {
+  	language: "English",
+  	location: "Christmas Island",
+  	id: 4096,
+  	tag: "en-CX",
+  	version: "Release 10"
+  },
+  	"en-cc": {
+  	language: "English",
+  	location: "Cocos [Keeling] Islands",
+  	id: 4096,
+  	tag: "en-CC",
+  	version: "Release 10"
+  },
+  	"en-ck": {
+  	language: "English",
+  	location: "Cook Islands",
+  	id: 4096,
+  	tag: "en-CK",
+  	version: "Release 10"
+  },
+  	"en-cy": {
+  	language: "English",
+  	location: "Cyprus",
+  	id: 4096,
+  	tag: "en-CY",
+  	version: "Release 10.1"
+  },
+  	"en-dk": {
+  	language: "English",
+  	location: "Denmark",
+  	id: 4096,
+  	tag: "en-DK",
+  	version: "Release 10.1"
+  },
+  	"en-dm": {
+  	language: "English",
+  	location: "Dominica",
+  	id: 4096,
+  	tag: "en-DM",
+  	version: "Release 10"
+  },
+  	"en-er": {
+  	language: "English",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "en-ER",
+  	version: "Release 10"
+  },
+  	"en-150": {
+  	language: "English",
+  	location: "Europe",
+  	id: 4096,
+  	tag: "en-150",
+  	version: "Release 10"
+  },
+  	"en-fk": {
+  	language: "English",
+  	location: "Falkland Islands",
+  	id: 4096,
+  	tag: "en-FK",
+  	version: "Release 10"
+  },
+  	"en-fi": {
+  	language: "English",
+  	location: "Finland",
+  	id: 4096,
+  	tag: "en-FI",
+  	version: "Release 10.1"
+  },
+  	"en-fj": {
+  	language: "English",
+  	location: "Fiji",
+  	id: 4096,
+  	tag: "en-FJ",
+  	version: "Release 10"
+  },
+  	"en-gm": {
+  	language: "English",
+  	location: "Gambia",
+  	id: 4096,
+  	tag: "en-GM",
+  	version: "Release 10"
+  },
+  	"en-de": {
+  	language: "English",
+  	location: "Germany",
+  	id: 4096,
+  	tag: "en-DE",
+  	version: "Release 10.1"
+  },
+  	"en-gh": {
+  	language: "English",
+  	location: "Ghana",
+  	id: 4096,
+  	tag: "en-GH",
+  	version: "Release 10"
+  },
+  	"en-gi": {
+  	language: "English",
+  	location: "Gibraltar",
+  	id: 4096,
+  	tag: "en-GI",
+  	version: "Release 10"
+  },
+  	"en-gd": {
+  	language: "English",
+  	location: "Grenada",
+  	id: 4096,
+  	tag: "en-GD",
+  	version: "Release 10"
+  },
+  	"en-gu": {
+  	language: "English",
+  	location: "Guam",
+  	id: 4096,
+  	tag: "en-GU",
+  	version: "Release 10"
+  },
+  	"en-gg": {
+  	language: "English",
+  	location: "Guernsey",
+  	id: 4096,
+  	tag: "en-GG",
+  	version: "Release 10"
+  },
+  	"en-gy": {
+  	language: "English",
+  	location: "Guyana",
+  	id: 4096,
+  	tag: "en-GY",
+  	version: "Release 10"
+  },
+  	"en-hk": {
+  	language: "English",
+  	location: "Hong Kong",
+  	id: 15369,
+  	tag: "en-HK",
+  	version: "Release 8.1"
+  },
+  	"en-in": {
+  	language: "English",
+  	location: "India",
+  	id: 16393,
+  	tag: "en-IN",
+  	version: "Release V"
+  },
+  	"en-ie": {
+  	language: "English",
+  	location: "Ireland",
+  	id: 6153,
+  	tag: "en-IE",
+  	version: "Release A"
+  },
+  	"en-im": {
+  	language: "English",
+  	location: "Isle of Man",
+  	id: 4096,
+  	tag: "en-IM",
+  	version: "Release 10"
+  },
+  	"en-il": {
+  	language: "English",
+  	location: "Israel",
+  	id: 4096,
+  	tag: "en-IL",
+  	version: "Release 10.1"
+  },
+  	"en-jm": {
+  	language: "English",
+  	location: "Jamaica",
+  	id: 8201,
+  	tag: "en-JM",
+  	version: "Release B"
+  },
+  	"en-je": {
+  	language: "English",
+  	location: "Jersey",
+  	id: 4096,
+  	tag: "en-JE",
+  	version: "Release 10"
+  },
+  	"en-ke": {
+  	language: "English",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "en-KE",
+  	version: "Release 10"
+  },
+  	"en-ki": {
+  	language: "English",
+  	location: "Kiribati",
+  	id: 4096,
+  	tag: "en-KI",
+  	version: "Release 10"
+  },
+  	"en-ls": {
+  	language: "English",
+  	location: "Lesotho",
+  	id: 4096,
+  	tag: "en-LS",
+  	version: "Release 10"
+  },
+  	"en-lr": {
+  	language: "English",
+  	location: "Liberia",
+  	id: 4096,
+  	tag: "en-LR",
+  	version: "Release 10"
+  },
+  	"en-mo": {
+  	language: "English",
+  	location: "Macao SAR",
+  	id: 4096,
+  	tag: "en-MO",
+  	version: "Release 10"
+  },
+  	"en-mg": {
+  	language: "English",
+  	location: "Madagascar",
+  	id: 4096,
+  	tag: "en-MG",
+  	version: "Release 10"
+  },
+  	"en-mw": {
+  	language: "English",
+  	location: "Malawi",
+  	id: 4096,
+  	tag: "en-MW",
+  	version: "Release 10"
+  },
+  	"en-my": {
+  	language: "English",
+  	location: "Malaysia",
+  	id: 17417,
+  	tag: "en-MY",
+  	version: "Release V"
+  },
+  	"en-mt": {
+  	language: "English",
+  	location: "Malta",
+  	id: 4096,
+  	tag: "en-MT",
+  	version: "Release 10"
+  },
+  	"en-mh": {
+  	language: "English",
+  	location: "Marshall Islands",
+  	id: 4096,
+  	tag: "en-MH",
+  	version: "Release 10"
+  },
+  	"en-mu": {
+  	language: "English",
+  	location: "Mauritius",
+  	id: 4096,
+  	tag: "en-MU",
+  	version: "Release 10"
+  },
+  	"en-fm": {
+  	language: "English",
+  	location: "Micronesia",
+  	id: 4096,
+  	tag: "en-FM",
+  	version: "Release 10"
+  },
+  	"en-ms": {
+  	language: "English",
+  	location: "Montserrat",
+  	id: 4096,
+  	tag: "en-MS",
+  	version: "Release 10"
+  },
+  	"en-na": {
+  	language: "English",
+  	location: "Namibia",
+  	id: 4096,
+  	tag: "en-NA",
+  	version: "Release 10"
+  },
+  	"en-nr": {
+  	language: "English",
+  	location: "Nauru",
+  	id: 4096,
+  	tag: "en-NR",
+  	version: "Release 10"
+  },
+  	"en-nl": {
+  	language: "English",
+  	location: "Netherlands",
+  	id: 4096,
+  	tag: "en-NL",
+  	version: "Release 10.1"
+  },
+  	"en-nz": {
+  	language: "English",
+  	location: "New Zealand",
+  	id: 5129,
+  	tag: "en-NZ",
+  	version: "Release A"
+  },
+  	"en-ng": {
+  	language: "English",
+  	location: "Nigeria",
+  	id: 4096,
+  	tag: "en-NG",
+  	version: "Release 10"
+  },
+  	"en-nu": {
+  	language: "English",
+  	location: "Niue",
+  	id: 4096,
+  	tag: "en-NU",
+  	version: "Release 10"
+  },
+  	"en-nf": {
+  	language: "English",
+  	location: "Norfolk Island",
+  	id: 4096,
+  	tag: "en-NF",
+  	version: "Release 10"
+  },
+  	"en-mp": {
+  	language: "English",
+  	location: "Northern Mariana Islands",
+  	id: 4096,
+  	tag: "en-MP",
+  	version: "Release 10"
+  },
+  	"en-pk": {
+  	language: "English",
+  	location: "Pakistan",
+  	id: 4096,
+  	tag: "en-PK",
+  	version: "Release 10"
+  },
+  	"en-pw": {
+  	language: "English",
+  	location: "Palau",
+  	id: 4096,
+  	tag: "en-PW",
+  	version: "Release 10"
+  },
+  	"en-pg": {
+  	language: "English",
+  	location: "Papua New Guinea",
+  	id: 4096,
+  	tag: "en-PG",
+  	version: "Release 10"
+  },
+  	"en-pn": {
+  	language: "English",
+  	location: "Pitcairn Islands",
+  	id: 4096,
+  	tag: "en-PN",
+  	version: "Release 10"
+  },
+  	"en-pr": {
+  	language: "English",
+  	location: "Puerto Rico",
+  	id: 4096,
+  	tag: "en-PR",
+  	version: "Release 10"
+  },
+  	"en-ph": {
+  	language: "English",
+  	location: "Republic of the Philippines",
+  	id: 13321,
+  	tag: "en-PH",
+  	version: "Release C"
+  },
+  	"en-rw": {
+  	language: "English",
+  	location: "Rwanda",
+  	id: 4096,
+  	tag: "en-RW",
+  	version: "Release 10"
+  },
+  	"en-kn": {
+  	language: "English",
+  	location: "Saint Kitts and Nevis",
+  	id: 4096,
+  	tag: "en-KN",
+  	version: "Release 10"
+  },
+  	"en-lc": {
+  	language: "English",
+  	location: "Saint Lucia",
+  	id: 4096,
+  	tag: "en-LC",
+  	version: "Release 10"
+  },
+  	"en-vc": {
+  	language: "English",
+  	location: "Saint Vincent and the Grenadines",
+  	id: 4096,
+  	tag: "en-VC",
+  	version: "Release 10"
+  },
+  	"en-ws": {
+  	language: "English",
+  	location: "Samoa",
+  	id: 4096,
+  	tag: "en-WS",
+  	version: "Release 10"
+  },
+  	"en-sc": {
+  	language: "English",
+  	location: "Seychelles",
+  	id: 4096,
+  	tag: "en-SC",
+  	version: "Release 10"
+  },
+  	"en-sl": {
+  	language: "English",
+  	location: "Sierra Leone",
+  	id: 4096,
+  	tag: "en-SL",
+  	version: "Release 10"
+  },
+  	"en-sg": {
+  	language: "English",
+  	location: "Singapore",
+  	id: 18441,
+  	tag: "en-SG",
+  	version: "Release V"
+  },
+  	"en-sx": {
+  	language: "English",
+  	location: "Sint Maarten",
+  	id: 4096,
+  	tag: "en-SX",
+  	version: "Release 10"
+  },
+  	"en-si": {
+  	language: "English",
+  	location: "Slovenia",
+  	id: 4096,
+  	tag: "en-SI",
+  	version: "Release 10.1"
+  },
+  	"en-sb": {
+  	language: "English",
+  	location: "Solomon Islands",
+  	id: 4096,
+  	tag: "en-SB",
+  	version: "Release 10"
+  },
+  	"en-za": {
+  	language: "English",
+  	location: "South Africa",
+  	id: 7177,
+  	tag: "en-ZA",
+  	version: "Release B"
+  },
+  	"en-ss": {
+  	language: "English",
+  	location: "South Sudan",
+  	id: 4096,
+  	tag: "en-SS",
+  	version: "Release 10"
+  },
+  	"en-sh": {
+  	language: "English",
+  	location: "St Helena, Ascension, Tristan da ",
+  	id: 4096,
+  	tag: "en-SH",
+  	version: "Release 10"
+  },
+  	"en-sd": {
+  	language: "English",
+  	location: "Sudan",
+  	id: 4096,
+  	tag: "en-SD",
+  	version: "Release 10"
+  },
+  	"en-sz": {
+  	language: "English",
+  	location: "Swaziland",
+  	id: 4096,
+  	tag: "en-SZ",
+  	version: "Release 10"
+  },
+  	"en-se": {
+  	language: "English",
+  	location: "Sweden",
+  	id: 4096,
+  	tag: "en-SE",
+  	version: "Release 10.1"
+  },
+  	"en-ch": {
+  	language: "English",
+  	location: "Switzerland",
+  	id: 4096,
+  	tag: "en-CH",
+  	version: "Release 10.1"
+  },
+  	"en-tz": {
+  	language: "English",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "en-TZ",
+  	version: "Release 10"
+  },
+  	"en-tk": {
+  	language: "English",
+  	location: "Tokelau",
+  	id: 4096,
+  	tag: "en-TK",
+  	version: "Release 10"
+  },
+  	"en-to": {
+  	language: "English",
+  	location: "Tonga",
+  	id: 4096,
+  	tag: "en-TO",
+  	version: "Release 10"
+  },
+  	"en-tt": {
+  	language: "English",
+  	location: "Trinidad and Tobago",
+  	id: 11273,
+  	tag: "en-TT",
+  	version: "Release B"
+  },
+  	"en-tc": {
+  	language: "English",
+  	location: "Turks and Caicos Islands",
+  	id: 4096,
+  	tag: "en-TC",
+  	version: "Release 10"
+  },
+  	"en-tv": {
+  	language: "English",
+  	location: "Tuvalu",
+  	id: 4096,
+  	tag: "en-TV",
+  	version: "Release 10"
+  },
+  	"en-ug": {
+  	language: "English",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "en-UG",
+  	version: "Release 10"
+  },
+  	"en-gb": {
+  	language: "English",
+  	location: "United Kingdom",
+  	id: 2057,
+  	tag: "en-GB",
+  	version: "Release A"
+  },
+  	"en-us": {
+  	language: "English",
+  	location: "United States",
+  	id: 1033,
+  	tag: "en-US",
+  	version: "Release A"
+  },
+  	"en-um": {
+  	language: "English",
+  	location: "US Minor Outlying Islands",
+  	id: 4096,
+  	tag: "en-UM",
+  	version: "Release 10"
+  },
+  	"en-vi": {
+  	language: "English",
+  	location: "US Virgin Islands",
+  	id: 4096,
+  	tag: "en-VI",
+  	version: "Release 10"
+  },
+  	"en-vu": {
+  	language: "English",
+  	location: "Vanuatu",
+  	id: 4096,
+  	tag: "en-VU",
+  	version: "Release 10"
+  },
+  	"en-001": {
+  	language: "English",
+  	location: "World",
+  	id: 4096,
+  	tag: "en-001",
+  	version: "Release 10"
+  },
+  	"en-zm": {
+  	language: "English",
+  	location: "Zambia",
+  	id: 4096,
+  	tag: "en-ZM",
+  	version: "Release 10"
+  },
+  	"en-zw": {
+  	language: "English",
+  	location: "Zimbabwe",
+  	id: 12297,
+  	tag: "en-ZW",
+  	version: "Release C"
+  },
+  	eo: eo,
+  	"eo-001": {
+  	language: "Esperanto",
+  	location: "World",
+  	id: 4096,
+  	tag: "eo-001",
+  	version: "Release 10"
+  },
+  	et: et,
+  	"et-ee": {
+  	language: "Estonian",
+  	location: "Estonia",
+  	id: 1061,
+  	tag: "et-EE",
+  	version: "Release B"
+  },
+  	ee: ee,
+  	"ee-gh": {
+  	language: "Ewe",
+  	location: "Ghana",
+  	id: 4096,
+  	tag: "ee-GH",
+  	version: "Release 10"
+  },
+  	"ee-tg": {
+  	language: "Ewe",
+  	location: "Togo",
+  	id: 4096,
+  	tag: "ee-TG",
+  	version: "Release 10"
+  },
+  	ewo: ewo,
+  	"ewo-cm": {
+  	language: "Ewondo",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "ewo-CM",
+  	version: "Release 10"
+  },
+  	fo: fo,
+  	"fo-dk": {
+  	language: "Faroese",
+  	location: "Denmark",
+  	id: 4096,
+  	tag: "fo-DK",
+  	version: "Release 10.1"
+  },
+  	"fo-fo": {
+  	language: "Faroese",
+  	location: "Faroe Islands",
+  	id: 1080,
+  	tag: "fo-FO",
+  	version: "Release B"
+  },
+  	fil: fil,
+  	"fil-ph": {
+  	language: "Filipino",
+  	location: "Philippines",
+  	id: 1124,
+  	tag: "fil-PH",
+  	version: "Release E2"
+  },
+  	fi: fi,
+  	"fi-fi": {
+  	language: "Finnish",
+  	location: "Finland",
+  	id: 1035,
+  	tag: "fi-FI",
+  	version: "Release A"
+  },
+  	fr: fr,
+  	"fr-dz": {
+  	language: "French",
+  	location: "Algeria",
+  	id: 4096,
+  	tag: "fr-DZ",
+  	version: "Release 10"
+  },
+  	"fr-be": {
+  	language: "French",
+  	location: "Belgium",
+  	id: 2060,
+  	tag: "fr-BE",
+  	version: "Release A"
+  },
+  	"fr-bj": {
+  	language: "French",
+  	location: "Benin",
+  	id: 4096,
+  	tag: "fr-BJ",
+  	version: "Release 10"
+  },
+  	"fr-bf": {
+  	language: "French",
+  	location: "Burkina Faso",
+  	id: 4096,
+  	tag: "fr-BF",
+  	version: "Release 10"
+  },
+  	"fr-bi": {
+  	language: "French",
+  	location: "Burundi",
+  	id: 4096,
+  	tag: "fr-BI",
+  	version: "Release 10"
+  },
+  	"fr-cm": {
+  	language: "French",
+  	location: "Cameroon",
+  	id: 11276,
+  	tag: "fr-CM",
+  	version: "Release 8.1"
+  },
+  	"fr-ca": {
+  	language: "French",
+  	location: "Canada",
+  	id: 3084,
+  	tag: "fr-CA",
+  	version: "Release A"
+  },
+  	"fr-cf": {
+  	language: "French",
+  	location: "Central African Republic",
+  	id: 4096,
+  	tag: "fr-CF",
+  	version: "Release 10"
+  },
+  	"fr-td": {
+  	language: "French",
+  	location: "Chad",
+  	id: 4096,
+  	tag: "fr-TD",
+  	version: "Release 10"
+  },
+  	"fr-km": {
+  	language: "French",
+  	location: "Comoros",
+  	id: 4096,
+  	tag: "fr-KM",
+  	version: "Release 10"
+  },
+  	"fr-cg": {
+  	language: "French",
+  	location: "Congo",
+  	id: 4096,
+  	tag: "fr-CG",
+  	version: "Release 10"
+  },
+  	"fr-cd": {
+  	language: "French",
+  	location: "Congo, DRC",
+  	id: 9228,
+  	tag: "fr-CD",
+  	version: "Release 8.1"
+  },
+  	"fr-ci": {
+  	language: "French",
+  	location: "Côte d'Ivoire",
+  	id: 12300,
+  	tag: "fr-CI",
+  	version: "Release 8.1"
+  },
+  	"fr-dj": {
+  	language: "French",
+  	location: "Djibouti",
+  	id: 4096,
+  	tag: "fr-DJ",
+  	version: "Release 10"
+  },
+  	"fr-gq": {
+  	language: "French",
+  	location: "Equatorial Guinea",
+  	id: 4096,
+  	tag: "fr-GQ",
+  	version: "Release 10"
+  },
+  	"fr-fr": {
+  	language: "French",
+  	location: "France",
+  	id: 1036,
+  	tag: "fr-FR",
+  	version: "Release A"
+  },
+  	"fr-gf": {
+  	language: "French",
+  	location: "French Guiana",
+  	id: 4096,
+  	tag: "fr-GF",
+  	version: "Release 10"
+  },
+  	"fr-pf": {
+  	language: "French",
+  	location: "French Polynesia",
+  	id: 4096,
+  	tag: "fr-PF",
+  	version: "Release 10"
+  },
+  	"fr-ga": {
+  	language: "French",
+  	location: "Gabon",
+  	id: 4096,
+  	tag: "fr-GA",
+  	version: "Release 10"
+  },
+  	"fr-gp": {
+  	language: "French",
+  	location: "Guadeloupe",
+  	id: 4096,
+  	tag: "fr-GP",
+  	version: "Release 10"
+  },
+  	"fr-gn": {
+  	language: "French",
+  	location: "Guinea",
+  	id: 4096,
+  	tag: "fr-GN",
+  	version: "Release 10"
+  },
+  	"fr-ht": {
+  	language: "French",
+  	location: "Haiti",
+  	id: 15372,
+  	tag: "fr-HT",
+  	version: "Release 8.1"
+  },
+  	"fr-lu": {
+  	language: "French",
+  	location: "Luxembourg",
+  	id: 5132,
+  	tag: "fr-LU",
+  	version: "Release A"
+  },
+  	"fr-mg": {
+  	language: "French",
+  	location: "Madagascar",
+  	id: 4096,
+  	tag: "fr-MG",
+  	version: "Release 10"
+  },
+  	"fr-ml": {
+  	language: "French",
+  	location: "Mali",
+  	id: 13324,
+  	tag: "fr-ML",
+  	version: "Release 8.1"
+  },
+  	"fr-mq": {
+  	language: "French",
+  	location: "Martinique",
+  	id: 4096,
+  	tag: "fr-MQ",
+  	version: "Release 10"
+  },
+  	"fr-mr": {
+  	language: "French",
+  	location: "Mauritania",
+  	id: 4096,
+  	tag: "fr-MR",
+  	version: "Release 10"
+  },
+  	"fr-mu": {
+  	language: "French",
+  	location: "Mauritius",
+  	id: 4096,
+  	tag: "fr-MU",
+  	version: "Release 10"
+  },
+  	"fr-yt": {
+  	language: "French",
+  	location: "Mayotte",
+  	id: 4096,
+  	tag: "fr-YT",
+  	version: "Release 10"
+  },
+  	"fr-ma": {
+  	language: "French",
+  	location: "Morocco",
+  	id: 14348,
+  	tag: "fr-MA",
+  	version: "Release 8.1"
+  },
+  	"fr-nc": {
+  	language: "French",
+  	location: "New Caledonia",
+  	id: 4096,
+  	tag: "fr-NC",
+  	version: "Release 10"
+  },
+  	"fr-ne": {
+  	language: "French",
+  	location: "Niger",
+  	id: 4096,
+  	tag: "fr-NE",
+  	version: "Release 10"
+  },
+  	"fr-mc": {
+  	language: "French",
+  	location: "Principality of Monaco",
+  	id: 6156,
+  	tag: "fr-MC",
+  	version: "Release A"
+  },
+  	"fr-re": {
+  	language: "French",
+  	location: "Reunion",
+  	id: 8204,
+  	tag: "fr-RE",
+  	version: "Release 8.1"
+  },
+  	"fr-rw": {
+  	language: "French",
+  	location: "Rwanda",
+  	id: 4096,
+  	tag: "fr-RW",
+  	version: "Release 10"
+  },
+  	"fr-bl": {
+  	language: "French",
+  	location: "Saint Barthélemy",
+  	id: 4096,
+  	tag: "fr-BL",
+  	version: "Release 10"
+  },
+  	"fr-mf": {
+  	language: "French",
+  	location: "Saint Martin",
+  	id: 4096,
+  	tag: "fr-MF",
+  	version: "Release 10"
+  },
+  	"fr-pm": {
+  	language: "French",
+  	location: "Saint Pierre and Miquelon",
+  	id: 4096,
+  	tag: "fr-PM",
+  	version: "Release 10"
+  },
+  	"fr-sn": {
+  	language: "French",
+  	location: "Senegal",
+  	id: 10252,
+  	tag: "fr-SN",
+  	version: "Release 8.1"
+  },
+  	"fr-sc": {
+  	language: "French",
+  	location: "Seychelles",
+  	id: 4096,
+  	tag: "fr-SC",
+  	version: "Release 10"
+  },
+  	"fr-ch": {
+  	language: "French",
+  	location: "Switzerland",
+  	id: 4108,
+  	tag: "fr-CH",
+  	version: "Release A"
+  },
+  	"fr-sy": {
+  	language: "French",
+  	location: "Syria",
+  	id: 4096,
+  	tag: "fr-SY",
+  	version: "Release 10"
+  },
+  	"fr-tg": {
+  	language: "French",
+  	location: "Togo",
+  	id: 4096,
+  	tag: "fr-TG",
+  	version: "Release 10"
+  },
+  	"fr-tn": {
+  	language: "French",
+  	location: "Tunisia",
+  	id: 4096,
+  	tag: "fr-TN",
+  	version: "Release 10"
+  },
+  	"fr-vu": {
+  	language: "French",
+  	location: "Vanuatu",
+  	id: 4096,
+  	tag: "fr-VU",
+  	version: "Release 10"
+  },
+  	"fr-wf": {
+  	language: "French",
+  	location: "Wallis and Futuna",
+  	id: 4096,
+  	tag: "fr-WF",
+  	version: "Release 10"
+  },
+  	fy: fy,
+  	"fy-nl": {
+  	language: "Frisian",
+  	location: "Netherlands",
+  	id: 1122,
+  	tag: "fy-NL",
+  	version: "Release E2"
+  },
+  	fur: fur,
+  	"fur-it": {
+  	language: "Friulian",
+  	location: "Italy",
+  	id: 4096,
+  	tag: "fur-IT",
+  	version: "Release 10"
+  },
+  	ff: ff,
+  	"ff-latn": {
+  	language: "Fulah (Latin)",
+  	location: null,
+  	id: 31847,
+  	tag: "ff-Latn",
+  	version: "Release 8"
+  },
+  	"ff-latn-bf": {
+  	language: "Fulah (Latin)",
+  	location: "Burkina Faso",
+  	id: 4096,
+  	tag: "ff-Latn-BF",
+  	version: "Release 10.4"
+  },
+  	"ff-cm": {
+  	language: "Fulah",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "ff-CM",
+  	version: "Release 10"
+  },
+  	"ff-latn-cm": {
+  	language: "Fulah (Latin)",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "ff-Latn-CM",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-gm": {
+  	language: "Fulah (Latin)",
+  	location: "Gambia",
+  	id: 4096,
+  	tag: "ff-Latn-GM",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-gh": {
+  	language: "Fulah (Latin)",
+  	location: "Ghana",
+  	id: 4096,
+  	tag: "ff-Latn-GH",
+  	version: "Release 10.4"
+  },
+  	"ff-gn": {
+  	language: "Fulah",
+  	location: "Guinea",
+  	id: 4096,
+  	tag: "ff-GN",
+  	version: "Release 10"
+  },
+  	"ff-latn-gn": {
+  	language: "Fulah (Latin)",
+  	location: "Guinea",
+  	id: 4096,
+  	tag: "ff-Latn-GN",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-gw": {
+  	language: "Fulah (Latin)",
+  	location: "Guinea-Bissau",
+  	id: 4096,
+  	tag: "ff-Latn-GW",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-lr": {
+  	language: "Fulah (Latin)",
+  	location: "Liberia",
+  	id: 4096,
+  	tag: "ff-Latn-LR",
+  	version: "Release 10.4"
+  },
+  	"ff-mr": {
+  	language: "Fulah",
+  	location: "Mauritania",
+  	id: 4096,
+  	tag: "ff-MR",
+  	version: "Release 10"
+  },
+  	"ff-latn-mr": {
+  	language: "Fulah (Latin)",
+  	location: "Mauritania",
+  	id: 4096,
+  	tag: "ff-Latn-MR",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-ne": {
+  	language: "Fulah (Latin)",
+  	location: "Niger",
+  	id: 4096,
+  	tag: "ff-Latn-NE",
+  	version: "Release 10.4"
+  },
+  	"ff-ng": {
+  	language: "Fulah",
+  	location: "Nigeria",
+  	id: 4096,
+  	tag: "ff-NG",
+  	version: "Release 10"
+  },
+  	"ff-latn-ng": {
+  	language: "Fulah (Latin)",
+  	location: "Nigeria",
+  	id: 4096,
+  	tag: "ff-Latn-NG",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-sn": {
+  	language: "Fulah",
+  	location: "Senegal",
+  	id: 2151,
+  	tag: "ff-Latn-SN",
+  	version: "Release 8"
+  },
+  	"ff-latn-sl": {
+  	language: "Fulah (Latin)",
+  	location: "Sierra Leone",
+  	id: 4096,
+  	tag: "ff-Latn-SL",
+  	version: "Release 10.4"
+  },
+  	gl: gl,
+  	"gl-es": {
+  	language: "Galician",
+  	location: "Spain",
+  	id: 1110,
+  	tag: "gl-ES",
+  	version: "Release D"
+  },
+  	lg: lg,
+  	"lg-ug": {
+  	language: "Ganda",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "lg-UG",
+  	version: "Release 10"
+  },
+  	ka: ka,
+  	"ka-ge": {
+  	language: "Georgian",
+  	location: "Georgia",
+  	id: 1079,
+  	tag: "ka-GE",
+  	version: "Release C"
+  },
+  	de: de,
+  	"de-at": {
+  	language: "German",
+  	location: "Austria",
+  	id: 3079,
+  	tag: "de-AT",
+  	version: "Release A"
+  },
+  	"de-be": {
+  	language: "German",
+  	location: "Belgium",
+  	id: 4096,
+  	tag: "de-BE",
+  	version: "Release 10"
+  },
+  	"de-de": {
+  	language: "German",
+  	location: "Germany",
+  	id: 1031,
+  	tag: "de-DE",
+  	version: "Release A"
+  },
+  	"de-it": {
+  	language: "German",
+  	location: "Italy",
+  	id: 4096,
+  	tag: "de-IT",
+  	version: "Release 10.2"
+  },
+  	"de-li": {
+  	language: "German",
+  	location: "Liechtenstein",
+  	id: 5127,
+  	tag: "de-LI",
+  	version: "Release B"
+  },
+  	"de-lu": {
+  	language: "German",
+  	location: "Luxembourg",
+  	id: 4103,
+  	tag: "de-LU",
+  	version: "Release B"
+  },
+  	"de-ch": {
+  	language: "German",
+  	location: "Switzerland",
+  	id: 2055,
+  	tag: "de-CH",
+  	version: "Release A"
+  },
+  	el: el,
+  	"el-cy": {
+  	language: "Greek",
+  	location: "Cyprus",
+  	id: 4096,
+  	tag: "el-CY",
+  	version: "Release 10"
+  },
+  	"el-gr": {
+  	language: "Greek",
+  	location: "Greece",
+  	id: 1032,
+  	tag: "el-GR",
+  	version: "Release A"
+  },
+  	kl: kl,
+  	"kl-gl": {
+  	language: "Greenlandic",
+  	location: "Greenland",
+  	id: 1135,
+  	tag: "kl-GL",
+  	version: "Release V"
+  },
+  	gn: gn,
+  	"gn-py": {
+  	language: "Guarani",
+  	location: "Paraguay",
+  	id: 1140,
+  	tag: "gn-PY",
+  	version: "Release 8.1"
+  },
+  	gu: gu,
+  	"gu-in": {
+  	language: "Gujarati",
+  	location: "India",
+  	id: 1095,
+  	tag: "gu-IN",
+  	version: "Release D"
+  },
+  	guz: guz,
+  	"guz-ke": {
+  	language: "Gusii",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "guz-KE",
+  	version: "Release 10"
+  },
+  	ha: ha,
+  	"ha-latn": {
+  	language: "Hausa (Latin)",
+  	location: null,
+  	id: 31848,
+  	tag: "ha-Latn",
+  	version: "Windows 7"
+  },
+  	"ha-latn-gh": {
+  	language: "Hausa (Latin)",
+  	location: "Ghana",
+  	id: 4096,
+  	tag: "ha-Latn-GH",
+  	version: "Release 10"
+  },
+  	"ha-latn-ne": {
+  	language: "Hausa (Latin)",
+  	location: "Niger",
+  	id: 4096,
+  	tag: "ha-Latn-NE",
+  	version: "Release 10"
+  },
+  	"ha-latn-ng": {
+  	language: "Hausa (Latin)",
+  	location: "Nigeria",
+  	id: 1128,
+  	tag: "ha-Latn-NG",
+  	version: "Release V"
+  },
+  	haw: haw,
+  	"haw-us": {
+  	language: "Hawaiian",
+  	location: "United States",
+  	id: 1141,
+  	tag: "haw-US",
+  	version: "Release 8"
+  },
+  	he: he,
+  	"he-il": {
+  	language: "Hebrew",
+  	location: "Israel",
+  	id: 1037,
+  	tag: "he-IL",
+  	version: "Release B"
+  },
+  	hi: hi,
+  	"hi-in": {
+  	language: "Hindi",
+  	location: "India",
+  	id: 1081,
+  	tag: "hi-IN",
+  	version: "Release C"
+  },
+  	hu: hu,
+  	"hu-hu": {
+  	language: "Hungarian",
+  	location: "Hungary",
+  	id: 1038,
+  	tag: "hu-HU",
+  	version: "Release A"
+  },
+  	is: is,
+  	"is-is": {
+  	language: "Icelandic",
+  	location: "Iceland",
+  	id: 1039,
+  	tag: "is-IS",
+  	version: "Release A"
+  },
+  	ig: ig,
+  	"ig-ng": {
+  	language: "Igbo",
+  	location: "Nigeria",
+  	id: 1136,
+  	tag: "ig-NG",
+  	version: "Release V"
+  },
+  	id: id,
+  	"id-id": {
+  	language: "Indonesian",
+  	location: "Indonesia",
+  	id: 1057,
+  	tag: "id-ID",
+  	version: "Release B"
+  },
+  	ia: ia,
+  	"ia-fr": {
+  	language: "Interlingua",
+  	location: "France",
+  	id: 4096,
+  	tag: "ia-FR",
+  	version: "Release 10"
+  },
+  	"ia-001": {
+  	language: "Interlingua",
+  	location: "World",
+  	id: 4096,
+  	tag: "ia-001",
+  	version: "Release 10"
+  },
+  	iu: iu,
+  	"iu-latn": {
+  	language: "Inuktitut (Latin)",
+  	location: null,
+  	id: 31837,
+  	tag: "iu-Latn",
+  	version: "Windows 7"
+  },
+  	"iu-latn-ca": {
+  	language: "Inuktitut (Latin)",
+  	location: "Canada",
+  	id: 2141,
+  	tag: "iu-Latn-CA",
+  	version: "Release E2"
+  },
+  	"iu-cans": {
+  	language: "Inuktitut (Syllabics)",
+  	location: null,
+  	id: 30813,
+  	tag: "iu-Cans",
+  	version: "Windows 7"
+  },
+  	"iu-cans-ca": {
+  	language: "Inuktitut (Syllabics)",
+  	location: "Canada",
+  	id: 1117,
+  	tag: "iu-Cans-CA",
+  	version: "Release V"
+  },
+  	ga: ga,
+  	"ga-ie": {
+  	language: "Irish",
+  	location: "Ireland",
+  	id: 2108,
+  	tag: "ga-IE",
+  	version: "Release E2"
+  },
+  	it: it,
+  	"it-it": {
+  	language: "Italian",
+  	location: "Italy",
+  	id: 1040,
+  	tag: "it-IT",
+  	version: "Release A"
+  },
+  	"it-sm": {
+  	language: "Italian",
+  	location: "San Marino",
+  	id: 4096,
+  	tag: "it-SM",
+  	version: "Release 10"
+  },
+  	"it-ch": {
+  	language: "Italian",
+  	location: "Switzerland",
+  	id: 2064,
+  	tag: "it-CH",
+  	version: "Release A"
+  },
+  	"it-va": {
+  	language: "Italian",
+  	location: "Vatican City",
+  	id: 4096,
+  	tag: "it-VA",
+  	version: "Release 10.3"
+  },
+  	ja: ja,
+  	"ja-jp": {
+  	language: "Japanese",
+  	location: "Japan",
+  	id: 1041,
+  	tag: "ja-JP",
+  	version: "Release A"
+  },
+  	jv: jv,
+  	"jv-latn": {
+  	language: "Javanese",
+  	location: "Latin",
+  	id: 4096,
+  	tag: "jv-Latn",
+  	version: "Release 8.1"
+  },
+  	"jv-latn-id": {
+  	language: "Javanese",
+  	location: "Latin, Indonesia",
+  	id: 4096,
+  	tag: "jv-Latn-ID",
+  	version: "Release 8.1"
+  },
+  	dyo: dyo,
+  	"dyo-sn": {
+  	language: "Jola-Fonyi",
+  	location: "Senegal",
+  	id: 4096,
+  	tag: "dyo-SN",
+  	version: "Release 10"
+  },
+  	kea: kea,
+  	"kea-cv": {
+  	language: "Kabuverdianu",
+  	location: "Cabo Verde",
+  	id: 4096,
+  	tag: "kea-CV",
+  	version: "Release 10"
+  },
+  	kab: kab,
+  	"kab-dz": {
+  	language: "Kabyle",
+  	location: "Algeria",
+  	id: 4096,
+  	tag: "kab-DZ",
+  	version: "Release 10"
+  },
+  	kkj: kkj,
+  	"kkj-cm": {
+  	language: "Kako",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "kkj-CM",
+  	version: "Release 10"
+  },
+  	kln: kln,
+  	"kln-ke": {
+  	language: "Kalenjin",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "kln-KE",
+  	version: "Release 10"
+  },
+  	kam: kam,
+  	"kam-ke": {
+  	language: "Kamba",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "kam-KE",
+  	version: "Release 10"
+  },
+  	kn: kn,
+  	"kn-in": {
+  	language: "Kannada",
+  	location: "India",
+  	id: 1099,
+  	tag: "kn-IN",
+  	version: "Release D"
+  },
+  	ks: ks,
+  	"ks-arab": {
+  	language: "Kashmiri",
+  	location: "Perso-Arabic",
+  	id: 1120,
+  	tag: "ks-Arab",
+  	version: "Release 10"
+  },
+  	"ks-arab-in": {
+  	language: "Kashmiri",
+  	location: "Perso-Arabic",
+  	id: 4096,
+  	tag: "ks-Arab-IN",
+  	version: "Release 10"
+  },
+  	kk: kk,
+  	"kk-kz": {
+  	language: "Kazakh",
+  	location: "Kazakhstan",
+  	id: 1087,
+  	tag: "kk-KZ",
+  	version: "Release C"
+  },
+  	km: km,
+  	"km-kh": {
+  	language: "Khmer",
+  	location: "Cambodia",
+  	id: 1107,
+  	tag: "km-KH",
+  	version: "Release V"
+  },
+  	quc: quc,
+  	"quc-latn-gt": {
+  	language: "K'iche",
+  	location: "Guatemala",
+  	id: 1158,
+  	tag: "quc-Latn-GT",
+  	version: "Release 10"
+  },
+  	ki: ki,
+  	"ki-ke": {
+  	language: "Kikuyu",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "ki-KE",
+  	version: "Release 10"
+  },
+  	rw: rw,
+  	"rw-rw": {
+  	language: "Kinyarwanda",
+  	location: "Rwanda",
+  	id: 1159,
+  	tag: "rw-RW",
+  	version: "Release V"
+  },
+  	sw: sw,
+  	"sw-ke": {
+  	language: "Kiswahili",
+  	location: "Kenya",
+  	id: 1089,
+  	tag: "sw-KE",
+  	version: "Release C"
+  },
+  	"sw-tz": {
+  	language: "Kiswahili",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "sw-TZ",
+  	version: "Release 10"
+  },
+  	"sw-ug": {
+  	language: "Kiswahili",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "sw-UG",
+  	version: "Release 10"
+  },
+  	kok: kok,
+  	"kok-in": {
+  	language: "Konkani",
+  	location: "India",
+  	id: 1111,
+  	tag: "kok-IN",
+  	version: "Release C"
+  },
+  	ko: ko,
+  	"ko-kr": {
+  	language: "Korean",
+  	location: "Korea",
+  	id: 1042,
+  	tag: "ko-KR",
+  	version: "Release A"
+  },
+  	"ko-kp": {
+  	language: "Korean",
+  	location: "North Korea",
+  	id: 4096,
+  	tag: "ko-KP",
+  	version: "Release 10.1"
+  },
+  	khq: khq,
+  	"khq-ml": {
+  	language: "Koyra Chiini",
+  	location: "Mali",
+  	id: 4096,
+  	tag: "khq-ML",
+  	version: "Release 10"
+  },
+  	ses: ses,
+  	"ses-ml": {
+  	language: "Koyraboro Senni",
+  	location: "Mali",
+  	id: 4096,
+  	tag: "ses-ML",
+  	version: "Release 10"
+  },
+  	nmg: nmg,
+  	"nmg-cm": {
+  	language: "Kwasio",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "nmg-CM",
+  	version: "Release 10"
+  },
+  	ky: ky,
+  	"ky-kg": {
+  	language: "Kyrgyz",
+  	location: "Kyrgyzstan",
+  	id: 1088,
+  	tag: "ky-KG",
+  	version: "Release D"
+  },
+  	"ku-arab-ir": {
+  	language: "Kurdish",
+  	location: "Perso-Arabic, Iran",
+  	id: 4096,
+  	tag: "ku-Arab-IR",
+  	version: "Release 10.1"
+  },
+  	lkt: lkt,
+  	"lkt-us": {
+  	language: "Lakota",
+  	location: "United States",
+  	id: 4096,
+  	tag: "lkt-US",
+  	version: "Release 10"
+  },
+  	lag: lag,
+  	"lag-tz": {
+  	language: "Langi",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "lag-TZ",
+  	version: "Release 10"
+  },
+  	lo: lo,
+  	"lo-la": {
+  	language: "Lao",
+  	location: "Lao P.D.R.",
+  	id: 1108,
+  	tag: "lo-LA",
+  	version: "Release V"
+  },
+  	lv: lv,
+  	"lv-lv": {
+  	language: "Latvian",
+  	location: "Latvia",
+  	id: 1062,
+  	tag: "lv-LV",
+  	version: "Release B"
+  },
+  	ln: ln,
+  	"ln-ao": {
+  	language: "Lingala",
+  	location: "Angola",
+  	id: 4096,
+  	tag: "ln-AO",
+  	version: "Release 10"
+  },
+  	"ln-cf": {
+  	language: "Lingala",
+  	location: "Central African Republic",
+  	id: 4096,
+  	tag: "ln-CF",
+  	version: "Release 10"
+  },
+  	"ln-cg": {
+  	language: "Lingala",
+  	location: "Congo",
+  	id: 4096,
+  	tag: "ln-CG",
+  	version: "Release 10"
+  },
+  	"ln-cd": {
+  	language: "Lingala",
+  	location: "Congo DRC",
+  	id: 4096,
+  	tag: "ln-CD",
+  	version: "Release 10"
+  },
+  	lt: lt,
+  	"lt-lt": {
+  	language: "Lithuanian",
+  	location: "Lithuania",
+  	id: 1063,
+  	tag: "lt-LT",
+  	version: "Release B"
+  },
+  	nds: nds,
+  	"nds-de": {
+  	language: "Low German ",
+  	location: "Germany",
+  	id: 4096,
+  	tag: "nds-DE",
+  	version: "Release 10.2"
+  },
+  	"nds-nl": {
+  	language: "Low German",
+  	location: "Netherlands",
+  	id: 4096,
+  	tag: "nds-NL",
+  	version: "Release 10.2"
+  },
+  	dsb: dsb,
+  	"dsb-de": {
+  	language: "Lower Sorbian",
+  	location: "Germany",
+  	id: 2094,
+  	tag: "dsb-DE",
+  	version: "Release V"
+  },
+  	lu: lu,
+  	"lu-cd": {
+  	language: "Luba-Katanga",
+  	location: "Congo DRC",
+  	id: 4096,
+  	tag: "lu-CD",
+  	version: "Release 10"
+  },
+  	luo: luo,
+  	"luo-ke": {
+  	language: "Luo",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "luo-KE",
+  	version: "Release 10"
+  },
+  	lb: lb,
+  	"lb-lu": {
+  	language: "Luxembourgish",
+  	location: "Luxembourg",
+  	id: 1134,
+  	tag: "lb-LU",
+  	version: "Release E2"
+  },
+  	luy: luy,
+  	"luy-ke": {
+  	language: "Luyia",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "luy-KE",
+  	version: "Release 10"
+  },
+  	mk: mk,
+  	"mk-mk": {
+  	language: "Macedonian",
+  	location: "North Macedonia ",
+  	id: 1071,
+  	tag: "mk-MK",
+  	version: "Release C"
+  },
+  	jmc: jmc,
+  	"jmc-tz": {
+  	language: "Machame",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "jmc-TZ",
+  	version: "Release 10"
+  },
+  	mgh: mgh,
+  	"mgh-mz": {
+  	language: "Makhuwa-Meetto",
+  	location: "Mozambique",
+  	id: 4096,
+  	tag: "mgh-MZ",
+  	version: "Release 10"
+  },
+  	kde: kde,
+  	"kde-tz": {
+  	language: "Makonde",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "kde-TZ",
+  	version: "Release 10"
+  },
+  	mg: mg,
+  	"mg-mg": {
+  	language: "Malagasy",
+  	location: "Madagascar",
+  	id: 4096,
+  	tag: "mg-MG",
+  	version: "Release 8.1"
+  },
+  	ms: ms,
+  	"ms-bn": {
+  	language: "Malay",
+  	location: "Brunei Darussalam",
+  	id: 2110,
+  	tag: "ms-BN",
+  	version: "Release C"
+  },
+  	"ms-my": {
+  	language: "Malay",
+  	location: "Malaysia",
+  	id: 1086,
+  	tag: "ms-MY",
+  	version: "Release C"
+  },
+  	ml: ml,
+  	"ml-in": {
+  	language: "Malayalam",
+  	location: "India",
+  	id: 1100,
+  	tag: "ml-IN",
+  	version: "Release E1"
+  },
+  	mt: mt,
+  	"mt-mt": {
+  	language: "Maltese",
+  	location: "Malta",
+  	id: 1082,
+  	tag: "mt-MT",
+  	version: "Release E1"
+  },
+  	gv: gv,
+  	"gv-im": {
+  	language: "Manx",
+  	location: "Isle of Man",
+  	id: 4096,
+  	tag: "gv-IM",
+  	version: "Release 10"
+  },
+  	mi: mi,
+  	"mi-nz": {
+  	language: "Maori",
+  	location: "New Zealand",
+  	id: 1153,
+  	tag: "mi-NZ",
+  	version: "Release E1"
+  },
+  	arn: arn,
+  	"arn-cl": {
+  	language: "Mapudungun",
+  	location: "Chile",
+  	id: 1146,
+  	tag: "arn-CL",
+  	version: "Release E2"
+  },
+  	mr: mr,
+  	"mr-in": {
+  	language: "Marathi",
+  	location: "India",
+  	id: 1102,
+  	tag: "mr-IN",
+  	version: "Release C"
+  },
+  	mas: mas,
+  	"mas-ke": {
+  	language: "Masai",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "mas-KE",
+  	version: "Release 10"
+  },
+  	"mas-tz": {
+  	language: "Masai",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "mas-TZ",
+  	version: "Release 10"
+  },
+  	"mzn-ir": {
+  	language: "Mazanderani",
+  	location: "Iran",
+  	id: 4096,
+  	tag: "mzn-IR",
+  	version: "Release 10.1"
+  },
+  	mer: mer,
+  	"mer-ke": {
+  	language: "Meru",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "mer-KE",
+  	version: "Release 10"
+  },
+  	mgo: mgo,
+  	"mgo-cm": {
+  	language: "Meta'",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "mgo-CM",
+  	version: "Release 10"
+  },
+  	moh: moh,
+  	"moh-ca": {
+  	language: "Mohawk",
+  	location: "Canada",
+  	id: 1148,
+  	tag: "moh-CA",
+  	version: "Release E2"
+  },
+  	mn: mn,
+  	"mn-cyrl": {
+  	language: "Mongolian (Cyrillic)",
+  	location: null,
+  	id: 30800,
+  	tag: "mn-Cyrl",
+  	version: "Windows 7"
+  },
+  	"mn-mn": {
+  	language: "Mongolian (Cyrillic)",
+  	location: "Mongolia",
+  	id: 1104,
+  	tag: "mn-MN",
+  	version: "Release D"
+  },
+  	"mn-mong": {
+  	language: "Mongolian (Traditional ",
+  	location: null,
+  	id: 31824,
+  	tag: "mn-Mong",
+  	version: "Windows 7"
+  },
+  	"mn-mong-": {
+  	language: "Mongolian (Traditional ",
+  	location: "Mongolia",
+  	id: 3152,
+  	tag: "mn-Mong-",
+  	version: "Windows 7"
+  },
+  	mfe: mfe,
+  	"mfe-mu": {
+  	language: "Morisyen",
+  	location: "Mauritius",
+  	id: 4096,
+  	tag: "mfe-MU",
+  	version: "Release 10"
+  },
+  	mua: mua,
+  	"mua-cm": {
+  	language: "Mundang",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "mua-CM",
+  	version: "Release 10"
+  },
+  	nqo: nqo,
+  	"nqo-gn": {
+  	language: "N'ko",
+  	location: "Guinea",
+  	id: 4096,
+  	tag: "nqo-GN",
+  	version: "Release 8.1"
+  },
+  	naq: naq,
+  	"naq-na": {
+  	language: "Nama",
+  	location: "Namibia",
+  	id: 4096,
+  	tag: "naq-NA",
+  	version: "Release 10"
+  },
+  	ne: ne,
+  	"ne-in": {
+  	language: "Nepali",
+  	location: "India",
+  	id: 2145,
+  	tag: "ne-IN",
+  	version: "Release 8.1"
+  },
+  	"ne-np": {
+  	language: "Nepali",
+  	location: "Nepal",
+  	id: 1121,
+  	tag: "ne-NP",
+  	version: "Release E2"
+  },
+  	nnh: nnh,
+  	"nnh-cm": {
+  	language: "Ngiemboon",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "nnh-CM",
+  	version: "Release 10"
+  },
+  	jgo: jgo,
+  	"jgo-cm": {
+  	language: "Ngomba",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "jgo-CM",
+  	version: "Release 10"
+  },
+  	"lrc-iq": {
+  	language: "Northern Luri",
+  	location: "Iraq",
+  	id: 4096,
+  	tag: "lrc-IQ",
+  	version: "Release 10.1"
+  },
+  	"lrc-ir": {
+  	language: "Northern Luri",
+  	location: "Iran",
+  	id: 4096,
+  	tag: "lrc-IR",
+  	version: "Release 10.1"
+  },
+  	nd: nd,
+  	"nd-zw": {
+  	language: "North Ndebele",
+  	location: "Zimbabwe",
+  	id: 4096,
+  	tag: "nd-ZW",
+  	version: "Release 10"
+  },
+  	no: no,
+  	nb: nb,
+  	"nb-no": {
+  	language: "Norwegian (Bokmal)",
+  	location: "Norway",
+  	id: 1044,
+  	tag: "nb-NO",
+  	version: "Release A"
+  },
+  	nn: nn,
+  	"nn-no": {
+  	language: "Norwegian (Nynorsk)",
+  	location: "Norway",
+  	id: 2068,
+  	tag: "nn-NO",
+  	version: "Release A"
+  },
+  	"nb-sj": {
+  	language: "Norwegian Bokmål",
+  	location: "Svalbard and Jan Mayen",
+  	id: 4096,
+  	tag: "nb-SJ",
+  	version: "Release 10"
+  },
+  	nus: nus,
+  	"nus-sd": {
+  	language: "Nuer",
+  	location: "Sudan",
+  	id: 4096,
+  	tag: "nus-SD",
+  	version: "Release 10"
+  },
+  	"nus-ss": {
+  	language: "Nuer",
+  	location: "South Sudan",
+  	id: 4096,
+  	tag: "nus-SS",
+  	version: "Release 10.1"
+  },
+  	nyn: nyn,
+  	"nyn-ug": {
+  	language: "Nyankole",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "nyn-UG",
+  	version: "Release 10"
+  },
+  	oc: oc,
+  	"oc-fr": {
+  	language: "Occitan",
+  	location: "France",
+  	id: 1154,
+  	tag: "oc-FR",
+  	version: "Release V"
+  },
+  	or: or,
+  	"or-in": {
+  	language: "Odia",
+  	location: "India",
+  	id: 1096,
+  	tag: "or-IN",
+  	version: "Release V"
+  },
+  	om: om,
+  	"om-et": {
+  	language: "Oromo",
+  	location: "Ethiopia",
+  	id: 1138,
+  	tag: "om-ET",
+  	version: "Release 8.1"
+  },
+  	"om-ke": {
+  	language: "Oromo",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "om-KE",
+  	version: "Release 10"
+  },
+  	os: os,
+  	"os-ge": {
+  	language: "Ossetian",
+  	location: "Cyrillic, Georgia",
+  	id: 4096,
+  	tag: "os-GE",
+  	version: "Release 10"
+  },
+  	"os-ru": {
+  	language: "Ossetian",
+  	location: "Cyrillic, Russia",
+  	id: 4096,
+  	tag: "os-RU",
+  	version: "Release 10"
+  },
+  	ps: ps,
+  	"ps-af": {
+  	language: "Pashto",
+  	location: "Afghanistan",
+  	id: 1123,
+  	tag: "ps-AF",
+  	version: "Release E2"
+  },
+  	fa: fa,
+  	"fa-af": {
+  	language: "Persian",
+  	location: "Afghanistan",
+  	id: 4096,
+  	tag: "fa-AF",
+  	version: "Release 10"
+  },
+  	"fa-ir": {
+  	language: "Persian",
+  	location: "Iran",
+  	id: 1065,
+  	tag: "fa-IR",
+  	version: "Release B"
+  },
+  	pl: pl,
+  	"pl-pl": {
+  	language: "Polish",
+  	location: "Poland",
+  	id: 1045,
+  	tag: "pl-PL",
+  	version: "Release A"
+  },
+  	pt: pt,
+  	"pt-ao": {
+  	language: "Portuguese",
+  	location: "Angola",
+  	id: 4096,
+  	tag: "pt-AO",
+  	version: "Release 8.1"
+  },
+  	"pt-br": {
+  	language: "Portuguese",
+  	location: "Brazil",
+  	id: 1046,
+  	tag: "pt-BR",
+  	version: "ReleaseA"
+  },
+  	"pt-cv": {
+  	language: "Portuguese",
+  	location: "Cabo Verde",
+  	id: 4096,
+  	tag: "pt-CV",
+  	version: "Release 10"
+  },
+  	"pt-gq": {
+  	language: "Portuguese",
+  	location: "Equatorial Guinea",
+  	id: 4096,
+  	tag: "pt-GQ",
+  	version: "Release 10.2"
+  },
+  	"pt-gw": {
+  	language: "Portuguese",
+  	location: "Guinea-Bissau",
+  	id: 4096,
+  	tag: "pt-GW",
+  	version: "Release 10"
+  },
+  	"pt-lu": {
+  	language: "Portuguese",
+  	location: "Luxembourg",
+  	id: 4096,
+  	tag: "pt-LU",
+  	version: "Release 10.2"
+  },
+  	"pt-mo": {
+  	language: "Portuguese",
+  	location: "Macao SAR",
+  	id: 4096,
+  	tag: "pt-MO",
+  	version: "Release 10"
+  },
+  	"pt-mz": {
+  	language: "Portuguese",
+  	location: "Mozambique",
+  	id: 4096,
+  	tag: "pt-MZ",
+  	version: "Release 10"
+  },
+  	"pt-pt": {
+  	language: "Portuguese",
+  	location: "Portugal",
+  	id: 2070,
+  	tag: "pt-PT",
+  	version: "Release A"
+  },
+  	"pt-st": {
+  	language: "Portuguese",
+  	location: "São Tomé and Príncipe",
+  	id: 4096,
+  	tag: "pt-ST",
+  	version: "Release 10"
+  },
+  	"pt-ch": {
+  	language: "Portuguese",
+  	location: "Switzerland",
+  	id: 4096,
+  	tag: "pt-CH",
+  	version: "Release 10.2"
+  },
+  	"pt-tl": {
+  	language: "Portuguese",
+  	location: "Timor-Leste",
+  	id: 4096,
+  	tag: "pt-TL",
+  	version: "Release 10"
+  },
+  	"prg-001": {
+  	language: "Prussian",
+  	location: null,
+  	id: 4096,
+  	tag: "prg-001",
+  	version: "Release 10.1"
+  },
+  	"qps-ploca": {
+  	language: "Pseudo Language",
+  	location: "Pseudo locale for east Asian/complex ",
+  	id: 1534,
+  	tag: "qps-ploca",
+  	version: "Release 7"
+  },
+  	"qps-ploc": {
+  	language: "Pseudo Language",
+  	location: "Pseudo locale used for localization ",
+  	id: 1281,
+  	tag: "qps-ploc",
+  	version: "Release 7"
+  },
+  	"qps-plocm": {
+  	language: "Pseudo Language",
+  	location: "Pseudo locale used for localization ",
+  	id: 2559,
+  	tag: "qps-plocm",
+  	version: "Release 7"
+  },
+  	pa: pa,
+  	"pa-arab": {
+  	language: "Punjabi",
+  	location: null,
+  	id: 31814,
+  	tag: "pa-Arab",
+  	version: "Release 8"
+  },
+  	"pa-in": {
+  	language: "Punjabi",
+  	location: "India",
+  	id: 1094,
+  	tag: "pa-IN",
+  	version: "Release D"
+  },
+  	"pa-arab-pk": {
+  	language: "Punjabi",
+  	location: "Islamic Republic of Pakistan",
+  	id: 2118,
+  	tag: "pa-Arab-PK",
+  	version: "Release 8"
+  },
+  	quz: quz,
+  	"quz-bo": {
+  	language: "Quechua",
+  	location: "Bolivia",
+  	id: 1131,
+  	tag: "quz-BO",
+  	version: "Release E1"
+  },
+  	"quz-ec": {
+  	language: "Quechua",
+  	location: "Ecuador",
+  	id: 2155,
+  	tag: "quz-EC",
+  	version: "Release E1"
+  },
+  	"quz-pe": {
+  	language: "Quechua",
+  	location: "Peru",
+  	id: 3179,
+  	tag: "quz-PE",
+  	version: "Release E1"
+  },
+  	ksh: ksh,
+  	"ksh-de": {
+  	language: "Ripuarian",
+  	location: "Germany",
+  	id: 4096,
+  	tag: "ksh-DE",
+  	version: "Release 10"
+  },
+  	ro: ro,
+  	"ro-md": {
+  	language: "Romanian",
+  	location: "Moldova",
+  	id: 2072,
+  	tag: "ro-MD",
+  	version: "Release 8.1"
+  },
+  	"ro-ro": {
+  	language: "Romanian",
+  	location: "Romania",
+  	id: 1048,
+  	tag: "ro-RO",
+  	version: "Release A"
+  },
+  	rm: rm,
+  	"rm-ch": {
+  	language: "Romansh",
+  	location: "Switzerland",
+  	id: 1047,
+  	tag: "rm-CH",
+  	version: "Release E2"
+  },
+  	rof: rof,
+  	"rof-tz": {
+  	language: "Rombo",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "rof-TZ",
+  	version: "Release 10"
+  },
+  	rn: rn,
+  	"rn-bi": {
+  	language: "Rundi",
+  	location: "Burundi",
+  	id: 4096,
+  	tag: "rn-BI",
+  	version: "Release 10"
+  },
+  	ru: ru,
+  	"ru-by": {
+  	language: "Russian",
+  	location: "Belarus",
+  	id: 4096,
+  	tag: "ru-BY",
+  	version: "Release 10"
+  },
+  	"ru-kz": {
+  	language: "Russian",
+  	location: "Kazakhstan",
+  	id: 4096,
+  	tag: "ru-KZ",
+  	version: "Release 10"
+  },
+  	"ru-kg": {
+  	language: "Russian",
+  	location: "Kyrgyzstan",
+  	id: 4096,
+  	tag: "ru-KG",
+  	version: "Release 10"
+  },
+  	"ru-md": {
+  	language: "Russian",
+  	location: "Moldova",
+  	id: 2073,
+  	tag: "ru-MD",
+  	version: "Release 10"
+  },
+  	"ru-ru": {
+  	language: "Russian",
+  	location: "Russia",
+  	id: 1049,
+  	tag: "ru-RU",
+  	version: "Release A"
+  },
+  	"ru-ua": {
+  	language: "Russian",
+  	location: "Ukraine",
+  	id: 4096,
+  	tag: "ru-UA",
+  	version: "Release 10"
+  },
+  	rwk: rwk,
+  	"rwk-tz": {
+  	language: "Rwa",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "rwk-TZ",
+  	version: "Release 10"
+  },
+  	ssy: ssy,
+  	"ssy-er": {
+  	language: "Saho",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "ssy-ER",
+  	version: "Release 10"
+  },
+  	sah: sah,
+  	"sah-ru": {
+  	language: "Sakha",
+  	location: "Russia",
+  	id: 1157,
+  	tag: "sah-RU",
+  	version: "Release V"
+  },
+  	saq: saq,
+  	"saq-ke": {
+  	language: "Samburu",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "saq-KE",
+  	version: "Release 10"
+  },
+  	smn: smn,
+  	"smn-fi": {
+  	language: "Sami (Inari)",
+  	location: "Finland",
+  	id: 9275,
+  	tag: "smn-FI",
+  	version: "Release E1"
+  },
+  	smj: smj,
+  	"smj-no": {
+  	language: "Sami (Lule)",
+  	location: "Norway",
+  	id: 4155,
+  	tag: "smj-NO",
+  	version: "Release E1"
+  },
+  	"smj-se": {
+  	language: "Sami (Lule)",
+  	location: "Sweden",
+  	id: 5179,
+  	tag: "smj-SE",
+  	version: "Release E1"
+  },
+  	se: se,
+  	"se-fi": {
+  	language: "Sami (Northern)",
+  	location: "Finland",
+  	id: 3131,
+  	tag: "se-FI",
+  	version: "Release E1"
+  },
+  	"se-no": {
+  	language: "Sami (Northern)",
+  	location: "Norway",
+  	id: 1083,
+  	tag: "se-NO",
+  	version: "Release E1"
+  },
+  	"se-se": {
+  	language: "Sami (Northern)",
+  	location: "Sweden",
+  	id: 2107,
+  	tag: "se-SE",
+  	version: "Release E1"
+  },
+  	sms: sms,
+  	"sms-fi": {
+  	language: "Sami (Skolt)",
+  	location: "Finland",
+  	id: 8251,
+  	tag: "sms-FI",
+  	version: "Release E1"
+  },
+  	sma: sma,
+  	"sma-no": {
+  	language: "Sami (Southern)",
+  	location: "Norway",
+  	id: 6203,
+  	tag: "sma-NO",
+  	version: "Release E1"
+  },
+  	"sma-se": {
+  	language: "Sami (Southern)",
+  	location: "Sweden",
+  	id: 7227,
+  	tag: "sma-SE",
+  	version: "Release E1"
+  },
+  	sg: sg,
+  	"sg-cf": {
+  	language: "Sango",
+  	location: "Central African Republic",
+  	id: 4096,
+  	tag: "sg-CF",
+  	version: "Release 10"
+  },
+  	sbp: sbp,
+  	"sbp-tz": {
+  	language: "Sangu",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "sbp-TZ",
+  	version: "Release 10"
+  },
+  	sa: sa,
+  	"sa-in": {
+  	language: "Sanskrit",
+  	location: "India",
+  	id: 1103,
+  	tag: "sa-IN",
+  	version: "Release C"
+  },
+  	gd: gd,
+  	"gd-gb": {
+  	language: "Scottish Gaelic",
+  	location: "United Kingdom",
+  	id: 1169,
+  	tag: "gd-GB",
+  	version: "Release 7"
+  },
+  	seh: seh,
+  	"seh-mz": {
+  	language: "Sena",
+  	location: "Mozambique",
+  	id: 4096,
+  	tag: "seh-MZ",
+  	version: "Release 10"
+  },
+  	"sr-cyrl": {
+  	language: "Serbian (Cyrillic)",
+  	location: null,
+  	id: 27674,
+  	tag: "sr-Cyrl",
+  	version: "Windows 7"
+  },
+  	"sr-cyrl-ba": {
+  	language: "Serbian (Cyrillic)",
+  	location: "Bosnia and Herzegovina",
+  	id: 7194,
+  	tag: "sr-Cyrl-BA",
+  	version: "Release E1"
+  },
+  	"sr-cyrl-me": {
+  	language: "Serbian (Cyrillic)",
+  	location: "Montenegro",
+  	id: 12314,
+  	tag: "sr-Cyrl-ME",
+  	version: "Release 7"
+  },
+  	"sr-cyrl-rs": {
+  	language: "Serbian (Cyrillic)",
+  	location: "Serbia",
+  	id: 10266,
+  	tag: "sr-Cyrl-RS",
+  	version: "Release 7"
+  },
+  	"sr-cyrl-cs": {
+  	language: "Serbian (Cyrillic)",
+  	location: "Serbia and Montenegro (Former)",
+  	id: 3098,
+  	tag: "sr-Cyrl-CS",
+  	version: "Release B"
+  },
+  	"sr-latn": {
+  	language: "Serbian (Latin)",
+  	location: null,
+  	id: 28698,
+  	tag: "sr-Latn",
+  	version: "Windows 7"
+  },
+  	sr: sr,
+  	"sr-latn-ba": {
+  	language: "Serbian (Latin)",
+  	location: "Bosnia and Herzegovina",
+  	id: 6170,
+  	tag: "sr-Latn-BA",
+  	version: "Release E1"
+  },
+  	"sr-latn-me": {
+  	language: "Serbian (Latin)",
+  	location: "Montenegro",
+  	id: 11290,
+  	tag: "sr-Latn-ME",
+  	version: "Release 7"
+  },
+  	"sr-latn-rs": {
+  	language: "Serbian (Latin)",
+  	location: "Serbia",
+  	id: 9242,
+  	tag: "sr-Latn-RS",
+  	version: "Release 7"
+  },
+  	"sr-latn-cs": {
+  	language: "Serbian (Latin)",
+  	location: "Serbia and Montenegro (Former)",
+  	id: 2074,
+  	tag: "sr-Latn-CS",
+  	version: "Release B"
+  },
+  	nso: nso,
+  	"nso-za": {
+  	language: "Sesotho sa Leboa",
+  	location: "South Africa",
+  	id: 1132,
+  	tag: "nso-ZA",
+  	version: "Release E1"
+  },
+  	tn: tn,
+  	"tn-bw": {
+  	language: "Setswana",
+  	location: "Botswana",
+  	id: 2098,
+  	tag: "tn-BW",
+  	version: "Release 8"
+  },
+  	"tn-za": {
+  	language: "Setswana",
+  	location: "South Africa",
+  	id: 1074,
+  	tag: "tn-ZA",
+  	version: "Release E1"
+  },
+  	ksb: ksb,
+  	"ksb-tz": {
+  	language: "Shambala",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "ksb-TZ",
+  	version: "Release 10"
+  },
+  	sn: sn,
+  	"sn-latn": {
+  	language: "Shona",
+  	location: "Latin",
+  	id: 4096,
+  	tag: "sn-Latn",
+  	version: "Release 8.1"
+  },
+  	"sn-latn-zw": {
+  	language: "Shona",
+  	location: "Zimbabwe",
+  	id: 4096,
+  	tag: "sn-Latn-ZW",
+  	version: "Release 8.1"
+  },
+  	sd: sd,
+  	"sd-arab": {
+  	language: "Sindhi",
+  	location: null,
+  	id: 31833,
+  	tag: "sd-Arab",
+  	version: "Release 8"
+  },
+  	"sd-arab-pk": {
+  	language: "Sindhi",
+  	location: "Islamic Republic of Pakistan",
+  	id: 2137,
+  	tag: "sd-Arab-PK",
+  	version: "Release 8"
+  },
+  	si: si,
+  	"si-lk": {
+  	language: "Sinhala",
+  	location: "Sri Lanka",
+  	id: 1115,
+  	tag: "si-LK",
+  	version: "Release V"
+  },
+  	sk: sk,
+  	"sk-sk": {
+  	language: "Slovak",
+  	location: "Slovakia",
+  	id: 1051,
+  	tag: "sk-SK",
+  	version: "Release A"
+  },
+  	sl: sl,
+  	"sl-si": {
+  	language: "Slovenian",
+  	location: "Slovenia",
+  	id: 1060,
+  	tag: "sl-SI",
+  	version: "Release A"
+  },
+  	xog: xog,
+  	"xog-ug": {
+  	language: "Soga",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "xog-UG",
+  	version: "Release 10"
+  },
+  	so: so,
+  	"so-dj": {
+  	language: "Somali",
+  	location: "Djibouti",
+  	id: 4096,
+  	tag: "so-DJ",
+  	version: "Release 10"
+  },
+  	"so-et": {
+  	language: "Somali",
+  	location: "Ethiopia",
+  	id: 4096,
+  	tag: "so-ET",
+  	version: "Release 10"
+  },
+  	"so-ke": {
+  	language: "Somali",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "so-KE",
+  	version: "Release 10"
+  },
+  	"so-so": {
+  	language: "Somali",
+  	location: "Somalia",
+  	id: 1143,
+  	tag: "so-SO",
+  	version: "Release 8.1"
+  },
+  	st: st,
+  	"st-za": {
+  	language: "Sotho",
+  	location: "South Africa",
+  	id: 1072,
+  	tag: "st-ZA",
+  	version: "Release 8.1"
+  },
+  	nr: nr,
+  	"nr-za": {
+  	language: "South Ndebele",
+  	location: "South Africa",
+  	id: 4096,
+  	tag: "nr-ZA",
+  	version: "Release 10"
+  },
+  	"st-ls": {
+  	language: "Southern Sotho",
+  	location: "Lesotho",
+  	id: 4096,
+  	tag: "st-LS",
+  	version: "Release 10"
+  },
+  	es: es,
+  	"es-ar": {
+  	language: "Spanish",
+  	location: "Argentina",
+  	id: 11274,
+  	tag: "es-AR",
+  	version: "Release B"
+  },
+  	"es-bz": {
+  	language: "Spanish",
+  	location: "Belize",
+  	id: 4096,
+  	tag: "es-BZ",
+  	version: "Release 10.3"
+  },
+  	"es-ve": {
+  	language: "Spanish",
+  	location: "Bolivarian Republic of Venezuela",
+  	id: 8202,
+  	tag: "es-VE",
+  	version: "Release B"
+  },
+  	"es-bo": {
+  	language: "Spanish",
+  	location: "Bolivia",
+  	id: 16394,
+  	tag: "es-BO",
+  	version: "Release B"
+  },
+  	"es-br": {
+  	language: "Spanish",
+  	location: "Brazil",
+  	id: 4096,
+  	tag: "es-BR",
+  	version: "Release 10.2"
+  },
+  	"es-cl": {
+  	language: "Spanish",
+  	location: "Chile",
+  	id: 13322,
+  	tag: "es-CL",
+  	version: "Release B"
+  },
+  	"es-co": {
+  	language: "Spanish",
+  	location: "Colombia",
+  	id: 9226,
+  	tag: "es-CO",
+  	version: "Release B"
+  },
+  	"es-cr": {
+  	language: "Spanish",
+  	location: "Costa Rica",
+  	id: 5130,
+  	tag: "es-CR",
+  	version: "Release B"
+  },
+  	"es-cu": {
+  	language: "Spanish",
+  	location: "Cuba",
+  	id: 23562,
+  	tag: "es-CU",
+  	version: "Release 10"
+  },
+  	"es-do": {
+  	language: "Spanish",
+  	location: "Dominican Republic",
+  	id: 7178,
+  	tag: "es-DO",
+  	version: "Release B"
+  },
+  	"es-ec": {
+  	language: "Spanish",
+  	location: "Ecuador",
+  	id: 12298,
+  	tag: "es-EC",
+  	version: "Release B"
+  },
+  	"es-sv": {
+  	language: "Spanish",
+  	location: "El Salvador",
+  	id: 17418,
+  	tag: "es-SV",
+  	version: "Release B"
+  },
+  	"es-gq": {
+  	language: "Spanish",
+  	location: "Equatorial Guinea",
+  	id: 4096,
+  	tag: "es-GQ",
+  	version: "Release 10"
+  },
+  	"es-gt": {
+  	language: "Spanish",
+  	location: "Guatemala",
+  	id: 4106,
+  	tag: "es-GT",
+  	version: "Release B"
+  },
+  	"es-hn": {
+  	language: "Spanish",
+  	location: "Honduras",
+  	id: 18442,
+  	tag: "es-HN",
+  	version: "Release B"
+  },
+  	"es-419": {
+  	language: "Spanish",
+  	location: "Latin America",
+  	id: 22538,
+  	tag: "es-419",
+  	version: "Release 8.1"
+  },
+  	"es-mx": {
+  	language: "Spanish",
+  	location: "Mexico",
+  	id: 2058,
+  	tag: "es-MX",
+  	version: "Release A"
+  },
+  	"es-ni": {
+  	language: "Spanish",
+  	location: "Nicaragua",
+  	id: 19466,
+  	tag: "es-NI",
+  	version: "Release B"
+  },
+  	"es-pa": {
+  	language: "Spanish",
+  	location: "Panama",
+  	id: 6154,
+  	tag: "es-PA",
+  	version: "Release B"
+  },
+  	"es-py": {
+  	language: "Spanish",
+  	location: "Paraguay",
+  	id: 15370,
+  	tag: "es-PY",
+  	version: "Release B"
+  },
+  	"es-pe": {
+  	language: "Spanish",
+  	location: "Peru",
+  	id: 10250,
+  	tag: "es-PE",
+  	version: "Release B"
+  },
+  	"es-ph": {
+  	language: "Spanish",
+  	location: "Philippines",
+  	id: 4096,
+  	tag: "es-PH",
+  	version: "Release 10"
+  },
+  	"es-pr": {
+  	language: "Spanish",
+  	location: "Puerto Rico",
+  	id: 20490,
+  	tag: "es-PR",
+  	version: "Release B"
+  },
+  	"es-es_tradnl": {
+  	language: "Spanish",
+  	location: "Spain",
+  	id: 1034,
+  	tag: "es-ES_tradnl",
+  	version: "Release A"
+  },
+  	"es-es": {
+  	language: "Spanish",
+  	location: "Spain",
+  	id: 3082,
+  	tag: "es-ES",
+  	version: "Release A"
+  },
+  	"es-us": {
+  	language: "Spanish",
+  	location: "United States",
+  	id: 21514,
+  	tag: "es-US",
+  	version: "Release V"
+  },
+  	"es-uy": {
+  	language: "Spanish",
+  	location: "Uruguay",
+  	id: 14346,
+  	tag: "es-UY",
+  	version: "Release B"
+  },
+  	zgh: zgh,
+  	"zgh-tfng-ma": {
+  	language: "Standard Moroccan ",
+  	location: "Morocco",
+  	id: 4096,
+  	tag: "zgh-Tfng-MA",
+  	version: "Release 8.1"
+  },
+  	"zgh-tfng": {
+  	language: "Standard Moroccan ",
+  	location: "Tifinagh",
+  	id: 4096,
+  	tag: "zgh-Tfng",
+  	version: "Release 8.1"
+  },
+  	ss: ss,
+  	"ss-za": {
+  	language: "Swati",
+  	location: "South Africa",
+  	id: 4096,
+  	tag: "ss-ZA",
+  	version: "Release 10"
+  },
+  	"ss-sz": {
+  	language: "Swati",
+  	location: "Swaziland",
+  	id: 4096,
+  	tag: "ss-SZ",
+  	version: "Release 10"
+  },
+  	sv: sv,
+  	"sv-ax": {
+  	language: "Swedish",
+  	location: "Åland Islands",
+  	id: 4096,
+  	tag: "sv-AX",
+  	version: "Release 10"
+  },
+  	"sv-fi": {
+  	language: "Swedish",
+  	location: "Finland",
+  	id: 2077,
+  	tag: "sv-FI",
+  	version: "ReleaseB"
+  },
+  	"sv-se": {
+  	language: "Swedish",
+  	location: "Sweden",
+  	id: 1053,
+  	tag: "sv-SE",
+  	version: "Release A"
+  },
+  	syr: syr,
+  	"syr-sy": {
+  	language: "Syriac",
+  	location: "Syria",
+  	id: 1114,
+  	tag: "syr-SY",
+  	version: "Release D"
+  },
+  	shi: shi,
+  	"shi-tfng": {
+  	language: "Tachelhit",
+  	location: "Tifinagh",
+  	id: 4096,
+  	tag: "shi-Tfng",
+  	version: "Release 10"
+  },
+  	"shi-tfng-ma": {
+  	language: "Tachelhit",
+  	location: "Tifinagh, Morocco",
+  	id: 4096,
+  	tag: "shi-Tfng-MA",
+  	version: "Release 10"
+  },
+  	"shi-latn": {
+  	language: "Tachelhit (Latin)",
+  	location: null,
+  	id: 4096,
+  	tag: "shi-Latn",
+  	version: "Release 10"
+  },
+  	"shi-latn-ma": {
+  	language: "Tachelhit (Latin)",
+  	location: "Morocco",
+  	id: 4096,
+  	tag: "shi-Latn-MA",
+  	version: "Release 10"
+  },
+  	dav: dav,
+  	"dav-ke": {
+  	language: "Taita",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "dav-KE",
+  	version: "Release 10"
+  },
+  	tg: tg,
+  	"tg-cyrl": {
+  	language: "Tajik (Cyrillic)",
+  	location: null,
+  	id: 31784,
+  	tag: "tg-Cyrl",
+  	version: "Windows 7"
+  },
+  	"tg-cyrl-tj": {
+  	language: "Tajik (Cyrillic)",
+  	location: "Tajikistan",
+  	id: 1064,
+  	tag: "tg-Cyrl-TJ",
+  	version: "Release V"
+  },
+  	tzm: tzm,
+  	"tzm-latn": {
+  	language: "Tamazight (Latin)",
+  	location: null,
+  	id: 31839,
+  	tag: "tzm-Latn",
+  	version: "Windows 7"
+  },
+  	"tzm-latn-dz": {
+  	language: "Tamazight (Latin)",
+  	location: "Algeria",
+  	id: 2143,
+  	tag: "tzm-Latn-DZ",
+  	version: "Release V"
+  },
+  	ta: ta,
+  	"ta-in": {
+  	language: "Tamil",
+  	location: "India",
+  	id: 1097,
+  	tag: "ta-IN",
+  	version: "Release C"
+  },
+  	"ta-my": {
+  	language: "Tamil",
+  	location: "Malaysia",
+  	id: 4096,
+  	tag: "ta-MY",
+  	version: "Release 10"
+  },
+  	"ta-sg": {
+  	language: "Tamil",
+  	location: "Singapore",
+  	id: 4096,
+  	tag: "ta-SG",
+  	version: "Release 10"
+  },
+  	"ta-lk": {
+  	language: "Tamil",
+  	location: "Sri Lanka",
+  	id: 2121,
+  	tag: "ta-LK",
+  	version: "Release 8"
+  },
+  	twq: twq,
+  	"twq-ne": {
+  	language: "Tasawaq",
+  	location: "Niger",
+  	id: 4096,
+  	tag: "twq-NE",
+  	version: "Release 10"
+  },
+  	tt: tt,
+  	"tt-ru": {
+  	language: "Tatar",
+  	location: "Russia",
+  	id: 1092,
+  	tag: "tt-RU",
+  	version: "Release D"
+  },
+  	te: te,
+  	"te-in": {
+  	language: "Telugu",
+  	location: "India",
+  	id: 1098,
+  	tag: "te-IN",
+  	version: "Release D"
+  },
+  	teo: teo,
+  	"teo-ke": {
+  	language: "Teso",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "teo-KE",
+  	version: "Release 10"
+  },
+  	"teo-ug": {
+  	language: "Teso",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "teo-UG",
+  	version: "Release 10"
+  },
+  	th: th,
+  	"th-th": {
+  	language: "Thai",
+  	location: "Thailand",
+  	id: 1054,
+  	tag: "th-TH",
+  	version: "Release B"
+  },
+  	bo: bo,
+  	"bo-in": {
+  	language: "Tibetan",
+  	location: "India",
+  	id: 4096,
+  	tag: "bo-IN",
+  	version: "Release 10"
+  },
+  	"bo-cn": {
+  	language: "Tibetan",
+  	location: "People's Republic of China",
+  	id: 1105,
+  	tag: "bo-CN",
+  	version: "Release V"
+  },
+  	tig: tig,
+  	"tig-er": {
+  	language: "Tigre",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "tig-ER",
+  	version: "Release 10"
+  },
+  	ti: ti,
+  	"ti-er": {
+  	language: "Tigrinya",
+  	location: "Eritrea",
+  	id: 2163,
+  	tag: "ti-ER",
+  	version: "Release 8"
+  },
+  	"ti-et": {
+  	language: "Tigrinya",
+  	location: "Ethiopia",
+  	id: 1139,
+  	tag: "ti-ET",
+  	version: "Release 8"
+  },
+  	to: to,
+  	"to-to": {
+  	language: "Tongan",
+  	location: "Tonga",
+  	id: 4096,
+  	tag: "to-TO",
+  	version: "Release 10"
+  },
+  	ts: ts,
+  	"ts-za": {
+  	language: "Tsonga",
+  	location: "South Africa",
+  	id: 1073,
+  	tag: "ts-ZA",
+  	version: "Release 8.1"
+  },
+  	tr: tr,
+  	"tr-cy": {
+  	language: "Turkish",
+  	location: "Cyprus",
+  	id: 4096,
+  	tag: "tr-CY",
+  	version: "Release 10"
+  },
+  	"tr-tr": {
+  	language: "Turkish",
+  	location: "Turkey",
+  	id: 1055,
+  	tag: "tr-TR",
+  	version: "Release A"
+  },
+  	tk: tk,
+  	"tk-tm": {
+  	language: "Turkmen",
+  	location: "Turkmenistan",
+  	id: 1090,
+  	tag: "tk-TM",
+  	version: "Release V"
+  },
+  	uk: uk,
+  	"uk-ua": {
+  	language: "Ukrainian",
+  	location: "Ukraine",
+  	id: 1058,
+  	tag: "uk-UA",
+  	version: "Release B"
+  },
+  	hsb: hsb,
+  	"hsb-de": {
+  	language: "Upper Sorbian",
+  	location: "Germany",
+  	id: 1070,
+  	tag: "hsb-DE",
+  	version: "Release V"
+  },
+  	ur: ur,
+  	"ur-in": {
+  	language: "Urdu",
+  	location: "India",
+  	id: 2080,
+  	tag: "ur-IN",
+  	version: "Release 8.1"
+  },
+  	"ur-pk": {
+  	language: "Urdu",
+  	location: "Islamic Republic of Pakistan",
+  	id: 1056,
+  	tag: "ur-PK",
+  	version: "Release C"
+  },
+  	ug: ug,
+  	"ug-cn": {
+  	language: "Uyghur",
+  	location: "People's Republic of China",
+  	id: 1152,
+  	tag: "ug-CN",
+  	version: "Release V"
+  },
+  	"uz-arab": {
+  	language: "Uzbek",
+  	location: "Perso-Arabic",
+  	id: 4096,
+  	tag: "uz-Arab",
+  	version: "Release 10"
+  },
+  	"uz-arab-af": {
+  	language: "Uzbek",
+  	location: "Perso-Arabic, Afghanistan",
+  	id: 4096,
+  	tag: "uz-Arab-AF",
+  	version: "Release 10"
+  },
+  	"uz-cyrl": {
+  	language: "Uzbek (Cyrillic)",
+  	location: null,
+  	id: 30787,
+  	tag: "uz-Cyrl",
+  	version: "Windows 7"
+  },
+  	"uz-cyrl-uz": {
+  	language: "Uzbek (Cyrillic)",
+  	location: "Uzbekistan",
+  	id: 2115,
+  	tag: "uz-Cyrl-UZ",
+  	version: "Release C"
+  },
+  	uz: uz,
+  	"uz-latn": {
+  	language: "Uzbek (Latin)",
+  	location: null,
+  	id: 31811,
+  	tag: "uz-Latn",
+  	version: "Windows 7"
+  },
+  	"uz-latn-uz": {
+  	language: "Uzbek (Latin)",
+  	location: "Uzbekistan",
+  	id: 1091,
+  	tag: "uz-Latn-UZ",
+  	version: "Release C"
+  },
+  	vai: vai,
+  	"vai-vaii": {
+  	language: "Vai",
+  	location: null,
+  	id: 4096,
+  	tag: "vai-Vaii",
+  	version: "Release 10"
+  },
+  	"vai-vaii-lr": {
+  	language: "Vai",
+  	location: "Liberia",
+  	id: 4096,
+  	tag: "vai-Vaii-LR",
+  	version: "Release 10"
+  },
+  	"vai-latn-lr": {
+  	language: "Vai (Latin)",
+  	location: "Liberia",
+  	id: 4096,
+  	tag: "vai-Latn-LR",
+  	version: "Release 10"
+  },
+  	"vai-latn": {
+  	language: "Vai (Latin)",
+  	location: null,
+  	id: 4096,
+  	tag: "vai-Latn",
+  	version: "Release 10"
+  },
+  	"ca-es-": {
+  	language: "Valencian",
+  	location: "Spain",
+  	id: 2051,
+  	tag: "ca-ES-",
+  	version: "Release 8"
+  },
+  	ve: ve,
+  	"ve-za": {
+  	language: "Venda",
+  	location: "South Africa",
+  	id: 1075,
+  	tag: "ve-ZA",
+  	version: "Release 10"
+  },
+  	vi: vi,
+  	"vi-vn": {
+  	language: "Vietnamese",
+  	location: "Vietnam",
+  	id: 1066,
+  	tag: "vi-VN",
+  	version: "Release B"
+  },
+  	vo: vo,
+  	"vo-001": {
+  	language: "Volapük",
+  	location: "World",
+  	id: 4096,
+  	tag: "vo-001",
+  	version: "Release 10"
+  },
+  	vun: vun,
+  	"vun-tz": {
+  	language: "Vunjo",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "vun-TZ",
+  	version: "Release 10"
+  },
+  	wae: wae,
+  	"wae-ch": {
+  	language: "Walser",
+  	location: "Switzerland",
+  	id: 4096,
+  	tag: "wae-CH",
+  	version: "Release 10"
+  },
+  	cy: cy,
+  	"cy-gb": {
+  	language: "Welsh",
+  	location: "United Kingdom",
+  	id: 1106,
+  	tag: "cy-GB",
+  	version: "ReleaseE1"
+  },
+  	wal: wal,
+  	"wal-et": {
+  	language: "Wolaytta",
+  	location: "Ethiopia",
+  	id: 4096,
+  	tag: "wal-ET",
+  	version: "Release 10"
+  },
+  	wo: wo,
+  	"wo-sn": {
+  	language: "Wolof",
+  	location: "Senegal",
+  	id: 1160,
+  	tag: "wo-SN",
+  	version: "Release V"
+  },
+  	xh: xh,
+  	"xh-za": {
+  	language: "Xhosa",
+  	location: "South Africa",
+  	id: 1076,
+  	tag: "xh-ZA",
+  	version: "Release E1"
+  },
+  	yav: yav,
+  	"yav-cm": {
+  	language: "Yangben",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "yav-CM",
+  	version: "Release 10"
+  },
+  	ii: ii,
+  	"ii-cn": {
+  	language: "Yi",
+  	location: "People's Republic of China",
+  	id: 1144,
+  	tag: "ii-CN",
+  	version: "Release V"
+  },
+  	yo: yo,
+  	"yo-bj": {
+  	language: "Yoruba",
+  	location: "Benin",
+  	id: 4096,
+  	tag: "yo-BJ",
+  	version: "Release 10"
+  },
+  	"yo-ng": {
+  	language: "Yoruba",
+  	location: "Nigeria",
+  	id: 1130,
+  	tag: "yo-NG",
+  	version: "Release V"
+  },
+  	dje: dje,
+  	"dje-ne": {
+  	language: "Zarma",
+  	location: "Niger",
+  	id: 4096,
+  	tag: "dje-NE",
+  	version: "Release 10"
+  },
+  	zu: zu,
+  	"zu-za": {
+  	language: "Zulu",
+  	location: "South Africa",
+  	id: 1077,
+  	tag: "zu-ZA",
+  	version: "Release E1"
+  }
+  };
+
+  var Abkhazian = {
+  	name: "Abkhazian",
+  	names: [
+  		"Abkhazian"
+  	],
+  	"iso639-2": "abk",
+  	"iso639-1": "ab"
+  };
+  var Achinese = {
+  	name: "Achinese",
+  	names: [
+  		"Achinese"
+  	],
+  	"iso639-2": "ace",
+  	"iso639-1": null
+  };
+  var Acoli = {
+  	name: "Acoli",
+  	names: [
+  		"Acoli"
+  	],
+  	"iso639-2": "ach",
+  	"iso639-1": null
+  };
+  var Adangme = {
+  	name: "Adangme",
+  	names: [
+  		"Adangme"
+  	],
+  	"iso639-2": "ada",
+  	"iso639-1": null
+  };
+  var Adygei = {
+  	name: "Adygei",
+  	names: [
+  		"Adyghe",
+  		"Adygei"
+  	],
+  	"iso639-2": "ady",
+  	"iso639-1": null
+  };
+  var Adyghe = {
+  	name: "Adyghe",
+  	names: [
+  		"Adyghe",
+  		"Adygei"
+  	],
+  	"iso639-2": "ady",
+  	"iso639-1": null
+  };
+  var Afar = {
+  	name: "Afar",
+  	names: [
+  		"Afar"
+  	],
+  	"iso639-2": "aar",
+  	"iso639-1": "aa"
+  };
+  var Afrihili = {
+  	name: "Afrihili",
+  	names: [
+  		"Afrihili"
+  	],
+  	"iso639-2": "afh",
+  	"iso639-1": null
+  };
+  var Afrikaans = {
+  	name: "Afrikaans",
+  	names: [
+  		"Afrikaans"
+  	],
+  	"iso639-2": "afr",
+  	"iso639-1": "af"
+  };
+  var Ainu = {
+  	name: "Ainu",
+  	names: [
+  		"Ainu"
+  	],
+  	"iso639-2": "ain",
+  	"iso639-1": null
+  };
+  var Akan = {
+  	name: "Akan",
+  	names: [
+  		"Akan"
+  	],
+  	"iso639-2": "aka",
+  	"iso639-1": "ak"
+  };
+  var Akkadian = {
+  	name: "Akkadian",
+  	names: [
+  		"Akkadian"
+  	],
+  	"iso639-2": "akk",
+  	"iso639-1": null
+  };
+  var Albanian = {
+  	name: "Albanian",
+  	names: [
+  		"Albanian"
+  	],
+  	"iso639-2": "alb/sqi",
+  	"iso639-1": "sq"
+  };
+  var Alemannic = {
+  	name: "Alemannic",
+  	names: [
+  		"Swiss German",
+  		"Alemannic",
+  		"Alsatian"
+  	],
+  	"iso639-2": "gsw",
+  	"iso639-1": null
+  };
+  var Aleut = {
+  	name: "Aleut",
+  	names: [
+  		"Aleut"
+  	],
+  	"iso639-2": "ale",
+  	"iso639-1": null
+  };
+  var Alsatian = {
+  	name: "Alsatian",
+  	names: [
+  		"Swiss German",
+  		"Alemannic",
+  		"Alsatian"
+  	],
+  	"iso639-2": "gsw",
+  	"iso639-1": null
+  };
+  var Amharic = {
+  	name: "Amharic",
+  	names: [
+  		"Amharic"
+  	],
+  	"iso639-2": "amh",
+  	"iso639-1": "am"
+  };
+  var Angika = {
+  	name: "Angika",
+  	names: [
+  		"Angika"
+  	],
+  	"iso639-2": "anp",
+  	"iso639-1": null
+  };
+  var Arabic = {
+  	name: "Arabic",
+  	names: [
+  		"Arabic"
+  	],
+  	"iso639-2": "ara",
+  	"iso639-1": "ar"
+  };
+  var Aragonese = {
+  	name: "Aragonese",
+  	names: [
+  		"Aragonese"
+  	],
+  	"iso639-2": "arg",
+  	"iso639-1": "an"
+  };
+  var Arapaho = {
+  	name: "Arapaho",
+  	names: [
+  		"Arapaho"
+  	],
+  	"iso639-2": "arp",
+  	"iso639-1": null
+  };
+  var Arawak = {
+  	name: "Arawak",
+  	names: [
+  		"Arawak"
+  	],
+  	"iso639-2": "arw",
+  	"iso639-1": null
+  };
+  var Armenian = {
+  	name: "Armenian",
+  	names: [
+  		"Armenian"
+  	],
+  	"iso639-2": "arm/hye",
+  	"iso639-1": "hy"
+  };
+  var Aromanian = {
+  	name: "Aromanian",
+  	names: [
+  		"Aromanian",
+  		"Arumanian",
+  		"Macedo-Romanian"
+  	],
+  	"iso639-2": "rup",
+  	"iso639-1": null
+  };
+  var Arumanian = {
+  	name: "Arumanian",
+  	names: [
+  		"Aromanian",
+  		"Arumanian",
+  		"Macedo-Romanian"
+  	],
+  	"iso639-2": "rup",
+  	"iso639-1": null
+  };
+  var Assamese = {
+  	name: "Assamese",
+  	names: [
+  		"Assamese"
+  	],
+  	"iso639-2": "asm",
+  	"iso639-1": "as"
+  };
+  var Asturian = {
+  	name: "Asturian",
+  	names: [
+  		"Asturian",
+  		"Bable",
+  		"Leonese",
+  		"Asturleonese"
+  	],
+  	"iso639-2": "ast",
+  	"iso639-1": null
+  };
+  var Asturleonese = {
+  	name: "Asturleonese",
+  	names: [
+  		"Asturian",
+  		"Bable",
+  		"Leonese",
+  		"Asturleonese"
+  	],
+  	"iso639-2": "ast",
+  	"iso639-1": null
+  };
+  var Avaric = {
+  	name: "Avaric",
+  	names: [
+  		"Avaric"
+  	],
+  	"iso639-2": "ava",
+  	"iso639-1": "av"
+  };
+  var Avestan = {
+  	name: "Avestan",
+  	names: [
+  		"Avestan"
+  	],
+  	"iso639-2": "ave",
+  	"iso639-1": "ae"
+  };
+  var Awadhi = {
+  	name: "Awadhi",
+  	names: [
+  		"Awadhi"
+  	],
+  	"iso639-2": "awa",
+  	"iso639-1": null
+  };
+  var Aymara = {
+  	name: "Aymara",
+  	names: [
+  		"Aymara"
+  	],
+  	"iso639-2": "aym",
+  	"iso639-1": "ay"
+  };
+  var Azerbaijani = {
+  	name: "Azerbaijani",
+  	names: [
+  		"Azerbaijani"
+  	],
+  	"iso639-2": "aze",
+  	"iso639-1": "az"
+  };
+  var Bable = {
+  	name: "Bable",
+  	names: [
+  		"Asturian",
+  		"Bable",
+  		"Leonese",
+  		"Asturleonese"
+  	],
+  	"iso639-2": "ast",
+  	"iso639-1": null
+  };
+  var Balinese = {
+  	name: "Balinese",
+  	names: [
+  		"Balinese"
+  	],
+  	"iso639-2": "ban",
+  	"iso639-1": null
+  };
+  var Baluchi = {
+  	name: "Baluchi",
+  	names: [
+  		"Baluchi"
+  	],
+  	"iso639-2": "bal",
+  	"iso639-1": null
+  };
+  var Bambara = {
+  	name: "Bambara",
+  	names: [
+  		"Bambara"
+  	],
+  	"iso639-2": "bam",
+  	"iso639-1": "bm"
+  };
+  var Basa = {
+  	name: "Basa",
+  	names: [
+  		"Basa"
+  	],
+  	"iso639-2": "bas",
+  	"iso639-1": null
+  };
+  var Bashkir = {
+  	name: "Bashkir",
+  	names: [
+  		"Bashkir"
+  	],
+  	"iso639-2": "bak",
+  	"iso639-1": "ba"
+  };
+  var Basque = {
+  	name: "Basque",
+  	names: [
+  		"Basque"
+  	],
+  	"iso639-2": "baq/eus",
+  	"iso639-1": "eu"
+  };
+  var Bedawiyet = {
+  	name: "Bedawiyet",
+  	names: [
+  		"Beja",
+  		"Bedawiyet"
+  	],
+  	"iso639-2": "bej",
+  	"iso639-1": null
+  };
+  var Beja = {
+  	name: "Beja",
+  	names: [
+  		"Beja",
+  		"Bedawiyet"
+  	],
+  	"iso639-2": "bej",
+  	"iso639-1": null
+  };
+  var Belarusian = {
+  	name: "Belarusian",
+  	names: [
+  		"Belarusian"
+  	],
+  	"iso639-2": "bel",
+  	"iso639-1": "be"
+  };
+  var Bemba = {
+  	name: "Bemba",
+  	names: [
+  		"Bemba"
+  	],
+  	"iso639-2": "bem",
+  	"iso639-1": null
+  };
+  var Bengali = {
+  	name: "Bengali",
+  	names: [
+  		"Bengali"
+  	],
+  	"iso639-2": "ben",
+  	"iso639-1": "bn"
+  };
+  var Bhojpuri = {
+  	name: "Bhojpuri",
+  	names: [
+  		"Bhojpuri"
+  	],
+  	"iso639-2": "bho",
+  	"iso639-1": null
+  };
+  var Bikol = {
+  	name: "Bikol",
+  	names: [
+  		"Bikol"
+  	],
+  	"iso639-2": "bik",
+  	"iso639-1": null
+  };
+  var Bilin = {
+  	name: "Bilin",
+  	names: [
+  		"Blin",
+  		"Bilin"
+  	],
+  	"iso639-2": "byn",
+  	"iso639-1": null
+  };
+  var Bini = {
+  	name: "Bini",
+  	names: [
+  		"Bini",
+  		"Edo"
+  	],
+  	"iso639-2": "bin",
+  	"iso639-1": null
+  };
+  var Bislama = {
+  	name: "Bislama",
+  	names: [
+  		"Bislama"
+  	],
+  	"iso639-2": "bis",
+  	"iso639-1": "bi"
+  };
+  var Blin = {
+  	name: "Blin",
+  	names: [
+  		"Blin",
+  		"Bilin"
+  	],
+  	"iso639-2": "byn",
+  	"iso639-1": null
+  };
+  var Bliss = {
+  	name: "Bliss",
+  	names: [
+  		"Blissymbols",
+  		"Blissymbolics",
+  		"Bliss"
+  	],
+  	"iso639-2": "zbl",
+  	"iso639-1": null
+  };
+  var Blissymbolics = {
+  	name: "Blissymbolics",
+  	names: [
+  		"Blissymbols",
+  		"Blissymbolics",
+  		"Bliss"
+  	],
+  	"iso639-2": "zbl",
+  	"iso639-1": null
+  };
+  var Blissymbols = {
+  	name: "Blissymbols",
+  	names: [
+  		"Blissymbols",
+  		"Blissymbolics",
+  		"Bliss"
+  	],
+  	"iso639-2": "zbl",
+  	"iso639-1": null
+  };
+  var Bosnian = {
+  	name: "Bosnian",
+  	names: [
+  		"Bosnian"
+  	],
+  	"iso639-2": "bos",
+  	"iso639-1": "bs"
+  };
+  var Braj = {
+  	name: "Braj",
+  	names: [
+  		"Braj"
+  	],
+  	"iso639-2": "bra",
+  	"iso639-1": null
+  };
+  var Breton = {
+  	name: "Breton",
+  	names: [
+  		"Breton"
+  	],
+  	"iso639-2": "bre",
+  	"iso639-1": "br"
+  };
+  var Buginese = {
+  	name: "Buginese",
+  	names: [
+  		"Buginese"
+  	],
+  	"iso639-2": "bug",
+  	"iso639-1": null
+  };
+  var Bulgarian = {
+  	name: "Bulgarian",
+  	names: [
+  		"Bulgarian"
+  	],
+  	"iso639-2": "bul",
+  	"iso639-1": "bg"
+  };
+  var Buriat = {
+  	name: "Buriat",
+  	names: [
+  		"Buriat"
+  	],
+  	"iso639-2": "bua",
+  	"iso639-1": null
+  };
+  var Burmese = {
+  	name: "Burmese",
+  	names: [
+  		"Burmese"
+  	],
+  	"iso639-2": "bur/mya",
+  	"iso639-1": "my"
+  };
+  var Caddo = {
+  	name: "Caddo",
+  	names: [
+  		"Caddo"
+  	],
+  	"iso639-2": "cad",
+  	"iso639-1": null
+  };
+  var Castilian = {
+  	name: "Castilian",
+  	names: [
+  		"Spanish",
+  		"Castilian"
+  	],
+  	"iso639-2": "spa",
+  	"iso639-1": "es"
+  };
+  var Catalan = {
+  	name: "Catalan",
+  	names: [
+  		"Catalan",
+  		"Valencian"
+  	],
+  	"iso639-2": "cat",
+  	"iso639-1": "ca"
+  };
+  var Cebuano = {
+  	name: "Cebuano",
+  	names: [
+  		"Cebuano"
+  	],
+  	"iso639-2": "ceb",
+  	"iso639-1": null
+  };
+  var Chagatai = {
+  	name: "Chagatai",
+  	names: [
+  		"Chagatai"
+  	],
+  	"iso639-2": "chg",
+  	"iso639-1": null
+  };
+  var Chamorro = {
+  	name: "Chamorro",
+  	names: [
+  		"Chamorro"
+  	],
+  	"iso639-2": "cha",
+  	"iso639-1": "ch"
+  };
+  var Chechen = {
+  	name: "Chechen",
+  	names: [
+  		"Chechen"
+  	],
+  	"iso639-2": "che",
+  	"iso639-1": "ce"
+  };
+  var Cherokee = {
+  	name: "Cherokee",
+  	names: [
+  		"Cherokee"
+  	],
+  	"iso639-2": "chr",
+  	"iso639-1": null
+  };
+  var Chewa = {
+  	name: "Chewa",
+  	names: [
+  		"Chichewa",
+  		"Chewa",
+  		"Nyanja"
+  	],
+  	"iso639-2": "nya",
+  	"iso639-1": "ny"
+  };
+  var Cheyenne = {
+  	name: "Cheyenne",
+  	names: [
+  		"Cheyenne"
+  	],
+  	"iso639-2": "chy",
+  	"iso639-1": null
+  };
+  var Chibcha = {
+  	name: "Chibcha",
+  	names: [
+  		"Chibcha"
+  	],
+  	"iso639-2": "chb",
+  	"iso639-1": null
+  };
+  var Chichewa = {
+  	name: "Chichewa",
+  	names: [
+  		"Chichewa",
+  		"Chewa",
+  		"Nyanja"
+  	],
+  	"iso639-2": "nya",
+  	"iso639-1": "ny"
+  };
+  var Chinese = {
+  	name: "Chinese",
+  	names: [
+  		"Chinese"
+  	],
+  	"iso639-2": "chi/zho",
+  	"iso639-1": "zh"
+  };
+  var Chipewyan = {
+  	name: "Chipewyan",
+  	names: [
+  		"Chipewyan",
+  		"Dene Suline"
+  	],
+  	"iso639-2": "chp",
+  	"iso639-1": null
+  };
+  var Choctaw = {
+  	name: "Choctaw",
+  	names: [
+  		"Choctaw"
+  	],
+  	"iso639-2": "cho",
+  	"iso639-1": null
+  };
+  var Chuang = {
+  	name: "Chuang",
+  	names: [
+  		"Zhuang",
+  		"Chuang"
+  	],
+  	"iso639-2": "zha",
+  	"iso639-1": "za"
+  };
+  var Chuukese = {
+  	name: "Chuukese",
+  	names: [
+  		"Chuukese"
+  	],
+  	"iso639-2": "chk",
+  	"iso639-1": null
+  };
+  var Chuvash = {
+  	name: "Chuvash",
+  	names: [
+  		"Chuvash"
+  	],
+  	"iso639-2": "chv",
+  	"iso639-1": "cv"
+  };
+  var Coptic = {
+  	name: "Coptic",
+  	names: [
+  		"Coptic"
+  	],
+  	"iso639-2": "cop",
+  	"iso639-1": null
+  };
+  var Cornish = {
+  	name: "Cornish",
+  	names: [
+  		"Cornish"
+  	],
+  	"iso639-2": "cor",
+  	"iso639-1": "kw"
+  };
+  var Corsican = {
+  	name: "Corsican",
+  	names: [
+  		"Corsican"
+  	],
+  	"iso639-2": "cos",
+  	"iso639-1": "co"
+  };
+  var Cree = {
+  	name: "Cree",
+  	names: [
+  		"Cree"
+  	],
+  	"iso639-2": "cre",
+  	"iso639-1": "cr"
+  };
+  var Creek = {
+  	name: "Creek",
+  	names: [
+  		"Creek"
+  	],
+  	"iso639-2": "mus",
+  	"iso639-1": null
+  };
+  var Croatian = {
+  	name: "Croatian",
+  	names: [
+  		"Croatian"
+  	],
+  	"iso639-2": "hrv",
+  	"iso639-1": "hr"
+  };
+  var Czech = {
+  	name: "Czech",
+  	names: [
+  		"Czech"
+  	],
+  	"iso639-2": "cze/ces",
+  	"iso639-1": "cs"
+  };
+  var Dakota = {
+  	name: "Dakota",
+  	names: [
+  		"Dakota"
+  	],
+  	"iso639-2": "dak",
+  	"iso639-1": null
+  };
+  var Danish = {
+  	name: "Danish",
+  	names: [
+  		"Danish"
+  	],
+  	"iso639-2": "dan",
+  	"iso639-1": "da"
+  };
+  var Dargwa = {
+  	name: "Dargwa",
+  	names: [
+  		"Dargwa"
+  	],
+  	"iso639-2": "dar",
+  	"iso639-1": null
+  };
+  var Delaware = {
+  	name: "Delaware",
+  	names: [
+  		"Delaware"
+  	],
+  	"iso639-2": "del",
+  	"iso639-1": null
+  };
+  var Dhivehi = {
+  	name: "Dhivehi",
+  	names: [
+  		"Divehi",
+  		"Dhivehi",
+  		"Maldivian"
+  	],
+  	"iso639-2": "div",
+  	"iso639-1": "dv"
+  };
+  var Dimili = {
+  	name: "Dimili",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Dimli = {
+  	name: "Dimli",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Dinka = {
+  	name: "Dinka",
+  	names: [
+  		"Dinka"
+  	],
+  	"iso639-2": "din",
+  	"iso639-1": null
+  };
+  var Divehi = {
+  	name: "Divehi",
+  	names: [
+  		"Divehi",
+  		"Dhivehi",
+  		"Maldivian"
+  	],
+  	"iso639-2": "div",
+  	"iso639-1": "dv"
+  };
+  var Dogri = {
+  	name: "Dogri",
+  	names: [
+  		"Dogri"
+  	],
+  	"iso639-2": "doi",
+  	"iso639-1": null
+  };
+  var Dogrib = {
+  	name: "Dogrib",
+  	names: [
+  		"Dogrib"
+  	],
+  	"iso639-2": "dgr",
+  	"iso639-1": null
+  };
+  var Duala = {
+  	name: "Duala",
+  	names: [
+  		"Duala"
+  	],
+  	"iso639-2": "dua",
+  	"iso639-1": null
+  };
+  var Dutch = {
+  	name: "Dutch",
+  	names: [
+  		"Dutch",
+  		"Flemish"
+  	],
+  	"iso639-2": "dut/nld",
+  	"iso639-1": "nl"
+  };
+  var Dyula = {
+  	name: "Dyula",
+  	names: [
+  		"Dyula"
+  	],
+  	"iso639-2": "dyu",
+  	"iso639-1": null
+  };
+  var Dzongkha = {
+  	name: "Dzongkha",
+  	names: [
+  		"Dzongkha"
+  	],
+  	"iso639-2": "dzo",
+  	"iso639-1": "dz"
+  };
+  var Edo = {
+  	name: "Edo",
+  	names: [
+  		"Bini",
+  		"Edo"
+  	],
+  	"iso639-2": "bin",
+  	"iso639-1": null
+  };
+  var Efik = {
+  	name: "Efik",
+  	names: [
+  		"Efik"
+  	],
+  	"iso639-2": "efi",
+  	"iso639-1": null
+  };
+  var Ekajuk = {
+  	name: "Ekajuk",
+  	names: [
+  		"Ekajuk"
+  	],
+  	"iso639-2": "eka",
+  	"iso639-1": null
+  };
+  var Elamite = {
+  	name: "Elamite",
+  	names: [
+  		"Elamite"
+  	],
+  	"iso639-2": "elx",
+  	"iso639-1": null
+  };
+  var English = {
+  	name: "English",
+  	names: [
+  		"English"
+  	],
+  	"iso639-2": "eng",
+  	"iso639-1": "en"
+  };
+  var Erzya = {
+  	name: "Erzya",
+  	names: [
+  		"Erzya"
+  	],
+  	"iso639-2": "myv",
+  	"iso639-1": null
+  };
+  var Esperanto = {
+  	name: "Esperanto",
+  	names: [
+  		"Esperanto"
+  	],
+  	"iso639-2": "epo",
+  	"iso639-1": "eo"
+  };
+  var Estonian = {
+  	name: "Estonian",
+  	names: [
+  		"Estonian"
+  	],
+  	"iso639-2": "est",
+  	"iso639-1": "et"
+  };
+  var Ewe = {
+  	name: "Ewe",
+  	names: [
+  		"Ewe"
+  	],
+  	"iso639-2": "ewe",
+  	"iso639-1": "ee"
+  };
+  var Ewondo = {
+  	name: "Ewondo",
+  	names: [
+  		"Ewondo"
+  	],
+  	"iso639-2": "ewo",
+  	"iso639-1": null
+  };
+  var Fang = {
+  	name: "Fang",
+  	names: [
+  		"Fang"
+  	],
+  	"iso639-2": "fan",
+  	"iso639-1": null
+  };
+  var Fanti = {
+  	name: "Fanti",
+  	names: [
+  		"Fanti"
+  	],
+  	"iso639-2": "fat",
+  	"iso639-1": null
+  };
+  var Faroese = {
+  	name: "Faroese",
+  	names: [
+  		"Faroese"
+  	],
+  	"iso639-2": "fao",
+  	"iso639-1": "fo"
+  };
+  var Fijian = {
+  	name: "Fijian",
+  	names: [
+  		"Fijian"
+  	],
+  	"iso639-2": "fij",
+  	"iso639-1": "fj"
+  };
+  var Filipino = {
+  	name: "Filipino",
+  	names: [
+  		"Filipino",
+  		"Pilipino"
+  	],
+  	"iso639-2": "fil",
+  	"iso639-1": null
+  };
+  var Finnish = {
+  	name: "Finnish",
+  	names: [
+  		"Finnish"
+  	],
+  	"iso639-2": "fin",
+  	"iso639-1": "fi"
+  };
+  var Flemish = {
+  	name: "Flemish",
+  	names: [
+  		"Dutch",
+  		"Flemish"
+  	],
+  	"iso639-2": "dut/nld",
+  	"iso639-1": "nl"
+  };
+  var Fon = {
+  	name: "Fon",
+  	names: [
+  		"Fon"
+  	],
+  	"iso639-2": "fon",
+  	"iso639-1": null
+  };
+  var French = {
+  	name: "French",
+  	names: [
+  		"French"
+  	],
+  	"iso639-2": "fre/fra",
+  	"iso639-1": "fr"
+  };
+  var Friulian = {
+  	name: "Friulian",
+  	names: [
+  		"Friulian"
+  	],
+  	"iso639-2": "fur",
+  	"iso639-1": null
+  };
+  var Fulah = {
+  	name: "Fulah",
+  	names: [
+  		"Fulah"
+  	],
+  	"iso639-2": "ful",
+  	"iso639-1": "ff"
+  };
+  var Ga = {
+  	name: "Ga",
+  	names: [
+  		"Ga"
+  	],
+  	"iso639-2": "gaa",
+  	"iso639-1": null
+  };
+  var Gaelic = {
+  	name: "Gaelic",
+  	names: [
+  		"Gaelic",
+  		"Scottish Gaelic"
+  	],
+  	"iso639-2": "gla",
+  	"iso639-1": "gd"
+  };
+  var Galician = {
+  	name: "Galician",
+  	names: [
+  		"Galician"
+  	],
+  	"iso639-2": "glg",
+  	"iso639-1": "gl"
+  };
+  var Ganda = {
+  	name: "Ganda",
+  	names: [
+  		"Ganda"
+  	],
+  	"iso639-2": "lug",
+  	"iso639-1": "lg"
+  };
+  var Gayo = {
+  	name: "Gayo",
+  	names: [
+  		"Gayo"
+  	],
+  	"iso639-2": "gay",
+  	"iso639-1": null
+  };
+  var Gbaya = {
+  	name: "Gbaya",
+  	names: [
+  		"Gbaya"
+  	],
+  	"iso639-2": "gba",
+  	"iso639-1": null
+  };
+  var Geez = {
+  	name: "Geez",
+  	names: [
+  		"Geez"
+  	],
+  	"iso639-2": "gez",
+  	"iso639-1": null
+  };
+  var Georgian = {
+  	name: "Georgian",
+  	names: [
+  		"Georgian"
+  	],
+  	"iso639-2": "geo/kat",
+  	"iso639-1": "ka"
+  };
+  var German = {
+  	name: "German",
+  	names: [
+  		"German"
+  	],
+  	"iso639-2": "ger/deu",
+  	"iso639-1": "de"
+  };
+  var Gikuyu = {
+  	name: "Gikuyu",
+  	names: [
+  		"Kikuyu",
+  		"Gikuyu"
+  	],
+  	"iso639-2": "kik",
+  	"iso639-1": "ki"
+  };
+  var Gilbertese = {
+  	name: "Gilbertese",
+  	names: [
+  		"Gilbertese"
+  	],
+  	"iso639-2": "gil",
+  	"iso639-1": null
+  };
+  var Gondi = {
+  	name: "Gondi",
+  	names: [
+  		"Gondi"
+  	],
+  	"iso639-2": "gon",
+  	"iso639-1": null
+  };
+  var Gorontalo = {
+  	name: "Gorontalo",
+  	names: [
+  		"Gorontalo"
+  	],
+  	"iso639-2": "gor",
+  	"iso639-1": null
+  };
+  var Gothic = {
+  	name: "Gothic",
+  	names: [
+  		"Gothic"
+  	],
+  	"iso639-2": "got",
+  	"iso639-1": null
+  };
+  var Grebo = {
+  	name: "Grebo",
+  	names: [
+  		"Grebo"
+  	],
+  	"iso639-2": "grb",
+  	"iso639-1": null
+  };
+  var Greenlandic = {
+  	name: "Greenlandic",
+  	names: [
+  		"Kalaallisut",
+  		"Greenlandic"
+  	],
+  	"iso639-2": "kal",
+  	"iso639-1": "kl"
+  };
+  var Guarani = {
+  	name: "Guarani",
+  	names: [
+  		"Guarani"
+  	],
+  	"iso639-2": "grn",
+  	"iso639-1": "gn"
+  };
+  var Gujarati = {
+  	name: "Gujarati",
+  	names: [
+  		"Gujarati"
+  	],
+  	"iso639-2": "guj",
+  	"iso639-1": "gu"
+  };
+  var Haida = {
+  	name: "Haida",
+  	names: [
+  		"Haida"
+  	],
+  	"iso639-2": "hai",
+  	"iso639-1": null
+  };
+  var Haitian = {
+  	name: "Haitian",
+  	names: [
+  		"Haitian",
+  		"Haitian Creole"
+  	],
+  	"iso639-2": "hat",
+  	"iso639-1": "ht"
+  };
+  var Hausa = {
+  	name: "Hausa",
+  	names: [
+  		"Hausa"
+  	],
+  	"iso639-2": "hau",
+  	"iso639-1": "ha"
+  };
+  var Hawaiian = {
+  	name: "Hawaiian",
+  	names: [
+  		"Hawaiian"
+  	],
+  	"iso639-2": "haw",
+  	"iso639-1": null
+  };
+  var Hebrew = {
+  	name: "Hebrew",
+  	names: [
+  		"Hebrew"
+  	],
+  	"iso639-2": "heb",
+  	"iso639-1": "he"
+  };
+  var Herero = {
+  	name: "Herero",
+  	names: [
+  		"Herero"
+  	],
+  	"iso639-2": "her",
+  	"iso639-1": "hz"
+  };
+  var Hiligaynon = {
+  	name: "Hiligaynon",
+  	names: [
+  		"Hiligaynon"
+  	],
+  	"iso639-2": "hil",
+  	"iso639-1": null
+  };
+  var Hindi = {
+  	name: "Hindi",
+  	names: [
+  		"Hindi"
+  	],
+  	"iso639-2": "hin",
+  	"iso639-1": "hi"
+  };
+  var Hittite = {
+  	name: "Hittite",
+  	names: [
+  		"Hittite"
+  	],
+  	"iso639-2": "hit",
+  	"iso639-1": null
+  };
+  var Hmong = {
+  	name: "Hmong",
+  	names: [
+  		"Hmong",
+  		"Mong"
+  	],
+  	"iso639-2": "hmn",
+  	"iso639-1": null
+  };
+  var Hungarian = {
+  	name: "Hungarian",
+  	names: [
+  		"Hungarian"
+  	],
+  	"iso639-2": "hun",
+  	"iso639-1": "hu"
+  };
+  var Hupa = {
+  	name: "Hupa",
+  	names: [
+  		"Hupa"
+  	],
+  	"iso639-2": "hup",
+  	"iso639-1": null
+  };
+  var Iban = {
+  	name: "Iban",
+  	names: [
+  		"Iban"
+  	],
+  	"iso639-2": "iba",
+  	"iso639-1": null
+  };
+  var Icelandic = {
+  	name: "Icelandic",
+  	names: [
+  		"Icelandic"
+  	],
+  	"iso639-2": "ice/isl",
+  	"iso639-1": "is"
+  };
+  var Ido = {
+  	name: "Ido",
+  	names: [
+  		"Ido"
+  	],
+  	"iso639-2": "ido",
+  	"iso639-1": "io"
+  };
+  var Igbo = {
+  	name: "Igbo",
+  	names: [
+  		"Igbo"
+  	],
+  	"iso639-2": "ibo",
+  	"iso639-1": "ig"
+  };
+  var Iloko = {
+  	name: "Iloko",
+  	names: [
+  		"Iloko"
+  	],
+  	"iso639-2": "ilo",
+  	"iso639-1": null
+  };
+  var Indonesian = {
+  	name: "Indonesian",
+  	names: [
+  		"Indonesian"
+  	],
+  	"iso639-2": "ind",
+  	"iso639-1": "id"
+  };
+  var Ingush = {
+  	name: "Ingush",
+  	names: [
+  		"Ingush"
+  	],
+  	"iso639-2": "inh",
+  	"iso639-1": null
+  };
+  var Interlingue = {
+  	name: "Interlingue",
+  	names: [
+  		"Interlingue",
+  		"Occidental"
+  	],
+  	"iso639-2": "ile",
+  	"iso639-1": "ie"
+  };
+  var Inuktitut = {
+  	name: "Inuktitut",
+  	names: [
+  		"Inuktitut"
+  	],
+  	"iso639-2": "iku",
+  	"iso639-1": "iu"
+  };
+  var Inupiaq = {
+  	name: "Inupiaq",
+  	names: [
+  		"Inupiaq"
+  	],
+  	"iso639-2": "ipk",
+  	"iso639-1": "ik"
+  };
+  var Irish = {
+  	name: "Irish",
+  	names: [
+  		"Irish"
+  	],
+  	"iso639-2": "gle",
+  	"iso639-1": "ga"
+  };
+  var Italian = {
+  	name: "Italian",
+  	names: [
+  		"Italian"
+  	],
+  	"iso639-2": "ita",
+  	"iso639-1": "it"
+  };
+  var Japanese = {
+  	name: "Japanese",
+  	names: [
+  		"Japanese"
+  	],
+  	"iso639-2": "jpn",
+  	"iso639-1": "ja"
+  };
+  var Javanese = {
+  	name: "Javanese",
+  	names: [
+  		"Javanese"
+  	],
+  	"iso639-2": "jav",
+  	"iso639-1": "jv"
+  };
+  var Jingpho = {
+  	name: "Jingpho",
+  	names: [
+  		"Kachin",
+  		"Jingpho"
+  	],
+  	"iso639-2": "kac",
+  	"iso639-1": null
+  };
+  var Kabardian = {
+  	name: "Kabardian",
+  	names: [
+  		"Kabardian"
+  	],
+  	"iso639-2": "kbd",
+  	"iso639-1": null
+  };
+  var Kabyle = {
+  	name: "Kabyle",
+  	names: [
+  		"Kabyle"
+  	],
+  	"iso639-2": "kab",
+  	"iso639-1": null
+  };
+  var Kachin = {
+  	name: "Kachin",
+  	names: [
+  		"Kachin",
+  		"Jingpho"
+  	],
+  	"iso639-2": "kac",
+  	"iso639-1": null
+  };
+  var Kalaallisut = {
+  	name: "Kalaallisut",
+  	names: [
+  		"Kalaallisut",
+  		"Greenlandic"
+  	],
+  	"iso639-2": "kal",
+  	"iso639-1": "kl"
+  };
+  var Kalmyk = {
+  	name: "Kalmyk",
+  	names: [
+  		"Kalmyk",
+  		"Oirat"
+  	],
+  	"iso639-2": "xal",
+  	"iso639-1": null
+  };
+  var Kamba = {
+  	name: "Kamba",
+  	names: [
+  		"Kamba"
+  	],
+  	"iso639-2": "kam",
+  	"iso639-1": null
+  };
+  var Kannada = {
+  	name: "Kannada",
+  	names: [
+  		"Kannada"
+  	],
+  	"iso639-2": "kan",
+  	"iso639-1": "kn"
+  };
+  var Kanuri = {
+  	name: "Kanuri",
+  	names: [
+  		"Kanuri"
+  	],
+  	"iso639-2": "kau",
+  	"iso639-1": "kr"
+  };
+  var Kapampangan = {
+  	name: "Kapampangan",
+  	names: [
+  		"Pampanga",
+  		"Kapampangan"
+  	],
+  	"iso639-2": "pam",
+  	"iso639-1": null
+  };
+  var Karelian = {
+  	name: "Karelian",
+  	names: [
+  		"Karelian"
+  	],
+  	"iso639-2": "krl",
+  	"iso639-1": null
+  };
+  var Kashmiri = {
+  	name: "Kashmiri",
+  	names: [
+  		"Kashmiri"
+  	],
+  	"iso639-2": "kas",
+  	"iso639-1": "ks"
+  };
+  var Kashubian = {
+  	name: "Kashubian",
+  	names: [
+  		"Kashubian"
+  	],
+  	"iso639-2": "csb",
+  	"iso639-1": null
+  };
+  var Kawi = {
+  	name: "Kawi",
+  	names: [
+  		"Kawi"
+  	],
+  	"iso639-2": "kaw",
+  	"iso639-1": null
+  };
+  var Kazakh = {
+  	name: "Kazakh",
+  	names: [
+  		"Kazakh"
+  	],
+  	"iso639-2": "kaz",
+  	"iso639-1": "kk"
+  };
+  var Khasi = {
+  	name: "Khasi",
+  	names: [
+  		"Khasi"
+  	],
+  	"iso639-2": "kha",
+  	"iso639-1": null
+  };
+  var Khotanese = {
+  	name: "Khotanese",
+  	names: [
+  		"Khotanese",
+  		"Sakan"
+  	],
+  	"iso639-2": "kho",
+  	"iso639-1": null
+  };
+  var Kikuyu = {
+  	name: "Kikuyu",
+  	names: [
+  		"Kikuyu",
+  		"Gikuyu"
+  	],
+  	"iso639-2": "kik",
+  	"iso639-1": "ki"
+  };
+  var Kimbundu = {
+  	name: "Kimbundu",
+  	names: [
+  		"Kimbundu"
+  	],
+  	"iso639-2": "kmb",
+  	"iso639-1": null
+  };
+  var Kinyarwanda = {
+  	name: "Kinyarwanda",
+  	names: [
+  		"Kinyarwanda"
+  	],
+  	"iso639-2": "kin",
+  	"iso639-1": "rw"
+  };
+  var Kirdki = {
+  	name: "Kirdki",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Kirghiz = {
+  	name: "Kirghiz",
+  	names: [
+  		"Kirghiz",
+  		"Kyrgyz"
+  	],
+  	"iso639-2": "kir",
+  	"iso639-1": "ky"
+  };
+  var Kirmanjki = {
+  	name: "Kirmanjki",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Klingon = {
+  	name: "Klingon",
+  	names: [
+  		"Klingon",
+  		"tlhIngan-Hol"
+  	],
+  	"iso639-2": "tlh",
+  	"iso639-1": null
+  };
+  var Komi = {
+  	name: "Komi",
+  	names: [
+  		"Komi"
+  	],
+  	"iso639-2": "kom",
+  	"iso639-1": "kv"
+  };
+  var Kongo = {
+  	name: "Kongo",
+  	names: [
+  		"Kongo"
+  	],
+  	"iso639-2": "kon",
+  	"iso639-1": "kg"
+  };
+  var Konkani = {
+  	name: "Konkani",
+  	names: [
+  		"Konkani"
+  	],
+  	"iso639-2": "kok",
+  	"iso639-1": null
+  };
+  var Korean = {
+  	name: "Korean",
+  	names: [
+  		"Korean"
+  	],
+  	"iso639-2": "kor",
+  	"iso639-1": "ko"
+  };
+  var Kosraean = {
+  	name: "Kosraean",
+  	names: [
+  		"Kosraean"
+  	],
+  	"iso639-2": "kos",
+  	"iso639-1": null
+  };
+  var Kpelle = {
+  	name: "Kpelle",
+  	names: [
+  		"Kpelle"
+  	],
+  	"iso639-2": "kpe",
+  	"iso639-1": null
+  };
+  var Kuanyama = {
+  	name: "Kuanyama",
+  	names: [
+  		"Kuanyama",
+  		"Kwanyama"
+  	],
+  	"iso639-2": "kua",
+  	"iso639-1": "kj"
+  };
+  var Kumyk = {
+  	name: "Kumyk",
+  	names: [
+  		"Kumyk"
+  	],
+  	"iso639-2": "kum",
+  	"iso639-1": null
+  };
+  var Kurdish = {
+  	name: "Kurdish",
+  	names: [
+  		"Kurdish"
+  	],
+  	"iso639-2": "kur",
+  	"iso639-1": "ku"
+  };
+  var Kurukh = {
+  	name: "Kurukh",
+  	names: [
+  		"Kurukh"
+  	],
+  	"iso639-2": "kru",
+  	"iso639-1": null
+  };
+  var Kutenai = {
+  	name: "Kutenai",
+  	names: [
+  		"Kutenai"
+  	],
+  	"iso639-2": "kut",
+  	"iso639-1": null
+  };
+  var Kwanyama = {
+  	name: "Kwanyama",
+  	names: [
+  		"Kuanyama",
+  		"Kwanyama"
+  	],
+  	"iso639-2": "kua",
+  	"iso639-1": "kj"
+  };
+  var Kyrgyz = {
+  	name: "Kyrgyz",
+  	names: [
+  		"Kirghiz",
+  		"Kyrgyz"
+  	],
+  	"iso639-2": "kir",
+  	"iso639-1": "ky"
+  };
+  var Ladino = {
+  	name: "Ladino",
+  	names: [
+  		"Ladino"
+  	],
+  	"iso639-2": "lad",
+  	"iso639-1": null
+  };
+  var Lahnda = {
+  	name: "Lahnda",
+  	names: [
+  		"Lahnda"
+  	],
+  	"iso639-2": "lah",
+  	"iso639-1": null
+  };
+  var Lamba = {
+  	name: "Lamba",
+  	names: [
+  		"Lamba"
+  	],
+  	"iso639-2": "lam",
+  	"iso639-1": null
+  };
+  var Lao = {
+  	name: "Lao",
+  	names: [
+  		"Lao"
+  	],
+  	"iso639-2": "lao",
+  	"iso639-1": "lo"
+  };
+  var Latin = {
+  	name: "Latin",
+  	names: [
+  		"Latin"
+  	],
+  	"iso639-2": "lat",
+  	"iso639-1": "la"
+  };
+  var Latvian = {
+  	name: "Latvian",
+  	names: [
+  		"Latvian"
+  	],
+  	"iso639-2": "lav",
+  	"iso639-1": "lv"
+  };
+  var Leonese = {
+  	name: "Leonese",
+  	names: [
+  		"Asturian",
+  		"Bable",
+  		"Leonese",
+  		"Asturleonese"
+  	],
+  	"iso639-2": "ast",
+  	"iso639-1": null
+  };
+  var Letzeburgesch = {
+  	name: "Letzeburgesch",
+  	names: [
+  		"Luxembourgish",
+  		"Letzeburgesch"
+  	],
+  	"iso639-2": "ltz",
+  	"iso639-1": "lb"
+  };
+  var Lezghian = {
+  	name: "Lezghian",
+  	names: [
+  		"Lezghian"
+  	],
+  	"iso639-2": "lez",
+  	"iso639-1": null
+  };
+  var Limburgan = {
+  	name: "Limburgan",
+  	names: [
+  		"Limburgan",
+  		"Limburger",
+  		"Limburgish"
+  	],
+  	"iso639-2": "lim",
+  	"iso639-1": "li"
+  };
+  var Limburger = {
+  	name: "Limburger",
+  	names: [
+  		"Limburgan",
+  		"Limburger",
+  		"Limburgish"
+  	],
+  	"iso639-2": "lim",
+  	"iso639-1": "li"
+  };
+  var Limburgish = {
+  	name: "Limburgish",
+  	names: [
+  		"Limburgan",
+  		"Limburger",
+  		"Limburgish"
+  	],
+  	"iso639-2": "lim",
+  	"iso639-1": "li"
+  };
+  var Lingala = {
+  	name: "Lingala",
+  	names: [
+  		"Lingala"
+  	],
+  	"iso639-2": "lin",
+  	"iso639-1": "ln"
+  };
+  var Lithuanian = {
+  	name: "Lithuanian",
+  	names: [
+  		"Lithuanian"
+  	],
+  	"iso639-2": "lit",
+  	"iso639-1": "lt"
+  };
+  var Lojban = {
+  	name: "Lojban",
+  	names: [
+  		"Lojban"
+  	],
+  	"iso639-2": "jbo",
+  	"iso639-1": null
+  };
+  var Lozi = {
+  	name: "Lozi",
+  	names: [
+  		"Lozi"
+  	],
+  	"iso639-2": "loz",
+  	"iso639-1": null
+  };
+  var Luiseno = {
+  	name: "Luiseno",
+  	names: [
+  		"Luiseno"
+  	],
+  	"iso639-2": "lui",
+  	"iso639-1": null
+  };
+  var Lunda = {
+  	name: "Lunda",
+  	names: [
+  		"Lunda"
+  	],
+  	"iso639-2": "lun",
+  	"iso639-1": null
+  };
+  var Lushai = {
+  	name: "Lushai",
+  	names: [
+  		"Lushai"
+  	],
+  	"iso639-2": "lus",
+  	"iso639-1": null
+  };
+  var Luxembourgish = {
+  	name: "Luxembourgish",
+  	names: [
+  		"Luxembourgish",
+  		"Letzeburgesch"
+  	],
+  	"iso639-2": "ltz",
+  	"iso639-1": "lb"
+  };
+  var Macedonian = {
+  	name: "Macedonian",
+  	names: [
+  		"Macedonian"
+  	],
+  	"iso639-2": "mac/mkd",
+  	"iso639-1": "mk"
+  };
+  var Madurese = {
+  	name: "Madurese",
+  	names: [
+  		"Madurese"
+  	],
+  	"iso639-2": "mad",
+  	"iso639-1": null
+  };
+  var Magahi = {
+  	name: "Magahi",
+  	names: [
+  		"Magahi"
+  	],
+  	"iso639-2": "mag",
+  	"iso639-1": null
+  };
+  var Maithili = {
+  	name: "Maithili",
+  	names: [
+  		"Maithili"
+  	],
+  	"iso639-2": "mai",
+  	"iso639-1": null
+  };
+  var Makasar = {
+  	name: "Makasar",
+  	names: [
+  		"Makasar"
+  	],
+  	"iso639-2": "mak",
+  	"iso639-1": null
+  };
+  var Malagasy = {
+  	name: "Malagasy",
+  	names: [
+  		"Malagasy"
+  	],
+  	"iso639-2": "mlg",
+  	"iso639-1": "mg"
+  };
+  var Malay = {
+  	name: "Malay",
+  	names: [
+  		"Malay"
+  	],
+  	"iso639-2": "may/msa",
+  	"iso639-1": "ms"
+  };
+  var Malayalam = {
+  	name: "Malayalam",
+  	names: [
+  		"Malayalam"
+  	],
+  	"iso639-2": "mal",
+  	"iso639-1": "ml"
+  };
+  var Maldivian = {
+  	name: "Maldivian",
+  	names: [
+  		"Divehi",
+  		"Dhivehi",
+  		"Maldivian"
+  	],
+  	"iso639-2": "div",
+  	"iso639-1": "dv"
+  };
+  var Maltese = {
+  	name: "Maltese",
+  	names: [
+  		"Maltese"
+  	],
+  	"iso639-2": "mlt",
+  	"iso639-1": "mt"
+  };
+  var Manchu = {
+  	name: "Manchu",
+  	names: [
+  		"Manchu"
+  	],
+  	"iso639-2": "mnc",
+  	"iso639-1": null
+  };
+  var Mandar = {
+  	name: "Mandar",
+  	names: [
+  		"Mandar"
+  	],
+  	"iso639-2": "mdr",
+  	"iso639-1": null
+  };
+  var Mandingo = {
+  	name: "Mandingo",
+  	names: [
+  		"Mandingo"
+  	],
+  	"iso639-2": "man",
+  	"iso639-1": null
+  };
+  var Manipuri = {
+  	name: "Manipuri",
+  	names: [
+  		"Manipuri"
+  	],
+  	"iso639-2": "mni",
+  	"iso639-1": null
+  };
+  var Manx = {
+  	name: "Manx",
+  	names: [
+  		"Manx"
+  	],
+  	"iso639-2": "glv",
+  	"iso639-1": "gv"
+  };
+  var Maori = {
+  	name: "Maori",
+  	names: [
+  		"Maori"
+  	],
+  	"iso639-2": "mao/mri",
+  	"iso639-1": "mi"
+  };
+  var Mapuche = {
+  	name: "Mapuche",
+  	names: [
+  		"Mapudungun",
+  		"Mapuche"
+  	],
+  	"iso639-2": "arn",
+  	"iso639-1": null
+  };
+  var Mapudungun = {
+  	name: "Mapudungun",
+  	names: [
+  		"Mapudungun",
+  		"Mapuche"
+  	],
+  	"iso639-2": "arn",
+  	"iso639-1": null
+  };
+  var Marathi = {
+  	name: "Marathi",
+  	names: [
+  		"Marathi"
+  	],
+  	"iso639-2": "mar",
+  	"iso639-1": "mr"
+  };
+  var Mari = {
+  	name: "Mari",
+  	names: [
+  		"Mari"
+  	],
+  	"iso639-2": "chm",
+  	"iso639-1": null
+  };
+  var Marshallese = {
+  	name: "Marshallese",
+  	names: [
+  		"Marshallese"
+  	],
+  	"iso639-2": "mah",
+  	"iso639-1": "mh"
+  };
+  var Marwari = {
+  	name: "Marwari",
+  	names: [
+  		"Marwari"
+  	],
+  	"iso639-2": "mwr",
+  	"iso639-1": null
+  };
+  var Masai = {
+  	name: "Masai",
+  	names: [
+  		"Masai"
+  	],
+  	"iso639-2": "mas",
+  	"iso639-1": null
+  };
+  var Mende = {
+  	name: "Mende",
+  	names: [
+  		"Mende"
+  	],
+  	"iso639-2": "men",
+  	"iso639-1": null
+  };
+  var Micmac = {
+  	name: "Micmac",
+  	names: [
+  		"Mi'kmaq",
+  		"Micmac"
+  	],
+  	"iso639-2": "mic",
+  	"iso639-1": null
+  };
+  var Minangkabau = {
+  	name: "Minangkabau",
+  	names: [
+  		"Minangkabau"
+  	],
+  	"iso639-2": "min",
+  	"iso639-1": null
+  };
+  var Mirandese = {
+  	name: "Mirandese",
+  	names: [
+  		"Mirandese"
+  	],
+  	"iso639-2": "mwl",
+  	"iso639-1": null
+  };
+  var Mohawk = {
+  	name: "Mohawk",
+  	names: [
+  		"Mohawk"
+  	],
+  	"iso639-2": "moh",
+  	"iso639-1": null
+  };
+  var Moksha = {
+  	name: "Moksha",
+  	names: [
+  		"Moksha"
+  	],
+  	"iso639-2": "mdf",
+  	"iso639-1": null
+  };
+  var Moldavian = {
+  	name: "Moldavian",
+  	names: [
+  		"Romanian",
+  		"Moldavian",
+  		"Moldovan"
+  	],
+  	"iso639-2": "rum/ron",
+  	"iso639-1": "ro"
+  };
+  var Moldovan = {
+  	name: "Moldovan",
+  	names: [
+  		"Romanian",
+  		"Moldavian",
+  		"Moldovan"
+  	],
+  	"iso639-2": "rum/ron",
+  	"iso639-1": "ro"
+  };
+  var Mong = {
+  	name: "Mong",
+  	names: [
+  		"Hmong",
+  		"Mong"
+  	],
+  	"iso639-2": "hmn",
+  	"iso639-1": null
+  };
+  var Mongo = {
+  	name: "Mongo",
+  	names: [
+  		"Mongo"
+  	],
+  	"iso639-2": "lol",
+  	"iso639-1": null
+  };
+  var Mongolian = {
+  	name: "Mongolian",
+  	names: [
+  		"Mongolian"
+  	],
+  	"iso639-2": "mon",
+  	"iso639-1": "mn"
+  };
+  var Montenegrin = {
+  	name: "Montenegrin",
+  	names: [
+  		"Montenegrin"
+  	],
+  	"iso639-2": "cnr",
+  	"iso639-1": null
+  };
+  var Mossi = {
+  	name: "Mossi",
+  	names: [
+  		"Mossi"
+  	],
+  	"iso639-2": "mos",
+  	"iso639-1": null
+  };
+  var Nauru = {
+  	name: "Nauru",
+  	names: [
+  		"Nauru"
+  	],
+  	"iso639-2": "nau",
+  	"iso639-1": "na"
+  };
+  var Navaho = {
+  	name: "Navaho",
+  	names: [
+  		"Navajo",
+  		"Navaho"
+  	],
+  	"iso639-2": "nav",
+  	"iso639-1": "nv"
+  };
+  var Navajo = {
+  	name: "Navajo",
+  	names: [
+  		"Navajo",
+  		"Navaho"
+  	],
+  	"iso639-2": "nav",
+  	"iso639-1": "nv"
+  };
+  var Ndonga = {
+  	name: "Ndonga",
+  	names: [
+  		"Ndonga"
+  	],
+  	"iso639-2": "ndo",
+  	"iso639-1": "ng"
+  };
+  var Neapolitan = {
+  	name: "Neapolitan",
+  	names: [
+  		"Neapolitan"
+  	],
+  	"iso639-2": "nap",
+  	"iso639-1": null
+  };
+  var Nepali = {
+  	name: "Nepali",
+  	names: [
+  		"Nepali"
+  	],
+  	"iso639-2": "nep",
+  	"iso639-1": "ne"
+  };
+  var Newari = {
+  	name: "Newari",
+  	names: [
+  		"Nepal Bhasa",
+  		"Newari"
+  	],
+  	"iso639-2": "new",
+  	"iso639-1": null
+  };
+  var Nias = {
+  	name: "Nias",
+  	names: [
+  		"Nias"
+  	],
+  	"iso639-2": "nia",
+  	"iso639-1": null
+  };
+  var Niuean = {
+  	name: "Niuean",
+  	names: [
+  		"Niuean"
+  	],
+  	"iso639-2": "niu",
+  	"iso639-1": null
+  };
+  var Nogai = {
+  	name: "Nogai",
+  	names: [
+  		"Nogai"
+  	],
+  	"iso639-2": "nog",
+  	"iso639-1": null
+  };
+  var Norwegian = {
+  	name: "Norwegian",
+  	names: [
+  		"Norwegian"
+  	],
+  	"iso639-2": "nor",
+  	"iso639-1": "no"
+  };
+  var Nuosu = {
+  	name: "Nuosu",
+  	names: [
+  		"Sichuan Yi",
+  		"Nuosu"
+  	],
+  	"iso639-2": "iii",
+  	"iso639-1": "ii"
+  };
+  var Nyamwezi = {
+  	name: "Nyamwezi",
+  	names: [
+  		"Nyamwezi"
+  	],
+  	"iso639-2": "nym",
+  	"iso639-1": null
+  };
+  var Nyanja = {
+  	name: "Nyanja",
+  	names: [
+  		"Chichewa",
+  		"Chewa",
+  		"Nyanja"
+  	],
+  	"iso639-2": "nya",
+  	"iso639-1": "ny"
+  };
+  var Nyankole = {
+  	name: "Nyankole",
+  	names: [
+  		"Nyankole"
+  	],
+  	"iso639-2": "nyn",
+  	"iso639-1": null
+  };
+  var Nyoro = {
+  	name: "Nyoro",
+  	names: [
+  		"Nyoro"
+  	],
+  	"iso639-2": "nyo",
+  	"iso639-1": null
+  };
+  var Nzima = {
+  	name: "Nzima",
+  	names: [
+  		"Nzima"
+  	],
+  	"iso639-2": "nzi",
+  	"iso639-1": null
+  };
+  var Occidental = {
+  	name: "Occidental",
+  	names: [
+  		"Interlingue",
+  		"Occidental"
+  	],
+  	"iso639-2": "ile",
+  	"iso639-1": "ie"
+  };
+  var Oirat = {
+  	name: "Oirat",
+  	names: [
+  		"Kalmyk",
+  		"Oirat"
+  	],
+  	"iso639-2": "xal",
+  	"iso639-1": null
+  };
+  var Ojibwa = {
+  	name: "Ojibwa",
+  	names: [
+  		"Ojibwa"
+  	],
+  	"iso639-2": "oji",
+  	"iso639-1": "oj"
+  };
+  var Oriya = {
+  	name: "Oriya",
+  	names: [
+  		"Oriya"
+  	],
+  	"iso639-2": "ori",
+  	"iso639-1": "or"
+  };
+  var Oromo = {
+  	name: "Oromo",
+  	names: [
+  		"Oromo"
+  	],
+  	"iso639-2": "orm",
+  	"iso639-1": "om"
+  };
+  var Osage = {
+  	name: "Osage",
+  	names: [
+  		"Osage"
+  	],
+  	"iso639-2": "osa",
+  	"iso639-1": null
+  };
+  var Ossetian = {
+  	name: "Ossetian",
+  	names: [
+  		"Ossetian",
+  		"Ossetic"
+  	],
+  	"iso639-2": "oss",
+  	"iso639-1": "os"
+  };
+  var Ossetic = {
+  	name: "Ossetic",
+  	names: [
+  		"Ossetian",
+  		"Ossetic"
+  	],
+  	"iso639-2": "oss",
+  	"iso639-1": "os"
+  };
+  var Pahlavi = {
+  	name: "Pahlavi",
+  	names: [
+  		"Pahlavi"
+  	],
+  	"iso639-2": "pal",
+  	"iso639-1": null
+  };
+  var Palauan = {
+  	name: "Palauan",
+  	names: [
+  		"Palauan"
+  	],
+  	"iso639-2": "pau",
+  	"iso639-1": null
+  };
+  var Pali = {
+  	name: "Pali",
+  	names: [
+  		"Pali"
+  	],
+  	"iso639-2": "pli",
+  	"iso639-1": "pi"
+  };
+  var Pampanga = {
+  	name: "Pampanga",
+  	names: [
+  		"Pampanga",
+  		"Kapampangan"
+  	],
+  	"iso639-2": "pam",
+  	"iso639-1": null
+  };
+  var Pangasinan = {
+  	name: "Pangasinan",
+  	names: [
+  		"Pangasinan"
+  	],
+  	"iso639-2": "pag",
+  	"iso639-1": null
+  };
+  var Panjabi = {
+  	name: "Panjabi",
+  	names: [
+  		"Panjabi",
+  		"Punjabi"
+  	],
+  	"iso639-2": "pan",
+  	"iso639-1": "pa"
+  };
+  var Papiamento = {
+  	name: "Papiamento",
+  	names: [
+  		"Papiamento"
+  	],
+  	"iso639-2": "pap",
+  	"iso639-1": null
+  };
+  var Pashto = {
+  	name: "Pashto",
+  	names: [
+  		"Pushto",
+  		"Pashto"
+  	],
+  	"iso639-2": "pus",
+  	"iso639-1": "ps"
+  };
+  var Pedi = {
+  	name: "Pedi",
+  	names: [
+  		"Pedi",
+  		"Sepedi",
+  		"Northern Sotho"
+  	],
+  	"iso639-2": "nso",
+  	"iso639-1": null
+  };
+  var Persian = {
+  	name: "Persian",
+  	names: [
+  		"Persian"
+  	],
+  	"iso639-2": "per/fas",
+  	"iso639-1": "fa"
+  };
+  var Phoenician = {
+  	name: "Phoenician",
+  	names: [
+  		"Phoenician"
+  	],
+  	"iso639-2": "phn",
+  	"iso639-1": null
+  };
+  var Pilipino = {
+  	name: "Pilipino",
+  	names: [
+  		"Filipino",
+  		"Pilipino"
+  	],
+  	"iso639-2": "fil",
+  	"iso639-1": null
+  };
+  var Pohnpeian = {
+  	name: "Pohnpeian",
+  	names: [
+  		"Pohnpeian"
+  	],
+  	"iso639-2": "pon",
+  	"iso639-1": null
+  };
+  var Polish = {
+  	name: "Polish",
+  	names: [
+  		"Polish"
+  	],
+  	"iso639-2": "pol",
+  	"iso639-1": "pl"
+  };
+  var Portuguese = {
+  	name: "Portuguese",
+  	names: [
+  		"Portuguese"
+  	],
+  	"iso639-2": "por",
+  	"iso639-1": "pt"
+  };
+  var Punjabi = {
+  	name: "Punjabi",
+  	names: [
+  		"Panjabi",
+  		"Punjabi"
+  	],
+  	"iso639-2": "pan",
+  	"iso639-1": "pa"
+  };
+  var Pushto = {
+  	name: "Pushto",
+  	names: [
+  		"Pushto",
+  		"Pashto"
+  	],
+  	"iso639-2": "pus",
+  	"iso639-1": "ps"
+  };
+  var Quechua = {
+  	name: "Quechua",
+  	names: [
+  		"Quechua"
+  	],
+  	"iso639-2": "que",
+  	"iso639-1": "qu"
+  };
+  var Rajasthani = {
+  	name: "Rajasthani",
+  	names: [
+  		"Rajasthani"
+  	],
+  	"iso639-2": "raj",
+  	"iso639-1": null
+  };
+  var Rapanui = {
+  	name: "Rapanui",
+  	names: [
+  		"Rapanui"
+  	],
+  	"iso639-2": "rap",
+  	"iso639-1": null
+  };
+  var Rarotongan = {
+  	name: "Rarotongan",
+  	names: [
+  		"Rarotongan",
+  		"Cook Islands Maori"
+  	],
+  	"iso639-2": "rar",
+  	"iso639-1": null
+  };
+  var Romanian = {
+  	name: "Romanian",
+  	names: [
+  		"Romanian",
+  		"Moldavian",
+  		"Moldovan"
+  	],
+  	"iso639-2": "rum/ron",
+  	"iso639-1": "ro"
+  };
+  var Romansh = {
+  	name: "Romansh",
+  	names: [
+  		"Romansh"
+  	],
+  	"iso639-2": "roh",
+  	"iso639-1": "rm"
+  };
+  var Romany = {
+  	name: "Romany",
+  	names: [
+  		"Romany"
+  	],
+  	"iso639-2": "rom",
+  	"iso639-1": null
+  };
+  var Rundi = {
+  	name: "Rundi",
+  	names: [
+  		"Rundi"
+  	],
+  	"iso639-2": "run",
+  	"iso639-1": "rn"
+  };
+  var Russian = {
+  	name: "Russian",
+  	names: [
+  		"Russian"
+  	],
+  	"iso639-2": "rus",
+  	"iso639-1": "ru"
+  };
+  var Sakan = {
+  	name: "Sakan",
+  	names: [
+  		"Khotanese",
+  		"Sakan"
+  	],
+  	"iso639-2": "kho",
+  	"iso639-1": null
+  };
+  var Samoan = {
+  	name: "Samoan",
+  	names: [
+  		"Samoan"
+  	],
+  	"iso639-2": "smo",
+  	"iso639-1": "sm"
+  };
+  var Sandawe = {
+  	name: "Sandawe",
+  	names: [
+  		"Sandawe"
+  	],
+  	"iso639-2": "sad",
+  	"iso639-1": null
+  };
+  var Sango = {
+  	name: "Sango",
+  	names: [
+  		"Sango"
+  	],
+  	"iso639-2": "sag",
+  	"iso639-1": "sg"
+  };
+  var Sanskrit = {
+  	name: "Sanskrit",
+  	names: [
+  		"Sanskrit"
+  	],
+  	"iso639-2": "san",
+  	"iso639-1": "sa"
+  };
+  var Santali = {
+  	name: "Santali",
+  	names: [
+  		"Santali"
+  	],
+  	"iso639-2": "sat",
+  	"iso639-1": null
+  };
+  var Sardinian = {
+  	name: "Sardinian",
+  	names: [
+  		"Sardinian"
+  	],
+  	"iso639-2": "srd",
+  	"iso639-1": "sc"
+  };
+  var Sasak = {
+  	name: "Sasak",
+  	names: [
+  		"Sasak"
+  	],
+  	"iso639-2": "sas",
+  	"iso639-1": null
+  };
+  var Scots = {
+  	name: "Scots",
+  	names: [
+  		"Scots"
+  	],
+  	"iso639-2": "sco",
+  	"iso639-1": null
+  };
+  var Selkup = {
+  	name: "Selkup",
+  	names: [
+  		"Selkup"
+  	],
+  	"iso639-2": "sel",
+  	"iso639-1": null
+  };
+  var Sepedi = {
+  	name: "Sepedi",
+  	names: [
+  		"Pedi",
+  		"Sepedi",
+  		"Northern Sotho"
+  	],
+  	"iso639-2": "nso",
+  	"iso639-1": null
+  };
+  var Serbian = {
+  	name: "Serbian",
+  	names: [
+  		"Serbian"
+  	],
+  	"iso639-2": "srp",
+  	"iso639-1": "sr"
+  };
+  var Serer = {
+  	name: "Serer",
+  	names: [
+  		"Serer"
+  	],
+  	"iso639-2": "srr",
+  	"iso639-1": null
+  };
+  var Shan = {
+  	name: "Shan",
+  	names: [
+  		"Shan"
+  	],
+  	"iso639-2": "shn",
+  	"iso639-1": null
+  };
+  var Shona = {
+  	name: "Shona",
+  	names: [
+  		"Shona"
+  	],
+  	"iso639-2": "sna",
+  	"iso639-1": "sn"
+  };
+  var Sicilian = {
+  	name: "Sicilian",
+  	names: [
+  		"Sicilian"
+  	],
+  	"iso639-2": "scn",
+  	"iso639-1": null
+  };
+  var Sidamo = {
+  	name: "Sidamo",
+  	names: [
+  		"Sidamo"
+  	],
+  	"iso639-2": "sid",
+  	"iso639-1": null
+  };
+  var Siksika = {
+  	name: "Siksika",
+  	names: [
+  		"Siksika"
+  	],
+  	"iso639-2": "bla",
+  	"iso639-1": null
+  };
+  var Sindhi = {
+  	name: "Sindhi",
+  	names: [
+  		"Sindhi"
+  	],
+  	"iso639-2": "snd",
+  	"iso639-1": "sd"
+  };
+  var Sinhala = {
+  	name: "Sinhala",
+  	names: [
+  		"Sinhala",
+  		"Sinhalese"
+  	],
+  	"iso639-2": "sin",
+  	"iso639-1": "si"
+  };
+  var Sinhalese = {
+  	name: "Sinhalese",
+  	names: [
+  		"Sinhala",
+  		"Sinhalese"
+  	],
+  	"iso639-2": "sin",
+  	"iso639-1": "si"
+  };
+  var Slovak = {
+  	name: "Slovak",
+  	names: [
+  		"Slovak"
+  	],
+  	"iso639-2": "slo/slk",
+  	"iso639-1": "sk"
+  };
+  var Slovenian = {
+  	name: "Slovenian",
+  	names: [
+  		"Slovenian"
+  	],
+  	"iso639-2": "slv",
+  	"iso639-1": "sl"
+  };
+  var Sogdian = {
+  	name: "Sogdian",
+  	names: [
+  		"Sogdian"
+  	],
+  	"iso639-2": "sog",
+  	"iso639-1": null
+  };
+  var Somali = {
+  	name: "Somali",
+  	names: [
+  		"Somali"
+  	],
+  	"iso639-2": "som",
+  	"iso639-1": "so"
+  };
+  var Soninke = {
+  	name: "Soninke",
+  	names: [
+  		"Soninke"
+  	],
+  	"iso639-2": "snk",
+  	"iso639-1": null
+  };
+  var Spanish = {
+  	name: "Spanish",
+  	names: [
+  		"Spanish",
+  		"Castilian"
+  	],
+  	"iso639-2": "spa",
+  	"iso639-1": "es"
+  };
+  var Sukuma = {
+  	name: "Sukuma",
+  	names: [
+  		"Sukuma"
+  	],
+  	"iso639-2": "suk",
+  	"iso639-1": null
+  };
+  var Sumerian = {
+  	name: "Sumerian",
+  	names: [
+  		"Sumerian"
+  	],
+  	"iso639-2": "sux",
+  	"iso639-1": null
+  };
+  var Sundanese = {
+  	name: "Sundanese",
+  	names: [
+  		"Sundanese"
+  	],
+  	"iso639-2": "sun",
+  	"iso639-1": "su"
+  };
+  var Susu = {
+  	name: "Susu",
+  	names: [
+  		"Susu"
+  	],
+  	"iso639-2": "sus",
+  	"iso639-1": null
+  };
+  var Swahili = {
+  	name: "Swahili",
+  	names: [
+  		"Swahili"
+  	],
+  	"iso639-2": "swa",
+  	"iso639-1": "sw"
+  };
+  var Swati = {
+  	name: "Swati",
+  	names: [
+  		"Swati"
+  	],
+  	"iso639-2": "ssw",
+  	"iso639-1": "ss"
+  };
+  var Swedish = {
+  	name: "Swedish",
+  	names: [
+  		"Swedish"
+  	],
+  	"iso639-2": "swe",
+  	"iso639-1": "sv"
+  };
+  var Syriac = {
+  	name: "Syriac",
+  	names: [
+  		"Syriac"
+  	],
+  	"iso639-2": "syr",
+  	"iso639-1": null
+  };
+  var Tagalog = {
+  	name: "Tagalog",
+  	names: [
+  		"Tagalog"
+  	],
+  	"iso639-2": "tgl",
+  	"iso639-1": "tl"
+  };
+  var Tahitian = {
+  	name: "Tahitian",
+  	names: [
+  		"Tahitian"
+  	],
+  	"iso639-2": "tah",
+  	"iso639-1": "ty"
+  };
+  var Tajik = {
+  	name: "Tajik",
+  	names: [
+  		"Tajik"
+  	],
+  	"iso639-2": "tgk",
+  	"iso639-1": "tg"
+  };
+  var Tamashek = {
+  	name: "Tamashek",
+  	names: [
+  		"Tamashek"
+  	],
+  	"iso639-2": "tmh",
+  	"iso639-1": null
+  };
+  var Tamil = {
+  	name: "Tamil",
+  	names: [
+  		"Tamil"
+  	],
+  	"iso639-2": "tam",
+  	"iso639-1": "ta"
+  };
+  var Tatar = {
+  	name: "Tatar",
+  	names: [
+  		"Tatar"
+  	],
+  	"iso639-2": "tat",
+  	"iso639-1": "tt"
+  };
+  var Telugu = {
+  	name: "Telugu",
+  	names: [
+  		"Telugu"
+  	],
+  	"iso639-2": "tel",
+  	"iso639-1": "te"
+  };
+  var Tereno = {
+  	name: "Tereno",
+  	names: [
+  		"Tereno"
+  	],
+  	"iso639-2": "ter",
+  	"iso639-1": null
+  };
+  var Tetum = {
+  	name: "Tetum",
+  	names: [
+  		"Tetum"
+  	],
+  	"iso639-2": "tet",
+  	"iso639-1": null
+  };
+  var Thai = {
+  	name: "Thai",
+  	names: [
+  		"Thai"
+  	],
+  	"iso639-2": "tha",
+  	"iso639-1": "th"
+  };
+  var Tibetan = {
+  	name: "Tibetan",
+  	names: [
+  		"Tibetan"
+  	],
+  	"iso639-2": "tib/bod",
+  	"iso639-1": "bo"
+  };
+  var Tigre = {
+  	name: "Tigre",
+  	names: [
+  		"Tigre"
+  	],
+  	"iso639-2": "tig",
+  	"iso639-1": null
+  };
+  var Tigrinya = {
+  	name: "Tigrinya",
+  	names: [
+  		"Tigrinya"
+  	],
+  	"iso639-2": "tir",
+  	"iso639-1": "ti"
+  };
+  var Timne = {
+  	name: "Timne",
+  	names: [
+  		"Timne"
+  	],
+  	"iso639-2": "tem",
+  	"iso639-1": null
+  };
+  var Tiv = {
+  	name: "Tiv",
+  	names: [
+  		"Tiv"
+  	],
+  	"iso639-2": "tiv",
+  	"iso639-1": null
+  };
+  var Tlingit = {
+  	name: "Tlingit",
+  	names: [
+  		"Tlingit"
+  	],
+  	"iso639-2": "tli",
+  	"iso639-1": null
+  };
+  var Tokelau = {
+  	name: "Tokelau",
+  	names: [
+  		"Tokelau"
+  	],
+  	"iso639-2": "tkl",
+  	"iso639-1": null
+  };
+  var Tsimshian = {
+  	name: "Tsimshian",
+  	names: [
+  		"Tsimshian"
+  	],
+  	"iso639-2": "tsi",
+  	"iso639-1": null
+  };
+  var Tsonga = {
+  	name: "Tsonga",
+  	names: [
+  		"Tsonga"
+  	],
+  	"iso639-2": "tso",
+  	"iso639-1": "ts"
+  };
+  var Tswana = {
+  	name: "Tswana",
+  	names: [
+  		"Tswana"
+  	],
+  	"iso639-2": "tsn",
+  	"iso639-1": "tn"
+  };
+  var Tumbuka = {
+  	name: "Tumbuka",
+  	names: [
+  		"Tumbuka"
+  	],
+  	"iso639-2": "tum",
+  	"iso639-1": null
+  };
+  var Turkish = {
+  	name: "Turkish",
+  	names: [
+  		"Turkish"
+  	],
+  	"iso639-2": "tur",
+  	"iso639-1": "tr"
+  };
+  var Turkmen = {
+  	name: "Turkmen",
+  	names: [
+  		"Turkmen"
+  	],
+  	"iso639-2": "tuk",
+  	"iso639-1": "tk"
+  };
+  var Tuvalu = {
+  	name: "Tuvalu",
+  	names: [
+  		"Tuvalu"
+  	],
+  	"iso639-2": "tvl",
+  	"iso639-1": null
+  };
+  var Tuvinian = {
+  	name: "Tuvinian",
+  	names: [
+  		"Tuvinian"
+  	],
+  	"iso639-2": "tyv",
+  	"iso639-1": null
+  };
+  var Twi = {
+  	name: "Twi",
+  	names: [
+  		"Twi"
+  	],
+  	"iso639-2": "twi",
+  	"iso639-1": "tw"
+  };
+  var Udmurt = {
+  	name: "Udmurt",
+  	names: [
+  		"Udmurt"
+  	],
+  	"iso639-2": "udm",
+  	"iso639-1": null
+  };
+  var Ugaritic = {
+  	name: "Ugaritic",
+  	names: [
+  		"Ugaritic"
+  	],
+  	"iso639-2": "uga",
+  	"iso639-1": null
+  };
+  var Uighur = {
+  	name: "Uighur",
+  	names: [
+  		"Uighur",
+  		"Uyghur"
+  	],
+  	"iso639-2": "uig",
+  	"iso639-1": "ug"
+  };
+  var Ukrainian = {
+  	name: "Ukrainian",
+  	names: [
+  		"Ukrainian"
+  	],
+  	"iso639-2": "ukr",
+  	"iso639-1": "uk"
+  };
+  var Umbundu = {
+  	name: "Umbundu",
+  	names: [
+  		"Umbundu"
+  	],
+  	"iso639-2": "umb",
+  	"iso639-1": null
+  };
+  var Undetermined = {
+  	name: "Undetermined",
+  	names: [
+  		"Undetermined"
+  	],
+  	"iso639-2": "und",
+  	"iso639-1": null
+  };
+  var Urdu = {
+  	name: "Urdu",
+  	names: [
+  		"Urdu"
+  	],
+  	"iso639-2": "urd",
+  	"iso639-1": "ur"
+  };
+  var Uyghur = {
+  	name: "Uyghur",
+  	names: [
+  		"Uighur",
+  		"Uyghur"
+  	],
+  	"iso639-2": "uig",
+  	"iso639-1": "ug"
+  };
+  var Uzbek = {
+  	name: "Uzbek",
+  	names: [
+  		"Uzbek"
+  	],
+  	"iso639-2": "uzb",
+  	"iso639-1": "uz"
+  };
+  var Vai = {
+  	name: "Vai",
+  	names: [
+  		"Vai"
+  	],
+  	"iso639-2": "vai",
+  	"iso639-1": null
+  };
+  var Valencian = {
+  	name: "Valencian",
+  	names: [
+  		"Catalan",
+  		"Valencian"
+  	],
+  	"iso639-2": "cat",
+  	"iso639-1": "ca"
+  };
+  var Venda = {
+  	name: "Venda",
+  	names: [
+  		"Venda"
+  	],
+  	"iso639-2": "ven",
+  	"iso639-1": "ve"
+  };
+  var Vietnamese = {
+  	name: "Vietnamese",
+  	names: [
+  		"Vietnamese"
+  	],
+  	"iso639-2": "vie",
+  	"iso639-1": "vi"
+  };
+  var Votic = {
+  	name: "Votic",
+  	names: [
+  		"Votic"
+  	],
+  	"iso639-2": "vot",
+  	"iso639-1": null
+  };
+  var Walloon = {
+  	name: "Walloon",
+  	names: [
+  		"Walloon"
+  	],
+  	"iso639-2": "wln",
+  	"iso639-1": "wa"
+  };
+  var Waray = {
+  	name: "Waray",
+  	names: [
+  		"Waray"
+  	],
+  	"iso639-2": "war",
+  	"iso639-1": null
+  };
+  var Washo = {
+  	name: "Washo",
+  	names: [
+  		"Washo"
+  	],
+  	"iso639-2": "was",
+  	"iso639-1": null
+  };
+  var Welsh = {
+  	name: "Welsh",
+  	names: [
+  		"Welsh"
+  	],
+  	"iso639-2": "wel/cym",
+  	"iso639-1": "cy"
+  };
+  var Wolaitta = {
+  	name: "Wolaitta",
+  	names: [
+  		"Wolaitta",
+  		"Wolaytta"
+  	],
+  	"iso639-2": "wal",
+  	"iso639-1": null
+  };
+  var Wolaytta = {
+  	name: "Wolaytta",
+  	names: [
+  		"Wolaitta",
+  		"Wolaytta"
+  	],
+  	"iso639-2": "wal",
+  	"iso639-1": null
+  };
+  var Wolof = {
+  	name: "Wolof",
+  	names: [
+  		"Wolof"
+  	],
+  	"iso639-2": "wol",
+  	"iso639-1": "wo"
+  };
+  var Xhosa = {
+  	name: "Xhosa",
+  	names: [
+  		"Xhosa"
+  	],
+  	"iso639-2": "xho",
+  	"iso639-1": "xh"
+  };
+  var Yakut = {
+  	name: "Yakut",
+  	names: [
+  		"Yakut"
+  	],
+  	"iso639-2": "sah",
+  	"iso639-1": null
+  };
+  var Yao = {
+  	name: "Yao",
+  	names: [
+  		"Yao"
+  	],
+  	"iso639-2": "yao",
+  	"iso639-1": null
+  };
+  var Yapese = {
+  	name: "Yapese",
+  	names: [
+  		"Yapese"
+  	],
+  	"iso639-2": "yap",
+  	"iso639-1": null
+  };
+  var Yiddish = {
+  	name: "Yiddish",
+  	names: [
+  		"Yiddish"
+  	],
+  	"iso639-2": "yid",
+  	"iso639-1": "yi"
+  };
+  var Yoruba = {
+  	name: "Yoruba",
+  	names: [
+  		"Yoruba"
+  	],
+  	"iso639-2": "yor",
+  	"iso639-1": "yo"
+  };
+  var Zapotec = {
+  	name: "Zapotec",
+  	names: [
+  		"Zapotec"
+  	],
+  	"iso639-2": "zap",
+  	"iso639-1": null
+  };
+  var Zaza = {
+  	name: "Zaza",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Zazaki = {
+  	name: "Zazaki",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Zenaga = {
+  	name: "Zenaga",
+  	names: [
+  		"Zenaga"
+  	],
+  	"iso639-2": "zen",
+  	"iso639-1": null
+  };
+  var Zhuang = {
+  	name: "Zhuang",
+  	names: [
+  		"Zhuang",
+  		"Chuang"
+  	],
+  	"iso639-2": "zha",
+  	"iso639-1": "za"
+  };
+  var Zulu = {
+  	name: "Zulu",
+  	names: [
+  		"Zulu"
+  	],
+  	"iso639-2": "zul",
+  	"iso639-1": "zu"
+  };
+  var Zuni = {
+  	name: "Zuni",
+  	names: [
+  		"Zuni"
+  	],
+  	"iso639-2": "zun",
+  	"iso639-1": null
+  };
+  var iso = {
+  	Abkhazian: Abkhazian,
+  	Achinese: Achinese,
+  	Acoli: Acoli,
+  	Adangme: Adangme,
+  	Adygei: Adygei,
+  	Adyghe: Adyghe,
+  	Afar: Afar,
+  	Afrihili: Afrihili,
+  	Afrikaans: Afrikaans,
+  	"Afro-Asiatic languages": {
+  	name: "Afro-Asiatic languages",
+  	names: [
+  		"Afro-Asiatic languages"
+  	],
+  	"iso639-2": "afa",
+  	"iso639-1": null
+  },
+  	Ainu: Ainu,
+  	Akan: Akan,
+  	Akkadian: Akkadian,
+  	Albanian: Albanian,
+  	Alemannic: Alemannic,
+  	Aleut: Aleut,
+  	"Algonquian languages": {
+  	name: "Algonquian languages",
+  	names: [
+  		"Algonquian languages"
+  	],
+  	"iso639-2": "alg",
+  	"iso639-1": null
+  },
+  	Alsatian: Alsatian,
+  	"Altaic languages": {
+  	name: "Altaic languages",
+  	names: [
+  		"Altaic languages"
+  	],
+  	"iso639-2": "tut",
+  	"iso639-1": null
+  },
+  	Amharic: Amharic,
+  	Angika: Angika,
+  	"Apache languages": {
+  	name: "Apache languages",
+  	names: [
+  		"Apache languages"
+  	],
+  	"iso639-2": "apa",
+  	"iso639-1": null
+  },
+  	Arabic: Arabic,
+  	Aragonese: Aragonese,
+  	Arapaho: Arapaho,
+  	Arawak: Arawak,
+  	Armenian: Armenian,
+  	Aromanian: Aromanian,
+  	"Artificial languages": {
+  	name: "Artificial languages",
+  	names: [
+  		"Artificial languages"
+  	],
+  	"iso639-2": "art",
+  	"iso639-1": null
+  },
+  	Arumanian: Arumanian,
+  	Assamese: Assamese,
+  	Asturian: Asturian,
+  	Asturleonese: Asturleonese,
+  	"Athapascan languages": {
+  	name: "Athapascan languages",
+  	names: [
+  		"Athapascan languages"
+  	],
+  	"iso639-2": "ath",
+  	"iso639-1": null
+  },
+  	"Australian languages": {
+  	name: "Australian languages",
+  	names: [
+  		"Australian languages"
+  	],
+  	"iso639-2": "aus",
+  	"iso639-1": null
+  },
+  	"Austronesian languages": {
+  	name: "Austronesian languages",
+  	names: [
+  		"Austronesian languages"
+  	],
+  	"iso639-2": "map",
+  	"iso639-1": null
+  },
+  	Avaric: Avaric,
+  	Avestan: Avestan,
+  	Awadhi: Awadhi,
+  	Aymara: Aymara,
+  	Azerbaijani: Azerbaijani,
+  	Bable: Bable,
+  	Balinese: Balinese,
+  	"Baltic languages": {
+  	name: "Baltic languages",
+  	names: [
+  		"Baltic languages"
+  	],
+  	"iso639-2": "bat",
+  	"iso639-1": null
+  },
+  	Baluchi: Baluchi,
+  	Bambara: Bambara,
+  	"Bamileke languages": {
+  	name: "Bamileke languages",
+  	names: [
+  		"Bamileke languages"
+  	],
+  	"iso639-2": "bai",
+  	"iso639-1": null
+  },
+  	"Banda languages": {
+  	name: "Banda languages",
+  	names: [
+  		"Banda languages"
+  	],
+  	"iso639-2": "bad",
+  	"iso639-1": null
+  },
+  	"Bantu languages": {
+  	name: "Bantu languages",
+  	names: [
+  		"Bantu languages"
+  	],
+  	"iso639-2": "bnt",
+  	"iso639-1": null
+  },
+  	Basa: Basa,
+  	Bashkir: Bashkir,
+  	Basque: Basque,
+  	"Batak languages": {
+  	name: "Batak languages",
+  	names: [
+  		"Batak languages"
+  	],
+  	"iso639-2": "btk",
+  	"iso639-1": null
+  },
+  	Bedawiyet: Bedawiyet,
+  	Beja: Beja,
+  	Belarusian: Belarusian,
+  	Bemba: Bemba,
+  	Bengali: Bengali,
+  	"Berber languages": {
+  	name: "Berber languages",
+  	names: [
+  		"Berber languages"
+  	],
+  	"iso639-2": "ber",
+  	"iso639-1": null
+  },
+  	Bhojpuri: Bhojpuri,
+  	"Bihari languages": {
+  	name: "Bihari languages",
+  	names: [
+  		"Bihari languages"
+  	],
+  	"iso639-2": "bih",
+  	"iso639-1": "bh"
+  },
+  	Bikol: Bikol,
+  	Bilin: Bilin,
+  	Bini: Bini,
+  	Bislama: Bislama,
+  	Blin: Blin,
+  	Bliss: Bliss,
+  	Blissymbolics: Blissymbolics,
+  	Blissymbols: Blissymbols,
+  	"Bokmål, Norwegian": {
+  	name: "Bokmål, Norwegian",
+  	names: [
+  		"Bokmål, Norwegian",
+  		"Norwegian Bokmål"
+  	],
+  	"iso639-2": "nob",
+  	"iso639-1": "nb"
+  },
+  	Bosnian: Bosnian,
+  	Braj: Braj,
+  	Breton: Breton,
+  	Buginese: Buginese,
+  	Bulgarian: Bulgarian,
+  	Buriat: Buriat,
+  	Burmese: Burmese,
+  	Caddo: Caddo,
+  	Castilian: Castilian,
+  	Catalan: Catalan,
+  	"Caucasian languages": {
+  	name: "Caucasian languages",
+  	names: [
+  		"Caucasian languages"
+  	],
+  	"iso639-2": "cau",
+  	"iso639-1": null
+  },
+  	Cebuano: Cebuano,
+  	"Celtic languages": {
+  	name: "Celtic languages",
+  	names: [
+  		"Celtic languages"
+  	],
+  	"iso639-2": "cel",
+  	"iso639-1": null
+  },
+  	"Central American Indian languages": {
+  	name: "Central American Indian languages",
+  	names: [
+  		"Central American Indian languages"
+  	],
+  	"iso639-2": "cai",
+  	"iso639-1": null
+  },
+  	"Central Khmer": {
+  	name: "Central Khmer",
+  	names: [
+  		"Central Khmer"
+  	],
+  	"iso639-2": "khm",
+  	"iso639-1": "km"
+  },
+  	Chagatai: Chagatai,
+  	"Chamic languages": {
+  	name: "Chamic languages",
+  	names: [
+  		"Chamic languages"
+  	],
+  	"iso639-2": "cmc",
+  	"iso639-1": null
+  },
+  	Chamorro: Chamorro,
+  	Chechen: Chechen,
+  	Cherokee: Cherokee,
+  	Chewa: Chewa,
+  	Cheyenne: Cheyenne,
+  	Chibcha: Chibcha,
+  	Chichewa: Chichewa,
+  	Chinese: Chinese,
+  	"Chinook jargon": {
+  	name: "Chinook jargon",
+  	names: [
+  		"Chinook jargon"
+  	],
+  	"iso639-2": "chn",
+  	"iso639-1": null
+  },
+  	Chipewyan: Chipewyan,
+  	Choctaw: Choctaw,
+  	Chuang: Chuang,
+  	"Church Slavic": {
+  	name: "Church Slavic",
+  	names: [
+  		"Church Slavic",
+  		"Old Slavonic",
+  		"Church Slavonic",
+  		"Old Bulgarian",
+  		"Old Church Slavonic"
+  	],
+  	"iso639-2": "chu",
+  	"iso639-1": "cu"
+  },
+  	"Church Slavonic": {
+  	name: "Church Slavonic",
+  	names: [
+  		"Church Slavic",
+  		"Old Slavonic",
+  		"Church Slavonic",
+  		"Old Bulgarian",
+  		"Old Church Slavonic"
+  	],
+  	"iso639-2": "chu",
+  	"iso639-1": "cu"
+  },
+  	Chuukese: Chuukese,
+  	Chuvash: Chuvash,
+  	"Classical Nepal Bhasa": {
+  	name: "Classical Nepal Bhasa",
+  	names: [
+  		"Classical Newari",
+  		"Old Newari",
+  		"Classical Nepal Bhasa"
+  	],
+  	"iso639-2": "nwc",
+  	"iso639-1": null
+  },
+  	"Classical Newari": {
+  	name: "Classical Newari",
+  	names: [
+  		"Classical Newari",
+  		"Old Newari",
+  		"Classical Nepal Bhasa"
+  	],
+  	"iso639-2": "nwc",
+  	"iso639-1": null
+  },
+  	"Classical Syriac": {
+  	name: "Classical Syriac",
+  	names: [
+  		"Classical Syriac"
+  	],
+  	"iso639-2": "syc",
+  	"iso639-1": null
+  },
+  	"Cook Islands Maori": {
+  	name: "Cook Islands Maori",
+  	names: [
+  		"Rarotongan",
+  		"Cook Islands Maori"
+  	],
+  	"iso639-2": "rar",
+  	"iso639-1": null
+  },
+  	Coptic: Coptic,
+  	Cornish: Cornish,
+  	Corsican: Corsican,
+  	Cree: Cree,
+  	Creek: Creek,
+  	"Creoles and pidgins": {
+  	name: "Creoles and pidgins",
+  	names: [
+  		"Creoles and pidgins"
+  	],
+  	"iso639-2": "crp",
+  	"iso639-1": null
+  },
+  	"Creoles and pidgins, English based": {
+  	name: "Creoles and pidgins, English based",
+  	names: [
+  		"Creoles and pidgins, English based"
+  	],
+  	"iso639-2": "cpe",
+  	"iso639-1": null
+  },
+  	"Creoles and pidgins, French-based": {
+  	name: "Creoles and pidgins, French-based",
+  	names: [
+  		"Creoles and pidgins, French-based"
+  	],
+  	"iso639-2": "cpf",
+  	"iso639-1": null
+  },
+  	"Creoles and pidgins, Portuguese-based": {
+  	name: "Creoles and pidgins, Portuguese-based",
+  	names: [
+  		"Creoles and pidgins, Portuguese-based"
+  	],
+  	"iso639-2": "cpp",
+  	"iso639-1": null
+  },
+  	"Crimean Tatar": {
+  	name: "Crimean Tatar",
+  	names: [
+  		"Crimean Tatar",
+  		"Crimean Turkish"
+  	],
+  	"iso639-2": "crh",
+  	"iso639-1": null
+  },
+  	"Crimean Turkish": {
+  	name: "Crimean Turkish",
+  	names: [
+  		"Crimean Tatar",
+  		"Crimean Turkish"
+  	],
+  	"iso639-2": "crh",
+  	"iso639-1": null
+  },
+  	Croatian: Croatian,
+  	"Cushitic languages": {
+  	name: "Cushitic languages",
+  	names: [
+  		"Cushitic languages"
+  	],
+  	"iso639-2": "cus",
+  	"iso639-1": null
+  },
+  	Czech: Czech,
+  	Dakota: Dakota,
+  	Danish: Danish,
+  	Dargwa: Dargwa,
+  	Delaware: Delaware,
+  	"Dene Suline": {
+  	name: "Dene Suline",
+  	names: [
+  		"Chipewyan",
+  		"Dene Suline"
+  	],
+  	"iso639-2": "chp",
+  	"iso639-1": null
+  },
+  	Dhivehi: Dhivehi,
+  	Dimili: Dimili,
+  	Dimli: Dimli,
+  	Dinka: Dinka,
+  	Divehi: Divehi,
+  	Dogri: Dogri,
+  	Dogrib: Dogrib,
+  	"Dravidian languages": {
+  	name: "Dravidian languages",
+  	names: [
+  		"Dravidian languages"
+  	],
+  	"iso639-2": "dra",
+  	"iso639-1": null
+  },
+  	Duala: Duala,
+  	Dutch: Dutch,
+  	"Dutch, Middle (ca.1050-1350)": {
+  	name: "Dutch, Middle (ca.1050-1350)",
+  	names: [
+  		"Dutch, Middle (ca.1050-1350)"
+  	],
+  	"iso639-2": "dum",
+  	"iso639-1": null
+  },
+  	Dyula: Dyula,
+  	Dzongkha: Dzongkha,
+  	"Eastern Frisian": {
+  	name: "Eastern Frisian",
+  	names: [
+  		"Eastern Frisian"
+  	],
+  	"iso639-2": "frs",
+  	"iso639-1": null
+  },
+  	Edo: Edo,
+  	Efik: Efik,
+  	"Egyptian (Ancient)": {
+  	name: "Egyptian (Ancient)",
+  	names: [
+  		"Egyptian (Ancient)"
+  	],
+  	"iso639-2": "egy",
+  	"iso639-1": null
+  },
+  	Ekajuk: Ekajuk,
+  	Elamite: Elamite,
+  	English: English,
+  	"English, Middle (1100-1500)": {
+  	name: "English, Middle (1100-1500)",
+  	names: [
+  		"English, Middle (1100-1500)"
+  	],
+  	"iso639-2": "enm",
+  	"iso639-1": null
+  },
+  	"English, Old (ca.450-1100)": {
+  	name: "English, Old (ca.450-1100)",
+  	names: [
+  		"English, Old (ca.450-1100)"
+  	],
+  	"iso639-2": "ang",
+  	"iso639-1": null
+  },
+  	Erzya: Erzya,
+  	Esperanto: Esperanto,
+  	Estonian: Estonian,
+  	Ewe: Ewe,
+  	Ewondo: Ewondo,
+  	Fang: Fang,
+  	Fanti: Fanti,
+  	Faroese: Faroese,
+  	Fijian: Fijian,
+  	Filipino: Filipino,
+  	Finnish: Finnish,
+  	"Finno-Ugrian languages": {
+  	name: "Finno-Ugrian languages",
+  	names: [
+  		"Finno-Ugrian languages"
+  	],
+  	"iso639-2": "fiu",
+  	"iso639-1": null
+  },
+  	Flemish: Flemish,
+  	Fon: Fon,
+  	French: French,
+  	"French, Middle (ca.1400-1600)": {
+  	name: "French, Middle (ca.1400-1600)",
+  	names: [
+  		"French, Middle (ca.1400-1600)"
+  	],
+  	"iso639-2": "frm",
+  	"iso639-1": null
+  },
+  	"French, Old (842-ca.1400)": {
+  	name: "French, Old (842-ca.1400)",
+  	names: [
+  		"French, Old (842-ca.1400)"
+  	],
+  	"iso639-2": "fro",
+  	"iso639-1": null
+  },
+  	Friulian: Friulian,
+  	Fulah: Fulah,
+  	Ga: Ga,
+  	Gaelic: Gaelic,
+  	"Galibi Carib": {
+  	name: "Galibi Carib",
+  	names: [
+  		"Galibi Carib"
+  	],
+  	"iso639-2": "car",
+  	"iso639-1": null
+  },
+  	Galician: Galician,
+  	Ganda: Ganda,
+  	Gayo: Gayo,
+  	Gbaya: Gbaya,
+  	Geez: Geez,
+  	Georgian: Georgian,
+  	German: German,
+  	"German, Low": {
+  	name: "German, Low",
+  	names: [
+  		"Low German",
+  		"Low Saxon",
+  		"German, Low",
+  		"Saxon, Low"
+  	],
+  	"iso639-2": "nds",
+  	"iso639-1": null
+  },
+  	"German, Middle High (ca.1050-1500)": {
+  	name: "German, Middle High (ca.1050-1500)",
+  	names: [
+  		"German, Middle High (ca.1050-1500)"
+  	],
+  	"iso639-2": "gmh",
+  	"iso639-1": null
+  },
+  	"German, Old High (ca.750-1050)": {
+  	name: "German, Old High (ca.750-1050)",
+  	names: [
+  		"German, Old High (ca.750-1050)"
+  	],
+  	"iso639-2": "goh",
+  	"iso639-1": null
+  },
+  	"Germanic languages": {
+  	name: "Germanic languages",
+  	names: [
+  		"Germanic languages"
+  	],
+  	"iso639-2": "gem",
+  	"iso639-1": null
+  },
+  	Gikuyu: Gikuyu,
+  	Gilbertese: Gilbertese,
+  	Gondi: Gondi,
+  	Gorontalo: Gorontalo,
+  	Gothic: Gothic,
+  	Grebo: Grebo,
+  	"Greek, Ancient (to 1453)": {
+  	name: "Greek, Ancient (to 1453)",
+  	names: [
+  		"Greek, Ancient (to 1453)"
+  	],
+  	"iso639-2": "grc",
+  	"iso639-1": null
+  },
+  	"Greek, Modern (1453-)": {
+  	name: "Greek, Modern (1453-)",
+  	names: [
+  		"Greek, Modern (1453-)"
+  	],
+  	"iso639-2": "gre/ell",
+  	"iso639-1": "el"
+  },
+  	Greenlandic: Greenlandic,
+  	Guarani: Guarani,
+  	Gujarati: Gujarati,
+  	"Gwich'in": {
+  	name: "Gwich'in",
+  	names: [
+  		"Gwich'in"
+  	],
+  	"iso639-2": "gwi",
+  	"iso639-1": null
+  },
+  	Haida: Haida,
+  	Haitian: Haitian,
+  	"Haitian Creole": {
+  	name: "Haitian Creole",
+  	names: [
+  		"Haitian",
+  		"Haitian Creole"
+  	],
+  	"iso639-2": "hat",
+  	"iso639-1": "ht"
+  },
+  	Hausa: Hausa,
+  	Hawaiian: Hawaiian,
+  	Hebrew: Hebrew,
+  	Herero: Herero,
+  	Hiligaynon: Hiligaynon,
+  	"Himachali languages": {
+  	name: "Himachali languages",
+  	names: [
+  		"Himachali languages",
+  		"Western Pahari languages"
+  	],
+  	"iso639-2": "him",
+  	"iso639-1": null
+  },
+  	Hindi: Hindi,
+  	"Hiri Motu": {
+  	name: "Hiri Motu",
+  	names: [
+  		"Hiri Motu"
+  	],
+  	"iso639-2": "hmo",
+  	"iso639-1": "ho"
+  },
+  	Hittite: Hittite,
+  	Hmong: Hmong,
+  	Hungarian: Hungarian,
+  	Hupa: Hupa,
+  	Iban: Iban,
+  	Icelandic: Icelandic,
+  	Ido: Ido,
+  	Igbo: Igbo,
+  	"Ijo languages": {
+  	name: "Ijo languages",
+  	names: [
+  		"Ijo languages"
+  	],
+  	"iso639-2": "ijo",
+  	"iso639-1": null
+  },
+  	Iloko: Iloko,
+  	"Imperial Aramaic (700-300 BCE)": {
+  	name: "Imperial Aramaic (700-300 BCE)",
+  	names: [
+  		"Official Aramaic (700-300 BCE)",
+  		"Imperial Aramaic (700-300 BCE)"
+  	],
+  	"iso639-2": "arc",
+  	"iso639-1": null
+  },
+  	"Inari Sami": {
+  	name: "Inari Sami",
+  	names: [
+  		"Inari Sami"
+  	],
+  	"iso639-2": "smn",
+  	"iso639-1": null
+  },
+  	"Indic languages": {
+  	name: "Indic languages",
+  	names: [
+  		"Indic languages"
+  	],
+  	"iso639-2": "inc",
+  	"iso639-1": null
+  },
+  	"Indo-European languages": {
+  	name: "Indo-European languages",
+  	names: [
+  		"Indo-European languages"
+  	],
+  	"iso639-2": "ine",
+  	"iso639-1": null
+  },
+  	Indonesian: Indonesian,
+  	Ingush: Ingush,
+  	"Interlingua (International Auxiliary Language Association)": {
+  	name: "Interlingua (International Auxiliary Language Association)",
+  	names: [
+  		"Interlingua (International Auxiliary Language Association)"
+  	],
+  	"iso639-2": "ina",
+  	"iso639-1": "ia"
+  },
+  	Interlingue: Interlingue,
+  	Inuktitut: Inuktitut,
+  	Inupiaq: Inupiaq,
+  	"Iranian languages": {
+  	name: "Iranian languages",
+  	names: [
+  		"Iranian languages"
+  	],
+  	"iso639-2": "ira",
+  	"iso639-1": null
+  },
+  	Irish: Irish,
+  	"Irish, Middle (900-1200)": {
+  	name: "Irish, Middle (900-1200)",
+  	names: [
+  		"Irish, Middle (900-1200)"
+  	],
+  	"iso639-2": "mga",
+  	"iso639-1": null
+  },
+  	"Irish, Old (to 900)": {
+  	name: "Irish, Old (to 900)",
+  	names: [
+  		"Irish, Old (to 900)"
+  	],
+  	"iso639-2": "sga",
+  	"iso639-1": null
+  },
+  	"Iroquoian languages": {
+  	name: "Iroquoian languages",
+  	names: [
+  		"Iroquoian languages"
+  	],
+  	"iso639-2": "iro",
+  	"iso639-1": null
+  },
+  	Italian: Italian,
+  	Japanese: Japanese,
+  	Javanese: Javanese,
+  	Jingpho: Jingpho,
+  	"Judeo-Arabic": {
+  	name: "Judeo-Arabic",
+  	names: [
+  		"Judeo-Arabic"
+  	],
+  	"iso639-2": "jrb",
+  	"iso639-1": null
+  },
+  	"Judeo-Persian": {
+  	name: "Judeo-Persian",
+  	names: [
+  		"Judeo-Persian"
+  	],
+  	"iso639-2": "jpr",
+  	"iso639-1": null
+  },
+  	Kabardian: Kabardian,
+  	Kabyle: Kabyle,
+  	Kachin: Kachin,
+  	Kalaallisut: Kalaallisut,
+  	Kalmyk: Kalmyk,
+  	Kamba: Kamba,
+  	Kannada: Kannada,
+  	Kanuri: Kanuri,
+  	Kapampangan: Kapampangan,
+  	"Kara-Kalpak": {
+  	name: "Kara-Kalpak",
+  	names: [
+  		"Kara-Kalpak"
+  	],
+  	"iso639-2": "kaa",
+  	"iso639-1": null
+  },
+  	"Karachay-Balkar": {
+  	name: "Karachay-Balkar",
+  	names: [
+  		"Karachay-Balkar"
+  	],
+  	"iso639-2": "krc",
+  	"iso639-1": null
+  },
+  	Karelian: Karelian,
+  	"Karen languages": {
+  	name: "Karen languages",
+  	names: [
+  		"Karen languages"
+  	],
+  	"iso639-2": "kar",
+  	"iso639-1": null
+  },
+  	Kashmiri: Kashmiri,
+  	Kashubian: Kashubian,
+  	Kawi: Kawi,
+  	Kazakh: Kazakh,
+  	Khasi: Khasi,
+  	"Khoisan languages": {
+  	name: "Khoisan languages",
+  	names: [
+  		"Khoisan languages"
+  	],
+  	"iso639-2": "khi",
+  	"iso639-1": null
+  },
+  	Khotanese: Khotanese,
+  	Kikuyu: Kikuyu,
+  	Kimbundu: Kimbundu,
+  	Kinyarwanda: Kinyarwanda,
+  	Kirdki: Kirdki,
+  	Kirghiz: Kirghiz,
+  	Kirmanjki: Kirmanjki,
+  	Klingon: Klingon,
+  	Komi: Komi,
+  	Kongo: Kongo,
+  	Konkani: Konkani,
+  	Korean: Korean,
+  	Kosraean: Kosraean,
+  	Kpelle: Kpelle,
+  	"Kru languages": {
+  	name: "Kru languages",
+  	names: [
+  		"Kru languages"
+  	],
+  	"iso639-2": "kro",
+  	"iso639-1": null
+  },
+  	Kuanyama: Kuanyama,
+  	Kumyk: Kumyk,
+  	Kurdish: Kurdish,
+  	Kurukh: Kurukh,
+  	Kutenai: Kutenai,
+  	Kwanyama: Kwanyama,
+  	Kyrgyz: Kyrgyz,
+  	Ladino: Ladino,
+  	Lahnda: Lahnda,
+  	Lamba: Lamba,
+  	"Land Dayak languages": {
+  	name: "Land Dayak languages",
+  	names: [
+  		"Land Dayak languages"
+  	],
+  	"iso639-2": "day",
+  	"iso639-1": null
+  },
+  	Lao: Lao,
+  	Latin: Latin,
+  	Latvian: Latvian,
+  	Leonese: Leonese,
+  	Letzeburgesch: Letzeburgesch,
+  	Lezghian: Lezghian,
+  	Limburgan: Limburgan,
+  	Limburger: Limburger,
+  	Limburgish: Limburgish,
+  	Lingala: Lingala,
+  	Lithuanian: Lithuanian,
+  	Lojban: Lojban,
+  	"Low German": {
+  	name: "Low German",
+  	names: [
+  		"Low German",
+  		"Low Saxon",
+  		"German, Low",
+  		"Saxon, Low"
+  	],
+  	"iso639-2": "nds",
+  	"iso639-1": null
+  },
+  	"Low Saxon": {
+  	name: "Low Saxon",
+  	names: [
+  		"Low German",
+  		"Low Saxon",
+  		"German, Low",
+  		"Saxon, Low"
+  	],
+  	"iso639-2": "nds",
+  	"iso639-1": null
+  },
+  	"Lower Sorbian": {
+  	name: "Lower Sorbian",
+  	names: [
+  		"Lower Sorbian"
+  	],
+  	"iso639-2": "dsb",
+  	"iso639-1": null
+  },
+  	Lozi: Lozi,
+  	"Luba-Katanga": {
+  	name: "Luba-Katanga",
+  	names: [
+  		"Luba-Katanga"
+  	],
+  	"iso639-2": "lub",
+  	"iso639-1": "lu"
+  },
+  	"Luba-Lulua": {
+  	name: "Luba-Lulua",
+  	names: [
+  		"Luba-Lulua"
+  	],
+  	"iso639-2": "lua",
+  	"iso639-1": null
+  },
+  	Luiseno: Luiseno,
+  	"Lule Sami": {
+  	name: "Lule Sami",
+  	names: [
+  		"Lule Sami"
+  	],
+  	"iso639-2": "smj",
+  	"iso639-1": null
+  },
+  	Lunda: Lunda,
+  	"Luo (Kenya and Tanzania)": {
+  	name: "Luo (Kenya and Tanzania)",
+  	names: [
+  		"Luo (Kenya and Tanzania)"
+  	],
+  	"iso639-2": "luo",
+  	"iso639-1": null
+  },
+  	Lushai: Lushai,
+  	Luxembourgish: Luxembourgish,
+  	"Macedo-Romanian": {
+  	name: "Macedo-Romanian",
+  	names: [
+  		"Aromanian",
+  		"Arumanian",
+  		"Macedo-Romanian"
+  	],
+  	"iso639-2": "rup",
+  	"iso639-1": null
+  },
+  	Macedonian: Macedonian,
+  	Madurese: Madurese,
+  	Magahi: Magahi,
+  	Maithili: Maithili,
+  	Makasar: Makasar,
+  	Malagasy: Malagasy,
+  	Malay: Malay,
+  	Malayalam: Malayalam,
+  	Maldivian: Maldivian,
+  	Maltese: Maltese,
+  	Manchu: Manchu,
+  	Mandar: Mandar,
+  	Mandingo: Mandingo,
+  	Manipuri: Manipuri,
+  	"Manobo languages": {
+  	name: "Manobo languages",
+  	names: [
+  		"Manobo languages"
+  	],
+  	"iso639-2": "mno",
+  	"iso639-1": null
+  },
+  	Manx: Manx,
+  	Maori: Maori,
+  	Mapuche: Mapuche,
+  	Mapudungun: Mapudungun,
+  	Marathi: Marathi,
+  	Mari: Mari,
+  	Marshallese: Marshallese,
+  	Marwari: Marwari,
+  	Masai: Masai,
+  	"Mayan languages": {
+  	name: "Mayan languages",
+  	names: [
+  		"Mayan languages"
+  	],
+  	"iso639-2": "myn",
+  	"iso639-1": null
+  },
+  	Mende: Mende,
+  	"Mi'kmaq": {
+  	name: "Mi'kmaq",
+  	names: [
+  		"Mi'kmaq",
+  		"Micmac"
+  	],
+  	"iso639-2": "mic",
+  	"iso639-1": null
+  },
+  	Micmac: Micmac,
+  	Minangkabau: Minangkabau,
+  	Mirandese: Mirandese,
+  	Mohawk: Mohawk,
+  	Moksha: Moksha,
+  	Moldavian: Moldavian,
+  	Moldovan: Moldovan,
+  	"Mon-Khmer languages": {
+  	name: "Mon-Khmer languages",
+  	names: [
+  		"Mon-Khmer languages"
+  	],
+  	"iso639-2": "mkh",
+  	"iso639-1": null
+  },
+  	Mong: Mong,
+  	Mongo: Mongo,
+  	Mongolian: Mongolian,
+  	Montenegrin: Montenegrin,
+  	Mossi: Mossi,
+  	"Multiple languages": {
+  	name: "Multiple languages",
+  	names: [
+  		"Multiple languages"
+  	],
+  	"iso639-2": "mul",
+  	"iso639-1": null
+  },
+  	"Munda languages": {
+  	name: "Munda languages",
+  	names: [
+  		"Munda languages"
+  	],
+  	"iso639-2": "mun",
+  	"iso639-1": null
+  },
+  	"N'Ko": {
+  	name: "N'Ko",
+  	names: [
+  		"N'Ko"
+  	],
+  	"iso639-2": "nqo",
+  	"iso639-1": null
+  },
+  	"Nahuatl languages": {
+  	name: "Nahuatl languages",
+  	names: [
+  		"Nahuatl languages"
+  	],
+  	"iso639-2": "nah",
+  	"iso639-1": null
+  },
+  	Nauru: Nauru,
+  	Navaho: Navaho,
+  	Navajo: Navajo,
+  	"Ndebele, North": {
+  	name: "Ndebele, North",
+  	names: [
+  		"Ndebele, North",
+  		"North Ndebele"
+  	],
+  	"iso639-2": "nde",
+  	"iso639-1": "nd"
+  },
+  	"Ndebele, South": {
+  	name: "Ndebele, South",
+  	names: [
+  		"Ndebele, South",
+  		"South Ndebele"
+  	],
+  	"iso639-2": "nbl",
+  	"iso639-1": "nr"
+  },
+  	Ndonga: Ndonga,
+  	Neapolitan: Neapolitan,
+  	"Nepal Bhasa": {
+  	name: "Nepal Bhasa",
+  	names: [
+  		"Nepal Bhasa",
+  		"Newari"
+  	],
+  	"iso639-2": "new",
+  	"iso639-1": null
+  },
+  	Nepali: Nepali,
+  	Newari: Newari,
+  	Nias: Nias,
+  	"Niger-Kordofanian languages": {
+  	name: "Niger-Kordofanian languages",
+  	names: [
+  		"Niger-Kordofanian languages"
+  	],
+  	"iso639-2": "nic",
+  	"iso639-1": null
+  },
+  	"Nilo-Saharan languages": {
+  	name: "Nilo-Saharan languages",
+  	names: [
+  		"Nilo-Saharan languages"
+  	],
+  	"iso639-2": "ssa",
+  	"iso639-1": null
+  },
+  	Niuean: Niuean,
+  	"No linguistic content": {
+  	name: "No linguistic content",
+  	names: [
+  		"No linguistic content",
+  		"Not applicable"
+  	],
+  	"iso639-2": "zxx",
+  	"iso639-1": null
+  },
+  	Nogai: Nogai,
+  	"Norse, Old": {
+  	name: "Norse, Old",
+  	names: [
+  		"Norse, Old"
+  	],
+  	"iso639-2": "non",
+  	"iso639-1": null
+  },
+  	"North American Indian languages": {
+  	name: "North American Indian languages",
+  	names: [
+  		"North American Indian languages"
+  	],
+  	"iso639-2": "nai",
+  	"iso639-1": null
+  },
+  	"North Ndebele": {
+  	name: "North Ndebele",
+  	names: [
+  		"Ndebele, North",
+  		"North Ndebele"
+  	],
+  	"iso639-2": "nde",
+  	"iso639-1": "nd"
+  },
+  	"Northern Frisian": {
+  	name: "Northern Frisian",
+  	names: [
+  		"Northern Frisian"
+  	],
+  	"iso639-2": "frr",
+  	"iso639-1": null
+  },
+  	"Northern Sami": {
+  	name: "Northern Sami",
+  	names: [
+  		"Northern Sami"
+  	],
+  	"iso639-2": "sme",
+  	"iso639-1": "se"
+  },
+  	"Northern Sotho": {
+  	name: "Northern Sotho",
+  	names: [
+  		"Pedi",
+  		"Sepedi",
+  		"Northern Sotho"
+  	],
+  	"iso639-2": "nso",
+  	"iso639-1": null
+  },
+  	Norwegian: Norwegian,
+  	"Norwegian Bokmål": {
+  	name: "Norwegian Bokmål",
+  	names: [
+  		"Bokmål, Norwegian",
+  		"Norwegian Bokmål"
+  	],
+  	"iso639-2": "nob",
+  	"iso639-1": "nb"
+  },
+  	"Norwegian Nynorsk": {
+  	name: "Norwegian Nynorsk",
+  	names: [
+  		"Norwegian Nynorsk",
+  		"Nynorsk, Norwegian"
+  	],
+  	"iso639-2": "nno",
+  	"iso639-1": "nn"
+  },
+  	"Not applicable": {
+  	name: "Not applicable",
+  	names: [
+  		"No linguistic content",
+  		"Not applicable"
+  	],
+  	"iso639-2": "zxx",
+  	"iso639-1": null
+  },
+  	"Nubian languages": {
+  	name: "Nubian languages",
+  	names: [
+  		"Nubian languages"
+  	],
+  	"iso639-2": "nub",
+  	"iso639-1": null
+  },
+  	Nuosu: Nuosu,
+  	Nyamwezi: Nyamwezi,
+  	Nyanja: Nyanja,
+  	Nyankole: Nyankole,
+  	"Nynorsk, Norwegian": {
+  	name: "Nynorsk, Norwegian",
+  	names: [
+  		"Norwegian Nynorsk",
+  		"Nynorsk, Norwegian"
+  	],
+  	"iso639-2": "nno",
+  	"iso639-1": "nn"
+  },
+  	Nyoro: Nyoro,
+  	Nzima: Nzima,
+  	Occidental: Occidental,
+  	"Occitan (post 1500)": {
+  	name: "Occitan (post 1500)",
+  	names: [
+  		"Occitan (post 1500)"
+  	],
+  	"iso639-2": "oci",
+  	"iso639-1": "oc"
+  },
+  	"Occitan, Old (to 1500)": {
+  	name: "Occitan, Old (to 1500)",
+  	names: [
+  		"Provençal, Old (to 1500)",
+  		"Occitan, Old (to 1500)"
+  	],
+  	"iso639-2": "pro",
+  	"iso639-1": null
+  },
+  	"Official Aramaic (700-300 BCE)": {
+  	name: "Official Aramaic (700-300 BCE)",
+  	names: [
+  		"Official Aramaic (700-300 BCE)",
+  		"Imperial Aramaic (700-300 BCE)"
+  	],
+  	"iso639-2": "arc",
+  	"iso639-1": null
+  },
+  	Oirat: Oirat,
+  	Ojibwa: Ojibwa,
+  	"Old Bulgarian": {
+  	name: "Old Bulgarian",
+  	names: [
+  		"Church Slavic",
+  		"Old Slavonic",
+  		"Church Slavonic",
+  		"Old Bulgarian",
+  		"Old Church Slavonic"
+  	],
+  	"iso639-2": "chu",
+  	"iso639-1": "cu"
+  },
+  	"Old Church Slavonic": {
+  	name: "Old Church Slavonic",
+  	names: [
+  		"Church Slavic",
+  		"Old Slavonic",
+  		"Church Slavonic",
+  		"Old Bulgarian",
+  		"Old Church Slavonic"
+  	],
+  	"iso639-2": "chu",
+  	"iso639-1": "cu"
+  },
+  	"Old Newari": {
+  	name: "Old Newari",
+  	names: [
+  		"Classical Newari",
+  		"Old Newari",
+  		"Classical Nepal Bhasa"
+  	],
+  	"iso639-2": "nwc",
+  	"iso639-1": null
+  },
+  	"Old Slavonic": {
+  	name: "Old Slavonic",
+  	names: [
+  		"Church Slavic",
+  		"Old Slavonic",
+  		"Church Slavonic",
+  		"Old Bulgarian",
+  		"Old Church Slavonic"
+  	],
+  	"iso639-2": "chu",
+  	"iso639-1": "cu"
+  },
+  	Oriya: Oriya,
+  	Oromo: Oromo,
+  	Osage: Osage,
+  	Ossetian: Ossetian,
+  	Ossetic: Ossetic,
+  	"Otomian languages": {
+  	name: "Otomian languages",
+  	names: [
+  		"Otomian languages"
+  	],
+  	"iso639-2": "oto",
+  	"iso639-1": null
+  },
+  	Pahlavi: Pahlavi,
+  	Palauan: Palauan,
+  	Pali: Pali,
+  	Pampanga: Pampanga,
+  	Pangasinan: Pangasinan,
+  	Panjabi: Panjabi,
+  	Papiamento: Papiamento,
+  	"Papuan languages": {
+  	name: "Papuan languages",
+  	names: [
+  		"Papuan languages"
+  	],
+  	"iso639-2": "paa",
+  	"iso639-1": null
+  },
+  	Pashto: Pashto,
+  	Pedi: Pedi,
+  	Persian: Persian,
+  	"Persian, Old (ca.600-400 B.C.)": {
+  	name: "Persian, Old (ca.600-400 B.C.)",
+  	names: [
+  		"Persian, Old (ca.600-400 B.C.)"
+  	],
+  	"iso639-2": "peo",
+  	"iso639-1": null
+  },
+  	"Philippine languages": {
+  	name: "Philippine languages",
+  	names: [
+  		"Philippine languages"
+  	],
+  	"iso639-2": "phi",
+  	"iso639-1": null
+  },
+  	Phoenician: Phoenician,
+  	Pilipino: Pilipino,
+  	Pohnpeian: Pohnpeian,
+  	Polish: Polish,
+  	Portuguese: Portuguese,
+  	"Prakrit languages": {
+  	name: "Prakrit languages",
+  	names: [
+  		"Prakrit languages"
+  	],
+  	"iso639-2": "pra",
+  	"iso639-1": null
+  },
+  	"Provençal, Old (to 1500)": {
+  	name: "Provençal, Old (to 1500)",
+  	names: [
+  		"Provençal, Old (to 1500)",
+  		"Occitan, Old (to 1500)"
+  	],
+  	"iso639-2": "pro",
+  	"iso639-1": null
+  },
+  	Punjabi: Punjabi,
+  	Pushto: Pushto,
+  	Quechua: Quechua,
+  	Rajasthani: Rajasthani,
+  	Rapanui: Rapanui,
+  	Rarotongan: Rarotongan,
+  	"Reserved for local use": {
+  	name: "Reserved for local use",
+  	names: [
+  		"Reserved for local use"
+  	],
+  	"iso639-2": "qaa-qtz",
+  	"iso639-1": null
+  },
+  	"Romance languages": {
+  	name: "Romance languages",
+  	names: [
+  		"Romance languages"
+  	],
+  	"iso639-2": "roa",
+  	"iso639-1": null
+  },
+  	Romanian: Romanian,
+  	Romansh: Romansh,
+  	Romany: Romany,
+  	Rundi: Rundi,
+  	Russian: Russian,
+  	Sakan: Sakan,
+  	"Salishan languages": {
+  	name: "Salishan languages",
+  	names: [
+  		"Salishan languages"
+  	],
+  	"iso639-2": "sal",
+  	"iso639-1": null
+  },
+  	"Samaritan Aramaic": {
+  	name: "Samaritan Aramaic",
+  	names: [
+  		"Samaritan Aramaic"
+  	],
+  	"iso639-2": "sam",
+  	"iso639-1": null
+  },
+  	"Sami languages": {
+  	name: "Sami languages",
+  	names: [
+  		"Sami languages"
+  	],
+  	"iso639-2": "smi",
+  	"iso639-1": null
+  },
+  	Samoan: Samoan,
+  	Sandawe: Sandawe,
+  	Sango: Sango,
+  	Sanskrit: Sanskrit,
+  	Santali: Santali,
+  	Sardinian: Sardinian,
+  	Sasak: Sasak,
+  	"Saxon, Low": {
+  	name: "Saxon, Low",
+  	names: [
+  		"Low German",
+  		"Low Saxon",
+  		"German, Low",
+  		"Saxon, Low"
+  	],
+  	"iso639-2": "nds",
+  	"iso639-1": null
+  },
+  	Scots: Scots,
+  	"Scottish Gaelic": {
+  	name: "Scottish Gaelic",
+  	names: [
+  		"Gaelic",
+  		"Scottish Gaelic"
+  	],
+  	"iso639-2": "gla",
+  	"iso639-1": "gd"
+  },
+  	Selkup: Selkup,
+  	"Semitic languages": {
+  	name: "Semitic languages",
+  	names: [
+  		"Semitic languages"
+  	],
+  	"iso639-2": "sem",
+  	"iso639-1": null
+  },
+  	Sepedi: Sepedi,
+  	Serbian: Serbian,
+  	Serer: Serer,
+  	Shan: Shan,
+  	Shona: Shona,
+  	"Sichuan Yi": {
+  	name: "Sichuan Yi",
+  	names: [
+  		"Sichuan Yi",
+  		"Nuosu"
+  	],
+  	"iso639-2": "iii",
+  	"iso639-1": "ii"
+  },
+  	Sicilian: Sicilian,
+  	Sidamo: Sidamo,
+  	"Sign Languages": {
+  	name: "Sign Languages",
+  	names: [
+  		"Sign Languages"
+  	],
+  	"iso639-2": "sgn",
+  	"iso639-1": null
+  },
+  	Siksika: Siksika,
+  	Sindhi: Sindhi,
+  	Sinhala: Sinhala,
+  	Sinhalese: Sinhalese,
+  	"Sino-Tibetan languages": {
+  	name: "Sino-Tibetan languages",
+  	names: [
+  		"Sino-Tibetan languages"
+  	],
+  	"iso639-2": "sit",
+  	"iso639-1": null
+  },
+  	"Siouan languages": {
+  	name: "Siouan languages",
+  	names: [
+  		"Siouan languages"
+  	],
+  	"iso639-2": "sio",
+  	"iso639-1": null
+  },
+  	"Skolt Sami": {
+  	name: "Skolt Sami",
+  	names: [
+  		"Skolt Sami"
+  	],
+  	"iso639-2": "sms",
+  	"iso639-1": null
+  },
+  	"Slave (Athapascan)": {
+  	name: "Slave (Athapascan)",
+  	names: [
+  		"Slave (Athapascan)"
+  	],
+  	"iso639-2": "den",
+  	"iso639-1": null
+  },
+  	"Slavic languages": {
+  	name: "Slavic languages",
+  	names: [
+  		"Slavic languages"
+  	],
+  	"iso639-2": "sla",
+  	"iso639-1": null
+  },
+  	Slovak: Slovak,
+  	Slovenian: Slovenian,
+  	Sogdian: Sogdian,
+  	Somali: Somali,
+  	"Songhai languages": {
+  	name: "Songhai languages",
+  	names: [
+  		"Songhai languages"
+  	],
+  	"iso639-2": "son",
+  	"iso639-1": null
+  },
+  	Soninke: Soninke,
+  	"Sorbian languages": {
+  	name: "Sorbian languages",
+  	names: [
+  		"Sorbian languages"
+  	],
+  	"iso639-2": "wen",
+  	"iso639-1": null
+  },
+  	"Sotho, Northern": {
+  	name: "Sotho, Northern",
+  	names: [
+  		"Pedi",
+  		"Sepedi",
+  		"Northern Sotho"
+  	],
+  	"iso639-2": "nso",
+  	"iso639-1": null
+  },
+  	"Sotho, Southern": {
+  	name: "Sotho, Southern",
+  	names: [
+  		"Sotho, Southern"
+  	],
+  	"iso639-2": "sot",
+  	"iso639-1": "st"
+  },
+  	"South American Indian languages": {
+  	name: "South American Indian languages",
+  	names: [
+  		"South American Indian languages"
+  	],
+  	"iso639-2": "sai",
+  	"iso639-1": null
+  },
+  	"South Ndebele": {
+  	name: "South Ndebele",
+  	names: [
+  		"Ndebele, South",
+  		"South Ndebele"
+  	],
+  	"iso639-2": "nbl",
+  	"iso639-1": "nr"
+  },
+  	"Southern Altai": {
+  	name: "Southern Altai",
+  	names: [
+  		"Southern Altai"
+  	],
+  	"iso639-2": "alt",
+  	"iso639-1": null
+  },
+  	"Southern Sami": {
+  	name: "Southern Sami",
+  	names: [
+  		"Southern Sami"
+  	],
+  	"iso639-2": "sma",
+  	"iso639-1": null
+  },
+  	Spanish: Spanish,
+  	"Sranan Tongo": {
+  	name: "Sranan Tongo",
+  	names: [
+  		"Sranan Tongo"
+  	],
+  	"iso639-2": "srn",
+  	"iso639-1": null
+  },
+  	"Standard Moroccan Tamazight": {
+  	name: "Standard Moroccan Tamazight",
+  	names: [
+  		"Standard Moroccan Tamazight"
+  	],
+  	"iso639-2": "zgh",
+  	"iso639-1": null
+  },
+  	Sukuma: Sukuma,
+  	Sumerian: Sumerian,
+  	Sundanese: Sundanese,
+  	Susu: Susu,
+  	Swahili: Swahili,
+  	Swati: Swati,
+  	Swedish: Swedish,
+  	"Swiss German": {
+  	name: "Swiss German",
+  	names: [
+  		"Swiss German",
+  		"Alemannic",
+  		"Alsatian"
+  	],
+  	"iso639-2": "gsw",
+  	"iso639-1": null
+  },
+  	Syriac: Syriac,
+  	Tagalog: Tagalog,
+  	Tahitian: Tahitian,
+  	"Tai languages": {
+  	name: "Tai languages",
+  	names: [
+  		"Tai languages"
+  	],
+  	"iso639-2": "tai",
+  	"iso639-1": null
+  },
+  	Tajik: Tajik,
+  	Tamashek: Tamashek,
+  	Tamil: Tamil,
+  	Tatar: Tatar,
+  	Telugu: Telugu,
+  	Tereno: Tereno,
+  	Tetum: Tetum,
+  	Thai: Thai,
+  	Tibetan: Tibetan,
+  	Tigre: Tigre,
+  	Tigrinya: Tigrinya,
+  	Timne: Timne,
+  	Tiv: Tiv,
+  	"tlhIngan-Hol": {
+  	name: "tlhIngan-Hol",
+  	names: [
+  		"Klingon",
+  		"tlhIngan-Hol"
+  	],
+  	"iso639-2": "tlh",
+  	"iso639-1": null
+  },
+  	Tlingit: Tlingit,
+  	"Tok Pisin": {
+  	name: "Tok Pisin",
+  	names: [
+  		"Tok Pisin"
+  	],
+  	"iso639-2": "tpi",
+  	"iso639-1": null
+  },
+  	Tokelau: Tokelau,
+  	"Tonga (Nyasa)": {
+  	name: "Tonga (Nyasa)",
+  	names: [
+  		"Tonga (Nyasa)"
+  	],
+  	"iso639-2": "tog",
+  	"iso639-1": null
+  },
+  	"Tonga (Tonga Islands)": {
+  	name: "Tonga (Tonga Islands)",
+  	names: [
+  		"Tonga (Tonga Islands)"
+  	],
+  	"iso639-2": "ton",
+  	"iso639-1": "to"
+  },
+  	Tsimshian: Tsimshian,
+  	Tsonga: Tsonga,
+  	Tswana: Tswana,
+  	Tumbuka: Tumbuka,
+  	"Tupi languages": {
+  	name: "Tupi languages",
+  	names: [
+  		"Tupi languages"
+  	],
+  	"iso639-2": "tup",
+  	"iso639-1": null
+  },
+  	Turkish: Turkish,
+  	"Turkish, Ottoman (1500-1928)": {
+  	name: "Turkish, Ottoman (1500-1928)",
+  	names: [
+  		"Turkish, Ottoman (1500-1928)"
+  	],
+  	"iso639-2": "ota",
+  	"iso639-1": null
+  },
+  	Turkmen: Turkmen,
+  	Tuvalu: Tuvalu,
+  	Tuvinian: Tuvinian,
+  	Twi: Twi,
+  	Udmurt: Udmurt,
+  	Ugaritic: Ugaritic,
+  	Uighur: Uighur,
+  	Ukrainian: Ukrainian,
+  	Umbundu: Umbundu,
+  	"Uncoded languages": {
+  	name: "Uncoded languages",
+  	names: [
+  		"Uncoded languages"
+  	],
+  	"iso639-2": "mis",
+  	"iso639-1": null
+  },
+  	Undetermined: Undetermined,
+  	"Upper Sorbian": {
+  	name: "Upper Sorbian",
+  	names: [
+  		"Upper Sorbian"
+  	],
+  	"iso639-2": "hsb",
+  	"iso639-1": null
+  },
+  	Urdu: Urdu,
+  	Uyghur: Uyghur,
+  	Uzbek: Uzbek,
+  	Vai: Vai,
+  	Valencian: Valencian,
+  	Venda: Venda,
+  	Vietnamese: Vietnamese,
+  	"Volapük": {
+  	name: "Volapük",
+  	names: [
+  		"Volapük"
+  	],
+  	"iso639-2": "vol",
+  	"iso639-1": "vo"
+  },
+  	Votic: Votic,
+  	"Wakashan languages": {
+  	name: "Wakashan languages",
+  	names: [
+  		"Wakashan languages"
+  	],
+  	"iso639-2": "wak",
+  	"iso639-1": null
+  },
+  	Walloon: Walloon,
+  	Waray: Waray,
+  	Washo: Washo,
+  	Welsh: Welsh,
+  	"Western Frisian": {
+  	name: "Western Frisian",
+  	names: [
+  		"Western Frisian"
+  	],
+  	"iso639-2": "fry",
+  	"iso639-1": "fy"
+  },
+  	"Western Pahari languages": {
+  	name: "Western Pahari languages",
+  	names: [
+  		"Himachali languages",
+  		"Western Pahari languages"
+  	],
+  	"iso639-2": "him",
+  	"iso639-1": null
+  },
+  	Wolaitta: Wolaitta,
+  	Wolaytta: Wolaytta,
+  	Wolof: Wolof,
+  	Xhosa: Xhosa,
+  	Yakut: Yakut,
+  	Yao: Yao,
+  	Yapese: Yapese,
+  	Yiddish: Yiddish,
+  	Yoruba: Yoruba,
+  	"Yupik languages": {
+  	name: "Yupik languages",
+  	names: [
+  		"Yupik languages"
+  	],
+  	"iso639-2": "ypk",
+  	"iso639-1": null
+  },
+  	"Zande languages": {
+  	name: "Zande languages",
+  	names: [
+  		"Zande languages"
+  	],
+  	"iso639-2": "znd",
+  	"iso639-1": null
+  },
+  	Zapotec: Zapotec,
+  	Zaza: Zaza,
+  	Zazaki: Zazaki,
+  	Zenaga: Zenaga,
+  	Zhuang: Zhuang,
+  	Zulu: Zulu,
+  	Zuni: Zuni
+  };
+
+  function _defineProperty$1(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+  var locales = [];
+  var isoKeys = Object.keys(iso);
+  Object.keys(lcid).map(function (id) {
+    var locale = lcid[id];
+    var isoLanguage = isoKeys.find(function (name) {
+      return name.toLowerCase() === locale.language.toLowerCase();
+    });
+
+    if (locale.location && isoLanguage) {
+      var _locales$push;
+
+      locales.push((_locales$push = {}, _defineProperty$1(_locales$push, "name", locale.language), _defineProperty$1(_locales$push, "location", locale.location), _defineProperty$1(_locales$push, "tag", locale.tag), _defineProperty$1(_locales$push, "lcid", locale.id), _defineProperty$1(_locales$push, "iso639-2", iso[isoLanguage]["iso639-2"]), _defineProperty$1(_locales$push, "iso639-1", iso[isoLanguage]["iso639-1"]), _locales$push));
+    }
+  });
+  var defaultLocales = {
+    ar: "ar-SA",
+    ca: "ca-ES",
+    da: "da-DK",
+    en: "en-US",
+    ko: "ko-KR",
+    pa: "pa-IN",
+    pt: "pt-BR",
+    sv: "sv-SE"
+  };
+  /**
+   * Converts a 2-digit language into a full language-LOCATION locale.
+   * @param {String} locale
+   */
+
+  function findLocale (locale) {
+    if (typeof locale !== "string" || locale.length === 5) return locale;
+    if (defaultLocales[locale]) return defaultLocales[locale];
+    var list = locales.filter(function (d) {
+      return d["iso639-1"] === locale;
+    });
+    if (!list.length) return locale;else if (list.length === 1) return list[0].tag;else if (list.find(function (d) {
+      return d.tag === "".concat(locale, "-").concat(locale.toUpperCase());
+    })) return "".concat(locale, "-").concat(locale.toUpperCase());else return list[0].tag;
+  }
+
   /**
       @function s
       @desc Returns 4 random characters, used for constructing unique identifiers.
@@ -413,7 +11586,7 @@
       }
       /**
           @memberof BaseClass
-          @desc If *value* is specified, sets the locale to the specified string and returns the current class instance. This method supports the locales defined in [d3plus-format](https://github.com/d3plus/d3plus-format/blob/master/src/locale.js). In another case, you can define an Object with a custom locale.
+          @desc Sets the locale used for all text and number formatting. This method supports the locales defined in [d3plus-format](https://github.com/d3plus/d3plus-format/blob/master/src/locale.js). The locale can be defined as a complex Object (like in d3plus-format), a locale code (like "en-US"), or a 2-digit language code (like "en"). If a 2-digit code is provided, the "findLocale" function is used to identify the most approximate locale from d3plus-format.
           @param {Object|String} [*value* = "en-US"]
           @chainable
           @example
@@ -432,7 +11605,7 @@
     }, {
       key: "locale",
       value: function locale(_) {
-        return arguments.length ? (this._locale = _, this) : this._locale;
+        return arguments.length ? (this._locale = findLocale(_), this) : this._locale;
       }
       /**
           @memberof BaseClass
@@ -1479,7 +12652,7 @@
     return current;
   }
 
-  function point (node, event) {
+  function clientPoint (node, event) {
     var svg = node.ownerSVGElement || node;
 
     if (svg.createSVGPoint) {
@@ -1496,7 +12669,7 @@
   function mouse (node) {
     var event = sourceEvent();
     if (event.changedTouches) event = event.changedTouches[0];
-    return point(node, event);
+    return clientPoint(node, event);
   }
 
   function selectAll (selector) {
@@ -1508,7 +12681,7 @@
 
     for (var i = 0, n = touches ? touches.length : 0, touch; i < n; ++i) {
       if ((touch = touches[i]).identifier === identifier) {
-        return point(node, touch);
+        return clientPoint(node, touch);
       }
     }
 
@@ -3338,7 +14511,7 @@
     });
   }
 
-  var id = 0;
+  var id$1 = 0;
   function Transition(groups, parents, name, id) {
     this._groups = groups;
     this._parents = parents;
@@ -3349,7 +14522,7 @@
     return selection().transition(name);
   }
   function newId() {
-    return ++id;
+    return ++id$1;
   }
   var selection_prototype = selection.prototype;
   Transition.prototype = transition.prototype = {
@@ -3996,6 +15169,21 @@
   }
 
   /**
+      @function unique
+      @desc ES5 implementation to reduce an Array of values to unique instances.
+      @param {Array} objects The Array of objects to be filtered.
+      @example <caption>this</caption>
+  unique(["apple", "banana", "apple"]);
+      @example <caption>returns this</caption>
+  ["apple", "banana"]
+  */
+  function unique (arr) {
+    return arr.filter(function (k, i, a) {
+      return a.indexOf(k) === i;
+    });
+  }
+
+  /**
       @function merge
       @desc Combines an Array of Objects together and returns a new Object.
       @param {Array} objects The Array of objects to be merged together.
@@ -4011,7 +15199,7 @@
 
   function objectMerge(objects) {
     var aggs = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var availableKeys = new Set(merge(objects.map(function (o) {
+    var availableKeys = unique(merge(objects.map(function (o) {
       return keys(o);
     }))),
         newObject = {};
@@ -4030,17 +15218,20 @@
           value = merge(values.map(function (v) {
             return v instanceof Array ? v : [v];
           }));
-          value = Array.from(new Set(value));
+          value = unique(value);
           if (value.length === 1) value = value[0];
         } else if (types.indexOf(String) >= 0) {
-          value = Array.from(new Set(values));
+          value = unique(values);
           if (value.length === 1) value = value[0];
-        } else if (types.indexOf(Number) >= 0) value = sum(values);else if (types.indexOf(Object) >= 0) value = objectMerge(values.filter(function (v) {
-          return v;
-        }));else {
-          value = Array.from(new Set(values.filter(function (v) {
+        } else if (types.indexOf(Number) >= 0) value = sum(values);else if (types.indexOf(Object) >= 0) {
+          value = unique(values.filter(function (v) {
+            return v;
+          }));
+          if (value.length === 1) value = value[0];else value = objectMerge(value);
+        } else {
+          value = unique(values.filter(function (v) {
             return v !== void 0;
-          })));
+          }));
           if (value.length === 1) value = value[0];
         }
       }
@@ -4265,7 +15456,7 @@
     return scale;
   }
 
-  function point$1() {
+  function point() {
     return pointish(band.apply(null, arguments).paddingInner(1));
   }
 
@@ -6480,7 +17671,7 @@
 
   var scales = /*#__PURE__*/Object.freeze({
     scaleBand: band,
-    scalePoint: point$1,
+    scalePoint: point,
     scaleIdentity: identity$3,
     scaleLinear: linear$1,
     scaleLog: log,
@@ -7369,15 +18560,15 @@
     }
   };
 
-  var ka = 0.89081309152928522810,
+  var ka$1 = 0.89081309152928522810,
       kr = Math.sin(pi$2 / 10) / Math.sin(7 * pi$2 / 10),
       kx = Math.sin(tau$2 / 10) * kr,
-      ky = -Math.cos(tau$2 / 10) * kr;
+      ky$1 = -Math.cos(tau$2 / 10) * kr;
   var star = {
     draw: function draw(context, size) {
-      var r = Math.sqrt(size * ka),
+      var r = Math.sqrt(size * ka$1),
           x = kx * r,
-          y = ky * r;
+          y = ky$1 * r;
       context.moveTo(0, -r);
       context.lineTo(x, y);
 
@@ -16617,59 +27808,383 @@
   });
 
   /**
-      @function date
-      @summary Parses numbers and strings to valid Javascript Date objects.
-      @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
-      @param {Number|String} *date*
+   * Strips HTML and "un-escapes" escape characters.
+   * @param {String} input
+   */
+  function htmlDecode$1(input) {
+    if (input === " ") return input;
+    var doc = new DOMParser().parseFromString(input.replace(/<[^>]+>/g, ""), "text/html");
+    return doc.documentElement.textContent;
+  }
+  /**
+      @function textWidth
+      @desc Given a text string, returns the predicted pixel width of the string when placed into DOM.
+      @param {String|Array} text Can be either a single string or an array of strings to analyze.
+      @param {Object} [style] An object of CSS font styles to apply. Accepts any of the valid [CSS font property](http://www.w3schools.com/cssref/pr_font_font.asp) values.
   */
-  function date$2 (d) {
-    // returns if already Date object
-    if (d.constructor === Date) return d; // detects if milliseconds
-    else if (d.constructor === Number && "".concat(d).length > 5 && d % 1 === 0) return new Date(d);
-    var s = "".concat(d);
-    var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
-        strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s); // tests for XX/XX/XXXX format
 
-    if (dayFormat) {
-      var year = dayFormat[1];
-      if (year.indexOf("-") === 0) s = s.replace(year, year.substr(1));
-      var date = new Date(s);
-      date.setFullYear(year);
-      return date;
-    } // tests for full Date object string format
-    else if (strFormat) {
-        var _year = strFormat[1];
-        if (_year.indexOf("-") === 0) s = s.replace(_year, _year.substr(1));
 
-        var _date = new Date(s);
-
-        _date.setFullYear(_year);
-
-        return _date;
-      } // detects if only passing a year value
-      else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
-          var _date2 = new Date("".concat(s, "/01/01"));
-
-          _date2.setFullYear(d);
-
-          return _date2;
-        } // parses string to Date object
-        else return new Date(s);
+  function measure (text, style) {
+    style = Object.assign({
+      "font-size": 10,
+      "font-family": "sans-serif",
+      "font-style": "normal",
+      "font-weight": 400,
+      "font-variant": "normal"
+    }, style);
+    var context = document.createElement("canvas").getContext("2d");
+    var font = [];
+    font.push(style["font-style"]);
+    font.push(style["font-variant"]);
+    font.push(style["font-weight"]);
+    font.push(typeof style["font-size"] === "string" ? style["font-size"] : "".concat(style["font-size"], "px"));
+    font.push(style["font-family"]);
+    context.font = font.join(" ");
+    if (text instanceof Array) return text.map(function (t) {
+      return context.measureText(htmlDecode$1(t)).width;
+    });
+    return context.measureText(htmlDecode$1(text)).width;
   }
 
-  function _defineProperty$1(obj, key, value) {
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
+  /**
+      @function trim
+      @desc Cross-browser implementation of [trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim).
+      @param {String} str
+  */
+  function trim$1(str) {
+    return str.toString().replace(/^\s+|\s+$/g, "");
+  }
+  /**
+      @function trimRight
+      @desc Cross-browser implementation of [trimRight](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/TrimRight).
+      @param {String} str
+  */
+
+
+  function trimRight$1(str) {
+    return str.toString().replace(/\s+$/, "");
+  }
+
+  var alpha$1 = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890",
+      checked$1 = {},
+      height$1 = 32;
+  var dejavu$1, macos$1, monospace$1, proportional$1;
+  /**
+      @function fontExists
+      @desc Given either a single font-family or a list of fonts, returns the name of the first font that can be rendered, or `false` if none are installed on the user's machine.
+      @param {String|Array} font Can be either a valid CSS font-family string (single or comma-separated names) or an Array of string names.
+  */
+
+  var fontExists$1 = function fontExists(font) {
+    if (!dejavu$1) {
+      dejavu$1 = measure(alpha$1, {
+        "font-family": "DejaVuSans",
+        "font-size": height$1
       });
-    } else {
-      obj[key] = value;
+      macos$1 = measure(alpha$1, {
+        "font-family": "-apple-system",
+        "font-size": height$1
+      });
+      monospace$1 = measure(alpha$1, {
+        "font-family": "monospace",
+        "font-size": height$1
+      });
+      proportional$1 = measure(alpha$1, {
+        "font-family": "sans-serif",
+        "font-size": height$1
+      });
     }
 
-    return obj;
+    if (!(font instanceof Array)) font = font.split(",");
+    font = font.map(function (f) {
+      return trim$1(f);
+    });
+
+    for (var i = 0; i < font.length; i++) {
+      var fam = font[i];
+      if (checked$1[fam] || ["-apple-system", "monospace", "sans-serif", "DejaVuSans"].includes(fam)) return fam;else if (checked$1[fam] === false) continue;
+      var width = measure(alpha$1, {
+        "font-family": fam,
+        "font-size": height$1
+      });
+      checked$1[fam] = width !== monospace$1;
+      if (checked$1[fam]) checked$1[fam] = width !== proportional$1;
+      if (macos$1 && checked$1[fam]) checked$1[fam] = width !== macos$1;
+      if (dejavu$1 && checked$1[fam]) checked$1[fam] = width !== dejavu$1;
+      if (checked$1[fam]) return fam;
+    }
+
+    return false;
+  };
+
+  /**
+      @function rtl
+      @desc Returns `true` if the HTML or body element has either the "dir" HTML attribute or the "direction" CSS property set to "rtl".
+  */
+
+  var detectRTL$1 = (function () {
+    return _select("html").attr("dir") === "rtl" || _select("body").attr("dir") === "rtl" || _select("html").style("direction") === "rtl" || _select("body").style("direction") === "rtl";
+  });
+
+  /**
+      @function stringify
+      @desc Coerces value into a String.
+      @param {String} value
+  */
+  function stringify$1 (value) {
+    if (value === void 0) value = "undefined";else if (!(typeof value === "string" || value instanceof String)) value = JSON.stringify(value);
+    return value;
+  }
+
+  // great unicode list: http://asecuritysite.com/coding/asc2
+  var diacritics$1 = [[/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"], [/[\306]/g, "AE"], [/[\346]/g, "ae"], [/[\337]/g, "B"], [/[\307]/g, "C"], [/[\347]/g, "c"], [/[\320\336\376]/g, "D"], [/[\360]/g, "d"], [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"], [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"], [/[\321]/g, "N"], [/[\361]/g, "n"], [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"], [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"], [/[\327]/g, "x"], [/[\335]/g, "Y"], [/[\375\377]/g, "y"]];
+  /**
+      @function strip
+      @desc Removes all non ASCII characters from a string.
+      @param {String} value
+  */
+
+  function strip$1 (value) {
+    return "".concat(value).replace(/[^A-Za-z0-9\-_]/g, function (_char) {
+      if (_char === " ") return "-";
+      var ret = false;
+
+      for (var d = 0; d < diacritics$1.length; d++) {
+        if (new RegExp(diacritics$1[d][0]).test(_char)) {
+          ret = diacritics$1[d][1];
+          break;
+        }
+      }
+
+      return ret || "";
+    });
+  }
+
+  // scraped from http://www.fileformat.info/info/unicode/category/Mc/list.htm
+  // and http://www.fileformat.info/info/unicode/category/Mn/list.htm
+  // JSON.stringify([].slice.call(document.getElementsByClassName("table-list")[0].getElementsByTagName("tr")).filter(function(d){ return d.getElementsByTagName("a").length && d.getElementsByTagName("a")[0].innerHTML.length === 6; }).map(function(d){ return d.getElementsByTagName("a")[0].innerHTML.replace("U", "u").replace("+", ""); }).sort());
+  // The following unicode characters combine to form new characters and should never be split from surrounding characters.
+  var a$2 = ["u0903", "u093B", "u093E", "u093F", "u0940", "u0949", "u094A", "u094B", "u094C", "u094E", "u094F", "u0982", "u0983", "u09BE", "u09BF", "u09C0", "u09C7", "u09C8", "u09CB", "u09CC", "u09D7", "u0A03", "u0A3E", "u0A3F", "u0A40", "u0A83", "u0ABE", "u0ABF", "u0AC0", "u0AC9", "u0ACB", "u0ACC", "u0B02", "u0B03", "u0B3E", "u0B40", "u0B47", "u0B48", "u0B4B", "u0B4C", "u0B57", "u0BBE", "u0BBF", "u0BC1", "u0BC2", "u0BC6", "u0BC7", "u0BC8", "u0BCA", "u0BCB", "u0BCC", "u0BD7", "u0C01", "u0C02", "u0C03", "u0C41", "u0C42", "u0C43", "u0C44", "u0C82", "u0C83", "u0CBE", "u0CC0", "u0CC1", "u0CC2", "u0CC3", "u0CC4", "u0CC7", "u0CC8", "u0CCA", "u0CCB", "u0CD5", "u0CD6", "u0D02", "u0D03", "u0D3E", "u0D3F", "u0D40", "u0D46", "u0D47", "u0D48", "u0D4A", "u0D4B", "u0D4C", "u0D57", "u0D82", "u0D83", "u0DCF", "u0DD0", "u0DD1", "u0DD8", "u0DD9", "u0DDA", "u0DDB", "u0DDC", "u0DDD", "u0DDE", "u0DDF", "u0DF2", "u0DF3", "u0F3E", "u0F3F", "u0F7F", "u102B", "u102C", "u1031", "u1038", "u103B", "u103C", "u1056", "u1057", "u1062", "u1063", "u1064", "u1067", "u1068", "u1069", "u106A", "u106B", "u106C", "u106D", "u1083", "u1084", "u1087", "u1088", "u1089", "u108A", "u108B", "u108C", "u108F", "u109A", "u109B", "u109C", "u17B6", "u17BE", "u17BF", "u17C0", "u17C1", "u17C2", "u17C3", "u17C4", "u17C5", "u17C7", "u17C8", "u1923", "u1924", "u1925", "u1926", "u1929", "u192A", "u192B", "u1930", "u1931", "u1933", "u1934", "u1935", "u1936", "u1937", "u1938", "u1A19", "u1A1A", "u1A55", "u1A57", "u1A61", "u1A63", "u1A64", "u1A6D", "u1A6E", "u1A6F", "u1A70", "u1A71", "u1A72", "u1B04", "u1B35", "u1B3B", "u1B3D", "u1B3E", "u1B3F", "u1B40", "u1B41", "u1B43", "u1B44", "u1B82", "u1BA1", "u1BA6", "u1BA7", "u1BAA", "u1BE7", "u1BEA", "u1BEB", "u1BEC", "u1BEE", "u1BF2", "u1BF3", "u1C24", "u1C25", "u1C26", "u1C27", "u1C28", "u1C29", "u1C2A", "u1C2B", "u1C34", "u1C35", "u1CE1", "u1CF2", "u1CF3", "u302E", "u302F", "uA823", "uA824", "uA827", "uA880", "uA881", "uA8B4", "uA8B5", "uA8B6", "uA8B7", "uA8B8", "uA8B9", "uA8BA", "uA8BB", "uA8BC", "uA8BD", "uA8BE", "uA8BF", "uA8C0", "uA8C1", "uA8C2", "uA8C3", "uA952", "uA953", "uA983", "uA9B4", "uA9B5", "uA9BA", "uA9BB", "uA9BD", "uA9BE", "uA9BF", "uA9C0", "uAA2F", "uAA30", "uAA33", "uAA34", "uAA4D", "uAA7B", "uAA7D", "uAAEB", "uAAEE", "uAAEF", "uAAF5", "uABE3", "uABE4", "uABE6", "uABE7", "uABE9", "uABEA", "uABEC"];
+  var b$1 = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
+  var combiningMarks$1 = a$2.concat(b$1);
+
+  var splitChars$1 = ["-", ";", ":", "&", "|", "u0E2F", // thai character pairannoi
+  "u0EAF", // lao ellipsis
+  "u0EC6", // lao ko la (word repetition)
+  "u0ECC", // lao cancellation mark
+  "u104A", // myanmar sign little section
+  "u104B", // myanmar sign section
+  "u104C", // myanmar symbol locative
+  "u104D", // myanmar symbol completed
+  "u104E", // myanmar symbol aforementioned
+  "u104F", // myanmar symbol genitive
+  "u2013", // en dash
+  "u2014", // em dash
+  "u2027", // simplified chinese hyphenation point
+  "u3000", // simplified chinese ideographic space
+  "u3001", // simplified chinese ideographic comma
+  "u3002", // simplified chinese ideographic full stop
+  "uFF0C", // full-width comma
+  "uFF5E" // wave dash
+  ];
+  var prefixChars$1 = ["'", "<", "(", "{", "[", "u00AB", // left-pointing double angle quotation mark
+  "u300A", // left double angle bracket
+  "u3008" // left angle bracket
+  ];
+  var suffixChars$1 = ["'", ">", ")", "}", "]", ".", "!", "?", "/", "u00BB", // right-pointing double angle quotation mark
+  "u300B", // right double angle bracket
+  "u3009" // right angle bracket
+  ].concat(splitChars$1);
+  var burmeseRange$1 = "\u1000-\u102A\u103F-\u1049\u1050-\u1055";
+  var japaneseRange$1 = "\u3040-\u309F\u30A0-\u30FF\uFF00-\uFF0B\uFF0D-\uFF5D\uFF5F-\uFF9F\u3400-\u4DBF";
+  var chineseRange$1 = "\u3400-\u9FBF";
+  var laoRange$1 = "\u0E81-\u0EAE\u0EB0-\u0EC4\u0EC8-\u0ECB\u0ECD-\u0EDD";
+  var noSpaceRange$1 = burmeseRange$1 + chineseRange$1 + japaneseRange$1 + laoRange$1;
+  var splitWords$1 = new RegExp("(\\".concat(splitChars$1.join("|\\"), ")*[^\\s|\\").concat(splitChars$1.join("|\\"), "]*(\\").concat(splitChars$1.join("|\\"), ")*"), "g");
+  var noSpaceLanguage$1 = new RegExp("[".concat(noSpaceRange$1, "]"));
+  var splitAllChars$1 = new RegExp("(\\".concat(prefixChars$1.join("|\\"), ")*[").concat(noSpaceRange$1, "](\\").concat(suffixChars$1.join("|\\"), "|\\").concat(combiningMarks$1.join("|\\"), ")*|[a-z0-9]+"), "gi");
+  /**
+      @function textSplit
+      @desc Splits a given sentence into an array of words.
+      @param {String} sentence
+  */
+
+  function textSplit$1 (sentence) {
+    if (!noSpaceLanguage$1.test(sentence)) return stringify$1(sentence).match(splitWords$1).filter(function (w) {
+      return w.length;
+    });
+    return merge(stringify$1(sentence).match(splitWords$1).map(function (d) {
+      if (noSpaceLanguage$1.test(d)) return d.match(splitAllChars$1);
+      return [d];
+    }));
+  }
+
+  /**
+      @function textWrap
+      @desc Based on the defined styles and dimensions, breaks a string into an array of strings for each line of text.
+  */
+
+  function textWrap$1 () {
+    var fontFamily = "sans-serif",
+        fontSize = 10,
+        fontWeight = 400,
+        height = 200,
+        lineHeight,
+        maxLines = null,
+        overflow = false,
+        split = textSplit$1,
+        width = 200;
+    /**
+        The inner return object and wraps the text and returns the line data array.
+        @private
+    */
+
+    function textWrap(sentence) {
+      sentence = stringify$1(sentence);
+      if (lineHeight === void 0) lineHeight = Math.ceil(fontSize * 1.4);
+      var words = split(sentence);
+      var style = {
+        "font-family": fontFamily,
+        "font-size": fontSize,
+        "font-weight": fontWeight,
+        "line-height": lineHeight
+      };
+      var line = 1,
+          textProg = "",
+          truncated = false,
+          widthProg = 0;
+      var lineData = [],
+          sizes = measure(words, style),
+          space = measure(" ", style);
+
+      for (var i = 0; i < words.length; i++) {
+        var word = words[i];
+        var wordWidth = sizes[words.indexOf(word)];
+        word += sentence.slice(textProg.length + word.length).match("^( |\n)*", "g")[0];
+
+        if (textProg.slice(-1) === "\n" || widthProg + wordWidth > width) {
+          if (!i && !overflow) {
+            truncated = true;
+            break;
+          }
+
+          if (lineData.length >= line) lineData[line - 1] = trimRight$1(lineData[line - 1]);
+          line++;
+
+          if (lineHeight * line > height || wordWidth > width && !overflow || maxLines && line > maxLines) {
+            truncated = true;
+            break;
+          }
+
+          widthProg = 0;
+          lineData.push(word);
+        } else if (!i) lineData[0] = word;else lineData[line - 1] += word;
+
+        textProg += word;
+        widthProg += wordWidth;
+        widthProg += word.match(/[\s]*$/g)[0].length * space;
+      }
+
+      return {
+        lines: lineData,
+        sentence: sentence,
+        truncated: truncated,
+        widths: measure(lineData, style),
+        words: words
+      };
+    }
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the font family accessor to the specified function or string and returns this generator. If *value* is not specified, returns the current font family.
+        @param {Function|String} [*value* = "sans-serif"]
+    */
+
+
+    textWrap.fontFamily = function (_) {
+      return arguments.length ? (fontFamily = _, textWrap) : fontFamily;
+    };
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the font size accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font size.
+        @param {Function|Number} [*value* = 10]
+    */
+
+
+    textWrap.fontSize = function (_) {
+      return arguments.length ? (fontSize = _, textWrap) : fontSize;
+    };
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the font weight accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current font weight.
+        @param {Function|Number|String} [*value* = 400]
+    */
+
+
+    textWrap.fontWeight = function (_) {
+      return arguments.length ? (fontWeight = _, textWrap) : fontWeight;
+    };
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets height limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
+        @param {Number} [*value* = 200]
+    */
+
+
+    textWrap.height = function (_) {
+      return arguments.length ? (height = _, textWrap) : height;
+    };
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the line height accessor to the specified function or number and returns this generator. If *value* is not specified, returns the current line height accessor, which is 1.1 times the [font size](#textWrap.fontSize) by default.
+        @param {Function|Number} [*value*]
+    */
+
+
+    textWrap.lineHeight = function (_) {
+      return arguments.length ? (lineHeight = _, textWrap) : lineHeight;
+    };
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the maximum number of lines allowed when wrapping.
+        @param {Function|Number} [*value*]
+    */
+
+
+    textWrap.maxLines = function (_) {
+      return arguments.length ? (maxLines = _, textWrap) : maxLines;
+    };
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the overflow to the specified boolean and returns this generator. If *value* is not specified, returns the current overflow value.
+        @param {Boolean} [*value* = false]
+    */
+
+
+    textWrap.overflow = function (_) {
+      return arguments.length ? (overflow = _, textWrap) : overflow;
+    };
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets the word split function to the specified function and returns this generator. If *value* is not specified, returns the current word split function.
+        @param {Function} [*value*] A function that, when passed a string, is expected to return that string split into an array of words to textWrap. The default split function splits strings on the following characters: `-`, `/`, `;`, `:`, `&`
+    */
+
+
+    textWrap.split = function (_) {
+      return arguments.length ? (split = _, textWrap) : split;
+    };
+    /**
+        @memberof textWrap
+        @desc If *value* is specified, sets width limit to the specified value and returns this generator. If *value* is not specified, returns the current value.
+        @param {Number} [*value* = 200]
+    */
+
+
+    textWrap.width = function (_) {
+      return arguments.length ? (width = _, textWrap) : width;
+    };
+
+    return textWrap;
   }
 
   function _typeof$e(obj) {
@@ -16684,28 +28199,6 @@
     }
 
     return _typeof$e(obj);
-  }
-
-  function _toConsumableArray(arr) {
-    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
-  }
-
-  function _nonIterableSpread() {
-    throw new TypeError("Invalid attempt to spread non-iterable instance");
-  }
-
-  function _iterableToArray(iter) {
-    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
-  }
-
-  function _arrayWithoutHoles(arr) {
-    if (Array.isArray(arr)) {
-      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
-        arr2[i] = arr[i];
-      }
-
-      return arr2;
-    }
   }
 
   function _classCallCheck$d(instance, Constructor) {
@@ -16776,14 +28269,970 @@
 
     return _setPrototypeOf$b(o, p);
   }
-  var formatDay = timeFormat("%a %d"),
-      formatHour = timeFormat("%I %p"),
-      formatMillisecond = timeFormat(".%L"),
-      formatMinute = timeFormat("%I:%M"),
-      formatMonth = timeFormat("%b"),
-      formatSecond = timeFormat(":%S"),
-      formatWeek = timeFormat("%b %d"),
-      formatYear$1 = timeFormat("%Y");
+  var tagLookup$1 = {
+    i: "font-style: italic;",
+    em: "font-style: italic;",
+    b: "font-weight: bold;",
+    strong: "font-weight: bold;"
+  };
+  /**
+      @class TextBox
+      @extends external:BaseClass
+      @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
+  */
+
+  var TextBox$1 =
+  /*#__PURE__*/
+  function (_BaseClass) {
+    _inherits$b(TextBox, _BaseClass);
+    /**
+        @memberof TextBox
+        @desc Invoked when creating a new class instance, and sets any default parameters.
+        @private
+    */
+
+
+    function TextBox() {
+      var _this;
+
+      _classCallCheck$d(this, TextBox);
+
+      _this = _possibleConstructorReturn$b(this, _getPrototypeOf$b(TextBox).call(this));
+      _this._ariaHidden = constant("false");
+      _this._delay = 0;
+      _this._duration = 0;
+
+      _this._ellipsis = function (text, line) {
+        return line ? "".concat(text.replace(/\.|,$/g, ""), "...") : "";
+      };
+
+      _this._fontColor = constant("black");
+      _this._fontFamily = constant(["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]);
+      _this._fontMax = constant(50);
+      _this._fontMin = constant(8);
+      _this._fontOpacity = constant(1);
+      _this._fontResize = constant(false);
+      _this._fontSize = constant(10);
+      _this._fontWeight = constant(400);
+      _this._height = accessor("height", 200);
+      _this._html = true;
+
+      _this._id = function (d, i) {
+        return d.id || "".concat(i);
+      };
+
+      _this._lineHeight = function (d, i) {
+        return _this._fontSize(d, i) * 1.2;
+      };
+
+      _this._maxLines = constant(null);
+      _this._on = {};
+      _this._overflow = constant(false);
+      _this._padding = constant(0);
+      _this._pointerEvents = constant("auto");
+      _this._rotate = constant(0);
+
+      _this._rotateAnchor = function (d) {
+        return [d.w / 2, d.h / 2];
+      };
+
+      _this._split = textSplit$1;
+      _this._text = accessor("text");
+      _this._textAnchor = constant("start");
+      _this._verticalAlign = constant("top");
+      _this._width = accessor("width", 200);
+      _this._x = accessor("x", 0);
+      _this._y = accessor("y", 0);
+      return _this;
+    }
+    /**
+        @memberof TextBox
+        @desc Renders the text boxes. If a *callback* is specified, it will be called once the shapes are done drawing.
+        @param {Function} [*callback* = undefined]
+    */
+
+
+    _createClass$d(TextBox, [{
+      key: "render",
+      value: function render(callback) {
+        var _this2 = this;
+
+        if (this._select === void 0) this.select(_select("body").append("svg").style("width", "".concat(window.innerWidth, "px")).style("height", "".concat(window.innerHeight, "px")).node());
+        var that = this;
+
+        var boxes = this._select.selectAll(".d3plus-textBox").data(this._data.reduce(function (arr, d, i) {
+          var t = _this2._text(d, i);
+
+          if (t === void 0) return arr;
+          t = trim$1(t);
+
+          var resize = _this2._fontResize(d, i);
+
+          var lHRatio = _this2._lineHeight(d, i) / _this2._fontSize(d, i);
+
+          var fS = resize ? _this2._fontMax(d, i) : _this2._fontSize(d, i),
+              lH = resize ? fS * lHRatio : _this2._lineHeight(d, i),
+              line = 1,
+              lineData = [],
+              sizes,
+              wrapResults;
+          var style = {
+            "font-family": fontExists$1(_this2._fontFamily(d, i)),
+            "font-size": fS,
+            "font-weight": _this2._fontWeight(d, i),
+            "line-height": lH
+          };
+          var padding = parseSides(_this2._padding(d, i));
+          var h = _this2._height(d, i) - (padding.top + padding.bottom),
+              w = _this2._width(d, i) - (padding.left + padding.right);
+          var wrapper = textWrap$1().fontFamily(style["font-family"]).fontSize(fS).fontWeight(style["font-weight"]).lineHeight(lH).maxLines(_this2._maxLines(d, i)).height(h).overflow(_this2._overflow(d, i)).width(w).split(_this2._split);
+
+          var fMax = _this2._fontMax(d, i),
+              fMin = _this2._fontMin(d, i),
+              vA = _this2._verticalAlign(d, i),
+              words = _this2._split(t, i);
+          /**
+              Figures out the lineData to be used for wrapping.
+              @private
+          */
+
+
+          function checkSize() {
+            var truncate = function truncate() {
+              if (line < 1) lineData = [that._ellipsis("", line)];else lineData[line - 1] = that._ellipsis(lineData[line - 1], line);
+            }; // Constraint the font size
+
+
+            fS = max([fS, fMin]);
+            fS = min([fS, fMax]);
+
+            if (resize) {
+              lH = fS * lHRatio;
+              wrapper.fontSize(fS).lineHeight(lH);
+              style["font-size"] = fS;
+              style["line-height"] = lH;
+            }
+
+            wrapResults = wrapper(t);
+            lineData = wrapResults.lines.filter(function (l) {
+              return l !== "";
+            });
+            line = lineData.length;
+
+            if (wrapResults.truncated) {
+              if (resize) {
+                fS--;
+
+                if (fS < fMin) {
+                  fS = fMin;
+                  truncate();
+                  return;
+                } else checkSize();
+              } else truncate();
+            }
+          }
+
+          if (w > fMin && (h > lH || resize && h > fMin * lHRatio)) {
+            if (resize) {
+              sizes = measure(words, style);
+              var areaMod = 1.165 + w / h * 0.1,
+                  boxArea = w * h,
+                  maxWidth = max(sizes),
+                  textArea = sum(sizes, function (d) {
+                return d * lH;
+              }) * areaMod;
+
+              if (maxWidth > w || textArea > boxArea) {
+                var areaRatio = Math.sqrt(boxArea / textArea),
+                    widthRatio = w / maxWidth;
+                var sizeRatio = min([areaRatio, widthRatio]);
+                fS = Math.floor(fS * sizeRatio);
+              }
+
+              var heightMax = Math.floor(h * 0.8);
+              if (fS > heightMax) fS = heightMax;
+            }
+
+            checkSize();
+          }
+
+          if (lineData.length) {
+            var tH = line * lH;
+
+            var r = _this2._rotate(d, i);
+
+            var yP = r === 0 ? vA === "top" ? 0 : vA === "middle" ? h / 2 - tH / 2 : h - tH : 0;
+            yP -= lH * 0.1;
+            arr.push({
+              aH: _this2._ariaHidden(d, i),
+              data: d,
+              i: i,
+              lines: lineData,
+              fC: _this2._fontColor(d, i),
+              fF: style["font-family"],
+              fO: _this2._fontOpacity(d, i),
+              fW: style["font-weight"],
+              id: _this2._id(d, i),
+              tA: _this2._textAnchor(d, i),
+              vA: _this2._verticalAlign(d, i),
+              widths: wrapResults.widths,
+              fS: fS,
+              lH: lH,
+              w: w,
+              h: h,
+              r: r,
+              x: _this2._x(d, i) + padding.left,
+              y: _this2._y(d, i) + yP + padding.top
+            });
+          }
+
+          return arr;
+        }, []), function (d) {
+          return _this2._id(d.data, d.i);
+        });
+
+        var t = transition().duration(this._duration);
+
+        if (this._duration === 0) {
+          boxes.exit().remove();
+        } else {
+          boxes.exit().transition().delay(this._duration).remove();
+          boxes.exit().selectAll("text").transition(t).attr("opacity", 0).style("opacity", 0);
+        }
+        /**
+         * Applies translate and rotate to a text element.
+         * @param {D3Selection} text
+         * @private
+         */
+
+
+        function rotate(text) {
+          text.attr("transform", function (d, i) {
+            var rotateAnchor = that._rotateAnchor(d, i);
+
+            return "translate(".concat(d.x, ", ").concat(d.y, ") rotate(").concat(d.r, ", ").concat(rotateAnchor[0], ", ").concat(rotateAnchor[1], ")");
+          });
+        }
+
+        var update = boxes.enter().append("g").attr("class", "d3plus-textBox").attr("id", function (d) {
+          return "d3plus-textBox-".concat(strip$1(d.id));
+        }).call(rotate).merge(boxes);
+        var rtl = detectRTL$1();
+        update.style("pointer-events", function (d) {
+          return _this2._pointerEvents(d.data, d.i);
+        }).each(function (d) {
+          /**
+              Sets the inner text content of each <text> element.
+              @private
+          */
+          function textContent(text) {
+            text[that._html ? "html" : "text"](function (t) {
+              return trimRight$1(t).replace(/&([^\;&]*)/g, function (str, a) {
+                return a === "amp" ? str : "&amp;".concat(a);
+              }) // replaces all non-HTML ampersands with escaped entity
+              .replace(/<([^A-z^/]+)/g, function (str, a) {
+                return "&lt;".concat(a);
+              }).replace(/<$/g, "&lt;") // replaces all non-HTML left angle brackets with escaped entity
+              .replace(/(<[^>^\/]+>)([^<^>]+)$/g, function (str, a, b) {
+                return "".concat(a).concat(b).concat(a.replace("<", "</"));
+              }) // ands end tag to lines before mid-HTML break
+              .replace(/^([^<^>]+)(<\/[^>]+>)/g, function (str, a, b) {
+                return "".concat(b.replace("</", "<")).concat(a).concat(b);
+              }) // ands start tag to lines after mid-HTML break
+              .replace(/<([A-z]+)[^>]*>([^<^>]+)<\/[^>]+>/g, function (str, a, b) {
+                var tag = tagLookup$1[a] ? "<tspan style=\"".concat(tagLookup$1[a], "\">") : "";
+                return "".concat(tag.length ? tag : "").concat(b).concat(tag.length ? "</tspan>" : "");
+              });
+            });
+          }
+          /**
+              Styles to apply to each <text> element.
+              @private
+          */
+
+
+          function textStyle(text) {
+            text.attr("aria-hidden", d.aH).attr("dir", rtl ? "rtl" : "ltr").attr("fill", d.fC).attr("text-anchor", d.tA).attr("font-family", d.fF).style("font-family", d.fF).attr("font-size", "".concat(d.fS, "px")).style("font-size", "".concat(d.fS, "px")).attr("font-weight", d.fW).style("font-weight", d.fW).attr("x", "".concat(d.tA === "middle" ? d.w / 2 : rtl ? d.tA === "start" ? d.w : 0 : d.tA === "end" ? d.w : 2 * Math.sin(Math.PI * d.r / 180), "px")).attr("y", function (t, i) {
+              return d.r === 0 || d.vA === "top" ? "".concat((i + 1) * d.lH - (d.lH - d.fS), "px") : d.vA === "middle" ? "".concat((d.h + d.fS) / 2 - (d.lH - d.fS) + (i - d.lines.length / 2 + 0.5) * d.lH, "px") : "".concat(d.h - 2 * (d.lH - d.fS) - (d.lines.length - (i + 1)) * d.lH + 2 * Math.cos(Math.PI * d.r / 180), "px");
+            });
+          }
+
+          var texts = _select(this).selectAll("text").data(d.lines);
+
+          if (that._duration === 0) {
+            texts.call(textContent).call(textStyle);
+            texts.exit().remove();
+            texts.enter().append("text").attr("dominant-baseline", "alphabetic").style("baseline-shift", "0%").attr("unicode-bidi", "bidi-override").call(textContent).call(textStyle).attr("opacity", d.fO).style("opacity", d.fO);
+          } else {
+            texts.call(textContent).transition(t).call(textStyle);
+            texts.exit().transition(t).attr("opacity", 0).remove();
+            texts.enter().append("text").attr("dominant-baseline", "alphabetic").style("baseline-shift", "0%").attr("opacity", 0).style("opacity", 0).call(textContent).call(textStyle).merge(texts).transition(t).delay(that._delay).call(textStyle).attr("opacity", d.fO).style("opacity", d.fO);
+          }
+        }).transition(t).call(rotate);
+        var events = Object.keys(this._on),
+            on = events.reduce(function (obj, e) {
+          obj[e] = function (d, i) {
+            return _this2._on[e](d.data, i);
+          };
+
+          return obj;
+        }, {});
+
+        for (var e = 0; e < events.length; e++) {
+          update.on(events[e], on[events[e]]);
+        }
+
+        if (callback) setTimeout(callback, this._duration + 100);
+        return this;
+      }
+      /**
+          @memberof TextBox
+          @desc If *value* is specified, sets the aria-hidden attribute to the specified function or string and returns the current class instance.
+          @param {Function|String} *value*
+          @chainable
+      */
+
+    }, {
+      key: "ariaHidden",
+      value: function ariaHidden(_) {
+        return _ !== undefined ? (this._ariaHidden = typeof _ === "function" ? _ : constant(_), this) : this._ariaHidden;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the data array to the specified array. A text box will be drawn for each object in the array.
+          @param {Array} [*data* = []]
+          @chainable
+      */
+
+    }, {
+      key: "data",
+      value: function data(_) {
+        return arguments.length ? (this._data = _, this) : this._data;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the animation delay to the specified number in milliseconds.
+          @param {Number} [*value* = 0]
+          @chainable
+      */
+
+    }, {
+      key: "delay",
+      value: function delay(_) {
+        return arguments.length ? (this._delay = _, this) : this._delay;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the animation duration to the specified number in milliseconds.
+          @param {Number} [*value* = 0]
+          @chainable
+      */
+
+    }, {
+      key: "duration",
+      value: function duration(_) {
+        return arguments.length ? (this._duration = _, this) : this._duration;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the function that handles what to do when a line is truncated. It should return the new value for the line, and is passed 2 arguments: the String of text for the line in question, and the number of the line. By default, an ellipsis is added to the end of any line except if it is the first word that cannot fit (in that case, an empty string is returned).
+          @param {Function|String} [*value*]
+          @chainable
+          @example <caption>default accessor</caption>
+      function(text, line) {
+      return line ? text.replace(/\.|,$/g, "") + "..." : "";
+      }
+      */
+
+    }, {
+      key: "ellipsis",
+      value: function ellipsis(_) {
+        return arguments.length ? (this._ellipsis = typeof _ === "function" ? _ : constant(_), this) : this._ellipsis;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the font color to the specified accessor function or static string, which is inferred from the [DOM selection](#textBox.select) by default.
+          @param {Function|String} [*value* = "black"]
+          @chainable
+      */
+
+    }, {
+      key: "fontColor",
+      value: function fontColor(_) {
+        return arguments.length ? (this._fontColor = typeof _ === "function" ? _ : constant(_), this) : this._fontColor;
+      }
+      /**
+          @memberof TextBox
+          @desc Defines the font-family to be used. The value passed can be either a *String* name of a font, a comma-separated list of font-family fallbacks, an *Array* of fallbacks, or a *Function* that returns either a *String* or an *Array*. If supplying multiple fallback fonts, the [fontExists](#fontExists) function will be used to determine the first available font on the client's machine.
+          @param {Array|Function|String} [*value* = ["Roboto", "Helvetica Neue", "HelveticaNeue", "Helvetica", "Arial", "sans-serif"]]
+          @chainable
+      */
+
+    }, {
+      key: "fontFamily",
+      value: function fontFamily(_) {
+        return arguments.length ? (this._fontFamily = typeof _ === "function" ? _ : constant(_), this) : this._fontFamily;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the maximum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
+          @param {Function|Number} [*value* = 50]
+          @chainable
+      */
+
+    }, {
+      key: "fontMax",
+      value: function fontMax(_) {
+        return arguments.length ? (this._fontMax = typeof _ === "function" ? _ : constant(_), this) : this._fontMax;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the minimum font size to the specified accessor function or static number (which corresponds to pixel units), which is used when [dynamically resizing fonts](#textBox.fontResize).
+          @param {Function|Number} [*value* = 8]
+          @chainable
+      */
+
+    }, {
+      key: "fontMin",
+      value: function fontMin(_) {
+        return arguments.length ? (this._fontMin = typeof _ === "function" ? _ : constant(_), this) : this._fontMin;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the font opacity to the specified accessor function or static number between 0 and 1.
+          @param {Function|Number} [*value* = 1]
+          @chainable
+       */
+
+    }, {
+      key: "fontOpacity",
+      value: function fontOpacity(_) {
+        return arguments.length ? (this._fontOpacity = typeof _ === "function" ? _ : constant(_), this) : this._fontOpacity;
+      }
+      /**
+          @memberof TextBox
+          @desc Toggles font resizing, which can either be defined as a static boolean for all data points, or an accessor function that returns a boolean. See [this example](http://d3plus.org/examples/d3plus-text/resizing-text/) for a side-by-side comparison.
+          @param {Function|Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "fontResize",
+      value: function fontResize(_) {
+        return arguments.length ? (this._fontResize = typeof _ === "function" ? _ : constant(_), this) : this._fontResize;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the font size to the specified accessor function or static number (which corresponds to pixel units), which is inferred from the [DOM selection](#textBox.select) by default.
+          @param {Function|Number} [*value* = 10]
+          @chainable
+      */
+
+    }, {
+      key: "fontSize",
+      value: function fontSize(_) {
+        return arguments.length ? (this._fontSize = typeof _ === "function" ? _ : constant(_), this) : this._fontSize;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the font weight to the specified accessor function or static number, which is inferred from the [DOM selection](#textBox.select) by default.
+          @param {Function|Number|String} [*value* = 400]
+          @chainable
+      */
+
+    }, {
+      key: "fontWeight",
+      value: function fontWeight(_) {
+        return arguments.length ? (this._fontWeight = typeof _ === "function" ? _ : constant(_), this) : this._fontWeight;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the height for each box to the specified accessor function or static number.
+          @param {Function|Number} [*value*]
+          @chainable
+          @example <caption>default accessor</caption>
+      function(d) {
+      return d.height || 200;
+      }
+      */
+
+    }, {
+      key: "height",
+      value: function height(_) {
+        return arguments.length ? (this._height = typeof _ === "function" ? _ : constant(_), this) : this._height;
+      }
+      /**
+          @memberof TextBox
+          @desc Toggles the ability to render simple HTML tags. Currently supports `<b>`, `<strong>`, `<i>`, and `<em>`.
+          @param {Boolean} [*value* = true]
+          @chainable
+      */
+
+    }, {
+      key: "html",
+      value: function html(_) {
+        return arguments.length ? (this._html = _, this) : this._html;
+      }
+      /**
+          @memberof TextBox
+          @desc Defines the unique id for each box to the specified accessor function or static number.
+          @param {Function|Number} [*value*]
+          @chainable
+          @example <caption>default accessor</caption>
+      function(d, i) {
+      return d.id || i + "";
+      }
+      */
+
+    }, {
+      key: "id",
+      value: function id(_) {
+        return arguments.length ? (this._id = typeof _ === "function" ? _ : constant(_), this) : this._id;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the line height to the specified accessor function or static number, which is 1.2 times the [font size](#textBox.fontSize) by default.
+          @param {Function|Number} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "lineHeight",
+      value: function lineHeight(_) {
+        return arguments.length ? (this._lineHeight = typeof _ === "function" ? _ : constant(_), this) : this._lineHeight;
+      }
+      /**
+          @memberof TextBox
+          @desc Restricts the maximum number of lines to wrap onto, which is null (unlimited) by default.
+          @param {Function|Number} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "maxLines",
+      value: function maxLines(_) {
+        return arguments.length ? (this._maxLines = typeof _ === "function" ? _ : constant(_), this) : this._maxLines;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the text overflow to the specified accessor function or static boolean.
+          @param {Function|Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "overflow",
+      value: function overflow(_) {
+        return arguments.length ? (this._overflow = typeof _ === "function" ? _ : constant(_), this) : this._overflow;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the padding to the specified accessor function, CSS shorthand string, or static number, which is 0 by default.
+          @param {Function|Number|String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "padding",
+      value: function padding(_) {
+        return arguments.length ? (this._padding = typeof _ === "function" ? _ : constant(_), this) : this._padding;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the pointer-events to the specified accessor function or static string.
+          @param {Function|String} [*value* = "auto"]
+          @chainable
+      */
+
+    }, {
+      key: "pointerEvents",
+      value: function pointerEvents(_) {
+        return arguments.length ? (this._pointerEvents = typeof _ === "function" ? _ : constant(_), this) : this._pointerEvents;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the rotate percentage for each box to the specified accessor function or static string.
+          @param {Function|Number} [*value* = 0]
+          @chainable
+      */
+
+    }, {
+      key: "rotate",
+      value: function rotate(_) {
+        return arguments.length ? (this._rotate = typeof _ === "function" ? _ : constant(_), this) : this._rotate;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the anchor point around which to rotate the text box.
+          @param {Function|Number[]}
+          @chainable
+       */
+
+    }, {
+      key: "rotateAnchor",
+      value: function rotateAnchor(_) {
+        return arguments.length ? (this._rotateAnchor = typeof _ === "function" ? _ : constant(_), this) : this._rotateAnchor;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the SVG container element to the specified d3 selector or DOM element. If not explicitly specified, an SVG element will be added to the page for use.
+          @param {String|HTMLElement} [*selector*]
+          @chainable
+      */
+
+    }, {
+      key: "select",
+      value: function select(_) {
+        return arguments.length ? (this._select = _select(_), this) : this._select;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the word split behavior to the specified function, which when passed a string is expected to return that string split into an array of words.
+          @param {Function} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "split",
+      value: function split(_) {
+        return arguments.length ? (this._split = _, this) : this._split;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the text for each box to the specified accessor function or static string.
+          @param {Function|String} [*value*]
+          @chainable
+          @example <caption>default accessor</caption>
+      function(d) {
+      return d.text;
+      }
+      */
+
+    }, {
+      key: "text",
+      value: function text(_) {
+        return arguments.length ? (this._text = typeof _ === "function" ? _ : constant(_), this) : this._text;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the horizontal text anchor to the specified accessor function or static string, whose values are analagous to the SVG [text-anchor](https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/text-anchor) property.
+          @param {Function|String} [*value* = "start"]
+          @chainable
+      */
+
+    }, {
+      key: "textAnchor",
+      value: function textAnchor(_) {
+        return arguments.length ? (this._textAnchor = typeof _ === "function" ? _ : constant(_), this) : this._textAnchor;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the vertical alignment to the specified accessor function or static string. Accepts `"top"`, `"middle"`, and `"bottom"`.
+          @param {Function|String} [*value* = "top"]
+          @chainable
+      */
+
+    }, {
+      key: "verticalAlign",
+      value: function verticalAlign(_) {
+        return arguments.length ? (this._verticalAlign = typeof _ === "function" ? _ : constant(_), this) : this._verticalAlign;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the width for each box to the specified accessor function or static number.
+          @param {Function|Number} [*value*]
+          @chainable
+          @example <caption>default accessor</caption>
+      function(d) {
+      return d.width || 200;
+      }
+      */
+
+    }, {
+      key: "width",
+      value: function width(_) {
+        return arguments.length ? (this._width = typeof _ === "function" ? _ : constant(_), this) : this._width;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the x position for each box to the specified accessor function or static number. The number given should correspond to the left side of the textBox.
+          @param {Function|Number} [*value*]
+          @chainable
+          @example <caption>default accessor</caption>
+      function(d) {
+      return d.x || 0;
+      }
+      */
+
+    }, {
+      key: "x",
+      value: function x(_) {
+        return arguments.length ? (this._x = typeof _ === "function" ? _ : constant(_), this) : this._x;
+      }
+      /**
+          @memberof TextBox
+          @desc Sets the y position for each box to the specified accessor function or static number. The number given should correspond to the top side of the textBox.
+          @param {Function|Number} [*value*]
+          @chainable
+          @example <caption>default accessor</caption>
+      function(d) {
+      return d.y || 0;
+      }
+      */
+
+    }, {
+      key: "y",
+      value: function y(_) {
+        return arguments.length ? (this._y = typeof _ === "function" ? _ : constant(_), this) : this._y;
+      }
+    }]);
+
+    return TextBox;
+  }(BaseClass);
+
+  /**
+      @function date
+      @summary Parses numbers and strings to valid Javascript Date objects.
+      @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
+      @param {Number|String} *date*
+  */
+  function date$2 (d) {
+    // returns if already Date object
+    if (d.constructor === Date) return d; // detects if milliseconds
+    else if (d.constructor === Number && "".concat(d).length > 5 && d % 1 === 0) return new Date(d);
+    var s = "".concat(d);
+    var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
+        strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s); // tests for XX/XX/XXXX format
+
+    if (dayFormat) {
+      var year = dayFormat[1];
+      if (year.indexOf("-") === 0) s = s.replace(year, year.substr(1));
+      var date = new Date(s);
+      date.setFullYear(year);
+      return date;
+    } // tests for full Date object string format
+    else if (strFormat) {
+        var _year = strFormat[1];
+        if (_year.indexOf("-") === 0) s = s.replace(_year, _year.substr(1));
+
+        var _date = new Date(s);
+
+        _date.setFullYear(_year);
+
+        return _date;
+      } // detects if only passing a year value
+      else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
+          var _date2 = new Date("".concat(s, "/01/01"));
+
+          _date2.setFullYear(d);
+
+          return _date2;
+        } // parses string to Date object
+        else return new Date(s);
+  }
+
+  var locale$2 = {
+    "de-DE": {
+      dateTime: "%A, der %e. %B %Y, %X",
+      date: "%d.%m.%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    },
+    "en-GB": {
+      dateTime: "%a %e %b %X %Y",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "en-US": {
+      dateTime: "%x, %X",
+      date: "%-m/%-d/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "es-ES": {
+      dateTime: "%A, %e de %B de %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "es-MX": {
+      dateTime: "%x, %X",
+      date: "%d/%m/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "fr-FR": {
+      dateTime: "%A, le %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+      shortDays: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
+      months: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+      shortMonths: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."]
+    },
+    "it-IT": {
+      dateTime: "%A %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+      shortDays: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
+      months: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+      shortMonths: ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
+    },
+    "pt-BR": {
+      dateTime: "%A, %e de %B de %Y. %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"],
+      shortDays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+      months: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+      shortMonths: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+    }
+  };
+
+  function _defineProperty$2(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function _typeof$f(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$f = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$f = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$f(obj);
+  }
+
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance");
+  }
+
+  function _iterableToArray(iter) {
+    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
+        arr2[i] = arr[i];
+      }
+
+      return arr2;
+    }
+  }
+
+  function _classCallCheck$e(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$e(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$e(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$e(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$e(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$c(self, call) {
+    if (call && (_typeof$f(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$c(self);
+  }
+
+  function _assertThisInitialized$c(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _getPrototypeOf$c(o) {
+    _getPrototypeOf$c = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$c(o);
+  }
+
+  function _inherits$c(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$c(subClass, superClass);
+  }
+
+  function _setPrototypeOf$c(o, p) {
+    _setPrototypeOf$c = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$c(o, p);
+  }
   /**
       @class Axis
       @extends external:BaseClass
@@ -16793,7 +29242,7 @@
   var Axis =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$b(Axis, _BaseClass);
+    _inherits$c(Axis, _BaseClass);
     /**
         @memberof Axis
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -16804,9 +29253,9 @@
     function Axis() {
       var _this;
 
-      _classCallCheck$d(this, Axis);
+      _classCallCheck$e(this, Axis);
 
-      _this = _possibleConstructorReturn$b(this, _getPrototypeOf$b(Axis).call(this));
+      _this = _possibleConstructorReturn$c(this, _getPrototypeOf$c(Axis).call(this));
       _this._align = "middle";
       _this._barConfig = {
         "stroke": "#000",
@@ -16835,6 +29284,7 @@
       _this._paddingOuter = 0.1;
       _this._rotateLabels = false;
       _this._scale = "linear";
+      _this._scalePadding = 0.5;
       _this._shape = "Line";
       _this._shapeConfig = {
         fill: "#000",
@@ -16849,12 +29299,12 @@
         },
         labelConfig: {
           fontColor: "#000",
-          fontFamily: new TextBox().fontFamily(),
+          fontFamily: new TextBox$1().fontFamily(),
           fontResize: false,
           fontSize: constant(10),
           padding: 0,
           textAnchor: function textAnchor() {
-            var rtl = detectRTL();
+            var rtl = detectRTL$1();
             return _this._orient === "left" ? rtl ? "start" : "end" : _this._orient === "right" ? rtl ? "end" : "start" : _this._rotateLabels ? _this._orient === "bottom" ? "end" : "start" : "middle";
           },
           verticalAlign: function verticalAlign() {
@@ -16874,7 +29324,8 @@
       _this._tickSpecifier = undefined;
       _this._tickSuffix = "normal";
       _this._tickUnit = 0;
-      _this._titleClass = new TextBox();
+      _this._timeLocale = undefined;
+      _this._titleClass = new TextBox$1();
       _this._titleConfig = {
         fontSize: 12,
         textAnchor: "middle"
@@ -16890,7 +29341,7 @@
     */
 
 
-    _createClass$d(Axis, [{
+    _createClass$e(Axis, [{
       key: "_barPosition",
       value: function _barPosition(bar) {
         var _this$_position = this._position,
@@ -16902,7 +29353,9 @@
             offset = this._margin[opposite],
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
 
-        bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0)).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0)).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
+        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**
           @memberof Axis
@@ -16916,7 +29369,7 @@
         var ticks = [];
         if (this._d3ScaleNegative) ticks = this._d3ScaleNegative.domain();
         if (this._d3Scale) ticks = ticks.concat(this._d3Scale.domain());
-        var domain = this._scale === "ordinal" ? ticks : extent(ticks);
+        var domain = ["band", "ordinal", "point"].includes(this._scale) ? ticks : extent(ticks);
         return ticks[0] > ticks[1] ? domain.reverse() : domain;
       }
       /**
@@ -17023,10 +29476,20 @@
         if (this._select === void 0) {
           this.select(_select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node());
         }
+
+        var timeLocale = this._timeLocale || locale$2[this._locale] || locale$2["en-US"];
+        defaultLocale$1(timeLocale).format();
+        var formatDay = timeFormat("%a %d"),
+            formatHour = timeFormat("%I %p"),
+            formatMillisecond = timeFormat(".%L"),
+            formatMinute = timeFormat("%I:%M"),
+            formatMonth = timeFormat("%b"),
+            formatSecond = timeFormat(":%S"),
+            formatWeek = timeFormat("%b %d"),
+            formatYear = timeFormat("%Y");
         /**
          * Declares some commonly used variables.
          */
-
 
         var _this$_position3 = this._position,
             width = _this$_position3.width,
@@ -17120,6 +29583,7 @@
 
           this._d3Scale = scales["scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1))]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
           if (this._d3Scale.round) this._d3Scale.round(true);
+          if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
           if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
           if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
           if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range$1);else this._d3Scale.range(range$1);
@@ -17266,8 +29730,8 @@
             if (_t !== "1") _n = "".concat(_t, " x ").concat(_n);
             return d < 0 ? "-".concat(_n) : _n;
           } else if (_this3._scale === "time") {
-            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear$1)(d);
-          } else if (_this3._scale === "ordinal") {
+            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear)(d);
+          } else if (["band", "ordinal", "point"].includes(_this3._scale)) {
             return d;
           }
 
@@ -17277,12 +29741,13 @@
           if (isNaN(n)) {
             return n;
           } else if (_this3._scale === "linear" && _this3._tickSuffix === "smallest") {
-            var locale = _typeof$e(_this3._locale) === "object" ? _this3._locale : formatLocale$2[_this3._locale];
-            var separator = locale.separator,
-                suffixes = locale.suffixes;
+            var _locale = _typeof$f(_this3._locale) === "object" ? _this3._locale : formatLocale$2[_this3._locale];
+
+            var separator = _locale.separator,
+                suffixes = _locale.suffixes;
             var suff = n >= 1000 ? suffixes[_this3._tickUnit + 8] : "";
             var tick = n / Math.pow(10, 3 * _this3._tickUnit);
-            var number = formatAbbreviate(tick, locale, ",.".concat(tick.toString().length, "r"));
+            var number = formatAbbreviate(tick, _locale, ",.".concat(tick.toString().length, "r"));
             return "".concat(number).concat(separator).concat(suff);
           } else {
             return formatAbbreviate(n, _this3._locale);
@@ -17298,7 +29763,7 @@
               fontFamily = _this$_titleConfig.fontFamily,
               fontSize = _this$_titleConfig.fontSize,
               lineHeight = _this$_titleConfig.lineHeight;
-          var titleWrap = textWrap().fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily).fontSize(typeof fontSize === "function" ? fontSize() : fontSize).lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight).width(range$1[range$1.length - 1] - range$1[0] - p * 2).height(this["_".concat(height)] - this._tickSize - p * 2);
+          var titleWrap = textWrap$1().fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily).fontSize(typeof fontSize === "function" ? fontSize() : fontSize).lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight).width(range$1[range$1.length - 1] - range$1[0] - p * 2).height(this["_".concat(height)] - this._tickSize - p * 2);
           var lines = titleWrap(this._title).lines.length;
           margin[this._orient] = lines * titleWrap.lineHeight() + p;
         }
@@ -17349,7 +29814,7 @@
               space = datum.space;
           var h = rotate ? "width" : "height",
               w = rotate ? "height" : "width";
-          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : min([this._maxSize, this._width]) - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? min([this._maxSize, this._height]) - hBuff - p - this._margin.top - this._margin.bottom : space);
+          var wrap = textWrap$1().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : min([this._maxSize, this._width]) - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? min([this._maxSize, this._height]) - hBuff - p - this._margin.top - this._margin.bottom : space);
           var res = wrap(tickFormat(d));
           res.lines = res.lines.filter(function (d) {
             return d !== "";
@@ -17473,9 +29938,9 @@
           return datum.offset = datum.offset ? globalOffset : 0;
         });
         var tBuff = this._shape === "Line" ? 0 : hBuff;
-        var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$1(_this$_outerBounds, height, (max(textData, function (t) {
+        var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$2(_this$_outerBounds, height, (max(textData, function (t) {
           return Math.ceil(t[t.rotate || !horizontal ? "width" : "height"] + t.offset);
-        }) || 0) + (textData.length ? p : 0)), _defineProperty$1(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$1(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
+        }) || 0) + (textData.length ? p : 0)), _defineProperty$2(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$2(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
         margin[this._orient] += hBuff;
         margin[opposite] = this._gridSize !== undefined ? max([this._gridSize, tBuff]) : this["_".concat(height)] - margin[this._orient] - bounds[height] - p;
         bounds[height] += margin[opposite] + margin[this._orient];
@@ -17535,7 +30000,7 @@
             size: labels.includes(d) ? size : 0,
             text: labels.includes(d) ? tickFormat(d) : false,
             tick: ticks.includes(d)
-          }, _defineProperty$1(_tickConfig, x, xPos + (_this3._scale === "band" ? _this3._d3Scale.bandwidth() / 2 : 0)), _defineProperty$1(_tickConfig, y, yPos), _tickConfig);
+          }, _defineProperty$2(_tickConfig, x, xPos + (_this3._scale === "band" ? _this3._d3Scale.bandwidth() / 2 : 0)), _defineProperty$2(_tickConfig, y, yPos), _tickConfig);
           return tickConfig;
         });
 
@@ -17566,7 +30031,7 @@
           parent: group
         }).node()).text(function (d) {
           return d.text;
-        }).verticalAlign("middle").width(range$1[range$1.length - 1] - range$1[0]).x(horizontal ? range$1[0] : this._orient === "left" ? margin[this._orient] / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2 + p : p - margin.right / 2).y(horizontal ? this._orient === "bottom" ? bounds.height - margin.bottom + p : bounds.y : range$1[0] + (range$1[range$1.length - 1] - range$1[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
+        }).verticalAlign("middle").width(range$1[range$1.length - 1] - range$1[0]).x(horizontal ? range$1[0] : this._orient === "left" ? margin.left / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2 + p : bounds.x + bounds.width - margin.right / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom - p : bounds.y : range$1[0] + (range$1[range$1.length - 1] - range$1[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
 
         this._lastScale = this._getPosition.bind(this);
         if (callback) setTimeout(callback, this._duration + 100);
@@ -17833,6 +30298,18 @@
       }
       /**
           @memberof Axis
+          @desc Sets the "padding" property of the scale, often used in point scales.
+          @param {Number} [*value* = 0.5]
+          @chainable
+      */
+
+    }, {
+      key: "scalePadding",
+      value: function scalePadding(_) {
+        return arguments.length ? (this._scalePadding = _, this) : this._scalePadding;
+      }
+      /**
+          @memberof Axis
           @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
           @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
           @chainable
@@ -17917,7 +30394,7 @@
       }
       /**
           @memberof Axis
-          @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick). 
+          @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick).
           @param {String} [*value* = "normal"]
           @chainable
       */
@@ -17926,6 +30403,18 @@
       key: "tickSuffix",
       value: function tickSuffix(_) {
         return arguments.length ? (this._tickSuffix = _, this) : this._tickSuffix;
+      }
+      /**
+          @memberof Axis
+          @desc Defines a custom locale object to be used in time scale. This object must include the following properties: dateTime, date, time, periods, days, shortDays, months, shortMonths. For more information, you can revise [d3p.d3-time-format](https://github.com/d3/d3-time-format/blob/master/README.md#timeFormatLocale).
+          @param {Object} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "timeLocale",
+      value: function timeLocale(_) {
+        return arguments.length ? (this._timeLocale = _, this) : this._timeLocale;
       }
       /**
           @memberof Axis
@@ -17967,104 +30456,6 @@
 
     return Axis;
   }(BaseClass);
-
-  function _typeof$f(obj) {
-    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$f = function _typeof$1(obj) {
-        return _typeof(obj);
-      };
-    } else {
-      _typeof$f = function _typeof$1(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
-      };
-    }
-
-    return _typeof$f(obj);
-  }
-
-  function _classCallCheck$e(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _possibleConstructorReturn$c(self, call) {
-    if (call && (_typeof$f(call) === "object" || typeof call === "function")) {
-      return call;
-    }
-
-    return _assertThisInitialized$c(self);
-  }
-
-  function _assertThisInitialized$c(self) {
-    if (self === void 0) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return self;
-  }
-
-  function _getPrototypeOf$c(o) {
-    _getPrototypeOf$c = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-      return o.__proto__ || Object.getPrototypeOf(o);
-    };
-    return _getPrototypeOf$c(o);
-  }
-
-  function _inherits$c(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) _setPrototypeOf$c(subClass, superClass);
-  }
-
-  function _setPrototypeOf$c(o, p) {
-    _setPrototypeOf$c = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf$c(o, p);
-  }
-  /**
-      @class AxisBottom
-      @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn below the horizontal domain path. Extends all functionality of the base [Axis](#Axis) class.
-  */
-
-  var AxisBottom =
-  /*#__PURE__*/
-  function (_Axis) {
-    _inherits$c(AxisBottom, _Axis);
-    /**
-        @memberof AxisBottom
-        @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Axis.
-        @private
-    */
-
-
-    function AxisBottom() {
-      var _this;
-
-      _classCallCheck$e(this, AxisBottom);
-
-      _this = _possibleConstructorReturn$c(this, _getPrototypeOf$c(AxisBottom).call(this));
-
-      _this.orient("bottom");
-
-      return _this;
-    }
-
-    return AxisBottom;
-  }(Axis);
 
   function _typeof$g(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
@@ -18133,35 +30524,35 @@
     return _setPrototypeOf$d(o, p);
   }
   /**
-      @class AxisLeft
+      @class AxisBottom
       @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn to the left of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
+      @desc Shorthand method for creating an axis where the ticks are drawn below the horizontal domain path. Extends all functionality of the base [Axis](#Axis) class.
   */
 
-  var AxisLeft =
+  var AxisBottom =
   /*#__PURE__*/
   function (_Axis) {
-    _inherits$d(AxisLeft, _Axis);
+    _inherits$d(AxisBottom, _Axis);
     /**
-        @memberof AxisLeft
+        @memberof AxisBottom
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Axis.
         @private
     */
 
 
-    function AxisLeft() {
+    function AxisBottom() {
       var _this;
 
-      _classCallCheck$f(this, AxisLeft);
+      _classCallCheck$f(this, AxisBottom);
 
-      _this = _possibleConstructorReturn$d(this, _getPrototypeOf$d(AxisLeft).call(this));
+      _this = _possibleConstructorReturn$d(this, _getPrototypeOf$d(AxisBottom).call(this));
 
-      _this.orient("left");
+      _this.orient("bottom");
 
       return _this;
     }
 
-    return AxisLeft;
+    return AxisBottom;
   }(Axis);
 
   function _typeof$h(obj) {
@@ -18231,35 +30622,35 @@
     return _setPrototypeOf$e(o, p);
   }
   /**
-      @class AxisRight
+      @class AxisLeft
       @extends Axis
-      @desc Shorthand method for creating an axis where the ticks are drawn to the right of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
+      @desc Shorthand method for creating an axis where the ticks are drawn to the left of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
   */
 
-  var AxisRight =
+  var AxisLeft =
   /*#__PURE__*/
   function (_Axis) {
-    _inherits$e(AxisRight, _Axis);
+    _inherits$e(AxisLeft, _Axis);
     /**
-        @memberof AxisRight
+        @memberof AxisLeft
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Axis.
         @private
     */
 
 
-    function AxisRight() {
+    function AxisLeft() {
       var _this;
 
-      _classCallCheck$g(this, AxisRight);
+      _classCallCheck$g(this, AxisLeft);
 
-      _this = _possibleConstructorReturn$e(this, _getPrototypeOf$e(AxisRight).call(this));
+      _this = _possibleConstructorReturn$e(this, _getPrototypeOf$e(AxisLeft).call(this));
 
-      _this.orient("right");
+      _this.orient("left");
 
       return _this;
     }
 
-    return AxisRight;
+    return AxisLeft;
   }(Axis);
 
   function _typeof$i(obj) {
@@ -18329,6 +30720,104 @@
     return _setPrototypeOf$f(o, p);
   }
   /**
+      @class AxisRight
+      @extends Axis
+      @desc Shorthand method for creating an axis where the ticks are drawn to the right of the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
+  */
+
+  var AxisRight =
+  /*#__PURE__*/
+  function (_Axis) {
+    _inherits$f(AxisRight, _Axis);
+    /**
+        @memberof AxisRight
+        @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Axis.
+        @private
+    */
+
+
+    function AxisRight() {
+      var _this;
+
+      _classCallCheck$h(this, AxisRight);
+
+      _this = _possibleConstructorReturn$f(this, _getPrototypeOf$f(AxisRight).call(this));
+
+      _this.orient("right");
+
+      return _this;
+    }
+
+    return AxisRight;
+  }(Axis);
+
+  function _typeof$j(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$j = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$j = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$j(obj);
+  }
+
+  function _classCallCheck$i(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _possibleConstructorReturn$g(self, call) {
+    if (call && (_typeof$j(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$g(self);
+  }
+
+  function _assertThisInitialized$g(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _getPrototypeOf$g(o) {
+    _getPrototypeOf$g = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$g(o);
+  }
+
+  function _inherits$g(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$g(subClass, superClass);
+  }
+
+  function _setPrototypeOf$g(o, p) {
+    _setPrototypeOf$g = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$g(o, p);
+  }
+  /**
       @class AxisTop
       @extends Axis
       @desc Shorthand method for creating an axis where the ticks are drawn above the vertical domain path. Extends all functionality of the base [Axis](#Axis) class.
@@ -18337,7 +30826,7 @@
   var AxisTop =
   /*#__PURE__*/
   function (_Axis) {
-    _inherits$f(AxisTop, _Axis);
+    _inherits$g(AxisTop, _Axis);
     /**
         @memberof AxisTop
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Axis.
@@ -18348,9 +30837,9 @@
     function AxisTop() {
       var _this;
 
-      _classCallCheck$h(this, AxisTop);
+      _classCallCheck$i(this, AxisTop);
 
-      _this = _possibleConstructorReturn$f(this, _getPrototypeOf$f(AxisTop).call(this));
+      _this = _possibleConstructorReturn$g(this, _getPrototypeOf$g(AxisTop).call(this));
 
       _this.orient("top");
 
@@ -18575,7 +31064,7 @@
     return length < width ? new Array(width - length + 1).join(0) + s : s;
   }
 
-  function formatYear$2(year) {
+  function formatYear$1(year) {
     return year < 0 ? "-" + pad$1(-year, 6) : year > 9999 ? "+" + pad$1(year, 6) : pad$1(year, 4);
   }
 
@@ -18584,7 +31073,7 @@
         minutes = date.getUTCMinutes(),
         seconds = date.getUTCSeconds(),
         milliseconds = date.getUTCMilliseconds();
-    return isNaN(date) ? "Invalid Date" : formatYear$2(date.getUTCFullYear()) + "-" + pad$1(date.getUTCMonth() + 1, 2) + "-" + pad$1(date.getUTCDate(), 2) + (milliseconds ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + ":" + pad$1(seconds, 2) + "." + pad$1(milliseconds, 3) + "Z" : seconds ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + ":" + pad$1(seconds, 2) + "Z" : minutes || hours ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + "Z" : "");
+    return isNaN(date) ? "Invalid Date" : formatYear$1(date.getUTCFullYear()) + "-" + pad$1(date.getUTCMonth() + 1, 2) + "-" + pad$1(date.getUTCDate(), 2) + (milliseconds ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + ":" + pad$1(seconds, 2) + "." + pad$1(milliseconds, 3) + "Z" : seconds ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + ":" + pad$1(seconds, 2) + "Z" : minutes || hours ? "T" + pad$1(hours, 2) + ":" + pad$1(minutes, 2) + "Z" : "");
   }
 
   function dsv (delimiter) {
@@ -18838,11 +31327,20 @@
       MODE_CENTER = {
     name: "center"
   };
+
+  function number1(e) {
+    return [+e[0], +e[1]];
+  }
+
+  function number2(e) {
+    return [number1(e[0]), number1(e[1])];
+  }
+
   var X = {
     name: "x",
-    handles: ["e", "w"].map(type$1),
+    handles: ["w", "e"].map(type$1),
     input: function input(x, e) {
-      return x && [[x[0], e[0][1]], [x[1], e[1][1]]];
+      return x == null ? null : [[+x[0], e[0][1]], [+x[1], e[1][1]]];
     },
     output: function output(xy) {
       return xy && [xy[0][0], xy[1][0]];
@@ -18852,7 +31350,7 @@
     name: "y",
     handles: ["n", "s"].map(type$1),
     input: function input(y, e) {
-      return y && [[e[0][0], y[0]], [e[1][0], y[1]]];
+      return y == null ? null : [[e[0][0], +y[0]], [e[1][0], +y[1]]];
     },
     output: function output(xy) {
       return xy && [xy[0][1], xy[1][1]];
@@ -18860,9 +31358,9 @@
   };
   var XY = {
     name: "xy",
-    handles: ["n", "e", "s", "w", "nw", "ne", "se", "sw"].map(type$1),
+    handles: ["nw", "n", "ne", "w", "e", "sw", "s", "se"].map(type$1),
     input: function input(xy) {
-      return xy;
+      return xy == null ? null : number2(xy);
     },
     output: function output(xy) {
       return xy;
@@ -18929,12 +31427,22 @@
 
 
   function defaultFilter() {
-    return !event$1.button;
+    return !event$1.ctrlKey && !event$1.button;
   }
 
   function defaultExtent() {
     var svg = this.ownerSVGElement || this;
+
+    if (svg.hasAttribute("viewBox")) {
+      svg = svg.viewBox.baseVal;
+      return [[svg.x, svg.y], [svg.x + svg.width, svg.y + svg.height]];
+    }
+
     return [[0, 0], [svg.width.baseVal.value, svg.height.baseVal.value]];
+  }
+
+  function defaultTouchable() {
+    return navigator.maxTouchPoints || "ontouchstart" in this;
   } // Like d3.local, but with the name “__brush” rather than auto-generated.
 
 
@@ -18959,6 +31467,8 @@
   function brush$1(dim) {
     var extent = defaultExtent,
         filter = defaultFilter,
+        touchable = defaultTouchable,
+        keys = true,
         listeners = dispatch(brush, "start", "brush", "end"),
         handleSize = 6,
         touchending;
@@ -18979,7 +31489,7 @@
       }).attr("cursor", function (d) {
         return cursors[d.type];
       });
-      group.each(redraw).attr("fill", "none").attr("pointer-events", "all").style("-webkit-tap-highlight-color", "rgba(0,0,0,0)").on("mousedown.brush touchstart.brush", started);
+      group.each(redraw).attr("fill", "none").attr("pointer-events", "all").on("mousedown.brush", started).filter(touchable).on("touchstart.brush", started).on("touchmove.brush", touchmoved).on("touchend.brush touchcancel.brush", touchended).style("touch-action", "none").style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
     }
 
     brush.move = function (group, selection) {
@@ -18997,12 +31507,12 @@
               i = interpolate(selection0, selection1);
 
           function tween(t) {
-            state.selection = t === 1 && empty$1(selection1) ? null : i(t);
+            state.selection = t === 1 && selection1 === null ? null : i(t);
             redraw.call(that);
             emit.brush();
           }
 
-          return selection0 && selection1 ? tween : tween(1);
+          return selection0 !== null && selection1 !== null ? tween : tween(1);
         });
       } else {
         group.each(function () {
@@ -19012,11 +31522,15 @@
               selection1 = dim.input(typeof selection === "function" ? selection.apply(that, args) : selection, state.extent),
               emit = emitter(that, args).beforestart();
           interrupt(that);
-          state.selection = selection1 == null || empty$1(selection1) ? null : selection1;
+          state.selection = selection1 === null ? null : selection1;
           redraw.call(that);
           emit.start().brush().end();
         });
       }
+    };
+
+    brush.clear = function (group) {
+      brush.move(group, null);
     };
 
     function redraw() {
@@ -19039,8 +31553,8 @@
       }
     }
 
-    function emitter(that, args) {
-      return that.__brush.emitter || new Emitter(that, args);
+    function emitter(that, args, clean) {
+      return !clean && that.__brush.emitter || new Emitter(that, args);
     }
 
     function Emitter(that, args) {
@@ -19056,7 +31570,7 @@
         return this;
       },
       start: function start() {
-        if (this.starting) this.starting = false, this.emit("start");
+        if (this.starting) this.starting = false, this.emit("start");else this.emit("brush");
         return this;
       },
       brush: function brush() {
@@ -19072,6 +31586,10 @@
       }
     };
 
+    function pointer(target) {
+      return clientPoint(target, event$1.touches ? event$1.touches[0] : event$1);
+    }
+
     function started() {
       if (event$1.touches) {
         if (event$1.changedTouches.length < event$1.touches.length) return noevent$1();
@@ -19080,7 +31598,7 @@
       if (!filter.apply(this, arguments)) return;
       var that = this,
           type = event$1.target.__data__.type,
-          mode = (event$1.metaKey ? type = "overlay" : type) === "selection" ? MODE_DRAG : event$1.altKey ? MODE_CENTER : MODE_HANDLE,
+          mode = (keys && event$1.metaKey ? type = "overlay" : type) === "selection" ? MODE_DRAG : keys && event$1.altKey ? MODE_CENTER : MODE_HANDLE,
           signX = dim === Y ? null : signsX[type],
           signY = dim === X ? null : signsY[type],
           state = local(that),
@@ -19098,17 +31616,18 @@
           S = extent[1][1],
           s0,
           s1,
-          dx,
-          dy,
+          dx = 0,
+          dy = 0,
           moving,
-          shifting = signX && signY && event$1.shiftKey,
+          shifting = signX && signY && keys && event$1.shiftKey,
           lockX,
           lockY,
-          point0 = mouse(that),
+          point0 = pointer(that),
           point = point0,
-          emit = emitter(that, arguments).beforestart();
+          emit = emitter(that, arguments, true).beforestart();
 
       if (type === "overlay") {
+        if (selection) moving = true;
         state.selection = selection = [[w0 = dim === Y ? W : point0[0], n0 = dim === X ? N : point0[1]], [e0 = dim === Y ? E : w0, s0 = dim === X ? S : n0]];
       } else {
         w0 = selection[0][0];
@@ -19125,9 +31644,11 @@
       var overlay = group.selectAll(".overlay").attr("cursor", cursors[type]);
 
       if (event$1.touches) {
-        group.on("touchmove.brush", moved, true).on("touchend.brush touchcancel.brush", ended, true);
+        emit.moved = moved;
+        emit.ended = ended;
       } else {
-        var view = _select(event$1.view).on("keydown.brush", keydowned, true).on("keyup.brush", keyupped, true).on("mousemove.brush", moved, true).on("mouseup.brush", ended, true);
+        var view = _select(event$1.view).on("mousemove.brush", moved, true).on("mouseup.brush", ended, true);
+        if (keys) view.on("keydown.brush", keydowned, true).on("keyup.brush", keyupped, true);
         dragDisable(event$1.view);
       }
 
@@ -19137,7 +31658,7 @@
       emit.start();
 
       function moved() {
-        var point1 = mouse(that);
+        var point1 = pointer(that);
 
         if (shifting && !lockX && !lockY) {
           if (Math.abs(point1[0] - point[0]) > Math.abs(point1[1] - point[1])) lockY = true;else lockX = true;
@@ -19213,8 +31734,6 @@
           touchending = setTimeout(function () {
             touchending = null;
           }, 500); // Ghost clicks are delayed!
-
-          group.on("touchmove.brush touchend.brush touchcancel.brush", null);
         } else {
           yesdrag(event$1.view, moving);
           view.on("keydown.brush keyup.brush mousemove.brush mouseup.brush", null);
@@ -19326,17 +31845,25 @@
       }
     }
 
+    function touchmoved() {
+      emitter(this, arguments).moved();
+    }
+
+    function touchended() {
+      emitter(this, arguments).ended();
+    }
+
     function initialize() {
       var state = this.__brush || {
         selection: null
       };
-      state.extent = extent.apply(this, arguments);
+      state.extent = number2(extent.apply(this, arguments));
       state.dim = dim;
       return state;
     }
 
     brush.extent = function (_) {
-      return arguments.length ? (extent = typeof _ === "function" ? _ : constant$5([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
+      return arguments.length ? (extent = typeof _ === "function" ? _ : constant$5(number2(_)), brush) : extent;
     };
 
     brush.filter = function (_) {
@@ -19345,6 +31872,10 @@
 
     brush.handleSize = function (_) {
       return arguments.length ? (handleSize = +_, brush) : handleSize;
+    };
+
+    brush.keyModifiers = function (_) {
+      return arguments.length ? (keys = !!_, brush) : keys;
     };
 
     brush.on = function () {
@@ -19535,16 +32066,32 @@
     yellowgreen: 0x9acd32
   };
   define$3(Color$3, color$3, {
+    copy: function copy(channels) {
+      return Object.assign(new this.constructor(), this, channels);
+    },
     displayable: function displayable() {
       return this.rgb().displayable();
     },
-    hex: function hex() {
-      return this.rgb().hex();
-    },
-    toString: function toString() {
-      return this.rgb() + "";
-    }
+    hex: color_formatHex,
+    // Deprecated! Use color.formatHex.
+    formatHex: color_formatHex,
+    formatHsl: color_formatHsl,
+    formatRgb: color_formatRgb,
+    toString: color_formatRgb
   });
+
+  function color_formatHex() {
+    return this.rgb().formatHex();
+  }
+
+  function color_formatHsl() {
+    return hslConvert$3(this).formatHsl();
+  }
+
+  function color_formatRgb() {
+    return this.rgb().formatRgb();
+  }
+
   function color$3(format) {
     var m;
     format = (format + "").trim().toLowerCase();
@@ -19556,7 +32103,8 @@
     : (m = reRgbaPercent$3.exec(format)) ? rgba$3(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
     : (m = reHslPercent$3.exec(format)) ? hsla$3(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
     : (m = reHslaPercent$3.exec(format)) ? hsla$3(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
-    : named$3.hasOwnProperty(format) ? rgbn$3(named$3[format]) : format === "transparent" ? new Rgb$3(NaN, NaN, NaN, 0) : null;
+    : named$3.hasOwnProperty(format) ? rgbn$3(named$3[format]) // eslint-disable-line no-prototype-builtins
+    : format === "transparent" ? new Rgb$3(NaN, NaN, NaN, 0) : null;
   }
 
   function rgbn$3(n) {
@@ -19598,17 +32146,24 @@
     displayable: function displayable() {
       return -0.5 <= this.r && this.r < 255.5 && -0.5 <= this.g && this.g < 255.5 && -0.5 <= this.b && this.b < 255.5 && 0 <= this.opacity && this.opacity <= 1;
     },
-    hex: function hex() {
-      return "#" + _hex$3(this.r) + _hex$3(this.g) + _hex$3(this.b);
-    },
-    toString: function toString() {
-      var a = this.opacity;
-      a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-      return (a === 1 ? "rgb(" : "rgba(") + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.b) || 0)) + (a === 1 ? ")" : ", " + a + ")");
-    }
+    hex: rgb_formatHex,
+    // Deprecated! Use color.formatHex.
+    formatHex: rgb_formatHex,
+    formatRgb: rgb_formatRgb,
+    toString: rgb_formatRgb
   }));
 
-  function _hex$3(value) {
+  function rgb_formatHex() {
+    return "#" + hex(this.r) + hex(this.g) + hex(this.b);
+  }
+
+  function rgb_formatRgb() {
+    var a = this.opacity;
+    a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+    return (a === 1 ? "rgb(" : "rgba(") + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.b) || 0)) + (a === 1 ? ")" : ", " + a + ")");
+  }
+
+  function hex(value) {
     value = Math.max(0, Math.min(255, Math.round(value) || 0));
     return (value < 16 ? "0" : "") + value.toString(16);
   }
@@ -19673,6 +32228,11 @@
     },
     displayable: function displayable() {
       return (0 <= this.s && this.s <= 1 || isNaN(this.s)) && 0 <= this.l && this.l <= 1 && 0 <= this.opacity && this.opacity <= 1;
+    },
+    formatHsl: function formatHsl() {
+      var a = this.opacity;
+      a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+      return (a === 1 ? "hsl(" : "hsla(") + (this.h || 0) + ", " + (this.s || 0) * 100 + "%, " + (this.l || 0) * 100 + "%" + (a === 1 ? ")" : ", " + a + ")");
     }
   }));
   /* From FvD 13.37, CSS Color Module Level 3 */
@@ -20041,24 +32601,24 @@
   }
 
   function defaultFilter$1() {
-    return !event$1.button;
+    return !event$1.ctrlKey && !event$1.button;
   }
 
   function defaultExtent$1() {
-    var e = this,
-        w,
-        h;
+    var e = this;
 
     if (e instanceof SVGElement) {
       e = e.ownerSVGElement || e;
-      w = e.width.baseVal.value;
-      h = e.height.baseVal.value;
-    } else {
-      w = e.clientWidth;
-      h = e.clientHeight;
+
+      if (e.hasAttribute("viewBox")) {
+        e = e.viewBox.baseVal;
+        return [[e.x, e.y], [e.x + e.width, e.y + e.height]];
+      }
+
+      return [[0, 0], [e.width.baseVal.value, e.height.baseVal.value]];
     }
 
-    return [[0, 0], [w, h]];
+    return [[0, 0], [e.clientWidth, e.clientHeight]];
   }
 
   function defaultTransform() {
@@ -20066,11 +32626,11 @@
   }
 
   function defaultWheelDelta() {
-    return -event$1.deltaY * (event$1.deltaMode ? 120 : 1) / 500;
+    return -event$1.deltaY * (event$1.deltaMode === 1 ? 0.05 : event$1.deltaMode ? 1 : 0.002);
   }
 
-  function defaultTouchable() {
-    return "ontouchstart" in this;
+  function defaultTouchable$1() {
+    return navigator.maxTouchPoints || "ontouchstart" in this;
   }
 
   function defaultConstrain(transform, extent, translateExtent) {
@@ -20086,12 +32646,11 @@
         extent = defaultExtent$1,
         constrain = defaultConstrain,
         wheelDelta = defaultWheelDelta,
-        touchable = defaultTouchable,
+        touchable = defaultTouchable$1,
         scaleExtent = [0, Infinity],
         translateExtent = [[-Infinity, -Infinity], [Infinity, Infinity]],
         duration = 250,
         interpolate = interpolateZoom,
-        gestures = [],
         listeners = dispatch("start", "zoom", "end"),
         touchstarting,
         touchending,
@@ -20192,28 +32751,22 @@
       });
     }
 
-    function gesture(that, args) {
-      for (var i = 0, n = gestures.length, g; i < n; ++i) {
-        if ((g = gestures[i]).that === that) {
-          return g;
-        }
-      }
-
-      return new Gesture(that, args);
+    function gesture(that, args, clean) {
+      return !clean && that.__zooming || new Gesture(that, args);
     }
 
     function Gesture(that, args) {
       this.that = that;
       this.args = args;
-      this.index = -1;
       this.active = 0;
       this.extent = extent.apply(that, args);
+      this.taps = 0;
     }
 
     Gesture.prototype = {
       start: function start() {
         if (++this.active === 1) {
-          this.index = gestures.push(this) - 1;
+          this.that.__zooming = this;
           this.emit("start");
         }
 
@@ -20229,8 +32782,7 @@
       },
       end: function end() {
         if (--this.active === 0) {
-          gestures.splice(this.index, 1);
-          this.index = -1;
+          delete this.that.__zooming;
           this.emit("end");
         }
 
@@ -20246,7 +32798,9 @@
       var g = gesture(this, arguments),
           t = this.__zoom,
           k = Math.max(scaleExtent[0], Math.min(scaleExtent[1], t.k * Math.pow(2, wheelDelta.apply(this, arguments)))),
-          p = mouse(this); // If the mouse is in the same location as before, reuse it.
+          p = mouse(this); // If this wheel event won’t trigger a transform change, ignore it.
+
+      if (t.k === k) return; // If the mouse is in the same location as before, reuse it.
       // If there were recent wheel events, reset the wheel idle timeout.
 
       if (g.wheel) {
@@ -20255,13 +32809,12 @@
         }
 
         clearTimeout(g.wheel);
-      } // If this wheel event won’t trigger a transform change, ignore it.
-      else if (t.k === k) return; // Otherwise, capture the mouse point and location at the start.
-        else {
-            g.mouse = [p, t.invert(p)];
-            interrupt(this);
-            g.start();
-          }
+      } // Otherwise, capture the mouse point and location at the start.
+      else {
+          g.mouse = [p, t.invert(p)];
+          interrupt(this);
+          g.start();
+        }
 
       noevent$2();
       g.wheel = setTimeout(wheelidled, wheelDelay);
@@ -20275,7 +32828,7 @@
 
     function mousedowned() {
       if (touchending || !filter.apply(this, arguments)) return;
-      var g = gesture(this, arguments),
+      var g = gesture(this, arguments, true),
           v = _select(event$1.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
           p = mouse(this),
           x0 = event$1.clientX,
@@ -20319,10 +32872,10 @@
 
     function touchstarted() {
       if (!filter.apply(this, arguments)) return;
-      var g = gesture(this, arguments),
-          touches = event$1.changedTouches,
-          started,
+      var touches = event$1.touches,
           n = touches.length,
+          g = gesture(this, arguments, event$1.changedTouches.length === n),
+          started,
           i,
           t,
           p;
@@ -20331,23 +32884,13 @@
       for (i = 0; i < n; ++i) {
         t = touches[i], p = touch(this, touches, t.identifier);
         p = [p, this.__zoom.invert(p), t.identifier];
-        if (!g.touch0) g.touch0 = p, started = true;else if (!g.touch1) g.touch1 = p;
-      } // If this is a dbltap, reroute to the (optional) dblclick.zoom handler.
-
-
-      if (touchstarting) {
-        touchstarting = clearTimeout(touchstarting);
-
-        if (!g.touch1) {
-          g.end();
-          p = _select(this).on("dblclick.zoom");
-          if (p) p.apply(this, arguments);
-          return;
-        }
+        if (!g.touch0) g.touch0 = p, started = true, g.taps = 1 + !!touchstarting;else if (!g.touch1) g.touch1 = p, g.taps = 0;
       }
 
+      if (touchstarting) touchstarting = clearTimeout(touchstarting);
+
       if (started) {
-        touchstarting = setTimeout(function () {
+        if (g.taps < 2) touchstarting = setTimeout(function () {
           touchstarting = null;
         }, touchDelay);
         interrupt(this);
@@ -20356,6 +32899,7 @@
     }
 
     function touchmoved() {
+      if (!this.__zooming) return;
       var g = gesture(this, arguments),
           touches = event$1.changedTouches,
           n = touches.length,
@@ -20365,6 +32909,7 @@
           l;
       noevent$2();
       if (touchstarting) touchstarting = clearTimeout(touchstarting);
+      g.taps = 0;
 
       for (i = 0; i < n; ++i) {
         t = touches[i], p = touch(this, touches, t.identifier);
@@ -20389,6 +32934,7 @@
     }
 
     function touchended() {
+      if (!this.__zooming) return;
       var g = gesture(this, arguments),
           touches = event$1.changedTouches,
           n = touches.length,
@@ -20406,7 +32952,14 @@
       }
 
       if (g.touch1 && !g.touch0) g.touch0 = g.touch1, delete g.touch1;
-      if (g.touch0) g.touch0[1] = this.__zoom.invert(g.touch0[0]);else g.end();
+      if (g.touch0) g.touch0[1] = this.__zoom.invert(g.touch0[0]);else {
+        g.end(); // If this was a dbltap, reroute to the (optional) dblclick.zoom handler.
+
+        if (g.taps === 2) {
+          var p = _select(this).on("dblclick.zoom");
+          if (p) p.apply(this, arguments);
+        }
+      }
     }
 
     zoom.wheelDelta = function (_) {
@@ -20615,27 +33168,27 @@
     });
   });
 
-  function _typeof$j(obj) {
+  function _typeof$k(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$j = function _typeof$1(obj) {
+      _typeof$k = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$j = function _typeof$1(obj) {
+      _typeof$k = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$j(obj);
+    return _typeof$k(obj);
   }
 
-  function _classCallCheck$i(instance, Constructor) {
+  function _classCallCheck$j(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$e(target, props) {
+  function _defineProperties$f(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -20645,21 +33198,21 @@
     }
   }
 
-  function _createClass$e(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$e(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$e(Constructor, staticProps);
+  function _createClass$f(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$f(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$f(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$g(self, call) {
-    if (call && (_typeof$j(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$h(self, call) {
+    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$g(self);
+    return _assertThisInitialized$h(self);
   }
 
-  function _assertThisInitialized$g(self) {
+  function _assertThisInitialized$h(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -20667,14 +33220,14 @@
     return self;
   }
 
-  function _getPrototypeOf$g(o) {
-    _getPrototypeOf$g = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$h(o) {
+    _getPrototypeOf$h = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$g(o);
+    return _getPrototypeOf$h(o);
   }
 
-  function _inherits$g(subClass, superClass) {
+  function _inherits$h(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -20686,16 +33239,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$g(subClass, superClass);
+    if (superClass) _setPrototypeOf$h(subClass, superClass);
   }
 
-  function _setPrototypeOf$g(o, p) {
-    _setPrototypeOf$g = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$h(o, p) {
+    _setPrototypeOf$h = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$g(o, p);
+    return _setPrototypeOf$h(o, p);
   }
   /**
       @class Button
@@ -20706,7 +33259,7 @@
   var Button =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$g(Button, _BaseClass);
+    _inherits$h(Button, _BaseClass);
     /**
         @memberof Button
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -20717,9 +33270,9 @@
     function Button() {
       var _this;
 
-      _classCallCheck$i(this, Button);
+      _classCallCheck$j(this, Button);
 
-      _this = _possibleConstructorReturn$g(this, _getPrototypeOf$g(Button).call(this));
+      _this = _possibleConstructorReturn$h(this, _getPrototypeOf$h(Button).call(this));
       _this._buttonStyle = {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
         "font-size": "14px",
@@ -20737,7 +33290,7 @@
     */
 
 
-    _createClass$e(Button, [{
+    _createClass$f(Button, [{
       key: "render",
       value: function render() {
         var _this2 = this;
@@ -20827,27 +33380,27 @@
     return Button;
   }(BaseClass);
 
-  function _typeof$k(obj) {
+  function _typeof$l(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$k = function _typeof$1(obj) {
+      _typeof$l = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$k = function _typeof$1(obj) {
+      _typeof$l = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$k(obj);
+    return _typeof$l(obj);
   }
 
-  function _classCallCheck$j(instance, Constructor) {
+  function _classCallCheck$k(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$f(target, props) {
+  function _defineProperties$g(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -20857,21 +33410,21 @@
     }
   }
 
-  function _createClass$f(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$f(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$f(Constructor, staticProps);
+  function _createClass$g(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$g(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$g(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$h(self, call) {
-    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$i(self, call) {
+    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$h(self);
+    return _assertThisInitialized$i(self);
   }
 
-  function _assertThisInitialized$h(self) {
+  function _assertThisInitialized$i(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -20879,14 +33432,14 @@
     return self;
   }
 
-  function _getPrototypeOf$h(o) {
-    _getPrototypeOf$h = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$i(o) {
+    _getPrototypeOf$i = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$h(o);
+    return _getPrototypeOf$i(o);
   }
 
-  function _inherits$h(subClass, superClass) {
+  function _inherits$i(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -20898,16 +33451,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$h(subClass, superClass);
+    if (superClass) _setPrototypeOf$i(subClass, superClass);
   }
 
-  function _setPrototypeOf$h(o, p) {
-    _setPrototypeOf$h = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$i(o, p) {
+    _setPrototypeOf$i = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$h(o, p);
+    return _setPrototypeOf$i(o, p);
   }
   /**
       @class Radio
@@ -20918,7 +33471,7 @@
   var Radio =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$h(Radio, _BaseClass);
+    _inherits$i(Radio, _BaseClass);
     /**
         @memberof Radio
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -20929,9 +33482,9 @@
     function Radio() {
       var _this;
 
-      _classCallCheck$j(this, Radio);
+      _classCallCheck$k(this, Radio);
 
-      _this = _possibleConstructorReturn$h(this, _getPrototypeOf$h(Radio).call(this));
+      _this = _possibleConstructorReturn$i(this, _getPrototypeOf$i(Radio).call(this));
       _this._labelStyle = {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
         "font-size": "14px",
@@ -20957,7 +33510,7 @@
     */
 
 
-    _createClass$f(Radio, [{
+    _createClass$g(Radio, [{
       key: "render",
       value: function render() {
         var _this2 = this;
@@ -21120,27 +33673,27 @@
     return Radio;
   }(BaseClass);
 
-  function _typeof$l(obj) {
+  function _typeof$m(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$l = function _typeof$1(obj) {
+      _typeof$m = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$l = function _typeof$1(obj) {
+      _typeof$m = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$l(obj);
+    return _typeof$m(obj);
   }
 
-  function _classCallCheck$k(instance, Constructor) {
+  function _classCallCheck$l(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$g(target, props) {
+  function _defineProperties$h(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -21150,21 +33703,21 @@
     }
   }
 
-  function _createClass$g(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$g(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$g(Constructor, staticProps);
+  function _createClass$h(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$h(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$h(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$i(self, call) {
-    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$j(self, call) {
+    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$i(self);
+    return _assertThisInitialized$j(self);
   }
 
-  function _assertThisInitialized$i(self) {
+  function _assertThisInitialized$j(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -21172,14 +33725,14 @@
     return self;
   }
 
-  function _getPrototypeOf$i(o) {
-    _getPrototypeOf$i = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$j(o) {
+    _getPrototypeOf$j = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$i(o);
+    return _getPrototypeOf$j(o);
   }
 
-  function _inherits$i(subClass, superClass) {
+  function _inherits$j(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -21191,16 +33744,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$i(subClass, superClass);
+    if (superClass) _setPrototypeOf$j(subClass, superClass);
   }
 
-  function _setPrototypeOf$i(o, p) {
-    _setPrototypeOf$i = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$j(o, p) {
+    _setPrototypeOf$j = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$i(o, p);
+    return _setPrototypeOf$j(o, p);
   }
   /**
       @class Select
@@ -21211,7 +33764,7 @@
   var Select =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$i(Select, _BaseClass);
+    _inherits$j(Select, _BaseClass);
     /**
         @memberof Select
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -21222,9 +33775,9 @@
     function Select() {
       var _this;
 
-      _classCallCheck$k(this, Select);
+      _classCallCheck$l(this, Select);
 
-      _this = _possibleConstructorReturn$i(this, _getPrototypeOf$i(Select).call(this));
+      _this = _possibleConstructorReturn$j(this, _getPrototypeOf$j(Select).call(this));
       _this._labelStyle = {
         "font-family": "'Roboto', 'Helvetica Neue', 'HelveticaNeue', 'Helvetica', 'Arial', sans-serif",
         "font-size": "14px",
@@ -21255,7 +33808,7 @@
     */
 
 
-    _createClass$g(Select, [{
+    _createClass$h(Select, [{
       key: "render",
       value: function render() {
         var _this2 = this;
@@ -21651,27 +34204,27 @@
     return clusters;
   }
 
-  function _typeof$m(obj) {
+  function _typeof$n(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$m = function _typeof$1(obj) {
+      _typeof$n = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$m = function _typeof$1(obj) {
+      _typeof$n = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$m(obj);
+    return _typeof$n(obj);
   }
 
-  function _classCallCheck$l(instance, Constructor) {
+  function _classCallCheck$m(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$h(target, props) {
+  function _defineProperties$i(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -21681,21 +34234,21 @@
     }
   }
 
-  function _createClass$h(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$h(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$h(Constructor, staticProps);
+  function _createClass$i(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$i(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$i(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$j(self, call) {
-    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$k(self, call) {
+    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$j(self);
+    return _assertThisInitialized$k(self);
   }
 
-  function _assertThisInitialized$j(self) {
+  function _assertThisInitialized$k(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -21703,14 +34256,14 @@
     return self;
   }
 
-  function _getPrototypeOf$j(o) {
-    _getPrototypeOf$j = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$k(o) {
+    _getPrototypeOf$k = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$j(o);
+    return _getPrototypeOf$k(o);
   }
 
-  function _inherits$j(subClass, superClass) {
+  function _inherits$k(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -21722,16 +34275,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$j(subClass, superClass);
+    if (superClass) _setPrototypeOf$k(subClass, superClass);
   }
 
-  function _setPrototypeOf$j(o, p) {
-    _setPrototypeOf$j = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$k(o, p) {
+    _setPrototypeOf$k = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$j(o, p);
+    return _setPrototypeOf$k(o, p);
   }
   /**
       @class Legend
@@ -21742,7 +34295,7 @@
   var Legend =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$j(Legend, _BaseClass);
+    _inherits$k(Legend, _BaseClass);
     /**
         @memberof Legend
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -21753,9 +34306,9 @@
     function Legend() {
       var _this;
 
-      _classCallCheck$l(this, Legend);
+      _classCallCheck$m(this, Legend);
 
-      _this = _possibleConstructorReturn$j(this, _getPrototypeOf$j(Legend).call(this));
+      _this = _possibleConstructorReturn$k(this, _getPrototypeOf$k(Legend).call(this));
       _this._align = "center";
       _this._data = [];
       _this._direction = "row";
@@ -21839,7 +34392,7 @@
       return _this;
     }
 
-    _createClass$h(Legend, [{
+    _createClass$i(Legend, [{
       key: "_fetchConfig",
       value: function _fetchConfig(key, d, i) {
         var val = this._shapeConfig[key] || this._shapeConfig.labelConfig[key];
@@ -22363,21 +34916,21 @@
     return Legend;
   }(BaseClass);
 
-  function _typeof$n(obj) {
+  function _typeof$o(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$n = function _typeof$1(obj) {
+      _typeof$o = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$n = function _typeof$1(obj) {
+      _typeof$o = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$n(obj);
+    return _typeof$o(obj);
   }
 
-  function _defineProperty$2(obj, key, value) {
+  function _defineProperty$3(obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
@@ -22392,13 +34945,13 @@
     return obj;
   }
 
-  function _classCallCheck$m(instance, Constructor) {
+  function _classCallCheck$n(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$i(target, props) {
+  function _defineProperties$j(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -22408,21 +34961,21 @@
     }
   }
 
-  function _createClass$i(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$i(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$i(Constructor, staticProps);
+  function _createClass$j(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$j(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$j(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$k(self, call) {
-    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$l(self, call) {
+    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$k(self);
+    return _assertThisInitialized$l(self);
   }
 
-  function _assertThisInitialized$k(self) {
+  function _assertThisInitialized$l(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -22430,14 +34983,14 @@
     return self;
   }
 
-  function _getPrototypeOf$k(o) {
-    _getPrototypeOf$k = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$l(o) {
+    _getPrototypeOf$l = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$k(o);
+    return _getPrototypeOf$l(o);
   }
 
-  function _inherits$k(subClass, superClass) {
+  function _inherits$l(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -22449,16 +35002,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$k(subClass, superClass);
+    if (superClass) _setPrototypeOf$l(subClass, superClass);
   }
 
-  function _setPrototypeOf$k(o, p) {
-    _setPrototypeOf$k = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$l(o, p) {
+    _setPrototypeOf$l = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$k(o, p);
+    return _setPrototypeOf$l(o, p);
   }
   /**
       @class ColorScale
@@ -22469,7 +35022,7 @@
   var ColorScale =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$k(ColorScale, _BaseClass);
+    _inherits$l(ColorScale, _BaseClass);
     /**
         @memberof ColorScale
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -22480,9 +35033,9 @@
     function ColorScale() {
       var _this;
 
-      _classCallCheck$m(this, ColorScale);
+      _classCallCheck$n(this, ColorScale);
 
-      _this = _possibleConstructorReturn$k(this, _getPrototypeOf$k(ColorScale).call(this));
+      _this = _possibleConstructorReturn$l(this, _getPrototypeOf$l(ColorScale).call(this));
       _this._axisClass = new Axis();
       _this._axisConfig = {
         gridSize: 0,
@@ -22539,7 +35092,7 @@
     */
 
 
-    _createClass$i(ColorScale, [{
+    _createClass$j(ColorScale, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
@@ -22658,9 +35211,9 @@
             fill: ticks ? function (d) {
               return _this2._colorScale(d);
             } : "url(#gradient-".concat(this._uuid, ")")
-          }, _defineProperty$2(_this$_rectClass$data, x, ticks ? function (d, i) {
+          }, _defineProperty$3(_this$_rectClass$data, x, ticks ? function (d, i) {
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
-          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2), _defineProperty$2(_this$_rectClass$data, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2), _defineProperty$2(_this$_rectClass$data, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$2(_this$_rectClass$data, height, this._size), _this$_rectClass$data)).config(this._rectConfig).render();
+          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2), _defineProperty$3(_this$_rectClass$data, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2), _defineProperty$3(_this$_rectClass$data, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$3(_this$_rectClass$data, height, this._size), _this$_rectClass$data)).config(this._rectConfig).render();
         } else {
           var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : function (d) {
             return d;
@@ -22924,27 +35477,27 @@
     return ColorScale;
   }(BaseClass);
 
-  function _typeof$o(obj) {
+  function _typeof$p(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$o = function _typeof$1(obj) {
+      _typeof$p = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$o = function _typeof$1(obj) {
+      _typeof$p = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$o(obj);
+    return _typeof$p(obj);
   }
 
-  function _classCallCheck$n(instance, Constructor) {
+  function _classCallCheck$o(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$j(target, props) {
+  function _defineProperties$k(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -22954,21 +35507,21 @@
     }
   }
 
-  function _createClass$j(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$j(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$j(Constructor, staticProps);
+  function _createClass$k(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$k(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$k(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$l(self, call) {
-    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$m(self, call) {
+    if (call && (_typeof$p(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$l(self);
+    return _assertThisInitialized$m(self);
   }
 
-  function _assertThisInitialized$l(self) {
+  function _assertThisInitialized$m(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -22999,21 +35552,21 @@
 
   function _superPropBase$7(object, property) {
     while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf$l(object);
+      object = _getPrototypeOf$m(object);
       if (object === null) break;
     }
 
     return object;
   }
 
-  function _getPrototypeOf$l(o) {
-    _getPrototypeOf$l = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$m(o) {
+    _getPrototypeOf$m = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$l(o);
+    return _getPrototypeOf$m(o);
   }
 
-  function _inherits$l(subClass, superClass) {
+  function _inherits$m(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -23025,16 +35578,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$l(subClass, superClass);
+    if (superClass) _setPrototypeOf$m(subClass, superClass);
   }
 
-  function _setPrototypeOf$l(o, p) {
-    _setPrototypeOf$l = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$m(o, p) {
+    _setPrototypeOf$m = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$l(o, p);
+    return _setPrototypeOf$m(o, p);
   }
   /**
       @class Timeline
@@ -23044,7 +35597,7 @@
   var Timeline =
   /*#__PURE__*/
   function (_Axis) {
-    _inherits$l(Timeline, _Axis);
+    _inherits$m(Timeline, _Axis);
     /**
         @memberof Timeline
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Axis.
@@ -23055,9 +35608,9 @@
     function Timeline() {
       var _this;
 
-      _classCallCheck$n(this, Timeline);
+      _classCallCheck$o(this, Timeline);
 
-      _this = _possibleConstructorReturn$l(this, _getPrototypeOf$l(Timeline).call(this));
+      _this = _possibleConstructorReturn$m(this, _getPrototypeOf$m(Timeline).call(this));
       _this._barConfig = Object.assign({}, _this._barConfig, {
         "stroke-width": function strokeWidth() {
           return _this._buttonBehaviorCurrent === "buttons" ? 0 : 1;
@@ -23125,7 +35678,7 @@
     */
 
 
-    _createClass$j(Timeline, [{
+    _createClass$k(Timeline, [{
       key: "_brushBrush",
       value: function _brushBrush() {
         if (event$1.sourceEvent && event$1.sourceEvent.offsetX && event$1.selection !== null && (!this._brushing || this._snapping)) {
@@ -23332,7 +35885,7 @@
         if (this._ticks) this._domain = this._buttonBehaviorCurrent === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(date$2);
         this._labels = this._ticks;
 
-        _get$7(_getPrototypeOf$l(Timeline.prototype), "render", this).call(this, callback);
+        _get$7(_getPrototypeOf$m(Timeline.prototype), "render", this).call(this, callback);
 
         var offset = this._outerBounds[y],
             range = this._d3Scale.range();
@@ -26109,27 +38662,27 @@
   Popper.placements = placements;
   Popper.Defaults = Defaults;
 
-  function _typeof$p(obj) {
+  function _typeof$q(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$p = function _typeof$1(obj) {
+      _typeof$q = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$p = function _typeof$1(obj) {
+      _typeof$q = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$p(obj);
+    return _typeof$q(obj);
   }
 
-  function _classCallCheck$o(instance, Constructor) {
+  function _classCallCheck$p(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$k(target, props) {
+  function _defineProperties$l(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -26139,21 +38692,21 @@
     }
   }
 
-  function _createClass$k(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$k(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$k(Constructor, staticProps);
+  function _createClass$l(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$l(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$l(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$m(self, call) {
-    if (call && (_typeof$p(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$n(self, call) {
+    if (call && (_typeof$q(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$m(self);
+    return _assertThisInitialized$n(self);
   }
 
-  function _assertThisInitialized$m(self) {
+  function _assertThisInitialized$n(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -26161,14 +38714,14 @@
     return self;
   }
 
-  function _getPrototypeOf$m(o) {
-    _getPrototypeOf$m = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$n(o) {
+    _getPrototypeOf$n = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$m(o);
+    return _getPrototypeOf$n(o);
   }
 
-  function _inherits$m(subClass, superClass) {
+  function _inherits$n(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -26180,16 +38733,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$m(subClass, superClass);
+    if (superClass) _setPrototypeOf$n(subClass, superClass);
   }
 
-  function _setPrototypeOf$m(o, p) {
-    _setPrototypeOf$m = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$n(o, p) {
+    _setPrototypeOf$n = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$m(o, p);
+    return _setPrototypeOf$n(o, p);
   }
   /**
       @class Tooltip
@@ -26200,7 +38753,7 @@
   var Tooltip =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$m(Tooltip, _BaseClass);
+    _inherits$n(Tooltip, _BaseClass);
     /**
         @memberof Tooltip
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -26211,9 +38764,9 @@
     function Tooltip() {
       var _this;
 
-      _classCallCheck$o(this, Tooltip);
+      _classCallCheck$p(this, Tooltip);
 
-      _this = _possibleConstructorReturn$m(this, _getPrototypeOf$m(Tooltip).call(this));
+      _this = _possibleConstructorReturn$n(this, _getPrototypeOf$n(Tooltip).call(this));
       _this._arrow = accessor("arrow", "");
       _this._arrowStyle = {
         "content": "",
@@ -26297,7 +38850,7 @@
     */
 
 
-    _createClass$k(Tooltip, [{
+    _createClass$l(Tooltip, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
@@ -26835,13 +39388,13 @@
     return Tooltip;
   }(BaseClass);
 
-  function _classCallCheck$p(instance, Constructor) {
+  function _classCallCheck$q(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$l(target, props) {
+  function _defineProperties$m(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -26851,9 +39404,9 @@
     }
   }
 
-  function _createClass$l(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$l(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$l(Constructor, staticProps);
+  function _createClass$m(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$m(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$m(Constructor, staticProps);
     return Constructor;
   }
   /**
@@ -26871,7 +39424,7 @@
         @private
     */
     function Message() {
-      _classCallCheck$p(this, Message);
+      _classCallCheck$q(this, Message);
 
       this._isVisible = false;
     }
@@ -26882,7 +39435,7 @@
     */
 
 
-    _createClass$l(Message, [{
+    _createClass$m(Message, [{
       key: "exit",
       value: function exit(elem, duration) {
         elem.transition().duration(duration).style("opacity", 0).transition().remove();
@@ -26927,7 +39480,7 @@
             _ref2$html = _ref2.html,
             html = _ref2$html === void 0 ? "Please Wait" : _ref2$html,
             _ref2$mask = _ref2.mask,
-            mask = _ref2$mask === void 0 ? "rgba(0, 0, 0, 0.1)" : _ref2$mask,
+            mask = _ref2$mask === void 0 ? "rgba(0, 0, 0, 0.05)" : _ref2$mask,
             _ref2$style = _ref2.style,
             style = _ref2$style === void 0 ? {} : _ref2$style;
 
@@ -38399,7 +50952,7 @@
 
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var timelinePossible = this._time && this._timeline;
-    var ticks = timelinePossible ? Array.from(new Set(this._data.map(this._time))).map(date$2) : [];
+    var ticks = timelinePossible ? unique(this._data.map(this._time)).map(date$2) : [];
     timelinePossible = timelinePossible && ticks.length > 1;
     var padding = this._timelinePadding() ? this._padding : {
       top: 0,
@@ -39079,27 +51632,27 @@
     if (Array.isArray(arr)) return arr;
   }
 
-  function _typeof$q(obj) {
+  function _typeof$r(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$q = function _typeof$1(obj) {
+      _typeof$r = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$q = function _typeof$1(obj) {
+      _typeof$r = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$q(obj);
+    return _typeof$r(obj);
   }
 
-  function _classCallCheck$q(instance, Constructor) {
+  function _classCallCheck$r(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$m(target, props) {
+  function _defineProperties$n(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -39109,28 +51662,28 @@
     }
   }
 
-  function _createClass$m(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$m(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$m(Constructor, staticProps);
+  function _createClass$n(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$n(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$n(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$n(self, call) {
-    if (call && (_typeof$q(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$o(self, call) {
+    if (call && (_typeof$r(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$n(self);
+    return _assertThisInitialized$o(self);
   }
 
-  function _getPrototypeOf$n(o) {
-    _getPrototypeOf$n = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$o(o) {
+    _getPrototypeOf$o = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$n(o);
+    return _getPrototypeOf$o(o);
   }
 
-  function _assertThisInitialized$n(self) {
+  function _assertThisInitialized$o(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -39138,7 +51691,7 @@
     return self;
   }
 
-  function _inherits$n(subClass, superClass) {
+  function _inherits$o(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -39150,16 +51703,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$n(subClass, superClass);
+    if (superClass) _setPrototypeOf$o(subClass, superClass);
   }
 
-  function _setPrototypeOf$n(o, p) {
-    _setPrototypeOf$n = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$o(o, p) {
+    _setPrototypeOf$o = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$n(o, p);
+    return _setPrototypeOf$o(o, p);
   }
   /**
    * Default padding logic that will return false if the screen is less than 600 pixels wide.
@@ -39189,7 +51742,7 @@
   var Viz =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$n(Viz, _BaseClass);
+    _inherits$o(Viz, _BaseClass);
     /**
         @memberof Viz
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -39200,9 +51753,9 @@
     function Viz() {
       var _this;
 
-      _classCallCheck$q(this, Viz);
+      _classCallCheck$r(this, Viz);
 
-      _this = _possibleConstructorReturn$n(this, _getPrototypeOf$n(Viz).call(this));
+      _this = _possibleConstructorReturn$o(this, _getPrototypeOf$o(Viz).call(this));
       _this._aggs = {};
       _this._ariaHidden = true;
       _this._backClass = new TextBox().on("click", function () {
@@ -39254,9 +51807,9 @@
       _this._legend = true;
       _this._legendClass = new Legend();
       _this._legendConfig = {
-        label: legendLabel.bind(_assertThisInitialized$n(_this)),
+        label: legendLabel.bind(_assertThisInitialized$o(_this)),
         shapeConfig: {
-          ariaLabel: legendLabel.bind(_assertThisInitialized$n(_this)),
+          ariaLabel: legendLabel.bind(_assertThisInitialized$o(_this)),
           labelConfig: {
             fontColor: undefined,
             fontResize: false,
@@ -39273,30 +51826,31 @@
       };
 
       _this._legendTooltip = {};
-      _this._loadingHTML = constant("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
+      _this._loadingHTML = constant("\n    <div style=\"left: 50%; top: 50%; position: absolute; transform: translate(-50%, -50%); font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"bottom: 0; display: block; line-height: 1; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
       _this._loadingMessage = true;
       _this._lrucache = lrucache(10);
       _this._messageClass = new Message();
-      _this._messageMask = "rgba(0, 0, 0, 0.1)";
+      _this._messageMask = "rgba(0, 0, 0, 0.05)";
       _this._messageStyle = {
-        "left": "0px",
+        "bottom": "0",
+        "left": "0",
         "position": "absolute",
+        "right": "0",
         "text-align": "center",
-        "top": "45%",
-        "width": "100%"
+        "top": "0"
       };
-      _this._noDataHTML = constant("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>No Data Available</strong>\n    </div>");
+      _this._noDataHTML = constant("\n    <div style=\"left: 50%; top: 50%; position: absolute; transform: translate(-50%, -50%); font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>No Data Available</strong>\n    </div>");
       _this._noDataMessage = true;
       _this._on = {
-        "click.shape": clickShape.bind(_assertThisInitialized$n(_this)),
-        "click.legend": clickLegend.bind(_assertThisInitialized$n(_this)),
-        "mouseenter": mouseenter.bind(_assertThisInitialized$n(_this)),
-        "mouseleave": mouseleave.bind(_assertThisInitialized$n(_this)),
-        "mousemove.shape": mousemoveShape.bind(_assertThisInitialized$n(_this)),
-        "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$n(_this))
+        "click.shape": clickShape.bind(_assertThisInitialized$o(_this)),
+        "click.legend": clickLegend.bind(_assertThisInitialized$o(_this)),
+        "mouseenter": mouseenter.bind(_assertThisInitialized$o(_this)),
+        "mouseleave": mouseleave.bind(_assertThisInitialized$o(_this)),
+        "mousemove.shape": mousemoveShape.bind(_assertThisInitialized$o(_this)),
+        "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$o(_this))
       };
       _this._queue = [];
-      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$q(window)) === undefined ? "" : window;
+      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$r(window)) === undefined ? "" : window;
       _this._shape = constant("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
@@ -39431,7 +51985,7 @@
      */
 
 
-    _createClass$m(Viz, [{
+    _createClass$n(Viz, [{
       key: "_preDraw",
       value: function _preDraw() {
         var _this2 = this;
@@ -39532,7 +52086,7 @@
           this._messageClass.render({
             container: this._select.node().parentNode,
             html: this._noDataHTML(this),
-            mask: this._messageMask,
+            mask: false,
             style: this._messageStyle
           });
         }
@@ -39735,7 +52289,7 @@
             this._messageClass.render({
               container: this._select.node().parentNode,
               html: this._loadingHTML(this),
-              mask: this._messageMask,
+              mask: this._filteredData ? this._messageMask : false,
               style: this._messageStyle
             });
           }
@@ -40169,7 +52723,7 @@
           if (typeof k === "function") return k;else {
             if (!_this4._aggs[k]) {
               _this4._aggs[k] = function (a) {
-                var v = Array.from(new Set(a));
+                var v = unique(a);
                 return v.length === 1 ? v[0] : v;
               };
             }
@@ -40568,7 +53122,7 @@
 
             if (!this._aggs[_]) {
               this._aggs[_] = function (a) {
-                var v = Array.from(new Set(a));
+                var v = unique(a);
                 return v.length === 1 ? v[0] : v;
               };
             }
@@ -40899,19 +53453,26 @@
   }(BaseClass);
 
   /**
-      Adds buffers in between ordinal axis ticks.
-      @param {Array} domain
-      @private
-  */
-  function ordinalBuffer (domain) {
-    if (domain.includes("d3plus-buffer-start")) return domain;
-    var newDomain = ["d3plus-buffer-start"];
-    domain.forEach(function (b) {
-      newDomain.push(b);
-      newDomain.push("d3plus-buffer-".concat(b));
-    });
-    return newDomain;
-  }
+   * Adds left/right padding to a point or time scale.
+   * @private
+   */
+  var discreteBuffer = (function (scale, data, discrete) {
+    if (scale.padding) scale.padding(0.5);else {
+      var closest = data.map(function (d) {
+        return d[discrete];
+      }).reduce(function (acc, curr, i, arr) {
+        if (!i) return acc;
+        var prev = arr[i - 1];
+        if (!acc || curr - prev < acc) return curr - prev;else return acc;
+      }, 0);
+      var domain = scale.domain().slice();
+      if (discrete === "y") domain.reverse();
+      domain[0] = new Date(+domain[0] - closest / 2);
+      domain[1] = new Date(+domain[1] + closest / 2);
+      if (discrete === "y") domain.reverse();
+      scale.domain(domain);
+    }
+  });
 
   /**
       Adds a buffer to either side of the non-discrete axis.
@@ -40976,8 +53537,7 @@
     if (bMin < oppDomain[0]) oppDomain[0] = bMin;
     if (isDiscreteX) oppDomain.reverse();
     oppScale.domain(oppDomain);
-    var discreteScale = isDiscreteX ? x : y;
-    discreteScale.domain(ordinalBuffer(discreteScale.domain()));
+    discreteBuffer(isDiscreteX ? x : y, data, this._discrete);
     return [x, y];
   }
 
@@ -41044,8 +53604,7 @@
     if (bMin < oppDomain[0]) oppDomain[0] = bMin;
     if (isDiscreteX) oppDomain.reverse();
     oppScale.domain(oppDomain);
-    var discreteScale = isDiscreteX ? x : y;
-    discreteScale.domain(ordinalBuffer(discreteScale.domain()));
+    discreteBuffer(isDiscreteX ? x : y, data, this._discrete);
     return [x, y];
   }
 
@@ -41073,8 +53632,8 @@
         yD = y.domain().slice();
     var xR = x.range(),
         yR = y.range();
-    if (!x.invert) xD = ordinalBuffer(xD);
-    if (!y.invert) yD = ordinalBuffer(yD);
+    if (!x.invert && x.padding) discreteBuffer(x, data, this._discrete);
+    if (!y.invert && y.padding) discreteBuffer(y, data, this._discrete);
     data.forEach(function (d) {
       var s = buffer ? buffer : config.r(d.data, d.i) * 2;
 
@@ -41162,8 +53721,8 @@
         yD = y.domain().slice();
     var xR = x.range(),
         yR = y.range();
-    if (!x.invert) xD = ordinalBuffer(xD);
-    if (!y.invert) yD = ordinalBuffer(yD);
+    if (!x.invert && x.padding) discreteBuffer(x, data, this._discrete);
+    if (!y.invert && y.padding) discreteBuffer(y, data, this._discrete);
     data.forEach(function (d) {
       var h = config.height(d.data, d.i),
           w = config.width(d.data, d.i);
@@ -41648,7 +54207,7 @@
         }
 
         var xDomain = this._xDomain ? this._xDomain.slice() : domains.x,
-            xScale = this._xSort ? "Ordinal" : "Linear";
+            xScale = this._xSort ? "Point" : "Linear";
         if (xDomain[0] === void 0) xDomain[0] = domains.x[0];
         if (xDomain[1] === void 0) xDomain[1] = domains.x[1];
 
@@ -41663,11 +54222,11 @@
           }).map(function (d) {
             return d.x;
           })));
-          xScale = "Ordinal";
+          xScale = "Point";
         }
 
         var x2Domain = this._x2Domain ? this._x2Domain.slice() : domains.x2,
-            x2Scale = this._x2Sort ? "Ordinal" : "Linear";
+            x2Scale = this._x2Sort ? "Point" : "Linear";
         if (x2Domain && x2Domain[0] === void 0) x2Domain[0] = domains.x2[0];
         if (x2Domain && x2Domain[1] === void 0) x2Domain[1] = domains.x2[1];
 
@@ -41682,15 +54241,15 @@
           }).map(function (d) {
             return d.x2;
           })));
-          x2Scale = "Ordinal";
+          x2Scale = "Point";
         }
 
         var yDomain = this._yDomain ? this._yDomain.slice() : domains.y,
-            yScale = this._ySort ? "Ordinal" : "Linear";
+            yScale = this._ySort ? "Point" : "Linear";
         if (yDomain[0] === void 0) yDomain[0] = domains.y[0];
         if (yDomain[1] === void 0) yDomain[1] = domains.y[1];
         var y2Domain = this._y2Domain ? this._y2Domain.slice() : domains.y2,
-            y2Scale = this._y2Sort ? "Ordinal" : "Linear";
+            y2Scale = this._y2Sort ? "Point" : "Linear";
         if (y2Domain && y2Domain[0] === void 0) y2Domain[0] = domains.y2[0];
         if (y2Domain && y2Domain[1] === void 0) y2Domain[1] = domains.y2[1];
 
@@ -41703,13 +54262,13 @@
           }).map(function (d) {
             return d.y;
           })));
-          yScale = "Ordinal";
+          yScale = "Point";
           y2Domain = Array.from(new Set(data.sort(function (a, b) {
             return _this2._y2Sort ? _this2._y2Sort(a.data, b.data) : a.y2 - b.y2;
           }).map(function (d) {
             return d.y2;
           })));
-          y2Scale = "Ordinal";
+          y2Scale = "Point";
         }
 
         if (y2Time) {
@@ -41747,7 +54306,7 @@
         });
         var oppScale = this._discrete === "x" ? yScale : xScale;
 
-        if (this._xConfig.scale !== "log" && this._yConfig.scale !== "log" && oppScale !== "Ordinal") {
+        if (this._xConfig.scale !== "log" && this._yConfig.scale !== "log" && oppScale !== "Point") {
           shapeData.forEach(function (d) {
             if (_this2._buffer[d.key]) {
               var res = _this2._buffer[d.key].bind(_this2)({
@@ -41796,7 +54355,8 @@
           gridConfig: {
             stroke: !this._discrete || this._discrete === "x" ? this._yTest.gridConfig().stroke : "transparent"
           },
-          locale: this._locale
+          locale: this._locale,
+          scalePadding: _y2.padding ? _y2.padding() : 0
         };
 
         if (!showX) {
@@ -41859,7 +54419,8 @@
           gridConfig: {
             stroke: !this._discrete || this._discrete === "y" ? this._xTest.gridConfig().stroke : "transparent"
           },
-          locale: this._locale
+          locale: this._locale,
+          scalePadding: _x2.padding ? _x2.padding() : 0
         };
 
         if (!showY) {
@@ -42128,15 +54689,17 @@
 
             var _scale = _this2._discrete === "x" ? _x2 : _y2;
 
-            var vals = (_this2._discrete === "x" ? xDomain : yDomain).filter(function (d) {
-              return typeof d !== "string" || d.indexOf("d3plus-buffer-") < 0;
-            });
+            var scaleType = _this2._discrete === "x" ? xScale : yScale;
+            var vals = _this2._discrete === "x" ? xDomain : yDomain;
 
             var _range = _this2._discrete === "x" ? xRange : yRange;
 
-            if (vals.length > 1) space = _scale(vals[1]) - _scale(vals[0]);else space = _range[_range.length - 1] - _range[0];
-            space -= _this2._groupPadding;
-            var barSize = space;
+            if (scaleType !== "Point" && vals.length === 2) {
+              space = (_scale(d.values[_this2._discrete === "x" ? 0 : d.values.length - 1][_this2._discrete]) - _scale(vals[0])) * 2;
+            } else if (vals.length > 1) space = _scale(vals[1]) - _scale(vals[0]);else space = _range[_range.length - 1] - _range[0];
+
+            if (_this2._groupPadding < space) space -= _this2._groupPadding;
+            var barSize = space || 1;
             var groups = nest().key(function (d) {
               return d[_this2._discrete];
             }).key(function (d) {
@@ -44160,6 +56723,15 @@
 	    } catch (f) { /* empty */ }
 	  } return false;
 	};
+
+	// `String.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
+	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
+	  includes: function includes(searchString /* , position = 0 */) {
+	    return !!~String(requireObjectCoercible(this))
+	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
 
 	var nativeStartsWith = ''.startsWith;
 	var min$2 = Math.min;
