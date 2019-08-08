@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.54
+  d3plus-common v0.6.55
   Common functions and methods used across D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -555,9 +555,12 @@
         } else if (types.indexOf(String) >= 0) {
           value = unique(values);
           if (value.length === 1) value = value[0];
-        } else if (types.indexOf(Number) >= 0) value = d3Array.sum(values);else if (types.indexOf(Object) >= 0) value = objectMerge(values.filter(function (v) {
-          return v;
-        }));else {
+        } else if (types.indexOf(Number) >= 0) value = d3Array.sum(values);else if (types.indexOf(Object) >= 0) {
+          value = unique(values.filter(function (v) {
+            return v;
+          }));
+          if (value.length === 1) value = value[0];else value = objectMerge(value);
+        } else {
           value = unique(values.filter(function (v) {
             return v !== void 0;
           }));
