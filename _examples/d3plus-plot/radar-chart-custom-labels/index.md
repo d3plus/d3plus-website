@@ -2,7 +2,7 @@
 title: Radar Chart Custom Labels
 width: 990
 height: 400
-time: 1565285172049
+time: 1565286287250
 date: August 08, 2019
 ---
 
@@ -36,7 +36,7 @@ new d3plus.Radar()
           fontColor: "green"
         },
         label: function(d) {
-          return d.replace("Region", "").trim();
+          return d.Geography.replace("Region", "").trim();
         }
       }
     }
