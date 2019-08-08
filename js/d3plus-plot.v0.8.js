@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.19
+  d3plus-plot v0.8.20
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -675,7 +675,9 @@
         var height = this._height - this._margin.top - this._margin.bottom,
             opp = this._discrete ? this._discrete === "x" ? "y" : "x" : undefined,
             opp2 = this._discrete ? this._discrete === "x" ? "y2" : "x2" : undefined,
-            opps = [opp, opp2],
+            opps = [opp, opp2].filter(function (d) {
+          return d;
+        }),
             parent = this._select,
             transition = this._transition,
             width = this._width - this._margin.left - this._margin.right;
