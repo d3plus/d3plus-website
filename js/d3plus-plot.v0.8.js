@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.20
+  d3plus-plot v0.8.21
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -2318,6 +2318,8 @@
             r: radius * ((d + 1) / _this2._levels)
           };
         });
+        var circleConfig = d3plusCommon.configPrep.bind(this)(this._axisConfig.shapeConfig, "shape", "Circle");
+        delete circleConfig.label;
         new shapes.Circle().data(circularAxis).select(d3plusCommon.elem("g.d3plus-Radar-radial-circles", {
           parent: this._select,
           enter: {
@@ -2326,7 +2328,7 @@
           update: {
             transform: transform
           }
-        }).node()).config(d3plusCommon.configPrep.bind(this)(this._axisConfig.shapeConfig, "shape", "Circle")).render();
+        }).node()).config(circleConfig).render();
         var totalAxis = nestedAxisData.length;
         var polarAxis = nestedAxisData.map(function (d, i) {
           var width = _this2._outerPadding;
@@ -2353,6 +2355,9 @@
             height: height
           };
           return {
+            __d3plus__: true,
+            data: d3plusCommon.merge(d.values),
+            i: i,
             id: d.key,
             angle: angle,
             textAnchor: textAnchor,
