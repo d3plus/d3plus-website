@@ -2,8 +2,8 @@
 title: Line Plot
 width: 990
 height: 400
-time: 1564498910364
-date: July 30, 2019
+time: 1565284607616
+date: August 08, 2019
 ---
 
 # Line Plot
@@ -11,7 +11,7 @@ date: July 30, 2019
 When constructing data to be used with a [LinePlot](http://d3plus.org/docs/#LinePlot), there must be a unique data point for each point on the [discrete](http://d3plus.org/docs/#Plot.discrete) axis (defaults to the X axis). Given this data array:
 
 ```js
-var data = [
+var myData = [
   {id: "alpha", x: 4, y:  7},
   {id: "alpha", x: 5, y: 25},
   {id: "alpha", x: 6, y: 13},
@@ -25,7 +25,9 @@ We can create a simple Line Plot:
 
 ```js
 new d3plus.LinePlot()
-  .data(data)
-  .groupBy("id")
+  .config({
+    data: myData,
+    groupBy: "id"
+  })
   .render();
 ```

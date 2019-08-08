@@ -21,7 +21,7 @@
 
 <script>
 
-  var data = [
+  var myData = [
     {id: "alpha", x: 4, y:  7},
     {id: "alpha", x: 5, y: 25},
     {id: "alpha", x: 6, y: 13},
@@ -31,32 +31,38 @@
   ];
 
   new d3plus.LinePlot()
-    .data(data)
-    .groupBy("id")
-    .annotations([
-      {
-        data: [
-          {x: 5, y: 7},
-          {x: 5, y: 16}
-        ],
-        shape: "Line",
-        stroke: "#ddd",
-        strokeDasharray: "10",
-        strokeWidth: 2
-      },
-      {
-        data: [
-          {x: 5, y: 16, width: 200, height: 100}
-        ],
-        fill: "#ddd",
-        label: "This is important",
-        labelConfig: {
-          textAnchor: "middle",
-          verticalAlign: "middle"
+    .config({
+      data: myData,
+      groupBy: "id",
+      annotations: [
+        {
+          data: [
+            {id: "box", x: 5, y: 7},
+            {id: "box", x: 5, y: 16},
+            {id: "dotted", x: 4, y: 23},
+            {id: "dotted", x: 6, y: 23}
+          ],
+          shape: "Line",
+          stroke: function(d) {
+            return d.id === "box" ? "#ddd" : "green";
+          },
+          strokeDasharray: "10",
+          strokeWidth: 2
         },
-        shape: "Rect"
-      }
-    ])
+        {
+          data: [
+            {x: 5, y: 16, width: 150, height: 50}
+          ],
+          fill: "#ddd",
+          label: "This is important",
+          labelConfig: {
+            textAnchor: "middle",
+            verticalAlign: "middle"
+          },
+          shape: "Rect"
+        }
+      ]
+    })
     .render();
 
 </script>

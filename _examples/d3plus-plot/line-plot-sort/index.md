@@ -2,8 +2,8 @@
 title: Line Plot Sorting
 width: 990
 height: 400
-time: 1564498910364
-date: July 30, 2019
+time: 1565284607616
+date: August 08, 2019
 ---
 
 # Line Plot Sorting
