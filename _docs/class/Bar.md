@@ -38,7 +38,7 @@ Draws the bars.
 This is a static method of [<code>Bar</code>](#Bar), and is chainable with other methods of this Class.
 
 
-<a name="Bar.height" href="#Bar.height">#</a> Bar.**height**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L157)
+<a name="Bar.height" href="#Bar.height">#</a> Bar.**height**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L164)
 
 If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance.
 
@@ -53,7 +53,7 @@ function(d) {
 ```
 
 
-<a name="Bar.width" href="#Bar.width">#</a> Bar.**width**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L171)
+<a name="Bar.width" href="#Bar.width">#</a> Bar.**width**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L178)
 
 If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance.
 
@@ -68,7 +68,7 @@ function(d) {
 ```
 
 
-<a name="Bar.x0" href="#Bar.x0">#</a> Bar.**x0**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L181)
+<a name="Bar.x0" href="#Bar.x0">#</a> Bar.**x0**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L188)
 
 If *value* is specified, sets the x0 accessor to the specified function or number and returns the current class instance.
 
@@ -76,7 +76,7 @@ If *value* is specified, sets the x0 accessor to the specified function or numbe
 This is a static method of [<code>Bar</code>](#Bar), and is chainable with other methods of this Class.
 
 
-<a name="Bar.x1" href="#Bar.x1">#</a> Bar.**x1**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L194)
+<a name="Bar.x1" href="#Bar.x1">#</a> Bar.**x1**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L201)
 
 If *value* is specified, sets the x1 accessor to the specified function or number and returns the current class instance.
 
@@ -84,7 +84,7 @@ If *value* is specified, sets the x1 accessor to the specified function or numbe
 This is a static method of [<code>Bar</code>](#Bar), and is chainable with other methods of this Class.
 
 
-<a name="Bar.y0" href="#Bar.y0">#</a> Bar.**y0**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L204)
+<a name="Bar.y0" href="#Bar.y0">#</a> Bar.**y0**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L211)
 
 If *value* is specified, sets the y0 accessor to the specified function or number and returns the current class instance.
 
@@ -92,7 +92,7 @@ If *value* is specified, sets the y0 accessor to the specified function or numbe
 This is a static method of [<code>Bar</code>](#Bar), and is chainable with other methods of this Class.
 
 
-<a name="Bar.y1" href="#Bar.y1">#</a> Bar.**y1**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L217)
+<a name="Bar.y1" href="#Bar.y1">#</a> Bar.**y1**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Bar.js#L224)
 
 If *value* is specified, sets the y1 accessor to the specified function or number and returns the current class instance.
 

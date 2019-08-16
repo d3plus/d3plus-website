@@ -33,7 +33,7 @@ Draws the circles.
 This is a static method of [<code>Circle</code>](#Circle), and is chainable with other methods of this Class.
 
 
-<a name="Circle.r" href="#Circle.r">#</a> Circle.**r**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Circle.js#L89)
+<a name="Circle.r" href="#Circle.r">#</a> Circle.**r**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Circle.js#L98)
 
 If *value* is specified, sets the radius accessor to the specified function or number and returns the current class instance.
 

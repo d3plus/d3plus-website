@@ -34,7 +34,7 @@ Draws the rectangles.
 This is a static method of [<code>Rect</code>](#Rect), and is chainable with other methods of this Class.
 
 
-<a name="Rect.height" href="#Rect.height">#</a> Rect.**height**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Rect.js#L90)
+<a name="Rect.height" href="#Rect.height">#</a> Rect.**height**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Rect.js#L97)
 
 If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance.
 
@@ -49,7 +49,7 @@ function(d) {
 ```
 
 
-<a name="Rect.width" href="#Rect.width">#</a> Rect.**width**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Rect.js#L104)
+<a name="Rect.width" href="#Rect.width">#</a> Rect.**width**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Shape/Rect.js#L111)
 
 If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance.
 
