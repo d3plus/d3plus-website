@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.16.10
+  d3plus-shape v0.16.11
   Fancy SVG shapes for visualizations
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -9520,16 +9520,29 @@
           }
         }).selectAll(".d3plus-".concat(this._name)).data(data, key); // Orders and transforms the updating Shapes.
 
-        update.order().transition(this._transition).call(this._applyTransform.bind(this)); // Makes the enter state of the group selection accessible.
+        update.order();
+
+        if (this._duration) {
+          update.transition(this._transition).call(this._applyTransform.bind(this));
+        } else {
+          update.call(this._applyTransform.bind(this));
+        } // Makes the enter state of the group selection accessible.
+
 
         var enter = this._enter = update.enter().append(this._tagName).attr("class", function (d, i) {
           return "d3plus-Shape d3plus-".concat(_this6._name, " d3plus-id-").concat(strip(_this6._nestWrapper(_this6._id)(d, i)));
         }).call(this._applyTransform.bind(this)).attr("aria-label", this._ariaLabel).attr("role", this._role).attr("opacity", this._nestWrapper(this._opacity));
         var enterUpdate = enter.merge(update);
-        enterUpdate.attr("shape-rendering", this._nestWrapper(this._shapeRendering)).attr("pointer-events", "none").transition(this._transition).attr("opacity", this._nestWrapper(this._opacity)).attr("pointer-events", this._pointerEvents); // Makes the exit state of the group selection accessible.
+        var enterUpdateRender = enterUpdate.attr("shape-rendering", this._nestWrapper(this._shapeRendering));
+
+        if (this._duration) {
+          enterUpdateRender = enterUpdateRender.attr("pointer-events", "none").transition(this._transition).transition().delay(100).attr("pointer-events", this._pointerEvents);
+        }
+
+        enterUpdateRender.attr("opacity", this._nestWrapper(this._opacity)); // Makes the exit state of the group selection accessible.
 
         var exit = this._exit = update.exit();
-        exit.transition().delay(this._duration).remove();
+        if (this._duration) exit.transition().delay(this._duration).remove();else exit.remove();
 
         this._renderImage();
 
@@ -11375,18 +11388,30 @@
     }, {
       key: "render",
       value: function render(callback) {
+        var _this4 = this;
+
         _get(_getPrototypeOf(Area.prototype), "render", this).call(this, callback);
 
         var path = this._path = area().defined(this._defined).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
         var exitPath = area().defined(function (d) {
           return d;
-        }).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
+        }).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).y(this._y).x0(function (d, i) {
+          return _this4._x1 ? _this4._x0(d, i) + (_this4._x1(d, i) - _this4._x0(d, i)) / 2 : _this4._x0(d, i);
+        }).x1(function (d, i) {
+          return _this4._x1 ? _this4._x0(d, i) + (_this4._x1(d, i) - _this4._x0(d, i)) / 2 : _this4._x0(d, i);
+        }).y0(function (d, i) {
+          return _this4._y1 ? _this4._y0(d, i) + (_this4._y1(d, i) - _this4._y0(d, i)) / 2 : _this4._y0(d, i);
+        }).y1(function (d, i) {
+          return _this4._y1 ? _this4._y0(d, i) + (_this4._y1(d, i) - _this4._y0(d, i)) / 2 : _this4._y0(d, i);
+        });
 
         this._enter.append("path").attr("transform", function (d) {
           return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
         }).attr("d", function (d) {
-          return path(d.values);
-        }).call(this._applyStyle.bind(this));
+          return exitPath(d.values);
+        }).call(this._applyStyle.bind(this)).transition(this._transition).attrTween("d", function (d) {
+          return interpolatePath(_select(this).attr("d"), path(d.values));
+        });
 
         this._update.select("path").transition(this._transition).attr("transform", function (d) {
           return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
@@ -11571,7 +11596,7 @@
 
         _get(_getPrototypeOf(Bar.prototype), "render", this).call(this, callback);
 
-        this._enter.attr("width", function (d, i) {
+        var enter = this._enter.attr("width", function (d, i) {
           return _this2._x1 === null ? _this2._getWidth(d, i) : 0;
         }).attr("height", function (d, i) {
           return _this2._x1 !== null ? _this2._getHeight(d, i) : 0;
@@ -11579,20 +11604,27 @@
           return _this2._x1 === null ? -_this2._getWidth(d, i) / 2 : 0;
         }).attr("y", function (d, i) {
           return _this2._x1 !== null ? -_this2._getHeight(d, i) / 2 : 0;
-        }).call(this._applyStyle.bind(this)).transition(this._transition).call(this._applyPosition.bind(this));
+        }).call(this._applyStyle.bind(this));
 
-        this._update.transition(this._transition).call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
+        var update = this._update;
 
-        this._exit.transition(this._transition).attr("width", function (d, i) {
-          return _this2._x1 === null ? _this2._getWidth(d, i) : 0;
-        }).attr("height", function (d, i) {
-          return _this2._x1 !== null ? _this2._getHeight(d, i) : 0;
-        }).attr("x", function (d, i) {
-          return _this2._x1 === null ? -_this2._getWidth(d, i) / 2 : 0;
-        }).attr("y", function (d, i) {
-          return _this2._x1 !== null ? -_this2._getHeight(d, i) / 2 : 0;
-        });
+        if (this._duration) {
+          enter = enter.transition(this._transition);
+          update = update.transition(this._transition);
 
+          this._exit.transition(this._transition).attr("width", function (d, i) {
+            return _this2._x1 === null ? _this2._getWidth(d, i) : 0;
+          }).attr("height", function (d, i) {
+            return _this2._x1 !== null ? _this2._getHeight(d, i) : 0;
+          }).attr("x", function (d, i) {
+            return _this2._x1 === null ? -_this2._getWidth(d, i) / 2 : 0;
+          }).attr("y", function (d, i) {
+            return _this2._x1 !== null ? -_this2._getHeight(d, i) / 2 : 0;
+          });
+        }
+
+        enter.call(this._applyPosition.bind(this));
+        update.call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
         return this;
       }
       /**
@@ -11852,12 +11884,20 @@
       value: function render(callback) {
         _get(_getPrototypeOf(Circle.prototype), "render", this).call(this, callback);
 
-        this._enter.attr("r", 0).attr("x", 0).attr("y", 0).call(this._applyStyle.bind(this)).transition(this._transition).call(this._applyPosition.bind(this));
+        var enter = this._enter.call(this._applyStyle.bind(this));
 
-        this._update.transition(this._transition).call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
+        var update = this._update;
 
-        this._exit.transition(this._transition).attr("r", 0).attr("x", 0).attr("y", 0);
+        if (this._duration) {
+          enter.attr("r", 0).attr("x", 0).attr("y", 0).transition(this._transition).call(this._applyPosition.bind(this));
+          update = update.transition(this._transition);
 
+          this._exit.transition(this._transition).attr("r", 0).attr("x", 0).attr("y", 0);
+        } else {
+          enter.call(this._applyPosition.bind(this));
+        }
+
+        update.call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
         return this;
       }
       /**
@@ -11946,12 +11986,19 @@
       value: function render(callback) {
         _get(_getPrototypeOf(Rect.prototype), "render", this).call(this, callback);
 
-        this._enter.attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0).call(this._applyStyle.bind(this)).transition(this._transition).call(this._applyPosition.bind(this));
+        var enter = this._enter.attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0).call(this._applyStyle.bind(this));
 
-        this._update.transition(this._transition).call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
+        var update = this._update;
 
-        this._exit.transition(this._transition).attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0);
+        if (this._duration) {
+          enter = enter.transition(this._transition);
+          update = update.transition(this._transition);
 
+          this._exit.transition(this._transition).attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0);
+        }
+
+        enter.call(this._applyPosition.bind(this));
+        update.call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
         return this;
       }
       /**
@@ -12126,18 +12173,40 @@
 
         this._path.curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).defined(this._defined).x(this._x).y(this._y);
 
-        this._enter.append("path").attr("transform", function (d) {
+        var enter = this._enter.append("path").attr("transform", function (d) {
           return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
         }).attr("d", function (d) {
           return _this3._path(d.values);
         }).call(this._applyStyle.bind(this));
 
-        this._update.select("path").transition(this._transition).attr("transform", function (d) {
-          return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
-        }).attrTween("d", function (d) {
-          return interpolatePath(_select(this).attr("d"), that._path(d.values));
-        }).call(this._applyStyle.bind(this));
+        var update = this._update.select("path").attr("stroke-dasharray", "0");
 
+        if (this._duration) {
+          enter.each(function (d) {
+            d.initialLength = this.getTotalLength();
+          }).attr("stroke-dasharray", function (d) {
+            return "".concat(d.initialLength, " ").concat(d.initialLength);
+          }).attr("stroke-dashoffset", function (d) {
+            return d.initialLength;
+          }).transition(this._transition).attr("stroke-dashoffset", 0);
+          update = update.transition(this._transition).attrTween("d", function (d) {
+            return interpolatePath(_select(this).attr("d"), that._path(d.values));
+          });
+
+          this._exit.selectAll("path").attr("stroke-dasharray", function (d) {
+            return "".concat(d.initialLength, " ").concat(d.initialLength);
+          }).transition(this._transition).attr("stroke-dashoffset", function (d) {
+            return -d.initialLength;
+          });
+        } else {
+          update = update.attr("d", function (d) {
+            return that._path(d.values);
+          });
+        }
+
+        update.attr("transform", function (d) {
+          return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
+        }).call(this._applyStyle.bind(this));
         return this;
       }
       /**
@@ -13054,12 +13123,18 @@
       value: function render(callback) {
         _get(_getPrototypeOf(Path.prototype), "render", this).call(this, callback);
 
-        this._enter.attr("opacity", 0).attr("d", this._d).call(this._applyStyle.bind(this)).transition(this._transition).attr("opacity", 1);
+        var enter = this._enter.attr("d", this._d).call(this._applyStyle.bind(this));
 
-        this._update.transition(this._transition).call(this._applyStyle.bind(this)).attr("opacity", 1).attr("d", this._d);
+        var update = this._update;
 
-        this._exit.transition(this._transition).attr("opacity", 0);
+        if (this._duration) {
+          enter.attr("opacity", 0).transition(this._transition).attr("opacity", 1);
+          update = update.transition(this._transition);
 
+          this._exit.transition(this._transition).attr("opacity", 0);
+        }
+
+        update.call(this._applyStyle.bind(this)).attr("d", this._d);
         return this;
       }
       /**
