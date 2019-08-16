@@ -1,5 +1,5 @@
 /*
-  d3plus-tooltip v0.3.11
+  d3plus-tooltip v0.3.12
   A javascript-only tooltip.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -208,7 +208,9 @@
           var div = update.select(".d3plus-tooltip-".concat(cat)).html(function (d, i) {
             return that["_".concat(cat)](d, i);
           }).style("display", function (d, i) {
-            return that["_".concat(cat)](d, i) ? "block" : "none";
+            var val = that["_".concat(cat)](d, i);
+            var visible = val !== false && val !== undefined && val !== null;
+            return visible ? "block" : "none";
           });
           d3plusCommon.stylize(div, that["_".concat(cat, "Style")]);
         }
