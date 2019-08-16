@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.21
+  d3plus-plot v0.8.22
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1405,24 +1405,28 @@
 
             s.width(barSize);
             s.height(barSize);
-          } else if (d.key === "Line" && _this2._confidence) {
-            var areaConfig = Object.assign({}, shapeConfig);
-            var key = _this2._discrete === "x" ? "y" : "x";
-            var scaleFunction = _this2._discrete === "x" ? _y2 : _x2;
+          } else if (d.key === "Line") {
+            s.duration(width * 1.5);
 
-            areaConfig["".concat(key, "0")] = function (d) {
-              return scaleFunction(_this2._confidence[0] ? d.lci : d[key]);
-            };
+            if (_this2._confidence) {
+              var areaConfig = Object.assign({}, shapeConfig);
+              var key = _this2._discrete === "x" ? "y" : "x";
+              var scaleFunction = _this2._discrete === "x" ? _y2 : _x2;
 
-            areaConfig["".concat(key, "1")] = function (d) {
-              return scaleFunction(_this2._confidence[1] ? d.hci : d[key]);
-            };
+              areaConfig["".concat(key, "0")] = function (d) {
+                return scaleFunction(_this2._confidence[0] ? d.lci : d[key]);
+              };
 
-            var area = new shapes.Area().config(areaConfig).data(d.values);
-            var confidenceConfig = Object.assign(_this2._shapeConfig, _this2._confidenceConfig);
-            area.config(d3plusCommon.configPrep.bind(_this2)(confidenceConfig, "shape", "Area")).render();
+              areaConfig["".concat(key, "1")] = function (d) {
+                return scaleFunction(_this2._confidence[1] ? d.hci : d[key]);
+              };
 
-            _this2._shapes.push(area);
+              var area = new shapes.Area().config(areaConfig).data(d.values);
+              var confidenceConfig = Object.assign(_this2._shapeConfig, _this2._confidenceConfig);
+              area.config(d3plusCommon.configPrep.bind(_this2)(confidenceConfig, "shape", "Area")).render();
+
+              _this2._shapes.push(area);
+            }
           }
 
           var classEvents = events.filter(function (e) {
@@ -1465,7 +1469,9 @@
             _loop3(e);
           }
 
-          s.config(d3plusCommon.configPrep.bind(_this2)(_this2._shapeConfig, "shape", d.key)).render();
+          var userConfig = d3plusCommon.configPrep.bind(_this2)(_this2._shapeConfig, "shape", d.key);
+          if (_this2._shapeConfig.duration === undefined) delete userConfig.duration;
+          s.config(userConfig).render();
 
           _this2._shapes.push(s);
         });
