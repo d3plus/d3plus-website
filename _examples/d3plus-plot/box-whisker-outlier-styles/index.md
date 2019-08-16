@@ -2,8 +2,8 @@
 title: Changing Box and Whisker Outlier Styles
 width: 990
 height: 400
-time: 1565286287250
-date: August 08, 2019
+time: 1565986402328
+date: August 16, 2019
 ---
 
 # Changing Box and Whisker Outlier Styles
