@@ -1,56 +1,10 @@
 /*
-  d3plus-dev v0.7.3
+  d3plus-dev v0.7.4
   A collection of scripts for developing D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
 */
 
-(function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-scale'), require('d3plus-common')) :
-	typeof define === 'function' && define.amd ? define('d3plus-dev', ['exports', 'd3-scale', 'd3plus-common'], factory) :
-	(global = global || self, factory(global.d3plus = {}, global.d3Scale, global.d3plusCommon));
-}(this, function (exports, d3Scale, d3plusCommon) { 'use strict';
-
-	var assign = (function () {
-	  return Object.assign({}, {
-	    test: true
-	  });
-	});
-
-	var find = (function (arr) {
-	  return arr.find(function (d, i) {
-	    return i === 0;
-	  });
-	});
-
-	var _import = d3plusCommon.uuid();
-
-	var includes = (function () {
-	  return [0, 1, 2].includes(1);
-	});
-
-	var startsWith = (function (str) {
-	  return str.startsWith("d3plus");
-	});
-
-	var string = "Ceci n'est pas une |";
-
-	Object.defineProperty(exports, 'scaleOrdinal', {
-		enumerable: true,
-		get: function () {
-			return d3Scale.scaleOrdinal;
-		}
-	});
-	exports.assign = assign;
-	exports.find = find;
-	exports.import = _import;
-	exports.includes = includes;
-	exports.startsWith = startsWith;
-	exports.string = string;
-
-	Object.defineProperty(exports, '__esModule', { value: true });
-
-}));
 (function (factory) {
 	typeof define === 'function' && define.amd ? define(factory) :
 	factory();
@@ -975,6 +929,53 @@
 
 	  })();
 	}
+
+}));
+
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-scale'), require('d3plus-common')) :
+	typeof define === 'function' && define.amd ? define('d3plus-dev', ['exports', 'd3-scale', 'd3plus-common'], factory) :
+	(global = global || self, factory(global.d3plus = {}, global.d3Scale, global.d3plusCommon));
+}(this, function (exports, d3Scale, d3plusCommon) { 'use strict';
+
+	var assign = (function () {
+	  return Object.assign({}, {
+	    test: true
+	  });
+	});
+
+	var find = (function (arr) {
+	  return arr.find(function (d, i) {
+	    return i === 0;
+	  });
+	});
+
+	var _import = d3plusCommon.uuid();
+
+	var includes = (function () {
+	  return [0, 1, 2].includes(1);
+	});
+
+	var startsWith = (function (str) {
+	  return str.startsWith("d3plus");
+	});
+
+	var string = "Ceci n'est pas une |";
+
+	Object.defineProperty(exports, 'scaleOrdinal', {
+		enumerable: true,
+		get: function () {
+			return d3Scale.scaleOrdinal;
+		}
+	});
+	exports.assign = assign;
+	exports.find = find;
+	exports.import = _import;
+	exports.includes = includes;
+	exports.startsWith = startsWith;
+	exports.string = string;
+
+	Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
 //# sourceMappingURL=d3plus-dev.js.map
