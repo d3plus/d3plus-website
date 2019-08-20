@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.14
+  d3plus-format v0.1.15
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -171,7 +171,7 @@
       var _char = f.symbol;
       val = "".concat(num).concat(separator).concat(_char);
     } else if (length === 3) val = d3plusFormatLocale.format(",f")(n);else if (n < 1 && n > -1) val = d3plusFormatLocale.format(".2g")(n);else val = d3plusFormatLocale.format(".3g")(n);
-    return "".concat(negative ? "-" : "").concat(val).replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+    return "".concat(negative && val.charAt(0) !== "-" ? "-" : "").concat(val).replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
     .replace(/[.]$/g, ""); // removes any trailing decimal point
   }
 
