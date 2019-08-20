@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.13
+  d3plus-format v0.1.14
   Shorthand formatters for common number types.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -452,6 +452,7 @@
     var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "en-US";
     var precision = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
     if (isFinite(n)) n *= 1;else return "N/A";
+    var negative = n < 0;
     var length = n.toString().split(".")[0].replace("-", "").length,
         localeConfig = _typeof(locale) === "object" ? locale : defaultLocale$1[locale] || defaultLocale$1["en-US"],
         suffixes = localeConfig.suffixes.map(parseSuffixes);
@@ -471,7 +472,7 @@
       var _char = f.symbol;
       val = "".concat(num).concat(separator).concat(_char);
     } else if (length === 3) val = d3plusFormatLocale.format(",f")(n);else if (n < 1 && n > -1) val = d3plusFormatLocale.format(".2g")(n);else val = d3plusFormatLocale.format(".3g")(n);
-    return val.replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+    return "".concat(negative ? "-" : "").concat(val).replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
     .replace(/[.]$/g, ""); // removes any trailing decimal point
   }
 
@@ -681,7 +682,7 @@
 	(module.exports = function (key, value) {
 	  return store[key] || (store[key] = value !== undefined ? value : {});
 	})('versions', []).push({
-	  version: '3.1.3',
+	  version: '3.2.1',
 	  mode:  'global',
 	  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
 	});
@@ -1310,6 +1311,15 @@
 	    } catch (f) { /* empty */ }
 	  } return false;
 	};
+
+	// `String.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
+	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
+	  includes: function includes(searchString /* , position = 0 */) {
+	    return !!~String(requireObjectCoercible(this))
+	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
 
 	var nativeStartsWith = ''.startsWith;
 	var min$2 = Math.min;
