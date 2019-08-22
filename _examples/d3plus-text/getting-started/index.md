@@ -2,8 +2,8 @@
 title: Wrapping SVG Text
 width: 700
 height: 75
-time: 1566330959780
-date: August 20, 2019
+time: 1566483606728
+date: August 22, 2019
 ---
 
 [width]: 700
