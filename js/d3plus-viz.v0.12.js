@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.39
+  d3plus-viz v0.12.40
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1250,12 +1250,12 @@
     }).node();
 
     this._backClass.data(visible ? [{
-      text: this._translate("Back"),
+      text: "\u2190 ".concat(this._translate("Back")),
       x: 0,
       y: 0
     }] : []).select(backGroup).config(this._backConfig).render();
 
-    this._margin.top += visible ? this._backClass.fontSize()() : 0;
+    this._margin.top += visible ? this._backClass.fontSize()() + this._backClass.padding()() * 2 : 0;
   }
 
   /**
