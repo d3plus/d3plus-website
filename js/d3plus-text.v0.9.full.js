@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.9.49
+  d3plus-text v0.9.50
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -15715,7 +15715,7 @@
     return textWrap;
   }
 
-  var tagLookup = {
+  var defaultHtmlLookup = {
     i: "font-style: italic;",
     em: "font-style: italic;",
     b: "font-weight: bold;",
@@ -15760,7 +15760,7 @@
       _this._fontSize = constant$2(10);
       _this._fontWeight = constant$2(400);
       _this._height = accessor("height", 200);
-      _this._html = true;
+      _this._html = defaultHtmlLookup;
 
       _this._id = function (d, i) {
         return d.id || "".concat(i);
@@ -15985,7 +15985,7 @@
                 return "".concat(b.replace("</", "<")).concat(a).concat(b);
               }) // ands start tag to lines after mid-HTML break
               .replace(/<([A-z]+)[^>]*>([^<^>]+)<\/[^>]+>/g, function (str, a, b) {
-                var tag = tagLookup[a] ? "<tspan style=\"".concat(tagLookup[a], "\">") : "";
+                var tag = that._html[a] ? "<tspan style=\"".concat(that._html[a], "\">") : "";
                 return "".concat(tag.length ? tag : "").concat(b).concat(tag.length ? "</tspan>" : "");
               });
             });
@@ -16208,15 +16208,20 @@
       }
       /**
           @memberof TextBox
-          @desc Toggles the ability to render simple HTML tags. Currently supports `<b>`, `<strong>`, `<i>`, and `<em>`.
-          @param {Boolean} [*value* = true]
+          @desc Configures the ability to render simple HTML tags. Defaults to supporting `<b>`, `<strong>`, `<i>`, and `<em>`, set to false to disable or provide a mapping of tags to svg styles
+          @param {Object|Boolean} [*value* = {
+                    i: 'font-style: italic;',
+                    em: 'font-style: italic;',
+                    b: 'font-weight: bold;',
+                    strong: 'font-weight: bold;'
+                }]
           @chainable
       */
 
     }, {
       key: "html",
       value: function html(_) {
-        return arguments.length ? (this._html = _, this) : this._html;
+        return arguments.length ? (this._html = typeof _ === "boolean" ? _ ? defaultHtmlLookup : false : _, this) : this._html;
       }
       /**
           @memberof TextBox
