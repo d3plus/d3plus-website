@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.40
+  d3plus-viz v0.12.41
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
