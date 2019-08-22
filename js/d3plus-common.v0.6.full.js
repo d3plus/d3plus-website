@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.56
+  d3plus-common v0.6.57
   Common functions and methods used across D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -12268,7 +12268,7 @@
     "Loading Visualization": "Cargando Visualización",
     "No Data Available": "Datos No Disponibles",
     "Powered by D3plus": "Funciona con D3plus",
-    "Share": "Compartir",
+    "Share": "Porcentaje",
     "Shift+Click to Hide": "Mayús+Clic para Ocultar",
     "Total": "Total",
     "Values": "Valores"
