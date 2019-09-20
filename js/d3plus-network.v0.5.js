@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.5.9
+  d3plus-network v0.5.10
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1499,6 +1499,8 @@
       _this = _possibleConstructorReturn(this, _getPrototypeOf(Sankey).call(this));
       _this._nodeId = d3plusCommon.accessor("id");
       _this._links = d3plusCommon.accessor("links");
+      _this._linksSource = "source";
+      _this._linksTarget = "target";
       _this._noDataMessage = false;
       _this._nodes = d3plusCommon.accessor("nodes");
       _this._nodeAlign = sankeyAligns.justify;
@@ -1585,7 +1587,17 @@
         var height = this._height - this._margin.top - this._margin.bottom,
             width = this._width - this._margin.left - this._margin.right;
 
-        var nodes = this._nodes.map(function (n, i) {
+        var _nodes = Array.isArray(this._nodes) ? this._nodes : this._links.reduce(function (all, d) {
+          if (!all.includes(d[_this2._linksSource])) all.push(d[_this2._linksSource]);
+          if (!all.includes(d[_this2._linksTarget])) all.push(d[_this2._linksTarget]);
+          return all;
+        }, []).map(function (id) {
+          return {
+            id: id
+          };
+        });
+
+        var nodes = _nodes.map(function (n, i) {
           return {
             __d3plus__: true,
             data: n,
@@ -1602,14 +1614,14 @@
         }, {});
 
         var links = this._links.map(function (link, i) {
-          var check = ["source", "target"];
+          var check = [_this2._linksSource, _this2._linksTarget];
           var linkLookup = check.reduce(function (result, item) {
-            result[item] = typeof link[item] === "number" ? nodeLookup[link[item]] : nodeLookup[link[item]];
+            result[item] = nodeLookup[link[item]];
             return result;
           }, {});
           return {
-            source: linkLookup.source,
-            target: linkLookup.target,
+            source: linkLookup[_this2._linksSource],
+            target: linkLookup[_this2._linksTarget],
             value: _this2._value(link, i)
           };
         });
@@ -1700,6 +1712,30 @@
         }
 
         return this._links;
+      }
+      /**
+          @memberof Sankey
+          @desc The key inside of each link Object that references the source node.
+          @param {String} [*value* = "source"]
+          @chainable
+      */
+
+    }, {
+      key: "linksSource",
+      value: function linksSource(_) {
+        return arguments.length ? (this._linksSource = _, this) : this._linksSource;
+      }
+      /**
+          @memberof Sankey
+          @desc The key inside of each link Object that references the target node.
+          @param {String} [*value* = "target"]
+          @chainable
+      */
+
+    }, {
+      key: "linksTarget",
+      value: function linksTarget(_) {
+        return arguments.length ? (this._linksTarget = _, this) : this._linksTarget;
       }
       /**
           @memberof Sankey
