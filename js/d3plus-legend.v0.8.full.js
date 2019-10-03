@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.25
+  d3plus-legend v0.8.26
   An easy to use javascript chart legend.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -28633,32 +28633,24 @@
             y: -h / 2
           };
         },
-        labelBounds: function labelBounds(dd, i, s) {
-          var d = _this._lineData[i],
-              w = s.r !== void 0 ? s.r : s.width / 2;
-
-          var shape = _this._shape(d.d, d.i);
-
-          var x = w + _this._padding;
-          var y = -d.height / 2 + (d.lh - d.s) / 2 + 1;
-
-          if (shape === "Circle") {
-            x -= d.shapeR;
-            y -= d.shapeR / 2;
-          }
-
+        labelBounds: function labelBounds(dd, i) {
+          var d = _this._lineData[i];
+          var x = d.shapeWidth;
+          if (d.shape === "Circle") x -= d.shapeR;
+          var height = max([d.shapeHeight, d.height]);
           return {
             width: d.width,
-            height: d.height,
+            height: height,
             x: x,
-            y: y
+            y: -height / 2
           };
         },
         labelConfig: {
           fontColor: constant$1("#444"),
           fontFamily: new TextBox().fontFamily(),
           fontResize: false,
-          fontSize: constant$1(10)
+          fontSize: constant$1(10),
+          verticalAlign: "middle"
         },
         opacity: 1,
         r: constant$1(5),
@@ -28760,13 +28752,18 @@
         this._lineData = this._data.map(function (d, i) {
           var label = _this3._label(d, i);
 
+          var shape = _this3._shape(d, i);
+
+          var r = _this3._fetchConfig("r", d, i);
+
           var res = {
             data: d,
             i: i,
             id: _this3._id(d, i),
-            shapeR: _this3._fetchConfig("r", d, i),
-            shapeWidth: _this3._fetchConfig("width", d, i),
-            shapeHeight: _this3._fetchConfig("height", d, i),
+            shape: shape,
+            shapeR: r,
+            shapeWidth: shape === "Circle" ? r * 2 : _this3._fetchConfig("width", d, i),
+            shapeHeight: shape === "Circle" ? r * 2 : _this3._fetchConfig("height", d, i),
             y: 0
           };
 
