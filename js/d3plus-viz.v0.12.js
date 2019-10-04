@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.41
+  d3plus-viz v0.12.42
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -941,6 +941,31 @@
   lrucache = lrucache && lrucache.hasOwnProperty('default') ? lrucache['default'] : lrucache;
 
   /**
+    @function dataConcat
+    @desc Reduce and concat all the elements included in arrayOfArrays if they are arrays. If it is a JSON object try to concat the array under given key data. If the key doesn't exists in object item, a warning message is lauched to the console. You need to implement DataFormat callback to concat the arrays manually.
+    @param {Array} arrayOfArray Array of elements
+    @param {String} [data = "data"] The key used for the flat data array if exists inside of the JSON object.
+  */
+  var concat = (function (arrayOfArrays) {
+    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "data";
+    return arrayOfArrays.reduce(function (acc, item) {
+      var dataArray = [];
+
+      if (Array.isArray(item)) {
+        dataArray = item;
+      } else {
+        if (item[data]) {
+          dataArray = item[data];
+        } else {
+          console.warn("d3plus-viz: Please implement a \"dataFormat\" callback to concat the arrays manually (consider using the d3plus.dataConcat method in your callback). Currently unable to concatenate the following response:", item);
+        }
+      }
+
+      return acc.concat(dataArray);
+    }, []);
+  });
+
+  /**
     @function dataFold
     @desc Given a JSON object where the data values and headers have been split into separate key lookups, this function will combine the data values with the headers and returns one large array of objects.
     @param {Object} json A JSON data Object with `data` and `headers` keys.
@@ -960,7 +985,7 @@
   /**
     @function dataLoad
     @desc Loads data from a filepath or URL, converts it to a valid JSON object, and returns it to a callback function.
-    @param {Array|String} path The path to the file or url to be loaded. If an Array is passed, the xhr request logic is skipped.
+    @param {Array|String} path The path to the file or url to be loaded. Also support array of paths strings. If an Array of objects is passed, the xhr request logic is skipped.
     @param {Function} [formatter] An optional formatter function that is run on the loaded data.
     @param {String} [key] The key in the `this` context to save the resulting data to.
     @param {Function} [callback] A function that is called when the final data is loaded. It is passed 2 variables, any error present and the data loaded.
@@ -969,27 +994,91 @@
   function load (path, formatter, key, callback) {
     var _this = this;
 
-    if (typeof path !== "string") {
-      var data = formatter ? formatter(path) : path;
-      if (key && "_".concat(key) in this) this["_".concat(key)] = data;
-      if (callback) callback(null, data);
-    } else {
-      var parser = path.slice(path.length - 4) === ".csv" ? d3Request.csv : path.slice(path.length - 4) === ".tsv" ? d3Request.tsv : path.slice(path.length - 4) === ".txt" ? d3Request.text : d3Request.json;
-      parser(path, function (err, data) {
-        if (parser !== d3Request.json && !err && data && data instanceof Array) {
-          data.forEach(function (d) {
-            for (var k in d) {
-              if (!isNaN(d[k])) d[k] = parseFloat(d[k]);else if (d[k].toLowerCase() === "false") d[k] = false;else if (d[k].toLowerCase() === "true") d[k] = true;else if (d[k].toLowerCase() === "null") d[k] = null;else if (d[k].toLowerCase() === "undefined") d[k] = undefined;
-            }
-          });
-        }
+    var parser;
 
-        data = err ? [] : formatter ? formatter(data) : data;
-        if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
-        if (key && "_".concat(key) in _this) _this["_".concat(key)] = data;
-        if (_this._cache) _this._lrucache.set(path, data);
-        if (callback) callback(err, data);
+    var getParser = function getParser(path) {
+      var ext = path.slice(path.length - 4);
+
+      switch (ext) {
+        case ".csv":
+          return d3Request.csv;
+
+        case ".tsv":
+          return d3Request.tsv;
+
+        case ".txt":
+          return d3Request.text;
+
+        default:
+          return d3Request.json;
+      }
+    };
+
+    var validateData = function validateData(err, parser, data) {
+      if (parser !== d3Request.json && !err && data && data instanceof Array) {
+        data.forEach(function (d) {
+          for (var k in d) {
+            if (!isNaN(d[k])) d[k] = parseFloat(d[k]);else if (d[k].toLowerCase() === "false") d[k] = false;else if (d[k].toLowerCase() === "true") d[k] = true;else if (d[k].toLowerCase() === "null") d[k] = null;else if (d[k].toLowerCase() === "undefined") d[k] = undefined;
+          }
+        });
+      }
+
+      return data;
+    }; // If data param is a single string url or an plain object then convert path to a 1 element array of urls to re-use logic
+
+
+    if (typeof path === "string") {
+      path = [path];
+    }
+
+    var isThereAnyString = path.find(function (dataItem) {
+      return typeof dataItem === "string";
+    });
+    var loaded = [];
+    var toLoad = []; // If there is a string I'm assuming is a Array to merge, urls or data
+
+    if (isThereAnyString) {
+      path.forEach(function (dataItem) {
+        if (typeof dataItem !== "string") {
+          loaded.push(dataItem);
+        } else if (typeof dataItem === "string") {
+          toLoad.push(dataItem);
+        }
       });
+    } // Data array itself
+    else {
+        loaded.push(path);
+      } // Load all urls an combine them with data arrays
+
+
+    var alreadyLoaded = loaded.length;
+    toLoad.forEach(function (url) {
+      parser = getParser(url);
+      parser(url, function (err, data) {
+        data = err ? [] : data;
+        if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
+        data = validateData(err, parser, data);
+        loaded.push(data);
+
+        if (loaded.length - alreadyLoaded === toLoad.length) {
+          // All urls loaded
+          data = formatter ? formatter(loaded.length === 1 ? loaded[0] : loaded) : concat(loaded);
+          if (key && "_".concat(key) in _this) _this["_".concat(key)] = data;
+          if (_this._cache) _this._lrucache.set(url, data);
+          if (callback) callback(err, data);
+        }
+      });
+    }); // If there is no data to Load response is immediately
+
+    if (toLoad.length === 0) {
+      loaded = loaded.map(function (data) {
+        if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
+        return data;
+      });
+      var data = formatter ? formatter(loaded.length === 1 ? loaded[0] : loaded) : concat(loaded);
+      if (key && "_".concat(key) in this) this["_".concat(key)] = data;
+      if (this._cache) this._lrucache.set(key, data);
+      if (callback) callback(null, data);
     }
   }
 
@@ -3945,6 +4034,7 @@
   }(d3plusCommon.BaseClass);
 
   exports.Viz = Viz;
+  exports.dataConcat = concat;
   exports.dataFold = fold;
   exports.dataLoad = load;
 
