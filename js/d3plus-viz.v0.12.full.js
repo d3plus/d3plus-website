@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.42
+  d3plus-viz v0.12.43
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -954,7 +954,7 @@
         if (item[data]) {
           dataArray = item[data];
         } else {
-          console.warn("d3plus-viz: Please implement a \"dataFormat\" callback to concat the arrays manually (consider using the d3plus.dataConcat method in your callback). Currently unable to concatenate the following response:", item);
+          console.warn("d3plus-viz: Please implement a \"dataFormat\" callback to concat the arrays manually (consider using the d3plus.dataConcat method in your callback). Currently unable to concatenate (using key: \"".concat(data, "\") the following response:"), item);
         }
       }
 
@@ -1771,7 +1771,15 @@
 
         if (loaded.length - alreadyLoaded === toLoad.length) {
           // All urls loaded
-          data = formatter ? formatter(loaded.length === 1 ? loaded[0] : loaded) : concat(loaded);
+          // Format data
+          data = loaded.length === 1 ? loaded[0] : loaded;
+
+          if (formatter) {
+            data = formatter(loaded.length === 1 ? loaded[0] : loaded);
+          } else if (key === "data") {
+            data = concat(loaded, "data");
+          }
+
           if (key && "_".concat(key) in _this) _this["_".concat(key)] = data;
           if (_this._cache) _this._lrucache.set(url, data);
           if (callback) callback(err, data);
@@ -1783,8 +1791,16 @@
       loaded = loaded.map(function (data) {
         if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
         return data;
-      });
-      var data = formatter ? formatter(loaded.length === 1 ? loaded[0] : loaded) : concat(loaded);
+      }); // Format data
+
+      var data = loaded.length === 1 ? loaded[0] : loaded;
+
+      if (formatter) {
+        data = formatter(loaded.length === 1 ? loaded[0] : loaded);
+      } else if (key === "data") {
+        data = concat(loaded, "data");
+      }
+
       if (key && "_".concat(key) in this) this["_".concat(key)] = data;
       if (this._cache) this._lrucache.set(key, data);
       if (callback) callback(null, data);
