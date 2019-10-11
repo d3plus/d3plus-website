@@ -18,6 +18,7 @@ This is a global class.
     * [.duration([*ms*])](#Image.duration) ↩︎
     * [.height([*value*])](#Image.height) ↩︎
     * [.id([*value*])](#Image.id) ↩︎
+    * [.opacity([*value*])](#Image.opacity) ↩︎
     * [.pointerEvents([*value*])](#Image.pointerEvents) ↩︎
     * [.select([*selector*])](#Image.select) ↩︎
     * [.url([*value*])](#Image.url) ↩︎
@@ -59,7 +60,7 @@ image().data([data])(function() { alert("draw complete!"); })
 ```
 
 
-<a name="Image.render" href="#Image.render">#</a> Image.**render**([*callback*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L45)
+<a name="Image.render" href="#Image.render">#</a> Image.**render**([*callback*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L46)
 
 Renders the current Image to the page. If a *callback* is specified, it will be called once the images are done drawing.
 
@@ -67,7 +68,7 @@ Renders the current Image to the page. If a *callback* is specified, it will be 
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
 
 
-<a name="Image.data" href="#Image.data">#</a> Image.**data**([*data*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L109)
+<a name="Image.data" href="#Image.data">#</a> Image.**data**([*data*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L110)
 
 If *data* is specified, sets the data array to the specified array and returns the current class instance. If *data* is not specified, returns the current data array. An <image> tag will be drawn for each object in the array.
 
@@ -75,7 +76,7 @@ If *data* is specified, sets the data array to the specified array and returns t
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
 
 
-<a name="Image.duration" href="#Image.duration">#</a> Image.**duration**([*ms*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L119)
+<a name="Image.duration" href="#Image.duration">#</a> Image.**duration**([*ms*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L120)
 
 If *ms* is specified, sets the animation duration to the specified number and returns the current class instance. If *ms* is not specified, returns the current animation duration.
 
@@ -83,7 +84,7 @@ If *ms* is specified, sets the animation duration to the specified number and re
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
 
 
-<a name="Image.height" href="#Image.height">#</a> Image.**height**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L133)
+<a name="Image.height" href="#Image.height">#</a> Image.**height**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L134)
 
 If *value* is specified, sets the height accessor to the specified function or number and returns the current class instance.
 
@@ -98,7 +99,7 @@ function(d) {
 ```
 
 
-<a name="Image.id" href="#Image.id">#</a> Image.**id**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L147)
+<a name="Image.id" href="#Image.id">#</a> Image.**id**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L148)
 
 If *value* is specified, sets the id accessor to the specified function and returns the current class instance.
 
@@ -113,7 +114,15 @@ function(d) {
 ```
 
 
-<a name="Image.pointerEvents" href="#Image.pointerEvents">#</a> Image.**pointerEvents**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L157)
+<a name="Image.opacity" href="#Image.opacity">#</a> Image.**opacity**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L158)
+
+Sets the opacity of the image.
+
+
+This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
+
+
+<a name="Image.pointerEvents" href="#Image.pointerEvents">#</a> Image.**pointerEvents**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L168)
 
 If *value* is specified, sets the pointer-events accessor to the specified function or string and returns the current class instance.
 
@@ -121,7 +130,7 @@ If *value* is specified, sets the pointer-events accessor to the specified funct
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
 
 
-<a name="Image.select" href="#Image.select">#</a> Image.**select**([*selector*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L167)
+<a name="Image.select" href="#Image.select">#</a> Image.**select**([*selector*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L178)
 
 If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
 
@@ -129,7 +138,7 @@ If *selector* is specified, sets the SVG container element to the specified d3 s
 This is a static method of [<code>Image</code>](#Image), and is chainable with other methods of this Class.
 
 
-<a name="Image.url" href="#Image.url">#</a> Image.**url**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L181)
+<a name="Image.url" href="#Image.url">#</a> Image.**url**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L192)
 
 If *value* is specified, sets the URL accessor to the specified function and returns the current class instance.
 
@@ -144,7 +153,7 @@ function(d) {
 ```
 
 
-<a name="Image.width" href="#Image.width">#</a> Image.**width**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L195)
+<a name="Image.width" href="#Image.width">#</a> Image.**width**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L206)
 
 If *value* is specified, sets the width accessor to the specified function or number and returns the current class instance.
 
@@ -159,7 +168,7 @@ function(d) {
 ```
 
 
-<a name="Image.x" href="#Image.x">#</a> Image.**x**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L209)
+<a name="Image.x" href="#Image.x">#</a> Image.**x**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L220)
 
 If *value* is specified, sets the x accessor to the specified function or number and returns the current class instance.
 
@@ -174,7 +183,7 @@ function(d) {
 ```
 
 
-<a name="Image.y" href="#Image.y">#</a> Image.**y**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L223)
+<a name="Image.y" href="#Image.y">#</a> Image.**y**([*value*]) [<>](https://github.com/d3plus/d3plus-shape/blob/master/src/Image.js#L234)
 
 If *value* is specified, sets the y accessor to the specified function or number and returns the current class instance.
 
