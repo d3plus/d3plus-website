@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.16.12
+  d3plus-shape v0.16.13
   Fancy SVG shapes for visualizations
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1108,6 +1108,7 @@
       this._duration = 600;
       this._height = d3plusCommon.accessor("height");
       this._id = d3plusCommon.accessor("id");
+      this._opacity = d3plusCommon.constant(1);
       this._pointerEvents = d3plusCommon.constant("auto");
       this._select;
       this._url = d3plusCommon.accessor("url");
@@ -1140,7 +1141,7 @@
         var t = d3Transition.transition().duration(this._duration),
             that = this,
             update = enter.merge(images);
-        update.attr("xlink:href", this._url).style("pointer-events", this._pointerEvents).transition(t).attr("opacity", 1).attr("width", function (d, i) {
+        update.attr("xlink:href", this._url).style("pointer-events", this._pointerEvents).transition(t).attr("opacity", this._opacity).attr("width", function (d, i) {
           return _this._width(d, i);
         }).attr("height", function (d, i) {
           return _this._height(d, i);
@@ -1236,6 +1237,18 @@
       key: "id",
       value: function id(_) {
         return arguments.length ? (this._id = _, this) : this._id;
+      }
+      /**
+          @memberof Image
+          @desc Sets the opacity of the image.
+          @param {Number} [*value* = 1]
+          @chainable
+      */
+
+    }, {
+      key: "opacity",
+      value: function opacity(_) {
+        return arguments.length ? (this._opacity = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._opacity;
       }
       /**
           @memberof Image
@@ -1719,7 +1732,7 @@
           }
         });
 
-        this._backgroundImageClass.data(imageData).duration(this._duration).pointerEvents("none").select(d3plusCommon.elem("g.d3plus-".concat(this._name, "-image"), {
+        this._backgroundImageClass.data(imageData).duration(this._duration).opacity(this._nestWrapper(this._opacity)).pointerEvents("none").select(d3plusCommon.elem("g.d3plus-".concat(this._name, "-image"), {
           parent: this._group,
           update: {
             opacity: this._active ? this._activeOpacity : 1
@@ -1788,7 +1801,7 @@
           }
         });
 
-        this._labelClass.data(labelData).duration(this._duration).pointerEvents("none").rotate(function (d) {
+        this._labelClass.data(labelData).duration(this._duration).fontOpacity(this._nestWrapper(this._opacity)).pointerEvents("none").rotate(function (d) {
           return d.__d3plus__ ? d.r : d.data.r;
         }).rotateAnchor(function (d) {
           return d.__d3plus__ ? d.rotateAnchor : d.data.rotateAnchor;
