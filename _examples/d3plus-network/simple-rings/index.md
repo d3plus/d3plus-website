@@ -2,8 +2,8 @@
 title: Simple Rings
 width: 990
 height: 400
-time: 1568989822975
-date: September 20, 2019
+time: 1571435665355
+date: October 18, 2019
 ---
 
 # Simple Rings
