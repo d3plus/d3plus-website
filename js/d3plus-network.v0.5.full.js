@@ -1,5 +1,5 @@
 /*
-  d3plus-network v0.5.10
+  d3plus-network v0.5.11
   Javascript network visualizations built upon d3 modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -41463,7 +41463,7 @@
         }, {});
 
         var nodes = this._nodes.reduce(function (obj, d, i) {
-          obj[_this2._nodeGroupBy ? _this2._nodeGroupBy[_this2._drawDepth](d, i) : _this2._id(d, i)] = d;
+          obj[_this2._nodeGroupBy ? _this2._nodeGroupBy[_this2._drawDepth](d, i) : d.id] = d;
           return obj;
         }, {});
 
