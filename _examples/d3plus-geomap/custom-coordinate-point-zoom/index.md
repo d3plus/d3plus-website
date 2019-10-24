@@ -2,7 +2,7 @@
 title: Custom Coordinate Point Zoom
 width: 990
 height: 400
-time: 1571929551609
+time: 1571929901108
 date: October 24, 2019
 ---
 
