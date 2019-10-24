@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.26
+  d3plus-legend v0.8.27
   An easy to use javascript chart legend.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -16409,6 +16409,7 @@
       this._duration = 600;
       this._height = accessor("height");
       this._id = accessor("id");
+      this._opacity = constant$1(1);
       this._pointerEvents = constant$1("auto");
       this._select;
       this._url = accessor("url");
@@ -16441,7 +16442,7 @@
         var t = transition().duration(this._duration),
             that = this,
             update = enter.merge(images);
-        update.attr("xlink:href", this._url).style("pointer-events", this._pointerEvents).transition(t).attr("opacity", 1).attr("width", function (d, i) {
+        update.attr("xlink:href", this._url).style("pointer-events", this._pointerEvents).transition(t).attr("opacity", this._opacity).attr("width", function (d, i) {
           return _this._width(d, i);
         }).attr("height", function (d, i) {
           return _this._height(d, i);
@@ -16537,6 +16538,18 @@
       key: "id",
       value: function id(_) {
         return arguments.length ? (this._id = _, this) : this._id;
+      }
+      /**
+          @memberof Image
+          @desc Sets the opacity of the image.
+          @param {Number} [*value* = 1]
+          @chainable
+      */
+
+    }, {
+      key: "opacity",
+      value: function opacity(_) {
+        return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$1(_), this) : this._opacity;
       }
       /**
           @memberof Image
@@ -23777,7 +23790,7 @@
           }
         });
 
-        this._backgroundImageClass.data(imageData).duration(this._duration).pointerEvents("none").select(elem("g.d3plus-".concat(this._name, "-image"), {
+        this._backgroundImageClass.data(imageData).duration(this._duration).opacity(this._nestWrapper(this._opacity)).pointerEvents("none").select(elem("g.d3plus-".concat(this._name, "-image"), {
           parent: this._group,
           update: {
             opacity: this._active ? this._activeOpacity : 1
@@ -23846,7 +23859,7 @@
           }
         });
 
-        this._labelClass.data(labelData).duration(this._duration).pointerEvents("none").rotate(function (d) {
+        this._labelClass.data(labelData).duration(this._duration).fontOpacity(this._nestWrapper(this._opacity)).pointerEvents("none").rotate(function (d) {
           return d.__d3plus__ ? d.r : d.data.r;
         }).rotateAnchor(function (d) {
           return d.__d3plus__ ? d.rotateAnchor : d.data.rotateAnchor;
@@ -29251,6 +29264,26 @@
       },
       currency: ["$", ""]
     },
+    "es-CL": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "MM", "B", "T", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ".",
+        decimal: ","
+      },
+      currency: ["$", ""]
+    },
+    "es-MX": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "MM", "B", "T", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["$", ""]
+    },
     "es-ES": {
       separator: "",
       suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "mm", "b", "t", "q", "Q", "Z", "Y"],
@@ -29260,16 +29293,6 @@
         decimal: ","
       },
       currency: ["€", ""]
-    },
-    "es-CL": {
-      separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
-      grouping: [3],
-      delimiters: {
-        thousands: ".",
-        decimal: ","
-      },
-      currency: ["$", ""]
     },
     "et-EE": {
       separator: " ",
@@ -29358,6 +29381,7 @@
     var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "en-US";
     var precision = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
     if (isFinite(n)) n *= 1;else return "N/A";
+    var negative = n < 0;
     var length = n.toString().split(".")[0].replace("-", "").length,
         localeConfig = _typeof$d(locale) === "object" ? locale : formatLocale$2[locale] || formatLocale$2["en-US"],
         suffixes = localeConfig.suffixes.map(parseSuffixes);
@@ -29377,7 +29401,7 @@
       var _char = f.symbol;
       val = "".concat(num).concat(separator).concat(_char);
     } else if (length === 3) val = d3plusFormatLocale.format(",f")(n);else if (n < 1 && n > -1) val = d3plusFormatLocale.format(".2g")(n);else val = d3plusFormatLocale.format(".3g")(n);
-    return val.replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+    return "".concat(negative && val.charAt(0) !== "-" ? "-" : "").concat(val).replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
     .replace(/[.]$/g, ""); // removes any trailing decimal point
   }
 
@@ -30096,9 +30120,9 @@
           if (this._scale === "band") {
             return this._d3Scale.bandwidth();
           } else {
-            var prevPosition = i - diff < 0 ? rangeOuter[0] : position - (position - textData[i - diff].position) / 2;
+            var prevPosition = i - diff < 0 ? textData.length === 1 || !this._range ? rangeOuter[0] : (position - textData[i + diff].position) / 2 - position : position - (position - textData[i - diff].position) / 2;
             var prevSpace = Math.abs(position - prevPosition);
-            var nextPosition = i + diff > textData.length - 1 ? rangeOuter[1] : position - (position - textData[i + diff].position) / 2;
+            var nextPosition = i + diff > textData.length - 1 ? textData.length === 1 || !this._range ? rangeOuter[1] : (position - textData[i - diff].position) / 2 - position : position - (position - textData[i + diff].position) / 2;
             var nextSpace = Math.abs(position - nextPosition);
             return min([prevSpace, nextSpace]) * 2;
           }
@@ -30422,7 +30446,7 @@
           parent: group
         }).node()).text(function (d) {
           return d.text;
-        }).verticalAlign("middle").width(range$1[range$1.length - 1] - range$1[0]).x(horizontal ? range$1[0] : this._orient === "left" ? margin.left / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2 + p : bounds.x + bounds.width - margin.right / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom - p : bounds.y : range$1[0] + (range$1[range$1.length - 1] - range$1[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
+        }).verticalAlign("middle").width(range$1[range$1.length - 1] - range$1[0]).x(horizontal ? range$1[0] : this._orient === "left" ? bounds.x + margin.left / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2 : bounds.x + bounds.width - margin.right / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom : bounds.y : range$1[0] + (range$1[range$1.length - 1] - range$1[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
 
         this._lastScale = this._getPosition.bind(this);
         if (callback) setTimeout(callback, this._duration + 100);
@@ -30884,8 +30908,11 @@
       };
       _this._axisTest = new Axis();
       _this._align = "middle";
+      _this._buckets = 5;
       _this._bucketAxis = false;
-      _this._color = "#0C8040";
+      _this._colorMax = "#0C8040";
+      _this._colorMid = "#f7f7f7";
+      _this._colorMin = "#b22200";
       _this._data = [];
       _this._duration = 600;
       _this._height = 200;
@@ -30899,6 +30926,7 @@
           strokeWidth: 1
         }
       };
+      _this._midpoint = 0;
       _this._orient = "bottom";
       _this._outerBounds = {
         width: 0,
@@ -30942,12 +30970,17 @@
           parent: this._select
         });
         var domain = extent(this._data, this._value);
+        var negative = domain[0] < this._midpoint;
+        var positive = domain[1] > this._midpoint;
+        var diverging = negative && positive;
         var colors = this._color,
             labels,
             ticks;
 
-        if (!(colors instanceof Array)) {
-          colors = [colorLighter(colors, 0.9), colorLighter(colors, 0.75), colorLighter(colors, 0.5), colorLighter(colors, 0.25), colors];
+        if (colors && !(colors instanceof Array)) {
+          colors = range(0, this._buckets, 1).map(function (i) {
+            return colorLighter(colors, (i + 1) / _this2._buckets);
+          }).reverse();
         }
 
         if (this._scale === "jenks") {
@@ -30955,11 +30988,8 @@
             return d !== null && typeof d === "number";
           });
 
-          if (data.length <= colors.length) {
-            colors = colors.slice(colors.length - data.length);
-          }
-
-          var jenks = ckmeans(data, colors.length);
+          var buckets = min([colors ? colors.length : this._buckets, data.length]);
+          var jenks = ckmeans(data, buckets);
           ticks = merge(jenks.map(function (c, i) {
             return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]];
           }));
@@ -30969,12 +30999,84 @@
             labels = Array.from(tickSet);
           }
 
+          if (!colors) {
+            if (diverging) {
+              colors = [this._colorMin, this._colorMid, this._colorMax];
+              var negatives = ticks.slice(0, buckets).filter(function (d, i) {
+                return d < _this2._midpoint && ticks[i + 1] <= _this2._midpoint;
+              });
+              var spanning = ticks.slice(0, buckets).filter(function (d, i) {
+                return d <= _this2._midpoint && ticks[i + 1] > _this2._midpoint;
+              });
+              var positives = ticks.slice(0, buckets).filter(function (d, i) {
+                return d > _this2._midpoint && ticks[i + 1] > _this2._midpoint;
+              });
+              var negativeColors = negatives.map(function (d, i) {
+                return !i ? colors[0] : colorLighter(colors[0], i / negatives.length);
+              });
+              var spanningColors = spanning.map(function () {
+                return colors[1];
+              });
+              var positiveColors = positives.map(function (d, i) {
+                return i === positives.length - 1 ? colors[2] : colorLighter(colors[2], 1 - (i + 1) / positives.length);
+              });
+              colors = negativeColors.concat(spanningColors).concat(positiveColors);
+            } else {
+              colors = range(0, this._buckets, 1).map(function (i) {
+                return colorLighter(_this2._colorMax, i / _this2._buckets);
+              }).reverse();
+            }
+          }
+
+          if (data.length <= buckets) {
+            colors = colors.slice(buckets - data.length);
+          }
+
           this._colorScale = threshold().domain(ticks).range(["black"].concat(colors).concat(colors[colors.length - 1]));
         } else {
-          var step = (domain[1] - domain[0]) / (colors.length - 1);
-          var buckets = range(domain[0], domain[1] + step / 2, step);
-          if (this._scale === "buckets") ticks = buckets;
-          this._colorScale = linear$1().domain(buckets).range(colors);
+          var _buckets;
+
+          if (diverging && !colors) {
+            var half = Math.floor(this._buckets / 2);
+
+            var _negativeColors = range(0, half, 1).map(function (i) {
+              return !i ? _this2._colorMin : colorLighter(_this2._colorMin, i / half);
+            });
+
+            var _spanningColors = (this._buckets % 2 ? [0] : []).map(function () {
+              return _this2._colorMid;
+            });
+
+            var _positiveColors = range(0, half, 1).map(function (i) {
+              return !i ? _this2._colorMax : colorLighter(_this2._colorMax, i / half);
+            }).reverse();
+
+            colors = _negativeColors.concat(_spanningColors).concat(_positiveColors);
+            var step = (colors.length - 1) / 2;
+            _buckets = [domain[0], this._midpoint, domain[1]];
+            _buckets = range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+          } else {
+            if (!colors) {
+              if (this._scale === "buckets") {
+                colors = range(0, this._buckets, 1).map(function (i) {
+                  return colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / _this2._buckets);
+                });
+                if (positive) colors = colors.reverse();
+              } else {
+                colors = negative ? [this._colorMin, colorLighter(this._colorMin, 0.8)] : [colorLighter(this._colorMax, 0.8), this._colorMax];
+              }
+            }
+
+            var _step = (domain[1] - domain[0]) / (colors.length - 1);
+
+            _buckets = range(domain[0], domain[1] + _step / 2, _step);
+          }
+
+          if (this._scale === "buckets") {
+            ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
+          }
+
+          this._colorScale = linear$1().domain(_buckets).range(colors);
         }
 
         if (this._bucketAxis || !["buckets", "jenks"].includes(this._scale)) {
@@ -31026,8 +31128,12 @@
           defs = defsEnter.merge(defs);
           defs.select("linearGradient").attr("".concat(x, "1"), horizontal ? "0%" : "100%").attr("".concat(x, "2"), horizontal ? "100%" : "0%").attr("".concat(y, "1"), "0%").attr("".concat(y, "2"), "0%");
           var stops = defs.select("linearGradient").selectAll("stop").data(colors);
+
+          var scaleDomain = this._colorScale.domain();
+
+          var offsetScale = linear$1().domain([scaleDomain[0], scaleDomain[scaleDomain.length - 1]]).range([0, 100]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
-            return "".concat(i / (colors.length - 1) * 100, "%");
+            return "".concat(offsetScale(scaleDomain[i]), "%");
           }).attr("stop-color", String);
           /** determines the width of buckets */
 
@@ -31124,6 +31230,18 @@
       }
       /**
           @memberof ColorScale
+          @desc The number of discrete buckets to create in a bucketed color scale. Will be overridden by any custom Array of colors passed to the `color` method.
+          @param {Number} [*value* = 5]
+          @chainable
+      */
+
+    }, {
+      key: "buckets",
+      value: function buckets(_) {
+        return arguments.length ? (this._buckets = _, this) : this._buckets;
+      }
+      /**
+          @memberof ColorScale
           @desc Determines whether or not to use an Axis to display bucket scales (both "buckets" and "jenks"). When set to `false`, bucketed scales will use the `Legend` class to display squares for each range of data. When set to `true`, bucketed scales will be displayed on an `Axis`, similar to "linear" scales.
           @param {Boolean} [*value* = false]
           @chainable
@@ -31136,8 +31254,8 @@
       }
       /**
           @memberof ColorScale
-          @desc Defines the color or colors to be used for the scale. If only a single color is given as a String, then the scale is interpolated by lightening that color. Otherwise, the function expects an Array of color values to be used in order for the scale.
-          @param {String|Array} [*value* = "#0C8040"]
+          @desc Overrides the default internal logic of `colorMin`, `colorMid`, and `colorMax` to only use just this specified color. If a single color is given as a String, then the scale is interpolated by lightening that color. Otherwise, the function expects an Array of color values to be used in order for the scale.
+          @param {String|Array} [*value*]
           @chainable
       */
 
@@ -31145,6 +31263,42 @@
       key: "color",
       value: function color(_) {
         return arguments.length ? (this._color = _, this) : this._color;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for numbers greater than the value of the `midpoint` on the scale (defaults to `0`). Colors in between this value and the value of `colorMid` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#0C8040"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMax",
+      value: function colorMax(_) {
+        return arguments.length ? (this._colorMax = _, this) : this._colorMax;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for the midpoint of a diverging scale, based on the current value of the `midpoint` method (defaults to `0`). Colors in between this value and the values of `colorMin` and `colorMax` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#f7f7f7"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMid",
+      value: function colorMid(_) {
+        return arguments.length ? (this._colorMid = _, this) : this._colorMid;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for numbers less than the value of the `midpoint` on the scale (defaults to `0`). Colors in between this value and the value of `colorMid` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#b22200"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMin",
+      value: function colorMin(_) {
+        return arguments.length ? (this._colorMin = _, this) : this._colorMin;
       }
       /**
           @memberof ColorScale
@@ -31193,6 +31347,18 @@
       key: "legendConfig",
       value: function legendConfig(_) {
         return arguments.length ? (this._legendConfig = assign(this._legendConfig, _), this) : this._legendConfig;
+      }
+      /**
+          @memberof ColorScale
+          @desc The number value to be used as the anchor for `colorMid`, and defines the center point of the diverging color scale.
+          @param {Number} [*value* = 0]
+          @chainable
+      */
+
+    }, {
+      key: "midpoint",
+      value: function midpoint(_) {
+        return arguments.length ? (this._midpoint = _, this) : this._midpoint;
       }
       /**
           @memberof ColorScale
