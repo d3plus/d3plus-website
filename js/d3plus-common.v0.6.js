@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.57
+  d3plus-common v0.6.58
   Common functions and methods used across D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1187,6 +1187,25 @@
     }
   }
   /**
+   * @desc finds all prototype methods of a class and it's parent classes
+   * @param {*} obj
+   * @private
+   */
+
+
+  function getAllMethods(obj) {
+    var props = [];
+
+    do {
+      props = props.concat(Object.getOwnPropertyNames(obj));
+      obj = Object.getPrototypeOf(obj);
+    } while (obj);
+
+    return props.filter(function (e) {
+      return e.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(e);
+    });
+  }
+  /**
       @class BaseClass
       @summary An abstract class that contains some global methods and functionality.
   */
@@ -1227,30 +1246,28 @@
     _createClass(BaseClass, [{
       key: "config",
       value: function config(_) {
+        var _this2 = this;
+
         if (!this._configDefault) {
           var config = {};
+          getAllMethods(this.__proto__).forEach(function (k) {
+            var v = _this2[k]();
 
-          for (var k in this.__proto__) {
-            if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
-              var v = this[k]();
-              config[k] = isObject(v) ? assign({}, v) : v;
-            }
-          }
-
+            config[k] = isObject(v) ? assign({}, v) : v;
+          });
           this._configDefault = config;
         }
 
         if (arguments.length) {
-          for (var _k in _) {
-            if ({}.hasOwnProperty.call(_, _k) && _k in this) {
-              var _v = _[_k];
+          for (var k in _) {
+            if ({}.hasOwnProperty.call(_, k) && k in this) {
+              var v = _[k];
 
-              if (_v === RESET) {
-                if (_k === "on") this._on = this._configDefault[_k];else this[_k](this._configDefault[_k]);
+              if (v === RESET) {
+                if (k === "on") this._on = this._configDefault[k];else this[k](this._configDefault[k]);
               } else {
-                nestedReset(_v, this._configDefault[_k]);
-
-                this[_k](_v);
+                nestedReset(v, this._configDefault[k]);
+                this[k](v);
               }
             }
           }
@@ -1258,11 +1275,9 @@
           return this;
         } else {
           var _config = {};
-
-          for (var _k2 in this.__proto__) {
-            if (_k2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(_k2)) _config[_k2] = this[_k2]();
-          }
-
+          getAllMethods(this.__proto__).forEach(function (k) {
+            _config[k] = _this2[k]();
+          });
           return _config;
         }
       }
