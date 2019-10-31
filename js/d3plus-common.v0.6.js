@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.58
+  d3plus-common v0.6.59
   Common functions and methods used across D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1199,7 +1199,7 @@
     do {
       props = props.concat(Object.getOwnPropertyNames(obj));
       obj = Object.getPrototypeOf(obj);
-    } while (obj);
+    } while (obj && obj !== Object.prototype);
 
     return props.filter(function (e) {
       return e.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(e);
