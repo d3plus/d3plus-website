@@ -2,8 +2,8 @@
 title: Changing Line Plot Splining
 width: 990
 height: 400
-time: 1571855640137
-date: October 23, 2019
+time: 1572543720472
+date: October 31, 2019
 ---
 
 # Changing Line Plot Splining
