@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.24
+  d3plus-plot v0.8.25
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -53210,7 +53210,7 @@
 
     if (this._stacked) {
       var groupedData = nest().key(function (d) {
-        return d[_this._discrete];
+        return "".concat(d[_this._discrete], "_").concat(d.group);
       }).entries(data).map(function (d) {
         return d.values.map(function (x) {
           return x[isDiscreteX ? yKey : xKey];
