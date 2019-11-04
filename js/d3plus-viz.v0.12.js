@@ -8,7 +8,7 @@
 (function (factory) {
 	typeof define === 'function' && define.amd ? define(factory) :
 	factory();
-}(function () { 'use strict';
+}((function () { 'use strict';
 
 	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -16,7 +16,6 @@
 		return module = { exports: {} }, fn(module, module.exports), module.exports;
 	}
 
-	var O = 'object';
 	var check = function (it) {
 	  return it && it.Math == Math && it;
 	};
@@ -24,10 +23,10 @@
 	// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 	var global_1 =
 	  // eslint-disable-next-line no-undef
-	  check(typeof globalThis == O && globalThis) ||
-	  check(typeof window == O && window) ||
-	  check(typeof self == O && self) ||
-	  check(typeof commonjsGlobal == O && commonjsGlobal) ||
+	  check(typeof globalThis == 'object' && globalThis) ||
+	  check(typeof window == 'object' && window) ||
+	  check(typeof self == 'object' && self) ||
+	  check(typeof commonjsGlobal == 'object' && commonjsGlobal) ||
 	  // eslint-disable-next-line no-new-func
 	  Function('return this')();
 
@@ -183,7 +182,7 @@
 		f: f$2
 	};
 
-	var hide = descriptors ? function (object, key, value) {
+	var createNonEnumerableProperty = descriptors ? function (object, key, value) {
 	  return objectDefineProperty.f(object, key, createPropertyDescriptor(1, value));
 	} : function (object, key, value) {
 	  object[key] = value;
@@ -192,20 +191,22 @@
 
 	var setGlobal = function (key, value) {
 	  try {
-	    hide(global_1, key, value);
+	    createNonEnumerableProperty(global_1, key, value);
 	  } catch (error) {
 	    global_1[key] = value;
 	  } return value;
 	};
 
-	var shared = createCommonjsModule(function (module) {
 	var SHARED = '__core-js_shared__';
 	var store = global_1[SHARED] || setGlobal(SHARED, {});
 
+	var sharedStore = store;
+
+	var shared = createCommonjsModule(function (module) {
 	(module.exports = function (key, value) {
-	  return store[key] || (store[key] = value !== undefined ? value : {});
+	  return sharedStore[key] || (sharedStore[key] = value !== undefined ? value : {});
 	})('versions', []).push({
-	  version: '3.2.1',
+	  version: '3.3.6',
 	  mode:  'global',
 	  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
 	});
@@ -249,25 +250,25 @@
 	};
 
 	if (nativeWeakMap) {
-	  var store = new WeakMap$1();
-	  var wmget = store.get;
-	  var wmhas = store.has;
-	  var wmset = store.set;
+	  var store$1 = new WeakMap$1();
+	  var wmget = store$1.get;
+	  var wmhas = store$1.has;
+	  var wmset = store$1.set;
 	  set = function (it, metadata) {
-	    wmset.call(store, it, metadata);
+	    wmset.call(store$1, it, metadata);
 	    return metadata;
 	  };
 	  get = function (it) {
-	    return wmget.call(store, it) || {};
+	    return wmget.call(store$1, it) || {};
 	  };
 	  has$1 = function (it) {
-	    return wmhas.call(store, it);
+	    return wmhas.call(store$1, it);
 	  };
 	} else {
 	  var STATE = sharedKey('state');
 	  hiddenKeys[STATE] = true;
 	  set = function (it, metadata) {
-	    hide(it, STATE, metadata);
+	    createNonEnumerableProperty(it, STATE, metadata);
 	    return metadata;
 	  };
 	  get = function (it) {
@@ -300,7 +301,7 @@
 	  var simple = options ? !!options.enumerable : false;
 	  var noTargetGet = options ? !!options.noTargetGet : false;
 	  if (typeof value == 'function') {
-	    if (typeof key == 'string' && !has(value, 'name')) hide(value, 'name', key);
+	    if (typeof key == 'string' && !has(value, 'name')) createNonEnumerableProperty(value, 'name', key);
 	    enforceInternalState(value).source = TEMPLATE.join(typeof key == 'string' ? key : '');
 	  }
 	  if (O === global_1) {
@@ -313,7 +314,7 @@
 	    simple = true;
 	  }
 	  if (simple) O[key] = value;
-	  else hide(O, key, value);
+	  else createNonEnumerableProperty(O, key, value);
 	// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
 	})(Function.prototype, 'toString', function toString() {
 	  return typeof this == 'function' && getInternalState(this).source || functionToString.call(this);
@@ -517,7 +518,7 @@
 	    }
 	    // add a flag to not completely full polyfills
 	    if (options.sham || (targetProperty && targetProperty.sham)) {
-	      hide(sourceProperty, 'sham', true);
+	      createNonEnumerableProperty(sourceProperty, 'sham', true);
 	    }
 	    // extend global
 	    redefine(target, key, sourceProperty, options);
@@ -572,10 +573,10 @@
 	});
 
 	var Symbol$1 = global_1.Symbol;
-	var store$1 = shared('wks');
+	var store$2 = shared('wks');
 
 	var wellKnownSymbol = function (name) {
-	  return store$1[name] || (store$1[name] = nativeSymbol && Symbol$1[name]
+	  return store$2[name] || (store$2[name] = nativeSymbol && Symbol$1[name]
 	    || (nativeSymbol ? Symbol$1 : uid)('Symbol.' + name));
 	};
 
@@ -725,7 +726,7 @@
 	// Array.prototype[@@unscopables]
 	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
 	if (ArrayPrototype[UNSCOPABLES] == undefined) {
-	  hide(ArrayPrototype, UNSCOPABLES, objectCreate(null));
+	  createNonEnumerableProperty(ArrayPrototype, UNSCOPABLES, objectCreate(null));
 	}
 
 	// add a key to Array.prototype[@@unscopables]
@@ -930,13 +931,13 @@
 	  })();
 	}
 
-}));
+})));
 
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-request'), require('d3-array'), require('d3-brush'), require('d3-color'), require('d3-collection'), require('d3-queue'), require('d3-selection'), require('d3-transition'), require('d3-zoom'), require('lrucache'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-common'), require('d3plus-form'), require('d3plus-format'), require('d3plus-legend'), require('d3plus-text'), require('d3plus-timeline'), require('d3plus-tooltip'), require('d3plus-export')) :
   typeof define === 'function' && define.amd ? define('d3plus-viz', ['exports', 'd3-request', 'd3-array', 'd3-brush', 'd3-color', 'd3-collection', 'd3-queue', 'd3-selection', 'd3-transition', 'd3-zoom', 'lrucache', 'd3plus-axis', 'd3plus-color', 'd3plus-common', 'd3plus-form', 'd3plus-format', 'd3plus-legend', 'd3plus-text', 'd3plus-timeline', 'd3plus-tooltip', 'd3plus-export'], factory) :
   (global = global || self, factory(global.d3plus = {}, global.d3Request, global.d3Array, global.d3Brush, global.d3Color, global.d3Collection, global.d3Queue, global.d3Selection, global.d3Transition, global.d3Zoom, global.lrucache, global.d3plusAxis, global.d3plusColor, global.d3plusCommon, global.d3plusForm, global.d3plusFormat, global.d3plusLegend, global.d3plusText, global.d3plusTimeline, global.d3plusTooltip, global.d3plusExport));
-}(this, function (exports, d3Request, d3Array, d3Brush, d3Color, d3Collection, d3Queue, d3Selection, d3Transition, d3Zoom, lrucache, d3plusAxis, d3plusColor, d3plusCommon, d3plusForm, d3plusFormat, d3plusLegend, d3plusText, d3plusTimeline, d3plusTooltip, d3plusExport) { 'use strict';
+}(this, (function (exports, d3Request, d3Array, d3Brush, d3Color, d3Collection, d3Queue, d3Selection, d3Transition, d3Zoom, lrucache, d3plusAxis, d3plusColor, d3plusCommon, d3plusForm, d3plusFormat, d3plusLegend, d3plusText, d3plusTimeline, d3plusTooltip, d3plusExport) { 'use strict';
 
   lrucache = lrucache && lrucache.hasOwnProperty('default') ? lrucache['default'] : lrucache;
 
@@ -1024,6 +1025,16 @@
       }
 
       return data;
+    };
+
+    var loadedLength = function loadedLength(loadedArray) {
+      return loadedArray.reduce(function (prev, current) {
+        return current ? prev + 1 : prev;
+      }, 0);
+    };
+
+    var getPathIndex = function getPathIndex(url, array) {
+      return array.indexOf(url);
     }; // If data param is a single string url or an plain object then convert path to a 1 element array of urls to re-use logic
 
 
@@ -1034,39 +1045,39 @@
     var isThereAnyString = path.find(function (dataItem) {
       return typeof dataItem === "string";
     });
-    var loaded = [];
+    var loaded = new Array(path.length);
     var toLoad = []; // If there is a string I'm assuming is a Array to merge, urls or data
 
     if (isThereAnyString) {
-      path.forEach(function (dataItem) {
+      path.forEach(function (dataItem, ix) {
         if (typeof dataItem !== "string") {
-          loaded.push(dataItem);
+          loaded[ix] = dataItem;
         } else if (typeof dataItem === "string") {
           toLoad.push(dataItem);
         }
       });
     } // Data array itself
     else {
-        loaded.push(path);
+        loaded[0] = path;
       } // Load all urls an combine them with data arrays
 
 
-    var alreadyLoaded = loaded.length;
+    var alreadyLoaded = loadedLength(loaded);
     toLoad.forEach(function (url) {
       parser = getParser(url);
       parser(url, function (err, data) {
         data = err ? [] : data;
         if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
         data = validateData(err, parser, data);
-        loaded.push(data);
+        loaded[getPathIndex(url, path)] = data;
 
-        if (loaded.length - alreadyLoaded === toLoad.length) {
+        if (loadedLength(loaded) - alreadyLoaded === toLoad.length) {
           // All urls loaded
           // Format data
-          data = loaded.length === 1 ? loaded[0] : loaded;
+          data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
 
           if (formatter) {
-            data = formatter(loaded.length === 1 ? loaded[0] : loaded);
+            data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
           } else if (key === "data") {
             data = concat(loaded, "data");
           }
@@ -1084,10 +1095,10 @@
         return data;
       }); // Format data
 
-      var data = loaded.length === 1 ? loaded[0] : loaded;
+      var data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
 
       if (formatter) {
-        data = formatter(loaded.length === 1 ? loaded[0] : loaded);
+        data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
       } else if (key === "data") {
         data = concat(loaded, "data");
       }
@@ -1206,6 +1217,10 @@
   }
 
   function _iterableToArrayLimit(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -4056,5 +4071,5 @@
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-}));
+})));
 //# sourceMappingURL=d3plus-viz.js.map
