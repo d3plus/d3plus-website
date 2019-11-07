@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.25
+  d3plus-plot v0.8.26
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -12462,6 +12462,25 @@
     }
   }
   /**
+   * @desc finds all prototype methods of a class and it's parent classes
+   * @param {*} obj
+   * @private
+   */
+
+
+  function getAllMethods(obj) {
+    var props = [];
+
+    do {
+      props = props.concat(Object.getOwnPropertyNames(obj));
+      obj = Object.getPrototypeOf(obj);
+    } while (obj && obj !== Object.prototype);
+
+    return props.filter(function (e) {
+      return e.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(e);
+    });
+  }
+  /**
       @class BaseClass
       @summary An abstract class that contains some global methods and functionality.
   */
@@ -12502,30 +12521,28 @@
     _createClass$1(BaseClass, [{
       key: "config",
       value: function config(_) {
+        var _this2 = this;
+
         if (!this._configDefault) {
           var config = {};
+          getAllMethods(this.__proto__).forEach(function (k) {
+            var v = _this2[k]();
 
-          for (var k in this.__proto__) {
-            if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
-              var v = this[k]();
-              config[k] = isObject(v) ? assign({}, v) : v;
-            }
-          }
-
+            config[k] = isObject(v) ? assign({}, v) : v;
+          });
           this._configDefault = config;
         }
 
         if (arguments.length) {
-          for (var _k in _) {
-            if ({}.hasOwnProperty.call(_, _k) && _k in this) {
-              var _v = _[_k];
+          for (var k in _) {
+            if ({}.hasOwnProperty.call(_, k) && k in this) {
+              var v = _[k];
 
-              if (_v === RESET) {
-                if (_k === "on") this._on = this._configDefault[_k];else this[_k](this._configDefault[_k]);
+              if (v === RESET) {
+                if (k === "on") this._on = this._configDefault[k];else this[k](this._configDefault[k]);
               } else {
-                nestedReset(_v, this._configDefault[_k]);
-
-                this[_k](_v);
+                nestedReset(v, this._configDefault[k]);
+                this[k](v);
               }
             }
           }
@@ -12533,11 +12550,9 @@
           return this;
         } else {
           var _config = {};
-
-          for (var _k2 in this.__proto__) {
-            if (_k2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(_k2)) _config[_k2] = this[_k2]();
-          }
-
+          getAllMethods(this.__proto__).forEach(function (k) {
+            _config[k] = _this2[k]();
+          });
           return _config;
         }
       }
@@ -30976,6 +30991,16 @@
       }
 
       return data;
+    };
+
+    var loadedLength = function loadedLength(loadedArray) {
+      return loadedArray.reduce(function (prev, current) {
+        return current ? prev + 1 : prev;
+      }, 0);
+    };
+
+    var getPathIndex = function getPathIndex(url, array) {
+      return array.indexOf(url);
     }; // If data param is a single string url or an plain object then convert path to a 1 element array of urls to re-use logic
 
 
@@ -30986,39 +31011,39 @@
     var isThereAnyString = path.find(function (dataItem) {
       return typeof dataItem === "string";
     });
-    var loaded = [];
+    var loaded = new Array(path.length);
     var toLoad = []; // If there is a string I'm assuming is a Array to merge, urls or data
 
     if (isThereAnyString) {
-      path.forEach(function (dataItem) {
+      path.forEach(function (dataItem, ix) {
         if (typeof dataItem !== "string") {
-          loaded.push(dataItem);
+          loaded[ix] = dataItem;
         } else if (typeof dataItem === "string") {
           toLoad.push(dataItem);
         }
       });
     } // Data array itself
     else {
-        loaded.push(path);
+        loaded[0] = path;
       } // Load all urls an combine them with data arrays
 
 
-    var alreadyLoaded = loaded.length;
+    var alreadyLoaded = loadedLength(loaded);
     toLoad.forEach(function (url) {
       parser = getParser(url);
       parser(url, function (err, data) {
         data = err ? [] : data;
         if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
         data = validateData(err, parser, data);
-        loaded.push(data);
+        loaded[getPathIndex(url, path)] = data;
 
-        if (loaded.length - alreadyLoaded === toLoad.length) {
+        if (loadedLength(loaded) - alreadyLoaded === toLoad.length) {
           // All urls loaded
           // Format data
-          data = loaded.length === 1 ? loaded[0] : loaded;
+          data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
 
           if (formatter) {
-            data = formatter(loaded.length === 1 ? loaded[0] : loaded);
+            data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
           } else if (key === "data") {
             data = concat(loaded, "data");
           }
@@ -31036,10 +31061,10 @@
         return data;
       }); // Format data
 
-      var data = loaded.length === 1 ? loaded[0] : loaded;
+      var data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
 
       if (formatter) {
-        data = formatter(loaded.length === 1 ? loaded[0] : loaded);
+        data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
       } else if (key === "data") {
         data = concat(loaded, "data");
       }
@@ -34696,8 +34721,11 @@
       };
       _this._axisTest = new Axis();
       _this._align = "middle";
+      _this._buckets = 5;
       _this._bucketAxis = false;
-      _this._color = "#0C8040";
+      _this._colorMax = "#0C8040";
+      _this._colorMid = "#f7f7f7";
+      _this._colorMin = "#b22200";
       _this._data = [];
       _this._duration = 600;
       _this._height = 200;
@@ -34711,6 +34739,7 @@
           strokeWidth: 1
         }
       };
+      _this._midpoint = 0;
       _this._orient = "bottom";
       _this._outerBounds = {
         width: 0,
@@ -34754,12 +34783,17 @@
           parent: this._select
         });
         var domain = extent(this._data, this._value);
+        var negative = domain[0] < this._midpoint;
+        var positive = domain[1] > this._midpoint;
+        var diverging = negative && positive;
         var colors = this._color,
             labels,
             ticks;
 
-        if (!(colors instanceof Array)) {
-          colors = [colorLighter(colors, 0.9), colorLighter(colors, 0.75), colorLighter(colors, 0.5), colorLighter(colors, 0.25), colors];
+        if (colors && !(colors instanceof Array)) {
+          colors = range(0, this._buckets, 1).map(function (i) {
+            return colorLighter(colors, (i + 1) / _this2._buckets);
+          }).reverse();
         }
 
         if (this._scale === "jenks") {
@@ -34767,11 +34801,8 @@
             return d !== null && typeof d === "number";
           });
 
-          if (data.length <= colors.length) {
-            colors = colors.slice(colors.length - data.length);
-          }
-
-          var jenks = ckmeans(data, colors.length);
+          var buckets = min([colors ? colors.length : this._buckets, data.length]);
+          var jenks = ckmeans(data, buckets);
           ticks = merge(jenks.map(function (c, i) {
             return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]];
           }));
@@ -34781,12 +34812,84 @@
             labels = Array.from(tickSet);
           }
 
+          if (!colors) {
+            if (diverging) {
+              colors = [this._colorMin, this._colorMid, this._colorMax];
+              var negatives = ticks.slice(0, buckets).filter(function (d, i) {
+                return d < _this2._midpoint && ticks[i + 1] <= _this2._midpoint;
+              });
+              var spanning = ticks.slice(0, buckets).filter(function (d, i) {
+                return d <= _this2._midpoint && ticks[i + 1] > _this2._midpoint;
+              });
+              var positives = ticks.slice(0, buckets).filter(function (d, i) {
+                return d > _this2._midpoint && ticks[i + 1] > _this2._midpoint;
+              });
+              var negativeColors = negatives.map(function (d, i) {
+                return !i ? colors[0] : colorLighter(colors[0], i / negatives.length);
+              });
+              var spanningColors = spanning.map(function () {
+                return colors[1];
+              });
+              var positiveColors = positives.map(function (d, i) {
+                return i === positives.length - 1 ? colors[2] : colorLighter(colors[2], 1 - (i + 1) / positives.length);
+              });
+              colors = negativeColors.concat(spanningColors).concat(positiveColors);
+            } else {
+              colors = range(0, this._buckets, 1).map(function (i) {
+                return colorLighter(_this2._colorMax, i / _this2._buckets);
+              }).reverse();
+            }
+          }
+
+          if (data.length <= buckets) {
+            colors = colors.slice(buckets - data.length);
+          }
+
           this._colorScale = threshold().domain(ticks).range(["black"].concat(colors).concat(colors[colors.length - 1]));
         } else {
-          var step = (domain[1] - domain[0]) / (colors.length - 1);
-          var buckets = range(domain[0], domain[1] + step / 2, step);
-          if (this._scale === "buckets") ticks = buckets;
-          this._colorScale = linear$1().domain(buckets).range(colors);
+          var _buckets;
+
+          if (diverging && !colors) {
+            var half = Math.floor(this._buckets / 2);
+
+            var _negativeColors = range(0, half, 1).map(function (i) {
+              return !i ? _this2._colorMin : colorLighter(_this2._colorMin, i / half);
+            });
+
+            var _spanningColors = (this._buckets % 2 ? [0] : []).map(function () {
+              return _this2._colorMid;
+            });
+
+            var _positiveColors = range(0, half, 1).map(function (i) {
+              return !i ? _this2._colorMax : colorLighter(_this2._colorMax, i / half);
+            }).reverse();
+
+            colors = _negativeColors.concat(_spanningColors).concat(_positiveColors);
+            var step = (colors.length - 1) / 2;
+            _buckets = [domain[0], this._midpoint, domain[1]];
+            _buckets = range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+          } else {
+            if (!colors) {
+              if (this._scale === "buckets") {
+                colors = range(0, this._buckets, 1).map(function (i) {
+                  return colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / _this2._buckets);
+                });
+                if (positive) colors = colors.reverse();
+              } else {
+                colors = negative ? [this._colorMin, colorLighter(this._colorMin, 0.8)] : [colorLighter(this._colorMax, 0.8), this._colorMax];
+              }
+            }
+
+            var _step = (domain[1] - domain[0]) / (colors.length - 1);
+
+            _buckets = range(domain[0], domain[1] + _step / 2, _step);
+          }
+
+          if (this._scale === "buckets") {
+            ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
+          }
+
+          this._colorScale = linear$1().domain(_buckets).range(colors);
         }
 
         if (this._bucketAxis || !["buckets", "jenks"].includes(this._scale)) {
@@ -34838,8 +34941,12 @@
           defs = defsEnter.merge(defs);
           defs.select("linearGradient").attr("".concat(x, "1"), horizontal ? "0%" : "100%").attr("".concat(x, "2"), horizontal ? "100%" : "0%").attr("".concat(y, "1"), "0%").attr("".concat(y, "2"), "0%");
           var stops = defs.select("linearGradient").selectAll("stop").data(colors);
+
+          var scaleDomain = this._colorScale.domain();
+
+          var offsetScale = linear$1().domain([scaleDomain[0], scaleDomain[scaleDomain.length - 1]]).range([0, 100]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
-            return "".concat(i / (colors.length - 1) * 100, "%");
+            return "".concat(offsetScale(scaleDomain[i]), "%");
           }).attr("stop-color", String);
           /** determines the width of buckets */
 
@@ -34936,6 +35043,18 @@
       }
       /**
           @memberof ColorScale
+          @desc The number of discrete buckets to create in a bucketed color scale. Will be overridden by any custom Array of colors passed to the `color` method.
+          @param {Number} [*value* = 5]
+          @chainable
+      */
+
+    }, {
+      key: "buckets",
+      value: function buckets(_) {
+        return arguments.length ? (this._buckets = _, this) : this._buckets;
+      }
+      /**
+          @memberof ColorScale
           @desc Determines whether or not to use an Axis to display bucket scales (both "buckets" and "jenks"). When set to `false`, bucketed scales will use the `Legend` class to display squares for each range of data. When set to `true`, bucketed scales will be displayed on an `Axis`, similar to "linear" scales.
           @param {Boolean} [*value* = false]
           @chainable
@@ -34948,8 +35067,8 @@
       }
       /**
           @memberof ColorScale
-          @desc Defines the color or colors to be used for the scale. If only a single color is given as a String, then the scale is interpolated by lightening that color. Otherwise, the function expects an Array of color values to be used in order for the scale.
-          @param {String|Array} [*value* = "#0C8040"]
+          @desc Overrides the default internal logic of `colorMin`, `colorMid`, and `colorMax` to only use just this specified color. If a single color is given as a String, then the scale is interpolated by lightening that color. Otherwise, the function expects an Array of color values to be used in order for the scale.
+          @param {String|Array} [*value*]
           @chainable
       */
 
@@ -34957,6 +35076,42 @@
       key: "color",
       value: function color(_) {
         return arguments.length ? (this._color = _, this) : this._color;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for numbers greater than the value of the `midpoint` on the scale (defaults to `0`). Colors in between this value and the value of `colorMid` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#0C8040"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMax",
+      value: function colorMax(_) {
+        return arguments.length ? (this._colorMax = _, this) : this._colorMax;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for the midpoint of a diverging scale, based on the current value of the `midpoint` method (defaults to `0`). Colors in between this value and the values of `colorMin` and `colorMax` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#f7f7f7"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMid",
+      value: function colorMid(_) {
+        return arguments.length ? (this._colorMid = _, this) : this._colorMid;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for numbers less than the value of the `midpoint` on the scale (defaults to `0`). Colors in between this value and the value of `colorMid` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#b22200"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMin",
+      value: function colorMin(_) {
+        return arguments.length ? (this._colorMin = _, this) : this._colorMin;
       }
       /**
           @memberof ColorScale
@@ -35005,6 +35160,18 @@
       key: "legendConfig",
       value: function legendConfig(_) {
         return arguments.length ? (this._legendConfig = assign(this._legendConfig, _), this) : this._legendConfig;
+      }
+      /**
+          @memberof ColorScale
+          @desc The number value to be used as the anchor for `colorMid`, and defines the center point of the diverging color scale.
+          @param {Number} [*value* = 0]
+          @chainable
+      */
+
+    }, {
+      key: "midpoint",
+      value: function midpoint(_) {
+        return arguments.length ? (this._midpoint = _, this) : this._midpoint;
       }
       /**
           @memberof ColorScale
@@ -51015,6 +51182,10 @@
   }
 
   function _iterableToArrayLimit$4(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -51294,6 +51465,10 @@
   }
 
   function _iterableToArrayLimit$5(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -51764,11 +51939,17 @@
           if (this._discrete && "_".concat(this._discrete) in this) dataNest.key(this["_".concat(this._discrete)]);
           if (this._discrete && "_".concat(this._discrete, "2") in this) dataNest.key(this["_".concat(this._discrete, "2")]);
           var tree = dataNest.rollup(function (leaves) {
+            var index = _this2._data.indexOf(leaves[0]);
+
+            var shape = _this2._shape(leaves[0], index);
+
+            var id = _this2._id(leaves[0], index);
+
             var d = objectMerge(leaves, _this2._aggs);
 
-            var id = _this2._id(d);
-
-            if (!_this2._hidden.includes(id) && (!_this2._solo.length || _this2._solo.includes(id))) _this2._filteredData.push(d);
+            if (!_this2._hidden.includes(id) && (!_this2._solo.length || _this2._solo.includes(id))) {
+              if (shape === "Line") _this2._filteredData = _this2._filteredData.concat(leaves);else _this2._filteredData.push(d);
+            }
 
             _this2._legendData.push(d);
           }).entries(flatData);
@@ -53924,7 +54105,7 @@
           xScale = "Time";
         } else if (this._discrete === "x") {
           xDomain = Array.from(new Set(data.filter(function (d) {
-            return d.x;
+            return ["number", "string"].includes(_typeof(d.x));
           }).sort(function (a, b) {
             return _this2._xSort ? _this2._xSort(a.data, b.data) : a.x - b.x;
           }).map(function (d) {
@@ -53943,7 +54124,7 @@
           x2Scale = "Time";
         } else if (this._discrete === "x") {
           x2Domain = Array.from(new Set(data.filter(function (d) {
-            return d.x2;
+            return ["number", "string"].includes(_typeof(d.x2));
           }).sort(function (a, b) {
             return _this2._x2Sort ? _this2._x2Sort(a.data, b.data) : a.x2 - b.x2;
           }).map(function (d) {
@@ -53965,13 +54146,17 @@
           yDomain = yDomain.map(date$2);
           yScale = "Time";
         } else if (this._discrete === "y") {
-          yDomain = Array.from(new Set(data.sort(function (a, b) {
+          yDomain = Array.from(new Set(data.filter(function (d) {
+            return ["number", "string"].includes(_typeof(d.y));
+          }).sort(function (a, b) {
             return _this2._ySort ? _this2._ySort(a.data, b.data) : a.y - b.y;
           }).map(function (d) {
             return d.y;
           })));
           yScale = "Point";
-          y2Domain = Array.from(new Set(data.sort(function (a, b) {
+          y2Domain = Array.from(new Set(data.filter(function (d) {
+            return ["number", "string"].includes(_typeof(d.y2));
+          }).sort(function (a, b) {
             return _this2._y2Sort ? _this2._y2Sort(a.data, b.data) : a.y2 - b.y2;
           }).map(function (d) {
             return d.y2;
@@ -55263,11 +55448,7 @@
       _classCallCheck(this, LinePlot);
 
       _this = _possibleConstructorReturn(this, _getPrototypeOf(LinePlot).call(this));
-      _this._discrete = "x";
       _this._shape = constant("Line");
-
-      _this.x("x");
-
       return _this;
     }
 

@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.25
+  d3plus-plot v0.8.26
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -938,6 +938,20 @@
   (global = global || self, factory(global.d3plus = {}, global.d3plusCommon, global.d3Array, global.d3Collection, global.scales, global.d3Shape, global.d3plusAxis, global.d3plusColor, global.shapes, global.d3plusViz, global.d3Selection));
 }(this, function (exports, d3plusCommon, d3Array, d3Collection, scales, d3Shape, d3plusAxis, d3plusColor, shapes, d3plusViz, d3Selection) { 'use strict';
 
+  function _typeof(obj) {
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof = function (obj) {
+        return typeof obj;
+      };
+    } else {
+      _typeof = function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+      };
+    }
+
+    return _typeof(obj);
+  }
+
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -1818,7 +1832,7 @@
           xScale = "Time";
         } else if (this._discrete === "x") {
           xDomain = Array.from(new Set(data.filter(function (d) {
-            return d.x;
+            return ["number", "string"].includes(_typeof(d.x));
           }).sort(function (a, b) {
             return _this2._xSort ? _this2._xSort(a.data, b.data) : a.x - b.x;
           }).map(function (d) {
@@ -1837,7 +1851,7 @@
           x2Scale = "Time";
         } else if (this._discrete === "x") {
           x2Domain = Array.from(new Set(data.filter(function (d) {
-            return d.x2;
+            return ["number", "string"].includes(_typeof(d.x2));
           }).sort(function (a, b) {
             return _this2._x2Sort ? _this2._x2Sort(a.data, b.data) : a.x2 - b.x2;
           }).map(function (d) {
@@ -1859,13 +1873,17 @@
           yDomain = yDomain.map(d3plusAxis.date);
           yScale = "Time";
         } else if (this._discrete === "y") {
-          yDomain = Array.from(new Set(data.sort(function (a, b) {
+          yDomain = Array.from(new Set(data.filter(function (d) {
+            return ["number", "string"].includes(_typeof(d.y));
+          }).sort(function (a, b) {
             return _this2._ySort ? _this2._ySort(a.data, b.data) : a.y - b.y;
           }).map(function (d) {
             return d.y;
           })));
           yScale = "Point";
-          y2Domain = Array.from(new Set(data.sort(function (a, b) {
+          y2Domain = Array.from(new Set(data.filter(function (d) {
+            return ["number", "string"].includes(_typeof(d.y2));
+          }).sort(function (a, b) {
             return _this2._y2Sort ? _this2._y2Sort(a.data, b.data) : a.y2 - b.y2;
           }).map(function (d) {
             return d.y2;
@@ -3157,11 +3175,7 @@
       _classCallCheck(this, LinePlot);
 
       _this = _possibleConstructorReturn(this, _getPrototypeOf(LinePlot).call(this));
-      _this._discrete = "x";
       _this._shape = d3plusCommon.constant("Line");
-
-      _this.x("x");
-
       return _this;
     }
 
