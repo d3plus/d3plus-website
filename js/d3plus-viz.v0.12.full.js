@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.44
+  d3plus-viz v0.12.45
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -50197,11 +50197,17 @@
           if (this._discrete && "_".concat(this._discrete) in this) dataNest.key(this["_".concat(this._discrete)]);
           if (this._discrete && "_".concat(this._discrete, "2") in this) dataNest.key(this["_".concat(this._discrete, "2")]);
           var tree = dataNest.rollup(function (leaves) {
+            var index = _this2._data.indexOf(leaves[0]);
+
+            var shape = _this2._shape(leaves[0], index);
+
+            var id = _this2._id(leaves[0], index);
+
             var d = objectMerge(leaves, _this2._aggs);
 
-            var id = _this2._id(d);
-
-            if (!_this2._hidden.includes(id) && (!_this2._solo.length || _this2._solo.includes(id))) _this2._filteredData.push(d);
+            if (!_this2._hidden.includes(id) && (!_this2._solo.length || _this2._solo.includes(id))) {
+              if (shape === "Line") _this2._filteredData = _this2._filteredData.concat(leaves);else _this2._filteredData.push(d);
+            }
 
             _this2._legendData.push(d);
           }).entries(flatData);
