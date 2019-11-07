@@ -1,9 +1,9 @@
 ---
 title: Changing Radar Chart Colors
-width: 990
-height: 400
-time: 1572543720472
-date: October 31, 2019
+width: 0
+height: 0
+time: 1573146922162
+date: November 07, 2019
 ---
 
 # Changing Radar Chart Colors
