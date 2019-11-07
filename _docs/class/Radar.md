@@ -27,7 +27,7 @@ Creates a radar visualization based on an array of data.
 
 
 
-<a name="Radar.axisConfig" href="#Radar.axisConfig">#</a> Radar.**axisConfig**(*value*) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L241)
+<a name="Radar.axisConfig" href="#Radar.axisConfig">#</a> Radar.**axisConfig**(*value*) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L240)
 
 Sets the config method used for the radial spokes, circles, and labels.
 
@@ -35,7 +35,7 @@ Sets the config method used for the radial spokes, circles, and labels.
 This is a static method of [<code>Radar</code>](#Radar), and is chainable with other methods of this Class.
 
 
-<a name="Radar.metric" href="#Radar.metric">#</a> Radar.**metric**(*value*) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L251)
+<a name="Radar.metric" href="#Radar.metric">#</a> Radar.**metric**(*value*) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L250)
 
 Defines the value used as axis. If *value* is specified, sets the accessor to the specified metric function. If *value* is not specified, returns the current metric accessor.
 
@@ -43,7 +43,7 @@ Defines the value used as axis. If *value* is specified, sets the accessor to th
 This is a static method of [<code>Radar</code>](#Radar), and is chainable with other methods of this Class.
 
 
-<a name="Radar.outerPadding" href="#Radar.outerPadding">#</a> Radar.**outerPadding**([*value*]) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L261)
+<a name="Radar.outerPadding" href="#Radar.outerPadding">#</a> Radar.**outerPadding**([*value*]) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L260)
 
 Determines how much pixel spaces to give the outer labels.
 
@@ -51,7 +51,7 @@ Determines how much pixel spaces to give the outer labels.
 This is a static method of [<code>Radar</code>](#Radar), and is chainable with other methods of this Class.
 
 
-<a name="Radar.value" href="#Radar.value">#</a> Radar.**value**(*value*) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L274)
+<a name="Radar.value" href="#Radar.value">#</a> Radar.**value**(*value*) [<>](https://github.com/d3plus/d3plus-plot/blob/master/src/Radar.js#L273)
 
 If *value* is specified, sets the value accessor to the specified function or number and returns the current class instance. If *value* is not specified, returns the current value accessor.
 
