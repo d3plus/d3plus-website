@@ -1,5 +1,5 @@
 /*
-  d3plus-common v0.6.59
+  d3plus-common v0.6.60
   Common functions and methods used across D3plus modules.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -12292,7 +12292,7 @@
           var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
 
           if (obj[nestedKey] === RESET) {
-            obj[nestedKey] = defaultValue;
+            if (defaultValue) obj[nestedKey] = defaultValue;else delete obj[nestedKey];
           } else if (isObject(obj[nestedKey])) {
             nestedReset(obj[nestedKey], defaultValue);
           }
@@ -12454,6 +12454,18 @@
       key: "translate",
       value: function translate(_) {
         return arguments.length ? (this._translate = _, this) : this._translate;
+      }
+      /**
+          @memberof Viz
+          @desc If *value* is specified, sets the config method for each shape and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "shapeConfig",
+      value: function shapeConfig(_) {
+        return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
       }
     }]);
 
