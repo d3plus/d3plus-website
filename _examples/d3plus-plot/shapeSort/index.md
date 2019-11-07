@@ -2,7 +2,7 @@
 title: Sorting Shapes on an X/Y Plot
 width: 990
 height: 400
-time: 1573146922162
+time: 1573148370580
 date: November 07, 2019
 ---
 
@@ -13,8 +13,8 @@ By using the [Plot](https://github.com/d3plus/d3plus-plot#Plot) class directly, 
 ```js
 var data = [
   {id: "alpha", time: 4, value: 240},
-  {id: "alpha", time: 5, value: 120},
-  {id: "alpha", time: 6, value: 180},
+  {id: "beta", time: 5, value: 120},
+  {id: "gamma", time: 6, value: 180},
   {id: "delta", time: 4, value: 240},
   {id: "delta", time: 5, value: 120},
   {id: "delta", time: 6, value: 180}
