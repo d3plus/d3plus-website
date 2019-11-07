@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.26
+  d3plus-plot v0.8.27
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -1735,42 +1735,7 @@
             }));
           }))]), _domains);
         } else {
-          var xData = this._discrete === "x" ? data.map(function (d) {
-            return d.x;
-          }) : data.map(function (d) {
-            return d.x;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
-          var x2Data = this._discrete === "x" ? data.map(function (d) {
-            return d.x2;
-          }) : data.map(function (d) {
-            return d.x2;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
-          var yData = this._discrete === "y" ? data.map(function (d) {
-            return d.y;
-          }) : data.map(function (d) {
-            return d.y;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
-          var y2Data = this._discrete === "y" ? data.map(function (d) {
-            return d.y2;
-          }) : data.map(function (d) {
-            return d.y2;
-          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
-            return d.lci;
-          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
-            return d.hci;
-          }) : []);
+          var _discrete = this._discrete || "x";
 
           if (this["_".concat(this._discrete, "Sort")]) {
             data.sort(function (a, b) {
@@ -1778,10 +1743,46 @@
             });
           } else {
             data.sort(function (a, b) {
-              return a[_this2._discrete] - b[_this2._discrete];
+              return a[_discrete] - b[_discrete];
             });
           }
 
+          var xData = _discrete === "x" ? data.map(function (d) {
+            return d.x;
+          }) : data.map(function (d) {
+            return d.x;
+          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
+            return d.lci;
+          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
+            return d.hci;
+          }) : []);
+          var x2Data = _discrete === "x" ? data.map(function (d) {
+            return d.x2;
+          }) : data.map(function (d) {
+            return d.x2;
+          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
+            return d.lci;
+          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
+            return d.hci;
+          }) : []);
+          var yData = _discrete === "y" ? data.map(function (d) {
+            return d.y;
+          }) : data.map(function (d) {
+            return d.y;
+          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
+            return d.lci;
+          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
+            return d.hci;
+          }) : []);
+          var y2Data = _discrete === "y" ? data.map(function (d) {
+            return d.y2;
+          }) : data.map(function (d) {
+            return d.y2;
+          }).concat(this._confidence && this._confidence[0] ? data.map(function (d) {
+            return d.lci;
+          }) : []).concat(this._confidence && this._confidence[1] ? data.map(function (d) {
+            return d.hci;
+          }) : []);
           domains = {
             x: this._xSort ? Array.from(new Set(data.filter(function (d) {
               return d.x;
@@ -2249,6 +2250,7 @@
         var yOffset = this._xAxis.barConfig()["stroke-width"];
 
         if (yOffset) yOffset /= 2;
+        var discrete = this._discrete || "x";
         var shapeConfig = {
           duration: this._duration,
           label: function label(d) {
@@ -2267,19 +2269,19 @@
           x: function x(d) {
             return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
           },
-          x0: this._discrete === "x" ? function (d) {
+          x0: discrete === "x" ? function (d) {
             return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
           } : _x2(typeof this._baseline === "number" ? this._baseline : domains.x[0]),
-          x1: this._discrete === "x" ? null : function (d) {
+          x1: discrete === "x" ? null : function (d) {
             return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
           },
           y: function y(d) {
             return d.y2 ? _y2(d.y2, "y2") : _y2(d.y);
           },
-          y0: this._discrete === "y" ? function (d) {
+          y0: discrete === "y" ? function (d) {
             return d.y2 ? _y2(d.y2, "y2") : _y2(d.y);
           } : _y2(typeof this._baseline === "number" ? this._baseline : domains.y[1]) - yOffset,
-          y1: this._discrete === "y" ? null : function (d) {
+          y1: discrete === "y" ? null : function (d) {
             return d.y2 ? _y2(d.y2, "y2") : _y2(d.y) - yOffset;
           }
         };
@@ -2355,8 +2357,11 @@
 
             if (_this2._confidence) {
               var areaConfig = Object.assign({}, shapeConfig);
-              var key = _this2._discrete === "x" ? "y" : "x";
-              var scaleFunction = _this2._discrete === "x" ? _y2 : _x2;
+
+              var _discrete2 = _this2._discrete || "x";
+
+              var key = _discrete2 === "x" ? "y" : "x";
+              var scaleFunction = _discrete2 === "x" ? _y2 : _x2;
 
               areaConfig["".concat(key, "0")] = function (d) {
                 return scaleFunction(_this2._confidence[0] ? d.lci : d[key]);
@@ -3211,11 +3216,8 @@
           labelConfig: {
             fontColor: "#000",
             padding: 0,
-            textAnchor: function textAnchor(d) {
-              return d.textAnchor;
-            },
-            rotateAnchor: function rotateAnchor(d) {
-              return d.data.rotateAnchor;
+            textAnchor: function textAnchor(d, i, x) {
+              return x.textAnchor;
             },
             verticalAlign: "middle"
           },
@@ -3317,7 +3319,7 @@
           return a.key - b.key;
         });
         new shapes.Rect().data(polarAxis).rotate(function (d) {
-          return d.angle;
+          return d.angle || 0;
         }).width(0).height(0).x(function (d) {
           return d.x;
         }).y(function (d) {
