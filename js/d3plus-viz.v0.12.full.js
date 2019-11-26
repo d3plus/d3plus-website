@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.45
+  d3plus-viz v0.12.46
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -49413,16 +49413,17 @@
           filterId = filterGroup(d, i);
       this.hover(false);
       if (this._tooltip) this._tooltipClass.data([]).render();
+      var oldFilter = this._filter;
 
       this._history.push({
         depth: this._depth,
-        filter: this._filter
+        filter: oldFilter
       });
 
       this.config({
         depth: this._drawDepth + 1,
         filter: function filter(f, x) {
-          return filterGroup(f, x) === filterId;
+          return (!oldFilter || oldFilter(f, x)) && filterGroup(f, x) === filterId;
         }
       }).render();
     }
@@ -50276,6 +50277,7 @@
         // this._zoomGroup = enter.merge(this._zoomGroup);
         // const testConfig = {
         //   on: {
+        //     click: this._on["click.shape"],
         //     mouseenter: this._on.mouseenter,
         //     mouseleave: this._on.mouseleave,
         //     mousemove: this._on["mousemove.shape"]
