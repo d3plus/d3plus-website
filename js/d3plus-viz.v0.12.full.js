@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.46
+  d3plus-viz v0.12.47
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -49105,9 +49105,7 @@
   */
 
   function legendLabel(d, i) {
-    var l = this._drawLabel(d, i);
-
-    return l instanceof Array ? l.join(", ") : l;
+    return this._drawLabel(d, i, this._legendDepth);
   }
   /**
       @function _drawLegend
@@ -49169,6 +49167,29 @@
         return _this._colorScale(d, i) === undefined;
       }) : data);
       legendData.sort(this._legendSort);
+      var labels = legendData.map(function (d, i) {
+        return _this._ids(d, i).slice(0, _this._drawDepth + 1);
+      });
+      this._legendDepth = 0;
+
+      var _loop = function _loop(x) {
+        var values = labels.map(function (l) {
+          return l[x];
+        });
+
+        if (!values.some(function (v) {
+          return v instanceof Array;
+        }) && Array.from(new Set(values)).length === legendData.length) {
+          _this._legendDepth = x;
+          return "break";
+        }
+      };
+
+      for (var x = 0; x <= this._drawDepth; x++) {
+        var _ret = _loop(x);
+
+        if (_ret === "break") break;
+      }
 
       var hidden = function hidden(d, i) {
         var id = _this._id(d, i);
@@ -50141,6 +50162,7 @@
         };
 
         this._drawLabel = function (d, i) {
+          var depth = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _this2._drawDepth;
           if (!d) return "";
 
           if (d._isAggregation) {
@@ -50154,12 +50176,12 @@
 
           if (_this2._label) return _this2._label(d, i);
 
-          var l = that._ids(d, i).slice(0, _this2._drawDepth + 1);
+          var l = that._ids(d, i).slice(0, depth + 1);
 
           var n = l.reverse().find(function (ll) {
             return !(ll instanceof Array);
           }) || l[l.length - 1];
-          return n instanceof Array ? listify(n) : n;
+          return n instanceof Array ? listify(n) : "".concat(n);
         }; // set the default timeFilter if it has not been specified
 
 
