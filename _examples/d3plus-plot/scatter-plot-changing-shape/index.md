@@ -2,8 +2,8 @@
 title: Changing Shapes in a Scatter Plot/Bubble Plot
 width: 990
 height: 400
-time: 1573148370580
-date: November 07, 2019
+time: 1575491025013
+date: December 04, 2019
 ---
 
 # Changing Shapes in a Scatter Plot/Bubble Plot
