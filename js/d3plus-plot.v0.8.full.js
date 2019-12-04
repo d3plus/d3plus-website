@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.27
+  d3plus-plot v0.8.28
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -54200,7 +54200,7 @@
         });
         var oppScale = this._discrete === "x" ? yScale : xScale;
 
-        if (this._xConfig.scale !== "log" && this._yConfig.scale !== "log" && oppScale !== "Point") {
+        if (oppScale !== "Point") {
           shapeData.forEach(function (d) {
             if (_this2._buffer[d.key]) {
               var res = _this2._buffer[d.key].bind(_this2)({
