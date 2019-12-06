@@ -2,8 +2,8 @@
 title: Bar Chart Axes Labels
 width: 990
 height: 400
-time: 1575491025013
-date: December 04, 2019
+time: 1575667358742
+date: December 06, 2019
 ---
 
 # Bar Chart Axes Labels
