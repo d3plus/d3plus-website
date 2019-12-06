@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.6.7
+  d3plus-geomap v0.6.8
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -56253,13 +56253,13 @@
           this._tileGroup.transition().duration(duration).attr("transform", transform);
         }
 
-        var images = this._tileGroup.selectAll("image.tile").data(tileData, function (d) {
+        var images = this._tileGroup.selectAll("image.d3plus-geomap-tile").data(tileData, function (d) {
           return "".concat(d.x, "-").concat(d.y, "-").concat(d.z);
         });
 
         images.exit().transition().duration(duration).attr("opacity", 0).remove();
         var scale = tileData.scale / transform.k;
-        images.enter().append("image").attr("class", "tile").attr("opacity", 0).attr("xlink:href", function (d) {
+        images.enter().append("image").attr("class", "d3plus-geomap-tile").attr("opacity", 0).attr("xlink:href", function (d) {
           return _this2._tileUrl.replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0]).replace("{z}", d.z).replace("{x}", d.x).replace("{y}", d.y);
         }).attr("width", scale).attr("height", scale).attr("x", function (d) {
           return d.x * scale + tileData.translate[0] * scale - transform.x / transform.k;
