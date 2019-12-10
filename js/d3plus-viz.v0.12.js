@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.47
+  d3plus-viz v0.12.48
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -2702,7 +2702,7 @@
             var d = d3plusCommon.merge(leaves, _this2._aggs);
 
             if (!_this2._hidden.includes(id) && (!_this2._solo.length || _this2._solo.includes(id))) {
-              if (shape === "Line") _this2._filteredData = _this2._filteredData.concat(leaves);else _this2._filteredData.push(d);
+              if (!_this2._discrete && shape === "Line") _this2._filteredData = _this2._filteredData.concat(leaves);else _this2._filteredData.push(d);
             }
 
             _this2._legendData.push(d);
