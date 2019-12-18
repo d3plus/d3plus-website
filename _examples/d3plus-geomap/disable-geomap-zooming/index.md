@@ -2,7 +2,7 @@
 title: Disable Geomap Zooming
 width: 990
 height: 550
-time: 1576701896812
+time: 1576702614829
 date: December 18, 2019
 ---
 
