@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.6.8
+  d3plus-geomap v0.6.9
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -934,10 +934,10 @@
 })));
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-geo'), require('d3-scale'), require('d3-tile'), require('topojson-client'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
-  typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports', 'd3-array', 'd3-color', 'd3-geo', 'd3-scale', 'd3-tile', 'topojson-client', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Color, global.d3Geo, global.scales, global.d3Tile, global.topojsonClient, global.d3plusCommon, global.d3plusShape, global.d3plusViz));
-}(this, (function (exports, d3Array, d3Color, d3Geo, scales, d3Tile, topojsonClient, d3plusCommon, d3plusShape, d3plusViz) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-geo'), require('d3-geo-projection'), require('d3-scale'), require('d3-tile'), require('topojson-client'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
+  typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports', 'd3-array', 'd3-color', 'd3-geo', 'd3-geo-projection', 'd3-scale', 'd3-tile', 'topojson-client', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
+  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Color, global.d3GeoCore, global.d3GeoProjection, global.scales, global.d3Tile, global.topojsonClient, global.d3plusCommon, global.d3plusShape, global.d3plusViz));
+}(this, (function (exports, d3Array, d3Color, d3GeoCore, d3GeoProjection, scales, d3Tile, topojsonClient, d3plusCommon, d3plusShape, d3plusViz) { 'use strict';
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -1038,6 +1038,7 @@
     return _get(target, property, receiver || target);
   }
 
+  var d3Geo = Object.assign({}, d3GeoCore, d3GeoProjection);
   /**
       @name topo2feature
       @desc Converts a specific topojson object key into a feature ready for projection.
@@ -1519,7 +1520,7 @@
       key: "projection",
       value: function projection(_) {
         if (arguments.length && _ !== "geoMercator") this._tiles = false;
-        return arguments.length ? (this._projection = typeof _ === "string" ? d3Geo[_]() : _, this) : this._projection;
+        return arguments.length ? (this._projection = typeof _ === "string" ? d3Geo[_] ? d3Geo[_]() : d3Geo.geoMercator() : _, this) : this._projection;
       }
       /**
           @memberof Geomap
