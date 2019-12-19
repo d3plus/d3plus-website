@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.27
+  d3plus-legend v0.8.28
   An easy to use javascript chart legend.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -933,10 +933,10 @@
 }));
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-selection'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text'), require('d3-scale'), require('d3plus-axis'), require('d3plus-color')) :
-  typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-selection', 'd3plus-common', 'd3plus-shape', 'd3plus-text', 'd3-scale', 'd3plus-axis', 'd3plus-color'], factory) :
-  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Selection, global.d3plusCommon, global.shapes, global.d3plusText, global.d3Scale, global.d3plusAxis, global.d3plusColor));
-}(this, function (exports, d3Array, d3Selection, d3plusCommon, shapes, d3plusText, d3Scale, d3plusAxis, d3plusColor) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-selection'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text'), require('d3-scale'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-format')) :
+  typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-selection', 'd3plus-common', 'd3plus-shape', 'd3plus-text', 'd3-scale', 'd3plus-axis', 'd3plus-color', 'd3plus-format'], factory) :
+  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Selection, global.d3plusCommon, global.shapes, global.d3plusText, global.d3Scale, global.d3plusAxis, global.d3plusColor, global.d3plusFormat));
+}(this, function (exports, d3Array, d3Selection, d3plusCommon, shapes, d3plusText, d3Scale, d3plusAxis, d3plusColor, d3plusFormat) { 'use strict';
 
   /**
       @desc Sort an array of numbers by their numeric value, ensuring that the array is not changed in place.
@@ -2110,6 +2110,38 @@
             ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
           }
 
+          if (this._scale === "log") {
+            var negativeBuckets = _buckets.filter(function (d) {
+              return d < 0;
+            });
+
+            if (negativeBuckets.length) {
+              var minVal = negativeBuckets[0];
+              var newNegativeBuckets = negativeBuckets.map(function (d) {
+                return -Math.pow(Math.abs(minVal), d / minVal);
+              });
+              negativeBuckets.forEach(function (bucket, i) {
+                _buckets[_buckets.indexOf(bucket)] = newNegativeBuckets[i];
+              });
+            }
+
+            var positiveBuckets = _buckets.filter(function (d) {
+              return d > 0;
+            });
+
+            if (positiveBuckets.length) {
+              var maxVal = positiveBuckets[positiveBuckets.length - 1];
+              var newPositiveBuckets = positiveBuckets.map(function (d) {
+                return Math.pow(maxVal, d / maxVal);
+              });
+              positiveBuckets.forEach(function (bucket, i) {
+                _buckets[_buckets.indexOf(bucket)] = newPositiveBuckets[i];
+              });
+            }
+
+            if (_buckets.includes(0)) _buckets[_buckets.indexOf(0)] = 1;
+          }
+
           this._colorScale = d3Scale.scaleLinear().domain(_buckets).range(colors);
         }
 
@@ -2123,6 +2155,7 @@
             labels: labels || ticks,
             orient: this._orient,
             padding: this._padding,
+            scale: this._scale === "log" ? "log" : "linear",
             ticks: ticks,
             width: this._width
           }, this._axisConfig);
@@ -2165,9 +2198,9 @@
 
           var scaleDomain = this._colorScale.domain();
 
-          var offsetScale = d3Scale.scaleLinear().domain([scaleDomain[0], scaleDomain[scaleDomain.length - 1]]).range([0, 100]);
+          var offsetScale = d3Scale.scaleLinear().domain(scaleRange).range([0, 100]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
-            return "".concat(offsetScale(scaleDomain[i]), "%");
+            return "".concat(offsetScale(axisScale(scaleDomain[i])), "%");
           }).attr("stop-color", String);
           /** determines the width of buckets */
 
@@ -2189,9 +2222,7 @@
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
           } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2), _defineProperty(_this$_rectClass$data, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2), _defineProperty(_this$_rectClass$data, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty(_this$_rectClass$data, height, this._size), _this$_rectClass$data)).config(this._rectConfig).render();
         } else {
-          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : function (d) {
-            return d;
-          };
+          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : d3plusFormat.formatAbbreviate;
 
           var _data = ticks.reduce(function (arr, tick, i) {
             if (i !== ticks.length - 1) {

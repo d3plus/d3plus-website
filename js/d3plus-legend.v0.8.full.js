@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.27
+  d3plus-legend v0.8.28
   An easy to use javascript chart legend.
   Copyright (c) 2019 D3plus - https://d3plus.org
   @license MIT
@@ -31076,6 +31076,38 @@
             ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
           }
 
+          if (this._scale === "log") {
+            var negativeBuckets = _buckets.filter(function (d) {
+              return d < 0;
+            });
+
+            if (negativeBuckets.length) {
+              var minVal = negativeBuckets[0];
+              var newNegativeBuckets = negativeBuckets.map(function (d) {
+                return -Math.pow(Math.abs(minVal), d / minVal);
+              });
+              negativeBuckets.forEach(function (bucket, i) {
+                _buckets[_buckets.indexOf(bucket)] = newNegativeBuckets[i];
+              });
+            }
+
+            var positiveBuckets = _buckets.filter(function (d) {
+              return d > 0;
+            });
+
+            if (positiveBuckets.length) {
+              var maxVal = positiveBuckets[positiveBuckets.length - 1];
+              var newPositiveBuckets = positiveBuckets.map(function (d) {
+                return Math.pow(maxVal, d / maxVal);
+              });
+              positiveBuckets.forEach(function (bucket, i) {
+                _buckets[_buckets.indexOf(bucket)] = newPositiveBuckets[i];
+              });
+            }
+
+            if (_buckets.includes(0)) _buckets[_buckets.indexOf(0)] = 1;
+          }
+
           this._colorScale = linear$1().domain(_buckets).range(colors);
         }
 
@@ -31089,6 +31121,7 @@
             labels: labels || ticks,
             orient: this._orient,
             padding: this._padding,
+            scale: this._scale === "log" ? "log" : "linear",
             ticks: ticks,
             width: this._width
           }, this._axisConfig);
@@ -31131,9 +31164,9 @@
 
           var scaleDomain = this._colorScale.domain();
 
-          var offsetScale = linear$1().domain([scaleDomain[0], scaleDomain[scaleDomain.length - 1]]).range([0, 100]);
+          var offsetScale = linear$1().domain(scaleRange).range([0, 100]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
-            return "".concat(offsetScale(scaleDomain[i]), "%");
+            return "".concat(offsetScale(axisScale(scaleDomain[i])), "%");
           }).attr("stop-color", String);
           /** determines the width of buckets */
 
@@ -31155,9 +31188,7 @@
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
           } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2), _defineProperty(_this$_rectClass$data, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2), _defineProperty(_this$_rectClass$data, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty(_this$_rectClass$data, height, this._size), _this$_rectClass$data)).config(this._rectConfig).render();
         } else {
-          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : function (d) {
-            return d;
-          };
+          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : formatAbbreviate;
 
           var _data = ticks.reduce(function (arr, tick, i) {
             if (i !== ticks.length - 1) {
