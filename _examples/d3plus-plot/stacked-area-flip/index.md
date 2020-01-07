@@ -2,8 +2,8 @@
 title: Horizontal Stacked Area Chart
 width: 990
 height: 400
-time: 1575667358742
-date: December 06, 2019
+time: 1578411281759
+date: January 07, 2020
 ---
 
 # Horizontal Stacked Area Chart

@@ -2,8 +2,8 @@
 title: Horizontal Box and Whisker Chart
 width: 990
 height: 400
-time: 1575667358742
-date: December 06, 2019
+time: 1578411281759
+date: January 07, 2020
 ---
 
 # Horizontal Box and Whisker Chart
