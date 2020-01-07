@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.30
+  d3plus-plot v0.8.31
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -52733,6 +52733,7 @@
       };
       _this._discreteCutoff = 100;
       _this._groupPadding = 5;
+      _this._previousShapes = [];
       _this._shape = constant("Circle");
       _this._shapeConfig = assign(_this._shapeConfig, {
         Area: {
@@ -53701,14 +53702,16 @@
         var dataShapes = shapeData.map(function (d) {
           return d.key;
         });
-        var exitShapes = Array.from(shapeConfig.select.childNodes).map(function (d) {
-          return d.getAttribute("class").match(/\-([A-Z]{1}[a-z]{1,})\-/)[1];
-        }).filter(function (d) {
+        if (this._confidence && dataShapes.includes("Line")) dataShapes.push("Area");
+
+        var exitShapes = this._previousShapes.filter(function (d) {
           return !dataShapes.includes(d);
         });
+
         exitShapes.forEach(function (shape) {
           new shapes$2[shape]().config(shapeConfig).data([]).render();
         });
+        this._previousShapes = dataShapes;
         return this;
       }
       /**
