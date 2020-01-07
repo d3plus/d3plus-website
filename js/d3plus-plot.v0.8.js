@@ -1,7 +1,7 @@
 /*
-  d3plus-plot v0.8.29
+  d3plus-plot v0.8.30
   A reusable javascript x/y plot built on D3.
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -2483,6 +2483,17 @@
           s.config(userConfig).render();
 
           _this2._shapes.push(s);
+        });
+        var dataShapes = shapeData.map(function (d) {
+          return d.key;
+        });
+        var exitShapes = Array.from(shapeConfig.select.childNodes).map(function (d) {
+          return d.getAttribute("class").match(/\-([A-Z]{1}[a-z]{1,})\-/)[1];
+        }).filter(function (d) {
+          return !dataShapes.includes(d);
+        });
+        exitShapes.forEach(function (shape) {
+          new shapes[shape]().config(shapeConfig).data([]).render();
         });
         return this;
       }
