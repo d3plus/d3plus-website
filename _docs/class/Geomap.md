@@ -23,6 +23,7 @@ This is a global class, and extends all of the methods and functionality of [<co
     * [.pointSizeMin([*value*])](#Geomap.pointSizeMin) ↩︎
     * [.projection(*projection*)](#Geomap.projection) ↩︎
     * [.projectionPadding([*value*])](#Geomap.projectionPadding) ↩︎
+    * [.projectionRotate([*value*])](#Geomap.projectionRotate) ↩︎
     * [.tiles([*value*])](#Geomap.tiles) ↩︎
     * [.tileUrl([url])](#Geomap.tileUrl) ↩︎
     * [.topojson(*data*, [*formatter*])](#Geomap.topojson) ↩︎
@@ -132,7 +133,15 @@ The outer padding between the edge of the visualization and the shapes drawn. Th
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.tiles" href="#Geomap.tiles">#</a> Geomap.**tiles**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L528)
+<a name="Geomap.projectionRotate" href="#Geomap.projectionRotate">#</a> Geomap.**projectionRotate**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L528)
+
+An array that corresponds to the value passed to the projection's [rotate](https://github.com/d3/d3-geo#projection_rotate) function. Use this method to shift the centerpoint of a map.
+
+
+This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
+
+
+<a name="Geomap.tiles" href="#Geomap.tiles">#</a> Geomap.**tiles**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L545)
 
 Toggles the visibility of the map tiles.
 
@@ -140,7 +149,7 @@ Toggles the visibility of the map tiles.
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.tileUrl" href="#Geomap.tileUrl">#</a> Geomap.**tileUrl**([url]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L538)
+<a name="Geomap.tileUrl" href="#Geomap.tileUrl">#</a> Geomap.**tileUrl**([url]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L555)
 
 By default, d3plus uses the `light_all` style provided by [CARTO](https://carto.com/location-data-services/basemaps/) for it's map tiles. The [tileUrl](https://d3plus.org/docs/#Geomap.tileUrl) method changes the base URL used for fetching the tiles, as long as the string passed contains `{x}`, `{y}`, and `{z}` variables enclosed in curly brackets for the zoom logic to load the correct tiles.
 
@@ -148,7 +157,7 @@ By default, d3plus uses the `light_all` style provided by [CARTO](https://carto.
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.topojson" href="#Geomap.topojson">#</a> Geomap.**topojson**(*data*, [*formatter*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L551)
+<a name="Geomap.topojson" href="#Geomap.topojson">#</a> Geomap.**topojson**(*data*, [*formatter*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L568)
 
 The topojson to be used for drawing geographical paths. The value passed should either be a valid Topojson *Object* or a *String* representing a filepath or URL to be loaded.
 
@@ -164,7 +173,7 @@ This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with
 
 
 
-<a name="Geomap.topojsonFill" href="#Geomap.topojsonFill">#</a> Geomap.**topojsonFill**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L574)
+<a name="Geomap.topojsonFill" href="#Geomap.topojsonFill">#</a> Geomap.**topojsonFill**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L591)
 
 The function is used to set default color of the map.
 
@@ -172,7 +181,7 @@ The function is used to set default color of the map.
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.topojsonFilter" href="#Geomap.topojsonFilter">#</a> Geomap.**topojsonFilter**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L584)
+<a name="Geomap.topojsonFilter" href="#Geomap.topojsonFilter">#</a> Geomap.**topojsonFilter**([*value*]) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L601)
 
 If the [topojson](#Geomap.topojson) being used contains boundaries that should not be shown, this method can be used to filter them out of the final output. The *value* passed can be a single id to remove, an array of ids, or a filter function.
 
@@ -180,7 +189,7 @@ If the [topojson](#Geomap.topojson) being used contains boundaries that should n
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.topojsonKey" href="#Geomap.topojsonKey">#</a> Geomap.**topojsonKey**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L602)
+<a name="Geomap.topojsonKey" href="#Geomap.topojsonKey">#</a> Geomap.**topojsonKey**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L619)
 
 If the [topojson](#Geomap.topojson) contains multiple geographical sets (for example, a file containing state and county boundaries), use this method to indentify which set to use.
 
@@ -190,7 +199,7 @@ If not specified, the first key in the *Array* returned from using `Object.keys`
 This is a static method of [<code>Geomap</code>](#Geomap), and is chainable with other methods of this Class.
 
 
-<a name="Geomap.topojsonId" href="#Geomap.topojsonId">#</a> Geomap.**topojsonId**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L617)
+<a name="Geomap.topojsonId" href="#Geomap.topojsonId">#</a> Geomap.**topojsonId**(*value*) [<>](https://github.com/d3plus/d3plus-geomap/blob/master/src/Geomap.js#L634)
 
 The accessor used to map each topojson geometry to it's corresponding [data](https://d3plus.org/docs/#Viz.data) point.
 
