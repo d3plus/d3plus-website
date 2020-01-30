@@ -1,7 +1,7 @@
 /*
-  d3plus-geomap v0.6.9
+  d3plus-geomap v0.6.10
   A reusable geo map built on D3 and Topojson
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -5400,13 +5400,84 @@
     return p.scale(169.529);
   }
 
+  // Solve f(x) = y, start from x
+
+  function solve(f, y, x) {
+    var steps = 100,
+        delta,
+        f0,
+        f1;
+    x = x === undefined ? 0 : +x;
+    y = +y;
+
+    do {
+      f0 = f(x);
+      f1 = f(x + epsilon$1);
+      if (f0 === f1) f1 = f0 + epsilon$1;
+      x -= delta = -1 * epsilon$1 * (f0 - y) / (f0 - f1);
+    } while (steps-- > 0 && abs$1(delta) > epsilon$1);
+
+    return steps < 0 ? NaN : x;
+  } // Approximate Newton-Raphson in 2D
+  // Solve f(a,b) = [x,y]
+
+  function solve2d(f, MAX_ITERATIONS, eps) {
+    if (MAX_ITERATIONS === undefined) MAX_ITERATIONS = 40;
+    if (eps === undefined) eps = epsilon2$1;
+    return function (x, y, a, b) {
+      var err2, da, db;
+      a = a === undefined ? 0 : +a;
+      b = b === undefined ? 0 : +b;
+
+      for (var i = 0; i < MAX_ITERATIONS; i++) {
+        var p = f(a, b),
+            // diffs
+        tx = p[0] - x,
+            ty = p[1] - y;
+        if (abs$1(tx) < eps && abs$1(ty) < eps) break; // we're there!
+        // backtrack if we overshot
+
+        var h = tx * tx + ty * ty;
+
+        if (h > err2) {
+          a -= da /= 2;
+          b -= db /= 2;
+          continue;
+        }
+
+        err2 = h; // partial derivatives
+
+        var ea = (a > 0 ? -1 : 1) * eps,
+            eb = (b > 0 ? -1 : 1) * eps,
+            pa = f(a + ea, b),
+            pb = f(a, b + eb),
+            dxa = (pa[0] - p[0]) / ea,
+            dya = (pa[1] - p[1]) / ea,
+            dxb = (pb[0] - p[0]) / eb,
+            dyb = (pb[1] - p[1]) / eb,
+            // determinant
+        D = dyb * dxa - dya * dxb,
+            // newton step — or half-step for small D
+        l = (abs$1(D) < 0.5 ? 0.5 : 1) / D;
+        da = (ty * dxb - tx * dyb) * l;
+        db = (tx * dya - ty * dxa) * l;
+        a += da;
+        b += db;
+        if (abs$1(da) < eps && abs$1(db) < eps) break; // we're crawling
+      }
+
+      return [a, b];
+    };
+  }
+
   // https://bl.ocks.org/Fil/5b9ee9636dfb6ffa53443c9006beb642
 
   function bertin1953Raw() {
     var hammer = hammerRaw(1.68, 2),
         fu = 1.4,
         k = 12;
-    return function (lambda, phi) {
+
+    function forward(lambda, phi) {
       if (lambda + phi < -fu) {
         var u = (lambda - phi + 1.6) * (lambda + phi + fu) / 8;
         lambda += u;
@@ -5425,13 +5496,14 @@
       }
 
       return r;
-    };
+    }
+
+    forward.invert = solve2d(forward);
+    return forward;
   }
   function bertin () {
-    var p = projection(bertin1953Raw());
-    p.rotate([-16.5, -42]);
-    delete p.rotate;
-    return p.scale(176.57).center([7.93, 0.09]);
+    // this projection should not be rotated
+    return projection(bertin1953Raw()).rotate([-16.5, -42]).scale(176.57).center([7.93, 0.09]);
   }
 
   function mollweideBromleyTheta(cp, phi) {
@@ -5666,7 +5738,9 @@
     }),
         R = [-c[0], -c[1]],
         r = rotation(R),
-        p = projection(chamberlinRaw(pointRadians$1(r(p0)), pointRadians$1(r(p1)), pointRadians$1(r(p2)))).rotate(R),
+        f = chamberlinRaw(pointRadians$1(r(p0)), pointRadians$1(r(p1)), pointRadians$1(r(p2)));
+    f.invert = solve2d(f);
+    var p = projection(f).rotate(R),
         center = p.center;
     delete p.rotate;
 
@@ -5959,26 +6033,6 @@
 
   function foucaut () {
     return projection(foucautRaw).scale(135.264);
-  }
-
-  // Solve f(x) = y, start from x
-
-  function solve(f, y, x) {
-    var steps = 100,
-        delta,
-        f0,
-        f1;
-    x = x === undefined ? 0 : +x;
-    y = +y;
-
-    do {
-      f0 = f(x);
-      f1 = f(x + epsilon$1);
-      if (f0 === f1) f1 = f0 + epsilon$1;
-      x -= delta = -1 * epsilon$1 * (f0 - y) / (f0 - f1);
-    } while (steps-- > 0 && abs$1(delta) > epsilon$1);
-
-    return steps < 0 ? NaN : x;
   }
 
   function foucautSinusoidalRaw(alpha) {
@@ -7225,7 +7279,7 @@
     };
   }
 
-  function interrupt (project, lobes) {
+  function interrupt (project, lobes, inverse) {
     var sphere, bounds;
 
     function forward(lambda, phi) {
@@ -7238,23 +7292,27 @@
       var p = project(lambda - lobe[i][1][0], phi);
       p[0] += project(lobe[i][1][0], sign * phi > sign * lobe[i][0][1] ? lobe[i][0][1] : phi)[0];
       return p;
-    } // Assumes mutually exclusive bounding boxes for lobes.
+    }
 
+    if (inverse) {
+      forward.invert = inverse(forward);
+    } else if (project.invert) {
+      forward.invert = function (x, y) {
+        var bound = bounds[+(y < 0)],
+            lobe = lobes[+(y < 0)];
 
-    if (project.invert) forward.invert = function (x, y) {
-      var bound = bounds[+(y < 0)],
-          lobe = lobes[+(y < 0)];
+        for (var i = 0, n = bound.length; i < n; ++i) {
+          var b = bound[i];
 
-      for (var i = 0, n = bound.length; i < n; ++i) {
-        var b = bound[i];
-
-        if (b[0][0] <= x && x < b[1][0] && b[0][1] <= y && y < b[1][1]) {
-          var p = project.invert(x - project(lobe[i][1][0], 0)[0], y);
-          p[0] += lobe[i][1][0];
-          return pointEqual$1(forward(p[0], p[1]), [x, y]) ? p : null;
+          if (b[0][0] <= x && x < b[1][0] && b[0][1] <= y && y < b[1][1]) {
+            var p = project.invert(x - project(lobe[i][1][0], 0)[0], y);
+            p[0] += lobe[i][1][0];
+            return pointEqual$1(forward(p[0], p[1]), [x, y]) ? p : null;
+          }
         }
-      }
-    };
+      };
+    }
+
     var p = projection(forward),
         stream_ = p.stream;
 
@@ -7333,7 +7391,7 @@
   [[-180, 35], [-30, 90], [0, 35]], [[0, 35], [30, 90], [180, 35]]], [// southern hemisphere
   [[-180, -10], [-102, -90], [-65, -10]], [[-65, -10], [5, -90], [77, -10]], [[77, -10], [103, -90], [180, -10]]]];
   function sinuMollweide$1 () {
-    return interrupt(sinuMollweideRaw, lobes$4).rotate([-20, -55]).scale(164.263).center([0, -5.4036]);
+    return interrupt(sinuMollweideRaw, lobes$4, solve2d).rotate([-20, -55]).scale(164.263).center([0, -5.4036]);
   }
 
   var lobes$5 = [[// northern hemisphere
@@ -7590,7 +7648,7 @@
       miller$1 = [[0.9245, 0], [0, 0], [0.01943, 0]],
       lee = [[0.721316, 0], [0, 0], [-0.00881625, -0.00617325]];
   function modifiedStereographicAlaska() {
-    return modifiedStereographic(alaska, [152, -64]).scale(1500).center([-160.908, 62.4864]).clipAngle(25);
+    return modifiedStereographic(alaska, [152, -64]).scale(1400).center([-160.908, 62.4864]).clipAngle(30).angle(7.8);
   }
   function modifiedStereographicGs48() {
     return modifiedStereographic(gs48, [95, -38]).scale(1000).clipAngle(55).center([-96.5563, 38.8675]);
@@ -9329,7 +9387,7 @@
         cy = 1 / (k * sqrt$1(n * m1 * m2));
     return wagnerFormula(cx, cy, m1, m2, n);
   }
-  function wagner () {
+  function wagner() {
     // default values generate wagner8
     var poleline = 65 * radians$1,
         parallels = 60 * radians$1,
@@ -9356,6 +9414,9 @@
 
     return projection.scale(163.775);
   }
+  function wagner7() {
+    return wagner().poleline(65).parallels(60).inflation(0).ratio(200).scale(172.633);
+  }
 
   var A = 4 * pi$1 + 3 * sqrt$1(3),
       B = 2 * sqrt$1(2 * pi$1 * sqrt$1(3) / A);
@@ -9374,25 +9435,6 @@
 
   function wagner6 () {
     return projection(wagner6Raw).scale(152.63);
-  }
-
-  function wagner7Raw(lambda, phi) {
-    var s = 0.90631 * sin$1(phi),
-        c0 = sqrt$1(1 - s * s),
-        c1 = sqrt$1(2 / (1 + c0 * cos$1(lambda /= 3)));
-    return [2.66723 * c0 * c1 * sin$1(lambda), 1.24104 * s * c1];
-  }
-
-  wagner7Raw.invert = function (x, y) {
-    var t1 = x / 2.66723,
-        t2 = y / 1.24104,
-        p = sqrt$1(t1 * t1 + t2 * t2),
-        c = 2 * asin$1(p / 2);
-    return [3 * atan2$1(x * tan$1(c), 2.66723 * p), p && asin$1(y * sin$1(c) / (1.24104 * 0.90631 * p))];
-  };
-
-  function wagner7 () {
-    return projection(wagner7Raw).scale(172.632);
   }
 
   function wiechelRaw(lambda, phi) {
@@ -9637,13 +9679,12 @@
     geoVanDerGrinten4: vanDerGrinten4,
     geoVanDerGrinten4Raw: vanDerGrinten4Raw,
     geoWagner: wagner,
+    geoWagner7: wagner7,
     geoWagnerRaw: wagnerRaw,
     geoWagner4: wagner4,
     geoWagner4Raw: wagner4Raw,
     geoWagner6: wagner6,
     geoWagner6Raw: wagner6Raw,
-    geoWagner7: wagner7,
-    geoWagner7Raw: wagner7Raw,
     geoWiechel: wiechel,
     geoWiechelRaw: wiechelRaw,
     geoWinkel3: winkel3,
@@ -24282,7 +24323,7 @@
           var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
 
           if (obj[nestedKey] === RESET) {
-            obj[nestedKey] = defaultValue;
+            if (defaultValue) obj[nestedKey] = defaultValue;else delete obj[nestedKey];
           } else if (isObject(obj[nestedKey])) {
             nestedReset(obj[nestedKey], defaultValue);
           }
@@ -24303,7 +24344,7 @@
     do {
       props = props.concat(Object.getOwnPropertyNames(obj));
       obj = Object.getPrototypeOf(obj);
-    } while (obj);
+    } while (obj && obj !== Object.prototype);
 
     return props.filter(function (e) {
       return e.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(e);
@@ -24444,6 +24485,18 @@
       key: "translate",
       value: function translate(_) {
         return arguments.length ? (this._translate = _, this) : this._translate;
+      }
+      /**
+          @memberof Viz
+          @desc If *value* is specified, sets the config method for each shape and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "shapeConfig",
+      value: function shapeConfig(_) {
+        return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
       }
     }]);
 
@@ -25230,11 +25283,15 @@
   }
 
   function selection_cloneShallow() {
-    return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
+    var clone = this.cloneNode(false),
+        parent = this.parentNode;
+    return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
   }
 
   function selection_cloneDeep() {
-    return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
+    var clone = this.cloneNode(true),
+        parent = this.parentNode;
+    return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
   }
 
   function selection_clone (deep) {
@@ -36733,7 +36790,7 @@
 
   function objectConverter(columns) {
     return new Function("d", "return {" + columns.map(function (name, i) {
-      return JSON.stringify(name) + ": d[" + i + "]";
+      return JSON.stringify(name) + ": d[" + i + "] || \"\"";
     }).join(",") + "}");
   }
 
@@ -36890,7 +36947,9 @@
       parseRows: parseRows,
       format: format,
       formatBody: formatBody,
-      formatRows: formatRows
+      formatRows: formatRows,
+      formatRow: formatRow,
+      formatValue: formatValue
     };
   }
 
@@ -36966,6 +37025,16 @@
       }
 
       return data;
+    };
+
+    var loadedLength = function loadedLength(loadedArray) {
+      return loadedArray.reduce(function (prev, current) {
+        return current ? prev + 1 : prev;
+      }, 0);
+    };
+
+    var getPathIndex = function getPathIndex(url, array) {
+      return array.indexOf(url);
     }; // If data param is a single string url or an plain object then convert path to a 1 element array of urls to re-use logic
 
 
@@ -36976,39 +37045,39 @@
     var isThereAnyString = path.find(function (dataItem) {
       return typeof dataItem === "string";
     });
-    var loaded = [];
+    var loaded = new Array(path.length);
     var toLoad = []; // If there is a string I'm assuming is a Array to merge, urls or data
 
     if (isThereAnyString) {
-      path.forEach(function (dataItem) {
+      path.forEach(function (dataItem, ix) {
         if (typeof dataItem !== "string") {
-          loaded.push(dataItem);
+          loaded[ix] = dataItem;
         } else if (typeof dataItem === "string") {
           toLoad.push(dataItem);
         }
       });
     } // Data array itself
     else {
-        loaded.push(path);
+        loaded[0] = path;
       } // Load all urls an combine them with data arrays
 
 
-    var alreadyLoaded = loaded.length;
+    var alreadyLoaded = loadedLength(loaded);
     toLoad.forEach(function (url) {
       parser = getParser(url);
       parser(url, function (err, data) {
         data = err ? [] : data;
         if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
         data = validateData(err, parser, data);
-        loaded.push(data);
+        loaded[getPathIndex(url, path)] = data;
 
-        if (loaded.length - alreadyLoaded === toLoad.length) {
+        if (loadedLength(loaded) - alreadyLoaded === toLoad.length) {
           // All urls loaded
           // Format data
-          data = loaded.length === 1 ? loaded[0] : loaded;
+          data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
 
           if (formatter) {
-            data = formatter(loaded.length === 1 ? loaded[0] : loaded);
+            data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
           } else if (key === "data") {
             data = concat(loaded, "data");
           }
@@ -37026,10 +37095,10 @@
         return data;
       }); // Format data
 
-      var data = loaded.length === 1 ? loaded[0] : loaded;
+      var data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
 
       if (formatter) {
-        data = formatter(loaded.length === 1 ? loaded[0] : loaded);
+        data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
       } else if (key === "data") {
         data = concat(loaded, "data");
       }
@@ -37255,7 +37324,7 @@
         filter = defaultFilter,
         touchable = defaultTouchable,
         keys = true,
-        listeners = dispatch(brush, "start", "brush", "end"),
+        listeners = dispatch("start", "brush", "end"),
         handleSize = 6,
         touchending;
 
@@ -37650,6 +37719,10 @@
       return arguments.length ? (filter = typeof _ === "function" ? _ : constant$6(!!_), brush) : filter;
     };
 
+    brush.touchable = function (_) {
+      return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$6(!!_), brush) : touchable;
+    };
+
     brush.handleSize = function (_) {
       return arguments.length ? (handleSize = +_, brush) : handleSize;
     };
@@ -37664,363 +37737,6 @@
     };
 
     return brush;
-  }
-
-  function define$3 (constructor, factory, prototype) {
-    constructor.prototype = factory.prototype = prototype;
-    prototype.constructor = constructor;
-  }
-  function extend$4(parent, definition) {
-    var prototype = Object.create(parent.prototype);
-
-    for (var key in definition) {
-      prototype[key] = definition[key];
-    }
-
-    return prototype;
-  }
-
-  function Color$3() {}
-  var _darker$3 = 0.7;
-
-  var _brighter$3 = 1 / _darker$3;
-  var reI$3 = "\\s*([+-]?\\d+)\\s*",
-      reN$3 = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
-      reP$3 = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
-      reHex$3 = /^#([0-9a-f]{3,8})$/,
-      reRgbInteger$3 = new RegExp("^rgb\\(" + [reI$3, reI$3, reI$3] + "\\)$"),
-      reRgbPercent$3 = new RegExp("^rgb\\(" + [reP$3, reP$3, reP$3] + "\\)$"),
-      reRgbaInteger$3 = new RegExp("^rgba\\(" + [reI$3, reI$3, reI$3, reN$3] + "\\)$"),
-      reRgbaPercent$3 = new RegExp("^rgba\\(" + [reP$3, reP$3, reP$3, reN$3] + "\\)$"),
-      reHslPercent$3 = new RegExp("^hsl\\(" + [reN$3, reP$3, reP$3] + "\\)$"),
-      reHslaPercent$3 = new RegExp("^hsla\\(" + [reN$3, reP$3, reP$3, reN$3] + "\\)$");
-  var named$3 = {
-    aliceblue: 0xf0f8ff,
-    antiquewhite: 0xfaebd7,
-    aqua: 0x00ffff,
-    aquamarine: 0x7fffd4,
-    azure: 0xf0ffff,
-    beige: 0xf5f5dc,
-    bisque: 0xffe4c4,
-    black: 0x000000,
-    blanchedalmond: 0xffebcd,
-    blue: 0x0000ff,
-    blueviolet: 0x8a2be2,
-    brown: 0xa52a2a,
-    burlywood: 0xdeb887,
-    cadetblue: 0x5f9ea0,
-    chartreuse: 0x7fff00,
-    chocolate: 0xd2691e,
-    coral: 0xff7f50,
-    cornflowerblue: 0x6495ed,
-    cornsilk: 0xfff8dc,
-    crimson: 0xdc143c,
-    cyan: 0x00ffff,
-    darkblue: 0x00008b,
-    darkcyan: 0x008b8b,
-    darkgoldenrod: 0xb8860b,
-    darkgray: 0xa9a9a9,
-    darkgreen: 0x006400,
-    darkgrey: 0xa9a9a9,
-    darkkhaki: 0xbdb76b,
-    darkmagenta: 0x8b008b,
-    darkolivegreen: 0x556b2f,
-    darkorange: 0xff8c00,
-    darkorchid: 0x9932cc,
-    darkred: 0x8b0000,
-    darksalmon: 0xe9967a,
-    darkseagreen: 0x8fbc8f,
-    darkslateblue: 0x483d8b,
-    darkslategray: 0x2f4f4f,
-    darkslategrey: 0x2f4f4f,
-    darkturquoise: 0x00ced1,
-    darkviolet: 0x9400d3,
-    deeppink: 0xff1493,
-    deepskyblue: 0x00bfff,
-    dimgray: 0x696969,
-    dimgrey: 0x696969,
-    dodgerblue: 0x1e90ff,
-    firebrick: 0xb22222,
-    floralwhite: 0xfffaf0,
-    forestgreen: 0x228b22,
-    fuchsia: 0xff00ff,
-    gainsboro: 0xdcdcdc,
-    ghostwhite: 0xf8f8ff,
-    gold: 0xffd700,
-    goldenrod: 0xdaa520,
-    gray: 0x808080,
-    green: 0x008000,
-    greenyellow: 0xadff2f,
-    grey: 0x808080,
-    honeydew: 0xf0fff0,
-    hotpink: 0xff69b4,
-    indianred: 0xcd5c5c,
-    indigo: 0x4b0082,
-    ivory: 0xfffff0,
-    khaki: 0xf0e68c,
-    lavender: 0xe6e6fa,
-    lavenderblush: 0xfff0f5,
-    lawngreen: 0x7cfc00,
-    lemonchiffon: 0xfffacd,
-    lightblue: 0xadd8e6,
-    lightcoral: 0xf08080,
-    lightcyan: 0xe0ffff,
-    lightgoldenrodyellow: 0xfafad2,
-    lightgray: 0xd3d3d3,
-    lightgreen: 0x90ee90,
-    lightgrey: 0xd3d3d3,
-    lightpink: 0xffb6c1,
-    lightsalmon: 0xffa07a,
-    lightseagreen: 0x20b2aa,
-    lightskyblue: 0x87cefa,
-    lightslategray: 0x778899,
-    lightslategrey: 0x778899,
-    lightsteelblue: 0xb0c4de,
-    lightyellow: 0xffffe0,
-    lime: 0x00ff00,
-    limegreen: 0x32cd32,
-    linen: 0xfaf0e6,
-    magenta: 0xff00ff,
-    maroon: 0x800000,
-    mediumaquamarine: 0x66cdaa,
-    mediumblue: 0x0000cd,
-    mediumorchid: 0xba55d3,
-    mediumpurple: 0x9370db,
-    mediumseagreen: 0x3cb371,
-    mediumslateblue: 0x7b68ee,
-    mediumspringgreen: 0x00fa9a,
-    mediumturquoise: 0x48d1cc,
-    mediumvioletred: 0xc71585,
-    midnightblue: 0x191970,
-    mintcream: 0xf5fffa,
-    mistyrose: 0xffe4e1,
-    moccasin: 0xffe4b5,
-    navajowhite: 0xffdead,
-    navy: 0x000080,
-    oldlace: 0xfdf5e6,
-    olive: 0x808000,
-    olivedrab: 0x6b8e23,
-    orange: 0xffa500,
-    orangered: 0xff4500,
-    orchid: 0xda70d6,
-    palegoldenrod: 0xeee8aa,
-    palegreen: 0x98fb98,
-    paleturquoise: 0xafeeee,
-    palevioletred: 0xdb7093,
-    papayawhip: 0xffefd5,
-    peachpuff: 0xffdab9,
-    peru: 0xcd853f,
-    pink: 0xffc0cb,
-    plum: 0xdda0dd,
-    powderblue: 0xb0e0e6,
-    purple: 0x800080,
-    rebeccapurple: 0x663399,
-    red: 0xff0000,
-    rosybrown: 0xbc8f8f,
-    royalblue: 0x4169e1,
-    saddlebrown: 0x8b4513,
-    salmon: 0xfa8072,
-    sandybrown: 0xf4a460,
-    seagreen: 0x2e8b57,
-    seashell: 0xfff5ee,
-    sienna: 0xa0522d,
-    silver: 0xc0c0c0,
-    skyblue: 0x87ceeb,
-    slateblue: 0x6a5acd,
-    slategray: 0x708090,
-    slategrey: 0x708090,
-    snow: 0xfffafa,
-    springgreen: 0x00ff7f,
-    steelblue: 0x4682b4,
-    tan: 0xd2b48c,
-    teal: 0x008080,
-    thistle: 0xd8bfd8,
-    tomato: 0xff6347,
-    turquoise: 0x40e0d0,
-    violet: 0xee82ee,
-    wheat: 0xf5deb3,
-    white: 0xffffff,
-    whitesmoke: 0xf5f5f5,
-    yellow: 0xffff00,
-    yellowgreen: 0x9acd32
-  };
-  define$3(Color$3, color$3, {
-    copy: function copy(channels) {
-      return Object.assign(new this.constructor(), this, channels);
-    },
-    displayable: function displayable() {
-      return this.rgb().displayable();
-    },
-    hex: color_formatHex$3,
-    // Deprecated! Use color.formatHex.
-    formatHex: color_formatHex$3,
-    formatHsl: color_formatHsl$3,
-    formatRgb: color_formatRgb$3,
-    toString: color_formatRgb$3
-  });
-
-  function color_formatHex$3() {
-    return this.rgb().formatHex();
-  }
-
-  function color_formatHsl$3() {
-    return hslConvert$3(this).formatHsl();
-  }
-
-  function color_formatRgb$3() {
-    return this.rgb().formatRgb();
-  }
-
-  function color$3(format) {
-    var m, l;
-    format = (format + "").trim().toLowerCase();
-    return (m = reHex$3.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn$3(m) // #ff0000
-    : l === 3 ? new Rgb$3(m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, (m & 0xf) << 4 | m & 0xf, 1) // #f00
-    : l === 8 ? new Rgb$3(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
-    : l === 4 ? new Rgb$3(m >> 12 & 0xf | m >> 8 & 0xf0, m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, ((m & 0xf) << 4 | m & 0xf) / 0xff) // #f000
-    : null // invalid hex
-    ) : (m = reRgbInteger$3.exec(format)) ? new Rgb$3(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
-    : (m = reRgbPercent$3.exec(format)) ? new Rgb$3(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
-    : (m = reRgbaInteger$3.exec(format)) ? rgba$3(m[1], m[2], m[3], m[4]) // rgba(255, 0, 0, 1)
-    : (m = reRgbaPercent$3.exec(format)) ? rgba$3(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
-    : (m = reHslPercent$3.exec(format)) ? hsla$3(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
-    : (m = reHslaPercent$3.exec(format)) ? hsla$3(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
-    : named$3.hasOwnProperty(format) ? rgbn$3(named$3[format]) // eslint-disable-line no-prototype-builtins
-    : format === "transparent" ? new Rgb$3(NaN, NaN, NaN, 0) : null;
-  }
-
-  function rgbn$3(n) {
-    return new Rgb$3(n >> 16 & 0xff, n >> 8 & 0xff, n & 0xff, 1);
-  }
-
-  function rgba$3(r, g, b, a) {
-    if (a <= 0) r = g = b = NaN;
-    return new Rgb$3(r, g, b, a);
-  }
-
-  function rgbConvert$3(o) {
-    if (!(o instanceof Color$3)) o = color$3(o);
-    if (!o) return new Rgb$3();
-    o = o.rgb();
-    return new Rgb$3(o.r, o.g, o.b, o.opacity);
-  }
-  function rgb$3(r, g, b, opacity) {
-    return arguments.length === 1 ? rgbConvert$3(r) : new Rgb$3(r, g, b, opacity == null ? 1 : opacity);
-  }
-  function Rgb$3(r, g, b, opacity) {
-    this.r = +r;
-    this.g = +g;
-    this.b = +b;
-    this.opacity = +opacity;
-  }
-  define$3(Rgb$3, rgb$3, extend$4(Color$3, {
-    brighter: function brighter(k) {
-      k = k == null ? _brighter$3 : Math.pow(_brighter$3, k);
-      return new Rgb$3(this.r * k, this.g * k, this.b * k, this.opacity);
-    },
-    darker: function darker(k) {
-      k = k == null ? _darker$3 : Math.pow(_darker$3, k);
-      return new Rgb$3(this.r * k, this.g * k, this.b * k, this.opacity);
-    },
-    rgb: function rgb() {
-      return this;
-    },
-    displayable: function displayable() {
-      return -0.5 <= this.r && this.r < 255.5 && -0.5 <= this.g && this.g < 255.5 && -0.5 <= this.b && this.b < 255.5 && 0 <= this.opacity && this.opacity <= 1;
-    },
-    hex: rgb_formatHex$3,
-    // Deprecated! Use color.formatHex.
-    formatHex: rgb_formatHex$3,
-    formatRgb: rgb_formatRgb$3,
-    toString: rgb_formatRgb$3
-  }));
-
-  function rgb_formatHex$3() {
-    return "#" + hex$3(this.r) + hex$3(this.g) + hex$3(this.b);
-  }
-
-  function rgb_formatRgb$3() {
-    var a = this.opacity;
-    a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-    return (a === 1 ? "rgb(" : "rgba(") + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.b) || 0)) + (a === 1 ? ")" : ", " + a + ")");
-  }
-
-  function hex$3(value) {
-    value = Math.max(0, Math.min(255, Math.round(value) || 0));
-    return (value < 16 ? "0" : "") + value.toString(16);
-  }
-
-  function hsla$3(h, s, l, a) {
-    if (a <= 0) h = s = l = NaN;else if (l <= 0 || l >= 1) h = s = NaN;else if (s <= 0) h = NaN;
-    return new Hsl$3(h, s, l, a);
-  }
-
-  function hslConvert$3(o) {
-    if (o instanceof Hsl$3) return new Hsl$3(o.h, o.s, o.l, o.opacity);
-    if (!(o instanceof Color$3)) o = color$3(o);
-    if (!o) return new Hsl$3();
-    if (o instanceof Hsl$3) return o;
-    o = o.rgb();
-    var r = o.r / 255,
-        g = o.g / 255,
-        b = o.b / 255,
-        min = Math.min(r, g, b),
-        max = Math.max(r, g, b),
-        h = NaN,
-        s = max - min,
-        l = (max + min) / 2;
-
-    if (s) {
-      if (r === max) h = (g - b) / s + (g < b) * 6;else if (g === max) h = (b - r) / s + 2;else h = (r - g) / s + 4;
-      s /= l < 0.5 ? max + min : 2 - max - min;
-      h *= 60;
-    } else {
-      s = l > 0 && l < 1 ? 0 : h;
-    }
-
-    return new Hsl$3(h, s, l, o.opacity);
-  }
-  function hsl$3(h, s, l, opacity) {
-    return arguments.length === 1 ? hslConvert$3(h) : new Hsl$3(h, s, l, opacity == null ? 1 : opacity);
-  }
-
-  function Hsl$3(h, s, l, opacity) {
-    this.h = +h;
-    this.s = +s;
-    this.l = +l;
-    this.opacity = +opacity;
-  }
-
-  define$3(Hsl$3, hsl$3, extend$4(Color$3, {
-    brighter: function brighter(k) {
-      k = k == null ? _brighter$3 : Math.pow(_brighter$3, k);
-      return new Hsl$3(this.h, this.s, this.l * k, this.opacity);
-    },
-    darker: function darker(k) {
-      k = k == null ? _darker$3 : Math.pow(_darker$3, k);
-      return new Hsl$3(this.h, this.s, this.l * k, this.opacity);
-    },
-    rgb: function rgb() {
-      var h = this.h % 360 + (this.h < 0) * 360,
-          s = isNaN(h) || isNaN(this.s) ? 0 : this.s,
-          l = this.l,
-          m2 = l + (l < 0.5 ? l : 1 - l) * s,
-          m1 = 2 * l - m2;
-      return new Rgb$3(hsl2rgb$3(h >= 240 ? h - 240 : h + 120, m1, m2), hsl2rgb$3(h, m1, m2), hsl2rgb$3(h < 120 ? h + 240 : h - 120, m1, m2), this.opacity);
-    },
-    displayable: function displayable() {
-      return (0 <= this.s && this.s <= 1 || isNaN(this.s)) && 0 <= this.l && this.l <= 1 && 0 <= this.opacity && this.opacity <= 1;
-    },
-    formatHsl: function formatHsl() {
-      var a = this.opacity;
-      a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-      return (a === 1 ? "hsl(" : "hsla(") + (this.h || 0) + ", " + (this.s || 0) * 100 + "%, " + (this.l || 0) * 100 + "%" + (a === 1 ? ")" : ", " + a + ")");
-    }
-  }));
-  /* From FvD 13.37, CSS Color Module Level 3 */
-
-  function hsl2rgb$3(h, m1, m2) {
-    return (h < 60 ? m1 + (m2 - m1) * h / 60 : h < 180 ? m2 : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60 : m1) * 255;
   }
 
   var slice$2 = [].slice;
@@ -42327,8 +42043,11 @@
       };
       _this._axisTest = new Axis();
       _this._align = "middle";
+      _this._buckets = 5;
       _this._bucketAxis = false;
-      _this._color = "#0C8040";
+      _this._colorMax = "#0C8040";
+      _this._colorMid = "#f7f7f7";
+      _this._colorMin = "#b22200";
       _this._data = [];
       _this._duration = 600;
       _this._height = 200;
@@ -42342,6 +42061,7 @@
           strokeWidth: 1
         }
       };
+      _this._midpoint = 0;
       _this._orient = "bottom";
       _this._outerBounds = {
         width: 0,
@@ -42385,12 +42105,17 @@
           parent: this._select
         });
         var domain = extent(this._data, this._value);
+        var negative = domain[0] < this._midpoint;
+        var positive = domain[1] > this._midpoint;
+        var diverging = negative && positive;
         var colors = this._color,
             labels,
             ticks;
 
-        if (!(colors instanceof Array)) {
-          colors = [colorLighter(colors, 0.9), colorLighter(colors, 0.75), colorLighter(colors, 0.5), colorLighter(colors, 0.25), colors];
+        if (colors && !(colors instanceof Array)) {
+          colors = range(0, this._buckets, 1).map(function (i) {
+            return colorLighter(colors, (i + 1) / _this2._buckets);
+          }).reverse();
         }
 
         if (this._scale === "jenks") {
@@ -42398,11 +42123,8 @@
             return d !== null && typeof d === "number";
           });
 
-          if (data.length <= colors.length) {
-            colors = colors.slice(colors.length - data.length);
-          }
-
-          var jenks = ckmeans(data, colors.length);
+          var buckets = min([colors ? colors.length : this._buckets, data.length]);
+          var jenks = ckmeans(data, buckets);
           ticks = arrayMerge(jenks.map(function (c, i) {
             return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]];
           }));
@@ -42412,12 +42134,116 @@
             labels = Array.from(tickSet);
           }
 
+          if (!colors) {
+            if (diverging) {
+              colors = [this._colorMin, this._colorMid, this._colorMax];
+              var negatives = ticks.slice(0, buckets).filter(function (d, i) {
+                return d < _this2._midpoint && ticks[i + 1] <= _this2._midpoint;
+              });
+              var spanning = ticks.slice(0, buckets).filter(function (d, i) {
+                return d <= _this2._midpoint && ticks[i + 1] > _this2._midpoint;
+              });
+              var positives = ticks.slice(0, buckets).filter(function (d, i) {
+                return d > _this2._midpoint && ticks[i + 1] > _this2._midpoint;
+              });
+              var negativeColors = negatives.map(function (d, i) {
+                return !i ? colors[0] : colorLighter(colors[0], i / negatives.length);
+              });
+              var spanningColors = spanning.map(function () {
+                return colors[1];
+              });
+              var positiveColors = positives.map(function (d, i) {
+                return i === positives.length - 1 ? colors[2] : colorLighter(colors[2], 1 - (i + 1) / positives.length);
+              });
+              colors = negativeColors.concat(spanningColors).concat(positiveColors);
+            } else {
+              colors = range(0, this._buckets, 1).map(function (i) {
+                return colorLighter(_this2._colorMax, i / _this2._buckets);
+              }).reverse();
+            }
+          }
+
+          if (data.length <= buckets) {
+            colors = colors.slice(buckets - data.length);
+          }
+
           this._colorScale = threshold().domain(ticks).range(["black"].concat(colors).concat(colors[colors.length - 1]));
         } else {
-          var step = (domain[1] - domain[0]) / (colors.length - 1);
-          var buckets = range(domain[0], domain[1] + step / 2, step);
-          if (this._scale === "buckets") ticks = buckets;
-          this._colorScale = linear$1().domain(buckets).range(colors);
+          var _buckets;
+
+          if (diverging && !colors) {
+            var half = Math.floor(this._buckets / 2);
+
+            var _negativeColors = range(0, half, 1).map(function (i) {
+              return !i ? _this2._colorMin : colorLighter(_this2._colorMin, i / half);
+            });
+
+            var _spanningColors = (this._buckets % 2 ? [0] : []).map(function () {
+              return _this2._colorMid;
+            });
+
+            var _positiveColors = range(0, half, 1).map(function (i) {
+              return !i ? _this2._colorMax : colorLighter(_this2._colorMax, i / half);
+            }).reverse();
+
+            colors = _negativeColors.concat(_spanningColors).concat(_positiveColors);
+            var step = (colors.length - 1) / 2;
+            _buckets = [domain[0], this._midpoint, domain[1]];
+            _buckets = range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+          } else {
+            if (!colors) {
+              if (this._scale === "buckets") {
+                colors = range(0, this._buckets, 1).map(function (i) {
+                  return colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / _this2._buckets);
+                });
+                if (positive) colors = colors.reverse();
+              } else {
+                colors = negative ? [this._colorMin, colorLighter(this._colorMin, 0.8)] : [colorLighter(this._colorMax, 0.8), this._colorMax];
+              }
+            }
+
+            var _step = (domain[1] - domain[0]) / (colors.length - 1);
+
+            _buckets = range(domain[0], domain[1] + _step / 2, _step);
+          }
+
+          if (this._scale === "buckets") {
+            ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
+          }
+
+          if (this._scale === "log") {
+            var negativeBuckets = _buckets.filter(function (d) {
+              return d < 0;
+            });
+
+            if (negativeBuckets.length) {
+              var minVal = negativeBuckets[0];
+              var newNegativeBuckets = negativeBuckets.map(function (d) {
+                return -Math.pow(Math.abs(minVal), d / minVal);
+              });
+              negativeBuckets.forEach(function (bucket, i) {
+                _buckets[_buckets.indexOf(bucket)] = newNegativeBuckets[i];
+              });
+            }
+
+            var positiveBuckets = _buckets.filter(function (d) {
+              return d > 0;
+            });
+
+            if (positiveBuckets.length) {
+              var maxVal = positiveBuckets[positiveBuckets.length - 1];
+              var newPositiveBuckets = positiveBuckets.map(function (d) {
+                return Math.pow(maxVal, d / maxVal);
+              });
+              positiveBuckets.forEach(function (bucket, i) {
+                _buckets[_buckets.indexOf(bucket)] = newPositiveBuckets[i];
+              });
+            }
+
+            if (_buckets.includes(0)) _buckets[_buckets.indexOf(0)] = 1;
+          }
+
+          this._colorScale = linear$1().domain(_buckets).range(colors);
         }
 
         if (this._bucketAxis || !["buckets", "jenks"].includes(this._scale)) {
@@ -42430,6 +42256,7 @@
             labels: labels || ticks,
             orient: this._orient,
             padding: this._padding,
+            scale: this._scale === "log" ? "log" : "linear",
             ticks: ticks,
             width: this._width
           }, this._axisConfig);
@@ -42469,8 +42296,12 @@
           defs = defsEnter.merge(defs);
           defs.select("linearGradient").attr("".concat(x, "1"), horizontal ? "0%" : "100%").attr("".concat(x, "2"), horizontal ? "100%" : "0%").attr("".concat(y, "1"), "0%").attr("".concat(y, "2"), "0%");
           var stops = defs.select("linearGradient").selectAll("stop").data(colors);
+
+          var scaleDomain = this._colorScale.domain();
+
+          var offsetScale = linear$1().domain(scaleRange).range([0, 100]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
-            return "".concat(i / (colors.length - 1) * 100, "%");
+            return "".concat(offsetScale(axisScale(scaleDomain[i])), "%");
           }).attr("stop-color", String);
           /** determines the width of buckets */
 
@@ -42492,9 +42323,7 @@
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
           } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2), _defineProperty$3(_this$_rectClass$data, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2), _defineProperty$3(_this$_rectClass$data, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$3(_this$_rectClass$data, height, this._size), _this$_rectClass$data)).config(this._rectConfig).render();
         } else {
-          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : function (d) {
-            return d;
-          };
+          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : formatAbbreviate;
 
           var _data = ticks.reduce(function (arr, tick, i) {
             if (i !== ticks.length - 1) {
@@ -42567,6 +42396,18 @@
       }
       /**
           @memberof ColorScale
+          @desc The number of discrete buckets to create in a bucketed color scale. Will be overridden by any custom Array of colors passed to the `color` method.
+          @param {Number} [*value* = 5]
+          @chainable
+      */
+
+    }, {
+      key: "buckets",
+      value: function buckets(_) {
+        return arguments.length ? (this._buckets = _, this) : this._buckets;
+      }
+      /**
+          @memberof ColorScale
           @desc Determines whether or not to use an Axis to display bucket scales (both "buckets" and "jenks"). When set to `false`, bucketed scales will use the `Legend` class to display squares for each range of data. When set to `true`, bucketed scales will be displayed on an `Axis`, similar to "linear" scales.
           @param {Boolean} [*value* = false]
           @chainable
@@ -42579,8 +42420,8 @@
       }
       /**
           @memberof ColorScale
-          @desc Defines the color or colors to be used for the scale. If only a single color is given as a String, then the scale is interpolated by lightening that color. Otherwise, the function expects an Array of color values to be used in order for the scale.
-          @param {String|Array} [*value* = "#0C8040"]
+          @desc Overrides the default internal logic of `colorMin`, `colorMid`, and `colorMax` to only use just this specified color. If a single color is given as a String, then the scale is interpolated by lightening that color. Otherwise, the function expects an Array of color values to be used in order for the scale.
+          @param {String|Array} [*value*]
           @chainable
       */
 
@@ -42588,6 +42429,42 @@
       key: "color",
       value: function color(_) {
         return arguments.length ? (this._color = _, this) : this._color;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for numbers greater than the value of the `midpoint` on the scale (defaults to `0`). Colors in between this value and the value of `colorMid` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#0C8040"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMax",
+      value: function colorMax(_) {
+        return arguments.length ? (this._colorMax = _, this) : this._colorMax;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for the midpoint of a diverging scale, based on the current value of the `midpoint` method (defaults to `0`). Colors in between this value and the values of `colorMin` and `colorMax` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#f7f7f7"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMid",
+      value: function colorMid(_) {
+        return arguments.length ? (this._colorMid = _, this) : this._colorMid;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for numbers less than the value of the `midpoint` on the scale (defaults to `0`). Colors in between this value and the value of `colorMid` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#b22200"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMin",
+      value: function colorMin(_) {
+        return arguments.length ? (this._colorMin = _, this) : this._colorMin;
       }
       /**
           @memberof ColorScale
@@ -42636,6 +42513,18 @@
       key: "legendConfig",
       value: function legendConfig(_) {
         return arguments.length ? (this._legendConfig = assign(this._legendConfig, _), this) : this._legendConfig;
+      }
+      /**
+          @memberof ColorScale
+          @desc The number value to be used as the anchor for `colorMid`, and defines the center point of the diverging color scale.
+          @param {Number} [*value* = 0]
+          @chainable
+      */
+
+    }, {
+      key: "midpoint",
+      value: function midpoint(_) {
+        return arguments.length ? (this._midpoint = _, this) : this._midpoint;
       }
       /**
           @memberof ColorScale
@@ -43341,7 +43230,7 @@
 
   /**!
    * @fileOverview Kickass library to create and place poppers near their reference elements.
-   * @version 1.16.0
+   * @version 1.16.1
    * @license
    * Copyright (c) 2016 Federico Zivolo and contributors
    *
@@ -43698,7 +43587,7 @@
   function getBordersSize(styles, axis) {
     var sideA = axis === 'x' ? 'Left' : 'Top';
     var sideB = sideA === 'Left' ? 'Right' : 'Bottom';
-    return parseFloat(styles['border' + sideA + 'Width'], 10) + parseFloat(styles['border' + sideB + 'Width'], 10);
+    return parseFloat(styles['border' + sideA + 'Width']) + parseFloat(styles['border' + sideB + 'Width']);
   }
 
   function getSize(axis, body, html, computedStyle) {
@@ -43843,8 +43732,8 @@
     var parentRect = getBoundingClientRect(parent);
     var scrollParent = getScrollParent(children);
     var styles = getStyleComputedProperty(parent);
-    var borderTopWidth = parseFloat(styles.borderTopWidth, 10);
-    var borderLeftWidth = parseFloat(styles.borderLeftWidth, 10); // In cases where the parent is fixed, we must ignore negative scroll in offset calc
+    var borderTopWidth = parseFloat(styles.borderTopWidth);
+    var borderLeftWidth = parseFloat(styles.borderLeftWidth); // In cases where the parent is fixed, we must ignore negative scroll in offset calc
 
     if (fixedPosition && isHTML) {
       parentRect.top = Math.max(parentRect.top, 0);
@@ -43864,8 +43753,8 @@
     // the box of the documentElement, in the other cases not.
 
     if (!isIE10 && isHTML) {
-      var marginTop = parseFloat(styles.marginTop, 10);
-      var marginLeft = parseFloat(styles.marginLeft, 10);
+      var marginTop = parseFloat(styles.marginTop);
+      var marginLeft = parseFloat(styles.marginLeft);
       offsets.top -= borderTopWidth - marginTop;
       offsets.bottom -= borderTopWidth - marginTop;
       offsets.left -= borderLeftWidth - marginLeft;
@@ -44805,8 +44694,8 @@
     // take popper margin in account because we don't have this info available
 
     var css = getStyleComputedProperty(data.instance.popper);
-    var popperMarginSide = parseFloat(css['margin' + sideCapitalized], 10);
-    var popperBorderSide = parseFloat(css['border' + sideCapitalized + 'Width'], 10);
+    var popperMarginSide = parseFloat(css['margin' + sideCapitalized]);
+    var popperBorderSide = parseFloat(css['border' + sideCapitalized + 'Width']);
     var sideValue = center - data.offsets.popper[side] - popperMarginSide - popperBorderSide; // prevent arrowElement from being placed not contiguously to its popper
 
     sideValue = Math.max(Math.min(popper[len] - arrowElementSize, sideValue), 0);
@@ -46133,6 +46022,7 @@
       _this._trStyle = {
         "border-top": "1px solid rgba(0, 0, 0, 0.1)"
       };
+      _this._tdStyle = {};
       _this._width = constant$3("auto");
       return _this;
     }
@@ -46217,6 +46107,7 @@
           return d;
         });
         td.enter().append("td").merge(td).html(cellContent);
+        stylize(td, this._tdStyle);
         divElement("footer");
         divElement("arrow");
         enter.attr("id", function (d, i) {
@@ -46655,7 +46546,7 @@
       }
       /**
           @memberof Tooltip
-          @desc If *value* is specified, sets the table row styles to the specified values and returns this generator. If *value* is not specified, returns the current table row styles.
+          @desc An object with CSS keys and values to be applied to all <tr> elements inside of each <tbody>.
           @param {Object} [*value*]
           @example <caption>default styles</caption>
       {
@@ -46667,6 +46558,17 @@
       key: "trStyle",
       value: function trStyle(_) {
         return arguments.length ? (this._trStyle = Object.assign(this._trStyle, _), this) : this._trStyle;
+      }
+      /**
+          @memberof Tooltip
+          @desc An object with CSS keys and values to be applied to all <td> elements inside of each <tr>.
+          @param {Object} [*value*]
+       */
+
+    }, {
+      key: "tdStyle",
+      value: function tdStyle(_) {
+        return arguments.length ? (this._tdStyle = Object.assign(this._tdStyle, _), this) : this._tdStyle;
       }
       /**
           @memberof Tooltip
@@ -57106,6 +57008,10 @@
   }
 
   function _iterableToArrayLimit$3(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -57345,6 +57251,11 @@
             data.loaded = true;
           };
 
+          img.onerror = function () {
+            data.loaded = true;
+            data.value = false;
+          };
+
           img.src = url;
         }
       } else if (!["svg", "g", "text"].includes(tag) && !_select(this).selectAll("svg").size()) {
@@ -57518,13 +57429,16 @@
 
         switch (layer.type) {
           case "img":
-            context.save();
-            context.beginPath();
-            context.translate(options.padding + clip.x, options.padding + clip.y);
-            context.rect(0, 0, clip.width, clip.height);
-            context.clip();
-            context.drawImage(layer.value, layer.x + clip.x, layer.y + clip.y, layer.width, layer.height);
-            context.restore();
+            if (layer.value) {
+              context.save();
+              context.beginPath();
+              context.translate(options.padding + clip.x, options.padding + clip.y);
+              context.rect(0, 0, clip.width, clip.height);
+              context.clip();
+              context.drawImage(layer.value, layer.x + clip.x, layer.y + clip.y, layer.width, layer.height);
+              context.restore();
+            }
+
             break;
 
           case "html":
@@ -58122,9 +58036,7 @@
   */
 
   function legendLabel(d, i) {
-    var l = this._drawLabel(d, i);
-
-    return l instanceof Array ? l.join(", ") : l;
+    return this._drawLabel(d, i, this._legendDepth);
   }
   /**
       @function _drawLegend
@@ -58186,6 +58098,29 @@
         return _this._colorScale(d, i) === undefined;
       }) : data);
       legendData.sort(this._legendSort);
+      var labels = legendData.map(function (d, i) {
+        return _this._ids(d, i).slice(0, _this._drawDepth + 1);
+      });
+      this._legendDepth = 0;
+
+      var _loop = function _loop(x) {
+        var values = labels.map(function (l) {
+          return l[x];
+        });
+
+        if (!values.some(function (v) {
+          return v instanceof Array;
+        }) && Array.from(new Set(values)).length === legendData.length) {
+          _this._legendDepth = x;
+          return "break";
+        }
+      };
+
+      for (var x = 0; x <= this._drawDepth; x++) {
+        var _ret = _loop(x);
+
+        if (_ret === "break") break;
+      }
 
       var hidden = function hidden(d, i) {
         var id = _this._id(d, i);
@@ -58430,16 +58365,17 @@
           filterId = filterGroup(d, i);
       this.hover(false);
       if (this._tooltip) this._tooltipClass.data([]).render();
+      var oldFilter = this._filter;
 
       this._history.push({
         depth: this._depth,
-        filter: this._filter
+        filter: oldFilter
       });
 
       this.config({
         depth: this._drawDepth + 1,
         filter: function filter(f, x) {
-          return filterGroup(f, x) === filterId;
+          return (!oldFilter || oldFilter(f, x)) && filterGroup(f, x) === filterId;
         }
       }).render();
     }
@@ -58644,6 +58580,10 @@
   }
 
   function _iterableToArrayLimit$4(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -58923,6 +58863,10 @@
   }
 
   function _iterableToArrayLimit$5(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -59206,7 +59150,7 @@
 
           var c = _this._color(d, i);
 
-          if (color$3(c)) return c;
+          if (color(c)) return c;
           return colorAssign(c);
         },
         labelConfig: {
@@ -59218,7 +59162,7 @@
         opacity: constant$3(1),
         stroke: function stroke(d, i) {
           var c = typeof _this._shapeConfig.fill === "function" ? _this._shapeConfig.fill(d, i) : _this._shapeConfig.fill;
-          return color$3(c).darker();
+          return color(c).darker();
         },
         role: "presentation",
         strokeWidth: constant$3(0)
@@ -59336,6 +59280,7 @@
         };
 
         this._drawLabel = function (d, i) {
+          var depth = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _this2._drawDepth;
           if (!d) return "";
 
           if (d._isAggregation) {
@@ -59349,12 +59294,12 @@
 
           if (_this2._label) return _this2._label(d, i);
 
-          var l = that._ids(d, i).slice(0, _this2._drawDepth + 1);
+          var l = that._ids(d, i).slice(0, depth + 1);
 
           var n = l.reverse().find(function (ll) {
             return !(ll instanceof Array);
           }) || l[l.length - 1];
-          return n instanceof Array ? listify(n) : n;
+          return n instanceof Array ? listify(n) : "".concat(n);
         }; // set the default timeFilter if it has not been specified
 
 
@@ -59393,11 +59338,17 @@
           if (this._discrete && "_".concat(this._discrete) in this) dataNest.key(this["_".concat(this._discrete)]);
           if (this._discrete && "_".concat(this._discrete, "2") in this) dataNest.key(this["_".concat(this._discrete, "2")]);
           var tree = dataNest.rollup(function (leaves) {
+            var index = _this2._data.indexOf(leaves[0]);
+
+            var shape = _this2._shape(leaves[0], index);
+
+            var id = _this2._id(leaves[0], index);
+
             var d = objectMerge(leaves, _this2._aggs);
 
-            var id = _this2._id(d);
-
-            if (!_this2._hidden.includes(id) && (!_this2._solo.length || _this2._solo.includes(id))) _this2._filteredData.push(d);
+            if (!_this2._hidden.includes(id) && (!_this2._solo.length || _this2._solo.includes(id))) {
+              if (!_this2._discrete && shape === "Line") _this2._filteredData = _this2._filteredData.concat(leaves);else _this2._filteredData.push(d);
+            }
 
             _this2._legendData.push(d);
           }).entries(flatData);
@@ -59466,6 +59417,7 @@
         // this._zoomGroup = enter.merge(this._zoomGroup);
         // const testConfig = {
         //   on: {
+        //     click: this._on["click.shape"],
         //     mouseenter: this._on.mouseenter,
         //     mouseleave: this._on.mouseleave,
         //     mousemove: this._on["mousemove.shape"]
@@ -59567,7 +59519,7 @@
           setSVGSize.bind(this)();
         }
 
-        this._select.attr("class", "d3plus-viz").attr("aria-hidden", this._ariaHidden).attr("aria-labelledby", "".concat(this._uuid, "-title ").concat(this._uuid, "-desc")).attr("role", "img").transition(transition).style("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).style("height", this._height !== undefined ? "".concat(this._height, "px") : undefined).attr("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).attr("height", this._height !== undefined ? "".concat(this._height, "px") : undefined); // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
+        this._select.attr("class", "d3plus-viz").attr("aria-hidden", this._ariaHidden).attr("aria-labelledby", "".concat(this._uuid, "-title ").concat(this._uuid, "-desc")).attr("role", "img").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xlink", "http://www.w3.org/1999/xlink").transition(transition).style("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).style("height", this._height !== undefined ? "".concat(this._height, "px") : undefined).attr("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).attr("height", this._height !== undefined ? "".concat(this._height, "px") : undefined); // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
 
 
         var svgTitle = this._select.selectAll("title").data([0]);
@@ -60833,7 +60785,7 @@
       _this._pointSizeScale = "linear";
       _this._projection = d3Geo.geoMercator();
       _this._projectionPadding = parseSides(20);
-      _this._rotate = [0, 0];
+      _this._projectionRotate = [0, 0];
       _this._shape = constant$3("Circle");
       _this._shapeConfig = assign(_this._shapeConfig, {
         ariaLabel: function ariaLabel(d, i) {
@@ -61082,7 +61034,7 @@
 
         this._projection = this._projection.fitExtent(this._extentBounds.features.length ? [[this._projectionPadding.left, this._projectionPadding.top], [width - this._projectionPadding.right, height - this._projectionPadding.bottom]] : [[0, 0], [width, height]], this._extentBounds.features.length ? this._extentBounds : {
           type: "Sphere"
-        });
+        }).rotate(this._projectionRotate);
 
         this._shapes.push(new Path$1().data(topoData).d(function (d) {
           return path(d.feature);
@@ -61282,6 +61234,24 @@
       key: "projectionPadding",
       value: function projectionPadding(_) {
         return arguments.length ? (this._projectionPadding = parseSides(_), this) : this._projectionPadding;
+      }
+      /**
+          @memberof Geomap
+          @desc An array that corresponds to the value passed to the projection's [rotate](https://github.com/d3/d3-geo#projection_rotate) function. Use this method to shift the centerpoint of a map.
+          @param {Array} [*value* = [0, 0]]
+          @chainable
+      */
+
+    }, {
+      key: "projectionRotate",
+      value: function projectionRotate(_) {
+        if (arguments.length) {
+          this._projectionRotate = _;
+          this._tiles = false;
+          return this;
+        } else {
+          return this._projectionRotate;
+        }
       }
       /**
           @memberof Geomap

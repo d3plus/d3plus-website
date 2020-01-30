@@ -1,7 +1,7 @@
 /*
-  d3plus-geomap v0.6.9
+  d3plus-geomap v0.6.10
   A reusable geo map built on D3 and Topojson
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -1084,7 +1084,7 @@
       _this._pointSizeScale = "linear";
       _this._projection = d3Geo.geoMercator();
       _this._projectionPadding = d3plusCommon.parseSides(20);
-      _this._rotate = [0, 0];
+      _this._projectionRotate = [0, 0];
       _this._shape = d3plusCommon.constant("Circle");
       _this._shapeConfig = d3plusCommon.assign(_this._shapeConfig, {
         ariaLabel: function ariaLabel(d, i) {
@@ -1333,7 +1333,7 @@
 
         this._projection = this._projection.fitExtent(this._extentBounds.features.length ? [[this._projectionPadding.left, this._projectionPadding.top], [width - this._projectionPadding.right, height - this._projectionPadding.bottom]] : [[0, 0], [width, height]], this._extentBounds.features.length ? this._extentBounds : {
           type: "Sphere"
-        });
+        }).rotate(this._projectionRotate);
 
         this._shapes.push(new d3plusShape.Path().data(topoData).d(function (d) {
           return path(d.feature);
@@ -1533,6 +1533,24 @@
       key: "projectionPadding",
       value: function projectionPadding(_) {
         return arguments.length ? (this._projectionPadding = d3plusCommon.parseSides(_), this) : this._projectionPadding;
+      }
+      /**
+          @memberof Geomap
+          @desc An array that corresponds to the value passed to the projection's [rotate](https://github.com/d3/d3-geo#projection_rotate) function. Use this method to shift the centerpoint of a map.
+          @param {Array} [*value* = [0, 0]]
+          @chainable
+      */
+
+    }, {
+      key: "projectionRotate",
+      value: function projectionRotate(_) {
+        if (arguments.length) {
+          this._projectionRotate = _;
+          this._tiles = false;
+          return this;
+        } else {
+          return this._projectionRotate;
+        }
       }
       /**
           @memberof Geomap
