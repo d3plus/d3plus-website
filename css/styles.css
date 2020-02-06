@@ -247,21 +247,26 @@ footer h4 {
   margin-bottom: 5px;
 }
 
-footer a {
+footer a.footer-site  {
+  box-shadow: 0px 2px 5px #ccc;
   display: inline-block;
+  height: 150px;
   margin: 10px 10px 0;
-  opacity: 0.8;
-  -webkit-transition: opacity .1s;
-          transition: opacity .1s;
+  overflow: hidden;
+  width: 200px;
+  -webkit-transition: box-shadow .1s;
+          transition: box-shadow .1s;
 }
 
-footer a:hover {
-  opacity: 1;
+footer a.footer-site:hover {
+  box-shadow: 0px 2px 5px #999;
 }
 
-footer img {
+footer a.footer-site img{
   border: 0;
-  vertical-align: middle;
+  margin-left: -50%;
+  margin-top: -50%;
+  width: 200%;
 }
 
 
