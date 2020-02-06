@@ -38,9 +38,9 @@ navigation:
 - text: Accessibility
   url: /accessibility/
   icon: universal-access
-- text: Blog
-  url: /blog/
-  icon: rss
+# - text: Blog
+#   url: /blog/
+#   icon: rss
 - text: Github
   url: https://github.com/alexandersimoes/d3plus
   icon: github

@@ -43,19 +43,10 @@ style: blog
     width: 94%;
   }
 
-  section#examples, section#posts {
-    display: inline-block;
-    margin: 75px 2% 0px;
-    vertical-align: top;
-  }
-
   section#examples {
+    display: block;
+    margin: 75px 2% 0px;
     text-align: center;
-    width: 53%;
-  }
-
-  section#posts {
-    width: 37%;
   }
 
   section#examples > h1, section#examples > a {
@@ -114,7 +105,7 @@ style: blog
   {% endfor %}
 </section>
 
-<section class="half" id="examples">
+<section id="examples">
 
     <h1>Recent Examples</h1>
 
@@ -123,38 +114,8 @@ style: blog
     </a>
 
     {% assign examples = site.examples | sort: "time" | reverse %}
-    {% for example in examples limit:12 %}
+    {% for example in examples limit:15 %}
     {% include example-tile.html example=example %}
-    {% endfor %}
-
-</section>
-
-<section class="half" id="posts">
-
-    <h1>Blog Posts</h1>
-
-    <a class="moreButton" href="/blog/" target="_blank">
-      All Posts <i class="fa fa-angle-right"></i>
-    </a>
-
-    {% for post in site.posts %}
-      <div class="post">
-        <h3 class="post-title">
-          <a href="{{ post.url }}" title="{{ post.title }}" data-action="open-post" >{{ post.title }}</a>
-        </h3>
-        <a class="post-snippet" href="{{ post.url }}">
-          <p>{{ post.content | strip_html | truncatewords:50}}</p>
-        </a>
-        <div class="post-meta">
-          <span>
-            <a href="" class="avatar" title="Go to the profile of ">
-              <img src="{{ site.url }}/assets/img/people/{{ post.author|lower }}.gif" class="avatar-image">
-              <span class="avatar-span">{{ post.author|capitalize }}</span>
-            </a>
-          </span>
-          <span class="post-date">{{ post.date | date_to_string }}</span>
-        </div>
-      </div>
     {% endfor %}
 
 </section>
