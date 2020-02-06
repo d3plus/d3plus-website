@@ -2,78 +2,21 @@
 layout: default
 ---
 
-{% assign url = page.url|split:'/' %}
-{% assign file = url[3]|split: '.' %}
-{% assign id = file[0] %}
+<style>
 
-{% if page.user == null %}
-  {% assign user = 'davelandry' %}
-{% else %}
-  {% assign user = page.user %}
-{% endif %}
+  #exampleIframe {
+    display: block;
+    margin: 0 auto 40px;
+  }
 
-<div class="page-header" style="position: relative;">
-  <h1 class="post-title">{{ id }}</h1>
-  <a class="button right" href="http://bl.ocks.org/{{user}}/raw/{{id}}/" target="_blank">
-    View Standalone <i class='fa fa-angle-right'></i>
-  </a>
+  #markdown {
+    margin-top: 30px;
+  }
+
+</style>
+
+<iframe src="embed.html" id="exampleIframe" width="{{ page.width }}" height="{{ page.height }}"></iframe>
+
+<div id="markdown">
+  {{ content }}
 </div>
-
-<section>
-  <p class="example"></p>
-  <iframe id="iframe-example" width="990" height="{% if page.height == null %}640{% else %}{{ page.height }}{% endif %}"></iframe>
-  <script src="https://gist.github.com/{{user}}/{{id}}.js?file=index.html"></script>
-</section>
-
-<script src="/js/d3.js"></script>
-<script src="/js/showdown.js"></script>
-
-<script>
-
-  var id = "{{ id }}"
-
-  d3.json("https://api.github.com/gists/"+id+"?client_id={{site.github_api.id}}&client_secret={{site.github_api.secret}}",function(error, gist){
-
-    if (!error || gist.length > 0) {
-
-      var doc = document.getElementById("iframe-example").contentWindow.document;
-      doc.open();
-      doc.write(gist.files["index.html"].content);
-      doc.close();
-
-      var section = d3.select("section")
-
-      var title = gist.description || id
-
-      document.title = title +" with D3plus"
-
-      d3.select("h1.post-title").text(title)
-
-      var readme = gist.files["README.md"]
-      if (readme) {
-
-        var md = readme.content;
-        var text = [
-          "Featured on \[D3plus\.org\]\(\/\/d3plus\.org\/\)",
-          "Featured on \[D3plus\.org\]\(\/\/d3plus\.org\/\)\.",
-          "Featured on \[D3plus\.org\]\(\/\/d3plus\.org\)",
-          "Featured on \[D3plus\.org\]\(\/\/d3plus\.org\)\."
-        ];
-        text.forEach(function(t){
-          md = md.replace("\n\n" + t, "");
-          md = md.replace("\n" + t, "");
-          md = md.replace(t, "");
-        });
-
-        var converter = new Showdown.converter(),
-            html = converter.makeHtml(md)
-
-        section.select("p").html(html)
-
-      }
-
-    }
-
-  })
-
-</script>
