@@ -2,8 +2,8 @@
 title: Change Default Geomap Zooming
 width: 990
 height: 550
-time: 1580421119176
-date: January 30, 2020
+time: 1581023675176
+date: February 06, 2020
 ---
 
 [height]: 550
