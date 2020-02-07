@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.31
+  d3plus-plot v0.8.32
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -15639,6 +15639,41 @@
     return x === null ? NaN : +x;
   }
 
+  function variance (values, valueof) {
+    var n = values.length,
+        m = 0,
+        i = -1,
+        mean = 0,
+        value,
+        delta,
+        sum = 0;
+
+    if (valueof == null) {
+      while (++i < n) {
+        if (!isNaN(value = number(values[i]))) {
+          delta = value - mean;
+          mean += delta / ++m;
+          sum += delta * (value - mean);
+        }
+      }
+    } else {
+      while (++i < n) {
+        if (!isNaN(value = number(valueof(values[i], i, values)))) {
+          delta = value - mean;
+          mean += delta / ++m;
+          sum += delta * (value - mean);
+        }
+      }
+    }
+
+    if (m > 1) return sum / (m - 1);
+  }
+
+  function deviation (array, f) {
+    var v = variance(array, f);
+    return v ? Math.sqrt(v) : v;
+  }
+
   function extent (values, valueof) {
     var n = values.length,
         i = -1,
@@ -15793,6 +15828,26 @@
     }
 
     return max;
+  }
+
+  function mean (values, valueof) {
+    var n = values.length,
+        m = n,
+        i = -1,
+        value,
+        sum = 0;
+
+    if (valueof == null) {
+      while (++i < n) {
+        if (!isNaN(value = number(values[i]))) sum += value;else --m;
+      }
+    } else {
+      while (++i < n) {
+        if (!isNaN(value = number(valueof(values[i], i, values)))) sum += value;else --m;
+      }
+    }
+
+    if (m) return sum / m;
   }
 
   function merge (arrays) {
@@ -53284,6 +53339,24 @@
           };
         }
 
+        var autoScale = function autoScale(axis) {
+          var userScale = _this2["_".concat(axis, "Config")].scale;
+
+          if (userScale === "auto") {
+            var values = data.map(function (d) {
+              return d[axis];
+            });
+            return deviation(values) / mean(values) > 3 ? "log" : "linear";
+          }
+
+          return userScale;
+        };
+
+        var yConfigScale = this._yConfig.scale ? autoScale("y") : yScale.toLowerCase();
+        var y2ConfigScale = this._y2Config.scale ? autoScale("y2") : y2Scale.toLowerCase();
+        var xConfigScale = this._xConfig.scale ? autoScale("x") : xScale.toLowerCase();
+        var x2ConfigScale = this._x2Config.scale ? autoScale("x2") : x2Scale.toLowerCase();
+        console.log(autoScale("y"));
         var testGroup = elem("g.d3plus-plot-test", {
           enter: {
             opacity: 0
@@ -53296,7 +53369,7 @@
             yTicks = !showX ? extent(domains.y) : this._discrete === "y" && !yTime ? domains.y : undefined;
 
         if (showY) {
-          this._yTest.domain(yDomain).height(height).maxSize(width / 2).range([undefined, undefined]).scale(yScale.toLowerCase()).select(testGroup.node()).ticks(yTicks).width(width).config(yC).config(this._yConfig).render();
+          this._yTest.domain(yDomain).height(height).maxSize(width / 2).range([undefined, undefined]).select(testGroup.node()).ticks(yTicks).width(width).config(yC).config(this._yConfig).scale(yConfigScale).render();
         }
 
         var yBounds = this._yTest.outerBounds();
@@ -53304,7 +53377,7 @@
         var yWidth = yBounds.width ? yBounds.width + this._yTest.padding() : undefined;
 
         if (y2Exists) {
-          this._y2Test.domain(y2Domain).height(height).range([undefined, undefined]).scale(y2Scale.toLowerCase()).select(testGroup.node()).ticks(y2Ticks).width(width).config(yC).config(defaultY2Config).config(this._y2Config).render();
+          this._y2Test.domain(y2Domain).height(height).range([undefined, undefined]).select(testGroup.node()).ticks(y2Ticks).width(width).config(yC).config(defaultY2Config).config(this._y2Config).scale(y2ConfigScale).render();
         }
 
         var y2Bounds = this._y2Test.outerBounds();
@@ -53349,11 +53422,11 @@
         }
 
         if (showX) {
-          this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, undefined]).scale(xScale.toLowerCase()).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).render();
+          this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, undefined]).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).scale(xConfigScale).render();
         }
 
         if (x2Exists) {
-          this._x2Test.domain(x2Domain).height(height).range([undefined, undefined]).scale(x2Scale.toLowerCase()).select(testGroup.node()).ticks(x2Ticks).width(width).config(xC).tickSize(0).config(defaultX2Config).config(this._x2Config).render();
+          this._x2Test.domain(x2Domain).height(height).range([undefined, undefined]).select(testGroup.node()).ticks(x2Ticks).width(width).config(xC).tickSize(0).config(defaultX2Config).config(this._x2Config).scale(x2ConfigScale).render();
         }
 
         var xTestRange = this._xTest._getRange();
@@ -53387,7 +53460,7 @@
         var yRange = [x2Height, height - (xHeight + topOffset + verticalMargin)];
 
         if (showY) {
-          this._yTest.domain(yDomain).height(height).maxSize(width / 2).range(yRange).scale(yScale.toLowerCase()).select(testGroup.node()).ticks(yTicks).width(width).config(yC).config(this._yConfig).render();
+          this._yTest.domain(yDomain).height(height).maxSize(width / 2).range(yRange).select(testGroup.node()).ticks(yTicks).width(width).config(yC).config(this._yConfig).scale(yConfigScale).render();
         }
 
         yBounds = this._yTest.outerBounds();
@@ -53395,7 +53468,7 @@
         xOffsetLeft = max([yWidth, xTestRange[0], x2TestRange[0]]);
 
         if (y2Exists) {
-          this._y2Test.config(yC).domain(y2Domain).gridSize(0).height(height).range(yRange).scale(y2Scale.toLowerCase()).select(testGroup.node()).width(width - max([0, xOffsetRight - y2Width])).title(false).config(this._y2Config).config(defaultY2Config).render();
+          this._y2Test.config(yC).domain(y2Domain).gridSize(0).height(height).range(yRange).select(testGroup.node()).width(width - max([0, xOffsetRight - y2Width])).title(false).config(this._y2Config).config(defaultY2Config).scale(y2ConfigScale).render();
         }
 
         y2Bounds = this._y2Test.outerBounds();
@@ -53452,10 +53525,10 @@
           }
         });
 
-        this._xAxis.domain(xDomain).height(height - (x2Height + topOffset + verticalMargin)).maxSize(height / 2).range(xRange).scale(xScale.toLowerCase()).select(showX ? xGroup.node() : undefined).ticks(xTicks).width(width).config(xC).config(this._xConfig).render();
+        this._xAxis.domain(xDomain).height(height - (x2Height + topOffset + verticalMargin)).maxSize(height / 2).range(xRange).select(showX ? xGroup.node() : undefined).ticks(xTicks).width(width).config(xC).config(this._xConfig).scale(xConfigScale).render();
 
         if (x2Exists) {
-          this._x2Axis.domain(x2Domain).height(height - (xHeight + topOffset + verticalMargin)).range(xRange).scale(x2Scale.toLowerCase()).select(x2Group.node()).ticks(x2Ticks).width(width).config(xC).config(defaultX2Config).config(this._x2Config).render();
+          this._x2Axis.domain(x2Domain).height(height - (xHeight + topOffset + verticalMargin)).range(xRange).select(x2Group.node()).ticks(x2Ticks).width(width).config(xC).config(defaultX2Config).config(this._x2Config).scale(x2ConfigScale).render();
         }
 
         _x2 = function x(d, _x) {
@@ -53470,10 +53543,10 @@
 
         yRange = [this._xAxis.outerBounds().y + x2Height, height - (xHeight + topOffset + verticalMargin)];
 
-        this._yAxis.domain(yDomain).height(height).maxSize(width / 2).range(yRange).scale(yScale.toLowerCase()).select(showY ? yGroup.node() : undefined).ticks(yTicks).width(xRange[xRange.length - 1]).config(yC).config(this._yConfig).render();
+        this._yAxis.domain(yDomain).height(height).maxSize(width / 2).range(yRange).select(showY ? yGroup.node() : undefined).ticks(yTicks).width(xRange[xRange.length - 1]).config(yC).config(this._yConfig).scale(yConfigScale).render();
 
         if (y2Exists) {
-          this._y2Axis.config(yC).domain(y2Exists ? y2Domain : yDomain).gridSize(0).height(height).range(yRange).scale(y2Exists ? y2Scale.toLowerCase() : yScale.toLowerCase()).select(y2Group.node()).width(width - max([0, xOffsetRight - y2Width])).title(false).config(this._y2Config).config(defaultY2Config).render();
+          this._y2Axis.config(yC).domain(y2Exists ? y2Domain : yDomain).gridSize(0).height(height).range(yRange).select(y2Group.node()).width(width - max([0, xOffsetRight - y2Width])).title(false).config(this._y2Config).config(defaultY2Config).scale(y2ConfigScale).render();
         }
 
         _y2 = function y(d, _y) {
@@ -53985,7 +54058,7 @@
       }
       /**
           @memberof Plot
-          @desc Sets the config method for the x-axis. If *value* is not specified, returns the current x-axis configuration.
+          @desc A pass-through to the underlying [Axis](http://d3plus.org/docs/#Axis) config used for the x-axis. Includes additional functionality where passing "auto" as the value for the [scale](http://d3plus.org/docs/#Axis.scale) method will determine if the scale should be "linear" or "log" based on the provided data.
           @param {Object} *value*
           @chainable
       */
@@ -54009,7 +54082,7 @@
       }
       /**
           @memberof Plot
-          @desc Sets the config method for the secondary x-axis. If *value* is not specified, returns the current secondary x-axis configuration.
+          @desc A pass-through to the underlying [Axis](http://d3plus.org/docs/#Axis) config used for the secondary x-axis. Includes additional functionality where passing "auto" as the value for the [scale](http://d3plus.org/docs/#Axis.scale) method will determine if the scale should be "linear" or "log" based on the provided data.
           @param {Object} *value*
           @chainable
       */
@@ -54117,7 +54190,7 @@
       }
       /**
           @memberof Plot
-          @desc Sets the config method for the y-axis. If *value* is not specified, returns the current y-axis configuration.
+          @desc A pass-through to the underlying [Axis](http://d3plus.org/docs/#Axis) config used for the y-axis. Includes additional functionality where passing "auto" as the value for the [scale](http://d3plus.org/docs/#Axis.scale) method will determine if the scale should be "linear" or "log" based on the provided data.
       *Note:* If a "domain" array is passed to the y-axis config, it will be reversed.
           @param {Object} *value*
           @chainable
@@ -54148,7 +54221,7 @@
       }
       /**
           @memberof Plot
-          @desc Sets the config method for the secondary y-axis. If *value* is not specified, returns the current secondary y-axis configuration.
+          @desc A pass-through to the underlying [Axis](http://d3plus.org/docs/#Axis) config used for the secondary y-axis. Includes additional functionality where passing "auto" as the value for the [scale](http://d3plus.org/docs/#Axis.scale) method will determine if the scale should be "linear" or "log" based on the provided data.
           @param {Object} *value*
           @chainable
       */
