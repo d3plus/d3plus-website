@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.32
+  d3plus-plot v0.8.33
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1309,8 +1309,8 @@
         if (_v3 < yD[1]) yD[1] = _v3;
       }
     });
-    x.domain(xD).range(xR);
-    y.domain(yD).range(yR);
+    x = x.copy().domain(xD).range(xR);
+    y = y.copy().domain(yD).range(yR);
     return [x, y];
   }
 
@@ -1399,8 +1399,8 @@
         if (_v3 < yD[1]) yD[1] = _v3;
       }
     });
-    x.domain(xD);
-    y.domain(yD);
+    x = x.copy().domain(xD);
+    y = y.copy().domain(yD);
     return [x, y];
   }
 
@@ -1985,6 +1985,25 @@
         }).entries(data).sort(function (a, b) {
           return _this2._shapeSort(a.key, b.key);
         });
+
+        var autoScale = function autoScale(axis, fallback) {
+          var userScale = _this2["_".concat(axis, "Config")].scale;
+
+          if (userScale === "auto") {
+            if (_this2._discrete === axis) return fallback;
+            var values = data.map(function (d) {
+              return d[axis];
+            });
+            return d3Array.deviation(values) / d3Array.mean(values) > 3 ? "log" : "linear";
+          }
+
+          return userScale || fallback;
+        };
+
+        var yConfigScale = autoScale("y", yScale);
+        var y2ConfigScale = autoScale("y2", y2Scale);
+        var xConfigScale = autoScale("x", xScale);
+        var x2ConfigScale = autoScale("x2", x2Scale);
         var oppScale = this._discrete === "x" ? yScale : xScale;
 
         if (oppScale !== "Point") {
@@ -1997,8 +2016,8 @@
                 config: _this2._shapeConfig[d.key]
               });
 
-              if (_this2._xConfig.scale !== "log") _x2 = res[0];
-              if (_this2._yConfig.scale !== "log") _y2 = res[1];
+              if (xConfigScale !== "log") _x2 = res[0];
+              if (yConfigScale !== "log") _y2 = res[1];
 
               var res2 = _this2._buffer[d.key].bind(_this2)({
                 data: d.values,
@@ -2009,8 +2028,8 @@
                 config: _this2._shapeConfig[d.key]
               });
 
-              if (_this2._x2Config.scale !== "log") x2 = res2[0];
-              if (_this2._y2Config.scale !== "log") y2 = res2[1];
+              if (x2ConfigScale !== "log") x2 = res2[0];
+              if (y2ConfigScale !== "log") y2 = res2[1];
             }
           });
         }
@@ -2070,24 +2089,6 @@
           };
         }
 
-        var autoScale = function autoScale(axis) {
-          var userScale = _this2["_".concat(axis, "Config")].scale;
-
-          if (userScale === "auto") {
-            var values = data.map(function (d) {
-              return d[axis];
-            });
-            return d3Array.deviation(values) / d3Array.mean(values) > 3 ? "log" : "linear";
-          }
-
-          return userScale;
-        };
-
-        var yConfigScale = this._yConfig.scale ? autoScale("y") : yScale.toLowerCase();
-        var y2ConfigScale = this._y2Config.scale ? autoScale("y2") : y2Scale.toLowerCase();
-        var xConfigScale = this._xConfig.scale ? autoScale("x") : xScale.toLowerCase();
-        var x2ConfigScale = this._x2Config.scale ? autoScale("x2") : x2Scale.toLowerCase();
-        console.log(autoScale("y"));
         var testGroup = d3plusCommon.elem("g.d3plus-plot-test", {
           enter: {
             opacity: 0
