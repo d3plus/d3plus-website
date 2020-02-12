@@ -2,8 +2,8 @@
 title: Changing the Size of Legend Shapes
 width: 990
 height: 400
-time: 1581093470961
-date: February 07, 2020
+time: 1581542136113
+date: February 12, 2020
 ---
 
 # Changing the Size of Legend Shapes
