@@ -2,8 +2,8 @@
 title: Line Plot Sorting
 width: 990
 height: 400
-time: 1581542136113
-date: February 12, 2020
+time: 1581698095208
+date: February 14, 2020
 ---
 
 # Line Plot Sorting
