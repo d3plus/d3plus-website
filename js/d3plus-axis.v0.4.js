@@ -1,7 +1,7 @@
 /*
-  d3plus-axis v0.4.17
+  d3plus-axis v0.4.18
   Beautiful javascript scales and axes.
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -1681,7 +1681,7 @@
           }
 
           var n = _this3._d3Scale.tickFormat ? _this3._d3Scale.tickFormat(labels.length - 1)(d) : d;
-          n = n.replace(/[^\d\.\-\+]/g, "") * 1;
+          n = typeof n === "string" ? n.replace(/[^\d\.\-\+]/g, "") * 1 : n;
 
           if (isNaN(n)) {
             return n;
