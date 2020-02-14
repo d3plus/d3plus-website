@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.33
+  d3plus-plot v0.8.34
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -2000,10 +2000,10 @@
           return userScale || fallback;
         };
 
-        var yConfigScale = autoScale("y", yScale);
-        var y2ConfigScale = autoScale("y2", y2Scale);
-        var xConfigScale = autoScale("x", xScale);
-        var x2ConfigScale = autoScale("x2", x2Scale);
+        var yConfigScale = autoScale("y", yScale).toLowerCase();
+        var y2ConfigScale = autoScale("y2", y2Scale).toLowerCase();
+        var xConfigScale = autoScale("x", xScale).toLowerCase();
+        var x2ConfigScale = autoScale("x2", x2Scale).toLowerCase();
         var oppScale = this._discrete === "x" ? yScale : xScale;
 
         if (oppScale !== "Point") {
