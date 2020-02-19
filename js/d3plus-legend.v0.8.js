@@ -1,7 +1,7 @@
 /*
-  d3plus-legend v0.8.28
+  d3plus-legend v0.8.29
   An easy to use javascript chart legend.
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -1950,6 +1950,7 @@
       _this._data = [];
       _this._duration = 600;
       _this._height = 200;
+      _this._labelClass = new d3plusText.TextBox();
       _this._legendClass = new Legend();
       _this._legendConfig = {
         shapeConfig: {
@@ -2146,8 +2147,12 @@
         }
 
         if (this._bucketAxis || !["buckets", "jenks"].includes(this._scale)) {
-          var _this$_rectClass$data;
+          var _assign;
 
+          var offsets = {
+            x: 0,
+            y: 0
+          };
           var axisConfig = d3plusCommon.assign({
             domain: horizontal ? domain : domain.reverse(),
             duration: this._duration,
@@ -2159,6 +2164,48 @@
             ticks: ticks,
             width: this._width
           }, this._axisConfig);
+          var labelConfig = d3plusCommon.assign({
+            height: this["_".concat(height)] / 2,
+            width: this["_".concat(width)] / 2
+          }, this._labelConfig || this._axisConfig.titleConfig);
+
+          this._labelClass.config(labelConfig);
+
+          var labelData = [];
+
+          if (horizontal && this._labelMin) {
+            var labelCSS = {
+              "font-family": this._labelClass.fontFamily()(this._labelMin),
+              "font-size": this._labelClass.fontSize()(this._labelMin),
+              "font-weight": this._labelClass.fontWeight()(this._labelMin)
+            };
+            if (labelCSS["font-family"] instanceof Array) labelCSS["font-family"] = labelCSS["font-family"][0];
+            var labelMinWidth = d3plusText.textWidth(this._labelMin, labelCSS);
+
+            if (labelMinWidth && labelMinWidth < this["_".concat(width)] / 2) {
+              labelData.push(this._labelMin);
+              labelMinWidth += this._padding;
+              if (horizontal) offsets.x += labelMinWidth;
+              axisConfig[width] -= labelMinWidth;
+            }
+          }
+
+          if (horizontal && this._labelMax) {
+            var _labelCSS = {
+              "font-family": this._labelClass.fontFamily()(this._labelMax),
+              "font-size": this._labelClass.fontSize()(this._labelMax),
+              "font-weight": this._labelClass.fontWeight()(this._labelMax)
+            };
+            if (_labelCSS["font-family"] instanceof Array) _labelCSS["font-family"] = _labelCSS["font-family"][0];
+            var labelMaxWidth = d3plusText.textWidth(this._labelMax, _labelCSS);
+
+            if (labelMaxWidth && labelMaxWidth < this["_".concat(width)] / 2) {
+              labelData.push(this._labelMax);
+              labelMaxWidth += this._padding;
+              if (!horizontal) offsets.y += labelMaxWidth;
+              axisConfig[width] -= labelMaxWidth;
+            }
+          }
 
           this._axisTest.select(d3plusCommon.elem("g.d3plus-ColorScale-axisTest", {
             enter: {
@@ -2175,12 +2222,12 @@
           this._outerBounds[y] = this._padding;
           if (this._align === "middle") this._outerBounds[y] = (this["_".concat(height)] - this._outerBounds[height]) / 2;else if (this._align === "end") this._outerBounds[y] = this["_".concat(height)] - this._padding - this._outerBounds[height];
 
-          var groupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
+          var axisGroupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
 
           this._axisClass.select(d3plusCommon.elem("g.d3plus-ColorScale-axis", {
             parent: this._group,
             update: {
-              transform: "translate(".concat(horizontal ? 0 : groupOffset, ", ").concat(horizontal ? groupOffset : 0, ")")
+              transform: "translate(".concat(offsets.x + (horizontal ? 0 : axisGroupOffset), ", ").concat(offsets.y + (horizontal ? axisGroupOffset : 0), ")")
             }
           }).node()).config(axisConfig).align("start").render();
 
@@ -2194,11 +2241,11 @@
           defsEnter.append("linearGradient").attr("id", "gradient-".concat(this._uuid));
           defs = defsEnter.merge(defs);
           defs.select("linearGradient").attr("".concat(x, "1"), horizontal ? "0%" : "100%").attr("".concat(x, "2"), horizontal ? "100%" : "0%").attr("".concat(y, "1"), "0%").attr("".concat(y, "2"), "0%");
-          var stops = defs.select("linearGradient").selectAll("stop").data(colors);
+          var stops = defs.select("linearGradient").selectAll("stop").data(horizontal ? colors : colors);
 
           var scaleDomain = this._colorScale.domain();
 
-          var offsetScale = d3Scale.scaleLinear().domain(scaleRange).range([0, 100]);
+          var offsetScale = d3Scale.scaleLinear().domain(scaleRange).range(horizontal ? [0, 100] : [100, 0]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
             return "".concat(offsetScale(axisScale(scaleDomain[i])), "%");
           }).attr("stop-color", String);
@@ -2209,18 +2256,33 @@
             return w || 2;
           };
 
-          this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
-            return i;
-          }).select(d3plusCommon.elem("g.d3plus-ColorScale-Rect", {
-            parent: this._group
-          }).node()).config((_this$_rectClass$data = {
+          var rectConfig = d3plusCommon.assign((_assign = {
             duration: this._duration,
             fill: ticks ? function (d) {
               return _this2._colorScale(d);
             } : "url(#gradient-".concat(this._uuid, ")")
-          }, _defineProperty(_this$_rectClass$data, x, ticks ? function (d, i) {
+          }, _defineProperty(_assign, x, ticks ? function (d, i) {
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
-          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2), _defineProperty(_this$_rectClass$data, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2), _defineProperty(_this$_rectClass$data, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty(_this$_rectClass$data, height, this._size), _this$_rectClass$data)).config(this._rectConfig).render();
+          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2 + offsets[x]), _defineProperty(_assign, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2 + offsets[y]), _defineProperty(_assign, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty(_assign, height, this._size), _assign), this._rectConfig);
+
+          this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
+            return i;
+          }).select(d3plusCommon.elem("g.d3plus-ColorScale-Rect", {
+            parent: this._group
+          }).node()).config(rectConfig).render();
+
+          labelConfig.height = this._outerBounds[height];
+          labelConfig.width = this._outerBounds[width];
+
+          this._labelClass.config(labelConfig).data(labelData).select(d3plusCommon.elem("g.d3plus-ColorScale-labels", {
+            parent: this._group
+          }).node()).x(function (d) {
+            return d === _this2._labelMax ? rectConfig.x + rectConfig.width / 2 + _this2._padding : _this2._outerBounds.x;
+          }).y(function (d) {
+            return rectConfig.y - _this2._labelClass.fontSize()(d) / 2;
+          }).text(function (d) {
+            return d;
+          }).rotate(horizontal ? 0 : this._orient === "right" ? 90 : -90).render();
         } else {
           var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : d3plusFormat.formatAbbreviate;
 
@@ -2400,6 +2462,42 @@
       key: "height",
       value: function height(_) {
         return arguments.length ? (this._height = _, this) : this._height;
+      }
+      /**
+          @memberof ColorScale
+          @desc A pass-through for the [TextBox](http://d3plus.org/docs/#TextBox) class used to style the labelMin and labelMax text.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labelConfig",
+      value: function labelConfig(_) {
+        return arguments.length ? (this._labelConfig = _, this) : this._labelConfig;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines a text label to be displayed off of the end of the minimum point in the scale (currently only available in horizontal orientation).
+          @param {String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labelMin",
+      value: function labelMin(_) {
+        return arguments.length ? (this._labelMin = _, this) : this._labelMin;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines a text label to be displayed off of the end of the maximum point in the scale (currently only available in horizontal orientation).
+          @param {String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labelMax",
+      value: function labelMax(_) {
+        return arguments.length ? (this._labelMax = _, this) : this._labelMax;
       }
       /**
           @memberof ColorScale
