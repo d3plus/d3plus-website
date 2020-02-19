@@ -1,7 +1,7 @@
 /*
-  d3plus-viz v0.12.49
+  d3plus-viz v0.12.50
   Abstract ES6 class that drives d3plus visualizations.
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -2647,7 +2647,7 @@
             i = d.i;
           }
 
-          if (_this2._label) return _this2._label(d, i);
+          if (_this2._label) return "".concat(_this2._label(d, i));
 
           var l = that._ids(d, i).slice(0, depth + 1);
 
