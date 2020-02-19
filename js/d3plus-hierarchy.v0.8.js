@@ -1,7 +1,7 @@
 /*
-  d3plus-hierarchy v0.8.9
+  d3plus-hierarchy v0.8.10
   Nested, hierarchical, and cluster charts built on D3
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -1950,58 +1950,49 @@
 
     }, {
       key: "_thresholdFunction",
-      value: function _thresholdFunction(data, tree) {
+      value: function _thresholdFunction(data) {
         var aggs = this._aggs;
         var drawDepth = this._drawDepth;
         var groupBy = this._groupBy;
         var threshold = this._threshold;
         var thresholdKey = this._thresholdKey;
+        var totalSum = d3Array.sum(data, thresholdKey);
 
         if (threshold && thresholdKey) {
-          var finalDataset = data.slice();
-          var totalSum = d3Array.sum(finalDataset, this._thresholdKey);
-          var n = tree.length;
-
-          while (n--) {
-            var branch = tree[n];
-            thresholdByDepth(finalDataset, totalSum, data, branch, 0);
-          }
-
-          return finalDataset;
+          return thresholdByDepth(data, 0);
         }
         /**
          * @memberof Treemap
          * @desc Explores the data tree recursively and merges elements under the indicated threshold.
-         * @param {object[]} finalDataset The array of data that will be returned after modifications.
-         * @param {number} totalSum The total sum of the values in the initial dataset.
-         * @param {object[]} currentDataset The current subset of the dataset to work on.
-         * @param {object} branch The branch of the dataset tree to explore.
+         * @param {object[]} branchData The current subset of the dataset to work on.
          * @param {number} depth The depth of the current branch.
          * @private
          */
 
 
-        function thresholdByDepth(finalDataset, totalSum, currentDataset, branch, depth) {
-          if (depth >= drawDepth) return;
-          var currentAccesor = groupBy[depth];
-          var nextDataset = currentDataset.filter(function (item) {
-            return currentAccesor(item) === branch.key;
-          });
+        function thresholdByDepth(branchData, depth) {
+          if (depth < drawDepth) {
+            return d3Collection.nest().key(groupBy[depth]).entries(branchData).reduce(function (bulk, leaf) {
+              var subBranchData = thresholdByDepth(leaf.values, depth + 1);
+              return bulk.concat(subBranchData);
+            }, []);
+          }
 
-          if (depth + 1 === drawDepth) {
+          if (depth === drawDepth) {
+            var thresholdPercent = Math.min(1, Math.max(0, threshold(branchData)));
+            if (!isFinite(thresholdPercent) || isNaN(thresholdPercent)) return null;
             var removedItems = [];
-            var thresholdPercent = Math.min(1, Math.max(0, threshold(nextDataset)));
-            if (!isFinite(thresholdPercent) || isNaN(thresholdPercent)) return;
+            var branchDataCopy = branchData.slice();
             var thresholdValue = thresholdPercent * totalSum;
-            var _n = nextDataset.length;
+            var n = branchDataCopy.length;
 
-            while (_n--) {
-              var item = nextDataset[_n];
+            while (n--) {
+              var datum = branchDataCopy[n];
 
-              if (thresholdKey(item) < thresholdValue) {
-                var index = finalDataset.indexOf(item);
-                finalDataset.splice(index, 1);
-                removedItems.push(item);
+              if (thresholdKey(datum) < thresholdValue) {
+                var index = branchDataCopy.indexOf(datum);
+                branchDataCopy.splice(index, 1);
+                removedItems.push(datum);
               }
             }
 
@@ -2009,16 +2000,13 @@
               var mergedItem = d3plusCommon.merge(removedItems, aggs);
               mergedItem._isAggregation = true;
               mergedItem._threshold = thresholdPercent;
-              finalDataset.push(mergedItem);
+              branchDataCopy.push(mergedItem);
             }
-          } else {
-            var leaves = branch.values;
-            var _n2 = leaves.length;
 
-            while (_n2--) {
-              thresholdByDepth(finalDataset, totalSum, nextDataset, leaves[_n2], depth + 1);
-            }
+            return branchDataCopy;
           }
+
+          throw new Error("Depth is higher than the amount of grouping levels.");
         }
 
         return data;
