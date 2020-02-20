@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.29
+  d3plus-legend v0.8.30
   An easy to use javascript chart legend.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -933,10 +933,10 @@
 }));
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-selection'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text'), require('d3-scale'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-format')) :
-  typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-selection', 'd3plus-common', 'd3plus-shape', 'd3plus-text', 'd3-scale', 'd3plus-axis', 'd3plus-color', 'd3plus-format'], factory) :
-  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Selection, global.d3plusCommon, global.shapes, global.d3plusText, global.d3Scale, global.d3plusAxis, global.d3plusColor, global.d3plusFormat));
-}(this, function (exports, d3Array, d3Selection, d3plusCommon, shapes, d3plusText, d3Scale, d3plusAxis, d3plusColor, d3plusFormat) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-selection'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-text'), require('d3-scale'), require('d3-transition'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-format')) :
+  typeof define === 'function' && define.amd ? define('d3plus-legend', ['exports', 'd3-array', 'd3-selection', 'd3plus-common', 'd3plus-shape', 'd3plus-text', 'd3-scale', 'd3-transition', 'd3plus-axis', 'd3plus-color', 'd3plus-format'], factory) :
+  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Selection, global.d3plusCommon, global.shapes, global.d3plusText, global.d3Scale, global.d3Transition, global.d3plusAxis, global.d3plusColor, global.d3plusFormat));
+}(this, function (exports, d3Array, d3Selection, d3plusCommon, shapes, d3plusText, d3Scale, d3Transition, d3plusAxis, d3plusColor, d3plusFormat) { 'use strict';
 
   /**
       @desc Sort an array of numbers by their numeric value, ensuring that the array is not changed in place.
@@ -2146,7 +2146,32 @@
           this._colorScale = d3Scale.scaleLinear().domain(_buckets).range(colors);
         }
 
-        if (this._bucketAxis || !["buckets", "jenks"].includes(this._scale)) {
+        var gradient = this._bucketAxis || !["buckets", "jenks"].includes(this._scale);
+        var t = d3Transition.transition().duration(this._duration);
+        var groupParams = {
+          enter: {
+            opacity: 0
+          },
+          exit: {
+            opacity: 0
+          },
+          parent: this._group,
+          transition: t,
+          update: {
+            opacity: 1
+          }
+        };
+        var labelGroup = d3plusCommon.elem("g.d3plus-ColorScale-labels", Object.assign({
+          condition: gradient
+        }, groupParams));
+        var rectGroup = d3plusCommon.elem("g.d3plus-ColorScale-Rect", Object.assign({
+          condition: gradient
+        }, groupParams));
+        var legendGroup = d3plusCommon.elem("g.d3plus-ColorScale-legend", Object.assign({
+          condition: !gradient
+        }, groupParams));
+
+        if (gradient) {
           var _assign;
 
           var offsets = {
@@ -2224,12 +2249,17 @@
 
           var axisGroupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
 
-          this._axisClass.select(d3plusCommon.elem("g.d3plus-ColorScale-axis", {
-            parent: this._group,
+          var transform = "translate(".concat(offsets.x + (horizontal ? 0 : axisGroupOffset), ", ").concat(offsets.y + (horizontal ? axisGroupOffset : 0), ")");
+
+          this._axisClass.select(d3plusCommon.elem("g.d3plus-ColorScale-axis", d3plusCommon.assign(groupParams, {
+            condition: true,
+            enter: {
+              transform: transform
+            },
             update: {
-              transform: "translate(".concat(offsets.x + (horizontal ? 0 : axisGroupOffset), ", ").concat(offsets.y + (horizontal ? axisGroupOffset : 0), ")")
+              transform: transform
             }
-          }).node()).config(axisConfig).align("start").render();
+          })).node()).config(axisConfig).align("start").render();
 
           var axisScale = this._axisTest._getPosition.bind(this._axisTest);
 
@@ -2267,16 +2297,12 @@
 
           this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
             return i;
-          }).select(d3plusCommon.elem("g.d3plus-ColorScale-Rect", {
-            parent: this._group
-          }).node()).config(rectConfig).render();
+          }).select(rectGroup.node()).config(rectConfig).render();
 
           labelConfig.height = this._outerBounds[height];
           labelConfig.width = this._outerBounds[width];
 
-          this._labelClass.config(labelConfig).data(labelData).select(d3plusCommon.elem("g.d3plus-ColorScale-labels", {
-            parent: this._group
-          }).node()).x(function (d) {
+          this._labelClass.config(labelConfig).data(labelData).select(labelGroup.node()).x(function (d) {
             return d === _this2._labelMax ? rectConfig.x + rectConfig.width / 2 + _this2._padding : _this2._outerBounds.x;
           }).y(function (d) {
             return rectConfig.y - _this2._labelClass.fontSize()(d) / 2;
@@ -2284,9 +2310,11 @@
             return d;
           }).rotate(horizontal ? 0 : this._orient === "right" ? 90 : -90).render();
         } else {
+          d3plusCommon.elem("g.d3plus-ColorScale-axis", Object.assign({
+            condition: gradient
+          }, groupParams));
           var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : d3plusFormat.formatAbbreviate;
-
-          var _data = ticks.reduce(function (arr, tick, i) {
+          var legendData = ticks.reduce(function (arr, tick, i) {
             if (i !== ticks.length - 1) {
               var next = ticks[i + 1];
               arr.push({
@@ -2297,7 +2325,6 @@
 
             return arr;
           }, []);
-
           var legendConfig = d3plusCommon.assign({
             align: horizontal ? "center" : {
               start: "left",
@@ -2321,9 +2348,7 @@
             }[this._align] : "middle"
           }, this._legendConfig);
 
-          this._legendClass.data(_data).select(d3plusCommon.elem("g.d3plus-ColorScale-legend", {
-            parent: this._group
-          }).node()).config(legendConfig).render();
+          this._legendClass.data(legendData).select(legendGroup.node()).config(legendConfig).render();
 
           this._outerBounds = this._legendClass.outerBounds();
         }
