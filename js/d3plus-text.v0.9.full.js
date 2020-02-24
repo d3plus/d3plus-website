@@ -1,7 +1,7 @@
 /*
-  d3plus-text v0.9.50
+  d3plus-text v0.9.51
   A smart SVG text box with line wrapping and automatic font size scaling.
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -1948,7 +1948,7 @@
   }
 
   // great unicode list: http://asecuritysite.com/coding/asc2
-  var diacritics = [[/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"], [/[\306]/g, "AE"], [/[\346]/g, "ae"], [/[\337]/g, "B"], [/[\307]/g, "C"], [/[\347]/g, "c"], [/[\320\336\376]/g, "D"], [/[\360]/g, "d"], [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"], [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"], [/[\321]/g, "N"], [/[\361]/g, "n"], [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"], [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"], [/[\327]/g, "x"], [/[\335]/g, "Y"], [/[\375\377]/g, "y"]];
+  var diacritics = [[/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"], [/[\306]/g, "AE"], [/[\346]/g, "ae"], [/[\337]/g, "B"], [/[\307]/g, "C"], [/[\347]/g, "c"], [/[\320\336\376]/g, "D"], [/[\360]/g, "d"], [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"], [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"], [/[\321]/g, "N"], [/[\361]/g, "n"], [/[\u014c\322-\326\330]/g, "O"], [/[\u014d\362-\366\370]/g, "o"], [/[\u016a\331-\334]/g, "U"], [/[\u016b\371-\374]/g, "u"], [/[\327]/g, "x"], [/[\335]/g, "Y"], [/[\375\377]/g, "y"]];
   /**
       @function strip
       @desc Removes all non ASCII characters from a string.
@@ -15292,6 +15292,27 @@
   */
   var RESET = "D3PLUS-COMMON-RESET";
 
+  var esES = {
+    "and": "y",
+    "Back": "Atrás",
+    "Click to Expand": "Clic para Ampliar",
+    "Click to Hide": "Clic para Ocultar",
+    "Click to Highlight": "Clic para Resaltar",
+    "Click to Reset": "Clic para Restablecer",
+    "Download": "Descargar",
+    "Loading Visualization": "Cargando Visualización",
+    "No Data Available": "Datos No Disponibles",
+    "Powered by D3plus": "Funciona con D3plus",
+    "Share": "Porcentaje",
+    "Shift+Click to Hide": "Mayús+Clic para Ocultar",
+    "Total": "Total",
+    "Values": "Valores"
+  };
+
+  var dictionaries = {
+    "es-ES": esES
+  };
+
   function _classCallCheck$1(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
@@ -15327,13 +15348,32 @@
           var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
 
           if (obj[nestedKey] === RESET) {
-            obj[nestedKey] = defaultValue;
+            if (defaultValue) obj[nestedKey] = defaultValue;else delete obj[nestedKey];
           } else if (isObject(obj[nestedKey])) {
             nestedReset(obj[nestedKey], defaultValue);
           }
         }
       }
     }
+  }
+  /**
+   * @desc finds all prototype methods of a class and it's parent classes
+   * @param {*} obj
+   * @private
+   */
+
+
+  function getAllMethods(obj) {
+    var props = [];
+
+    do {
+      props = props.concat(Object.getOwnPropertyNames(obj));
+      obj = Object.getPrototypeOf(obj);
+    } while (obj && obj !== Object.prototype);
+
+    return props.filter(function (e) {
+      return e.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(e);
+    });
   }
   /**
       @class BaseClass
@@ -15350,10 +15390,19 @@
         @private
     */
     function BaseClass() {
+      var _this = this;
+
       _classCallCheck$1(this, BaseClass);
 
       this._locale = "en-US";
       this._on = {};
+
+      this._translate = function (d) {
+        var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _this._locale;
+        var dictionary = dictionaries[locale];
+        return dictionary && dictionary[d] ? dictionary[d] : d;
+      };
+
       this._uuid = uuid();
     }
     /**
@@ -15367,30 +15416,28 @@
     _createClass$1(BaseClass, [{
       key: "config",
       value: function config(_) {
+        var _this2 = this;
+
         if (!this._configDefault) {
           var config = {};
+          getAllMethods(this.__proto__).forEach(function (k) {
+            var v = _this2[k]();
 
-          for (var k in this.__proto__) {
-            if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
-              var v = this[k]();
-              config[k] = isObject(v) ? assign({}, v) : v;
-            }
-          }
-
+            config[k] = isObject(v) ? assign({}, v) : v;
+          });
           this._configDefault = config;
         }
 
         if (arguments.length) {
-          for (var _k in _) {
-            if ({}.hasOwnProperty.call(_, _k) && _k in this) {
-              var _v = _[_k];
+          for (var k in _) {
+            if ({}.hasOwnProperty.call(_, k) && k in this) {
+              var v = _[k];
 
-              if (_v === RESET) {
-                if (_k === "on") this._on = this._configDefault[_k];else this[_k](this._configDefault[_k]);
+              if (v === RESET) {
+                if (k === "on") this._on = this._configDefault[k];else this[k](this._configDefault[k]);
               } else {
-                nestedReset(_v, this._configDefault[_k]);
-
-                this[_k](_v);
+                nestedReset(v, this._configDefault[k]);
+                this[k](v);
               }
             }
           }
@@ -15398,11 +15445,9 @@
           return this;
         } else {
           var _config = {};
-
-          for (var _k2 in this.__proto__) {
-            if (_k2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(_k2)) _config[_k2] = this[_k2]();
-          }
-
+          getAllMethods(this.__proto__).forEach(function (k) {
+            _config[k] = _this2[k]();
+          });
           return _config;
         }
       }
@@ -15449,6 +15494,34 @@
       key: "on",
       value: function on(_, f) {
         return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
+      }
+      /**
+          @memberof BaseClass
+          @desc Defines how informational text strings should be displayed. By default, this function will try to find the string in question (which is the first argument provided to this function) inside of an internally managed translation Object. If you'd like to override to use custom text, simply pass this method your own custom formatting function.
+          @param {Function} [*value*]
+          @chainable
+          @example <caption>For example, if we wanted to only change the string "Back" and allow all other string to return in English:</caption>
+      .translate(function(d) {
+      return d === "Back" ? "Get outta here" : d;
+      })
+      */
+
+    }, {
+      key: "translate",
+      value: function translate(_) {
+        return arguments.length ? (this._translate = _, this) : this._translate;
+      }
+      /**
+          @memberof Viz
+          @desc If *value* is specified, sets the config method for each shape and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "shapeConfig",
+      value: function shapeConfig(_) {
+        return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
       }
     }]);
 
