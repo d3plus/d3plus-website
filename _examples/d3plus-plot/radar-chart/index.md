@@ -1,8 +1,8 @@
 ---
 title: Radar Chart
-width: 0
-height: 0
-time: 1582732734723
+width: 990
+height: 400
+time: 1582733001361
 date: February 26, 2020
 ---
 
