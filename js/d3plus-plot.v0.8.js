@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.34
+  d3plus-plot v0.8.35
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1257,6 +1257,100 @@
     return [x, y];
   }
 
+  /** */
+
+  function numericBuffer (axis, scale, value, size, range, domain, index, invert) {
+    // console.log("\n");
+    // console.log(invert ? "Y Axis" : "X Axis");
+    // console.log("Index:", index);
+    // console.log("Range", range);
+    if (invert) {
+      domain = domain.slice().reverse();
+      range = range.slice().reverse();
+    }
+
+    var needsBuffer = function needsBuffer() {
+      var tempAxis = axis.copy();
+      var diverging = false;
+
+      if (scale === "log") {
+        var d = axis.domain().slice(),
+            r = axis.range().slice();
+
+        if (invert) {
+          d = d.reverse();
+          r = r.reverse();
+        }
+
+        diverging = d[0] * d[1] < 0;
+
+        if (diverging) {
+          var percentScale = scales.scaleLog().domain([1, Math.abs(d[index])]).range([0, 1]);
+          var leftPercentage = percentScale(Math.abs(d[index ? 0 : 1]));
+          var zero = leftPercentage / (leftPercentage + 1) * (r[1] - r[0]);
+          d = (index === 0 ? [d[0], 1] : [1, d[1]]).map(Math.abs);
+          r = index === 0 ? [r[0], r[0] + zero] : [r[0] + zero, r[1]];
+        }
+
+        tempAxis = scales.scaleLog().domain(d).range(r);
+      }
+
+      var outside = false;
+      var tempRange = tempAxis.range();
+      var pixelValue;
+
+      if (scale === "log") {
+        pixelValue = !diverging || value < 0 && !index || value > 0 && index ? tempAxis(Math.abs(value)) : tempRange[value < 0 ? 0 : 1];
+      } else pixelValue = tempAxis(value);
+
+      if (invert) {
+        if (index === 0) outside = pixelValue + size > tempRange[index];else if (index === 1) outside = pixelValue - size < tempRange[index];
+      } else {
+        if (index === 0) outside = pixelValue - size < tempRange[index];else if (index === 1) outside = pixelValue + size > tempRange[index];
+      } // console.log("temp", pixelValue, size, tempAxis.domain(), tempRange);
+
+
+      return outside;
+    };
+
+    if (axis.invert && needsBuffer()) {
+      if (scale === "log") {
+        var decrease = index === 0 && domain[0] > 0 || index === 1 && domain[1] < 0;
+        var log = Math[decrease ? "ceil" : "floor"](Math.log10(Math.abs(domain[index]))); // console.log("Log start:", log, decrease);
+
+        while (needsBuffer() && log < 20) {
+          log = decrease ? log - 1 : log + 1;
+          var mod = domain[index] < 0 ? -1 : 1;
+
+          if (log < 0) {
+            log = 1;
+            decrease = !decrease;
+            mod = !mod;
+          }
+
+          domain[index] = Math.pow(10, log) * mod;
+          axis.domain(invert ? domain.slice().reverse() : domain); // console.log("change!", domain);
+        }
+      } else if (index === 0) {
+        var v = axis.invert(axis(value) + size * (invert ? 1 : -1)); // console.log("value", v, domain);
+
+        if (v < domain[index]) {
+          domain[index] = v;
+          axis.domain(invert ? domain.slice().reverse() : domain);
+        }
+      } else if (index === 1) {
+        var _v = axis.invert(axis(value) + size * (invert ? -1 : 1));
+
+        if (_v > domain[index]) {
+          domain[index] = _v;
+          axis.domain(invert ? domain.slice().reverse() : domain);
+        }
+      }
+    }
+
+    return invert ? domain.reverse() : domain;
+  }
+
   /**
       Adds a buffer to either side of the non-discrete axis.
       @param {Array} data
@@ -1273,8 +1367,12 @@
         y = _ref.y,
         x2 = _ref.x2,
         y2 = _ref.y2,
+        yScale = _ref.yScale,
+        xScale = _ref.xScale,
         config = _ref.config,
         buffer = _ref.buffer;
+    x = x.copy();
+    y = y.copy();
     var xKey = x2 ? "x2" : "x";
     var yKey = y2 ? "y2" : "y";
     var xD = x.domain().slice(),
@@ -1283,34 +1381,23 @@
         yR = y.range();
     if (!x.invert && x.padding) discreteBuffer(x, data, this._discrete);
     if (!y.invert && y.padding) discreteBuffer(y, data, this._discrete);
-    data.forEach(function (d) {
-      var s = buffer ? buffer : config.r(d.data, d.i) * 2;
 
-      if (x.invert && x(d[xKey]) - xR[0] < s) {
-        var v = x.invert(x(d[xKey]) - s);
-        if (v < xD[0]) xD[0] = v;
-      }
+    if (x.invert || y.invert) {
+      data.forEach(function (d) {
+        var s = buffer ? buffer : config.r(d.data, d.i) * 2;
 
-      if (x.invert && xR[1] - x(d[xKey]) < s) {
-        var _v = x.invert(x(d[xKey]) + s);
+        if (x.invert) {
+          xD = numericBuffer(x, xScale, d[xKey], s, xR, xD, 0, false);
+          xD = numericBuffer(x, xScale, d[xKey], s, xR, xD, 1, false);
+        }
 
-        if (_v > xD[1]) xD[1] = _v;
-      }
+        if (y.invert) {
+          yD = numericBuffer(y, yScale, d[yKey], s, yR, yD, 0, true);
+          yD = numericBuffer(y, yScale, d[yKey], s, yR, yD, 1, true);
+        }
+      });
+    }
 
-      if (y.invert && y(d[yKey]) - yR[0] < s) {
-        var _v2 = y.invert(y(d[yKey]) - s);
-
-        if (_v2 > yD[0]) yD[0] = _v2;
-      }
-
-      if (y.invert && yR[1] - y(d[yKey]) < s) {
-        var _v3 = y.invert(y(d[yKey]) + s);
-
-        if (_v3 < yD[1]) yD[1] = _v3;
-      }
-    });
-    x = x.copy().domain(xD).range(xR);
-    y = y.copy().domain(yD).range(yR);
     return [x, y];
   }
 
@@ -1353,7 +1440,7 @@
       @param {D3Scale} x
       @param {D3Scale} y
       @param {Object} [config]
-      @param {Number} [buffer] Defaults to the radius of the largest Circle.
+      @param {Number} [buffer] Defaults to the width/height of the largest Rect.
       @private
   */
 
@@ -1363,7 +1450,11 @@
         y = _ref.y,
         x2 = _ref.x2,
         y2 = _ref.y2,
+        yScale = _ref.yScale,
+        xScale = _ref.xScale,
         config = _ref.config;
+    x = x.copy();
+    y = y.copy();
     var xKey = x2 ? "x2" : "x";
     var yKey = y2 ? "y2" : "y";
     var xD = x.domain().slice(),
@@ -1372,35 +1463,23 @@
         yR = y.range();
     if (!x.invert && x.padding) discreteBuffer(x, data, this._discrete);
     if (!y.invert && y.padding) discreteBuffer(y, data, this._discrete);
-    data.forEach(function (d) {
-      var h = config.height(d.data, d.i),
-          w = config.width(d.data, d.i);
 
-      if (x.invert && x(d[xKey]) - xR[0] < w) {
-        var v = x.invert(x(d[xKey]) - w);
-        if (v < xD[0]) xD[0] = v;
-      }
+    if (x.invert || y.invert) {
+      data.forEach(function (d) {
+        if (x.invert) {
+          var w = config.width(d.data, d.i);
+          xD = numericBuffer(x, xScale, d[xKey], w, xR, xD, 0, false);
+          xD = numericBuffer(x, xScale, d[xKey], w, xR, xD, 1, false);
+        }
 
-      if (x.invert && xR[1] - x(d[xKey]) < w) {
-        var _v = x.invert(x(d[xKey]) + w);
+        if (y.invert) {
+          var h = config.height(d.data, d.i);
+          yD = numericBuffer(y, yScale, d[yKey], h, yR, yD, 0, true);
+          yD = numericBuffer(y, yScale, d[yKey], h, yR, yD, 1, true);
+        }
+      });
+    }
 
-        if (_v > xD[1]) xD[1] = _v;
-      }
-
-      if (y.invert && y(d[yKey]) - yR[0] < h) {
-        var _v2 = y.invert(y(d[yKey]) - h);
-
-        if (_v2 > yD[0]) yD[0] = _v2;
-      }
-
-      if (y.invert && yR[1] - y(d[yKey]) < h) {
-        var _v3 = y.invert(y(d[yKey]) + h);
-
-        if (_v3 < yD[1]) yD[1] = _v3;
-      }
-    });
-    x = x.copy().domain(xD);
-    y = y.copy().domain(yD);
     return [x, y];
   }
 
@@ -2013,23 +2092,27 @@
                 data: d.values,
                 x: _x2,
                 y: _y2,
+                yScale: yConfigScale,
+                xScale: xConfigScale,
                 config: _this2._shapeConfig[d.key]
               });
 
-              if (xConfigScale !== "log") _x2 = res[0];
-              if (yConfigScale !== "log") _y2 = res[1];
+              _x2 = res[0];
+              _y2 = res[1];
 
               var res2 = _this2._buffer[d.key].bind(_this2)({
                 data: d.values,
                 x: x2,
                 y: y2,
+                yScale: y2ConfigScale,
+                xScale: x2ConfigScale,
                 x2: true,
                 y2: true,
                 config: _this2._shapeConfig[d.key]
               });
 
-              if (x2ConfigScale !== "log") x2 = res2[0];
-              if (y2ConfigScale !== "log") y2 = res2[1];
+              x2 = res2[0];
+              y2 = res2[1];
             }
           });
         }
