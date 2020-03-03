@@ -1,339 +1,14 @@
 /*
-  d3plus-priestley v0.3.4
+  d3plus-priestley v0.3.5
   A reusable Priestley timeline built on D3.
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
-(function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3plus-axis'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
-  typeof define === 'function' && define.amd ? define('d3plus-priestley', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3plus-axis', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Collection, global.d3Scale, global.d3plusAxis, global.d3plusCommon, global.d3plusShape, global.d3plusViz));
-}(this, function (exports, d3Array, d3Collection, d3Scale, d3plusAxis, d3plusCommon, d3plusShape, d3plusViz) { 'use strict';
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
-
-  function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-      throw new TypeError("Super expression must either be null or a function");
-    }
-
-    subClass.prototype = Object.create(superClass && superClass.prototype, {
-      constructor: {
-        value: subClass,
-        writable: true,
-        configurable: true
-      }
-    });
-    if (superClass) _setPrototypeOf(subClass, superClass);
-  }
-
-  function _getPrototypeOf(o) {
-    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
-      return o.__proto__ || Object.getPrototypeOf(o);
-    };
-    return _getPrototypeOf(o);
-  }
-
-  function _setPrototypeOf(o, p) {
-    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
-      o.__proto__ = p;
-      return o;
-    };
-
-    return _setPrototypeOf(o, p);
-  }
-
-  function _assertThisInitialized(self) {
-    if (self === void 0) {
-      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }
-
-    return self;
-  }
-
-  function _possibleConstructorReturn(self, call) {
-    if (call && (typeof call === "object" || typeof call === "function")) {
-      return call;
-    }
-
-    return _assertThisInitialized(self);
-  }
-
-  function _superPropBase(object, property) {
-    while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf(object);
-      if (object === null) break;
-    }
-
-    return object;
-  }
-
-  function _get(target, property, receiver) {
-    if (typeof Reflect !== "undefined" && Reflect.get) {
-      _get = Reflect.get;
-    } else {
-      _get = function _get(target, property, receiver) {
-        var base = _superPropBase(target, property);
-
-        if (!base) return;
-        var desc = Object.getOwnPropertyDescriptor(base, property);
-
-        if (desc.get) {
-          return desc.get.call(receiver);
-        }
-
-        return desc.value;
-      };
-    }
-
-    return _get(target, property, receiver || target);
-  }
-
-  /**
-      @class Priestley
-      @extends external:Viz
-      @desc Creates a priestley timeline based on an array of data.
-  */
-
-  var Priestley =
-  /*#__PURE__*/
-  function (_Viz) {
-    _inherits(Priestley, _Viz);
-
-    /**
-        @memberof Priestley
-        @desc Invoked when creating a new class instance, and sets any default parameters.
-        @private
-    */
-    function Priestley() {
-      var _this;
-
-      _classCallCheck(this, Priestley);
-
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Priestley).call(this));
-      _this._axis = new d3plusAxis.Axis().align("end").orient("bottom");
-      _this._axisConfig = {
-        scale: "time"
-      };
-      _this._axisTest = new d3plusAxis.Axis().align("end").gridSize(0).orient("bottom");
-
-      _this.end("end");
-
-      _this._shapeConfig = d3plusCommon.assign({}, _this._shapeConfig, {
-        ariaLabel: function ariaLabel(d, i) {
-          return "".concat(_this._drawLabel(d, i), ", ").concat(_this._start(d, i), " - ").concat(_this._end(d, i), ".");
-        }
-      });
-
-      _this.start("start");
-
-      return _this;
-    }
-    /**
-        @memberof Priestley
-        @desc Extends the render behavior of the abstract Viz class.
-        @private
-    */
-
-
-    _createClass(Priestley, [{
-      key: "render",
-      value: function render(callback) {
-        var _this2 = this;
-
-        _get(_getPrototypeOf(Priestley.prototype), "render", this).call(this, callback);
-
-        if (!this._filteredData) return this;
-
-        var data = this._filteredData.map(function (data, i) {
-          return {
-            __d3plus__: true,
-            data: data,
-            end: _this2._axisConfig.scale === "time" ? d3plusAxis.date(_this2._end(data, i)) : _this2._end(data, i),
-            i: i,
-            id: _this2._id(data, i),
-            start: _this2._axisConfig.scale === "time" ? d3plusAxis.date(_this2._start(data, i)) : _this2._start(data, i)
-          };
-        }).filter(function (d) {
-          return d.end - d.start > 0;
-        }).sort(function (a, b) {
-          return a.start - b.start;
-        });
-
-        var nestedData;
-
-        if (this._groupBy.length > 1 && this._drawDepth > 0) {
-          var dataNest = d3Collection.nest();
-
-          var _loop = function _loop(i) {
-            dataNest.key(function (d) {
-              return _this2._groupBy[i](d.data, d.i);
-            });
-          };
-
-          for (var i = 0; i < this._drawDepth; i++) {
-            _loop(i);
-          }
-
-          nestedData = dataNest.entries(data);
-        } else nestedData = [{
-          values: data
-        }];
-
-        var maxLane = 0;
-        nestedData.forEach(function (g) {
-          var track = [];
-          g.values.forEach(function (d) {
-            track = track.map(function (t) {
-              return t <= d.start ? false : t;
-            });
-            var i = track.indexOf(false);
-
-            if (i < 0) {
-              d.lane = maxLane + track.length;
-              track.push(d.end);
-            } else {
-              track[i] = d.end;
-              d.lane = maxLane + i;
-            }
-          });
-          maxLane += track.length;
-        });
-        var axisConfig = {
-          domain: [d3Array.min(data, function (d) {
-            return d.start;
-          }) || 0, d3Array.max(data, function (d) {
-            return d.end;
-          }) || 0],
-          height: this._height - this._margin.top - this._margin.bottom,
-          width: this._width - this._margin.left - this._margin.right
-        };
-        var transform = "translate(".concat(this._margin.left, ", ").concat(this._margin.top, ")");
-
-        this._axisTest.config(axisConfig).config(this._axisConfig).select(d3plusCommon.elem("g.d3plus-priestley-axis-test", {
-          parent: this._select,
-          enter: {
-            opacity: 0
-          }
-        }).node()).render();
-
-        this._axis.config(axisConfig).config(this._axisConfig).select(d3plusCommon.elem("g.d3plus-priestley-axis", {
-          parent: this._select,
-          enter: {
-            transform: transform
-          },
-          update: {
-            transform: transform
-          }
-        }).node()).render();
-
-        var axisPad = this._axisTest._padding;
-        var xScale = this._axis._d3Scale;
-        var yScale = d3Scale.scalePoint().domain(d3Array.range(0, maxLane, 1)).padding(0.5).rangeRound([this._height - this._margin.bottom - this._axisTest.outerBounds().height - axisPad, this._margin.top + axisPad]);
-        var step = yScale.step();
-
-        this._shapes.push(new d3plusShape.Rect().data(data).duration(this._duration).height(step >= this._padding * 2 ? step - this._padding : step > 2 ? step - 2 : step).label(function (d, i) {
-          return _this2._drawLabel(d.data, i);
-        }).select(d3plusCommon.elem("g.d3plus-priestley-shapes", {
-          parent: this._select
-        }).node()).width(function (d) {
-          var w = Math.abs(xScale(d.end) - xScale(d.start));
-          return w > 2 ? w - 2 : w;
-        }).x(function (d) {
-          return xScale(d.start) + (xScale(d.end) - xScale(d.start)) / 2;
-        }).y(function (d) {
-          return yScale(d.lane);
-        }).config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Rect")).render());
-
-        return this;
-      }
-      /**
-          @memberof Priestley
-          @desc If *value* is specified, sets the config method for the axis and returns the current class instance. If *value* is not specified, returns the current axis configuration.
-          @param {Object} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "axisConfig",
-      value: function axisConfig(_) {
-        return arguments.length ? (this._axisConfig = d3plusCommon.assign(this._axisConfig, _), this) : this._axisConfig;
-      }
-      /**
-          @memberof Priestley
-          @desc If *value* is specified, sets the end accessor to the specified function or key and returns the current class instance. If *value* is not specified, returns the current end accessor.
-          @param {Function|String} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "end",
-      value: function end(_) {
-        if (arguments.length) {
-          if (typeof _ === "function") this._end = _;else {
-            this._end = d3plusCommon.accessor(_);
-            if (!this._aggs[_]) this._aggs[_] = function (a) {
-              return d3Array.max(a);
-            };
-          }
-          return this;
-        } else return this._end;
-      }
-      /**
-          @memberof Priestley
-          @desc If *value* is specified, sets the start accessor to the specified function or key and returns the current class instance. If *value* is not specified, returns the current start accessor.
-          @param {Function|String} [*value*]
-          @chainable
-      */
-
-    }, {
-      key: "start",
-      value: function start(_) {
-        if (arguments.length) {
-          if (typeof _ === "function") this._start = _;else {
-            this._start = d3plusCommon.accessor(_);
-            if (!this._aggs[_]) this._aggs[_] = function (a) {
-              return d3Array.min(a);
-            };
-          }
-          return this;
-        } else return this._start;
-      }
-    }]);
-
-    return Priestley;
-  }(d3plusViz.Viz);
-
-  exports.Priestley = Priestley;
-
-  Object.defineProperty(exports, '__esModule', { value: true });
-
-}));
 (function (factory) {
 	typeof define === 'function' && define.amd ? define(factory) :
 	factory();
-}(function () { 'use strict';
+}((function () { 'use strict';
 
 	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -341,7 +16,6 @@
 		return module = { exports: {} }, fn(module, module.exports), module.exports;
 	}
 
-	var O = 'object';
 	var check = function (it) {
 	  return it && it.Math == Math && it;
 	};
@@ -349,10 +23,10 @@
 	// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 	var global_1 =
 	  // eslint-disable-next-line no-undef
-	  check(typeof globalThis == O && globalThis) ||
-	  check(typeof window == O && window) ||
-	  check(typeof self == O && self) ||
-	  check(typeof commonjsGlobal == O && commonjsGlobal) ||
+	  check(typeof globalThis == 'object' && globalThis) ||
+	  check(typeof window == 'object' && window) ||
+	  check(typeof self == 'object' && self) ||
+	  check(typeof commonjsGlobal == 'object' && commonjsGlobal) ||
 	  // eslint-disable-next-line no-new-func
 	  Function('return this')();
 
@@ -366,7 +40,7 @@
 
 	// Thank's IE8 for his funny defineProperty
 	var descriptors = !fails(function () {
-	  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+	  return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] != 7;
 	});
 
 	var nativePropertyIsEnumerable = {}.propertyIsEnumerable;
@@ -450,12 +124,12 @@
 	  return hasOwnProperty.call(it, key);
 	};
 
-	var document = global_1.document;
+	var document$1 = global_1.document;
 	// typeof document.createElement is 'object' in old IE
-	var EXISTS = isObject(document) && isObject(document.createElement);
+	var EXISTS = isObject(document$1) && isObject(document$1.createElement);
 
 	var documentCreateElement = function (it) {
-	  return EXISTS ? document.createElement(it) : {};
+	  return EXISTS ? document$1.createElement(it) : {};
 	};
 
 	// Thank's IE8 for his funny defineProperty
@@ -508,7 +182,7 @@
 		f: f$2
 	};
 
-	var hide = descriptors ? function (object, key, value) {
+	var createNonEnumerableProperty = descriptors ? function (object, key, value) {
 	  return objectDefineProperty.f(object, key, createPropertyDescriptor(1, value));
 	} : function (object, key, value) {
 	  object[key] = value;
@@ -517,30 +191,41 @@
 
 	var setGlobal = function (key, value) {
 	  try {
-	    hide(global_1, key, value);
+	    createNonEnumerableProperty(global_1, key, value);
 	  } catch (error) {
 	    global_1[key] = value;
 	  } return value;
 	};
 
-	var shared = createCommonjsModule(function (module) {
 	var SHARED = '__core-js_shared__';
 	var store = global_1[SHARED] || setGlobal(SHARED, {});
 
-	(module.exports = function (key, value) {
-	  return store[key] || (store[key] = value !== undefined ? value : {});
-	})('versions', []).push({
-	  version: '3.1.3',
-	  mode:  'global',
-	  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
-	});
-	});
+	var sharedStore = store;
 
-	var functionToString = shared('native-function-to-string', Function.toString);
+	var functionToString = Function.toString;
+
+	// this helper broken in `3.4.1-3.4.4`, so we can't use `shared` helper
+	if (typeof sharedStore.inspectSource != 'function') {
+	  sharedStore.inspectSource = function (it) {
+	    return functionToString.call(it);
+	  };
+	}
+
+	var inspectSource = sharedStore.inspectSource;
 
 	var WeakMap = global_1.WeakMap;
 
-	var nativeWeakMap = typeof WeakMap === 'function' && /native code/.test(functionToString.call(WeakMap));
+	var nativeWeakMap = typeof WeakMap === 'function' && /native code/.test(inspectSource(WeakMap));
+
+	var shared = createCommonjsModule(function (module) {
+	(module.exports = function (key, value) {
+	  return sharedStore[key] || (sharedStore[key] = value !== undefined ? value : {});
+	})('versions', []).push({
+	  version: '3.6.4',
+	  mode:  'global',
+	  copyright: '© 2020 Denis Pushkarev (zloirock.ru)'
+	});
+	});
 
 	var id = 0;
 	var postfix = Math.random();
@@ -574,25 +259,25 @@
 	};
 
 	if (nativeWeakMap) {
-	  var store = new WeakMap$1();
-	  var wmget = store.get;
-	  var wmhas = store.has;
-	  var wmset = store.set;
+	  var store$1 = new WeakMap$1();
+	  var wmget = store$1.get;
+	  var wmhas = store$1.has;
+	  var wmset = store$1.set;
 	  set = function (it, metadata) {
-	    wmset.call(store, it, metadata);
+	    wmset.call(store$1, it, metadata);
 	    return metadata;
 	  };
 	  get = function (it) {
-	    return wmget.call(store, it) || {};
+	    return wmget.call(store$1, it) || {};
 	  };
 	  has$1 = function (it) {
-	    return wmhas.call(store, it);
+	    return wmhas.call(store$1, it);
 	  };
 	} else {
 	  var STATE = sharedKey('state');
 	  hiddenKeys[STATE] = true;
 	  set = function (it, metadata) {
-	    hide(it, STATE, metadata);
+	    createNonEnumerableProperty(it, STATE, metadata);
 	    return metadata;
 	  };
 	  get = function (it) {
@@ -614,18 +299,14 @@
 	var redefine = createCommonjsModule(function (module) {
 	var getInternalState = internalState.get;
 	var enforceInternalState = internalState.enforce;
-	var TEMPLATE = String(functionToString).split('toString');
-
-	shared('inspectSource', function (it) {
-	  return functionToString.call(it);
-	});
+	var TEMPLATE = String(String).split('String');
 
 	(module.exports = function (O, key, value, options) {
 	  var unsafe = options ? !!options.unsafe : false;
 	  var simple = options ? !!options.enumerable : false;
 	  var noTargetGet = options ? !!options.noTargetGet : false;
 	  if (typeof value == 'function') {
-	    if (typeof key == 'string' && !has(value, 'name')) hide(value, 'name', key);
+	    if (typeof key == 'string' && !has(value, 'name')) createNonEnumerableProperty(value, 'name', key);
 	    enforceInternalState(value).source = TEMPLATE.join(typeof key == 'string' ? key : '');
 	  }
 	  if (O === global_1) {
@@ -638,10 +319,10 @@
 	    simple = true;
 	  }
 	  if (simple) O[key] = value;
-	  else hide(O, key, value);
+	  else createNonEnumerableProperty(O, key, value);
 	// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
 	})(Function.prototype, 'toString', function toString() {
-	  return typeof this == 'function' && getInternalState(this).source || functionToString.call(this);
+	  return typeof this == 'function' && getInternalState(this).source || inspectSource(this);
 	});
 	});
 
@@ -678,7 +359,7 @@
 
 	// Helper for a popular repeating case of the spec:
 	// Let integer be ? ToInteger(index).
-	// If integer < 0, let result be max((length + integer), 0); else let result be min(length, length).
+	// If integer < 0, let result be max((length + integer), 0); else let result be min(integer, length).
 	var toAbsoluteIndex = function (index, length) {
 	  var integer = toInteger(index);
 	  return integer < 0 ? max(integer + length, 0) : min$1(integer, length);
@@ -842,7 +523,7 @@
 	    }
 	    // add a flag to not completely full polyfills
 	    if (options.sham || (targetProperty && targetProperty.sham)) {
-	      hide(sourceProperty, 'sham', true);
+	      createNonEnumerableProperty(sourceProperty, 'sham', true);
 	    }
 	    // extend global
 	    redefine(target, key, sourceProperty, options);
@@ -856,7 +537,7 @@
 	};
 
 	// optional / simple context binding
-	var bindContext = function (fn, that, length) {
+	var functionBindContext = function (fn, that, length) {
 	  aFunction$1(fn);
 	  if (that === undefined) return fn;
 	  switch (length) {
@@ -896,12 +577,21 @@
 	  return !String(Symbol());
 	});
 
+	var useSymbolAsUid = nativeSymbol
+	  // eslint-disable-next-line no-undef
+	  && !Symbol.sham
+	  // eslint-disable-next-line no-undef
+	  && typeof Symbol.iterator == 'symbol';
+
+	var WellKnownSymbolsStore = shared('wks');
 	var Symbol$1 = global_1.Symbol;
-	var store$1 = shared('wks');
+	var createWellKnownSymbol = useSymbolAsUid ? Symbol$1 : Symbol$1 && Symbol$1.withoutSetter || uid;
 
 	var wellKnownSymbol = function (name) {
-	  return store$1[name] || (store$1[name] = nativeSymbol && Symbol$1[name]
-	    || (nativeSymbol ? Symbol$1 : uid)('Symbol.' + name));
+	  if (!has(WellKnownSymbolsStore, name)) {
+	    if (nativeSymbol && has(Symbol$1, name)) WellKnownSymbolsStore[name] = Symbol$1[name];
+	    else WellKnownSymbolsStore[name] = createWellKnownSymbol('Symbol.' + name);
+	  } return WellKnownSymbolsStore[name];
 	};
 
 	var SPECIES = wellKnownSymbol('species');
@@ -934,7 +624,7 @@
 	  return function ($this, callbackfn, that, specificCreate) {
 	    var O = toObject($this);
 	    var self = indexedObject(O);
-	    var boundFunction = bindContext(callbackfn, that, 3);
+	    var boundFunction = functionBindContext(callbackfn, that, 3);
 	    var length = toLength(self.length);
 	    var index = 0;
 	    var create = specificCreate || arraySpeciesCreate;
@@ -1001,48 +691,76 @@
 
 	var html = getBuiltIn('document', 'documentElement');
 
+	var GT = '>';
+	var LT = '<';
+	var PROTOTYPE = 'prototype';
+	var SCRIPT = 'script';
 	var IE_PROTO = sharedKey('IE_PROTO');
 
-	var PROTOTYPE = 'prototype';
-	var Empty = function () { /* empty */ };
+	var EmptyConstructor = function () { /* empty */ };
+
+	var scriptTag = function (content) {
+	  return LT + SCRIPT + GT + content + LT + '/' + SCRIPT + GT;
+	};
+
+	// Create object with fake `null` prototype: use ActiveX Object with cleared prototype
+	var NullProtoObjectViaActiveX = function (activeXDocument) {
+	  activeXDocument.write(scriptTag(''));
+	  activeXDocument.close();
+	  var temp = activeXDocument.parentWindow.Object;
+	  activeXDocument = null; // avoid memory leak
+	  return temp;
+	};
 
 	// Create object with fake `null` prototype: use iframe Object with cleared prototype
-	var createDict = function () {
+	var NullProtoObjectViaIFrame = function () {
 	  // Thrash, waste and sodomy: IE GC bug
 	  var iframe = documentCreateElement('iframe');
-	  var length = enumBugKeys.length;
-	  var lt = '<';
-	  var script = 'script';
-	  var gt = '>';
-	  var js = 'java' + script + ':';
+	  var JS = 'java' + SCRIPT + ':';
 	  var iframeDocument;
 	  iframe.style.display = 'none';
 	  html.appendChild(iframe);
-	  iframe.src = String(js);
+	  // https://github.com/zloirock/core-js/issues/475
+	  iframe.src = String(JS);
 	  iframeDocument = iframe.contentWindow.document;
 	  iframeDocument.open();
-	  iframeDocument.write(lt + script + gt + 'document.F=Object' + lt + '/' + script + gt);
+	  iframeDocument.write(scriptTag('document.F=Object'));
 	  iframeDocument.close();
-	  createDict = iframeDocument.F;
-	  while (length--) delete createDict[PROTOTYPE][enumBugKeys[length]];
-	  return createDict();
+	  return iframeDocument.F;
 	};
+
+	// Check for document.domain and active x support
+	// No need to use active x approach when document.domain is not set
+	// see https://github.com/es-shims/es5-shim/issues/150
+	// variation of https://github.com/kitcambridge/es5-shim/commit/4f738ac066346
+	// avoid IE GC bug
+	var activeXDocument;
+	var NullProtoObject = function () {
+	  try {
+	    /* global ActiveXObject */
+	    activeXDocument = document.domain && new ActiveXObject('htmlfile');
+	  } catch (error) { /* ignore */ }
+	  NullProtoObject = activeXDocument ? NullProtoObjectViaActiveX(activeXDocument) : NullProtoObjectViaIFrame();
+	  var length = enumBugKeys.length;
+	  while (length--) delete NullProtoObject[PROTOTYPE][enumBugKeys[length]];
+	  return NullProtoObject();
+	};
+
+	hiddenKeys[IE_PROTO] = true;
 
 	// `Object.create` method
 	// https://tc39.github.io/ecma262/#sec-object.create
 	var objectCreate = Object.create || function create(O, Properties) {
 	  var result;
 	  if (O !== null) {
-	    Empty[PROTOTYPE] = anObject(O);
-	    result = new Empty();
-	    Empty[PROTOTYPE] = null;
+	    EmptyConstructor[PROTOTYPE] = anObject(O);
+	    result = new EmptyConstructor();
+	    EmptyConstructor[PROTOTYPE] = null;
 	    // add "__proto__" for Object.getPrototypeOf polyfill
 	    result[IE_PROTO] = O;
-	  } else result = createDict();
+	  } else result = NullProtoObject();
 	  return Properties === undefined ? result : objectDefineProperties(result, Properties);
 	};
-
-	hiddenKeys[IE_PROTO] = true;
 
 	var UNSCOPABLES = wellKnownSymbol('unscopables');
 	var ArrayPrototype = Array.prototype;
@@ -1050,7 +768,10 @@
 	// Array.prototype[@@unscopables]
 	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
 	if (ArrayPrototype[UNSCOPABLES] == undefined) {
-	  hide(ArrayPrototype, UNSCOPABLES, objectCreate(null));
+	  objectDefineProperty.f(ArrayPrototype, UNSCOPABLES, {
+	    configurable: true,
+	    value: objectCreate(null)
+	  });
 	}
 
 	// add a key to Array.prototype[@@unscopables]
@@ -1058,18 +779,45 @@
 	  ArrayPrototype[UNSCOPABLES][key] = true;
 	};
 
+	var defineProperty = Object.defineProperty;
+	var cache = {};
+
+	var thrower = function (it) { throw it; };
+
+	var arrayMethodUsesToLength = function (METHOD_NAME, options) {
+	  if (has(cache, METHOD_NAME)) return cache[METHOD_NAME];
+	  if (!options) options = {};
+	  var method = [][METHOD_NAME];
+	  var ACCESSORS = has(options, 'ACCESSORS') ? options.ACCESSORS : false;
+	  var argument0 = has(options, 0) ? options[0] : thrower;
+	  var argument1 = has(options, 1) ? options[1] : undefined;
+
+	  return cache[METHOD_NAME] = !!method && !fails(function () {
+	    if (ACCESSORS && !descriptors) return true;
+	    var O = { length: -1 };
+
+	    if (ACCESSORS) defineProperty(O, 1, { enumerable: true, get: thrower });
+	    else O[1] = 1;
+
+	    method.call(O, argument0, argument1);
+	  });
+	};
+
 	var $find = arrayIteration.find;
+
 
 
 	var FIND = 'find';
 	var SKIPS_HOLES = true;
+
+	var USES_TO_LENGTH = arrayMethodUsesToLength(FIND);
 
 	// Shouldn't skip holes
 	if (FIND in []) Array(1)[FIND](function () { SKIPS_HOLES = false; });
 
 	// `Array.prototype.find` method
 	// https://tc39.github.io/ecma262/#sec-array.prototype.find
-	_export({ target: 'Array', proto: true, forced: SKIPS_HOLES }, {
+	_export({ target: 'Array', proto: true, forced: SKIPS_HOLES || !USES_TO_LENGTH }, {
 	  find: function find(callbackfn /* , that = undefined */) {
 	    return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
 	  }
@@ -1081,9 +829,12 @@
 	var $includes = arrayIncludes.includes;
 
 
+
+	var USES_TO_LENGTH$1 = arrayMethodUsesToLength('indexOf', { ACCESSORS: true, 1: 0 });
+
 	// `Array.prototype.includes` method
 	// https://tc39.github.io/ecma262/#sec-array.prototype.includes
-	_export({ target: 'Array', proto: true }, {
+	_export({ target: 'Array', proto: true, forced: !USES_TO_LENGTH$1 }, {
 	  includes: function includes(el /* , fromIndex = 0 */) {
 	    return $includes(this, el, arguments.length > 1 ? arguments[1] : undefined);
 	  }
@@ -1093,11 +844,22 @@
 	addToUnscopables('includes');
 
 	var nativeAssign = Object.assign;
+	var defineProperty$1 = Object.defineProperty;
 
 	// `Object.assign` method
 	// https://tc39.github.io/ecma262/#sec-object.assign
-	// should work with symbols and should have deterministic property order (V8 bug)
 	var objectAssign = !nativeAssign || fails(function () {
+	  // should have correct order of operations (Edge bug)
+	  if (descriptors && nativeAssign({ b: 1 }, nativeAssign(defineProperty$1({}, 'a', {
+	    enumerable: true,
+	    get: function () {
+	      defineProperty$1(this, 'b', {
+	        value: 3,
+	        enumerable: false
+	      });
+	    }
+	  }), { b: 2 })).b !== 1) return true;
+	  // should work with symbols and should have deterministic property order (V8 bug)
 	  var A = {};
 	  var B = {};
 	  // eslint-disable-next-line no-undef
@@ -1160,12 +922,35 @@
 	  } return false;
 	};
 
+	// `String.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
+	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
+	  includes: function includes(searchString /* , position = 0 */) {
+	    return !!~String(requireObjectCoercible(this))
+	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
+
+	var getOwnPropertyDescriptor$2 = objectGetOwnPropertyDescriptor.f;
+
+
+
+
+
+
 	var nativeStartsWith = ''.startsWith;
 	var min$2 = Math.min;
 
+	var CORRECT_IS_REGEXP_LOGIC = correctIsRegexpLogic('startsWith');
+	// https://github.com/zloirock/core-js/pull/702
+	var MDN_POLYFILL_BUG =  !CORRECT_IS_REGEXP_LOGIC && !!function () {
+	  var descriptor = getOwnPropertyDescriptor$2(String.prototype, 'startsWith');
+	  return descriptor && !descriptor.writable;
+	}();
+
 	// `String.prototype.startsWith` method
 	// https://tc39.github.io/ecma262/#sec-string.prototype.startswith
-	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('startsWith') }, {
+	_export({ target: 'String', proto: true, forced: !MDN_POLYFILL_BUG && !CORRECT_IS_REGEXP_LOGIC }, {
 	  startsWith: function startsWith(searchString /* , position = 0 */) {
 	    var that = String(requireObjectCoercible(this));
 	    notARegexp(searchString);
@@ -1246,5 +1031,355 @@
 	  })();
 	}
 
-}));
+})));
+
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3plus-axis'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
+  typeof define === 'function' && define.amd ? define('d3plus-priestley', ['exports', 'd3-array', 'd3-collection', 'd3-scale', 'd3plus-axis', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
+  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Collection, global.d3Scale, global.d3plusAxis, global.d3plusCommon, global.d3plusShape, global.d3plusViz));
+}(this, (function (exports, d3Array, d3Collection, d3Scale, d3plusAxis, d3plusCommon, d3plusShape, d3plusViz) { 'use strict';
+
+  function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf(subClass, superClass);
+  }
+
+  function _getPrototypeOf(o) {
+    _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf(o);
+  }
+
+  function _setPrototypeOf(o, p) {
+    _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf(o, p);
+  }
+
+  function _assertThisInitialized(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _possibleConstructorReturn(self, call) {
+    if (call && (typeof call === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized(self);
+  }
+
+  function _superPropBase(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _get(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get = Reflect.get;
+    } else {
+      _get = function _get(target, property, receiver) {
+        var base = _superPropBase(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get(target, property, receiver || target);
+  }
+
+  /**
+      @class Priestley
+      @extends external:Viz
+      @desc Creates a priestley timeline based on an array of data.
+  */
+
+  var Priestley = /*#__PURE__*/function (_Viz) {
+    _inherits(Priestley, _Viz);
+
+    /**
+        @memberof Priestley
+        @desc Invoked when creating a new class instance, and sets any default parameters.
+        @private
+    */
+    function Priestley() {
+      var _this;
+
+      _classCallCheck(this, Priestley);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Priestley).call(this));
+      _this._axis = new d3plusAxis.Axis().align("end").orient("bottom");
+      _this._axisConfig = {
+        scale: "time"
+      };
+      _this._axisTest = new d3plusAxis.Axis().align("end").gridSize(0).orient("bottom");
+
+      _this.end("end");
+
+      _this._paddingInner = 0.05;
+      _this._paddingOuter = 0.05;
+      _this._shapeConfig = d3plusCommon.assign({}, _this._shapeConfig, {
+        ariaLabel: function ariaLabel(d, i) {
+          return "".concat(_this._drawLabel(d, i), ", ").concat(_this._start(d, i), " - ").concat(_this._end(d, i), ".");
+        }
+      });
+
+      _this.start("start");
+
+      return _this;
+    }
+    /**
+        @memberof Priestley
+        @desc Extends the render behavior of the abstract Viz class.
+        @private
+    */
+
+
+    _createClass(Priestley, [{
+      key: "_draw",
+      value: function _draw(callback) {
+        var _this2 = this;
+
+        _get(_getPrototypeOf(Priestley.prototype), "_draw", this).call(this, callback);
+
+        if (!this._filteredData) return this;
+
+        var data = this._filteredData.map(function (data, i) {
+          return {
+            __d3plus__: true,
+            data: data,
+            end: _this2._axisConfig.scale === "time" ? d3plusAxis.date(_this2._end(data, i)) : _this2._end(data, i),
+            i: i,
+            id: _this2._id(data, i),
+            start: _this2._axisConfig.scale === "time" ? d3plusAxis.date(_this2._start(data, i)) : _this2._start(data, i)
+          };
+        }).filter(function (d) {
+          return d.end - d.start > 0;
+        }).sort(function (a, b) {
+          return a.start - b.start;
+        });
+
+        var nestedData;
+
+        if (this._groupBy.length > 1 && this._drawDepth > 0) {
+          var dataNest = d3Collection.nest();
+
+          var _loop = function _loop(i) {
+            dataNest.key(function (d) {
+              return _this2._groupBy[i](d.data, d.i);
+            });
+          };
+
+          for (var i = 0; i < this._drawDepth; i++) {
+            _loop(i);
+          }
+
+          nestedData = dataNest.entries(data);
+        } else nestedData = [{
+          values: data
+        }];
+
+        var maxLane = 0;
+        nestedData.forEach(function (g) {
+          var track = [];
+          g.values.forEach(function (d) {
+            track = track.map(function (t) {
+              return t <= d.start ? false : t;
+            });
+            var i = track.indexOf(false);
+
+            if (i < 0) {
+              d.lane = maxLane + track.length;
+              track.push(d.end);
+            } else {
+              track[i] = d.end;
+              d.lane = maxLane + i;
+            }
+          });
+          maxLane += track.length;
+        });
+        var axisConfig = {
+          domain: [d3Array.min(data, function (d) {
+            return d.start;
+          }) || 0, d3Array.max(data, function (d) {
+            return d.end;
+          }) || 0],
+          height: this._height - this._margin.top - this._margin.bottom,
+          width: this._width - this._margin.left - this._margin.right
+        };
+        var transform = "translate(".concat(this._margin.left, ", ").concat(this._margin.top, ")");
+
+        this._axisTest.config(axisConfig).config(this._axisConfig).select(d3plusCommon.elem("g.d3plus-priestley-axis-test", {
+          parent: this._select,
+          enter: {
+            opacity: 0
+          }
+        }).node()).render();
+
+        this._axis.config(axisConfig).config(this._axisConfig).select(d3plusCommon.elem("g.d3plus-priestley-axis", {
+          parent: this._select,
+          enter: {
+            transform: transform
+          },
+          update: {
+            transform: transform
+          }
+        }).node()).render();
+
+        var axisPad = this._axisTest._padding;
+        var xScale = this._axis._d3Scale;
+        var yScale = d3Scale.scaleBand().domain(d3Array.range(0, maxLane, 1)).paddingInner(this._paddingInner).paddingOuter(this._paddingOuter).rangeRound([this._height - this._margin.bottom - this._axisTest.outerBounds().height - axisPad, this._margin.top + axisPad]);
+        var bandWidth = yScale.bandwidth();
+
+        this._shapes.push(new d3plusShape.Rect().data(data).duration(this._duration).height(bandWidth).label(function (d, i) {
+          return _this2._drawLabel(d.data, i);
+        }).select(d3plusCommon.elem("g.d3plus-priestley-shapes", {
+          parent: this._select
+        }).node()).width(function (d) {
+          var w = Math.abs(xScale(d.end) - xScale(d.start));
+          return w > 2 ? w - 2 : w;
+        }).x(function (d) {
+          return xScale(d.start) + (xScale(d.end) - xScale(d.start)) / 2;
+        }).y(function (d) {
+          return yScale(d.lane) + bandWidth / 2;
+        }).config(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Rect")).render());
+
+        return this;
+      }
+      /**
+          @memberof Priestley
+          @desc If *value* is specified, sets the config method for the axis and returns the current class instance. If *value* is not specified, returns the current axis configuration.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "axisConfig",
+      value: function axisConfig(_) {
+        return arguments.length ? (this._axisConfig = d3plusCommon.assign(this._axisConfig, _), this) : this._axisConfig;
+      }
+      /**
+          @memberof Priestley
+          @desc If *value* is specified, sets the end accessor to the specified function or key and returns the current class instance. If *value* is not specified, returns the current end accessor.
+          @param {Function|String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "end",
+      value: function end(_) {
+        if (arguments.length) {
+          if (typeof _ === "function") this._end = _;else {
+            this._end = d3plusCommon.accessor(_);
+            if (!this._aggs[_]) this._aggs[_] = function (a) {
+              return d3Array.max(a);
+            };
+          }
+          return this;
+        } else return this._end;
+      }
+      /**
+          @memberof Priestley
+          @desc Sets the [paddingInner](https://github.com/d3/d3-scale#band_paddingInner) value of the underlining [Band Scale](https://github.com/d3/d3-scale#band-scales) used to determine the height of each bar. Values should be a ratio between 0 and 1 representing the space in between each rectangle.
+          @param {Number} [*value* = 0.05]
+          @chainable
+      */
+
+    }, {
+      key: "paddingInner",
+      value: function paddingInner(_) {
+        return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
+      }
+      /**
+          @memberof Priestley
+          @desc Sets the [paddingOuter](https://github.com/d3/d3-scale#band_paddingOuter) value of the underlining [Band Scale](https://github.com/d3/d3-scale#band-scales) used to determine the height of each bar. Values should be a ratio between 0 and 1 representing the space around the outer rectangles.
+          @param {Number} [*value* = 0.05]
+          @chainable
+      */
+
+    }, {
+      key: "paddingOuter",
+      value: function paddingOuter(_) {
+        return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
+      }
+      /**
+          @memberof Priestley
+          @desc If *value* is specified, sets the start accessor to the specified function or key and returns the current class instance. If *value* is not specified, returns the current start accessor.
+          @param {Function|String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "start",
+      value: function start(_) {
+        if (arguments.length) {
+          if (typeof _ === "function") this._start = _;else {
+            this._start = d3plusCommon.accessor(_);
+            if (!this._aggs[_]) this._aggs[_] = function (a) {
+              return d3Array.min(a);
+            };
+          }
+          return this;
+        } else return this._start;
+      }
+    }]);
+
+    return Priestley;
+  }(d3plusViz.Viz);
+
+  exports.Priestley = Priestley;
+
+  Object.defineProperty(exports, '__esModule', { value: true });
+
+})));
 //# sourceMappingURL=d3plus-priestley.js.map
