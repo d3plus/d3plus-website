@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.50
+  d3plus-viz v0.12.51
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -983,132 +983,6 @@
     });
   });
 
-  /**
-    @function dataLoad
-    @desc Loads data from a filepath or URL, converts it to a valid JSON object, and returns it to a callback function.
-    @param {Array|String} path The path to the file or url to be loaded. Also support array of paths strings. If an Array of objects is passed, the xhr request logic is skipped.
-    @param {Function} [formatter] An optional formatter function that is run on the loaded data.
-    @param {String} [key] The key in the `this` context to save the resulting data to.
-    @param {Function} [callback] A function that is called when the final data is loaded. It is passed 2 variables, any error present and the data loaded.
-  */
-
-  function load (path, formatter, key, callback) {
-    var _this = this;
-
-    var parser;
-
-    var getParser = function getParser(path) {
-      var ext = path.slice(path.length - 4);
-
-      switch (ext) {
-        case ".csv":
-          return d3Request.csv;
-
-        case ".tsv":
-          return d3Request.tsv;
-
-        case ".txt":
-          return d3Request.text;
-
-        default:
-          return d3Request.json;
-      }
-    };
-
-    var validateData = function validateData(err, parser, data) {
-      if (parser !== d3Request.json && !err && data && data instanceof Array) {
-        data.forEach(function (d) {
-          for (var k in d) {
-            if (!isNaN(d[k])) d[k] = parseFloat(d[k]);else if (d[k].toLowerCase() === "false") d[k] = false;else if (d[k].toLowerCase() === "true") d[k] = true;else if (d[k].toLowerCase() === "null") d[k] = null;else if (d[k].toLowerCase() === "undefined") d[k] = undefined;
-          }
-        });
-      }
-
-      return data;
-    };
-
-    var loadedLength = function loadedLength(loadedArray) {
-      return loadedArray.reduce(function (prev, current) {
-        return current ? prev + 1 : prev;
-      }, 0);
-    };
-
-    var getPathIndex = function getPathIndex(url, array) {
-      return array.indexOf(url);
-    }; // If data param is a single string url or an plain object then convert path to a 1 element array of urls to re-use logic
-
-
-    if (typeof path === "string") {
-      path = [path];
-    }
-
-    var isThereAnyString = path.find(function (dataItem) {
-      return typeof dataItem === "string";
-    });
-    var loaded = new Array(path.length);
-    var toLoad = []; // If there is a string I'm assuming is a Array to merge, urls or data
-
-    if (isThereAnyString) {
-      path.forEach(function (dataItem, ix) {
-        if (typeof dataItem !== "string") {
-          loaded[ix] = dataItem;
-        } else if (typeof dataItem === "string") {
-          toLoad.push(dataItem);
-        }
-      });
-    } // Data array itself
-    else {
-        loaded[0] = path;
-      } // Load all urls an combine them with data arrays
-
-
-    var alreadyLoaded = loadedLength(loaded);
-    toLoad.forEach(function (url) {
-      parser = getParser(url);
-      parser(url, function (err, data) {
-        data = err ? [] : data;
-        if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
-        data = validateData(err, parser, data);
-        loaded[getPathIndex(url, path)] = data;
-
-        if (loadedLength(loaded) - alreadyLoaded === toLoad.length) {
-          // All urls loaded
-          // Format data
-          data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
-
-          if (formatter) {
-            data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
-          } else if (key === "data") {
-            data = concat(loaded, "data");
-          }
-
-          if (key && "_".concat(key) in _this) _this["_".concat(key)] = data;
-          if (_this._cache) _this._lrucache.set(url, data);
-          if (callback) callback(err, data);
-        }
-      });
-    }); // If there is no data to Load response is immediately
-
-    if (toLoad.length === 0) {
-      loaded = loaded.map(function (data) {
-        if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
-        return data;
-      }); // Format data
-
-      var data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
-
-      if (formatter) {
-        data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
-      } else if (key === "data") {
-        data = concat(loaded, "data");
-      }
-
-      if (key && "_".concat(key) in this) this["_".concat(key)] = data;
-      if (this._cache) this._lrucache.set(key, data);
-      if (callback) callback(null, data);
-    }
-  }
-
   function _typeof(obj) {
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
       _typeof = function (obj) {
@@ -1252,6 +1126,144 @@
 
   function _nonIterableRest() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  }
+
+  /**
+    @function dataLoad
+    @desc Loads data from a filepath or URL, converts it to a valid JSON object, and returns it to a callback function.
+    @param {Array|String} path The path to the file or url to be loaded. Also support array of paths strings. If an Array of objects is passed, the xhr request logic is skipped.
+    @param {Function} [formatter] An optional formatter function that is run on the loaded data.
+    @param {String} [key] The key in the `this` context to save the resulting data to.
+    @param {Function} [callback] A function that is called when the final data is loaded. It is passed 2 variables, any error present and the data loaded.
+  */
+
+  function load (path, formatter, key, callback) {
+    var _this = this;
+
+    var parser;
+
+    var getParser = function getParser(path) {
+      var ext = path.slice(path.length - 4);
+
+      switch (ext) {
+        case ".csv":
+          return d3Request.csv;
+
+        case ".tsv":
+          return d3Request.tsv;
+
+        case ".txt":
+          return d3Request.text;
+
+        default:
+          return d3Request.json;
+      }
+    };
+
+    var validateData = function validateData(err, parser, data) {
+      if (parser !== d3Request.json && !err && data && data instanceof Array) {
+        data.forEach(function (d) {
+          for (var k in d) {
+            if (!isNaN(d[k])) d[k] = parseFloat(d[k]);else if (d[k].toLowerCase() === "false") d[k] = false;else if (d[k].toLowerCase() === "true") d[k] = true;else if (d[k].toLowerCase() === "null") d[k] = null;else if (d[k].toLowerCase() === "undefined") d[k] = undefined;
+          }
+        });
+      }
+
+      return data;
+    };
+
+    var loadedLength = function loadedLength(loadedArray) {
+      return loadedArray.reduce(function (prev, current) {
+        return current ? prev + 1 : prev;
+      }, 0);
+    };
+
+    var getPathIndex = function getPathIndex(url, array) {
+      return array.indexOf(url);
+    }; // If path param is a not an Array then convert path to a 1 element Array to re-use logic
+
+
+    if (!(path instanceof Array)) path = [path];
+
+    var isData = function isData(dataItem) {
+      return typeof dataItem === "string" || _typeof(dataItem) === "object" && dataItem.url && dataItem.headers;
+    };
+
+    var needToLoad = path.find(isData);
+    var loaded = new Array(path.length);
+    var toLoad = []; // If there is a string I'm assuming is a Array to merge, urls or data
+
+    if (needToLoad) {
+      path.forEach(function (dataItem, ix) {
+        if (isData(dataItem)) toLoad.push(dataItem);else loaded[ix] = dataItem;
+      });
+    } // Data array itself
+    else {
+        loaded[0] = path;
+      } // Load all urls an combine them with data arrays
+
+
+    var alreadyLoaded = loadedLength(loaded);
+    toLoad.forEach(function (dataItem) {
+      var headers = {},
+          url = dataItem;
+
+      if (_typeof(dataItem) === "object") {
+        url = dataItem.url;
+        headers = dataItem.headers;
+      }
+
+      parser = getParser(url);
+      var request = parser(url);
+
+      for (var _key in headers) {
+        if ({}.hasOwnProperty.call(headers, _key)) {
+          request.header(_key, headers[_key]);
+        }
+      }
+
+      request.get(function (err, data) {
+        data = err ? [] : data;
+        if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
+        data = validateData(err, parser, data);
+        loaded[getPathIndex(url, path)] = data;
+
+        if (loadedLength(loaded) - alreadyLoaded === toLoad.length) {
+          // All urls loaded
+          // Format data
+          data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
+
+          if (formatter) {
+            data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+          } else if (key === "data") {
+            data = concat(loaded, "data");
+          }
+
+          if (key && "_".concat(key) in _this) _this["_".concat(key)] = data;
+          if (_this._cache) _this._lrucache.set(url, data);
+          if (callback) callback(err, data);
+        }
+      });
+    }); // If there is no data to Load response is immediately
+
+    if (toLoad.length === 0) {
+      loaded = loaded.map(function (data) {
+        if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
+        return data;
+      }); // Format data
+
+      var data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
+
+      if (formatter) {
+        data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+      } else if (key === "data") {
+        data = concat(loaded, "data");
+      }
+
+      if (key && "_".concat(key) in this) this["_".concat(key)] = data;
+      if (this._cache) this._lrucache.set(key, data);
+      if (callback) callback(null, data);
+    }
   }
 
   /**
@@ -1906,7 +1918,7 @@
       var filterGroup = this._groupBy[this._drawDepth],
           filterId = filterGroup(d, i);
       this.hover(false);
-      if (this._tooltip) this._tooltipClass.data([]).render();
+      if (this._tooltip(d, i)) this._tooltipClass.data([]).render();
       var oldFilter = this._filter;
 
       this._history.push({
@@ -1935,7 +1947,7 @@
 
     this._select.style("cursor", "auto");
 
-    if (this._tooltip) this._tooltipClass.data([]).render();
+    if (this._tooltip(d, i)) this._tooltipClass.data([]).render();
 
     var id = this._id(d, i);
 
@@ -2039,7 +2051,7 @@
 
       var tooltipData = _this._tooltipClass.data();
 
-      if (tooltipData.length && _this._tooltip) {
+      if (tooltipData.length && _this._tooltip(d, i)) {
         var tooltipDatum = tooltipData[0];
 
         while (tooltipDatum.__d3plus__ && tooltipDatum.data) {
@@ -2072,7 +2084,7 @@
       return id;
     })).length;
 
-    if (this._tooltip && d) {
+    if (d && this._tooltip(d, i)) {
       var id = this._id(d, i);
 
       if (id instanceof Array) id = id[0];
@@ -2093,7 +2105,7 @@
   */
 
   function mousemoveShape (d, i, x) {
-    if (this._tooltip && d) {
+    if (d && this._tooltip(d, i)) {
       this._select.style("cursor", "pointer");
 
       var position = d3Selection.event.touches ? [d3Selection.event.touches[0].clientX, d3Selection.event.touches[0].clientY] : [d3Selection.event.clientX, d3Selection.event.clientY];
@@ -2110,7 +2122,7 @@
   function touchstartBody (d) {
     d3Selection.event.preventDefault();
     d3Selection.event.stopPropagation();
-    if (this._tooltip && !d) this._tooltipClass.data([]).render();
+    if (!d) this._tooltipClass.data([]).render();
   }
 
   var brushing = false;
@@ -2548,7 +2560,7 @@
         textAnchor: "middle"
       };
       _this._titlePadding = defaultPadding;
-      _this._tooltip = true;
+      _this._tooltip = d3plusCommon.constant(true);
       _this._tooltipClass = new d3plusTooltip.Tooltip();
       _this._tooltipConfig = {
         pointerEvents: "none",
@@ -2781,7 +2793,7 @@
         // const testWidth = 20;
         // this._shapes.push(new Rect()
         //   .config(this._shapeConfig)
-        //   .config(configPrep(testConfig))
+        //   .config(configPrep.bind(this)(testConfig))
         //   .data(this._filteredData)
         //   .label("Test Label")
         //   .select(this._zoomGroup.node())
@@ -3175,6 +3187,7 @@
       /**
           @memberof Viz
           @desc Sets the primary data array to be used when drawing the visualization. The value passed should be an *Array* of objects or a *String* representing a filepath or URL to be loaded. The following filetypes are supported: `csv`, `tsv`, `txt`, and `json`.
+      If your data URL needs specific headers to be set, an Object with "url" and "headers" keys may also be passed.
       Additionally, a custom formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final array of obejcts to be used as the primary data array. For example, some JSON APIs return the headers split from the data values to save bandwidth. These would need be joined using a custom formatter.
       If *data* is not specified, this method returns the current primary data array, which defaults to an empty array (`[]`);
           @param {Array|String} *data* = []
@@ -3861,14 +3874,14 @@
       /**
           @memberof Viz
           @desc If *value* is specified, toggles the tooltip based on the specified boolean and returns the current class instance.
-          @param {Boolean} [*value* = true]
+          @param {Boolean|Function} [*value* = true]
           @chainable
       */
 
     }, {
       key: "tooltip",
       value: function tooltip(_) {
-        return arguments.length ? (this._tooltip = _, this) : this._tooltip;
+        return arguments.length ? (this._tooltip = typeof _ === "function" ? _ : d3plusCommon.constant(_), this) : this._tooltip;
       }
       /**
           @memberof Viz
