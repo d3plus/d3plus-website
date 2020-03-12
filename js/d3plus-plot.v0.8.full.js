@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.35
+  d3plus-plot v0.8.36
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -28849,7 +28849,9 @@
               space = datum.space;
           var h = rotate ? "width" : "height",
               w = rotate ? "height" : "width";
-          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : min([this._maxSize, this._width]) - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? min([this._maxSize, this._height]) - hBuff - p - this._margin.top - this._margin.bottom : space);
+          var wSize = min([this._maxSize, this._width]);
+          var hSize = min([this._maxSize, this._height]);
+          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : wSize - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? hSize - hBuff - p - this._margin.top - this._margin.bottom : space);
           var res = wrap(tickFormat(d));
           res.lines = res.lines.filter(function (d) {
             return d !== "";
@@ -28976,6 +28978,7 @@
         var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$2(_this$_outerBounds, height, (max(textData, function (t) {
           return Math.ceil(t[t.rotate || !horizontal ? "width" : "height"] + t.offset);
         }) || 0) + (textData.length ? p : 0)), _defineProperty$2(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$2(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
+        bounds[height] = max([this._minSize, bounds[height]]);
         margin[this._orient] += hBuff;
         margin[opposite] = this._gridSize !== undefined ? max([this._gridSize, tBuff]) : this["_".concat(height)] - margin[this._orient] - bounds[height] - p;
         bounds[height] += margin[opposite] + margin[this._orient];
@@ -29227,6 +29230,18 @@
       key: "maxSize",
       value: function maxSize(_) {
         return arguments.length ? (this._maxSize = _, this) : this._maxSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the minimum size alloted for the space that contains the axis tick labels and title.
+          @param {Number}
+          @chainable
+       */
+
+    }, {
+      key: "minSize",
+      value: function minSize(_) {
+        return arguments.length ? (this._minSize = _, this) : this._minSize;
       }
       /**
           @memberof Axis
@@ -30286,6 +30301,19 @@
 
   var tsv$1 = dsv$1("text/tab-separated-values", tsvParse);
 
+  function _typeof$j(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$j = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$j = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$j(obj);
+  }
   /**
     @function dataLoad
     @desc Loads data from a filepath or URL, converts it to a valid JSON object, and returns it to a callback function.
@@ -30338,26 +30366,22 @@
 
     var getPathIndex = function getPathIndex(url, array) {
       return array.indexOf(url);
-    }; // If data param is a single string url or an plain object then convert path to a 1 element array of urls to re-use logic
+    }; // If path param is a not an Array then convert path to a 1 element Array to re-use logic
 
 
-    if (typeof path === "string") {
-      path = [path];
-    }
+    if (!(path instanceof Array)) path = [path];
 
-    var isThereAnyString = path.find(function (dataItem) {
-      return typeof dataItem === "string";
-    });
+    var isData = function isData(dataItem) {
+      return typeof dataItem === "string" || _typeof$j(dataItem) === "object" && dataItem.url && dataItem.headers;
+    };
+
+    var needToLoad = path.find(isData);
     var loaded = new Array(path.length);
     var toLoad = []; // If there is a string I'm assuming is a Array to merge, urls or data
 
-    if (isThereAnyString) {
+    if (needToLoad) {
       path.forEach(function (dataItem, ix) {
-        if (typeof dataItem !== "string") {
-          loaded[ix] = dataItem;
-        } else if (typeof dataItem === "string") {
-          toLoad.push(dataItem);
-        }
+        if (isData(dataItem)) toLoad.push(dataItem);else loaded[ix] = dataItem;
       });
     } // Data array itself
     else {
@@ -30366,9 +30390,25 @@
 
 
     var alreadyLoaded = loadedLength(loaded);
-    toLoad.forEach(function (url) {
+    toLoad.forEach(function (dataItem) {
+      var headers = {},
+          url = dataItem;
+
+      if (_typeof$j(dataItem) === "object") {
+        url = dataItem.url;
+        headers = dataItem.headers;
+      }
+
       parser = getParser(url);
-      parser(url, function (err, data) {
+      var request = parser(url);
+
+      for (var _key in headers) {
+        if ({}.hasOwnProperty.call(headers, _key)) {
+          request.header(_key, headers[_key]);
+        }
+      }
+
+      request.get(function (err, data) {
         data = err ? [] : data;
         if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
         data = validateData(err, parser, data);
@@ -31814,18 +31854,18 @@
     });
   });
 
-  function _typeof$j(obj) {
+  function _typeof$k(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$j = function _typeof$1(obj) {
+      _typeof$k = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$j = function _typeof$1(obj) {
+      _typeof$k = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$j(obj);
+    return _typeof$k(obj);
   }
 
   function _classCallCheck$i(instance, Constructor) {
@@ -31851,7 +31891,7 @@
   }
 
   function _possibleConstructorReturn$g(self, call) {
-    if (call && (_typeof$j(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -32026,18 +32066,18 @@
     return Button;
   }(BaseClass);
 
-  function _typeof$k(obj) {
+  function _typeof$l(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$k = function _typeof$1(obj) {
+      _typeof$l = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$k = function _typeof$1(obj) {
+      _typeof$l = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$k(obj);
+    return _typeof$l(obj);
   }
 
   function _classCallCheck$j(instance, Constructor) {
@@ -32063,7 +32103,7 @@
   }
 
   function _possibleConstructorReturn$h(self, call) {
-    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -32319,18 +32359,18 @@
     return Radio;
   }(BaseClass);
 
-  function _typeof$l(obj) {
+  function _typeof$m(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$l = function _typeof$1(obj) {
+      _typeof$m = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$l = function _typeof$1(obj) {
+      _typeof$m = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$l(obj);
+    return _typeof$m(obj);
   }
 
   function _classCallCheck$k(instance, Constructor) {
@@ -32356,7 +32396,7 @@
   }
 
   function _possibleConstructorReturn$i(self, call) {
-    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -32850,18 +32890,18 @@
     return clusters;
   }
 
-  function _typeof$m(obj) {
+  function _typeof$n(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$m = function _typeof$1(obj) {
+      _typeof$n = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$m = function _typeof$1(obj) {
+      _typeof$n = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$m(obj);
+    return _typeof$n(obj);
   }
 
   function _classCallCheck$l(instance, Constructor) {
@@ -32887,7 +32927,7 @@
   }
 
   function _possibleConstructorReturn$j(self, call) {
-    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -33571,18 +33611,18 @@
     return Legend;
   }(BaseClass);
 
-  function _typeof$n(obj) {
+  function _typeof$o(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$n = function _typeof$1(obj) {
+      _typeof$o = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$n = function _typeof$1(obj) {
+      _typeof$o = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$n(obj);
+    return _typeof$o(obj);
   }
 
   function _defineProperty$3(obj, key, value) {
@@ -33623,7 +33663,7 @@
   }
 
   function _possibleConstructorReturn$k(self, call) {
-    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -33713,6 +33753,7 @@
       _this._data = [];
       _this._duration = 600;
       _this._height = 200;
+      _this._labelClass = new TextBox();
       _this._legendClass = new Legend();
       _this._legendConfig = {
         shapeConfig: {
@@ -33908,9 +33949,38 @@
           this._colorScale = linear$1().domain(_buckets).range(colors);
         }
 
-        if (this._bucketAxis || !["buckets", "jenks"].includes(this._scale)) {
-          var _this$_rectClass$data;
+        var gradient = this._bucketAxis || !["buckets", "jenks"].includes(this._scale);
+        var t = transition().duration(this._duration);
+        var groupParams = {
+          enter: {
+            opacity: 0
+          },
+          exit: {
+            opacity: 0
+          },
+          parent: this._group,
+          transition: t,
+          update: {
+            opacity: 1
+          }
+        };
+        var labelGroup = elem("g.d3plus-ColorScale-labels", Object.assign({
+          condition: gradient
+        }, groupParams));
+        var rectGroup = elem("g.d3plus-ColorScale-Rect", Object.assign({
+          condition: gradient
+        }, groupParams));
+        var legendGroup = elem("g.d3plus-ColorScale-legend", Object.assign({
+          condition: !gradient
+        }, groupParams));
 
+        if (gradient) {
+          var _assign;
+
+          var offsets = {
+            x: 0,
+            y: 0
+          };
           var axisConfig = assign({
             domain: horizontal ? domain : domain.reverse(),
             duration: this._duration,
@@ -33922,6 +33992,48 @@
             ticks: ticks,
             width: this._width
           }, this._axisConfig);
+          var labelConfig = assign({
+            height: this["_".concat(height)] / 2,
+            width: this["_".concat(width)] / 2
+          }, this._labelConfig || this._axisConfig.titleConfig);
+
+          this._labelClass.config(labelConfig);
+
+          var labelData = [];
+
+          if (horizontal && this._labelMin) {
+            var labelCSS = {
+              "font-family": this._labelClass.fontFamily()(this._labelMin),
+              "font-size": this._labelClass.fontSize()(this._labelMin),
+              "font-weight": this._labelClass.fontWeight()(this._labelMin)
+            };
+            if (labelCSS["font-family"] instanceof Array) labelCSS["font-family"] = labelCSS["font-family"][0];
+            var labelMinWidth = textWidth(this._labelMin, labelCSS);
+
+            if (labelMinWidth && labelMinWidth < this["_".concat(width)] / 2) {
+              labelData.push(this._labelMin);
+              labelMinWidth += this._padding;
+              if (horizontal) offsets.x += labelMinWidth;
+              axisConfig[width] -= labelMinWidth;
+            }
+          }
+
+          if (horizontal && this._labelMax) {
+            var _labelCSS = {
+              "font-family": this._labelClass.fontFamily()(this._labelMax),
+              "font-size": this._labelClass.fontSize()(this._labelMax),
+              "font-weight": this._labelClass.fontWeight()(this._labelMax)
+            };
+            if (_labelCSS["font-family"] instanceof Array) _labelCSS["font-family"] = _labelCSS["font-family"][0];
+            var labelMaxWidth = textWidth(this._labelMax, _labelCSS);
+
+            if (labelMaxWidth && labelMaxWidth < this["_".concat(width)] / 2) {
+              labelData.push(this._labelMax);
+              labelMaxWidth += this._padding;
+              if (!horizontal) offsets.y += labelMaxWidth;
+              axisConfig[width] -= labelMaxWidth;
+            }
+          }
 
           this._axisTest.select(elem("g.d3plus-ColorScale-axisTest", {
             enter: {
@@ -33938,14 +34050,19 @@
           this._outerBounds[y] = this._padding;
           if (this._align === "middle") this._outerBounds[y] = (this["_".concat(height)] - this._outerBounds[height]) / 2;else if (this._align === "end") this._outerBounds[y] = this["_".concat(height)] - this._padding - this._outerBounds[height];
 
-          var groupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
+          var axisGroupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
 
-          this._axisClass.select(elem("g.d3plus-ColorScale-axis", {
-            parent: this._group,
+          var transform = "translate(".concat(offsets.x + (horizontal ? 0 : axisGroupOffset), ", ").concat(offsets.y + (horizontal ? axisGroupOffset : 0), ")");
+
+          this._axisClass.select(elem("g.d3plus-ColorScale-axis", assign(groupParams, {
+            condition: true,
+            enter: {
+              transform: transform
+            },
             update: {
-              transform: "translate(".concat(horizontal ? 0 : groupOffset, ", ").concat(horizontal ? groupOffset : 0, ")")
+              transform: transform
             }
-          }).node()).config(axisConfig).align("start").render();
+          })).node()).config(axisConfig).align("start").render();
 
           var axisScale = this._axisTest._getPosition.bind(this._axisTest);
 
@@ -33957,11 +34074,11 @@
           defsEnter.append("linearGradient").attr("id", "gradient-".concat(this._uuid));
           defs = defsEnter.merge(defs);
           defs.select("linearGradient").attr("".concat(x, "1"), horizontal ? "0%" : "100%").attr("".concat(x, "2"), horizontal ? "100%" : "0%").attr("".concat(y, "1"), "0%").attr("".concat(y, "2"), "0%");
-          var stops = defs.select("linearGradient").selectAll("stop").data(colors);
+          var stops = defs.select("linearGradient").selectAll("stop").data(horizontal ? colors : colors);
 
           var scaleDomain = this._colorScale.domain();
 
-          var offsetScale = linear$1().domain(scaleRange).range([0, 100]);
+          var offsetScale = linear$1().domain(scaleRange).range(horizontal ? [0, 100] : [100, 0]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
             return "".concat(offsetScale(axisScale(scaleDomain[i])), "%");
           }).attr("stop-color", String);
@@ -33972,22 +34089,35 @@
             return w || 2;
           };
 
-          this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
-            return i;
-          }).select(elem("g.d3plus-ColorScale-Rect", {
-            parent: this._group
-          }).node()).config((_this$_rectClass$data = {
+          var rectConfig = assign((_assign = {
             duration: this._duration,
             fill: ticks ? function (d) {
               return _this2._colorScale(d);
             } : "url(#gradient-".concat(this._uuid, ")")
-          }, _defineProperty$3(_this$_rectClass$data, x, ticks ? function (d, i) {
+          }, _defineProperty$3(_assign, x, ticks ? function (d, i) {
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
-          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2), _defineProperty$3(_this$_rectClass$data, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2), _defineProperty$3(_this$_rectClass$data, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$3(_this$_rectClass$data, height, this._size), _this$_rectClass$data)).config(this._rectConfig).render();
-        } else {
-          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : formatAbbreviate;
+          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2 + offsets[x]), _defineProperty$3(_assign, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2 + offsets[y]), _defineProperty$3(_assign, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$3(_assign, height, this._size), _assign), this._rectConfig);
 
-          var _data = ticks.reduce(function (arr, tick, i) {
+          this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
+            return i;
+          }).select(rectGroup.node()).config(rectConfig).render();
+
+          labelConfig.height = this._outerBounds[height];
+          labelConfig.width = this._outerBounds[width];
+
+          this._labelClass.config(labelConfig).data(labelData).select(labelGroup.node()).x(function (d) {
+            return d === _this2._labelMax ? rectConfig.x + rectConfig.width / 2 + _this2._padding : _this2._outerBounds.x;
+          }).y(function (d) {
+            return rectConfig.y - _this2._labelClass.fontSize()(d) / 2;
+          }).text(function (d) {
+            return d;
+          }).rotate(horizontal ? 0 : this._orient === "right" ? 90 : -90).render();
+        } else {
+          elem("g.d3plus-ColorScale-axis", Object.assign({
+            condition: gradient
+          }, groupParams));
+          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : formatAbbreviate;
+          var legendData = ticks.reduce(function (arr, tick, i) {
             if (i !== ticks.length - 1) {
               var next = ticks[i + 1];
               arr.push({
@@ -33998,7 +34128,6 @@
 
             return arr;
           }, []);
-
           var legendConfig = assign({
             align: horizontal ? "center" : {
               start: "left",
@@ -34022,9 +34151,7 @@
             }[this._align] : "middle"
           }, this._legendConfig);
 
-          this._legendClass.data(_data).select(elem("g.d3plus-ColorScale-legend", {
-            parent: this._group
-          }).node()).config(legendConfig).render();
+          this._legendClass.data(legendData).select(legendGroup.node()).config(legendConfig).render();
 
           this._outerBounds = this._legendClass.outerBounds();
         }
@@ -34163,6 +34290,42 @@
       key: "height",
       value: function height(_) {
         return arguments.length ? (this._height = _, this) : this._height;
+      }
+      /**
+          @memberof ColorScale
+          @desc A pass-through for the [TextBox](http://d3plus.org/docs/#TextBox) class used to style the labelMin and labelMax text.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labelConfig",
+      value: function labelConfig(_) {
+        return arguments.length ? (this._labelConfig = _, this) : this._labelConfig;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines a text label to be displayed off of the end of the minimum point in the scale (currently only available in horizontal orientation).
+          @param {String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labelMin",
+      value: function labelMin(_) {
+        return arguments.length ? (this._labelMin = _, this) : this._labelMin;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines a text label to be displayed off of the end of the maximum point in the scale (currently only available in horizontal orientation).
+          @param {String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labelMax",
+      value: function labelMax(_) {
+        return arguments.length ? (this._labelMax = _, this) : this._labelMax;
       }
       /**
           @memberof ColorScale
@@ -34305,18 +34468,18 @@
     return ColorScale;
   }(BaseClass);
 
-  function _typeof$o(obj) {
+  function _typeof$p(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$o = function _typeof$1(obj) {
+      _typeof$p = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$o = function _typeof$1(obj) {
+      _typeof$p = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$o(obj);
+    return _typeof$p(obj);
   }
 
   function _classCallCheck$n(instance, Constructor) {
@@ -34342,7 +34505,7 @@
   }
 
   function _possibleConstructorReturn$l(self, call) {
-    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$p(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -37505,18 +37668,18 @@
   Popper.placements = placements;
   Popper.Defaults = Defaults;
 
-  function _typeof$p(obj) {
+  function _typeof$q(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$p = function _typeof$1(obj) {
+      _typeof$q = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$p = function _typeof$1(obj) {
+      _typeof$q = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$p(obj);
+    return _typeof$q(obj);
   }
 
   function _classCallCheck$o(instance, Constructor) {
@@ -37542,7 +37705,7 @@
   }
 
   function _possibleConstructorReturn$m(self, call) {
-    if (call && (_typeof$p(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$q(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -50026,7 +50189,7 @@
       var filterGroup = this._groupBy[this._drawDepth],
           filterId = filterGroup(d, i);
       this.hover(false);
-      if (this._tooltip) this._tooltipClass.data([]).render();
+      if (this._tooltip(d, i)) this._tooltipClass.data([]).render();
       var oldFilter = this._filter;
 
       this._history.push({
@@ -50055,7 +50218,7 @@
 
     this._select.style("cursor", "auto");
 
-    if (this._tooltip) this._tooltipClass.data([]).render();
+    if (this._tooltip(d, i)) this._tooltipClass.data([]).render();
 
     var id = this._id(d, i);
 
@@ -50159,7 +50322,7 @@
 
       var tooltipData = _this._tooltipClass.data();
 
-      if (tooltipData.length && _this._tooltip) {
+      if (tooltipData.length && _this._tooltip(d, i)) {
         var tooltipDatum = tooltipData[0];
 
         while (tooltipDatum.__d3plus__ && tooltipDatum.data) {
@@ -50192,7 +50355,7 @@
       return id;
     })).length;
 
-    if (this._tooltip && d) {
+    if (d && this._tooltip(d, i)) {
       var id = this._id(d, i);
 
       if (id instanceof Array) id = id[0];
@@ -50213,7 +50376,7 @@
   */
 
   function mousemoveShape (d, i, x) {
-    if (this._tooltip && d) {
+    if (d && this._tooltip(d, i)) {
       this._select.style("cursor", "pointer");
 
       var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
@@ -50230,7 +50393,7 @@
   function touchstartBody (d) {
     event$1.preventDefault();
     event$1.stopPropagation();
-    if (this._tooltip && !d) this._tooltipClass.data([]).render();
+    if (!d) this._tooltipClass.data([]).render();
   }
 
   function _slicedToArray$4(arr, i) {
@@ -50558,18 +50721,18 @@
     if (Array.isArray(arr)) return arr;
   }
 
-  function _typeof$q(obj) {
+  function _typeof$r(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$q = function _typeof$1(obj) {
+      _typeof$r = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$q = function _typeof$1(obj) {
+      _typeof$r = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$q(obj);
+    return _typeof$r(obj);
   }
 
   function _classCallCheck$q(instance, Constructor) {
@@ -50595,7 +50758,7 @@
   }
 
   function _possibleConstructorReturn$n(self, call) {
-    if (call && (_typeof$q(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$r(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -50784,7 +50947,7 @@
         "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$n(_this))
       };
       _this._queue = [];
-      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$q(window)) === undefined ? "" : window;
+      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$r(window)) === undefined ? "" : window;
       _this._shape = constant("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
@@ -50855,7 +51018,7 @@
         textAnchor: "middle"
       };
       _this._titlePadding = defaultPadding;
-      _this._tooltip = true;
+      _this._tooltip = constant(true);
       _this._tooltipClass = new Tooltip();
       _this._tooltipConfig = {
         pointerEvents: "none",
@@ -50954,7 +51117,7 @@
             i = d.i;
           }
 
-          if (_this2._label) return _this2._label(d, i);
+          if (_this2._label) return "".concat(_this2._label(d, i));
 
           var l = that._ids(d, i).slice(0, depth + 1);
 
@@ -51088,7 +51251,7 @@
         // const testWidth = 20;
         // this._shapes.push(new Rect()
         //   .config(this._shapeConfig)
-        //   .config(configPrep(testConfig))
+        //   .config(configPrep.bind(this)(testConfig))
         //   .data(this._filteredData)
         //   .label("Test Label")
         //   .select(this._zoomGroup.node())
@@ -51482,6 +51645,7 @@
       /**
           @memberof Viz
           @desc Sets the primary data array to be used when drawing the visualization. The value passed should be an *Array* of objects or a *String* representing a filepath or URL to be loaded. The following filetypes are supported: `csv`, `tsv`, `txt`, and `json`.
+      If your data URL needs specific headers to be set, an Object with "url" and "headers" keys may also be passed.
       Additionally, a custom formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final array of obejcts to be used as the primary data array. For example, some JSON APIs return the headers split from the data values to save bandwidth. These would need be joined using a custom formatter.
       If *data* is not specified, this method returns the current primary data array, which defaults to an empty array (`[]`);
           @param {Array|String} *data* = []
@@ -52168,14 +52332,14 @@
       /**
           @memberof Viz
           @desc If *value* is specified, toggles the tooltip based on the specified boolean and returns the current class instance.
-          @param {Boolean} [*value* = true]
+          @param {Boolean|Function} [*value* = true]
           @chainable
       */
 
     }, {
       key: "tooltip",
       value: function tooltip(_) {
-        return arguments.length ? (this._tooltip = _, this) : this._tooltip;
+        return arguments.length ? (this._tooltip = typeof _ === "function" ? _ : constant(_), this) : this._tooltip;
       }
       /**
           @memberof Viz
