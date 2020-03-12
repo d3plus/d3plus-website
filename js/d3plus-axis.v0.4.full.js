@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.4.18
+  d3plus-axis v0.4.19
   Beautiful javascript scales and axes.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -29254,7 +29254,9 @@
               space = datum.space;
           var h = rotate ? "width" : "height",
               w = rotate ? "height" : "width";
-          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : min([this._maxSize, this._width]) - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? min([this._maxSize, this._height]) - hBuff - p - this._margin.top - this._margin.bottom : space);
+          var wSize = min([this._maxSize, this._width]);
+          var hSize = min([this._maxSize, this._height]);
+          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : wSize - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? hSize - hBuff - p - this._margin.top - this._margin.bottom : space);
           var res = wrap(tickFormat(d));
           res.lines = res.lines.filter(function (d) {
             return d !== "";
@@ -29381,6 +29383,7 @@
         var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty(_this$_outerBounds, height, (max(textData, function (t) {
           return Math.ceil(t[t.rotate || !horizontal ? "width" : "height"] + t.offset);
         }) || 0) + (textData.length ? p : 0)), _defineProperty(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
+        bounds[height] = max([this._minSize, bounds[height]]);
         margin[this._orient] += hBuff;
         margin[opposite] = this._gridSize !== undefined ? max([this._gridSize, tBuff]) : this["_".concat(height)] - margin[this._orient] - bounds[height] - p;
         bounds[height] += margin[opposite] + margin[this._orient];
@@ -29632,6 +29635,18 @@
       key: "maxSize",
       value: function maxSize(_) {
         return arguments.length ? (this._maxSize = _, this) : this._maxSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the minimum size alloted for the space that contains the axis tick labels and title.
+          @param {Number}
+          @chainable
+       */
+
+    }, {
+      key: "minSize",
+      value: function minSize(_) {
+        return arguments.length ? (this._minSize = _, this) : this._minSize;
       }
       /**
           @memberof Axis
