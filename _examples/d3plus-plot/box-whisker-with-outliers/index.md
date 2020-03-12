@@ -2,8 +2,8 @@
 title: Box and Whisker Chart with Outliers
 width: 990
 height: 400
-time: 1582733001361
-date: February 26, 2020
+time: 1584018459418
+date: March 12, 2020
 ---
 
 # Box and Whisker Chart with Outliers
