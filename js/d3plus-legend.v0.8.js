@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.30
+  d3plus-legend v0.8.31
   An easy to use javascript chart legend.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -2004,7 +2004,12 @@
         this._group = d3plusCommon.elem("g.d3plus-ColorScale", {
           parent: this._select
         });
-        var domain = d3Array.extent(this._data, this._value);
+
+        var allValues = this._data.map(this._value).sort(function (a, b) {
+          return a - b;
+        });
+
+        var domain = d3Array.extent(allValues);
         var negative = domain[0] < this._midpoint;
         var positive = domain[1] > this._midpoint;
         var diverging = negative && positive;
@@ -2092,7 +2097,7 @@
             _buckets = d3Array.range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(d3Array.range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
           } else {
             if (!colors) {
-              if (this._scale === "buckets") {
+              if (this._scale === "buckets" || this._scale === "quantile") {
                 colors = d3Array.range(0, this._buckets, 1).map(function (i) {
                   return d3plusColor.colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / _this2._buckets);
                 });
@@ -2102,16 +2107,22 @@
               }
             }
 
-            var _step = (domain[1] - domain[0]) / (colors.length - 1);
+            if (this._scale === "quantile") {
+              var _step = 1 / (colors.length - 1);
 
-            _buckets = d3Array.range(domain[0], domain[1] + _step / 2, _step);
+              _buckets = d3Array.range(0, 1 + _step / 2, _step).map(function (d) {
+                return d3Array.quantile(allValues, d);
+              });
+            } else {
+              var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
+
+              _buckets = d3Array.range(domain[0], domain[1] + _step2 / 2, _step2);
+            }
           }
 
-          if (this._scale === "buckets") {
+          if (this._scale === "buckets" || this._scale === "quantile") {
             ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
-          }
-
-          if (this._scale === "log") {
+          } else if (this._scale === "log") {
             var negativeBuckets = _buckets.filter(function (d) {
               return d < 0;
             });
@@ -2146,7 +2157,7 @@
           this._colorScale = d3Scale.scaleLinear().domain(_buckets).range(colors);
         }
 
-        var gradient = this._bucketAxis || !["buckets", "jenks"].includes(this._scale);
+        var gradient = this._bucketAxis || !["buckets", "jenks", "quantile"].includes(this._scale);
         var t = d3Transition.transition().duration(this._duration);
         var groupParams = {
           enter: {
