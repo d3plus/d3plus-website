@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.5.0
+  d3plus-axis v0.5.1
   Beautiful javascript scales and axes.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -29070,7 +29070,25 @@
             var tens = labels.filter(function (t) {
               return Math.abs(t).toString().charAt(0) === "1" && (_this2._d3Scale ? t !== -1 : t !== 1);
             });
-            if (tens.length > 3) return labels = tens;
+
+            if (tens.length > 2) {
+              labels = tens;
+              ticks = tens;
+            } else if (labels.length >= 10) {
+              (function () {
+                var step = 2;
+                var newLabels = labels.slice();
+
+                while (newLabels.length >= 10) {
+                  newLabels = labels.filter(function (t, i) {
+                    return i % step === 0;
+                  });
+                  step += 1;
+                }
+
+                labels = newLabels;
+              })();
+            }
           }
 
           if (this._scale === "time") {
@@ -29132,7 +29150,6 @@
             return pixels[i] !== false;
           });
           this._visibleTicks = ticks;
-          return true;
         }
 
         setScale.bind(this)();
