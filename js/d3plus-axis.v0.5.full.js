@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.5.2
+  d3plus-axis v0.5.3
   Beautiful javascript scales and axes.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -29349,12 +29349,10 @@
 
 
           var scale = "scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1));
-          this._d3Scale = scales[scale]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
-          if (this._d3Scale.round) this._d3Scale.round(true);
+          this._d3Scale = scales[scale]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain).range(range);
           if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
           if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
           if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
-          if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range);else this._d3Scale.range(range);
           /**
            * Constructs a separate "negative only" scale for logarithmic
            * domains, as they cannot pass zero.
