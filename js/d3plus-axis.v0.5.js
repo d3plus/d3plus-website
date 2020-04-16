@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.5.1
+  d3plus-axis v0.5.2
   Beautiful javascript scales and axes.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1411,7 +1411,7 @@
     }, {
       key: "render",
       value: function render(callback) {
-        var _this3 = this,
+        var _this2 = this,
             _this$_outerBounds;
 
         /**
@@ -1465,12 +1465,38 @@
         };
         var labels, range, ticks;
         /**
+         * Constructs the tick formatter function.
+         */
+
+        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
+          if (_this2._scale === "time") {
+            return (d3Time.timeSecond(d) < d ? formatMillisecond : d3Time.timeMinute(d) < d ? formatSecond : d3Time.timeHour(d) < d ? formatMinute : d3Time.timeDay(d) < d ? formatHour : d3Time.timeMonth(d) < d ? d3Time.timeWeek(d) < d ? formatDay : formatWeek : d3Time.timeYear(d) < d ? formatMonth : formatYear)(d);
+          } else if (["band", "ordinal", "point"].includes(_this2._scale)) {
+            return d;
+          }
+
+          if (isNaN(d)) {
+            return d;
+          } else if (_this2._scale === "linear" && _this2._tickSuffix === "smallest") {
+            var _locale = _typeof(_this2._locale) === "object" ? _this2._locale : d3plusFormat.formatLocale[_this2._locale];
+
+            var separator = _locale.separator,
+                suffixes = _locale.suffixes;
+            var suff = d >= 1000 ? suffixes[_this2._tickUnit + 8] : "";
+            var tick = d / Math.pow(10, 3 * _this2._tickUnit);
+            var number = d3plusFormat.formatAbbreviate(tick, _locale, ",.".concat(tick.toString().length, "r"));
+            return "".concat(number).concat(separator).concat(suff);
+          } else {
+            return d3plusFormat.formatAbbreviate(d, _this2._locale);
+          }
+        };
+        /**
          * (Re)calculates the internal d3 scale
          * @param {} newRange
          */
 
         function setScale() {
-          var _this2 = this;
+          var _this3 = this;
 
           var newRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._range;
 
@@ -1526,7 +1552,8 @@
            */
 
 
-          this._d3Scale = scales["scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1))]().domain(this._scale === "time" ? this._domain.map(date) : this._domain);
+          var scale = "scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1));
+          this._d3Scale = scales[scale]().domain(this._scale === "time" ? this._domain.map(date) : this._domain);
           if (this._d3Scale.round) this._d3Scale.round(true);
           if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
           if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
@@ -1542,8 +1569,13 @@
           if (this._scale === "log") {
             var _domain = this._d3Scale.domain();
 
-            if (_domain[0] === 0) _domain[0] = 1;
-            if (_domain[_domain.length - 1] === 0) _domain[_domain.length - 1] = -1;
+            if (_domain[0] === 0) {
+              _domain[0] = Math.abs(_domain[_domain.length - 1]) <= 1 ? 1e-6 : 1;
+              if (_domain[_domain.length - 1] < 0) _domain[0] *= -1;
+            } else if (_domain[_domain.length - 1] === 0) {
+              _domain[_domain.length - 1] = Math.abs(_domain[0]) <= 1 ? 1e-6 : 1;
+              if (_domain[0] < 0) _domain[_domain.length - 1] *= -1;
+            }
 
             var _range = this._d3Scale.range();
 
@@ -1573,26 +1605,16 @@
 
           if (this._scale === "log") {
             var tens = labels.filter(function (t) {
-              return Math.abs(t).toString().charAt(0) === "1" && (_this2._d3Scale ? t !== -1 : t !== 1);
+              return Math.abs(t).toString().charAt(0) === "1" && (_this3._d3Scale ? t !== -1 : t !== 1);
             });
 
             if (tens.length > 2) {
               labels = tens;
               ticks = tens;
             } else if (labels.length >= 10) {
-              (function () {
-                var step = 2;
-                var newLabels = labels.slice();
-
-                while (newLabels.length >= 10) {
-                  newLabels = labels.filter(function (t, i) {
-                    return i % step === 0;
-                  });
-                  step += 1;
-                }
-
-                labels = newLabels;
-              })();
+              labels = labels.filter(function (t) {
+                return t % 5 === 0 || tickFormat(t).substr(-1) === "1";
+              });
             }
           }
 
@@ -1602,10 +1624,10 @@
           }
 
           ticks = ticks.sort(function (a, b) {
-            return _this2._getPosition(a) - _this2._getPosition(b);
+            return _this3._getPosition(a) - _this3._getPosition(b);
           });
           labels = labels.sort(function (a, b) {
-            return _this2._getPosition(a) - _this2._getPosition(b);
+            return _this3._getPosition(a) - _this3._getPosition(b);
           });
           /**
            * Get the smallest suffix.
@@ -1645,9 +1667,9 @@
               id: d,
               tick: true
             }, i);
-            if (_this2._shape === "Circle") s *= 2;
+            if (_this3._shape === "Circle") s *= 2;
 
-            var t = _this2._getPosition(d);
+            var t = _this3._getPosition(d);
 
             if (!pixels.length || Math.abs(d3plusCommon.closest(t, pixels) - t) > s * 2) pixels.push(t);else pixels.push(false);
           });
@@ -1679,39 +1701,10 @@
           }
         }
         /**
-         * Constructs the tick formatter function.
-         */
-
-
-        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
-          if (_this3._scale === "time") {
-            return (d3Time.timeSecond(d) < d ? formatMillisecond : d3Time.timeMinute(d) < d ? formatSecond : d3Time.timeHour(d) < d ? formatMinute : d3Time.timeDay(d) < d ? formatHour : d3Time.timeMonth(d) < d ? d3Time.timeWeek(d) < d ? formatDay : formatWeek : d3Time.timeYear(d) < d ? formatMonth : formatYear)(d);
-          } else if (["band", "ordinal", "point"].includes(_this3._scale)) {
-            return d;
-          }
-
-          var n = _this3._d3Scale.tickFormat && _this3._scale !== "log" ? _this3._d3Scale.tickFormat(labels.length - 1)(d) : d;
-          n = typeof n === "string" ? n.replace(/[^\d\.\-\+]/g, "") * 1 : n;
-
-          if (isNaN(n)) {
-            return n;
-          } else if (_this3._scale === "linear" && _this3._tickSuffix === "smallest") {
-            var _locale = _typeof(_this3._locale) === "object" ? _this3._locale : d3plusFormat.formatLocale[_this3._locale];
-
-            var separator = _locale.separator,
-                suffixes = _locale.suffixes;
-            var suff = n >= 1000 ? suffixes[_this3._tickUnit + 8] : "";
-            var tick = n / Math.pow(10, 3 * _this3._tickUnit);
-            var number = d3plusFormat.formatAbbreviate(tick, _locale, ",.".concat(tick.toString().length, "r"));
-            return "".concat(number).concat(separator).concat(suff);
-          } else {
-            return d3plusFormat.formatAbbreviate(n, _this3._locale);
-          }
-        };
-        /**
          * Pre-calculates the size of the title, if defined, in order
          * to adjust the internal margins.
          */
+
 
         if (this._title) {
           var _this$_titleConfig = this._titleConfig,
@@ -1741,11 +1734,11 @@
          */
 
         var textData = labels.map(function (d, i) {
-          var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
-              fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
-              position = _this3._getPosition(d);
+          var fF = _this2._shapeConfig.labelConfig.fontFamily(d, i),
+              fS = _this2._shapeConfig.labelConfig.fontSize(d, i),
+              position = _this2._getPosition(d);
 
-          var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+          var lineHeight = _this2._shapeConfig.lineHeight ? _this2._shapeConfig.lineHeight(d, i) : fS * 1.4;
           return {
             d: d,
             i: i,
@@ -1784,9 +1777,9 @@
         }
 
         textData = textData.map(function (datum) {
-          datum.rotate = _this3._labelRotation;
-          datum.space = calculateSpace.bind(_this3)(datum);
-          var res = calculateLabelSize.bind(_this3)(datum);
+          datum.rotate = _this2._labelRotation;
+          datum.space = calculateSpace.bind(_this2)(datum);
+          var res = calculateLabelSize.bind(_this2)(datum);
           return Object.assign(res, datum);
         });
         this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (d) {
@@ -1796,7 +1789,7 @@
         if (this._rotateLabels) {
           textData = textData.map(function (datum) {
             datum.rotate = true;
-            var res = calculateLabelSize.bind(_this3)(datum);
+            var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(datum, res);
           });
         }
@@ -1833,11 +1826,11 @@
         if (newRange[0] !== first || newRange[1] !== last) {
           setScale.bind(this)(newRange);
           textData = labels.map(function (d, i) {
-            var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
-                fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
-                position = _this3._getPosition(d);
+            var fF = _this2._shapeConfig.labelConfig.fontFamily(d, i),
+                fS = _this2._shapeConfig.labelConfig.fontSize(d, i),
+                position = _this2._getPosition(d);
 
-            var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+            var lineHeight = _this2._shapeConfig.lineHeight ? _this2._shapeConfig.lineHeight(d, i) : fS * 1.4;
             return {
               d: d,
               i: i,
@@ -1848,9 +1841,9 @@
             };
           });
           textData = textData.map(function (datum) {
-            datum.rotate = _this3._rotateLabels;
-            datum.space = calculateSpace.bind(_this3)(datum);
-            var res = calculateLabelSize.bind(_this3)(datum);
+            datum.rotate = _this2._rotateLabels;
+            datum.space = calculateSpace.bind(_this2)(datum);
+            var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(res, datum);
           });
         }
@@ -1870,8 +1863,8 @@
         if (this._rotateLabels) {
           var offset = 0;
           textData = textData.map(function (datum) {
-            datum.space = calculateSpace.bind(_this3)(datum, 2);
-            var res = calculateLabelSize.bind(_this3)(datum);
+            datum.space = calculateSpace.bind(_this2)(datum, 2);
+            var res = calculateLabelSize.bind(_this2)(datum);
             datum = Object.assign(datum, res);
             var prev = textData[datum.i - 1];
 
@@ -1931,13 +1924,13 @@
             return td.d === d;
           });
 
-          var xPos = _this3._getPosition(d);
+          var xPos = _this2._getPosition(d);
 
           var space = data ? data.space : 0;
           var lines = data ? data.lines.length : 1;
           var lineHeight = data ? data.lineHeight : 1;
-          var labelOffset = data && _this3._labelOffset ? data.offset : 0;
-          var labelWidth = horizontal ? space : bounds.width - margin[_this3._position.opposite] - hBuff - margin[_this3._orient] + p;
+          var labelOffset = data && _this2._labelOffset ? data.offset : 0;
+          var labelWidth = horizontal ? space : bounds.width - margin[_this2._position.opposite] - hBuff - margin[_this2._orient] + p;
           var offset = margin[opposite],
               size = (hBuff + labelOffset) * (flip ? -1 : 1),
               yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
@@ -1945,12 +1938,12 @@
             id: d,
             labelBounds: rotated && data ? {
               x: -data.width / 2 + data.fS / 4,
-              y: _this3._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
+              y: _this2._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
               width: data.width,
               height: data.height
             } : {
-              x: horizontal ? -space / 2 : _this3._orient === "left" ? -labelWidth - p + size : size + p,
-              y: horizontal ? _this3._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
+              x: horizontal ? -space / 2 : _this2._orient === "left" ? -labelWidth - p + size : size + p,
+              y: horizontal ? _this2._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
               width: horizontal ? space : labelWidth,
               height: horizontal ? labelHeight : space
             },
@@ -1958,7 +1951,7 @@
             size: labels.includes(d) ? size : 0,
             text: labels.includes(d) ? tickFormat(d) : false,
             tick: ticks.includes(d)
-          }, _defineProperty(_tickConfig, x, xPos + (_this3._scale === "band" ? _this3._d3Scale.bandwidth() / 2 : 0)), _defineProperty(_tickConfig, y, yPos), _tickConfig);
+          }, _defineProperty(_tickConfig, x, xPos + (_this2._scale === "band" ? _this2._d3Scale.bandwidth() / 2 : 0)), _defineProperty(_tickConfig, y, yPos), _tickConfig);
           return tickConfig;
         });
 
