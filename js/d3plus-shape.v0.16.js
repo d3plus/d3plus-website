@@ -1,7 +1,7 @@
 /*
-  d3plus-shape v0.16.13
+  d3plus-shape v0.16.14
   Fancy SVG shapes for visualizations
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
@@ -1900,7 +1900,7 @@
           parent: this._group
         });
 
-        var hitAreas = this._group.selectAll(".d3plus-HitArea").data(this._hitArea ? data : [], key);
+        var hitAreas = this._group.selectAll(".d3plus-HitArea").data(this._hitArea && Object.keys(this._on).length ? data : [], key);
 
         hitAreas.order().call(this._applyTransform.bind(this));
         var isLine = this._name === "Line";
