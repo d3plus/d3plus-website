@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.36
+  d3plus-plot v0.8.37
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1132,6 +1132,48 @@
     }
 
     return _get(target, property, receiver || target);
+  }
+
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  }
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
   /**
@@ -21018,6 +21060,305 @@
     stackOrderReverse: reverse
   });
 
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal$1 (x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
+
+    var i,
+        coefficient = x.slice(0, i); // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+
+    return [coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient, +x.slice(i + 1)];
+  }
+
+  function exponent$1 (x) {
+    return x = formatDecimal$1(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup$1 (grouping, thousands) {
+    return function (value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) g = Math.max(1, width - length);
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) break;
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals$1 (numerals) {
+    return function (value) {
+      return value.replace(/[0-9]/g, function (i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re$1 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+  function formatSpecifier$1(specifier) {
+    if (!(match = re$1.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    return new FormatSpecifier$1({
+      fill: match[1],
+      align: match[2],
+      sign: match[3],
+      symbol: match[4],
+      zero: match[5],
+      width: match[6],
+      comma: match[7],
+      precision: match[8] && match[8].slice(1),
+      trim: match[9],
+      type: match[10]
+    });
+  }
+  formatSpecifier$1.prototype = FormatSpecifier$1.prototype; // instanceof
+
+  function FormatSpecifier$1(specifier) {
+    this.fill = specifier.fill === undefined ? " " : specifier.fill + "";
+    this.align = specifier.align === undefined ? ">" : specifier.align + "";
+    this.sign = specifier.sign === undefined ? "-" : specifier.sign + "";
+    this.symbol = specifier.symbol === undefined ? "" : specifier.symbol + "";
+    this.zero = !!specifier.zero;
+    this.width = specifier.width === undefined ? undefined : +specifier.width;
+    this.comma = !!specifier.comma;
+    this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
+    this.trim = !!specifier.trim;
+    this.type = specifier.type === undefined ? "" : specifier.type + "";
+  }
+
+  FormatSpecifier$1.prototype.toString = function () {
+    return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width === undefined ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim$1 (s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".":
+          i0 = i1 = i;
+          break;
+
+        case "0":
+          if (i0 === 0) i0 = i;
+          i1 = i;
+          break;
+
+        default:
+          if (!+s[i]) break out;
+          if (i0 > 0) i0 = 0;
+          break;
+      }
+    }
+
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent$1;
+  function formatPrefixAuto$1 (x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimal$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded$1 (x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1) : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes$1 = {
+    "%": function _(x, p) {
+      return (x * 100).toFixed(p);
+    },
+    "b": function b(x) {
+      return Math.round(x).toString(2);
+    },
+    "c": function c(x) {
+      return x + "";
+    },
+    "d": function d(x) {
+      return Math.round(x).toString(10);
+    },
+    "e": function e(x, p) {
+      return x.toExponential(p);
+    },
+    "f": function f(x, p) {
+      return x.toFixed(p);
+    },
+    "g": function g(x, p) {
+      return x.toPrecision(p);
+    },
+    "o": function o(x) {
+      return Math.round(x).toString(8);
+    },
+    "p": function p(x, _p) {
+      return formatRounded$1(x * 100, _p);
+    },
+    "r": formatRounded$1,
+    "s": formatPrefixAuto$1,
+    "X": function X(x) {
+      return Math.round(x).toString(16).toUpperCase();
+    },
+    "x": function x(_x) {
+      return Math.round(_x).toString(16);
+    }
+  };
+
+  function identity$5 (x) {
+    return x;
+  }
+
+  var map$3 = Array.prototype.map,
+      prefixes$1 = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
+  function formatLocale$2 (locale) {
+    var group = locale.grouping === undefined || locale.thousands === undefined ? identity$5 : formatGroup$1(map$3.call(locale.grouping, Number), locale.thousands + ""),
+        currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
+        currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
+        decimal = locale.decimal === undefined ? "." : locale.decimal + "",
+        numerals = locale.numerals === undefined ? identity$5 : formatNumerals$1(map$3.call(locale.numerals, String)),
+        percent = locale.percent === undefined ? "%" : locale.percent + "",
+        minus = locale.minus === undefined ? "-" : locale.minus + "",
+        nan = locale.nan === undefined ? "NaN" : locale.nan + "";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier$1(specifier);
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type; // The "n" type is an alias for ",g".
+
+      if (type === "n") comma = true, type = "g"; // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes$1[type]) precision === undefined && (precision = 12), trim = true, type = "g"; // If zero fill is specified, padding goes after sign and before digits.
+
+      if (zero || fill === "0" && align === "=") zero = true, fill = "0", align = "="; // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+
+      var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : ""; // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+
+      var formatType = formatTypes$1[type],
+          maybeSuffix = /[defgprs%]/.test(type); // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+
+      precision = precision === undefined ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i,
+            n,
+            c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value; // Determine the sign. -0 is not less than 0, but 1 / -0 is!
+
+          var valueNegative = value < 0 || 1 / value < 0; // Perform the initial formatting.
+
+          value = isNaN(value) ? nan : formatType(Math.abs(value), precision); // Trim insignificant zeros.
+
+          if (trim) value = formatTrim$1(value); // If a negative value rounds to zero after formatting, and no explicit positive sign is requested, hide the sign.
+
+          if (valueNegative && +value === 0 && sign !== "+") valueNegative = false; // Compute the prefix and suffix.
+
+          valuePrefix = (valueNegative ? sign === "(" ? sign : minus : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes$1[8 + prefixExponent$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : ""); // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        } // If the fill character is not "0", grouping is applied before padding.
+
+
+        if (comma && !zero) value = group(value, Infinity); // Compute the padding.
+
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : ""; // If the fill character is "0", grouping is applied after padding.
+
+        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = ""; // Reconstruct the final output based on the desired alignment.
+
+        switch (align) {
+          case "<":
+            value = valuePrefix + value + valueSuffix + padding;
+            break;
+
+          case "=":
+            value = valuePrefix + padding + value + valueSuffix;
+            break;
+
+          case "^":
+            value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
+            break;
+
+          default:
+            value = padding + valuePrefix + value + valueSuffix;
+            break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function () {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier$1(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes$1[8 + e / 3];
+      return function (value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
   /**
       @namespace {Object} formatLocale
       @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
@@ -21030,7 +21371,7 @@
         * | delimiters | {thousands: ",", decimal: "."} | Decimal and group separators. |
         * | currency | ["$", ""] | The currency prefix and suffix. |
   */
-  var formatLocale$2 = {
+  var formatLocale$3 = {
     "en-GB": {
       separator: "",
       suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
@@ -21103,6 +21444,8 @@
   };
 
   function _typeof$3(obj) {
+    "@babel/helpers - typeof";
+
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
       _typeof$3 = function _typeof$1(obj) {
         return _typeof(obj);
@@ -21170,12 +21513,12 @@
     if (isFinite(n)) n *= 1;else return "N/A";
     var negative = n < 0;
     var length = n.toString().split(".")[0].replace("-", "").length,
-        localeConfig = _typeof$3(locale) === "object" ? locale : formatLocale$2[locale] || formatLocale$2["en-US"],
+        localeConfig = _typeof$3(locale) === "object" ? locale : formatLocale$3[locale] || formatLocale$3["en-US"],
         suffixes = localeConfig.suffixes.map(parseSuffixes);
     var decimal = localeConfig.delimiters.decimal || ".",
         separator = localeConfig.separator || "",
         thousands = localeConfig.delimiters.thousands || ",";
-    var d3plusFormatLocale = formatLocale({
+    var d3plusFormatLocale = formatLocale$2({
       currency: localeConfig.currency || ["$", ""],
       decimal: decimal,
       grouping: localeConfig.grouping || [3],
@@ -21188,8 +21531,8 @@
       var _char = f.symbol;
       val = "".concat(num).concat(separator).concat(_char);
     } else if (length === 3) val = d3plusFormatLocale.format(",f")(n);else if (n < 1 && n > -1) val = d3plusFormatLocale.format(".2g")(n);else val = d3plusFormatLocale.format(".3g")(n);
-    return "".concat(negative && val.charAt(0) !== "-" ? "-" : "").concat(val).replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
-    .replace(/[.]$/g, ""); // removes any trailing decimal point
+    return "".concat(negative && val.charAt(0) !== "-" ? "-" : "").concat(val).replace(/(\.[0]*[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+    .replace(/\.[0]*$/g, ""); // removes any trailing decimal point
   }
 
   function _classCallCheck$2(instance, Constructor) {
@@ -21543,6 +21886,24 @@
     c = rgb(c);
     var yiq = (c.r * 299 + c.g * 587 + c.b * 114) / 1000;
     return yiq >= 128 ? getColor("dark", u) : getColor("light", u);
+  }
+
+  /**
+      @function colorLegible
+      @desc Darkens a color so that it will appear legible on a white background.
+      @param {String} c A valid CSS color string.
+      @returns {String}
+  */
+
+  function colorLegible (c) {
+    c = hsl(c);
+
+    if (c.l > 0.45) {
+      if (c.s > 0.8) c.s = 0.8;
+      c.l = 0.45;
+    }
+
+    return c.toString();
   }
 
   /**
@@ -23390,7 +23751,7 @@
           parent: this._group
         });
 
-        var hitAreas = this._group.selectAll(".d3plus-HitArea").data(this._hitArea ? data : [], key);
+        var hitAreas = this._group.selectAll(".d3plus-HitArea").data(this._hitArea && Object.keys(this._on).length ? data : [], key);
 
         hitAreas.order().call(this._applyTransform.bind(this));
         var isLine = this._name === "Line";
@@ -24062,7 +24423,7 @@
     return splitCurveAsPoints(points, segmentCount).map(pointsToCommand);
   }
 
-  var commandTokenRegex = /[MLCSTQAHVmlcstqahv]|[\d.-]+/g;
+  var commandTokenRegex = /[MLCSTQAHVmlcstqahv]|-?[\d.e+-]+/g;
   /**
    * List of params for each command type in a path `d` attribute
    */
@@ -24534,15 +24895,15 @@
     return [px, py];
   }
 
-  function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  function _slicedToArray$1(arr, i) {
+    return _arrayWithHoles$1(arr) || _iterableToArrayLimit$1(arr, i) || _nonIterableRest$1();
   }
 
-  function _nonIterableRest() {
+  function _nonIterableRest$1() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
-  function _iterableToArrayLimit(arr, i) {
+  function _iterableToArrayLimit$1(arr, i) {
     if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
       return;
     }
@@ -24572,7 +24933,7 @@
     return _arr;
   }
 
-  function _arrayWithHoles(arr) {
+  function _arrayWithHoles$1(arr) {
     if (Array.isArray(arr)) return arr;
   }
   /**
@@ -24587,7 +24948,7 @@
 
   function segmentBoxContains (s1, s2, p) {
     var eps = 1e-9,
-        _p = _slicedToArray(p, 2),
+        _p = _slicedToArray$1(p, 2),
         px = _p[0],
         py = _p[1];
 
@@ -24640,15 +25001,15 @@
     return polygonContains(polyB, polyA[0]);
   }
 
-  function _slicedToArray$1(arr, i) {
-    return _arrayWithHoles$1(arr) || _iterableToArrayLimit$1(arr, i) || _nonIterableRest$1();
+  function _slicedToArray$2(arr, i) {
+    return _arrayWithHoles$2(arr) || _iterableToArrayLimit$2(arr, i) || _nonIterableRest$2();
   }
 
-  function _nonIterableRest$1() {
+  function _nonIterableRest$2() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
-  function _iterableToArrayLimit$1(arr, i) {
+  function _iterableToArrayLimit$2(arr, i) {
     if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
       return;
     }
@@ -24678,7 +25039,7 @@
     return _arr;
   }
 
-  function _arrayWithHoles$1(arr) {
+  function _arrayWithHoles$2(arr) {
     if (Array.isArray(arr)) return arr;
   }
   /**
@@ -24696,7 +25057,7 @@
     origin = [origin[0] + eps * Math.cos(alpha), origin[1] + eps * Math.sin(alpha)];
 
     var _origin = origin,
-        _origin2 = _slicedToArray$1(_origin, 2),
+        _origin2 = _slicedToArray$2(_origin, 2),
         x0 = _origin2[0],
         y0 = _origin2[1];
 
@@ -24889,15 +25250,15 @@
     return poly;
   });
 
-  function _slicedToArray$2(arr, i) {
-    return _arrayWithHoles$2(arr) || _iterableToArrayLimit$2(arr, i) || _nonIterableRest$2();
+  function _slicedToArray$3(arr, i) {
+    return _arrayWithHoles$3(arr) || _iterableToArrayLimit$3(arr, i) || _nonIterableRest$3();
   }
 
-  function _nonIterableRest$2() {
+  function _nonIterableRest$3() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
-  function _iterableToArrayLimit$2(arr, i) {
+  function _iterableToArrayLimit$3(arr, i) {
     if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
       return;
     }
@@ -24927,7 +25288,7 @@
     return _arr;
   }
 
-  function _arrayWithHoles$2(arr) {
+  function _arrayWithHoles$3(arr) {
     if (Array.isArray(arr)) return arr;
   }
 
@@ -25016,14 +25377,14 @@
     var _extent = extent(poly, function (d) {
       return d[0];
     }),
-        _extent2 = _slicedToArray$2(_extent, 2),
+        _extent2 = _slicedToArray$3(_extent, 2),
         minx = _extent2[0],
         maxx = _extent2[1];
 
     var _extent3 = extent(poly, function (d) {
       return d[1];
     }),
-        _extent4 = _slicedToArray$2(_extent3, 2),
+        _extent4 = _slicedToArray$3(_extent3, 2),
         miny = _extent4[0],
         maxy = _extent4[1]; // simplify polygon
 
@@ -25039,7 +25400,7 @@
       return d[0];
     });
 
-    var _extent6 = _slicedToArray$2(_extent5, 2);
+    var _extent6 = _slicedToArray$3(_extent5, 2);
 
     minx = _extent6[0];
     maxx = _extent6[1];
@@ -25048,7 +25409,7 @@
       return d[1];
     });
 
-    var _extent8 = _slicedToArray$2(_extent7, 2);
+    var _extent8 = _slicedToArray$3(_extent7, 2);
 
     miny = _extent8[0];
     maxy = _extent8[1];
@@ -25101,12 +25462,12 @@
         var origOrigin = origins[i]; // generate improved origins
 
         var _polygonRayCast = polygonRayCast(poly, origOrigin, angleRad),
-            _polygonRayCast2 = _slicedToArray$2(_polygonRayCast, 2),
+            _polygonRayCast2 = _slicedToArray$3(_polygonRayCast, 2),
             p1W = _polygonRayCast2[0],
             p2W = _polygonRayCast2[1];
 
         var _polygonRayCast3 = polygonRayCast(poly, origOrigin, angleRad + Math.PI / 2),
-            _polygonRayCast4 = _slicedToArray$2(_polygonRayCast3, 2),
+            _polygonRayCast4 = _slicedToArray$3(_polygonRayCast3, 2),
             p1H = _polygonRayCast4[0],
             p2H = _polygonRayCast4[1];
 
@@ -25134,7 +25495,7 @@
           });
 
           var _polygonRayCast5 = polygonRayCast(poly, origin, angleRad),
-              _polygonRayCast6 = _slicedToArray$2(_polygonRayCast5, 2),
+              _polygonRayCast6 = _slicedToArray$3(_polygonRayCast5, 2),
               _p1W = _polygonRayCast6[0],
               _p2W = _polygonRayCast6[1];
 
@@ -25143,7 +25504,7 @@
           var maxWidth = 2 * Math.sqrt(minSqDistW);
 
           var _polygonRayCast7 = polygonRayCast(poly, origin, angleRad + Math.PI / 2),
-              _polygonRayCast8 = _slicedToArray$2(_polygonRayCast7, 2),
+              _polygonRayCast8 = _slicedToArray$3(_polygonRayCast7, 2),
               _p1H = _polygonRayCast8[0],
               _p2H = _polygonRayCast8[1];
 
@@ -25174,7 +25535,7 @@
               var width = (left + right) / 2;
               var height = width / aRatio;
 
-              var _origin = _slicedToArray$2(origin, 2),
+              var _origin = _slicedToArray$3(origin, 2),
                   cx = _origin[0],
                   cy = _origin[1];
 
@@ -28164,20 +28525,6 @@
     return obj;
   }
 
-  function _typeof$e(obj) {
-    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$e = function _typeof$1(obj) {
-        return _typeof(obj);
-      };
-    } else {
-      _typeof$e = function _typeof$1(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
-      };
-    }
-
-    return _typeof$e(obj);
-  }
-
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
   }
@@ -28198,6 +28545,20 @@
 
       return arr2;
     }
+  }
+
+  function _typeof$e(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$e = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$e = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$e(obj);
   }
 
   function _classCallCheck$d(instance, Constructor) {
@@ -28500,7 +28861,7 @@
     }, {
       key: "render",
       value: function render(callback) {
-        var _this3 = this,
+        var _this2 = this,
             _this$_outerBounds;
         /**
          * Creates an SVG element to contain the axis if none
@@ -28555,12 +28916,38 @@
         };
         var labels, range$1, ticks;
         /**
+         * Constructs the tick formatter function.
+         */
+
+        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
+          if (_this2._scale === "time") {
+            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear)(d);
+          } else if (["band", "ordinal", "point"].includes(_this2._scale)) {
+            return d;
+          }
+
+          if (isNaN(d)) {
+            return d;
+          } else if (_this2._scale === "linear" && _this2._tickSuffix === "smallest") {
+            var _locale = _typeof$e(_this2._locale) === "object" ? _this2._locale : formatLocale$3[_this2._locale];
+
+            var separator = _locale.separator,
+                suffixes = _locale.suffixes;
+            var suff = d >= 1000 ? suffixes[_this2._tickUnit + 8] : "";
+            var tick = d / Math.pow(10, 3 * _this2._tickUnit);
+            var number = formatAbbreviate(tick, _locale, ",.".concat(tick.toString().length, "r"));
+            return "".concat(number).concat(separator).concat(suff);
+          } else {
+            return formatAbbreviate(d, _this2._locale);
+          }
+        };
+        /**
          * (Re)calculates the internal d3 scale
          * @param {} newRange
          */
 
         function setScale() {
-          var _this2 = this;
+          var _this3 = this;
 
           var newRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._range;
           /**
@@ -28616,12 +29003,11 @@
            */
 
 
-          this._d3Scale = scales["scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1))]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
-          if (this._d3Scale.round) this._d3Scale.round(true);
+          var scale = "scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1));
+          this._d3Scale = scales[scale]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain).range(range$1);
           if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
           if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
           if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
-          if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range$1);else this._d3Scale.range(range$1);
           /**
            * Constructs a separate "negative only" scale for logarithmic
            * domains, as they cannot pass zero.
@@ -28632,8 +29018,13 @@
           if (this._scale === "log") {
             var _domain = this._d3Scale.domain();
 
-            if (_domain[0] === 0) _domain[0] = 1;
-            if (_domain[_domain.length - 1] === 0) _domain[_domain.length - 1] = -1;
+            if (_domain[0] === 0) {
+              _domain[0] = Math.abs(_domain[_domain.length - 1]) <= 1 ? 1e-6 : 1;
+              if (_domain[_domain.length - 1] < 0) _domain[0] *= -1;
+            } else if (_domain[_domain.length - 1] === 0) {
+              _domain[_domain.length - 1] = Math.abs(_domain[0]) <= 1 ? 1e-6 : 1;
+              if (_domain[0] < 0) _domain[_domain.length - 1] *= -1;
+            }
 
             var _range = this._d3Scale.range();
 
@@ -28662,19 +29053,30 @@
           labels = (this._labels ? this._scale === "time" ? this._labels.map(date$2) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
 
           if (this._scale === "log") {
-            labels = labels.filter(function (t) {
-              return Math.abs(t).toString().charAt(0) === "1" && (_this2._d3Scale ? t !== -1 : t !== 1);
+            var tens = labels.filter(function (t) {
+              return Math.abs(t).toString().charAt(0) === "1" && (_this3._d3Scale ? t !== -1 : t !== 1);
             });
-          } else if (this._scale === "time") {
+
+            if (tens.length > 2) {
+              labels = tens;
+              ticks = tens;
+            } else if (labels.length >= 10) {
+              labels = labels.filter(function (t) {
+                return t % 5 === 0 || tickFormat(t).substr(-1) === "1";
+              });
+            }
+          }
+
+          if (this._scale === "time") {
             ticks = ticks.map(Number);
             labels = labels.map(Number);
           }
 
           ticks = ticks.sort(function (a, b) {
-            return _this2._getPosition(a) - _this2._getPosition(b);
+            return _this3._getPosition(a) - _this3._getPosition(b);
           });
           labels = labels.sort(function (a, b) {
-            return _this2._getPosition(a) - _this2._getPosition(b);
+            return _this3._getPosition(a) - _this3._getPosition(b);
           });
           /**
            * Get the smallest suffix.
@@ -28714,9 +29116,9 @@
               id: d,
               tick: true
             }, i);
-            if (_this2._shape === "Circle") s *= 2;
+            if (_this3._shape === "Circle") s *= 2;
 
-            var t = _this2._getPosition(d);
+            var t = _this3._getPosition(d);
 
             if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) pixels.push(t);else pixels.push(false);
           });
@@ -28748,50 +29150,10 @@
           }
         }
         /**
-         * Constructs the tick formatter function.
-         */
-
-
-        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
-          if (_this3._scale === "log") {
-            var _p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
-
-            var _t = Math.abs(d).toString().charAt(0);
-
-            var _n = "10 ".concat("".concat(_p).split("").map(function (c) {
-              return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c];
-            }).join(""));
-
-            if (_t !== "1") _n = "".concat(_t, " x ").concat(_n);
-            return d < 0 ? "-".concat(_n) : _n;
-          } else if (_this3._scale === "time") {
-            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear)(d);
-          } else if (["band", "ordinal", "point"].includes(_this3._scale)) {
-            return d;
-          }
-
-          var n = _this3._d3Scale.tickFormat ? _this3._d3Scale.tickFormat(labels.length - 1)(d) : d;
-          n = typeof n === "string" ? n.replace(/[^\d\.\-\+]/g, "") * 1 : n;
-
-          if (isNaN(n)) {
-            return n;
-          } else if (_this3._scale === "linear" && _this3._tickSuffix === "smallest") {
-            var _locale = _typeof$e(_this3._locale) === "object" ? _this3._locale : formatLocale$2[_this3._locale];
-
-            var separator = _locale.separator,
-                suffixes = _locale.suffixes;
-            var suff = n >= 1000 ? suffixes[_this3._tickUnit + 8] : "";
-            var tick = n / Math.pow(10, 3 * _this3._tickUnit);
-            var number = formatAbbreviate(tick, _locale, ",.".concat(tick.toString().length, "r"));
-            return "".concat(number).concat(separator).concat(suff);
-          } else {
-            return formatAbbreviate(n, _this3._locale);
-          }
-        };
-        /**
          * Pre-calculates the size of the title, if defined, in order
          * to adjust the internal margins.
          */
+
 
         if (this._title) {
           var _this$_titleConfig = this._titleConfig,
@@ -28821,11 +29183,11 @@
          */
 
         var textData = labels.map(function (d, i) {
-          var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
-              fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
-              position = _this3._getPosition(d);
+          var fF = _this2._shapeConfig.labelConfig.fontFamily(d, i),
+              fS = _this2._shapeConfig.labelConfig.fontSize(d, i),
+              position = _this2._getPosition(d);
 
-          var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+          var lineHeight = _this2._shapeConfig.lineHeight ? _this2._shapeConfig.lineHeight(d, i) : fS * 1.4;
           return {
             d: d,
             i: i,
@@ -28864,9 +29226,9 @@
         }
 
         textData = textData.map(function (datum) {
-          datum.rotate = _this3._labelRotation;
-          datum.space = calculateSpace.bind(_this3)(datum);
-          var res = calculateLabelSize.bind(_this3)(datum);
+          datum.rotate = _this2._labelRotation;
+          datum.space = calculateSpace.bind(_this2)(datum);
+          var res = calculateLabelSize.bind(_this2)(datum);
           return Object.assign(res, datum);
         });
         this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (d) {
@@ -28876,7 +29238,7 @@
         if (this._rotateLabels) {
           textData = textData.map(function (datum) {
             datum.rotate = true;
-            var res = calculateLabelSize.bind(_this3)(datum);
+            var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(datum, res);
           });
         }
@@ -28913,11 +29275,11 @@
         if (newRange[0] !== first || newRange[1] !== last) {
           setScale.bind(this)(newRange);
           textData = labels.map(function (d, i) {
-            var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
-                fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
-                position = _this3._getPosition(d);
+            var fF = _this2._shapeConfig.labelConfig.fontFamily(d, i),
+                fS = _this2._shapeConfig.labelConfig.fontSize(d, i),
+                position = _this2._getPosition(d);
 
-            var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+            var lineHeight = _this2._shapeConfig.lineHeight ? _this2._shapeConfig.lineHeight(d, i) : fS * 1.4;
             return {
               d: d,
               i: i,
@@ -28928,9 +29290,9 @@
             };
           });
           textData = textData.map(function (datum) {
-            datum.rotate = _this3._rotateLabels;
-            datum.space = calculateSpace.bind(_this3)(datum);
-            var res = calculateLabelSize.bind(_this3)(datum);
+            datum.rotate = _this2._rotateLabels;
+            datum.space = calculateSpace.bind(_this2)(datum);
+            var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(res, datum);
           });
         }
@@ -28950,8 +29312,8 @@
         if (this._rotateLabels) {
           var offset = 0;
           textData = textData.map(function (datum) {
-            datum.space = calculateSpace.bind(_this3)(datum, 2);
-            var res = calculateLabelSize.bind(_this3)(datum);
+            datum.space = calculateSpace.bind(_this2)(datum, 2);
+            var res = calculateLabelSize.bind(_this2)(datum);
             datum = Object.assign(datum, res);
             var prev = textData[datum.i - 1];
 
@@ -29011,13 +29373,13 @@
             return td.d === d;
           });
 
-          var xPos = _this3._getPosition(d);
+          var xPos = _this2._getPosition(d);
 
           var space = data ? data.space : 0;
           var lines = data ? data.lines.length : 1;
           var lineHeight = data ? data.lineHeight : 1;
-          var labelOffset = data && _this3._labelOffset ? data.offset : 0;
-          var labelWidth = horizontal ? space : bounds.width - margin[_this3._position.opposite] - hBuff - margin[_this3._orient] + p;
+          var labelOffset = data && _this2._labelOffset ? data.offset : 0;
+          var labelWidth = horizontal ? space : bounds.width - margin[_this2._position.opposite] - hBuff - margin[_this2._orient] + p;
           var offset = margin[opposite],
               size = (hBuff + labelOffset) * (flip ? -1 : 1),
               yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
@@ -29025,12 +29387,12 @@
             id: d,
             labelBounds: rotated && data ? {
               x: -data.width / 2 + data.fS / 4,
-              y: _this3._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
+              y: _this2._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
               width: data.width,
               height: data.height
             } : {
-              x: horizontal ? -space / 2 : _this3._orient === "left" ? -labelWidth - p + size : size + p,
-              y: horizontal ? _this3._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
+              x: horizontal ? -space / 2 : _this2._orient === "left" ? -labelWidth - p + size : size + p,
+              y: horizontal ? _this2._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
               width: horizontal ? space : labelWidth,
               height: horizontal ? labelHeight : space
             },
@@ -29038,7 +29400,7 @@
             size: labels.includes(d) ? size : 0,
             text: labels.includes(d) ? tickFormat(d) : false,
             tick: ticks.includes(d)
-          }, _defineProperty$2(_tickConfig, x, xPos + (_this3._scale === "band" ? _this3._d3Scale.bandwidth() / 2 : 0)), _defineProperty$2(_tickConfig, y, yPos), _tickConfig);
+          }, _defineProperty$2(_tickConfig, x, xPos + (_this2._scale === "band" ? _this2._d3Scale.bandwidth() / 2 : 0)), _defineProperty$2(_tickConfig, y, yPos), _tickConfig);
           return tickConfig;
         });
 
@@ -31269,11 +31631,11 @@
       return "translate(" + this.x + "," + this.y + ") scale(" + this.k + ")";
     }
   };
-  var identity$5 = new Transform(1, 0, 0);
+  var identity$6 = new Transform(1, 0, 0);
   transform.prototype = Transform.prototype;
   function transform(node) {
     while (!node.__zoom) {
-      if (!(node = node.parentNode)) return identity$5;
+      if (!(node = node.parentNode)) return identity$6;
     }
 
     return node.__zoom;
@@ -31309,7 +31671,7 @@
   }
 
   function defaultTransform() {
-    return this.__zoom || identity$5;
+    return this.__zoom || identity$6;
   }
 
   function defaultWheelDelta() {
@@ -31392,7 +31754,7 @@
         var e = extent.apply(this, arguments),
             t = this.__zoom,
             p0 = p == null ? centroid(e) : typeof p === "function" ? p.apply(this, arguments) : p;
-        return constrain(identity$5.translate(p0[0], p0[1]).scale(t.k).translate(typeof x === "function" ? -x.apply(this, arguments) : -x, typeof y === "function" ? -y.apply(this, arguments) : -y), e, translateExtent);
+        return constrain(identity$6.translate(p0[0], p0[1]).scale(t.k).translate(typeof x === "function" ? -x.apply(this, arguments) : -x, typeof y === "function" ? -y.apply(this, arguments) : -y), e, translateExtent);
       }, p);
     };
 
@@ -31854,6 +32216,90 @@
     });
   });
 
+  /**
+      @namespace {Object} formatLocale
+      @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
+        *
+        * | Name | Default | Description |
+        * |---|---|---|
+        * | separator | "" | Separation between the number with the suffix. |
+        * | suffixes | [] | List of suffixes used to format numbers. |
+        * | grouping | [3] | The array of group sizes, |
+        * | delimiters | {thousands: ",", decimal: "."} | Decimal and group separators. |
+        * | currency | ["$", ""] | The currency prefix and suffix. |
+  */
+  var formatLocale$4 = {
+    "en-GB": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["£", ""]
+    },
+    "en-US": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["$", ""]
+    },
+    "es-CL": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "MM", "B", "T", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ".",
+        decimal: ","
+      },
+      currency: ["$", ""]
+    },
+    "es-MX": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "MM", "B", "T", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["$", ""]
+    },
+    "es-ES": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "mm", "b", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ".",
+        decimal: ","
+      },
+      currency: ["€", ""]
+    },
+    "et-EE": {
+      separator: " ",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "tuhat", "miljonit", "miljardit", "triljonit", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: " ",
+        decimal: ","
+      },
+      currency: ["", "eurot"]
+    },
+    "fr-FR": {
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "m", "b", "t", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: " ",
+        decimal: ","
+      },
+      currency: ["€", ""]
+    }
+  };
+
   function _typeof$k(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
       _typeof$k = function _typeof$1(obj) {
@@ -31866,6 +32312,137 @@
     }
 
     return _typeof$k(obj);
+  }
+
+  var round$1 = function round(x, n) {
+    return parseFloat(Math.round(x * Math.pow(10, n)) / Math.pow(10, n)).toFixed(n);
+  };
+  /**
+   * @private
+  */
+
+
+  function formatSuffix$1(value, precision, suffixes) {
+    var i = 0;
+
+    if (value) {
+      if (value < 0) value *= -1;
+      i = 1 + Math.floor(1e-12 + Math.log(value) / Math.LN10);
+      i = Math.max(-24, Math.min(24, Math.floor((i - 1) / 3) * 3));
+    }
+
+    var d = suffixes[8 + i / 3];
+    return {
+      number: round$1(d.scale(value), precision),
+      symbol: d.symbol
+    };
+  }
+  /**
+   * @private
+  */
+
+
+  function parseSuffixes$1(d, i) {
+    var k = Math.pow(10, Math.abs(8 - i) * 3);
+    return {
+      scale: i > 8 ? function (d) {
+        return d / k;
+      } : function (d) {
+        return d * k;
+      },
+      symbol: d
+    };
+  }
+  /**
+      @function formatAbbreviate
+      @desc Formats a number to an appropriate number of decimal places and rounding, adding suffixes if applicable (ie. `1200000` to `"1.2M"`).
+      @param {Number|String} n The number to be formatted.
+      @param {Object|String} locale The locale config to be used. If *value* is an object, the function will format the numbers according the object. The object must include `suffixes`, `delimiter` and `currency` properties.
+      @returns {String}
+  */
+
+
+  function formatAbbreviate$1 (n) {
+    var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "en-US";
+    var precision = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+    if (isFinite(n)) n *= 1;else return "N/A";
+    var negative = n < 0;
+    var length = n.toString().split(".")[0].replace("-", "").length,
+        localeConfig = _typeof$k(locale) === "object" ? locale : formatLocale$4[locale] || formatLocale$4["en-US"],
+        suffixes = localeConfig.suffixes.map(parseSuffixes$1);
+    var decimal = localeConfig.delimiters.decimal || ".",
+        separator = localeConfig.separator || "",
+        thousands = localeConfig.delimiters.thousands || ",";
+    var d3plusFormatLocale = formatLocale({
+      currency: localeConfig.currency || ["$", ""],
+      decimal: decimal,
+      grouping: localeConfig.grouping || [3],
+      thousands: thousands
+    });
+    var val;
+    if (precision) val = d3plusFormatLocale.format(precision)(n);else if (n === 0) val = "0";else if (length >= 3) {
+      var f = formatSuffix$1(d3plusFormatLocale.format(".3r")(n), 2, suffixes);
+      var num = parseFloat(f.number).toString().replace(".", decimal);
+      var _char = f.symbol;
+      val = "".concat(num).concat(separator).concat(_char);
+    } else if (length === 3) val = d3plusFormatLocale.format(",f")(n);else if (n < 1 && n > -1) val = d3plusFormatLocale.format(".2g")(n);else val = d3plusFormatLocale.format(".3g")(n);
+    return "".concat(negative && val.charAt(0) !== "-" ? "-" : "").concat(val).replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+    .replace(/[.]$/g, ""); // removes any trailing decimal point
+  }
+
+  /**
+      @function date
+      @summary Parses numbers and strings to valid Javascript Date objects.
+      @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
+      @param {Number|String} *date*
+  */
+  function date$3 (d) {
+    // returns if already Date object
+    if (d.constructor === Date) return d; // detects if milliseconds
+    else if (d.constructor === Number && "".concat(d).length > 5 && d % 1 === 0) return new Date(d);
+    var s = "".concat(d);
+    var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
+        strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s); // tests for XX/XX/XXXX format
+
+    if (dayFormat) {
+      var year = dayFormat[1];
+      if (year.indexOf("-") === 0) s = s.replace(year, year.substr(1));
+      var date = new Date(s);
+      date.setFullYear(year);
+      return date;
+    } // tests for full Date object string format
+    else if (strFormat) {
+        var _year = strFormat[1];
+        if (_year.indexOf("-") === 0) s = s.replace(_year, _year.substr(1));
+
+        var _date = new Date(s);
+
+        _date.setFullYear(_year);
+
+        return _date;
+      } // detects if only passing a year value
+      else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
+          var _date2 = new Date("".concat(s, "/01/01"));
+
+          _date2.setFullYear(d);
+
+          return _date2;
+        } // parses string to Date object
+        else return new Date(s);
+  }
+
+  function _typeof$l(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$l = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$l = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$l(obj);
   }
 
   function _classCallCheck$i(instance, Constructor) {
@@ -31891,7 +32468,7 @@
   }
 
   function _possibleConstructorReturn$g(self, call) {
-    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -32066,18 +32643,18 @@
     return Button;
   }(BaseClass);
 
-  function _typeof$l(obj) {
+  function _typeof$m(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$l = function _typeof$1(obj) {
+      _typeof$m = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$l = function _typeof$1(obj) {
+      _typeof$m = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$l(obj);
+    return _typeof$m(obj);
   }
 
   function _classCallCheck$j(instance, Constructor) {
@@ -32103,7 +32680,7 @@
   }
 
   function _possibleConstructorReturn$h(self, call) {
-    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -32359,18 +32936,18 @@
     return Radio;
   }(BaseClass);
 
-  function _typeof$m(obj) {
+  function _typeof$n(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$m = function _typeof$1(obj) {
+      _typeof$n = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$m = function _typeof$1(obj) {
+      _typeof$n = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$m(obj);
+    return _typeof$n(obj);
   }
 
   function _classCallCheck$k(instance, Constructor) {
@@ -32396,7 +32973,7 @@
   }
 
   function _possibleConstructorReturn$i(self, call) {
-    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -32890,18 +33467,18 @@
     return clusters;
   }
 
-  function _typeof$n(obj) {
+  function _typeof$o(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$n = function _typeof$1(obj) {
+      _typeof$o = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$n = function _typeof$1(obj) {
+      _typeof$o = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$n(obj);
+    return _typeof$o(obj);
   }
 
   function _classCallCheck$l(instance, Constructor) {
@@ -32927,7 +33504,7 @@
   }
 
   function _possibleConstructorReturn$j(self, call) {
-    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -33611,19 +34188,129 @@
     return Legend;
   }(BaseClass);
 
-  function _typeof$o(obj) {
-    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$o = function _typeof$1(obj) {
-        return _typeof(obj);
-      };
-    } else {
-      _typeof$o = function _typeof$1(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
-      };
-    }
+  /**
+      @function date
+      @summary Parses numbers and strings to valid Javascript Date objects.
+      @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
+      @param {Number|String} *date*
+  */
+  function date$4 (d) {
+    // returns if already Date object
+    if (d.constructor === Date) return d; // detects if milliseconds
+    else if (d.constructor === Number && "".concat(d).length > 5 && d % 1 === 0) return new Date(d);
+    var s = "".concat(d);
+    var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
+        strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s); // tests for XX/XX/XXXX format
 
-    return _typeof$o(obj);
+    if (dayFormat) {
+      var year = dayFormat[1];
+      if (year.indexOf("-") === 0) s = s.replace(year, year.substr(1));
+      var date = new Date(s);
+      date.setFullYear(year);
+      return date;
+    } // tests for full Date object string format
+    else if (strFormat) {
+        var _year = strFormat[1];
+        if (_year.indexOf("-") === 0) s = s.replace(_year, _year.substr(1));
+
+        var _date = new Date(s);
+
+        _date.setFullYear(_year);
+
+        return _date;
+      } // detects if only passing a year value
+      else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
+          var _date2 = new Date("".concat(s, "/01/01"));
+
+          _date2.setFullYear(d);
+
+          return _date2;
+        } // parses string to Date object
+        else return new Date(s);
   }
+
+  var locale$3 = {
+    "de-DE": {
+      dateTime: "%A, der %e. %B %Y, %X",
+      date: "%d.%m.%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    },
+    "en-GB": {
+      dateTime: "%a %e %b %X %Y",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "en-US": {
+      dateTime: "%x, %X",
+      date: "%-m/%-d/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "es-ES": {
+      dateTime: "%A, %e de %B de %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "es-MX": {
+      dateTime: "%x, %X",
+      date: "%d/%m/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "fr-FR": {
+      dateTime: "%A, le %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+      shortDays: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
+      months: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+      shortMonths: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."]
+    },
+    "it-IT": {
+      dateTime: "%A %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+      shortDays: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
+      months: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+      shortMonths: ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
+    },
+    "pt-BR": {
+      dateTime: "%A, %e de %B de %Y. %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"],
+      shortDays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+      months: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+      shortMonths: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+    }
+  };
 
   function _defineProperty$3(obj, key, value) {
     if (key in obj) {
@@ -33638,6 +34325,42 @@
     }
 
     return obj;
+  }
+
+  function _typeof$p(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$p = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$p = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$p(obj);
+  }
+
+  function _toConsumableArray$1(arr) {
+    return _arrayWithoutHoles$1(arr) || _iterableToArray$1(arr) || _nonIterableSpread$1();
+  }
+
+  function _nonIterableSpread$1() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance");
+  }
+
+  function _iterableToArray$1(iter) {
+    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  }
+
+  function _arrayWithoutHoles$1(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
+        arr2[i] = arr[i];
+      }
+
+      return arr2;
+    }
   }
 
   function _classCallCheck$m(instance, Constructor) {
@@ -33663,7 +34386,7 @@
   }
 
   function _possibleConstructorReturn$k(self, call) {
-    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$p(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -33709,6 +34432,1342 @@
     return _setPrototypeOf$k(o, p);
   }
   /**
+      @class Axis
+      @extends external:BaseClass
+      @desc Creates an SVG scale based on an array of data.
+  */
+
+  var Axis$1 =
+  /*#__PURE__*/
+  function (_BaseClass) {
+    _inherits$k(Axis, _BaseClass);
+    /**
+        @memberof Axis
+        @desc Invoked when creating a new class instance, and sets any default parameters.
+        @private
+    */
+
+
+    function Axis() {
+      var _this;
+
+      _classCallCheck$m(this, Axis);
+
+      _this = _possibleConstructorReturn$k(this, _getPrototypeOf$k(Axis).call(this));
+      _this._align = "middle";
+      _this._barConfig = {
+        "stroke": "#000",
+        "stroke-width": 1
+      };
+      _this._domain = [0, 10];
+      _this._duration = 600;
+      _this._gridConfig = {
+        "stroke": "#ccc",
+        "stroke-width": 1
+      };
+      _this._gridLog = false;
+      _this._height = 400;
+      _this._labelOffset = true;
+
+      _this.orient("bottom");
+
+      _this._outerBounds = {
+        width: 0,
+        height: 0,
+        x: 0,
+        y: 0
+      };
+      _this._padding = 5;
+      _this._paddingInner = 0.1;
+      _this._paddingOuter = 0.1;
+      _this._rotateLabels = false;
+      _this._scale = "linear";
+      _this._scalePadding = 0.5;
+      _this._shape = "Line";
+      _this._shapeConfig = {
+        fill: "#000",
+        height: function height(d) {
+          return d.tick ? 8 : 0;
+        },
+        label: function label(d) {
+          return d.text;
+        },
+        labelBounds: function labelBounds(d) {
+          return d.labelBounds;
+        },
+        labelConfig: {
+          fontColor: "#000",
+          fontFamily: new TextBox().fontFamily(),
+          fontResize: false,
+          fontSize: constant(10),
+          padding: 0,
+          textAnchor: function textAnchor() {
+            var rtl = detectRTL();
+            return _this._orient === "left" ? rtl ? "start" : "end" : _this._orient === "right" ? rtl ? "end" : "start" : _this._rotateLabels ? _this._orient === "bottom" ? "end" : "start" : "middle";
+          },
+          verticalAlign: function verticalAlign() {
+            return _this._orient === "bottom" ? "top" : _this._orient === "top" ? "bottom" : "middle";
+          }
+        },
+        r: function r(d) {
+          return d.tick ? 4 : 0;
+        },
+        stroke: "#000",
+        strokeWidth: 1,
+        width: function width(d) {
+          return d.tick ? 8 : 0;
+        }
+      };
+      _this._tickSize = 5;
+      _this._tickSpecifier = undefined;
+      _this._tickSuffix = "normal";
+      _this._tickUnit = 0;
+      _this._timeLocale = undefined;
+      _this._titleClass = new TextBox();
+      _this._titleConfig = {
+        fontSize: 12,
+        textAnchor: "middle"
+      };
+      _this._width = 400;
+      return _this;
+    }
+    /**
+        @memberof Axis
+        @desc Sets positioning for the axis bar.
+        @param {D3Selection} *bar*
+        @private
+    */
+
+
+    _createClass$i(Axis, [{
+      key: "_barPosition",
+      value: function _barPosition(bar) {
+        var _this$_position = this._position,
+            height = _this$_position.height,
+            x = _this$_position.x,
+            y = _this$_position.y,
+            opposite = _this$_position.opposite,
+            domain = this._getDomain(),
+            offset = this._margin[opposite],
+            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
+
+        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
+      }
+      /**
+          @memberof Axis
+          @desc Returns the scale's domain, taking into account negative and positive log scales.
+          @private
+      */
+
+    }, {
+      key: "_getDomain",
+      value: function _getDomain() {
+        var ticks = [];
+        if (this._d3ScaleNegative) ticks = this._d3ScaleNegative.domain();
+        if (this._d3Scale) ticks = ticks.concat(this._d3Scale.domain());
+        var domain = ["band", "ordinal", "point"].includes(this._scale) ? ticks : extent(ticks);
+        return ticks[0] > ticks[1] ? domain.reverse() : domain;
+      }
+      /**
+          @memberof Axis
+          @desc Returns a value's scale position, taking into account negative and positive log scales.
+          @param {Number|String} *d*
+          @private
+      */
+
+    }, {
+      key: "_getPosition",
+      value: function _getPosition(d) {
+        return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : this._d3Scale(d);
+      }
+      /**
+          @memberof Axis
+          @desc Returns the scale's range, taking into account negative and positive log scales.
+          @private
+      */
+
+    }, {
+      key: "_getRange",
+      value: function _getRange() {
+        var ticks = [];
+        if (this._d3ScaleNegative) ticks = this._d3ScaleNegative.range();
+        if (this._d3Scale) ticks = ticks.concat(this._d3Scale.range());
+        return ticks[0] > ticks[1] ? extent(ticks).reverse() : extent(ticks);
+      }
+      /**
+          @memberof Axis
+          @desc Returns the scale's ticks, taking into account negative and positive log scales.
+          @private
+      */
+
+    }, {
+      key: "_getTicks",
+      value: function _getTicks() {
+        var tickScale = sqrt().domain([10, 400]).range([10, 50]);
+        var ticks = [];
+
+        if (this._d3ScaleNegative) {
+          var negativeRange = this._d3ScaleNegative.range();
+
+          var size = negativeRange[1] - negativeRange[0];
+          ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
+        }
+
+        if (this._d3Scale) {
+          var positiveRange = this._d3Scale.range();
+
+          var _size = positiveRange[1] - positiveRange[0];
+
+          ticks = ticks.concat(this._d3Scale.ticks(Math.floor(_size / tickScale(_size))));
+        }
+
+        return ticks;
+      }
+      /**
+          @memberof Axis
+          @desc Sets positioning for the grid lines.
+          @param {D3Selection} *lines*
+          @private
+      */
+
+    }, {
+      key: "_gridPosition",
+      value: function _gridPosition(lines) {
+        var last = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        var _this$_position2 = this._position,
+            height = _this$_position2.height,
+            x = _this$_position2.x,
+            y = _this$_position2.y,
+            opposite = _this$_position2.opposite,
+            offset = this._margin[opposite],
+            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
+            scale = last ? this._lastScale || this._getPosition.bind(this) : this._getPosition.bind(this),
+            size = ["top", "left"].includes(this._orient) ? offset : -offset,
+            xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
+            xPos = function xPos(d) {
+          return scale(d.id) + xDiff;
+        };
+
+        lines.call(attrize, this._gridConfig).attr("".concat(x, "1"), xPos).attr("".concat(x, "2"), xPos).attr("".concat(y, "1"), position).attr("".concat(y, "2"), last ? position : position + size);
+      }
+      /**
+          @memberof Axis
+          @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
+          @param {Function} [*callback* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "render",
+      value: function render(callback) {
+        var _this3 = this,
+            _this$_outerBounds;
+        /**
+         * Creates an SVG element to contain the axis if none
+         * has been specified using the "select" method.
+         */
+
+
+        if (this._select === void 0) {
+          this.select(_select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node());
+        }
+
+        var timeLocale = this._timeLocale || locale$3[this._locale] || locale$3["en-US"];
+        defaultLocale$1(timeLocale).format();
+        var formatDay = timeFormat("%a %d"),
+            formatHour = timeFormat("%I %p"),
+            formatMillisecond = timeFormat(".%L"),
+            formatMinute = timeFormat("%I:%M"),
+            formatMonth = timeFormat("%b"),
+            formatSecond = timeFormat(":%S"),
+            formatWeek = timeFormat("%b %d"),
+            formatYear = timeFormat("%Y");
+        /**
+         * Declares some commonly used variables.
+         */
+
+        var _this$_position3 = this._position,
+            width = _this$_position3.width,
+            height = _this$_position3.height,
+            x = _this$_position3.x,
+            y = _this$_position3.y,
+            horizontal = _this$_position3.horizontal,
+            opposite = _this$_position3.opposite,
+            clipId = "d3plus-Axis-clip-".concat(this._uuid),
+            flip = ["top", "left"].includes(this._orient),
+            p = this._padding,
+            parent = this._select,
+            rangeOuter = [p, this["_".concat(width)] - p],
+            t = transition().duration(this._duration);
+        var tickValue = this._shape === "Circle" ? this._shapeConfig.r : this._shape === "Rect" ? this._shapeConfig[width] : this._shapeConfig.strokeWidth;
+        var tickGet = typeof tickValue !== "function" ? function () {
+          return tickValue;
+        } : tickValue;
+        /**
+         * Zeros out the margins for re-calculation.
+         */
+
+        var margin = this._margin = {
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0
+        };
+        var labels, range$1, ticks;
+        /**
+         * (Re)calculates the internal d3 scale
+         * @param {} newRange
+         */
+
+        function setScale() {
+          var _this2 = this;
+
+          var newRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._range;
+          /**
+           * Calculates the internal "range" array to use, including
+           * fallbacks if not specified with the "range" method.
+           */
+
+          range$1 = newRange ? newRange.slice() : [undefined, undefined];
+          var minRange = rangeOuter[0],
+              maxRange = rangeOuter[1];
+
+          if (this._range) {
+            if (this._range[0] !== undefined) minRange = this._range[0];
+            if (this._range[this._range.length - 1] !== undefined) maxRange = this._range[this._range.length - 1];
+          }
+
+          if (range$1[0] === undefined || range$1[0] < minRange) range$1[0] = minRange;
+          if (range$1[1] === undefined || range$1[1] > maxRange) range$1[1] = maxRange;
+          var sizeInner = maxRange - minRange;
+
+          if (this._scale === "ordinal" && this._domain.length > range$1.length) {
+            if (newRange === this._range) {
+              var buckets = this._domain.length + 1;
+              range$1 = range(buckets).map(function (d) {
+                return range$1[0] + sizeInner * (d / (buckets - 1));
+              }).slice(1, buckets);
+              range$1 = range$1.map(function (d) {
+                return d - range$1[0] / 2;
+              });
+            } else {
+              var _buckets = this._domain.length;
+              var size = range$1[1] - range$1[0];
+              range$1 = range(_buckets).map(function (d) {
+                return range$1[0] + size * (d / (_buckets - 1));
+              });
+            }
+          } else if (newRange === this._range) {
+            var tickScale = sqrt().domain([10, 400]).range([10, 50]);
+            var domain = this._scale === "time" ? this._domain.map(date$4) : this._domain;
+            var scaleTicks = d3Ticks(domain[0], domain[1], Math.floor(sizeInner / tickScale(sizeInner)));
+            ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date$4) : this._ticks : scaleTicks).slice();
+            labels = (this._labels ? this._scale === "time" ? this._labels.map(date$4) : this._labels : scaleTicks).slice();
+            var _buckets2 = labels.length;
+
+            if (_buckets2) {
+              var pad = Math.ceil(sizeInner / _buckets2 / 2);
+              range$1 = [range$1[0] + pad, range$1[1] - pad];
+            }
+          }
+          /**
+           * Sets up the initial d3 scale, using this._domain and the
+           * previously defined range variable.
+           */
+
+
+          this._d3Scale = scales["scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1))]().domain(this._scale === "time" ? this._domain.map(date$4) : this._domain);
+          if (this._d3Scale.round) this._d3Scale.round(true);
+          if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
+          if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
+          if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
+          if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range$1);else this._d3Scale.range(range$1);
+          /**
+           * Constructs a separate "negative only" scale for logarithmic
+           * domains, as they cannot pass zero.
+           */
+
+          this._d3ScaleNegative = null;
+
+          if (this._scale === "log") {
+            var _domain = this._d3Scale.domain();
+
+            if (_domain[0] === 0) _domain[0] = 1;
+            if (_domain[_domain.length - 1] === 0) _domain[_domain.length - 1] = -1;
+
+            var _range = this._d3Scale.range();
+
+            if (_domain[0] < 0 && _domain[_domain.length - 1] < 0) {
+              this._d3ScaleNegative = this._d3Scale.copy().domain(_domain).range(_range);
+              this._d3Scale = null;
+            } else if (_domain[0] > 0 && _domain[_domain.length - 1] > 0) {
+              this._d3Scale.domain(_domain).range(_range);
+            } else {
+              var percentScale = log().domain([1, _domain[_domain[1] > 0 ? 1 : 0]]).range([0, 1]);
+              var leftPercentage = percentScale(Math.abs(_domain[_domain[1] < 0 ? 1 : 0]));
+              var zero = leftPercentage / (leftPercentage + 1) * (_range[1] - _range[0]);
+              if (_domain[0] > 0) zero = _range[1] - _range[0] - zero;
+              this._d3ScaleNegative = this._d3Scale.copy();
+              (_domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative).domain([Math.sign(_domain[1]), _domain[1]]).range([_range[0] + zero, _range[1]]);
+              (_domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale).domain([_domain[0], Math.sign(_domain[0])]).range([_range[0], _range[0] + zero]);
+            }
+          }
+          /**
+           * Determines the of values array to use
+           * for the "ticks" and the "labels"
+           */
+
+
+          ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date$4) : this._ticks : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : this._domain).slice();
+          labels = (this._labels ? this._scale === "time" ? this._labels.map(date$4) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
+
+          if (this._scale === "log") {
+            labels = labels.filter(function (t) {
+              return Math.abs(t).toString().charAt(0) === "1" && (_this2._d3Scale ? t !== -1 : t !== 1);
+            });
+          } else if (this._scale === "time") {
+            ticks = ticks.map(Number);
+            labels = labels.map(Number);
+          }
+
+          ticks = ticks.sort(function (a, b) {
+            return _this2._getPosition(a) - _this2._getPosition(b);
+          });
+          labels = labels.sort(function (a, b) {
+            return _this2._getPosition(a) - _this2._getPosition(b);
+          });
+          /**
+           * Get the smallest suffix.
+           */
+
+          if (this._scale === "linear" && this._tickSuffix === "smallest") {
+            var suffixes = labels.filter(function (d) {
+              return d >= 1000;
+            });
+
+            if (suffixes.length > 0) {
+              var _min = Math.min.apply(Math, _toConsumableArray$1(suffixes));
+
+              var i = 1;
+
+              while (i && i < 7) {
+                var n = Math.pow(10, 3 * i);
+
+                if (_min / n >= 1) {
+                  this._tickUnit = i;
+                  i += 1;
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+          /**
+           * Removes ticks when they overlap other ticks.
+           */
+
+
+          var pixels = [];
+          this._availableTicks = ticks;
+          ticks.forEach(function (d, i) {
+            var s = tickGet({
+              id: d,
+              tick: true
+            }, i);
+            if (_this2._shape === "Circle") s *= 2;
+
+            var t = _this2._getPosition(d);
+
+            if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) pixels.push(t);else pixels.push(false);
+          });
+          ticks = ticks.filter(function (d, i) {
+            return pixels[i] !== false;
+          });
+          this._visibleTicks = ticks;
+        }
+
+        setScale.bind(this)();
+        /**
+         * Calculates the space available for a given label.
+         * @param {Object} datum
+         */
+
+        function calculateSpace(datum) {
+          var diff = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+          var i = datum.i,
+              position = datum.position;
+
+          if (this._scale === "band") {
+            return this._d3Scale.bandwidth();
+          } else {
+            var prevPosition = i - diff < 0 ? textData.length === 1 || !this._range ? rangeOuter[0] : (position - textData[i + diff].position) / 2 - position : position - (position - textData[i - diff].position) / 2;
+            var prevSpace = Math.abs(position - prevPosition);
+            var nextPosition = i + diff > textData.length - 1 ? textData.length === 1 || !this._range ? rangeOuter[1] : (position - textData[i - diff].position) / 2 - position : position - (position - textData[i + diff].position) / 2;
+            var nextSpace = Math.abs(position - nextPosition);
+            return min([prevSpace, nextSpace]) * 2;
+          }
+        }
+        /**
+         * Constructs the tick formatter function.
+         */
+
+
+        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
+          if (_this3._scale === "log") {
+            var _p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
+
+            var _t = Math.abs(d).toString().charAt(0);
+
+            var _n = "10 ".concat("".concat(_p).split("").map(function (c) {
+              return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c];
+            }).join(""));
+
+            if (_t !== "1") _n = "".concat(_t, " x ").concat(_n);
+            return d < 0 ? "-".concat(_n) : _n;
+          } else if (_this3._scale === "time") {
+            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear)(d);
+          } else if (["band", "ordinal", "point"].includes(_this3._scale)) {
+            return d;
+          }
+
+          var n = _this3._d3Scale.tickFormat ? _this3._d3Scale.tickFormat(labels.length - 1)(d) : d;
+          n = typeof n === "string" ? n.replace(/[^\d\.\-\+]/g, "") * 1 : n;
+
+          if (isNaN(n)) {
+            return n;
+          } else if (_this3._scale === "linear" && _this3._tickSuffix === "smallest") {
+            var _locale = _typeof$p(_this3._locale) === "object" ? _this3._locale : formatLocale$4[_this3._locale];
+
+            var separator = _locale.separator,
+                suffixes = _locale.suffixes;
+            var suff = n >= 1000 ? suffixes[_this3._tickUnit + 8] : "";
+            var tick = n / Math.pow(10, 3 * _this3._tickUnit);
+            var number = formatAbbreviate$1(tick, _locale, ",.".concat(tick.toString().length, "r"));
+            return "".concat(number).concat(separator).concat(suff);
+          } else {
+            return formatAbbreviate$1(n, _this3._locale);
+          }
+        };
+        /**
+         * Pre-calculates the size of the title, if defined, in order
+         * to adjust the internal margins.
+         */
+
+        if (this._title) {
+          var _this$_titleConfig = this._titleConfig,
+              fontFamily = _this$_titleConfig.fontFamily,
+              fontSize = _this$_titleConfig.fontSize,
+              lineHeight = _this$_titleConfig.lineHeight;
+          var titleWrap = textWrap().fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily).fontSize(typeof fontSize === "function" ? fontSize() : fontSize).lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight).width(range$1[range$1.length - 1] - range$1[0] - p * 2).height(this["_".concat(height)] - this._tickSize - p * 2);
+          var lines = titleWrap(this._title).lines.length;
+          margin[this._orient] = lines * titleWrap.lineHeight() + p;
+        }
+
+        var hBuff = this._shape === "Circle" ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({
+          tick: true
+        }) : this._shapeConfig.r : this._shape === "Rect" ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({
+          tick: true
+        }) : this._shapeConfig[height] : this._tickSize,
+            wBuff = tickGet({
+          tick: true
+        });
+        if (typeof hBuff === "function") hBuff = max(ticks.map(hBuff));
+        if (this._shape === "Rect") hBuff /= 2;
+        if (typeof wBuff === "function") wBuff = max(ticks.map(wBuff));
+        if (this._shape !== "Circle") wBuff /= 2;
+        /**
+         * Calculates the space each label would take up, given
+         * the provided this._space size.
+         */
+
+        var textData = labels.map(function (d, i) {
+          var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
+              fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
+              position = _this3._getPosition(d);
+
+          var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+          return {
+            d: d,
+            i: i,
+            fF: fF,
+            fS: fS,
+            lineHeight: lineHeight,
+            position: position
+          };
+        });
+        /**
+         * Calculates the text wrapping and size of a given textData object.
+         * @param {Object} datum
+         */
+
+        function calculateLabelSize(datum) {
+          var d = datum.d,
+              i = datum.i,
+              fF = datum.fF,
+              fS = datum.fS,
+              rotate = datum.rotate,
+              space = datum.space;
+          var h = rotate ? "width" : "height",
+              w = rotate ? "height" : "width";
+          var wSize = min([this._maxSize, this._width]);
+          var hSize = min([this._maxSize, this._height]);
+          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : wSize - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? hSize - hBuff - p - this._margin.top - this._margin.bottom : space);
+          var res = wrap(tickFormat(d));
+          res.lines = res.lines.filter(function (d) {
+            return d !== "";
+          });
+          res.width = res.lines.length ? Math.ceil(max(res.widths)) + fS / 4 : 0;
+          if (res.width % 2) res.width++;
+          res.height = res.lines.length ? Math.ceil(res.lines.length * wrap.lineHeight()) + fS / 4 : 0;
+          if (res.height % 2) res.height++;
+          return res;
+        }
+
+        textData = textData.map(function (datum) {
+          datum.rotate = _this3._labelRotation;
+          datum.space = calculateSpace.bind(_this3)(datum);
+          var res = calculateLabelSize.bind(_this3)(datum);
+          return Object.assign(res, datum);
+        });
+        this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (d) {
+          return d.truncated;
+        }) : this._labelRotation;
+
+        if (this._rotateLabels) {
+          textData = textData.map(function (datum) {
+            datum.rotate = true;
+            var res = calculateLabelSize.bind(_this3)(datum);
+            return Object.assign(datum, res);
+          });
+        }
+        /**
+         * "spillover" will contain the pixel spillover of the first and last label,
+         * and then adjust the scale range accordingly.
+         */
+
+
+        var spillover = [0, 0];
+
+        for (var index = 0; index < 2; index++) {
+          var datum = textData[index ? textData.length - 1 : 0];
+          if (!datum) break;
+          var _height = datum.height,
+              position = datum.position,
+              rotate = datum.rotate,
+              _width = datum.width;
+          var compPosition = index ? rangeOuter[1] : rangeOuter[0];
+          var halfSpace = (rotate || !horizontal ? _height : _width) / 2;
+          var spill = index ? position + halfSpace - compPosition : position - halfSpace - compPosition;
+          spillover[index] = spill;
+        }
+
+        var first = range$1[0];
+        var last = range$1[range$1.length - 1];
+        var newRange = [first - spillover[0], last - spillover[1]];
+
+        if (this._range) {
+          if (this._range[0] !== undefined) newRange[0] = this._range[0];
+          if (this._range[this._range.length - 1] !== undefined) newRange[1] = this._range[this._range.length - 1];
+        }
+
+        if (newRange[0] !== first || newRange[1] !== last) {
+          setScale.bind(this)(newRange);
+          textData = labels.map(function (d, i) {
+            var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
+                fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
+                position = _this3._getPosition(d);
+
+            var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+            return {
+              d: d,
+              i: i,
+              fF: fF,
+              fS: fS,
+              lineHeight: lineHeight,
+              position: position
+            };
+          });
+          textData = textData.map(function (datum) {
+            datum.rotate = _this3._rotateLabels;
+            datum.space = calculateSpace.bind(_this3)(datum);
+            var res = calculateLabelSize.bind(_this3)(datum);
+            return Object.assign(res, datum);
+          });
+        }
+
+        var labelHeight = max(textData, function (t) {
+          return t.height;
+        }) || 0;
+        this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (datum) {
+          var i = datum.i,
+              height = datum.height,
+              position = datum.position,
+              truncated = datum.truncated;
+          var prev = textData[i - 1];
+          return truncated || i && prev.position + prev.height / 2 > position - height / 2;
+        }) : this._labelRotation;
+
+        if (this._rotateLabels) {
+          var offset = 0;
+          textData = textData.map(function (datum) {
+            datum.space = calculateSpace.bind(_this3)(datum, 2);
+            var res = calculateLabelSize.bind(_this3)(datum);
+            datum = Object.assign(datum, res);
+            var prev = textData[datum.i - 1];
+
+            if (!prev) {
+              offset = 1;
+            } else if (prev.position + prev.height / 2 > datum.position) {
+              if (offset) {
+                datum.offset = prev.width;
+                offset = 0;
+              } else offset = 1;
+            }
+
+            return datum;
+          });
+        }
+
+        var globalOffset = this._labelOffset ? max(textData, function (d) {
+          return d.offset || 0;
+        }) : 0;
+        textData.forEach(function (datum) {
+          return datum.offset = datum.offset ? globalOffset : 0;
+        });
+        var tBuff = this._shape === "Line" ? 0 : hBuff;
+        var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$3(_this$_outerBounds, height, (max(textData, function (t) {
+          return Math.ceil(t[t.rotate || !horizontal ? "width" : "height"] + t.offset);
+        }) || 0) + (textData.length ? p : 0)), _defineProperty$3(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$3(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
+        bounds[height] = max([this._minSize, bounds[height]]);
+        margin[this._orient] += hBuff;
+        margin[opposite] = this._gridSize !== undefined ? max([this._gridSize, tBuff]) : this["_".concat(height)] - margin[this._orient] - bounds[height] - p;
+        bounds[height] += margin[opposite] + margin[this._orient];
+        bounds[y] = this._align === "start" ? this._padding : this._align === "end" ? this["_".concat(height)] - bounds[height] - this._padding : this["_".concat(height)] / 2 - bounds[height] / 2;
+        var group = elem("g#d3plus-Axis-".concat(this._uuid), {
+          parent: parent
+        });
+        this._group = group;
+        var grid = elem("g.grid", {
+          parent: group
+        }).selectAll("line").data((this._gridSize !== 0 ? this._grid || this._scale === "log" && !this._gridLog ? labels : ticks : []).map(function (d) {
+          return {
+            id: d
+          };
+        }), function (d) {
+          return d.id;
+        });
+        grid.exit().transition(t).attr("opacity", 0).call(this._gridPosition.bind(this)).remove();
+        grid.enter().append("line").attr("opacity", 0).attr("clip-path", "url(#".concat(clipId, ")")).call(this._gridPosition.bind(this), true).merge(grid).transition(t).attr("opacity", 1).call(this._gridPosition.bind(this));
+        var labelOnly = labels.filter(function (d, i) {
+          return textData[i].lines.length && !ticks.includes(d);
+        });
+        var rotated = textData.some(function (d) {
+          return d.rotate;
+        });
+        var tickData = ticks.concat(labelOnly).map(function (d) {
+          var _tickConfig;
+
+          var data = textData.find(function (td) {
+            return td.d === d;
+          });
+
+          var xPos = _this3._getPosition(d);
+
+          var space = data ? data.space : 0;
+          var lines = data ? data.lines.length : 1;
+          var lineHeight = data ? data.lineHeight : 1;
+          var labelOffset = data && _this3._labelOffset ? data.offset : 0;
+          var labelWidth = horizontal ? space : bounds.width - margin[_this3._position.opposite] - hBuff - margin[_this3._orient] + p;
+          var offset = margin[opposite],
+              size = (hBuff + labelOffset) * (flip ? -1 : 1),
+              yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
+          var tickConfig = (_tickConfig = {
+            id: d,
+            labelBounds: rotated && data ? {
+              x: -data.width / 2 + data.fS / 4,
+              y: _this3._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
+              width: data.width,
+              height: data.height
+            } : {
+              x: horizontal ? -space / 2 : _this3._orient === "left" ? -labelWidth - p + size : size + p,
+              y: horizontal ? _this3._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
+              width: horizontal ? space : labelWidth,
+              height: horizontal ? labelHeight : space
+            },
+            rotate: data ? data.rotate : false,
+            size: labels.includes(d) ? size : 0,
+            text: labels.includes(d) ? tickFormat(d) : false,
+            tick: ticks.includes(d)
+          }, _defineProperty$3(_tickConfig, x, xPos + (_this3._scale === "band" ? _this3._d3Scale.bandwidth() / 2 : 0)), _defineProperty$3(_tickConfig, y, yPos), _tickConfig);
+          return tickConfig;
+        });
+
+        if (this._shape === "Line") {
+          tickData = tickData.concat(tickData.map(function (d) {
+            var dupe = Object.assign({}, d);
+            dupe[y] += d.size;
+            return dupe;
+          }));
+        }
+
+        new shapes$2[this._shape]().data(tickData).duration(this._duration).labelConfig({
+          ellipsis: function ellipsis(d) {
+            return d && d.length ? "".concat(d, "...") : "";
+          },
+          rotate: function rotate(d) {
+            return d.rotate ? -90 : 0;
+          }
+        }).select(elem("g.ticks", {
+          parent: group
+        }).node()).config(this._shapeConfig).render();
+        var bar = group.selectAll("line.bar").data([null]);
+        bar.enter().append("line").attr("class", "bar").attr("opacity", 0).call(this._barPosition.bind(this)).merge(bar).transition(t).attr("opacity", 1).call(this._barPosition.bind(this));
+
+        this._titleClass.data(this._title ? [{
+          text: this._title
+        }] : []).duration(this._duration).height(margin[this._orient]).rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0).select(elem("g.d3plus-Axis-title", {
+          parent: group
+        }).node()).text(function (d) {
+          return d.text;
+        }).verticalAlign("middle").width(range$1[range$1.length - 1] - range$1[0]).x(horizontal ? range$1[0] : this._orient === "left" ? bounds.x + margin.left / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2 : bounds.x + bounds.width - margin.right / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom : bounds.y : range$1[0] + (range$1[range$1.length - 1] - range$1[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
+
+        this._lastScale = this._getPosition.bind(this);
+        if (callback) setTimeout(callback, this._duration + 100);
+        return this;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance.
+          @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
+          @chainable
+      */
+
+    }, {
+      key: "align",
+      value: function align(_) {
+        return arguments.length ? (this._align = _, this) : this._align;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the axis line style and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "barConfig",
+      value: function barConfig(_) {
+        return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance.
+          @param {Array} [*value* = [0, 10]]
+          @chainable
+      */
+
+    }, {
+      key: "domain",
+      value: function domain(_) {
+        return arguments.length ? (this._domain = _, this) : this._domain;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance.
+          @param {Number} [*value* = 600]
+          @chainable
+      */
+
+    }, {
+      key: "duration",
+      value: function duration(_) {
+        return arguments.length ? (this._duration = _, this) : this._duration;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid values of the axis and returns the current class instance.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "grid",
+      value: function grid(_) {
+        return arguments.length ? (this._grid = _, this) : this._grid;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid config of the axis and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "gridConfig",
+      value: function gridConfig(_) {
+        return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid behavior of the axis when scale is logarithmic and returns the current class instance.
+          @param {Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "gridLog",
+      value: function gridLog(_) {
+        return arguments.length ? (this._gridLog = _, this) : this._gridLog;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid size of the axis and returns the current class instance.
+          @param {Number} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "gridSize",
+      value: function gridSize(_) {
+        return arguments.length ? (this._gridSize = _, this) : this._gridSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the overall height of the axis and returns the current class instance.
+          @param {Number} [*value* = 100]
+          @chainable
+      */
+
+    }, {
+      key: "height",
+      value: function height(_) {
+        return arguments.length ? (this._height = _, this) : this._height;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labels",
+      value: function labels(_) {
+        return arguments.length ? (this._labels = _, this) : this._labels;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
+          @param {Boolean} [*value* = true]
+          @chainable
+       */
+
+    }, {
+      key: "labelOffset",
+      value: function labelOffset(_) {
+        return arguments.length ? (this._labelOffset = _, this) : this._labelOffset;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets whether whether horizontal axis labels are rotated -90 degrees.
+          @param {Boolean}
+          @chainable
+       */
+
+    }, {
+      key: "labelRotation",
+      value: function labelRotation(_) {
+        return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the maximum size allowed for the space that contains the axis tick labels and title.
+          @param {Number}
+          @chainable
+       */
+
+    }, {
+      key: "maxSize",
+      value: function maxSize(_) {
+        return arguments.length ? (this._maxSize = _, this) : this._maxSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the minimum size alloted for the space that contains the axis tick labels and title.
+          @param {Number}
+          @chainable
+       */
+
+    }, {
+      key: "minSize",
+      value: function minSize(_) {
+        return arguments.length ? (this._minSize = _, this) : this._minSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
+          @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
+          @chainable
+      */
+
+    }, {
+      key: "orient",
+      value: function orient(_) {
+        if (arguments.length) {
+          var horizontal = ["top", "bottom"].includes(_),
+              opps = {
+            top: "bottom",
+            right: "left",
+            bottom: "top",
+            left: "right"
+          };
+          this._position = {
+            horizontal: horizontal,
+            width: horizontal ? "width" : "height",
+            height: horizontal ? "height" : "width",
+            x: horizontal ? "x" : "y",
+            y: horizontal ? "y" : "x",
+            opposite: opps[_]
+          };
+          return this._orient = _, this;
+        }
+
+        return this._orient;
+      }
+      /**
+          @memberof Axis
+          @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the axis content.
+          @example
+      {"width": 180, "height": 24, "x": 10, "y": 20}
+      */
+
+    }, {
+      key: "outerBounds",
+      value: function outerBounds() {
+        return this._outerBounds;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance.
+          @param {Number} [*value* = 10]
+          @chainable
+      */
+
+    }, {
+      key: "padding",
+      value: function padding(_) {
+        return arguments.length ? (this._padding = _, this) : this._padding;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance.
+          @param {Number} [*value* = 0.1]
+          @chainable
+      */
+
+    }, {
+      key: "paddingInner",
+      value: function paddingInner(_) {
+        return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance.
+          @param {Number} [*value* = 0.1]
+          @chainable
+      */
+
+    }, {
+      key: "paddingOuter",
+      value: function paddingOuter(_) {
+        return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "range",
+      value: function range(_) {
+        return arguments.length ? (this._range = _, this) : this._range;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the scale of the axis and returns the current class instance.
+          @param {String} [*value* = "linear"]
+          @chainable
+      */
+
+    }, {
+      key: "scale",
+      value: function scale(_) {
+        return arguments.length ? (this._scale = _, this) : this._scale;
+      }
+      /**
+          @memberof Axis
+          @desc Sets the "padding" property of the scale, often used in point scales.
+          @param {Number} [*value* = 0.5]
+          @chainable
+      */
+
+    }, {
+      key: "scalePadding",
+      value: function scalePadding(_) {
+        return arguments.length ? (this._scalePadding = _, this) : this._scalePadding;
+      }
+      /**
+          @memberof Axis
+          @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+          @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+          @chainable
+      */
+
+    }, {
+      key: "select",
+      value: function select(_) {
+        return arguments.length ? (this._select = _select(_), this) : this._select;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick shape constructor and returns the current class instance.
+          @param {String} [*value* = "Line"]
+          @chainable
+      */
+
+    }, {
+      key: "shape",
+      value: function shape(_) {
+        return arguments.length ? (this._shape = _, this) : this._shape;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick style of the axis and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "shapeConfig",
+      value: function shapeConfig(_) {
+        return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick formatter and returns the current class instance.
+          @param {Function} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "tickFormat",
+      value: function tickFormat(_) {
+        return arguments.length ? (this._tickFormat = _, this) : this._tickFormat;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick values of the axis and returns the current class instance.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "ticks",
+      value: function ticks(_) {
+        return arguments.length ? (this._ticks = _, this) : this._ticks;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick size of the axis and returns the current class instance.
+          @param {Number} [*value* = 5]
+          @chainable
+      */
+
+    }, {
+      key: "tickSize",
+      value: function tickSize(_) {
+        return arguments.length ? (this._tickSize = _, this) : this._tickSize;
+      }
+      /**
+          @memberof Axis
+          @desc Sets the tick specifier for the [tickFormat](https://github.com/d3/d3-scale#continuous_tickFormat) function. If this method is called without any arguments, the default tick specifier is returned.
+          @param {String} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "tickSpecifier",
+      value: function tickSpecifier(_) {
+        return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
+      }
+      /**
+          @memberof Axis
+          @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick).
+          @param {String} [*value* = "normal"]
+          @chainable
+      */
+
+    }, {
+      key: "tickSuffix",
+      value: function tickSuffix(_) {
+        return arguments.length ? (this._tickSuffix = _, this) : this._tickSuffix;
+      }
+      /**
+          @memberof Axis
+          @desc Defines a custom locale object to be used in time scale. This object must include the following properties: dateTime, date, time, periods, days, shortDays, months, shortMonths. For more information, you can revise [d3p.d3-time-format](https://github.com/d3/d3-time-format/blob/master/README.md#timeFormatLocale).
+          @param {Object} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "timeLocale",
+      value: function timeLocale(_) {
+        return arguments.length ? (this._timeLocale = _, this) : this._timeLocale;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the title of the axis and returns the current class instance.
+          @param {String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "title",
+      value: function title(_) {
+        return arguments.length ? (this._title = _, this) : this._title;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "titleConfig",
+      value: function titleConfig(_) {
+        return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the overall width of the axis and returns the current class instance.
+          @param {Number} [*value* = 400]
+          @chainable
+      */
+
+    }, {
+      key: "width",
+      value: function width(_) {
+        return arguments.length ? (this._width = _, this) : this._width;
+      }
+    }]);
+
+    return Axis;
+  }(BaseClass);
+
+  function _typeof$q(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$q = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$q = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$q(obj);
+  }
+
+  function _defineProperty$4(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function _classCallCheck$n(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$j(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$j(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$j(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$j(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$l(self, call) {
+    if (call && (_typeof$q(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$l(self);
+  }
+
+  function _assertThisInitialized$l(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _getPrototypeOf$l(o) {
+    _getPrototypeOf$l = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$l(o);
+  }
+
+  function _inherits$l(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$l(subClass, superClass);
+  }
+
+  function _setPrototypeOf$l(o, p) {
+    _setPrototypeOf$l = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$l(o, p);
+  }
+  /**
       @class ColorScale
       @extends external:BaseClass
       @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
@@ -33717,7 +35776,7 @@
   var ColorScale =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$k(ColorScale, _BaseClass);
+    _inherits$l(ColorScale, _BaseClass);
     /**
         @memberof ColorScale
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -33728,10 +35787,10 @@
     function ColorScale() {
       var _this;
 
-      _classCallCheck$m(this, ColorScale);
+      _classCallCheck$n(this, ColorScale);
 
-      _this = _possibleConstructorReturn$k(this, _getPrototypeOf$k(ColorScale).call(this));
-      _this._axisClass = new Axis();
+      _this = _possibleConstructorReturn$l(this, _getPrototypeOf$l(ColorScale).call(this));
+      _this._axisClass = new Axis$1();
       _this._axisConfig = {
         gridSize: 0,
         shapeConfig: {
@@ -33743,7 +35802,7 @@
           fontSize: 12
         }
       };
-      _this._axisTest = new Axis();
+      _this._axisTest = new Axis$1();
       _this._align = "middle";
       _this._buckets = 5;
       _this._bucketAxis = false;
@@ -33792,7 +35851,7 @@
     */
 
 
-    _createClass$i(ColorScale, [{
+    _createClass$j(ColorScale, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
@@ -34094,9 +36153,9 @@
             fill: ticks ? function (d) {
               return _this2._colorScale(d);
             } : "url(#gradient-".concat(this._uuid, ")")
-          }, _defineProperty$3(_assign, x, ticks ? function (d, i) {
+          }, _defineProperty$4(_assign, x, ticks ? function (d, i) {
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
-          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2 + offsets[x]), _defineProperty$3(_assign, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2 + offsets[y]), _defineProperty$3(_assign, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$3(_assign, height, this._size), _assign), this._rectConfig);
+          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2 + offsets[x]), _defineProperty$4(_assign, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2 + offsets[y]), _defineProperty$4(_assign, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$4(_assign, height, this._size), _assign), this._rectConfig);
 
           this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
             return i;
@@ -34116,7 +36175,7 @@
           elem("g.d3plus-ColorScale-axis", Object.assign({
             condition: gradient
           }, groupParams));
-          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : formatAbbreviate;
+          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : formatAbbreviate$1;
           var legendData = ticks.reduce(function (arr, tick, i) {
             if (i !== ticks.length - 1) {
               var next = ticks[i + 1];
@@ -34468,27 +36527,188 @@
     return ColorScale;
   }(BaseClass);
 
-  function _typeof$p(obj) {
+  /**
+      @function date
+      @summary Parses numbers and strings to valid Javascript Date objects.
+      @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
+      @param {Number|String} *date*
+  */
+  function date$5 (d) {
+    // returns if already Date object
+    if (d.constructor === Date) return d; // detects if milliseconds
+    else if (d.constructor === Number && "".concat(d).length > 5 && d % 1 === 0) return new Date(d);
+    var s = "".concat(d);
+    var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
+        strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s); // tests for XX/XX/XXXX format
+
+    if (dayFormat) {
+      var year = dayFormat[1];
+      if (year.indexOf("-") === 0) s = s.replace(year, year.substr(1));
+      var date = new Date(s);
+      date.setFullYear(year);
+      return date;
+    } // tests for full Date object string format
+    else if (strFormat) {
+        var _year = strFormat[1];
+        if (_year.indexOf("-") === 0) s = s.replace(_year, _year.substr(1));
+
+        var _date = new Date(s);
+
+        _date.setFullYear(_year);
+
+        return _date;
+      } // detects if only passing a year value
+      else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
+          var _date2 = new Date("".concat(s, "/01/01"));
+
+          _date2.setFullYear(d);
+
+          return _date2;
+        } // parses string to Date object
+        else return new Date(s);
+  }
+
+  var locale$4 = {
+    "de-DE": {
+      dateTime: "%A, der %e. %B %Y, %X",
+      date: "%d.%m.%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    },
+    "en-GB": {
+      dateTime: "%a %e %b %X %Y",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "en-US": {
+      dateTime: "%x, %X",
+      date: "%-m/%-d/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "es-ES": {
+      dateTime: "%A, %e de %B de %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "es-MX": {
+      dateTime: "%x, %X",
+      date: "%d/%m/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "fr-FR": {
+      dateTime: "%A, le %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+      shortDays: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
+      months: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+      shortMonths: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."]
+    },
+    "it-IT": {
+      dateTime: "%A %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+      shortDays: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
+      months: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+      shortMonths: ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
+    },
+    "pt-BR": {
+      dateTime: "%A, %e de %B de %Y. %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"],
+      shortDays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+      months: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+      shortMonths: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+    }
+  };
+
+  function _defineProperty$5(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function _typeof$r(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$p = function _typeof$1(obj) {
+      _typeof$r = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$p = function _typeof$1(obj) {
+      _typeof$r = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$p(obj);
+    return _typeof$r(obj);
   }
 
-  function _classCallCheck$n(instance, Constructor) {
+  function _toConsumableArray$2(arr) {
+    return _arrayWithoutHoles$2(arr) || _iterableToArray$2(arr) || _nonIterableSpread$2();
+  }
+
+  function _nonIterableSpread$2() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance");
+  }
+
+  function _iterableToArray$2(iter) {
+    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  }
+
+  function _arrayWithoutHoles$2(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
+        arr2[i] = arr[i];
+      }
+
+      return arr2;
+    }
+  }
+
+  function _classCallCheck$o(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$j(target, props) {
+  function _defineProperties$k(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -34498,21 +36718,1342 @@
     }
   }
 
-  function _createClass$j(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$j(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$j(Constructor, staticProps);
+  function _createClass$k(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$k(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$k(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$l(self, call) {
-    if (call && (_typeof$p(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$m(self, call) {
+    if (call && (_typeof$r(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$l(self);
+    return _assertThisInitialized$m(self);
   }
 
-  function _assertThisInitialized$l(self) {
+  function _assertThisInitialized$m(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _getPrototypeOf$m(o) {
+    _getPrototypeOf$m = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$m(o);
+  }
+
+  function _inherits$m(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$m(subClass, superClass);
+  }
+
+  function _setPrototypeOf$m(o, p) {
+    _setPrototypeOf$m = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$m(o, p);
+  }
+  /**
+      @class Axis
+      @extends external:BaseClass
+      @desc Creates an SVG scale based on an array of data.
+  */
+
+  var Axis$2 =
+  /*#__PURE__*/
+  function (_BaseClass) {
+    _inherits$m(Axis, _BaseClass);
+    /**
+        @memberof Axis
+        @desc Invoked when creating a new class instance, and sets any default parameters.
+        @private
+    */
+
+
+    function Axis() {
+      var _this;
+
+      _classCallCheck$o(this, Axis);
+
+      _this = _possibleConstructorReturn$m(this, _getPrototypeOf$m(Axis).call(this));
+      _this._align = "middle";
+      _this._barConfig = {
+        "stroke": "#000",
+        "stroke-width": 1
+      };
+      _this._domain = [0, 10];
+      _this._duration = 600;
+      _this._gridConfig = {
+        "stroke": "#ccc",
+        "stroke-width": 1
+      };
+      _this._gridLog = false;
+      _this._height = 400;
+      _this._labelOffset = true;
+
+      _this.orient("bottom");
+
+      _this._outerBounds = {
+        width: 0,
+        height: 0,
+        x: 0,
+        y: 0
+      };
+      _this._padding = 5;
+      _this._paddingInner = 0.1;
+      _this._paddingOuter = 0.1;
+      _this._rotateLabels = false;
+      _this._scale = "linear";
+      _this._scalePadding = 0.5;
+      _this._shape = "Line";
+      _this._shapeConfig = {
+        fill: "#000",
+        height: function height(d) {
+          return d.tick ? 8 : 0;
+        },
+        label: function label(d) {
+          return d.text;
+        },
+        labelBounds: function labelBounds(d) {
+          return d.labelBounds;
+        },
+        labelConfig: {
+          fontColor: "#000",
+          fontFamily: new TextBox().fontFamily(),
+          fontResize: false,
+          fontSize: constant(10),
+          padding: 0,
+          textAnchor: function textAnchor() {
+            var rtl = detectRTL();
+            return _this._orient === "left" ? rtl ? "start" : "end" : _this._orient === "right" ? rtl ? "end" : "start" : _this._rotateLabels ? _this._orient === "bottom" ? "end" : "start" : "middle";
+          },
+          verticalAlign: function verticalAlign() {
+            return _this._orient === "bottom" ? "top" : _this._orient === "top" ? "bottom" : "middle";
+          }
+        },
+        r: function r(d) {
+          return d.tick ? 4 : 0;
+        },
+        stroke: "#000",
+        strokeWidth: 1,
+        width: function width(d) {
+          return d.tick ? 8 : 0;
+        }
+      };
+      _this._tickSize = 5;
+      _this._tickSpecifier = undefined;
+      _this._tickSuffix = "normal";
+      _this._tickUnit = 0;
+      _this._timeLocale = undefined;
+      _this._titleClass = new TextBox();
+      _this._titleConfig = {
+        fontSize: 12,
+        textAnchor: "middle"
+      };
+      _this._width = 400;
+      return _this;
+    }
+    /**
+        @memberof Axis
+        @desc Sets positioning for the axis bar.
+        @param {D3Selection} *bar*
+        @private
+    */
+
+
+    _createClass$k(Axis, [{
+      key: "_barPosition",
+      value: function _barPosition(bar) {
+        var _this$_position = this._position,
+            height = _this$_position.height,
+            x = _this$_position.x,
+            y = _this$_position.y,
+            opposite = _this$_position.opposite,
+            domain = this._getDomain(),
+            offset = this._margin[opposite],
+            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
+
+        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
+      }
+      /**
+          @memberof Axis
+          @desc Returns the scale's domain, taking into account negative and positive log scales.
+          @private
+      */
+
+    }, {
+      key: "_getDomain",
+      value: function _getDomain() {
+        var ticks = [];
+        if (this._d3ScaleNegative) ticks = this._d3ScaleNegative.domain();
+        if (this._d3Scale) ticks = ticks.concat(this._d3Scale.domain());
+        var domain = ["band", "ordinal", "point"].includes(this._scale) ? ticks : extent(ticks);
+        return ticks[0] > ticks[1] ? domain.reverse() : domain;
+      }
+      /**
+          @memberof Axis
+          @desc Returns a value's scale position, taking into account negative and positive log scales.
+          @param {Number|String} *d*
+          @private
+      */
+
+    }, {
+      key: "_getPosition",
+      value: function _getPosition(d) {
+        return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : this._d3Scale(d);
+      }
+      /**
+          @memberof Axis
+          @desc Returns the scale's range, taking into account negative and positive log scales.
+          @private
+      */
+
+    }, {
+      key: "_getRange",
+      value: function _getRange() {
+        var ticks = [];
+        if (this._d3ScaleNegative) ticks = this._d3ScaleNegative.range();
+        if (this._d3Scale) ticks = ticks.concat(this._d3Scale.range());
+        return ticks[0] > ticks[1] ? extent(ticks).reverse() : extent(ticks);
+      }
+      /**
+          @memberof Axis
+          @desc Returns the scale's ticks, taking into account negative and positive log scales.
+          @private
+      */
+
+    }, {
+      key: "_getTicks",
+      value: function _getTicks() {
+        var tickScale = sqrt().domain([10, 400]).range([10, 50]);
+        var ticks = [];
+
+        if (this._d3ScaleNegative) {
+          var negativeRange = this._d3ScaleNegative.range();
+
+          var size = negativeRange[1] - negativeRange[0];
+          ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
+        }
+
+        if (this._d3Scale) {
+          var positiveRange = this._d3Scale.range();
+
+          var _size = positiveRange[1] - positiveRange[0];
+
+          ticks = ticks.concat(this._d3Scale.ticks(Math.floor(_size / tickScale(_size))));
+        }
+
+        return ticks;
+      }
+      /**
+          @memberof Axis
+          @desc Sets positioning for the grid lines.
+          @param {D3Selection} *lines*
+          @private
+      */
+
+    }, {
+      key: "_gridPosition",
+      value: function _gridPosition(lines) {
+        var last = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        var _this$_position2 = this._position,
+            height = _this$_position2.height,
+            x = _this$_position2.x,
+            y = _this$_position2.y,
+            opposite = _this$_position2.opposite,
+            offset = this._margin[opposite],
+            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
+            scale = last ? this._lastScale || this._getPosition.bind(this) : this._getPosition.bind(this),
+            size = ["top", "left"].includes(this._orient) ? offset : -offset,
+            xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
+            xPos = function xPos(d) {
+          return scale(d.id) + xDiff;
+        };
+
+        lines.call(attrize, this._gridConfig).attr("".concat(x, "1"), xPos).attr("".concat(x, "2"), xPos).attr("".concat(y, "1"), position).attr("".concat(y, "2"), last ? position : position + size);
+      }
+      /**
+          @memberof Axis
+          @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
+          @param {Function} [*callback* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "render",
+      value: function render(callback) {
+        var _this3 = this,
+            _this$_outerBounds;
+        /**
+         * Creates an SVG element to contain the axis if none
+         * has been specified using the "select" method.
+         */
+
+
+        if (this._select === void 0) {
+          this.select(_select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node());
+        }
+
+        var timeLocale = this._timeLocale || locale$4[this._locale] || locale$4["en-US"];
+        defaultLocale$1(timeLocale).format();
+        var formatDay = timeFormat("%a %d"),
+            formatHour = timeFormat("%I %p"),
+            formatMillisecond = timeFormat(".%L"),
+            formatMinute = timeFormat("%I:%M"),
+            formatMonth = timeFormat("%b"),
+            formatSecond = timeFormat(":%S"),
+            formatWeek = timeFormat("%b %d"),
+            formatYear = timeFormat("%Y");
+        /**
+         * Declares some commonly used variables.
+         */
+
+        var _this$_position3 = this._position,
+            width = _this$_position3.width,
+            height = _this$_position3.height,
+            x = _this$_position3.x,
+            y = _this$_position3.y,
+            horizontal = _this$_position3.horizontal,
+            opposite = _this$_position3.opposite,
+            clipId = "d3plus-Axis-clip-".concat(this._uuid),
+            flip = ["top", "left"].includes(this._orient),
+            p = this._padding,
+            parent = this._select,
+            rangeOuter = [p, this["_".concat(width)] - p],
+            t = transition().duration(this._duration);
+        var tickValue = this._shape === "Circle" ? this._shapeConfig.r : this._shape === "Rect" ? this._shapeConfig[width] : this._shapeConfig.strokeWidth;
+        var tickGet = typeof tickValue !== "function" ? function () {
+          return tickValue;
+        } : tickValue;
+        /**
+         * Zeros out the margins for re-calculation.
+         */
+
+        var margin = this._margin = {
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0
+        };
+        var labels, range$1, ticks;
+        /**
+         * (Re)calculates the internal d3 scale
+         * @param {} newRange
+         */
+
+        function setScale() {
+          var _this2 = this;
+
+          var newRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._range;
+          /**
+           * Calculates the internal "range" array to use, including
+           * fallbacks if not specified with the "range" method.
+           */
+
+          range$1 = newRange ? newRange.slice() : [undefined, undefined];
+          var minRange = rangeOuter[0],
+              maxRange = rangeOuter[1];
+
+          if (this._range) {
+            if (this._range[0] !== undefined) minRange = this._range[0];
+            if (this._range[this._range.length - 1] !== undefined) maxRange = this._range[this._range.length - 1];
+          }
+
+          if (range$1[0] === undefined || range$1[0] < minRange) range$1[0] = minRange;
+          if (range$1[1] === undefined || range$1[1] > maxRange) range$1[1] = maxRange;
+          var sizeInner = maxRange - minRange;
+
+          if (this._scale === "ordinal" && this._domain.length > range$1.length) {
+            if (newRange === this._range) {
+              var buckets = this._domain.length + 1;
+              range$1 = range(buckets).map(function (d) {
+                return range$1[0] + sizeInner * (d / (buckets - 1));
+              }).slice(1, buckets);
+              range$1 = range$1.map(function (d) {
+                return d - range$1[0] / 2;
+              });
+            } else {
+              var _buckets = this._domain.length;
+              var size = range$1[1] - range$1[0];
+              range$1 = range(_buckets).map(function (d) {
+                return range$1[0] + size * (d / (_buckets - 1));
+              });
+            }
+          } else if (newRange === this._range) {
+            var tickScale = sqrt().domain([10, 400]).range([10, 50]);
+            var domain = this._scale === "time" ? this._domain.map(date$5) : this._domain;
+            var scaleTicks = d3Ticks(domain[0], domain[1], Math.floor(sizeInner / tickScale(sizeInner)));
+            ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date$5) : this._ticks : scaleTicks).slice();
+            labels = (this._labels ? this._scale === "time" ? this._labels.map(date$5) : this._labels : scaleTicks).slice();
+            var _buckets2 = labels.length;
+
+            if (_buckets2) {
+              var pad = Math.ceil(sizeInner / _buckets2 / 2);
+              range$1 = [range$1[0] + pad, range$1[1] - pad];
+            }
+          }
+          /**
+           * Sets up the initial d3 scale, using this._domain and the
+           * previously defined range variable.
+           */
+
+
+          this._d3Scale = scales["scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1))]().domain(this._scale === "time" ? this._domain.map(date$5) : this._domain);
+          if (this._d3Scale.round) this._d3Scale.round(true);
+          if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
+          if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
+          if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
+          if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range$1);else this._d3Scale.range(range$1);
+          /**
+           * Constructs a separate "negative only" scale for logarithmic
+           * domains, as they cannot pass zero.
+           */
+
+          this._d3ScaleNegative = null;
+
+          if (this._scale === "log") {
+            var _domain = this._d3Scale.domain();
+
+            if (_domain[0] === 0) _domain[0] = 1;
+            if (_domain[_domain.length - 1] === 0) _domain[_domain.length - 1] = -1;
+
+            var _range = this._d3Scale.range();
+
+            if (_domain[0] < 0 && _domain[_domain.length - 1] < 0) {
+              this._d3ScaleNegative = this._d3Scale.copy().domain(_domain).range(_range);
+              this._d3Scale = null;
+            } else if (_domain[0] > 0 && _domain[_domain.length - 1] > 0) {
+              this._d3Scale.domain(_domain).range(_range);
+            } else {
+              var percentScale = log().domain([1, _domain[_domain[1] > 0 ? 1 : 0]]).range([0, 1]);
+              var leftPercentage = percentScale(Math.abs(_domain[_domain[1] < 0 ? 1 : 0]));
+              var zero = leftPercentage / (leftPercentage + 1) * (_range[1] - _range[0]);
+              if (_domain[0] > 0) zero = _range[1] - _range[0] - zero;
+              this._d3ScaleNegative = this._d3Scale.copy();
+              (_domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative).domain([Math.sign(_domain[1]), _domain[1]]).range([_range[0] + zero, _range[1]]);
+              (_domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale).domain([_domain[0], Math.sign(_domain[0])]).range([_range[0], _range[0] + zero]);
+            }
+          }
+          /**
+           * Determines the of values array to use
+           * for the "ticks" and the "labels"
+           */
+
+
+          ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date$5) : this._ticks : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : this._domain).slice();
+          labels = (this._labels ? this._scale === "time" ? this._labels.map(date$5) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
+
+          if (this._scale === "log") {
+            labels = labels.filter(function (t) {
+              return Math.abs(t).toString().charAt(0) === "1" && (_this2._d3Scale ? t !== -1 : t !== 1);
+            });
+          } else if (this._scale === "time") {
+            ticks = ticks.map(Number);
+            labels = labels.map(Number);
+          }
+
+          ticks = ticks.sort(function (a, b) {
+            return _this2._getPosition(a) - _this2._getPosition(b);
+          });
+          labels = labels.sort(function (a, b) {
+            return _this2._getPosition(a) - _this2._getPosition(b);
+          });
+          /**
+           * Get the smallest suffix.
+           */
+
+          if (this._scale === "linear" && this._tickSuffix === "smallest") {
+            var suffixes = labels.filter(function (d) {
+              return d >= 1000;
+            });
+
+            if (suffixes.length > 0) {
+              var _min = Math.min.apply(Math, _toConsumableArray$2(suffixes));
+
+              var i = 1;
+
+              while (i && i < 7) {
+                var n = Math.pow(10, 3 * i);
+
+                if (_min / n >= 1) {
+                  this._tickUnit = i;
+                  i += 1;
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+          /**
+           * Removes ticks when they overlap other ticks.
+           */
+
+
+          var pixels = [];
+          this._availableTicks = ticks;
+          ticks.forEach(function (d, i) {
+            var s = tickGet({
+              id: d,
+              tick: true
+            }, i);
+            if (_this2._shape === "Circle") s *= 2;
+
+            var t = _this2._getPosition(d);
+
+            if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) pixels.push(t);else pixels.push(false);
+          });
+          ticks = ticks.filter(function (d, i) {
+            return pixels[i] !== false;
+          });
+          this._visibleTicks = ticks;
+        }
+
+        setScale.bind(this)();
+        /**
+         * Calculates the space available for a given label.
+         * @param {Object} datum
+         */
+
+        function calculateSpace(datum) {
+          var diff = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+          var i = datum.i,
+              position = datum.position;
+
+          if (this._scale === "band") {
+            return this._d3Scale.bandwidth();
+          } else {
+            var prevPosition = i - diff < 0 ? textData.length === 1 || !this._range ? rangeOuter[0] : (position - textData[i + diff].position) / 2 - position : position - (position - textData[i - diff].position) / 2;
+            var prevSpace = Math.abs(position - prevPosition);
+            var nextPosition = i + diff > textData.length - 1 ? textData.length === 1 || !this._range ? rangeOuter[1] : (position - textData[i - diff].position) / 2 - position : position - (position - textData[i + diff].position) / 2;
+            var nextSpace = Math.abs(position - nextPosition);
+            return min([prevSpace, nextSpace]) * 2;
+          }
+        }
+        /**
+         * Constructs the tick formatter function.
+         */
+
+
+        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
+          if (_this3._scale === "log") {
+            var _p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
+
+            var _t = Math.abs(d).toString().charAt(0);
+
+            var _n = "10 ".concat("".concat(_p).split("").map(function (c) {
+              return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c];
+            }).join(""));
+
+            if (_t !== "1") _n = "".concat(_t, " x ").concat(_n);
+            return d < 0 ? "-".concat(_n) : _n;
+          } else if (_this3._scale === "time") {
+            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear)(d);
+          } else if (["band", "ordinal", "point"].includes(_this3._scale)) {
+            return d;
+          }
+
+          var n = _this3._d3Scale.tickFormat ? _this3._d3Scale.tickFormat(labels.length - 1)(d) : d;
+          n = typeof n === "string" ? n.replace(/[^\d\.\-\+]/g, "") * 1 : n;
+
+          if (isNaN(n)) {
+            return n;
+          } else if (_this3._scale === "linear" && _this3._tickSuffix === "smallest") {
+            var _locale = _typeof$r(_this3._locale) === "object" ? _this3._locale : formatLocale$4[_this3._locale];
+
+            var separator = _locale.separator,
+                suffixes = _locale.suffixes;
+            var suff = n >= 1000 ? suffixes[_this3._tickUnit + 8] : "";
+            var tick = n / Math.pow(10, 3 * _this3._tickUnit);
+            var number = formatAbbreviate$1(tick, _locale, ",.".concat(tick.toString().length, "r"));
+            return "".concat(number).concat(separator).concat(suff);
+          } else {
+            return formatAbbreviate$1(n, _this3._locale);
+          }
+        };
+        /**
+         * Pre-calculates the size of the title, if defined, in order
+         * to adjust the internal margins.
+         */
+
+        if (this._title) {
+          var _this$_titleConfig = this._titleConfig,
+              fontFamily = _this$_titleConfig.fontFamily,
+              fontSize = _this$_titleConfig.fontSize,
+              lineHeight = _this$_titleConfig.lineHeight;
+          var titleWrap = textWrap().fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily).fontSize(typeof fontSize === "function" ? fontSize() : fontSize).lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight).width(range$1[range$1.length - 1] - range$1[0] - p * 2).height(this["_".concat(height)] - this._tickSize - p * 2);
+          var lines = titleWrap(this._title).lines.length;
+          margin[this._orient] = lines * titleWrap.lineHeight() + p;
+        }
+
+        var hBuff = this._shape === "Circle" ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({
+          tick: true
+        }) : this._shapeConfig.r : this._shape === "Rect" ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({
+          tick: true
+        }) : this._shapeConfig[height] : this._tickSize,
+            wBuff = tickGet({
+          tick: true
+        });
+        if (typeof hBuff === "function") hBuff = max(ticks.map(hBuff));
+        if (this._shape === "Rect") hBuff /= 2;
+        if (typeof wBuff === "function") wBuff = max(ticks.map(wBuff));
+        if (this._shape !== "Circle") wBuff /= 2;
+        /**
+         * Calculates the space each label would take up, given
+         * the provided this._space size.
+         */
+
+        var textData = labels.map(function (d, i) {
+          var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
+              fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
+              position = _this3._getPosition(d);
+
+          var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+          return {
+            d: d,
+            i: i,
+            fF: fF,
+            fS: fS,
+            lineHeight: lineHeight,
+            position: position
+          };
+        });
+        /**
+         * Calculates the text wrapping and size of a given textData object.
+         * @param {Object} datum
+         */
+
+        function calculateLabelSize(datum) {
+          var d = datum.d,
+              i = datum.i,
+              fF = datum.fF,
+              fS = datum.fS,
+              rotate = datum.rotate,
+              space = datum.space;
+          var h = rotate ? "width" : "height",
+              w = rotate ? "height" : "width";
+          var wSize = min([this._maxSize, this._width]);
+          var hSize = min([this._maxSize, this._height]);
+          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : wSize - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? hSize - hBuff - p - this._margin.top - this._margin.bottom : space);
+          var res = wrap(tickFormat(d));
+          res.lines = res.lines.filter(function (d) {
+            return d !== "";
+          });
+          res.width = res.lines.length ? Math.ceil(max(res.widths)) + fS / 4 : 0;
+          if (res.width % 2) res.width++;
+          res.height = res.lines.length ? Math.ceil(res.lines.length * wrap.lineHeight()) + fS / 4 : 0;
+          if (res.height % 2) res.height++;
+          return res;
+        }
+
+        textData = textData.map(function (datum) {
+          datum.rotate = _this3._labelRotation;
+          datum.space = calculateSpace.bind(_this3)(datum);
+          var res = calculateLabelSize.bind(_this3)(datum);
+          return Object.assign(res, datum);
+        });
+        this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (d) {
+          return d.truncated;
+        }) : this._labelRotation;
+
+        if (this._rotateLabels) {
+          textData = textData.map(function (datum) {
+            datum.rotate = true;
+            var res = calculateLabelSize.bind(_this3)(datum);
+            return Object.assign(datum, res);
+          });
+        }
+        /**
+         * "spillover" will contain the pixel spillover of the first and last label,
+         * and then adjust the scale range accordingly.
+         */
+
+
+        var spillover = [0, 0];
+
+        for (var index = 0; index < 2; index++) {
+          var datum = textData[index ? textData.length - 1 : 0];
+          if (!datum) break;
+          var _height = datum.height,
+              position = datum.position,
+              rotate = datum.rotate,
+              _width = datum.width;
+          var compPosition = index ? rangeOuter[1] : rangeOuter[0];
+          var halfSpace = (rotate || !horizontal ? _height : _width) / 2;
+          var spill = index ? position + halfSpace - compPosition : position - halfSpace - compPosition;
+          spillover[index] = spill;
+        }
+
+        var first = range$1[0];
+        var last = range$1[range$1.length - 1];
+        var newRange = [first - spillover[0], last - spillover[1]];
+
+        if (this._range) {
+          if (this._range[0] !== undefined) newRange[0] = this._range[0];
+          if (this._range[this._range.length - 1] !== undefined) newRange[1] = this._range[this._range.length - 1];
+        }
+
+        if (newRange[0] !== first || newRange[1] !== last) {
+          setScale.bind(this)(newRange);
+          textData = labels.map(function (d, i) {
+            var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
+                fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
+                position = _this3._getPosition(d);
+
+            var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+            return {
+              d: d,
+              i: i,
+              fF: fF,
+              fS: fS,
+              lineHeight: lineHeight,
+              position: position
+            };
+          });
+          textData = textData.map(function (datum) {
+            datum.rotate = _this3._rotateLabels;
+            datum.space = calculateSpace.bind(_this3)(datum);
+            var res = calculateLabelSize.bind(_this3)(datum);
+            return Object.assign(res, datum);
+          });
+        }
+
+        var labelHeight = max(textData, function (t) {
+          return t.height;
+        }) || 0;
+        this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (datum) {
+          var i = datum.i,
+              height = datum.height,
+              position = datum.position,
+              truncated = datum.truncated;
+          var prev = textData[i - 1];
+          return truncated || i && prev.position + prev.height / 2 > position - height / 2;
+        }) : this._labelRotation;
+
+        if (this._rotateLabels) {
+          var offset = 0;
+          textData = textData.map(function (datum) {
+            datum.space = calculateSpace.bind(_this3)(datum, 2);
+            var res = calculateLabelSize.bind(_this3)(datum);
+            datum = Object.assign(datum, res);
+            var prev = textData[datum.i - 1];
+
+            if (!prev) {
+              offset = 1;
+            } else if (prev.position + prev.height / 2 > datum.position) {
+              if (offset) {
+                datum.offset = prev.width;
+                offset = 0;
+              } else offset = 1;
+            }
+
+            return datum;
+          });
+        }
+
+        var globalOffset = this._labelOffset ? max(textData, function (d) {
+          return d.offset || 0;
+        }) : 0;
+        textData.forEach(function (datum) {
+          return datum.offset = datum.offset ? globalOffset : 0;
+        });
+        var tBuff = this._shape === "Line" ? 0 : hBuff;
+        var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$5(_this$_outerBounds, height, (max(textData, function (t) {
+          return Math.ceil(t[t.rotate || !horizontal ? "width" : "height"] + t.offset);
+        }) || 0) + (textData.length ? p : 0)), _defineProperty$5(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$5(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
+        bounds[height] = max([this._minSize, bounds[height]]);
+        margin[this._orient] += hBuff;
+        margin[opposite] = this._gridSize !== undefined ? max([this._gridSize, tBuff]) : this["_".concat(height)] - margin[this._orient] - bounds[height] - p;
+        bounds[height] += margin[opposite] + margin[this._orient];
+        bounds[y] = this._align === "start" ? this._padding : this._align === "end" ? this["_".concat(height)] - bounds[height] - this._padding : this["_".concat(height)] / 2 - bounds[height] / 2;
+        var group = elem("g#d3plus-Axis-".concat(this._uuid), {
+          parent: parent
+        });
+        this._group = group;
+        var grid = elem("g.grid", {
+          parent: group
+        }).selectAll("line").data((this._gridSize !== 0 ? this._grid || this._scale === "log" && !this._gridLog ? labels : ticks : []).map(function (d) {
+          return {
+            id: d
+          };
+        }), function (d) {
+          return d.id;
+        });
+        grid.exit().transition(t).attr("opacity", 0).call(this._gridPosition.bind(this)).remove();
+        grid.enter().append("line").attr("opacity", 0).attr("clip-path", "url(#".concat(clipId, ")")).call(this._gridPosition.bind(this), true).merge(grid).transition(t).attr("opacity", 1).call(this._gridPosition.bind(this));
+        var labelOnly = labels.filter(function (d, i) {
+          return textData[i].lines.length && !ticks.includes(d);
+        });
+        var rotated = textData.some(function (d) {
+          return d.rotate;
+        });
+        var tickData = ticks.concat(labelOnly).map(function (d) {
+          var _tickConfig;
+
+          var data = textData.find(function (td) {
+            return td.d === d;
+          });
+
+          var xPos = _this3._getPosition(d);
+
+          var space = data ? data.space : 0;
+          var lines = data ? data.lines.length : 1;
+          var lineHeight = data ? data.lineHeight : 1;
+          var labelOffset = data && _this3._labelOffset ? data.offset : 0;
+          var labelWidth = horizontal ? space : bounds.width - margin[_this3._position.opposite] - hBuff - margin[_this3._orient] + p;
+          var offset = margin[opposite],
+              size = (hBuff + labelOffset) * (flip ? -1 : 1),
+              yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
+          var tickConfig = (_tickConfig = {
+            id: d,
+            labelBounds: rotated && data ? {
+              x: -data.width / 2 + data.fS / 4,
+              y: _this3._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
+              width: data.width,
+              height: data.height
+            } : {
+              x: horizontal ? -space / 2 : _this3._orient === "left" ? -labelWidth - p + size : size + p,
+              y: horizontal ? _this3._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
+              width: horizontal ? space : labelWidth,
+              height: horizontal ? labelHeight : space
+            },
+            rotate: data ? data.rotate : false,
+            size: labels.includes(d) ? size : 0,
+            text: labels.includes(d) ? tickFormat(d) : false,
+            tick: ticks.includes(d)
+          }, _defineProperty$5(_tickConfig, x, xPos + (_this3._scale === "band" ? _this3._d3Scale.bandwidth() / 2 : 0)), _defineProperty$5(_tickConfig, y, yPos), _tickConfig);
+          return tickConfig;
+        });
+
+        if (this._shape === "Line") {
+          tickData = tickData.concat(tickData.map(function (d) {
+            var dupe = Object.assign({}, d);
+            dupe[y] += d.size;
+            return dupe;
+          }));
+        }
+
+        new shapes$2[this._shape]().data(tickData).duration(this._duration).labelConfig({
+          ellipsis: function ellipsis(d) {
+            return d && d.length ? "".concat(d, "...") : "";
+          },
+          rotate: function rotate(d) {
+            return d.rotate ? -90 : 0;
+          }
+        }).select(elem("g.ticks", {
+          parent: group
+        }).node()).config(this._shapeConfig).render();
+        var bar = group.selectAll("line.bar").data([null]);
+        bar.enter().append("line").attr("class", "bar").attr("opacity", 0).call(this._barPosition.bind(this)).merge(bar).transition(t).attr("opacity", 1).call(this._barPosition.bind(this));
+
+        this._titleClass.data(this._title ? [{
+          text: this._title
+        }] : []).duration(this._duration).height(margin[this._orient]).rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0).select(elem("g.d3plus-Axis-title", {
+          parent: group
+        }).node()).text(function (d) {
+          return d.text;
+        }).verticalAlign("middle").width(range$1[range$1.length - 1] - range$1[0]).x(horizontal ? range$1[0] : this._orient === "left" ? bounds.x + margin.left / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2 : bounds.x + bounds.width - margin.right / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom : bounds.y : range$1[0] + (range$1[range$1.length - 1] - range$1[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
+
+        this._lastScale = this._getPosition.bind(this);
+        if (callback) setTimeout(callback, this._duration + 100);
+        return this;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance.
+          @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
+          @chainable
+      */
+
+    }, {
+      key: "align",
+      value: function align(_) {
+        return arguments.length ? (this._align = _, this) : this._align;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the axis line style and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "barConfig",
+      value: function barConfig(_) {
+        return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance.
+          @param {Array} [*value* = [0, 10]]
+          @chainable
+      */
+
+    }, {
+      key: "domain",
+      value: function domain(_) {
+        return arguments.length ? (this._domain = _, this) : this._domain;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance.
+          @param {Number} [*value* = 600]
+          @chainable
+      */
+
+    }, {
+      key: "duration",
+      value: function duration(_) {
+        return arguments.length ? (this._duration = _, this) : this._duration;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid values of the axis and returns the current class instance.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "grid",
+      value: function grid(_) {
+        return arguments.length ? (this._grid = _, this) : this._grid;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid config of the axis and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "gridConfig",
+      value: function gridConfig(_) {
+        return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid behavior of the axis when scale is logarithmic and returns the current class instance.
+          @param {Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "gridLog",
+      value: function gridLog(_) {
+        return arguments.length ? (this._gridLog = _, this) : this._gridLog;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid size of the axis and returns the current class instance.
+          @param {Number} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "gridSize",
+      value: function gridSize(_) {
+        return arguments.length ? (this._gridSize = _, this) : this._gridSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the overall height of the axis and returns the current class instance.
+          @param {Number} [*value* = 100]
+          @chainable
+      */
+
+    }, {
+      key: "height",
+      value: function height(_) {
+        return arguments.length ? (this._height = _, this) : this._height;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labels",
+      value: function labels(_) {
+        return arguments.length ? (this._labels = _, this) : this._labels;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
+          @param {Boolean} [*value* = true]
+          @chainable
+       */
+
+    }, {
+      key: "labelOffset",
+      value: function labelOffset(_) {
+        return arguments.length ? (this._labelOffset = _, this) : this._labelOffset;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets whether whether horizontal axis labels are rotated -90 degrees.
+          @param {Boolean}
+          @chainable
+       */
+
+    }, {
+      key: "labelRotation",
+      value: function labelRotation(_) {
+        return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the maximum size allowed for the space that contains the axis tick labels and title.
+          @param {Number}
+          @chainable
+       */
+
+    }, {
+      key: "maxSize",
+      value: function maxSize(_) {
+        return arguments.length ? (this._maxSize = _, this) : this._maxSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the minimum size alloted for the space that contains the axis tick labels and title.
+          @param {Number}
+          @chainable
+       */
+
+    }, {
+      key: "minSize",
+      value: function minSize(_) {
+        return arguments.length ? (this._minSize = _, this) : this._minSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
+          @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
+          @chainable
+      */
+
+    }, {
+      key: "orient",
+      value: function orient(_) {
+        if (arguments.length) {
+          var horizontal = ["top", "bottom"].includes(_),
+              opps = {
+            top: "bottom",
+            right: "left",
+            bottom: "top",
+            left: "right"
+          };
+          this._position = {
+            horizontal: horizontal,
+            width: horizontal ? "width" : "height",
+            height: horizontal ? "height" : "width",
+            x: horizontal ? "x" : "y",
+            y: horizontal ? "y" : "x",
+            opposite: opps[_]
+          };
+          return this._orient = _, this;
+        }
+
+        return this._orient;
+      }
+      /**
+          @memberof Axis
+          @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the axis content.
+          @example
+      {"width": 180, "height": 24, "x": 10, "y": 20}
+      */
+
+    }, {
+      key: "outerBounds",
+      value: function outerBounds() {
+        return this._outerBounds;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance.
+          @param {Number} [*value* = 10]
+          @chainable
+      */
+
+    }, {
+      key: "padding",
+      value: function padding(_) {
+        return arguments.length ? (this._padding = _, this) : this._padding;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance.
+          @param {Number} [*value* = 0.1]
+          @chainable
+      */
+
+    }, {
+      key: "paddingInner",
+      value: function paddingInner(_) {
+        return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance.
+          @param {Number} [*value* = 0.1]
+          @chainable
+      */
+
+    }, {
+      key: "paddingOuter",
+      value: function paddingOuter(_) {
+        return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "range",
+      value: function range(_) {
+        return arguments.length ? (this._range = _, this) : this._range;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the scale of the axis and returns the current class instance.
+          @param {String} [*value* = "linear"]
+          @chainable
+      */
+
+    }, {
+      key: "scale",
+      value: function scale(_) {
+        return arguments.length ? (this._scale = _, this) : this._scale;
+      }
+      /**
+          @memberof Axis
+          @desc Sets the "padding" property of the scale, often used in point scales.
+          @param {Number} [*value* = 0.5]
+          @chainable
+      */
+
+    }, {
+      key: "scalePadding",
+      value: function scalePadding(_) {
+        return arguments.length ? (this._scalePadding = _, this) : this._scalePadding;
+      }
+      /**
+          @memberof Axis
+          @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+          @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+          @chainable
+      */
+
+    }, {
+      key: "select",
+      value: function select(_) {
+        return arguments.length ? (this._select = _select(_), this) : this._select;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick shape constructor and returns the current class instance.
+          @param {String} [*value* = "Line"]
+          @chainable
+      */
+
+    }, {
+      key: "shape",
+      value: function shape(_) {
+        return arguments.length ? (this._shape = _, this) : this._shape;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick style of the axis and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "shapeConfig",
+      value: function shapeConfig(_) {
+        return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick formatter and returns the current class instance.
+          @param {Function} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "tickFormat",
+      value: function tickFormat(_) {
+        return arguments.length ? (this._tickFormat = _, this) : this._tickFormat;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick values of the axis and returns the current class instance.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "ticks",
+      value: function ticks(_) {
+        return arguments.length ? (this._ticks = _, this) : this._ticks;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick size of the axis and returns the current class instance.
+          @param {Number} [*value* = 5]
+          @chainable
+      */
+
+    }, {
+      key: "tickSize",
+      value: function tickSize(_) {
+        return arguments.length ? (this._tickSize = _, this) : this._tickSize;
+      }
+      /**
+          @memberof Axis
+          @desc Sets the tick specifier for the [tickFormat](https://github.com/d3/d3-scale#continuous_tickFormat) function. If this method is called without any arguments, the default tick specifier is returned.
+          @param {String} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "tickSpecifier",
+      value: function tickSpecifier(_) {
+        return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
+      }
+      /**
+          @memberof Axis
+          @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick).
+          @param {String} [*value* = "normal"]
+          @chainable
+      */
+
+    }, {
+      key: "tickSuffix",
+      value: function tickSuffix(_) {
+        return arguments.length ? (this._tickSuffix = _, this) : this._tickSuffix;
+      }
+      /**
+          @memberof Axis
+          @desc Defines a custom locale object to be used in time scale. This object must include the following properties: dateTime, date, time, periods, days, shortDays, months, shortMonths. For more information, you can revise [d3p.d3-time-format](https://github.com/d3/d3-time-format/blob/master/README.md#timeFormatLocale).
+          @param {Object} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "timeLocale",
+      value: function timeLocale(_) {
+        return arguments.length ? (this._timeLocale = _, this) : this._timeLocale;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the title of the axis and returns the current class instance.
+          @param {String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "title",
+      value: function title(_) {
+        return arguments.length ? (this._title = _, this) : this._title;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "titleConfig",
+      value: function titleConfig(_) {
+        return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the overall width of the axis and returns the current class instance.
+          @param {Number} [*value* = 400]
+          @chainable
+      */
+
+    }, {
+      key: "width",
+      value: function width(_) {
+        return arguments.length ? (this._width = _, this) : this._width;
+      }
+    }]);
+
+    return Axis;
+  }(BaseClass);
+
+  function _typeof$s(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$s = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$s = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$s(obj);
+  }
+
+  function _classCallCheck$p(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$l(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$l(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$l(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$l(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$n(self, call) {
+    if (call && (_typeof$s(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$n(self);
+  }
+
+  function _assertThisInitialized$n(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -34543,21 +38084,21 @@
 
   function _superPropBase$7(object, property) {
     while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf$l(object);
+      object = _getPrototypeOf$n(object);
       if (object === null) break;
     }
 
     return object;
   }
 
-  function _getPrototypeOf$l(o) {
-    _getPrototypeOf$l = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$n(o) {
+    _getPrototypeOf$n = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$l(o);
+    return _getPrototypeOf$n(o);
   }
 
-  function _inherits$l(subClass, superClass) {
+  function _inherits$n(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -34569,16 +38110,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$l(subClass, superClass);
+    if (superClass) _setPrototypeOf$n(subClass, superClass);
   }
 
-  function _setPrototypeOf$l(o, p) {
-    _setPrototypeOf$l = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$n(o, p) {
+    _setPrototypeOf$n = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$l(o, p);
+    return _setPrototypeOf$n(o, p);
   }
   /**
       @class Timeline
@@ -34588,7 +38129,7 @@
   var Timeline =
   /*#__PURE__*/
   function (_Axis) {
-    _inherits$l(Timeline, _Axis);
+    _inherits$n(Timeline, _Axis);
     /**
         @memberof Timeline
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Axis.
@@ -34599,9 +38140,9 @@
     function Timeline() {
       var _this;
 
-      _classCallCheck$n(this, Timeline);
+      _classCallCheck$p(this, Timeline);
 
-      _this = _possibleConstructorReturn$l(this, _getPrototypeOf$l(Timeline).call(this));
+      _this = _possibleConstructorReturn$n(this, _getPrototypeOf$n(Timeline).call(this));
       _this._barConfig = Object.assign({}, _this._barConfig, {
         "stroke-width": function strokeWidth() {
           return _this._buttonBehaviorCurrent === "buttons" ? 0 : 1;
@@ -34652,7 +38193,7 @@
         },
         width: function width(d) {
           return _this._buttonBehaviorCurrent === "buttons" ? _this._ticksWidth / _this._availableTicks.length : d.tick ? _this._domain.map(function (t) {
-            return date$2(t).getTime();
+            return date$5(t).getTime();
           }).includes(d.id) ? 2 : 1 : 0;
         },
         y: function y(d) {
@@ -34669,7 +38210,7 @@
     */
 
 
-    _createClass$j(Timeline, [{
+    _createClass$l(Timeline, [{
       key: "_brushBrush",
       value: function _brushBrush() {
         if (event$1.sourceEvent && event$1.sourceEvent.offsetX && event$1.selection !== null && (!this._brushing || this._snapping)) {
@@ -34776,8 +38317,8 @@
         var ticks = this._buttonBehaviorCurrent === "ticks" ? this._availableTicks.map(Number) : this._d3Scale.range();
 
         if (this._buttonBehaviorCurrent === "ticks") {
-          domain[0] = date$2(closest(domain[0], ticks));
-          domain[1] = date$2(closest(domain[1], ticks));
+          domain[0] = date$5(closest(domain[0], ticks));
+          domain[1] = date$5(closest(domain[1], ticks));
         } else {
           domain[0] = closest(domain[0], ticks);
           domain[1] = closest(domain[1], ticks);
@@ -34786,7 +38327,7 @@
         var single = +domain[0] === +domain[1];
 
         if (event$1.type === "brush" || event$1.type === "end") {
-          this._selection = this._buttonBehaviorCurrent === "ticks" ? single ? domain[0] : domain : single ? date$2(this._availableTicks[ticks.indexOf(domain[0])]) : [date$2(this._availableTicks[ticks.indexOf(domain[0])]), date$2(this._availableTicks[ticks.indexOf(domain[1])])];
+          this._selection = this._buttonBehaviorCurrent === "ticks" ? single ? domain[0] : domain : single ? date$5(this._availableTicks[ticks.indexOf(domain[0])]) : [date$5(this._availableTicks[ticks.indexOf(domain[0])]), date$5(this._availableTicks[ticks.indexOf(domain[1])])];
         }
 
         return domain;
@@ -34800,7 +38341,7 @@
     }, {
       key: "_updateBrushLimit",
       value: function _updateBrushLimit(domain) {
-        var selection = this._buttonBehaviorCurrent === "ticks" ? domain.map(date$2).map(this._d3Scale) : domain;
+        var selection = this._buttonBehaviorCurrent === "ticks" ? domain.map(date$5).map(this._d3Scale) : domain;
 
         if (selection[0] === selection[1]) {
           selection[0] -= 0.1;
@@ -34832,7 +38373,7 @@
             y = _this$_position.y;
 
         if (this._buttonBehavior !== "ticks") {
-          var ticks = this._ticks ? this._ticks.map(date$2) : this._domain.map(date$2);
+          var ticks = this._ticks ? this._ticks.map(date$5) : this._domain.map(date$5);
           var d3Scale = scaleTime().domain(ticks).range([0, this._width]);
           ticks = this._ticks ? ticks : d3Scale.ticks();
           if (!this._tickFormat) this._tickFormat = d3Scale.tickFormat(ticks.length - 1, this._tickSpecifier); // Measures size of ticks
@@ -34862,10 +38403,10 @@
           this._scale = "ordinal";
           this._labelRotation = 0;
           if (!this._brushing) this._handleSize = 0;
-          var domain = scaleTime().domain(this._domain.map(date$2)).ticks().map(this._tickFormat).map(Number);
-          this._domain = this._ticks ? this._ticks.map(date$2) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) {
+          var domain = scaleTime().domain(this._domain.map(date$5)).ticks().map(this._tickFormat).map(Number);
+          this._domain = this._ticks ? this._ticks.map(date$5) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) {
             return domain[0] + x;
-          }).map(date$2);
+          }).map(date$5);
           this._ticks = this._domain;
           var buttonMargin = 0.5 * this._ticksWidth / this._ticks.length;
           this._marginLeft = this._buttonAlign === "middle" ? (this._width - this._ticksWidth) / 2 : this._buttonAlign === "end" ? this._width - this._ticksWidth : 0;
@@ -34873,10 +38414,10 @@
           this._range = [this._buttonAlign === "start" ? undefined : this._marginLeft + buttonMargin, this._buttonAlign === "end" ? undefined : marginRight - buttonMargin];
         }
 
-        if (this._ticks) this._domain = this._buttonBehaviorCurrent === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(date$2);
+        if (this._ticks) this._domain = this._buttonBehaviorCurrent === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(date$5);
         this._labels = this._ticks;
 
-        _get$7(_getPrototypeOf$l(Timeline.prototype), "render", this).call(this, callback);
+        _get$7(_getPrototypeOf$n(Timeline.prototype), "render", this).call(this, callback);
 
         var offset = this._outerBounds[y],
             range = this._d3Scale.range();
@@ -35051,7 +38592,7 @@
     }]);
 
     return Timeline;
-  }(Axis);
+  }(Axis$2);
 
   /**!
    * @fileOverview Kickass library to create and place poppers near their reference elements.
@@ -37668,27 +41209,27 @@
   Popper.placements = placements;
   Popper.Defaults = Defaults;
 
-  function _typeof$q(obj) {
+  function _typeof$t(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$q = function _typeof$1(obj) {
+      _typeof$t = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$q = function _typeof$1(obj) {
+      _typeof$t = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$q(obj);
+    return _typeof$t(obj);
   }
 
-  function _classCallCheck$o(instance, Constructor) {
+  function _classCallCheck$q(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$k(target, props) {
+  function _defineProperties$m(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -37698,21 +41239,21 @@
     }
   }
 
-  function _createClass$k(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$k(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$k(Constructor, staticProps);
+  function _createClass$m(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$m(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$m(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$m(self, call) {
-    if (call && (_typeof$q(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$o(self, call) {
+    if (call && (_typeof$t(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$m(self);
+    return _assertThisInitialized$o(self);
   }
 
-  function _assertThisInitialized$m(self) {
+  function _assertThisInitialized$o(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -37720,14 +41261,14 @@
     return self;
   }
 
-  function _getPrototypeOf$m(o) {
-    _getPrototypeOf$m = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$o(o) {
+    _getPrototypeOf$o = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$m(o);
+    return _getPrototypeOf$o(o);
   }
 
-  function _inherits$m(subClass, superClass) {
+  function _inherits$o(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -37739,16 +41280,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$m(subClass, superClass);
+    if (superClass) _setPrototypeOf$o(subClass, superClass);
   }
 
-  function _setPrototypeOf$m(o, p) {
-    _setPrototypeOf$m = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$o(o, p) {
+    _setPrototypeOf$o = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$m(o, p);
+    return _setPrototypeOf$o(o, p);
   }
   /**
       @class Tooltip
@@ -37759,7 +41300,7 @@
   var Tooltip =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$m(Tooltip, _BaseClass);
+    _inherits$o(Tooltip, _BaseClass);
     /**
         @memberof Tooltip
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -37770,9 +41311,9 @@
     function Tooltip() {
       var _this;
 
-      _classCallCheck$o(this, Tooltip);
+      _classCallCheck$q(this, Tooltip);
 
-      _this = _possibleConstructorReturn$m(this, _getPrototypeOf$m(Tooltip).call(this));
+      _this = _possibleConstructorReturn$o(this, _getPrototypeOf$o(Tooltip).call(this));
       _this._arrow = accessor("arrow", "");
       _this._arrowStyle = {
         "content": "",
@@ -37857,7 +41398,7 @@
     */
 
 
-    _createClass$k(Tooltip, [{
+    _createClass$m(Tooltip, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
@@ -38411,13 +41952,13 @@
     return Tooltip;
   }(BaseClass);
 
-  function _classCallCheck$p(instance, Constructor) {
+  function _classCallCheck$r(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$l(target, props) {
+  function _defineProperties$n(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -38427,9 +41968,9 @@
     }
   }
 
-  function _createClass$l(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$l(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$l(Constructor, staticProps);
+  function _createClass$n(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$n(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$n(Constructor, staticProps);
     return Constructor;
   }
   /**
@@ -38447,7 +41988,7 @@
         @private
     */
     function Message() {
-      _classCallCheck$p(this, Message);
+      _classCallCheck$r(this, Message);
 
       this._isVisible = false;
     }
@@ -38458,7 +41999,7 @@
     */
 
 
-    _createClass$l(Message, [{
+    _createClass$n(Message, [{
       key: "exit",
       value: function exit(elem, duration) {
         elem.transition().duration(duration).style("opacity", 0).transition().remove();
@@ -48824,15 +52365,15 @@
     });
   }
 
-  function _slicedToArray$3(arr, i) {
-    return _arrayWithHoles$3(arr) || _iterableToArrayLimit$3(arr, i) || _nonIterableRest$3();
+  function _slicedToArray$4(arr, i) {
+    return _arrayWithHoles$4(arr) || _iterableToArrayLimit$4(arr, i) || _nonIterableRest$4();
   }
 
-  function _nonIterableRest$3() {
+  function _nonIterableRest$4() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
-  function _iterableToArrayLimit$3(arr, i) {
+  function _iterableToArrayLimit$4(arr, i) {
     if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
       return;
     }
@@ -48862,7 +52403,7 @@
     return _arr;
   }
 
-  function _arrayWithHoles$3(arr) {
+  function _arrayWithHoles$4(arr) {
     if (Array.isArray(arr)) return arr;
   }
   var defaultOptions = {
@@ -48901,7 +52442,7 @@
           return parseFloat(d) * scale;
         });
 
-        var _translate$1$replace$2 = _slicedToArray$3(_translate$1$replace$, 2);
+        var _translate$1$replace$2 = _slicedToArray$4(_translate$1$replace$, 2);
 
         x = _translate$1$replace$2[0];
         y = _translate$1$replace$2[1];
@@ -49124,7 +52665,7 @@
         }));
       } else if (this.childNodes.length > 0) {
         var _parseTransform = parseTransform(this),
-            _parseTransform2 = _slicedToArray$3(_parseTransform, 3),
+            _parseTransform2 = _slicedToArray$4(_parseTransform, 3),
             scale = _parseTransform2[0],
             _x2 = _parseTransform2[1],
             _y2 = _parseTransform2[2];
@@ -49148,7 +52689,7 @@
           _select(_elem3).attr("y2", parseFloat(_select(_elem3).attr("y2")) + transform.y);
         } else if (tag === "path") {
           var _parseTransform3 = parseTransform(_elem3),
-              _parseTransform4 = _slicedToArray$3(_parseTransform3, 3),
+              _parseTransform4 = _slicedToArray$4(_parseTransform3, 3),
               _scale = _parseTransform4[0],
               _x3 = _parseTransform4[1],
               _y3 = _parseTransform4[2];
@@ -49172,7 +52713,7 @@
 
           if (defTag === "pattern") {
             var _parseTransform5 = parseTransform(_elem3),
-                _parseTransform6 = _slicedToArray$3(_parseTransform5, 3),
+                _parseTransform6 = _slicedToArray$4(_parseTransform5, 3),
                 _scale2 = _parseTransform6[0],
                 _x4 = _parseTransform6[1],
                 _y4 = _parseTransform6[2];
@@ -49988,7 +53529,7 @@
       this._timelineSelection = s;
       s = s.map(Number);
       this.timeFilter(function (d) {
-        var ms = date$2(_this._time(d)).getTime();
+        var ms = date$3(_this._time(d)).getTime();
         return ms >= s[0] && ms <= s[1];
       }).render();
     }
@@ -50006,7 +53547,7 @@
 
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var timelinePossible = this._time && this._timeline;
-    var ticks = timelinePossible ? unique(this._data.map(this._time)).map(date$2) : [];
+    var ticks = timelinePossible ? unique(this._data.map(this._time)).map(date$3) : [];
     timelinePossible = timelinePossible && ticks.length > 1;
     var padding = this._timelinePadding() ? this._padding : {
       top: 0,
@@ -50031,7 +53572,7 @@
       })).width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right));
 
       if (timeline.selection() === undefined) {
-        this._timelineSelection = extent(data, this._time).map(date$2);
+        this._timelineSelection = extent(data, this._time).map(date$3);
         timeline.selection(this._timelineSelection);
       }
 
@@ -50396,15 +53937,15 @@
     if (!d) this._tooltipClass.data([]).render();
   }
 
-  function _slicedToArray$4(arr, i) {
-    return _arrayWithHoles$4(arr) || _iterableToArrayLimit$4(arr, i) || _nonIterableRest$4();
+  function _slicedToArray$5(arr, i) {
+    return _arrayWithHoles$5(arr) || _iterableToArrayLimit$5(arr, i) || _nonIterableRest$5();
   }
 
-  function _nonIterableRest$4() {
+  function _nonIterableRest$5() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
-  function _iterableToArrayLimit$4(arr, i) {
+  function _iterableToArrayLimit$5(arr, i) {
     if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
       return;
     }
@@ -50434,7 +53975,7 @@
     return _arr;
   }
 
-  function _arrayWithHoles$4(arr) {
+  function _arrayWithHoles$5(arr) {
     if (Array.isArray(arr)) return arr;
   }
   var brushing = false;
@@ -50582,7 +54123,7 @@
         t = transform(this._container.node());
 
     if (bounds) {
-      var _this$_zoomBehavior$t = _slicedToArray$4(this._zoomBehavior.translateExtent()[1], 2),
+      var _this$_zoomBehavior$t = _slicedToArray$5(this._zoomBehavior.translateExtent()[1], 2),
           width = _this$_zoomBehavior$t[0],
           height = _this$_zoomBehavior$t[1],
           dx = bounds[1][0] - bounds[0][0],
@@ -50657,19 +54198,19 @@
     this._brushGroup.selectAll(".handle").call(attrize, this._zoomBrushHandleStyle || {});
   }
 
-  function _toConsumableArray$1(arr) {
-    return _arrayWithoutHoles$1(arr) || _iterableToArray$1(arr) || _nonIterableSpread$1();
+  function _toConsumableArray$3(arr) {
+    return _arrayWithoutHoles$3(arr) || _iterableToArray$3(arr) || _nonIterableSpread$3();
   }
 
-  function _nonIterableSpread$1() {
+  function _nonIterableSpread$3() {
     throw new TypeError("Invalid attempt to spread non-iterable instance");
   }
 
-  function _iterableToArray$1(iter) {
+  function _iterableToArray$3(iter) {
     if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
   }
 
-  function _arrayWithoutHoles$1(arr) {
+  function _arrayWithoutHoles$3(arr) {
     if (Array.isArray(arr)) {
       for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
         arr2[i] = arr[i];
@@ -50679,15 +54220,15 @@
     }
   }
 
-  function _slicedToArray$5(arr, i) {
-    return _arrayWithHoles$5(arr) || _iterableToArrayLimit$5(arr, i) || _nonIterableRest$5();
+  function _slicedToArray$6(arr, i) {
+    return _arrayWithHoles$6(arr) || _iterableToArrayLimit$6(arr, i) || _nonIterableRest$6();
   }
 
-  function _nonIterableRest$5() {
+  function _nonIterableRest$6() {
     throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
-  function _iterableToArrayLimit$5(arr, i) {
+  function _iterableToArrayLimit$6(arr, i) {
     if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
       return;
     }
@@ -50717,31 +54258,31 @@
     return _arr;
   }
 
-  function _arrayWithHoles$5(arr) {
+  function _arrayWithHoles$6(arr) {
     if (Array.isArray(arr)) return arr;
   }
 
-  function _typeof$r(obj) {
+  function _typeof$u(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$r = function _typeof$1(obj) {
+      _typeof$u = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$r = function _typeof$1(obj) {
+      _typeof$u = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$r(obj);
+    return _typeof$u(obj);
   }
 
-  function _classCallCheck$q(instance, Constructor) {
+  function _classCallCheck$s(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$m(target, props) {
+  function _defineProperties$o(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -50751,28 +54292,28 @@
     }
   }
 
-  function _createClass$m(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$m(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$m(Constructor, staticProps);
+  function _createClass$o(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$o(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$o(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$n(self, call) {
-    if (call && (_typeof$r(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$p(self, call) {
+    if (call && (_typeof$u(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$n(self);
+    return _assertThisInitialized$p(self);
   }
 
-  function _getPrototypeOf$n(o) {
-    _getPrototypeOf$n = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$p(o) {
+    _getPrototypeOf$p = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$n(o);
+    return _getPrototypeOf$p(o);
   }
 
-  function _assertThisInitialized$n(self) {
+  function _assertThisInitialized$p(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -50780,7 +54321,7 @@
     return self;
   }
 
-  function _inherits$n(subClass, superClass) {
+  function _inherits$p(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -50792,16 +54333,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$n(subClass, superClass);
+    if (superClass) _setPrototypeOf$p(subClass, superClass);
   }
 
-  function _setPrototypeOf$n(o, p) {
-    _setPrototypeOf$n = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$p(o, p) {
+    _setPrototypeOf$p = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$n(o, p);
+    return _setPrototypeOf$p(o, p);
   }
   /**
    * Default padding logic that will return false if the screen is less than 600 pixels wide.
@@ -50831,7 +54372,7 @@
   var Viz =
   /*#__PURE__*/
   function (_BaseClass) {
-    _inherits$n(Viz, _BaseClass);
+    _inherits$p(Viz, _BaseClass);
     /**
         @memberof Viz
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -50842,9 +54383,9 @@
     function Viz() {
       var _this;
 
-      _classCallCheck$q(this, Viz);
+      _classCallCheck$s(this, Viz);
 
-      _this = _possibleConstructorReturn$n(this, _getPrototypeOf$n(Viz).call(this));
+      _this = _possibleConstructorReturn$p(this, _getPrototypeOf$p(Viz).call(this));
       _this._aggs = {};
       _this._ariaHidden = true;
       _this._backClass = new TextBox().on("click", function () {
@@ -50896,9 +54437,9 @@
       _this._legend = true;
       _this._legendClass = new Legend();
       _this._legendConfig = {
-        label: legendLabel.bind(_assertThisInitialized$n(_this)),
+        label: legendLabel.bind(_assertThisInitialized$p(_this)),
         shapeConfig: {
-          ariaLabel: legendLabel.bind(_assertThisInitialized$n(_this)),
+          ariaLabel: legendLabel.bind(_assertThisInitialized$p(_this)),
           labelConfig: {
             fontColor: undefined,
             fontResize: false,
@@ -50939,15 +54480,15 @@
 
       _this._noDataMessage = true;
       _this._on = {
-        "click.shape": clickShape.bind(_assertThisInitialized$n(_this)),
-        "click.legend": clickLegend.bind(_assertThisInitialized$n(_this)),
-        "mouseenter": mouseenter.bind(_assertThisInitialized$n(_this)),
-        "mouseleave": mouseleave.bind(_assertThisInitialized$n(_this)),
-        "mousemove.shape": mousemoveShape.bind(_assertThisInitialized$n(_this)),
-        "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$n(_this))
+        "click.shape": clickShape.bind(_assertThisInitialized$p(_this)),
+        "click.legend": clickLegend.bind(_assertThisInitialized$p(_this)),
+        "mouseenter": mouseenter.bind(_assertThisInitialized$p(_this)),
+        "mouseleave": mouseleave.bind(_assertThisInitialized$p(_this)),
+        "mousemove.shape": mousemoveShape.bind(_assertThisInitialized$p(_this)),
+        "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$p(_this))
       };
       _this._queue = [];
-      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$r(window)) === undefined ? "" : window;
+      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$u(window)) === undefined ? "" : window;
       _this._shape = constant("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
@@ -51035,7 +54576,7 @@
       };
 
       _this._totalFormat = function (d) {
-        return "".concat(_this._translate("Total"), ": ").concat(formatAbbreviate(d, _this._locale));
+        return "".concat(_this._translate("Total"), ": ").concat(formatAbbreviate$1(d, _this._locale));
       };
 
       _this._totalPadding = defaultPadding;
@@ -51086,7 +54627,7 @@
      */
 
 
-    _createClass$m(Viz, [{
+    _createClass$o(Viz, [{
       key: "_preDraw",
       value: function _preDraw() {
         var _this2 = this;
@@ -51109,7 +54650,7 @@
           if (!d) return "";
 
           if (d._isAggregation) {
-            return "".concat(_this2._thresholdName(d, i), " < ").concat(formatAbbreviate(d._threshold * 100, _this2._locale), "%");
+            return "".concat(_this2._thresholdName(d, i), " < ").concat(formatAbbreviate$1(d._threshold * 100, _this2._locale), "%");
           }
 
           while (d.__d3plus__ && d.data) {
@@ -51129,7 +54670,7 @@
 
 
         if (this._time && !this._timeFilter && this._data.length) {
-          var dates = this._data.map(this._time).map(date$2);
+          var dates = this._data.map(this._time).map(date$3);
 
           var d = this._data[0],
               i = 0;
@@ -51142,7 +54683,7 @@
             var latestTime = +max(dates);
 
             this._timeFilter = function (d, i) {
-              return +date$2(_this2._time(d, i)) === latestTime;
+              return +date$3(_this2._time(d, i)) === latestTime;
             };
           }
         }
@@ -51313,7 +54854,7 @@
           this._select.style("display", "none");
 
           var _getSize = getSize$1(this._select.node().parentNode),
-              _getSize2 = _slicedToArray$5(_getSize, 2),
+              _getSize2 = _slicedToArray$6(_getSize, 2),
               w = _getSize2[0],
               h = _getSize2[1];
 
@@ -51408,7 +54949,7 @@
 
           this._queue.forEach(function (p) {
             var cache = _this3._cache ? _this3._lrucache.get(p[1]) : undefined;
-            if (!cache) q.defer.apply(q, _toConsumableArray$1(p));else _this3["_".concat(p[3])] = cache;
+            if (!cache) q.defer.apply(q, _toConsumableArray$3(p));else _this3["_".concat(p[3])] = cache;
           });
 
           this._queue = [];
@@ -52947,6 +56488,8 @@
     return [x, y];
   }
 
+  var testLineShape = new Line();
+  var testTextBox = new TextBox();
   /**
       @desc Logic for determining default sizes of shapes using the sizeScaleD3 internal function.
       @private
@@ -53062,6 +56605,13 @@
       };
       _this._discreteCutoff = 100;
       _this._groupPadding = 5;
+      _this._lineMarkerConfig = {
+        fill: function fill(d, i) {
+          return colorAssign(_this._id(d, i));
+        },
+        r: constant(3)
+      };
+      _this._lineMarkers = false;
       _this._previousShapes = [];
       _this._shape = constant("Circle");
       _this._shapeConfig = assign(_this._shapeConfig, {
@@ -53099,11 +56649,19 @@
         },
         Line: {
           fill: constant("none"),
-          label: false,
+          labelConfig: {
+            fontColor: function fontColor(d, i) {
+              return colorLegible(colorAssign(_this._id(d, i)));
+            },
+            fontResize: false,
+            padding: 5,
+            textAnchor: "start",
+            verticalAlign: "middle"
+          },
           stroke: function stroke(d, i) {
             return colorAssign(_this._id(d, i));
           },
-          strokeWidth: constant(1)
+          strokeWidth: constant(2)
         },
         Rect: {
           height: function height(d) {
@@ -53145,9 +56703,10 @@
       _this._yConfig = {
         gridConfig: {
           stroke: function stroke(d) {
-            var domain = _this._yAxis.domain();
+            var range = _this._yAxis.range(); // hides bottom-most y gridline so it doesn't overlap with the x axis
 
-            return domain[domain.length - 1] === d.id ? "transparent" : "#ccc";
+
+            return range[range.length - 1] === _this._yAxis._getPosition.bind(_this._yAxis)(d.id) ? "transparent" : "#ccc";
           }
         }
       };
@@ -53700,12 +57259,54 @@
           };
         }
 
+        var xRangeMax = undefined;
+
+        if (this._lineLabels) {
+          var lineData = nest().key(function (d) {
+            return d.id;
+          }).entries(data.filter(function (d) {
+            return d.shape === "Line";
+          }));
+
+          if (lineData.length && lineData.length < this._dataCutoff) {
+            var userConfig = configPrep.bind(this)(this._shapeConfig, "shape", "Line");
+            testLineShape.config(userConfig);
+            var lineLabelConfig = testLineShape.labelConfig();
+            var fontSizeAccessor = lineLabelConfig.fontSize !== undefined ? lineLabelConfig.fontSize : testTextBox.fontSize();
+            var fontWeightAccessor = lineLabelConfig.fontWeight !== undefined ? lineLabelConfig.fontWeight : testTextBox.fontWeight();
+            var fontFamilyAccessor = lineLabelConfig.fontFamily !== undefined ? lineLabelConfig.fontFamily : testTextBox.fontFamily();
+            var paddingAccessor = lineLabelConfig.padding !== undefined ? lineLabelConfig.padding : testTextBox.padding();
+            var labelWidths = lineData.map(function (d) {
+              var datum = d.values[0];
+
+              var label = _this2._drawLabel(datum);
+
+              var fontSize = typeof fontSizeAccessor === "function" ? fontSizeAccessor(datum) : fontSizeAccessor;
+              var fontWeight = typeof fontWeightAccessor === "function" ? fontWeightAccessor(datum) : fontWeightAccessor;
+              var fontFamily = typeof fontFamilyAccessor === "function" ? fontFamilyAccessor(datum) : fontFamilyAccessor;
+              if (fontFamily instanceof Array) fontFamily = fontFamily.map(function (f) {
+                return "'".concat(f, "'");
+              }).join(", ");
+              var labelPadding = typeof paddingAccessor === "function" ? paddingAccessor(datum) : paddingAccessor;
+              var labelWidth = textWidth(label, {
+                "font-size": fontSize,
+                "font-family": fontFamily,
+                "font-weight": fontWeight
+              });
+              return labelWidth + labelPadding * 2;
+            });
+            var largestLabel = max(labelWidths);
+            var labelSpace = min([largestLabel, width / 4]);
+            xRangeMax = width - labelSpace - this._margin.right;
+          }
+        }
+
         if (showX) {
-          this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, undefined]).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).scale(xConfigScale).render();
+          this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, xRangeMax]).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).scale(xConfigScale).render();
         }
 
         if (x2Exists) {
-          this._x2Test.domain(x2Domain).height(height).range([undefined, undefined]).select(testGroup.node()).ticks(x2Ticks).width(width).config(xC).tickSize(0).config(defaultX2Config).config(this._x2Config).scale(x2ConfigScale).render();
+          this._x2Test.domain(x2Domain).height(height).range([undefined, xRangeMax]).select(testGroup.node()).ticks(x2Ticks).width(width).config(xC).tickSize(0).config(defaultX2Config).config(this._x2Config).scale(x2ConfigScale).render();
         }
 
         var xTestRange = this._xTest._getRange();
@@ -53893,7 +57494,7 @@
             }
           }).node(),
           x: function x(d) {
-            return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
+            return d.x2 !== undefined ? _x2(d.x2, "x2") : _x2(d.x);
           },
           x0: discrete === "x" ? function (d) {
             return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
@@ -53902,7 +57503,7 @@
             return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
           },
           y: function y(d) {
-            return d.y2 ? _y2(d.y2, "y2") : _y2(d.y);
+            return d.y2 !== undefined ? _y2(d.y2, "y2") : _y2(d.y);
           },
           y0: discrete === "y" ? function (d) {
             return d.y2 ? _y2(d.y2, "y2") : _y2(d.y);
@@ -54003,6 +57604,27 @@
 
               _this2._shapes.push(area);
             }
+
+            s.config({
+              label: _this2._lineLabels ? _this2._drawLabel : false,
+              labelBounds: _this2._lineLabels ? function (d, i, s) {
+                var _s$points$ = _slicedToArray(s.points[0], 2),
+                    firstX = _s$points$[0],
+                    firstY = _s$points$[1];
+
+                var _s$points = _slicedToArray(s.points[s.points.length - 1], 2),
+                    lastX = _s$points[0],
+                    lastY = _s$points[1];
+
+                var height = _this2._height / 4;
+                return {
+                  x: lastX - firstX,
+                  y: lastY - firstY - height / 2,
+                  width: _this2._padding.right,
+                  height: height
+                };
+              } : false
+            });
           }
 
           var classEvents = events.filter(function (e) {
@@ -54050,11 +57672,55 @@
           s.config(userConfig).render();
 
           _this2._shapes.push(s);
+
+          if (d.key === "Line" && _this2._lineMarkers) {
+            var markers = new Circle().data(d.values).config(shapeConfig).config(_this2._lineMarkerConfig).id(function (d) {
+              return "".concat(d.id, "_").concat(d.discrete);
+            });
+
+            var _loop4 = function _loop4(_e3) {
+              markers.on(globalEvents[_e3], function (d) {
+                return _this2._on[globalEvents[_e3]](d.data, d.i);
+              });
+            };
+
+            for (var _e3 = 0; _e3 < globalEvents.length; _e3++) {
+              _loop4(_e3);
+            }
+
+            var _loop5 = function _loop5(_e4) {
+              markers.on(shapeEvents[_e4], function (d) {
+                return _this2._on[shapeEvents[_e4]](d.data, d.i);
+              });
+            };
+
+            for (var _e4 = 0; _e4 < shapeEvents.length; _e4++) {
+              _loop5(_e4);
+            }
+
+            var _loop6 = function _loop6(_e5) {
+              markers.on(classEvents[_e5], function (d) {
+                return _this2._on[classEvents[_e5]](d.data, d.i);
+              });
+            };
+
+            for (var _e5 = 0; _e5 < classEvents.length; _e5++) {
+              _loop6(_e5);
+            }
+
+            markers.render();
+
+            _this2._shapes.push(markers);
+          }
         });
         var dataShapes = shapeData.map(function (d) {
           return d.key;
         });
-        if (this._confidence && dataShapes.includes("Line")) dataShapes.push("Area");
+
+        if (dataShapes.includes("Line")) {
+          if (this._confidence) dataShapes.push("Area");
+          if (this._labelMarkers) dataShapes.push("Circle");
+        }
 
         var exitShapes = this._previousShapes.filter(function (d) {
           return !dataShapes.includes(d);
@@ -54187,6 +57853,42 @@
       key: "groupPadding",
       value: function groupPadding(_) {
         return arguments.length ? (this._groupPadding = _, this) : this._groupPadding;
+      }
+      /**
+          @memberof Plot
+          @desc Draws labels on the right side of any Line shapes that are drawn on the plot.
+          @param {Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "lineLabels",
+      value: function lineLabels(_) {
+        return arguments.length ? (this._lineLabels = _, this) : this._lineLabels;
+      }
+      /**
+          @memberof Plot
+          @desc Shape config for the Circle shapes drawn by the lineMarkers method.
+          @param {Object} *value*
+          @chainable
+      */
+
+    }, {
+      key: "lineMarkerConfig",
+      value: function lineMarkerConfig(_) {
+        return arguments.length ? (this._lineMarkerConfig = assign(this._lineMarkerConfig, _), this) : this._lineMarkerConfig;
+      }
+      /**
+          @memberof Plot
+          @desc Draws circle markers on each vertex of a Line.
+          @param {Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "lineMarkers",
+      value: function lineMarkers(_) {
+        return arguments.length ? (this._lineMarkers = _, this) : this._lineMarkers;
       }
       /**
           @memberof Plot
@@ -54508,7 +58210,13 @@
     }, {
       key: "y2Config",
       value: function y2Config(_) {
-        return arguments.length ? (this._y2Config = assign(this._y2Config, _), this) : this._y2Config;
+        if (arguments.length) {
+          if (_.domain) _.domain = _.domain.slice().reverse();
+          this._y2Config = assign(this._y2Config, _);
+          return this;
+        }
+
+        return this._y2Config;
       }
       /**
           @memberof Plot
@@ -54819,7 +58527,11 @@
       _classCallCheck(this, LinePlot);
 
       _this = _possibleConstructorReturn(this, _getPrototypeOf(LinePlot).call(this));
+      _this._discrete = "x";
       _this._shape = constant("Line");
+
+      _this.x("x");
+
       return _this;
     }
 

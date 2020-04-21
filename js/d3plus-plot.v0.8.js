@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.36
+  d3plus-plot v0.8.37
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -968,10 +968,10 @@
 })));
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-common'), require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-shape'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-shape'), require('d3plus-viz'), require('d3-selection')) :
-  typeof define === 'function' && define.amd ? define('d3plus-plot', ['exports', 'd3plus-common', 'd3-array', 'd3-collection', 'd3-scale', 'd3-shape', 'd3plus-axis', 'd3plus-color', 'd3plus-shape', 'd3plus-viz', 'd3-selection'], factory) :
-  (global = global || self, factory(global.d3plus = {}, global.d3plusCommon, global.d3Array, global.d3Collection, global.scales, global.d3Shape, global.d3plusAxis, global.d3plusColor, global.shapes, global.d3plusViz, global.d3Selection));
-}(this, (function (exports, d3plusCommon, d3Array, d3Collection, scales, d3Shape, d3plusAxis, d3plusColor, shapes, d3plusViz, d3Selection) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3plus-common'), require('d3-array'), require('d3-collection'), require('d3-scale'), require('d3-shape'), require('d3plus-axis'), require('d3plus-color'), require('d3plus-shape'), require('d3plus-text'), require('d3plus-viz'), require('d3-selection')) :
+  typeof define === 'function' && define.amd ? define('d3plus-plot', ['exports', 'd3plus-common', 'd3-array', 'd3-collection', 'd3-scale', 'd3-shape', 'd3plus-axis', 'd3plus-color', 'd3plus-shape', 'd3plus-text', 'd3plus-viz', 'd3-selection'], factory) :
+  (global = global || self, factory(global.d3plus = {}, global.d3plusCommon, global.d3Array, global.d3Collection, global.scales, global.d3Shape, global.d3plusAxis, global.d3plusColor, global.shapes, global.d3plusText, global.d3plusViz, global.d3Selection));
+}(this, (function (exports, d3plusCommon, d3Array, d3Collection, scales, d3Shape, d3plusAxis, d3plusColor, shapes, d3plusText, d3plusViz, d3Selection) { 'use strict';
 
   function _typeof(obj) {
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -1099,6 +1099,48 @@
     }
 
     return _get(target, property, receiver || target);
+  }
+
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  }
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
   }
 
   /**
@@ -1483,6 +1525,8 @@
     return [x, y];
   }
 
+  var testLineShape = new shapes.Line();
+  var testTextBox = new d3plusText.TextBox();
   /**
       @desc Logic for determining default sizes of shapes using the sizeScaleD3 internal function.
       @private
@@ -1598,6 +1642,13 @@
       };
       _this._discreteCutoff = 100;
       _this._groupPadding = 5;
+      _this._lineMarkerConfig = {
+        fill: function fill(d, i) {
+          return d3plusColor.colorAssign(_this._id(d, i));
+        },
+        r: d3plusCommon.constant(3)
+      };
+      _this._lineMarkers = false;
       _this._previousShapes = [];
       _this._shape = d3plusCommon.constant("Circle");
       _this._shapeConfig = d3plusCommon.assign(_this._shapeConfig, {
@@ -1635,11 +1686,19 @@
         },
         Line: {
           fill: d3plusCommon.constant("none"),
-          label: false,
+          labelConfig: {
+            fontColor: function fontColor(d, i) {
+              return d3plusColor.colorLegible(d3plusColor.colorAssign(_this._id(d, i)));
+            },
+            fontResize: false,
+            padding: 5,
+            textAnchor: "start",
+            verticalAlign: "middle"
+          },
           stroke: function stroke(d, i) {
             return d3plusColor.colorAssign(_this._id(d, i));
           },
-          strokeWidth: d3plusCommon.constant(1)
+          strokeWidth: d3plusCommon.constant(2)
         },
         Rect: {
           height: function height(d) {
@@ -1681,9 +1740,10 @@
       _this._yConfig = {
         gridConfig: {
           stroke: function stroke(d) {
-            var domain = _this._yAxis.domain();
+            var range = _this._yAxis.range(); // hides bottom-most y gridline so it doesn't overlap with the x axis
 
-            return domain[domain.length - 1] === d.id ? "transparent" : "#ccc";
+
+            return range[range.length - 1] === _this._yAxis._getPosition.bind(_this._yAxis)(d.id) ? "transparent" : "#ccc";
           }
         }
       };
@@ -2236,12 +2296,54 @@
           };
         }
 
+        var xRangeMax = undefined;
+
+        if (this._lineLabels) {
+          var lineData = d3Collection.nest().key(function (d) {
+            return d.id;
+          }).entries(data.filter(function (d) {
+            return d.shape === "Line";
+          }));
+
+          if (lineData.length && lineData.length < this._dataCutoff) {
+            var userConfig = d3plusCommon.configPrep.bind(this)(this._shapeConfig, "shape", "Line");
+            testLineShape.config(userConfig);
+            var lineLabelConfig = testLineShape.labelConfig();
+            var fontSizeAccessor = lineLabelConfig.fontSize !== undefined ? lineLabelConfig.fontSize : testTextBox.fontSize();
+            var fontWeightAccessor = lineLabelConfig.fontWeight !== undefined ? lineLabelConfig.fontWeight : testTextBox.fontWeight();
+            var fontFamilyAccessor = lineLabelConfig.fontFamily !== undefined ? lineLabelConfig.fontFamily : testTextBox.fontFamily();
+            var paddingAccessor = lineLabelConfig.padding !== undefined ? lineLabelConfig.padding : testTextBox.padding();
+            var labelWidths = lineData.map(function (d) {
+              var datum = d.values[0];
+
+              var label = _this2._drawLabel(datum);
+
+              var fontSize = typeof fontSizeAccessor === "function" ? fontSizeAccessor(datum) : fontSizeAccessor;
+              var fontWeight = typeof fontWeightAccessor === "function" ? fontWeightAccessor(datum) : fontWeightAccessor;
+              var fontFamily = typeof fontFamilyAccessor === "function" ? fontFamilyAccessor(datum) : fontFamilyAccessor;
+              if (fontFamily instanceof Array) fontFamily = fontFamily.map(function (f) {
+                return "'".concat(f, "'");
+              }).join(", ");
+              var labelPadding = typeof paddingAccessor === "function" ? paddingAccessor(datum) : paddingAccessor;
+              var labelWidth = d3plusText.textWidth(label, {
+                "font-size": fontSize,
+                "font-family": fontFamily,
+                "font-weight": fontWeight
+              });
+              return labelWidth + labelPadding * 2;
+            });
+            var largestLabel = d3Array.max(labelWidths);
+            var labelSpace = d3Array.min([largestLabel, width / 4]);
+            xRangeMax = width - labelSpace - this._margin.right;
+          }
+        }
+
         if (showX) {
-          this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, undefined]).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).scale(xConfigScale).render();
+          this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, xRangeMax]).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).scale(xConfigScale).render();
         }
 
         if (x2Exists) {
-          this._x2Test.domain(x2Domain).height(height).range([undefined, undefined]).select(testGroup.node()).ticks(x2Ticks).width(width).config(xC).tickSize(0).config(defaultX2Config).config(this._x2Config).scale(x2ConfigScale).render();
+          this._x2Test.domain(x2Domain).height(height).range([undefined, xRangeMax]).select(testGroup.node()).ticks(x2Ticks).width(width).config(xC).tickSize(0).config(defaultX2Config).config(this._x2Config).scale(x2ConfigScale).render();
         }
 
         var xTestRange = this._xTest._getRange();
@@ -2429,7 +2531,7 @@
             }
           }).node(),
           x: function x(d) {
-            return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
+            return d.x2 !== undefined ? _x2(d.x2, "x2") : _x2(d.x);
           },
           x0: discrete === "x" ? function (d) {
             return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
@@ -2438,7 +2540,7 @@
             return d.x2 ? _x2(d.x2, "x2") : _x2(d.x);
           },
           y: function y(d) {
-            return d.y2 ? _y2(d.y2, "y2") : _y2(d.y);
+            return d.y2 !== undefined ? _y2(d.y2, "y2") : _y2(d.y);
           },
           y0: discrete === "y" ? function (d) {
             return d.y2 ? _y2(d.y2, "y2") : _y2(d.y);
@@ -2539,6 +2641,27 @@
 
               _this2._shapes.push(area);
             }
+
+            s.config({
+              label: _this2._lineLabels ? _this2._drawLabel : false,
+              labelBounds: _this2._lineLabels ? function (d, i, s) {
+                var _s$points$ = _slicedToArray(s.points[0], 2),
+                    firstX = _s$points$[0],
+                    firstY = _s$points$[1];
+
+                var _s$points = _slicedToArray(s.points[s.points.length - 1], 2),
+                    lastX = _s$points[0],
+                    lastY = _s$points[1];
+
+                var height = _this2._height / 4;
+                return {
+                  x: lastX - firstX,
+                  y: lastY - firstY - height / 2,
+                  width: _this2._padding.right,
+                  height: height
+                };
+              } : false
+            });
           }
 
           var classEvents = events.filter(function (e) {
@@ -2586,11 +2709,55 @@
           s.config(userConfig).render();
 
           _this2._shapes.push(s);
+
+          if (d.key === "Line" && _this2._lineMarkers) {
+            var markers = new shapes.Circle().data(d.values).config(shapeConfig).config(_this2._lineMarkerConfig).id(function (d) {
+              return "".concat(d.id, "_").concat(d.discrete);
+            });
+
+            var _loop4 = function _loop4(_e3) {
+              markers.on(globalEvents[_e3], function (d) {
+                return _this2._on[globalEvents[_e3]](d.data, d.i);
+              });
+            };
+
+            for (var _e3 = 0; _e3 < globalEvents.length; _e3++) {
+              _loop4(_e3);
+            }
+
+            var _loop5 = function _loop5(_e4) {
+              markers.on(shapeEvents[_e4], function (d) {
+                return _this2._on[shapeEvents[_e4]](d.data, d.i);
+              });
+            };
+
+            for (var _e4 = 0; _e4 < shapeEvents.length; _e4++) {
+              _loop5(_e4);
+            }
+
+            var _loop6 = function _loop6(_e5) {
+              markers.on(classEvents[_e5], function (d) {
+                return _this2._on[classEvents[_e5]](d.data, d.i);
+              });
+            };
+
+            for (var _e5 = 0; _e5 < classEvents.length; _e5++) {
+              _loop6(_e5);
+            }
+
+            markers.render();
+
+            _this2._shapes.push(markers);
+          }
         });
         var dataShapes = shapeData.map(function (d) {
           return d.key;
         });
-        if (this._confidence && dataShapes.includes("Line")) dataShapes.push("Area");
+
+        if (dataShapes.includes("Line")) {
+          if (this._confidence) dataShapes.push("Area");
+          if (this._labelMarkers) dataShapes.push("Circle");
+        }
 
         var exitShapes = this._previousShapes.filter(function (d) {
           return !dataShapes.includes(d);
@@ -2723,6 +2890,42 @@
       key: "groupPadding",
       value: function groupPadding(_) {
         return arguments.length ? (this._groupPadding = _, this) : this._groupPadding;
+      }
+      /**
+          @memberof Plot
+          @desc Draws labels on the right side of any Line shapes that are drawn on the plot.
+          @param {Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "lineLabels",
+      value: function lineLabels(_) {
+        return arguments.length ? (this._lineLabels = _, this) : this._lineLabels;
+      }
+      /**
+          @memberof Plot
+          @desc Shape config for the Circle shapes drawn by the lineMarkers method.
+          @param {Object} *value*
+          @chainable
+      */
+
+    }, {
+      key: "lineMarkerConfig",
+      value: function lineMarkerConfig(_) {
+        return arguments.length ? (this._lineMarkerConfig = d3plusCommon.assign(this._lineMarkerConfig, _), this) : this._lineMarkerConfig;
+      }
+      /**
+          @memberof Plot
+          @desc Draws circle markers on each vertex of a Line.
+          @param {Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "lineMarkers",
+      value: function lineMarkers(_) {
+        return arguments.length ? (this._lineMarkers = _, this) : this._lineMarkers;
       }
       /**
           @memberof Plot
@@ -3044,7 +3247,13 @@
     }, {
       key: "y2Config",
       value: function y2Config(_) {
-        return arguments.length ? (this._y2Config = d3plusCommon.assign(this._y2Config, _), this) : this._y2Config;
+        if (arguments.length) {
+          if (_.domain) _.domain = _.domain.slice().reverse();
+          this._y2Config = d3plusCommon.assign(this._y2Config, _);
+          return this;
+        }
+
+        return this._y2Config;
       }
       /**
           @memberof Plot
@@ -3355,7 +3564,11 @@
       _classCallCheck(this, LinePlot);
 
       _this = _possibleConstructorReturn(this, _getPrototypeOf(LinePlot).call(this));
+      _this._discrete = "x";
       _this._shape = d3plusCommon.constant("Line");
+
+      _this.x("x");
+
       return _this;
     }
 
