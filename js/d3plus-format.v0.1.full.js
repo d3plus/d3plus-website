@@ -1,5 +1,5 @@
 /*
-  d3plus-format v0.1.17
+  d3plus-format v0.1.18
   Shorthand formatters for common number types.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1368,7 +1368,7 @@
   var defaultLocale = {
     "en-GB": {
       separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: ",",
@@ -1378,7 +1378,7 @@
     },
     "en-US": {
       separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: ",",
