@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.51
+  d3plus-viz v0.12.52
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1232,6 +1232,7 @@
           // All urls loaded
           // Format data
           data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
+          if (_this._cache) _this._lrucache.set("".concat(key, "_").concat(url), data);
 
           if (formatter) {
             data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
@@ -1240,7 +1241,6 @@
           }
 
           if (key && "_".concat(key) in _this) _this["_".concat(key)] = data;
-          if (_this._cache) _this._lrucache.set(url, data);
           if (callback) callback(err, data);
         }
       });
@@ -1261,7 +1261,6 @@
       }
 
       if (key && "_".concat(key) in this) this["_".concat(key)] = data;
-      if (this._cache) this._lrucache.set(key, data);
       if (callback) callback(null, data);
     }
   }
@@ -2949,8 +2948,8 @@
           }
 
           this._queue.forEach(function (p) {
-            var cache = _this3._cache ? _this3._lrucache.get(p[1]) : undefined;
-            if (!cache) q.defer.apply(q, _toConsumableArray(p));else _this3["_".concat(p[3])] = cache;
+            var cache = _this3._cache ? _this3._lrucache.get("".concat(p[3], "_").concat(p[1])) : undefined;
+            if (!cache) q.defer.apply(q, _toConsumableArray(p));else _this3["_".concat(p[3])] = p[2] ? p[2](cache) : cache;
           });
 
           this._queue = [];
