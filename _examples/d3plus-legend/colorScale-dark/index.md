@@ -2,8 +2,8 @@
 title: Changing Style of a Color Scale
 width: 400
 height: 200
-time: 1585164345141
-date: March 25, 2020
+time: 1588627880678
+date: May 04, 2020
 ---
 
 [width]: 400
