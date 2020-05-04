@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.31
+  d3plus-legend v0.8.32
   An easy to use javascript chart legend.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -16881,8 +16881,8 @@
     format = (format + "").trim().toLowerCase();
     return (m = reHex.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn$1(m) // #ff0000
     : l === 3 ? new Rgb$1(m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, (m & 0xf) << 4 | m & 0xf, 1) // #f00
-    : l === 8 ? new Rgb$1(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
-    : l === 4 ? new Rgb$1(m >> 12 & 0xf | m >> 8 & 0xf0, m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, ((m & 0xf) << 4 | m & 0xf) / 0xff) // #f000
+    : l === 8 ? rgba$1(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
+    : l === 4 ? rgba$1(m >> 12 & 0xf | m >> 8 & 0xf0, m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, ((m & 0xf) << 4 | m & 0xf) / 0xff) // #f000
     : null // invalid hex
     ) : (m = reRgbInteger$1.exec(format)) ? new Rgb$1(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
     : (m = reRgbPercent$1.exec(format)) ? new Rgb$1(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
@@ -21973,12 +21973,12 @@
 
     for (var i, j = 0, d, dy, yp, yn, n, m = series[order[0]].length; j < m; ++j) {
       for (yp = yn = 0, i = 0; i < n; ++i) {
-        if ((dy = (d = series[order[i]][j])[1] - d[0]) >= 0) {
+        if ((dy = (d = series[order[i]][j])[1] - d[0]) > 0) {
           d[0] = yp, d[1] = yp += dy;
         } else if (dy < 0) {
           d[1] = yn, d[0] = yn += dy;
         } else {
-          d[0] = yp;
+          d[0] = 0, d[1] = dy;
         }
       }
     }
@@ -22287,7 +22287,7 @@
   }
 
   // great unicode list: http://asecuritysite.com/coding/asc2
-  var diacritics = [[/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"], [/[\306]/g, "AE"], [/[\346]/g, "ae"], [/[\337]/g, "B"], [/[\307]/g, "C"], [/[\347]/g, "c"], [/[\320\336\376]/g, "D"], [/[\360]/g, "d"], [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"], [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"], [/[\321]/g, "N"], [/[\361]/g, "n"], [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"], [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"], [/[\327]/g, "x"], [/[\335]/g, "Y"], [/[\375\377]/g, "y"]];
+  var diacritics = [[/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"], [/[\306]/g, "AE"], [/[\346]/g, "ae"], [/[\337]/g, "B"], [/[\307]/g, "C"], [/[\347]/g, "c"], [/[\320\336\376]/g, "D"], [/[\360]/g, "d"], [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"], [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"], [/[\321]/g, "N"], [/[\361]/g, "n"], [/[\u014c\322-\326\330]/g, "O"], [/[\u014d\362-\366\370]/g, "o"], [/[\u016a\331-\334]/g, "U"], [/[\u016b\371-\374]/g, "u"], [/[\327]/g, "x"], [/[\335]/g, "Y"], [/[\375\377]/g, "y"]];
   /**
       @function strip
       @desc Removes all non ASCII characters from a string.
@@ -23985,7 +23985,7 @@
           parent: this._group
         });
 
-        var hitAreas = this._group.selectAll(".d3plus-HitArea").data(this._hitArea ? data : [], key);
+        var hitAreas = this._group.selectAll(".d3plus-HitArea").data(this._hitArea && Object.keys(this._on).length ? data : [], key);
 
         hitAreas.order().call(this._applyTransform.bind(this));
         var isLine = this._name === "Line";
@@ -24657,7 +24657,7 @@
     return splitCurveAsPoints(points, segmentCount).map(pointsToCommand);
   }
 
-  var commandTokenRegex = /[MLCSTQAHVmlcstqahv]|[\d.-]+/g;
+  var commandTokenRegex = /[MLCSTQAHVmlcstqahv]|-?[\d.e+-]+/g;
   /**
    * List of params for each command type in a path `d` attribute
    */
@@ -28660,7 +28660,6 @@
       _this._shape = constant$1("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
-        duration: _this._duration,
         fill: accessor("color"),
         height: constant$1(10),
         hitArea: function hitArea(dd, i) {
@@ -28731,7 +28730,7 @@
     _createClass(Legend, [{
       key: "_fetchConfig",
       value: function _fetchConfig(key, d, i) {
-        var val = this._shapeConfig[key] || this._shapeConfig.labelConfig[key];
+        var val = this._shapeConfig[key] !== undefined ? this._shapeConfig[key] : this._shapeConfig.labelConfig[key];
         if (!val && key === "lineHeight") return this._fetchConfig("fontSize", d, i) * 1.4;
         return typeof val === "function" ? val(d, i) : val;
       }
@@ -28766,10 +28765,16 @@
       value: function render(callback) {
         var _this3 = this;
 
-        if (this._select === void 0) this.select(_select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node()); // Shape <g> Group
+        if (this._select === void 0) this.select(_select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node()); // Legend Container <g> Groups
 
         this._group = elem("g.d3plus-Legend", {
           parent: this._select
+        });
+        this._titleGroup = elem("g.d3plus-Legend-title", {
+          parent: this._group
+        });
+        this._shapeGroup = elem("g.d3plus-Legend-shape", {
+          parent: this._group
         });
         var availableHeight = this._height;
         this._titleHeight = 0;
@@ -28980,7 +28985,7 @@
 
         this._titleClass.data(this._title ? [{
           text: this._title
-        }] : []).duration(this._duration).select(this._group.node()).textAnchor({
+        }] : []).duration(this._duration).select(this._titleGroup.node()).textAnchor({
           left: "start",
           center: "middle",
           right: "end"
@@ -29020,7 +29025,7 @@
             return d.shape === Shape;
           })).duration(_this3._duration).labelConfig({
             padding: 0
-          }).select(_this3._group.node()).verticalAlign("top").config(assign({}, baseConfig, config)).render());
+          }).select(_this3._shapeGroup.node()).verticalAlign("top").config(assign({}, baseConfig, config)).render());
         });
         if (callback) setTimeout(callback, this._duration + 100);
         return this;
@@ -29258,6 +29263,305 @@
     return Legend;
   }(BaseClass);
 
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal$1 (x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
+
+    var i,
+        coefficient = x.slice(0, i); // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+
+    return [coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient, +x.slice(i + 1)];
+  }
+
+  function exponent$1 (x) {
+    return x = formatDecimal$1(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup$1 (grouping, thousands) {
+    return function (value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) g = Math.max(1, width - length);
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) break;
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals$1 (numerals) {
+    return function (value) {
+      return value.replace(/[0-9]/g, function (i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re$1 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+  function formatSpecifier$1(specifier) {
+    if (!(match = re$1.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    return new FormatSpecifier$1({
+      fill: match[1],
+      align: match[2],
+      sign: match[3],
+      symbol: match[4],
+      zero: match[5],
+      width: match[6],
+      comma: match[7],
+      precision: match[8] && match[8].slice(1),
+      trim: match[9],
+      type: match[10]
+    });
+  }
+  formatSpecifier$1.prototype = FormatSpecifier$1.prototype; // instanceof
+
+  function FormatSpecifier$1(specifier) {
+    this.fill = specifier.fill === undefined ? " " : specifier.fill + "";
+    this.align = specifier.align === undefined ? ">" : specifier.align + "";
+    this.sign = specifier.sign === undefined ? "-" : specifier.sign + "";
+    this.symbol = specifier.symbol === undefined ? "" : specifier.symbol + "";
+    this.zero = !!specifier.zero;
+    this.width = specifier.width === undefined ? undefined : +specifier.width;
+    this.comma = !!specifier.comma;
+    this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
+    this.trim = !!specifier.trim;
+    this.type = specifier.type === undefined ? "" : specifier.type + "";
+  }
+
+  FormatSpecifier$1.prototype.toString = function () {
+    return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width === undefined ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim$1 (s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".":
+          i0 = i1 = i;
+          break;
+
+        case "0":
+          if (i0 === 0) i0 = i;
+          i1 = i;
+          break;
+
+        default:
+          if (!+s[i]) break out;
+          if (i0 > 0) i0 = 0;
+          break;
+      }
+    }
+
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent$1;
+  function formatPrefixAuto$1 (x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimal$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded$1 (x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1) : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes$1 = {
+    "%": function _(x, p) {
+      return (x * 100).toFixed(p);
+    },
+    "b": function b(x) {
+      return Math.round(x).toString(2);
+    },
+    "c": function c(x) {
+      return x + "";
+    },
+    "d": function d(x) {
+      return Math.round(x).toString(10);
+    },
+    "e": function e(x, p) {
+      return x.toExponential(p);
+    },
+    "f": function f(x, p) {
+      return x.toFixed(p);
+    },
+    "g": function g(x, p) {
+      return x.toPrecision(p);
+    },
+    "o": function o(x) {
+      return Math.round(x).toString(8);
+    },
+    "p": function p(x, _p) {
+      return formatRounded$1(x * 100, _p);
+    },
+    "r": formatRounded$1,
+    "s": formatPrefixAuto$1,
+    "X": function X(x) {
+      return Math.round(x).toString(16).toUpperCase();
+    },
+    "x": function x(_x) {
+      return Math.round(_x).toString(16);
+    }
+  };
+
+  function identity$5 (x) {
+    return x;
+  }
+
+  var map$2 = Array.prototype.map,
+      prefixes$1 = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
+  function formatLocale$2 (locale) {
+    var group = locale.grouping === undefined || locale.thousands === undefined ? identity$5 : formatGroup$1(map$2.call(locale.grouping, Number), locale.thousands + ""),
+        currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
+        currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
+        decimal = locale.decimal === undefined ? "." : locale.decimal + "",
+        numerals = locale.numerals === undefined ? identity$5 : formatNumerals$1(map$2.call(locale.numerals, String)),
+        percent = locale.percent === undefined ? "%" : locale.percent + "",
+        minus = locale.minus === undefined ? "-" : locale.minus + "",
+        nan = locale.nan === undefined ? "NaN" : locale.nan + "";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier$1(specifier);
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type; // The "n" type is an alias for ",g".
+
+      if (type === "n") comma = true, type = "g"; // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes$1[type]) precision === undefined && (precision = 12), trim = true, type = "g"; // If zero fill is specified, padding goes after sign and before digits.
+
+      if (zero || fill === "0" && align === "=") zero = true, fill = "0", align = "="; // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+
+      var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : ""; // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+
+      var formatType = formatTypes$1[type],
+          maybeSuffix = /[defgprs%]/.test(type); // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+
+      precision = precision === undefined ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i,
+            n,
+            c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value; // Determine the sign. -0 is not less than 0, but 1 / -0 is!
+
+          var valueNegative = value < 0 || 1 / value < 0; // Perform the initial formatting.
+
+          value = isNaN(value) ? nan : formatType(Math.abs(value), precision); // Trim insignificant zeros.
+
+          if (trim) value = formatTrim$1(value); // If a negative value rounds to zero after formatting, and no explicit positive sign is requested, hide the sign.
+
+          if (valueNegative && +value === 0 && sign !== "+") valueNegative = false; // Compute the prefix and suffix.
+
+          valuePrefix = (valueNegative ? sign === "(" ? sign : minus : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes$1[8 + prefixExponent$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : ""); // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        } // If the fill character is not "0", grouping is applied before padding.
+
+
+        if (comma && !zero) value = group(value, Infinity); // Compute the padding.
+
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : ""; // If the fill character is "0", grouping is applied after padding.
+
+        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = ""; // Reconstruct the final output based on the desired alignment.
+
+        switch (align) {
+          case "<":
+            value = valuePrefix + value + valueSuffix + padding;
+            break;
+
+          case "=":
+            value = valuePrefix + padding + value + valueSuffix;
+            break;
+
+          case "^":
+            value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
+            break;
+
+          default:
+            value = padding + valuePrefix + value + valueSuffix;
+            break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function () {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier$1(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes$1[8 + e / 3];
+      return function (value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
   /**
       @namespace {Object} formatLocale
       @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
@@ -29270,10 +29574,10 @@
         * | delimiters | {thousands: ",", decimal: "."} | Decimal and group separators. |
         * | currency | ["$", ""] | The currency prefix and suffix. |
   */
-  var formatLocale$2 = {
+  var formatLocale$3 = {
     "en-GB": {
       separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: ",",
@@ -29283,7 +29587,7 @@
     },
     "en-US": {
       separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: ",",
@@ -29343,6 +29647,8 @@
   };
 
   function _typeof$d(obj) {
+    "@babel/helpers - typeof";
+
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
       _typeof$d = function _typeof$1(obj) {
         return _typeof(obj);
@@ -29410,12 +29716,12 @@
     if (isFinite(n)) n *= 1;else return "N/A";
     var negative = n < 0;
     var length = n.toString().split(".")[0].replace("-", "").length,
-        localeConfig = _typeof$d(locale) === "object" ? locale : formatLocale$2[locale] || formatLocale$2["en-US"],
+        localeConfig = _typeof$d(locale) === "object" ? locale : formatLocale$3[locale] || formatLocale$3["en-US"],
         suffixes = localeConfig.suffixes.map(parseSuffixes);
     var decimal = localeConfig.delimiters.decimal || ".",
         separator = localeConfig.separator || "",
         thousands = localeConfig.delimiters.thousands || ",";
-    var d3plusFormatLocale = formatLocale({
+    var d3plusFormatLocale = formatLocale$2({
       currency: localeConfig.currency || ["$", ""],
       decimal: decimal,
       grouping: localeConfig.grouping || [3],
@@ -29428,8 +29734,8 @@
       var _char = f.symbol;
       val = "".concat(num).concat(separator).concat(_char);
     } else if (length === 3) val = d3plusFormatLocale.format(",f")(n);else if (n < 1 && n > -1) val = d3plusFormatLocale.format(".2g")(n);else val = d3plusFormatLocale.format(".3g")(n);
-    return "".concat(negative && val.charAt(0) !== "-" ? "-" : "").concat(val).replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
-    .replace(/[.]$/g, ""); // removes any trailing decimal point
+    return "".concat(negative && val.charAt(0) !== "-" ? "-" : "").concat(val).replace(/(\.[0]*[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+    .replace(/\.[0]*$/g, ""); // removes any trailing decimal point
   }
 
   /**
@@ -29571,20 +29877,6 @@
     return obj;
   }
 
-  function _typeof$e(obj) {
-    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$e = function _typeof$1(obj) {
-        return _typeof(obj);
-      };
-    } else {
-      _typeof$e = function _typeof$1(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
-      };
-    }
-
-    return _typeof$e(obj);
-  }
-
   function _toConsumableArray(arr) {
     return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
   }
@@ -29605,6 +29897,20 @@
 
       return arr2;
     }
+  }
+
+  function _typeof$e(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$e = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$e = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$e(obj);
   }
 
   function _classCallCheck$d(instance, Constructor) {
@@ -29907,7 +30213,7 @@
     }, {
       key: "render",
       value: function render(callback) {
-        var _this3 = this,
+        var _this2 = this,
             _this$_outerBounds;
         /**
          * Creates an SVG element to contain the axis if none
@@ -29962,12 +30268,38 @@
         };
         var labels, range$1, ticks;
         /**
+         * Constructs the tick formatter function.
+         */
+
+        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
+          if (_this2._scale === "time") {
+            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear)(d);
+          } else if (["band", "ordinal", "point"].includes(_this2._scale)) {
+            return d;
+          }
+
+          if (isNaN(d)) {
+            return d;
+          } else if (_this2._scale === "linear" && _this2._tickSuffix === "smallest") {
+            var _locale = _typeof$e(_this2._locale) === "object" ? _this2._locale : formatLocale$3[_this2._locale];
+
+            var separator = _locale.separator,
+                suffixes = _locale.suffixes;
+            var suff = d >= 1000 ? suffixes[_this2._tickUnit + 8] : "";
+            var tick = d / Math.pow(10, 3 * _this2._tickUnit);
+            var number = formatAbbreviate(tick, _locale, ",.".concat(tick.toString().length, "r"));
+            return "".concat(number).concat(separator).concat(suff);
+          } else {
+            return formatAbbreviate(d, _this2._locale);
+          }
+        };
+        /**
          * (Re)calculates the internal d3 scale
          * @param {} newRange
          */
 
         function setScale() {
-          var _this2 = this;
+          var _this3 = this;
 
           var newRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._range;
           /**
@@ -30023,12 +30355,11 @@
            */
 
 
-          this._d3Scale = scales["scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1))]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
-          if (this._d3Scale.round) this._d3Scale.round(true);
+          var scale = "scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1));
+          this._d3Scale = scales[scale]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain).range(range$1);
           if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
           if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
           if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
-          if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range$1);else this._d3Scale.range(range$1);
           /**
            * Constructs a separate "negative only" scale for logarithmic
            * domains, as they cannot pass zero.
@@ -30039,8 +30370,13 @@
           if (this._scale === "log") {
             var _domain = this._d3Scale.domain();
 
-            if (_domain[0] === 0) _domain[0] = 1;
-            if (_domain[_domain.length - 1] === 0) _domain[_domain.length - 1] = -1;
+            if (_domain[0] === 0) {
+              _domain[0] = Math.abs(_domain[_domain.length - 1]) <= 1 ? 1e-6 : 1;
+              if (_domain[_domain.length - 1] < 0) _domain[0] *= -1;
+            } else if (_domain[_domain.length - 1] === 0) {
+              _domain[_domain.length - 1] = Math.abs(_domain[0]) <= 1 ? 1e-6 : 1;
+              if (_domain[0] < 0) _domain[_domain.length - 1] *= -1;
+            }
 
             var _range = this._d3Scale.range();
 
@@ -30069,19 +30405,30 @@
           labels = (this._labels ? this._scale === "time" ? this._labels.map(date$2) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
 
           if (this._scale === "log") {
-            labels = labels.filter(function (t) {
-              return Math.abs(t).toString().charAt(0) === "1" && (_this2._d3Scale ? t !== -1 : t !== 1);
+            var tens = labels.filter(function (t) {
+              return Math.abs(t).toString().charAt(0) === "1" && (_this3._d3Scale ? t !== -1 : t !== 1);
             });
-          } else if (this._scale === "time") {
+
+            if (tens.length > 2) {
+              labels = tens;
+              ticks = tens;
+            } else if (labels.length >= 10) {
+              labels = labels.filter(function (t) {
+                return t % 5 === 0 || tickFormat(t).substr(-1) === "1";
+              });
+            }
+          }
+
+          if (this._scale === "time") {
             ticks = ticks.map(Number);
             labels = labels.map(Number);
           }
 
           ticks = ticks.sort(function (a, b) {
-            return _this2._getPosition(a) - _this2._getPosition(b);
+            return _this3._getPosition(a) - _this3._getPosition(b);
           });
           labels = labels.sort(function (a, b) {
-            return _this2._getPosition(a) - _this2._getPosition(b);
+            return _this3._getPosition(a) - _this3._getPosition(b);
           });
           /**
            * Get the smallest suffix.
@@ -30121,9 +30468,9 @@
               id: d,
               tick: true
             }, i);
-            if (_this2._shape === "Circle") s *= 2;
+            if (_this3._shape === "Circle") s *= 2;
 
-            var t = _this2._getPosition(d);
+            var t = _this3._getPosition(d);
 
             if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) pixels.push(t);else pixels.push(false);
           });
@@ -30155,50 +30502,10 @@
           }
         }
         /**
-         * Constructs the tick formatter function.
-         */
-
-
-        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
-          if (_this3._scale === "log") {
-            var _p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
-
-            var _t = Math.abs(d).toString().charAt(0);
-
-            var _n = "10 ".concat("".concat(_p).split("").map(function (c) {
-              return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c];
-            }).join(""));
-
-            if (_t !== "1") _n = "".concat(_t, " x ").concat(_n);
-            return d < 0 ? "-".concat(_n) : _n;
-          } else if (_this3._scale === "time") {
-            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear)(d);
-          } else if (["band", "ordinal", "point"].includes(_this3._scale)) {
-            return d;
-          }
-
-          var n = _this3._d3Scale.tickFormat ? _this3._d3Scale.tickFormat(labels.length - 1)(d) : d;
-          n = typeof n === "string" ? n.replace(/[^\d\.\-\+]/g, "") * 1 : n;
-
-          if (isNaN(n)) {
-            return n;
-          } else if (_this3._scale === "linear" && _this3._tickSuffix === "smallest") {
-            var _locale = _typeof$e(_this3._locale) === "object" ? _this3._locale : formatLocale$2[_this3._locale];
-
-            var separator = _locale.separator,
-                suffixes = _locale.suffixes;
-            var suff = n >= 1000 ? suffixes[_this3._tickUnit + 8] : "";
-            var tick = n / Math.pow(10, 3 * _this3._tickUnit);
-            var number = formatAbbreviate(tick, _locale, ",.".concat(tick.toString().length, "r"));
-            return "".concat(number).concat(separator).concat(suff);
-          } else {
-            return formatAbbreviate(n, _this3._locale);
-          }
-        };
-        /**
          * Pre-calculates the size of the title, if defined, in order
          * to adjust the internal margins.
          */
+
 
         if (this._title) {
           var _this$_titleConfig = this._titleConfig,
@@ -30228,11 +30535,11 @@
          */
 
         var textData = labels.map(function (d, i) {
-          var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
-              fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
-              position = _this3._getPosition(d);
+          var fF = _this2._shapeConfig.labelConfig.fontFamily(d, i),
+              fS = _this2._shapeConfig.labelConfig.fontSize(d, i),
+              position = _this2._getPosition(d);
 
-          var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+          var lineHeight = _this2._shapeConfig.lineHeight ? _this2._shapeConfig.lineHeight(d, i) : fS * 1.4;
           return {
             d: d,
             i: i,
@@ -30256,7 +30563,9 @@
               space = datum.space;
           var h = rotate ? "width" : "height",
               w = rotate ? "height" : "width";
-          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : min([this._maxSize, this._width]) - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? min([this._maxSize, this._height]) - hBuff - p - this._margin.top - this._margin.bottom : space);
+          var wSize = min([this._maxSize, this._width]);
+          var hSize = min([this._maxSize, this._height]);
+          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : wSize - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? hSize - hBuff - p - this._margin.top - this._margin.bottom : space);
           var res = wrap(tickFormat(d));
           res.lines = res.lines.filter(function (d) {
             return d !== "";
@@ -30269,9 +30578,9 @@
         }
 
         textData = textData.map(function (datum) {
-          datum.rotate = _this3._labelRotation;
-          datum.space = calculateSpace.bind(_this3)(datum);
-          var res = calculateLabelSize.bind(_this3)(datum);
+          datum.rotate = _this2._labelRotation;
+          datum.space = calculateSpace.bind(_this2)(datum);
+          var res = calculateLabelSize.bind(_this2)(datum);
           return Object.assign(res, datum);
         });
         this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (d) {
@@ -30281,7 +30590,7 @@
         if (this._rotateLabels) {
           textData = textData.map(function (datum) {
             datum.rotate = true;
-            var res = calculateLabelSize.bind(_this3)(datum);
+            var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(datum, res);
           });
         }
@@ -30318,11 +30627,11 @@
         if (newRange[0] !== first || newRange[1] !== last) {
           setScale.bind(this)(newRange);
           textData = labels.map(function (d, i) {
-            var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
-                fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
-                position = _this3._getPosition(d);
+            var fF = _this2._shapeConfig.labelConfig.fontFamily(d, i),
+                fS = _this2._shapeConfig.labelConfig.fontSize(d, i),
+                position = _this2._getPosition(d);
 
-            var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+            var lineHeight = _this2._shapeConfig.lineHeight ? _this2._shapeConfig.lineHeight(d, i) : fS * 1.4;
             return {
               d: d,
               i: i,
@@ -30333,9 +30642,9 @@
             };
           });
           textData = textData.map(function (datum) {
-            datum.rotate = _this3._rotateLabels;
-            datum.space = calculateSpace.bind(_this3)(datum);
-            var res = calculateLabelSize.bind(_this3)(datum);
+            datum.rotate = _this2._rotateLabels;
+            datum.space = calculateSpace.bind(_this2)(datum);
+            var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(res, datum);
           });
         }
@@ -30355,8 +30664,8 @@
         if (this._rotateLabels) {
           var offset = 0;
           textData = textData.map(function (datum) {
-            datum.space = calculateSpace.bind(_this3)(datum, 2);
-            var res = calculateLabelSize.bind(_this3)(datum);
+            datum.space = calculateSpace.bind(_this2)(datum, 2);
+            var res = calculateLabelSize.bind(_this2)(datum);
             datum = Object.assign(datum, res);
             var prev = textData[datum.i - 1];
 
@@ -30383,6 +30692,7 @@
         var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$2(_this$_outerBounds, height, (max(textData, function (t) {
           return Math.ceil(t[t.rotate || !horizontal ? "width" : "height"] + t.offset);
         }) || 0) + (textData.length ? p : 0)), _defineProperty$2(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$2(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
+        bounds[height] = max([this._minSize, bounds[height]]);
         margin[this._orient] += hBuff;
         margin[opposite] = this._gridSize !== undefined ? max([this._gridSize, tBuff]) : this["_".concat(height)] - margin[this._orient] - bounds[height] - p;
         bounds[height] += margin[opposite] + margin[this._orient];
@@ -30415,13 +30725,13 @@
             return td.d === d;
           });
 
-          var xPos = _this3._getPosition(d);
+          var xPos = _this2._getPosition(d);
 
           var space = data ? data.space : 0;
           var lines = data ? data.lines.length : 1;
           var lineHeight = data ? data.lineHeight : 1;
-          var labelOffset = data && _this3._labelOffset ? data.offset : 0;
-          var labelWidth = horizontal ? space : bounds.width - margin[_this3._position.opposite] - hBuff - margin[_this3._orient] + p;
+          var labelOffset = data && _this2._labelOffset ? data.offset : 0;
+          var labelWidth = horizontal ? space : bounds.width - margin[_this2._position.opposite] - hBuff - margin[_this2._orient] + p;
           var offset = margin[opposite],
               size = (hBuff + labelOffset) * (flip ? -1 : 1),
               yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
@@ -30429,12 +30739,12 @@
             id: d,
             labelBounds: rotated && data ? {
               x: -data.width / 2 + data.fS / 4,
-              y: _this3._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
+              y: _this2._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
               width: data.width,
               height: data.height
             } : {
-              x: horizontal ? -space / 2 : _this3._orient === "left" ? -labelWidth - p + size : size + p,
-              y: horizontal ? _this3._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
+              x: horizontal ? -space / 2 : _this2._orient === "left" ? -labelWidth - p + size : size + p,
+              y: horizontal ? _this2._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
               width: horizontal ? space : labelWidth,
               height: horizontal ? labelHeight : space
             },
@@ -30442,7 +30752,7 @@
             size: labels.includes(d) ? size : 0,
             text: labels.includes(d) ? tickFormat(d) : false,
             tick: ticks.includes(d)
-          }, _defineProperty$2(_tickConfig, x, xPos + (_this3._scale === "band" ? _this3._d3Scale.bandwidth() / 2 : 0)), _defineProperty$2(_tickConfig, y, yPos), _tickConfig);
+          }, _defineProperty$2(_tickConfig, x, xPos + (_this2._scale === "band" ? _this2._d3Scale.bandwidth() / 2 : 0)), _defineProperty$2(_tickConfig, y, yPos), _tickConfig);
           return tickConfig;
         });
 
@@ -30634,6 +30944,18 @@
       key: "maxSize",
       value: function maxSize(_) {
         return arguments.length ? (this._maxSize = _, this) : this._maxSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the minimum size alloted for the space that contains the axis tick labels and title.
+          @param {Number}
+          @chainable
+       */
+
+    }, {
+      key: "minSize",
+      value: function minSize(_) {
+        return arguments.length ? (this._minSize = _, this) : this._minSize;
       }
       /**
           @memberof Axis

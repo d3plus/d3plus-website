@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.31
+  d3plus-legend v0.8.32
   An easy to use javascript chart legend.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1308,7 +1308,6 @@
       _this._shape = d3plusCommon.constant("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
-        duration: _this._duration,
         fill: d3plusCommon.accessor("color"),
         height: d3plusCommon.constant(10),
         hitArea: function hitArea(dd, i) {
@@ -1379,7 +1378,7 @@
     _createClass(Legend, [{
       key: "_fetchConfig",
       value: function _fetchConfig(key, d, i) {
-        var val = this._shapeConfig[key] || this._shapeConfig.labelConfig[key];
+        var val = this._shapeConfig[key] !== undefined ? this._shapeConfig[key] : this._shapeConfig.labelConfig[key];
         if (!val && key === "lineHeight") return this._fetchConfig("fontSize", d, i) * 1.4;
         return typeof val === "function" ? val(d, i) : val;
       }
@@ -1414,10 +1413,16 @@
       value: function render(callback) {
         var _this3 = this;
 
-        if (this._select === void 0) this.select(d3Selection.select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node()); // Shape <g> Group
+        if (this._select === void 0) this.select(d3Selection.select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node()); // Legend Container <g> Groups
 
         this._group = d3plusCommon.elem("g.d3plus-Legend", {
           parent: this._select
+        });
+        this._titleGroup = d3plusCommon.elem("g.d3plus-Legend-title", {
+          parent: this._group
+        });
+        this._shapeGroup = d3plusCommon.elem("g.d3plus-Legend-shape", {
+          parent: this._group
         });
         var availableHeight = this._height;
         this._titleHeight = 0;
@@ -1628,7 +1633,7 @@
 
         this._titleClass.data(this._title ? [{
           text: this._title
-        }] : []).duration(this._duration).select(this._group.node()).textAnchor({
+        }] : []).duration(this._duration).select(this._titleGroup.node()).textAnchor({
           left: "start",
           center: "middle",
           right: "end"
@@ -1668,7 +1673,7 @@
             return d.shape === Shape;
           })).duration(_this3._duration).labelConfig({
             padding: 0
-          }).select(_this3._group.node()).verticalAlign("top").config(d3plusCommon.assign({}, baseConfig, config)).render());
+          }).select(_this3._shapeGroup.node()).verticalAlign("top").config(d3plusCommon.assign({}, baseConfig, config)).render());
         });
         if (callback) setTimeout(callback, this._duration + 100);
         return this;
