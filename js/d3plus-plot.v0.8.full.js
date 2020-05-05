@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.37
+  d3plus-plot v0.8.38
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -56601,6 +56601,10 @@
         Rect: RectBuffer
       };
       _this._confidenceConfig = {
+        fill: function fill(d, i) {
+          var c = typeof _this._shapeConfig.Line.stroke === "function" ? _this._shapeConfig.Line.stroke(d, i) : _this._shapeConfig.Line.stroke;
+          return c;
+        },
         fillOpacity: constant(0.5)
       };
       _this._discreteCutoff = 100;
@@ -56651,7 +56655,8 @@
           fill: constant("none"),
           labelConfig: {
             fontColor: function fontColor(d, i) {
-              return colorLegible(colorAssign(_this._id(d, i)));
+              var c = typeof _this._shapeConfig.Line.stroke === "function" ? _this._shapeConfig.Line.stroke(d, i) : _this._shapeConfig.Line.stroke;
+              return colorLegible(c);
             },
             fontResize: false,
             padding: 5,
@@ -56994,7 +56999,7 @@
           xDomain = xDomain.map(date$2);
           xScale = "Time";
         } else if (this._discrete === "x") {
-          xDomain = Array.from(new Set(data.filter(function (d) {
+          if (!this._xDomain) xDomain = Array.from(new Set(data.filter(function (d) {
             return ["number", "string"].includes(_typeof(d.x));
           }).sort(function (a, b) {
             return _this2._xSort ? _this2._xSort(a.data, b.data) : a.x - b.x;
@@ -57013,7 +57018,7 @@
           x2Domain = x2Domain.map(date$2);
           x2Scale = "Time";
         } else if (this._discrete === "x") {
-          x2Domain = Array.from(new Set(data.filter(function (d) {
+          if (!this._x2Domain) x2Domain = Array.from(new Set(data.filter(function (d) {
             return ["number", "string"].includes(_typeof(d.x2));
           }).sort(function (a, b) {
             return _this2._x2Sort ? _this2._x2Sort(a.data, b.data) : a.x2 - b.x2;
@@ -57036,7 +57041,7 @@
           yDomain = yDomain.map(date$2);
           yScale = "Time";
         } else if (this._discrete === "y") {
-          yDomain = Array.from(new Set(data.filter(function (d) {
+          if (!this._yDomain) yDomain = Array.from(new Set(data.filter(function (d) {
             return ["number", "string"].includes(_typeof(d.y));
           }).sort(function (a, b) {
             return _this2._ySort ? _this2._ySort(a.data, b.data) : a.y - b.y;
@@ -57044,7 +57049,7 @@
             return d.y;
           })));
           yScale = "Point";
-          y2Domain = Array.from(new Set(data.filter(function (d) {
+          if (!this._y2Domain) y2Domain = Array.from(new Set(data.filter(function (d) {
             return ["number", "string"].includes(_typeof(d.y2));
           }).sort(function (a, b) {
             return _this2._y2Sort ? _this2._y2Sort(a.data, b.data) : a.y2 - b.y2;
