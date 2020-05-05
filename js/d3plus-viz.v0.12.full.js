@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.53
+  d3plus-viz v0.12.54
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -51232,8 +51232,6 @@
       },
       opacity: opacity
     }).render();
-
-    console.log(legendBounds.height);
 
     if (!this._legendConfig.select && legendBounds.height) {
       if (wide) this._margin[position] += legendBounds.height + this._legendClass.padding() * 2;else this._margin[position] += legendBounds.width + this._legendClass.padding() * 2;
