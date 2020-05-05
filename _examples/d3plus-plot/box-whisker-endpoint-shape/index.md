@@ -2,8 +2,8 @@
 title: Changing Box and Whisker Endpoint Shapes
 width: 990
 height: 400
-time: 1587500407742
-date: April 21, 2020
+time: 1588696623572
+date: May 05, 2020
 ---
 
 # Changing Box and Whisker Endpoint Shapes
