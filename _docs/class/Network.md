@@ -162,7 +162,7 @@ If *value* is specified, sets the y accessor to the specified function or string
 This is a static method of [<code>Network</code>](#Network), and is chainable with other methods of this Class.
 
 
-<a name="Network.linkSize" href="#Network.linkSize">#</a> Network.**linkSize**([*value*]) [<>](https://github.com/d3plus/d3plus-network/blob/master/src/Rings.js#L529)
+<a name="Network.linkSize" href="#Network.linkSize">#</a> Network.**linkSize**([*value*]) [<>](https://github.com/d3plus/d3plus-network/blob/master/src/Rings.js#L534)
 
 Defines the thickness of the links connecting each node. The value provided can be either a pixel Number to be used for all links, or an accessor function that returns a specific data value to be used in an automatically calculated linear scale.
 
@@ -170,7 +170,7 @@ Defines the thickness of the links connecting each node. The value provided can 
 This is a static method of [<code>Network</code>](#Network), and is chainable with other methods of this Class.
 
 
-<a name="Network.linkSizeMin" href="#Network.linkSizeMin">#</a> Network.**linkSizeMin**([*value*]) [<>](https://github.com/d3plus/d3plus-network/blob/master/src/Rings.js#L539)
+<a name="Network.linkSizeMin" href="#Network.linkSizeMin">#</a> Network.**linkSizeMin**([*value*]) [<>](https://github.com/d3plus/d3plus-network/blob/master/src/Rings.js#L544)
 
 Defines the minimum pixel stroke width used in link sizing.
 
@@ -178,7 +178,7 @@ Defines the minimum pixel stroke width used in link sizing.
 This is a static method of [<code>Network</code>](#Network), and is chainable with other methods of this Class.
 
 
-<a name="Network.linkSizeScale" href="#Network.linkSizeScale">#</a> Network.**linkSizeScale**([*value*]) [<>](https://github.com/d3plus/d3plus-network/blob/master/src/Rings.js#L549)
+<a name="Network.linkSizeScale" href="#Network.linkSizeScale">#</a> Network.**linkSizeScale**([*value*]) [<>](https://github.com/d3plus/d3plus-network/blob/master/src/Rings.js#L554)
 
 Sets the specific type of [continuous d3-scale](https://github.com/d3/d3-scale#continuous-scales) used when calculating the pixel size of links in the network.
 
