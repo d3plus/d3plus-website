@@ -1,16 +1,1046 @@
 /*
-  d3plus-network v0.5.11
+  d3plus-network v0.5.12
   Javascript network visualizations built upon d3 modules.
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
+
+(function (factory) {
+	typeof define === 'function' && define.amd ? define(factory) :
+	factory();
+}((function () { 'use strict';
+
+	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+	function createCommonjsModule(fn, module) {
+		return module = { exports: {} }, fn(module, module.exports), module.exports;
+	}
+
+	var check = function (it) {
+	  return it && it.Math == Math && it;
+	};
+
+	// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+	var global_1 =
+	  // eslint-disable-next-line no-undef
+	  check(typeof globalThis == 'object' && globalThis) ||
+	  check(typeof window == 'object' && window) ||
+	  check(typeof self == 'object' && self) ||
+	  check(typeof commonjsGlobal == 'object' && commonjsGlobal) ||
+	  // eslint-disable-next-line no-new-func
+	  Function('return this')();
+
+	var fails = function (exec) {
+	  try {
+	    return !!exec();
+	  } catch (error) {
+	    return true;
+	  }
+	};
+
+	// Thank's IE8 for his funny defineProperty
+	var descriptors = !fails(function () {
+	  return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] != 7;
+	});
+
+	var nativePropertyIsEnumerable = {}.propertyIsEnumerable;
+	var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+	// Nashorn ~ JDK8 bug
+	var NASHORN_BUG = getOwnPropertyDescriptor && !nativePropertyIsEnumerable.call({ 1: 2 }, 1);
+
+	// `Object.prototype.propertyIsEnumerable` method implementation
+	// https://tc39.github.io/ecma262/#sec-object.prototype.propertyisenumerable
+	var f = NASHORN_BUG ? function propertyIsEnumerable(V) {
+	  var descriptor = getOwnPropertyDescriptor(this, V);
+	  return !!descriptor && descriptor.enumerable;
+	} : nativePropertyIsEnumerable;
+
+	var objectPropertyIsEnumerable = {
+		f: f
+	};
+
+	var createPropertyDescriptor = function (bitmap, value) {
+	  return {
+	    enumerable: !(bitmap & 1),
+	    configurable: !(bitmap & 2),
+	    writable: !(bitmap & 4),
+	    value: value
+	  };
+	};
+
+	var toString = {}.toString;
+
+	var classofRaw = function (it) {
+	  return toString.call(it).slice(8, -1);
+	};
+
+	var split = ''.split;
+
+	// fallback for non-array-like ES3 and non-enumerable old V8 strings
+	var indexedObject = fails(function () {
+	  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
+	  // eslint-disable-next-line no-prototype-builtins
+	  return !Object('z').propertyIsEnumerable(0);
+	}) ? function (it) {
+	  return classofRaw(it) == 'String' ? split.call(it, '') : Object(it);
+	} : Object;
+
+	// `RequireObjectCoercible` abstract operation
+	// https://tc39.github.io/ecma262/#sec-requireobjectcoercible
+	var requireObjectCoercible = function (it) {
+	  if (it == undefined) throw TypeError("Can't call method on " + it);
+	  return it;
+	};
+
+	// toObject with fallback for non-array-like ES3 strings
+
+
+
+	var toIndexedObject = function (it) {
+	  return indexedObject(requireObjectCoercible(it));
+	};
+
+	var isObject = function (it) {
+	  return typeof it === 'object' ? it !== null : typeof it === 'function';
+	};
+
+	// `ToPrimitive` abstract operation
+	// https://tc39.github.io/ecma262/#sec-toprimitive
+	// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+	// and the second argument - flag - preferred type is a string
+	var toPrimitive = function (input, PREFERRED_STRING) {
+	  if (!isObject(input)) return input;
+	  var fn, val;
+	  if (PREFERRED_STRING && typeof (fn = input.toString) == 'function' && !isObject(val = fn.call(input))) return val;
+	  if (typeof (fn = input.valueOf) == 'function' && !isObject(val = fn.call(input))) return val;
+	  if (!PREFERRED_STRING && typeof (fn = input.toString) == 'function' && !isObject(val = fn.call(input))) return val;
+	  throw TypeError("Can't convert object to primitive value");
+	};
+
+	var hasOwnProperty = {}.hasOwnProperty;
+
+	var has = function (it, key) {
+	  return hasOwnProperty.call(it, key);
+	};
+
+	var document$1 = global_1.document;
+	// typeof document.createElement is 'object' in old IE
+	var EXISTS = isObject(document$1) && isObject(document$1.createElement);
+
+	var documentCreateElement = function (it) {
+	  return EXISTS ? document$1.createElement(it) : {};
+	};
+
+	// Thank's IE8 for his funny defineProperty
+	var ie8DomDefine = !descriptors && !fails(function () {
+	  return Object.defineProperty(documentCreateElement('div'), 'a', {
+	    get: function () { return 7; }
+	  }).a != 7;
+	});
+
+	var nativeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+	// `Object.getOwnPropertyDescriptor` method
+	// https://tc39.github.io/ecma262/#sec-object.getownpropertydescriptor
+	var f$1 = descriptors ? nativeGetOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
+	  O = toIndexedObject(O);
+	  P = toPrimitive(P, true);
+	  if (ie8DomDefine) try {
+	    return nativeGetOwnPropertyDescriptor(O, P);
+	  } catch (error) { /* empty */ }
+	  if (has(O, P)) return createPropertyDescriptor(!objectPropertyIsEnumerable.f.call(O, P), O[P]);
+	};
+
+	var objectGetOwnPropertyDescriptor = {
+		f: f$1
+	};
+
+	var anObject = function (it) {
+	  if (!isObject(it)) {
+	    throw TypeError(String(it) + ' is not an object');
+	  } return it;
+	};
+
+	var nativeDefineProperty = Object.defineProperty;
+
+	// `Object.defineProperty` method
+	// https://tc39.github.io/ecma262/#sec-object.defineproperty
+	var f$2 = descriptors ? nativeDefineProperty : function defineProperty(O, P, Attributes) {
+	  anObject(O);
+	  P = toPrimitive(P, true);
+	  anObject(Attributes);
+	  if (ie8DomDefine) try {
+	    return nativeDefineProperty(O, P, Attributes);
+	  } catch (error) { /* empty */ }
+	  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
+	  if ('value' in Attributes) O[P] = Attributes.value;
+	  return O;
+	};
+
+	var objectDefineProperty = {
+		f: f$2
+	};
+
+	var createNonEnumerableProperty = descriptors ? function (object, key, value) {
+	  return objectDefineProperty.f(object, key, createPropertyDescriptor(1, value));
+	} : function (object, key, value) {
+	  object[key] = value;
+	  return object;
+	};
+
+	var setGlobal = function (key, value) {
+	  try {
+	    createNonEnumerableProperty(global_1, key, value);
+	  } catch (error) {
+	    global_1[key] = value;
+	  } return value;
+	};
+
+	var SHARED = '__core-js_shared__';
+	var store = global_1[SHARED] || setGlobal(SHARED, {});
+
+	var sharedStore = store;
+
+	var functionToString = Function.toString;
+
+	// this helper broken in `3.4.1-3.4.4`, so we can't use `shared` helper
+	if (typeof sharedStore.inspectSource != 'function') {
+	  sharedStore.inspectSource = function (it) {
+	    return functionToString.call(it);
+	  };
+	}
+
+	var inspectSource = sharedStore.inspectSource;
+
+	var WeakMap = global_1.WeakMap;
+
+	var nativeWeakMap = typeof WeakMap === 'function' && /native code/.test(inspectSource(WeakMap));
+
+	var shared = createCommonjsModule(function (module) {
+	(module.exports = function (key, value) {
+	  return sharedStore[key] || (sharedStore[key] = value !== undefined ? value : {});
+	})('versions', []).push({
+	  version: '3.6.5',
+	  mode:  'global',
+	  copyright: '© 2020 Denis Pushkarev (zloirock.ru)'
+	});
+	});
+
+	var id = 0;
+	var postfix = Math.random();
+
+	var uid = function (key) {
+	  return 'Symbol(' + String(key === undefined ? '' : key) + ')_' + (++id + postfix).toString(36);
+	};
+
+	var keys = shared('keys');
+
+	var sharedKey = function (key) {
+	  return keys[key] || (keys[key] = uid(key));
+	};
+
+	var hiddenKeys = {};
+
+	var WeakMap$1 = global_1.WeakMap;
+	var set, get, has$1;
+
+	var enforce = function (it) {
+	  return has$1(it) ? get(it) : set(it, {});
+	};
+
+	var getterFor = function (TYPE) {
+	  return function (it) {
+	    var state;
+	    if (!isObject(it) || (state = get(it)).type !== TYPE) {
+	      throw TypeError('Incompatible receiver, ' + TYPE + ' required');
+	    } return state;
+	  };
+	};
+
+	if (nativeWeakMap) {
+	  var store$1 = new WeakMap$1();
+	  var wmget = store$1.get;
+	  var wmhas = store$1.has;
+	  var wmset = store$1.set;
+	  set = function (it, metadata) {
+	    wmset.call(store$1, it, metadata);
+	    return metadata;
+	  };
+	  get = function (it) {
+	    return wmget.call(store$1, it) || {};
+	  };
+	  has$1 = function (it) {
+	    return wmhas.call(store$1, it);
+	  };
+	} else {
+	  var STATE = sharedKey('state');
+	  hiddenKeys[STATE] = true;
+	  set = function (it, metadata) {
+	    createNonEnumerableProperty(it, STATE, metadata);
+	    return metadata;
+	  };
+	  get = function (it) {
+	    return has(it, STATE) ? it[STATE] : {};
+	  };
+	  has$1 = function (it) {
+	    return has(it, STATE);
+	  };
+	}
+
+	var internalState = {
+	  set: set,
+	  get: get,
+	  has: has$1,
+	  enforce: enforce,
+	  getterFor: getterFor
+	};
+
+	var redefine = createCommonjsModule(function (module) {
+	var getInternalState = internalState.get;
+	var enforceInternalState = internalState.enforce;
+	var TEMPLATE = String(String).split('String');
+
+	(module.exports = function (O, key, value, options) {
+	  var unsafe = options ? !!options.unsafe : false;
+	  var simple = options ? !!options.enumerable : false;
+	  var noTargetGet = options ? !!options.noTargetGet : false;
+	  if (typeof value == 'function') {
+	    if (typeof key == 'string' && !has(value, 'name')) createNonEnumerableProperty(value, 'name', key);
+	    enforceInternalState(value).source = TEMPLATE.join(typeof key == 'string' ? key : '');
+	  }
+	  if (O === global_1) {
+	    if (simple) O[key] = value;
+	    else setGlobal(key, value);
+	    return;
+	  } else if (!unsafe) {
+	    delete O[key];
+	  } else if (!noTargetGet && O[key]) {
+	    simple = true;
+	  }
+	  if (simple) O[key] = value;
+	  else createNonEnumerableProperty(O, key, value);
+	// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
+	})(Function.prototype, 'toString', function toString() {
+	  return typeof this == 'function' && getInternalState(this).source || inspectSource(this);
+	});
+	});
+
+	var path = global_1;
+
+	var aFunction = function (variable) {
+	  return typeof variable == 'function' ? variable : undefined;
+	};
+
+	var getBuiltIn = function (namespace, method) {
+	  return arguments.length < 2 ? aFunction(path[namespace]) || aFunction(global_1[namespace])
+	    : path[namespace] && path[namespace][method] || global_1[namespace] && global_1[namespace][method];
+	};
+
+	var ceil = Math.ceil;
+	var floor = Math.floor;
+
+	// `ToInteger` abstract operation
+	// https://tc39.github.io/ecma262/#sec-tointeger
+	var toInteger = function (argument) {
+	  return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor : ceil)(argument);
+	};
+
+	var min = Math.min;
+
+	// `ToLength` abstract operation
+	// https://tc39.github.io/ecma262/#sec-tolength
+	var toLength = function (argument) {
+	  return argument > 0 ? min(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
+	};
+
+	var max = Math.max;
+	var min$1 = Math.min;
+
+	// Helper for a popular repeating case of the spec:
+	// Let integer be ? ToInteger(index).
+	// If integer < 0, let result be max((length + integer), 0); else let result be min(integer, length).
+	var toAbsoluteIndex = function (index, length) {
+	  var integer = toInteger(index);
+	  return integer < 0 ? max(integer + length, 0) : min$1(integer, length);
+	};
+
+	// `Array.prototype.{ indexOf, includes }` methods implementation
+	var createMethod = function (IS_INCLUDES) {
+	  return function ($this, el, fromIndex) {
+	    var O = toIndexedObject($this);
+	    var length = toLength(O.length);
+	    var index = toAbsoluteIndex(fromIndex, length);
+	    var value;
+	    // Array#includes uses SameValueZero equality algorithm
+	    // eslint-disable-next-line no-self-compare
+	    if (IS_INCLUDES && el != el) while (length > index) {
+	      value = O[index++];
+	      // eslint-disable-next-line no-self-compare
+	      if (value != value) return true;
+	    // Array#indexOf ignores holes, Array#includes - not
+	    } else for (;length > index; index++) {
+	      if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
+	    } return !IS_INCLUDES && -1;
+	  };
+	};
+
+	var arrayIncludes = {
+	  // `Array.prototype.includes` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.includes
+	  includes: createMethod(true),
+	  // `Array.prototype.indexOf` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.indexof
+	  indexOf: createMethod(false)
+	};
+
+	var indexOf = arrayIncludes.indexOf;
+
+
+	var objectKeysInternal = function (object, names) {
+	  var O = toIndexedObject(object);
+	  var i = 0;
+	  var result = [];
+	  var key;
+	  for (key in O) !has(hiddenKeys, key) && has(O, key) && result.push(key);
+	  // Don't enum bug & hidden keys
+	  while (names.length > i) if (has(O, key = names[i++])) {
+	    ~indexOf(result, key) || result.push(key);
+	  }
+	  return result;
+	};
+
+	// IE8- don't enum bug keys
+	var enumBugKeys = [
+	  'constructor',
+	  'hasOwnProperty',
+	  'isPrototypeOf',
+	  'propertyIsEnumerable',
+	  'toLocaleString',
+	  'toString',
+	  'valueOf'
+	];
+
+	var hiddenKeys$1 = enumBugKeys.concat('length', 'prototype');
+
+	// `Object.getOwnPropertyNames` method
+	// https://tc39.github.io/ecma262/#sec-object.getownpropertynames
+	var f$3 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+	  return objectKeysInternal(O, hiddenKeys$1);
+	};
+
+	var objectGetOwnPropertyNames = {
+		f: f$3
+	};
+
+	var f$4 = Object.getOwnPropertySymbols;
+
+	var objectGetOwnPropertySymbols = {
+		f: f$4
+	};
+
+	// all object keys, includes non-enumerable and symbols
+	var ownKeys = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
+	  var keys = objectGetOwnPropertyNames.f(anObject(it));
+	  var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
+	  return getOwnPropertySymbols ? keys.concat(getOwnPropertySymbols(it)) : keys;
+	};
+
+	var copyConstructorProperties = function (target, source) {
+	  var keys = ownKeys(source);
+	  var defineProperty = objectDefineProperty.f;
+	  var getOwnPropertyDescriptor = objectGetOwnPropertyDescriptor.f;
+	  for (var i = 0; i < keys.length; i++) {
+	    var key = keys[i];
+	    if (!has(target, key)) defineProperty(target, key, getOwnPropertyDescriptor(source, key));
+	  }
+	};
+
+	var replacement = /#|\.prototype\./;
+
+	var isForced = function (feature, detection) {
+	  var value = data[normalize(feature)];
+	  return value == POLYFILL ? true
+	    : value == NATIVE ? false
+	    : typeof detection == 'function' ? fails(detection)
+	    : !!detection;
+	};
+
+	var normalize = isForced.normalize = function (string) {
+	  return String(string).replace(replacement, '.').toLowerCase();
+	};
+
+	var data = isForced.data = {};
+	var NATIVE = isForced.NATIVE = 'N';
+	var POLYFILL = isForced.POLYFILL = 'P';
+
+	var isForced_1 = isForced;
+
+	var getOwnPropertyDescriptor$1 = objectGetOwnPropertyDescriptor.f;
+
+
+
+
+
+
+	/*
+	  options.target      - name of the target object
+	  options.global      - target is the global object
+	  options.stat        - export as static methods of target
+	  options.proto       - export as prototype methods of target
+	  options.real        - real prototype method for the `pure` version
+	  options.forced      - export even if the native feature is available
+	  options.bind        - bind methods to the target, required for the `pure` version
+	  options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
+	  options.unsafe      - use the simple assignment of property instead of delete + defineProperty
+	  options.sham        - add a flag to not completely full polyfills
+	  options.enumerable  - export as enumerable property
+	  options.noTargetGet - prevent calling a getter on target
+	*/
+	var _export = function (options, source) {
+	  var TARGET = options.target;
+	  var GLOBAL = options.global;
+	  var STATIC = options.stat;
+	  var FORCED, target, key, targetProperty, sourceProperty, descriptor;
+	  if (GLOBAL) {
+	    target = global_1;
+	  } else if (STATIC) {
+	    target = global_1[TARGET] || setGlobal(TARGET, {});
+	  } else {
+	    target = (global_1[TARGET] || {}).prototype;
+	  }
+	  if (target) for (key in source) {
+	    sourceProperty = source[key];
+	    if (options.noTargetGet) {
+	      descriptor = getOwnPropertyDescriptor$1(target, key);
+	      targetProperty = descriptor && descriptor.value;
+	    } else targetProperty = target[key];
+	    FORCED = isForced_1(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
+	    // contained in target
+	    if (!FORCED && targetProperty !== undefined) {
+	      if (typeof sourceProperty === typeof targetProperty) continue;
+	      copyConstructorProperties(sourceProperty, targetProperty);
+	    }
+	    // add a flag to not completely full polyfills
+	    if (options.sham || (targetProperty && targetProperty.sham)) {
+	      createNonEnumerableProperty(sourceProperty, 'sham', true);
+	    }
+	    // extend global
+	    redefine(target, key, sourceProperty, options);
+	  }
+	};
+
+	var aFunction$1 = function (it) {
+	  if (typeof it != 'function') {
+	    throw TypeError(String(it) + ' is not a function');
+	  } return it;
+	};
+
+	// optional / simple context binding
+	var functionBindContext = function (fn, that, length) {
+	  aFunction$1(fn);
+	  if (that === undefined) return fn;
+	  switch (length) {
+	    case 0: return function () {
+	      return fn.call(that);
+	    };
+	    case 1: return function (a) {
+	      return fn.call(that, a);
+	    };
+	    case 2: return function (a, b) {
+	      return fn.call(that, a, b);
+	    };
+	    case 3: return function (a, b, c) {
+	      return fn.call(that, a, b, c);
+	    };
+	  }
+	  return function (/* ...args */) {
+	    return fn.apply(that, arguments);
+	  };
+	};
+
+	// `ToObject` abstract operation
+	// https://tc39.github.io/ecma262/#sec-toobject
+	var toObject = function (argument) {
+	  return Object(requireObjectCoercible(argument));
+	};
+
+	// `IsArray` abstract operation
+	// https://tc39.github.io/ecma262/#sec-isarray
+	var isArray = Array.isArray || function isArray(arg) {
+	  return classofRaw(arg) == 'Array';
+	};
+
+	var nativeSymbol = !!Object.getOwnPropertySymbols && !fails(function () {
+	  // Chrome 38 Symbol has incorrect toString conversion
+	  // eslint-disable-next-line no-undef
+	  return !String(Symbol());
+	});
+
+	var useSymbolAsUid = nativeSymbol
+	  // eslint-disable-next-line no-undef
+	  && !Symbol.sham
+	  // eslint-disable-next-line no-undef
+	  && typeof Symbol.iterator == 'symbol';
+
+	var WellKnownSymbolsStore = shared('wks');
+	var Symbol$1 = global_1.Symbol;
+	var createWellKnownSymbol = useSymbolAsUid ? Symbol$1 : Symbol$1 && Symbol$1.withoutSetter || uid;
+
+	var wellKnownSymbol = function (name) {
+	  if (!has(WellKnownSymbolsStore, name)) {
+	    if (nativeSymbol && has(Symbol$1, name)) WellKnownSymbolsStore[name] = Symbol$1[name];
+	    else WellKnownSymbolsStore[name] = createWellKnownSymbol('Symbol.' + name);
+	  } return WellKnownSymbolsStore[name];
+	};
+
+	var SPECIES = wellKnownSymbol('species');
+
+	// `ArraySpeciesCreate` abstract operation
+	// https://tc39.github.io/ecma262/#sec-arrayspeciescreate
+	var arraySpeciesCreate = function (originalArray, length) {
+	  var C;
+	  if (isArray(originalArray)) {
+	    C = originalArray.constructor;
+	    // cross-realm fallback
+	    if (typeof C == 'function' && (C === Array || isArray(C.prototype))) C = undefined;
+	    else if (isObject(C)) {
+	      C = C[SPECIES];
+	      if (C === null) C = undefined;
+	    }
+	  } return new (C === undefined ? Array : C)(length === 0 ? 0 : length);
+	};
+
+	var push = [].push;
+
+	// `Array.prototype.{ forEach, map, filter, some, every, find, findIndex }` methods implementation
+	var createMethod$1 = function (TYPE) {
+	  var IS_MAP = TYPE == 1;
+	  var IS_FILTER = TYPE == 2;
+	  var IS_SOME = TYPE == 3;
+	  var IS_EVERY = TYPE == 4;
+	  var IS_FIND_INDEX = TYPE == 6;
+	  var NO_HOLES = TYPE == 5 || IS_FIND_INDEX;
+	  return function ($this, callbackfn, that, specificCreate) {
+	    var O = toObject($this);
+	    var self = indexedObject(O);
+	    var boundFunction = functionBindContext(callbackfn, that, 3);
+	    var length = toLength(self.length);
+	    var index = 0;
+	    var create = specificCreate || arraySpeciesCreate;
+	    var target = IS_MAP ? create($this, length) : IS_FILTER ? create($this, 0) : undefined;
+	    var value, result;
+	    for (;length > index; index++) if (NO_HOLES || index in self) {
+	      value = self[index];
+	      result = boundFunction(value, index, O);
+	      if (TYPE) {
+	        if (IS_MAP) target[index] = result; // map
+	        else if (result) switch (TYPE) {
+	          case 3: return true;              // some
+	          case 5: return value;             // find
+	          case 6: return index;             // findIndex
+	          case 2: push.call(target, value); // filter
+	        } else if (IS_EVERY) return false;  // every
+	      }
+	    }
+	    return IS_FIND_INDEX ? -1 : IS_SOME || IS_EVERY ? IS_EVERY : target;
+	  };
+	};
+
+	var arrayIteration = {
+	  // `Array.prototype.forEach` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.foreach
+	  forEach: createMethod$1(0),
+	  // `Array.prototype.map` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.map
+	  map: createMethod$1(1),
+	  // `Array.prototype.filter` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.filter
+	  filter: createMethod$1(2),
+	  // `Array.prototype.some` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.some
+	  some: createMethod$1(3),
+	  // `Array.prototype.every` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.every
+	  every: createMethod$1(4),
+	  // `Array.prototype.find` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.find
+	  find: createMethod$1(5),
+	  // `Array.prototype.findIndex` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.findIndex
+	  findIndex: createMethod$1(6)
+	};
+
+	// `Object.keys` method
+	// https://tc39.github.io/ecma262/#sec-object.keys
+	var objectKeys = Object.keys || function keys(O) {
+	  return objectKeysInternal(O, enumBugKeys);
+	};
+
+	// `Object.defineProperties` method
+	// https://tc39.github.io/ecma262/#sec-object.defineproperties
+	var objectDefineProperties = descriptors ? Object.defineProperties : function defineProperties(O, Properties) {
+	  anObject(O);
+	  var keys = objectKeys(Properties);
+	  var length = keys.length;
+	  var index = 0;
+	  var key;
+	  while (length > index) objectDefineProperty.f(O, key = keys[index++], Properties[key]);
+	  return O;
+	};
+
+	var html = getBuiltIn('document', 'documentElement');
+
+	var GT = '>';
+	var LT = '<';
+	var PROTOTYPE = 'prototype';
+	var SCRIPT = 'script';
+	var IE_PROTO = sharedKey('IE_PROTO');
+
+	var EmptyConstructor = function () { /* empty */ };
+
+	var scriptTag = function (content) {
+	  return LT + SCRIPT + GT + content + LT + '/' + SCRIPT + GT;
+	};
+
+	// Create object with fake `null` prototype: use ActiveX Object with cleared prototype
+	var NullProtoObjectViaActiveX = function (activeXDocument) {
+	  activeXDocument.write(scriptTag(''));
+	  activeXDocument.close();
+	  var temp = activeXDocument.parentWindow.Object;
+	  activeXDocument = null; // avoid memory leak
+	  return temp;
+	};
+
+	// Create object with fake `null` prototype: use iframe Object with cleared prototype
+	var NullProtoObjectViaIFrame = function () {
+	  // Thrash, waste and sodomy: IE GC bug
+	  var iframe = documentCreateElement('iframe');
+	  var JS = 'java' + SCRIPT + ':';
+	  var iframeDocument;
+	  iframe.style.display = 'none';
+	  html.appendChild(iframe);
+	  // https://github.com/zloirock/core-js/issues/475
+	  iframe.src = String(JS);
+	  iframeDocument = iframe.contentWindow.document;
+	  iframeDocument.open();
+	  iframeDocument.write(scriptTag('document.F=Object'));
+	  iframeDocument.close();
+	  return iframeDocument.F;
+	};
+
+	// Check for document.domain and active x support
+	// No need to use active x approach when document.domain is not set
+	// see https://github.com/es-shims/es5-shim/issues/150
+	// variation of https://github.com/kitcambridge/es5-shim/commit/4f738ac066346
+	// avoid IE GC bug
+	var activeXDocument;
+	var NullProtoObject = function () {
+	  try {
+	    /* global ActiveXObject */
+	    activeXDocument = document.domain && new ActiveXObject('htmlfile');
+	  } catch (error) { /* ignore */ }
+	  NullProtoObject = activeXDocument ? NullProtoObjectViaActiveX(activeXDocument) : NullProtoObjectViaIFrame();
+	  var length = enumBugKeys.length;
+	  while (length--) delete NullProtoObject[PROTOTYPE][enumBugKeys[length]];
+	  return NullProtoObject();
+	};
+
+	hiddenKeys[IE_PROTO] = true;
+
+	// `Object.create` method
+	// https://tc39.github.io/ecma262/#sec-object.create
+	var objectCreate = Object.create || function create(O, Properties) {
+	  var result;
+	  if (O !== null) {
+	    EmptyConstructor[PROTOTYPE] = anObject(O);
+	    result = new EmptyConstructor();
+	    EmptyConstructor[PROTOTYPE] = null;
+	    // add "__proto__" for Object.getPrototypeOf polyfill
+	    result[IE_PROTO] = O;
+	  } else result = NullProtoObject();
+	  return Properties === undefined ? result : objectDefineProperties(result, Properties);
+	};
+
+	var UNSCOPABLES = wellKnownSymbol('unscopables');
+	var ArrayPrototype = Array.prototype;
+
+	// Array.prototype[@@unscopables]
+	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
+	if (ArrayPrototype[UNSCOPABLES] == undefined) {
+	  objectDefineProperty.f(ArrayPrototype, UNSCOPABLES, {
+	    configurable: true,
+	    value: objectCreate(null)
+	  });
+	}
+
+	// add a key to Array.prototype[@@unscopables]
+	var addToUnscopables = function (key) {
+	  ArrayPrototype[UNSCOPABLES][key] = true;
+	};
+
+	var defineProperty = Object.defineProperty;
+	var cache = {};
+
+	var thrower = function (it) { throw it; };
+
+	var arrayMethodUsesToLength = function (METHOD_NAME, options) {
+	  if (has(cache, METHOD_NAME)) return cache[METHOD_NAME];
+	  if (!options) options = {};
+	  var method = [][METHOD_NAME];
+	  var ACCESSORS = has(options, 'ACCESSORS') ? options.ACCESSORS : false;
+	  var argument0 = has(options, 0) ? options[0] : thrower;
+	  var argument1 = has(options, 1) ? options[1] : undefined;
+
+	  return cache[METHOD_NAME] = !!method && !fails(function () {
+	    if (ACCESSORS && !descriptors) return true;
+	    var O = { length: -1 };
+
+	    if (ACCESSORS) defineProperty(O, 1, { enumerable: true, get: thrower });
+	    else O[1] = 1;
+
+	    method.call(O, argument0, argument1);
+	  });
+	};
+
+	var $find = arrayIteration.find;
+
+
+
+	var FIND = 'find';
+	var SKIPS_HOLES = true;
+
+	var USES_TO_LENGTH = arrayMethodUsesToLength(FIND);
+
+	// Shouldn't skip holes
+	if (FIND in []) Array(1)[FIND](function () { SKIPS_HOLES = false; });
+
+	// `Array.prototype.find` method
+	// https://tc39.github.io/ecma262/#sec-array.prototype.find
+	_export({ target: 'Array', proto: true, forced: SKIPS_HOLES || !USES_TO_LENGTH }, {
+	  find: function find(callbackfn /* , that = undefined */) {
+	    return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
+
+	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
+	addToUnscopables(FIND);
+
+	var $includes = arrayIncludes.includes;
+
+
+
+	var USES_TO_LENGTH$1 = arrayMethodUsesToLength('indexOf', { ACCESSORS: true, 1: 0 });
+
+	// `Array.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-array.prototype.includes
+	_export({ target: 'Array', proto: true, forced: !USES_TO_LENGTH$1 }, {
+	  includes: function includes(el /* , fromIndex = 0 */) {
+	    return $includes(this, el, arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
+
+	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
+	addToUnscopables('includes');
+
+	var nativeAssign = Object.assign;
+	var defineProperty$1 = Object.defineProperty;
+
+	// `Object.assign` method
+	// https://tc39.github.io/ecma262/#sec-object.assign
+	var objectAssign = !nativeAssign || fails(function () {
+	  // should have correct order of operations (Edge bug)
+	  if (descriptors && nativeAssign({ b: 1 }, nativeAssign(defineProperty$1({}, 'a', {
+	    enumerable: true,
+	    get: function () {
+	      defineProperty$1(this, 'b', {
+	        value: 3,
+	        enumerable: false
+	      });
+	    }
+	  }), { b: 2 })).b !== 1) return true;
+	  // should work with symbols and should have deterministic property order (V8 bug)
+	  var A = {};
+	  var B = {};
+	  // eslint-disable-next-line no-undef
+	  var symbol = Symbol();
+	  var alphabet = 'abcdefghijklmnopqrst';
+	  A[symbol] = 7;
+	  alphabet.split('').forEach(function (chr) { B[chr] = chr; });
+	  return nativeAssign({}, A)[symbol] != 7 || objectKeys(nativeAssign({}, B)).join('') != alphabet;
+	}) ? function assign(target, source) { // eslint-disable-line no-unused-vars
+	  var T = toObject(target);
+	  var argumentsLength = arguments.length;
+	  var index = 1;
+	  var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
+	  var propertyIsEnumerable = objectPropertyIsEnumerable.f;
+	  while (argumentsLength > index) {
+	    var S = indexedObject(arguments[index++]);
+	    var keys = getOwnPropertySymbols ? objectKeys(S).concat(getOwnPropertySymbols(S)) : objectKeys(S);
+	    var length = keys.length;
+	    var j = 0;
+	    var key;
+	    while (length > j) {
+	      key = keys[j++];
+	      if (!descriptors || propertyIsEnumerable.call(S, key)) T[key] = S[key];
+	    }
+	  } return T;
+	} : nativeAssign;
+
+	// `Object.assign` method
+	// https://tc39.github.io/ecma262/#sec-object.assign
+	_export({ target: 'Object', stat: true, forced: Object.assign !== objectAssign }, {
+	  assign: objectAssign
+	});
+
+	var MATCH = wellKnownSymbol('match');
+
+	// `IsRegExp` abstract operation
+	// https://tc39.github.io/ecma262/#sec-isregexp
+	var isRegexp = function (it) {
+	  var isRegExp;
+	  return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : classofRaw(it) == 'RegExp');
+	};
+
+	var notARegexp = function (it) {
+	  if (isRegexp(it)) {
+	    throw TypeError("The method doesn't accept regular expressions");
+	  } return it;
+	};
+
+	var MATCH$1 = wellKnownSymbol('match');
+
+	var correctIsRegexpLogic = function (METHOD_NAME) {
+	  var regexp = /./;
+	  try {
+	    '/./'[METHOD_NAME](regexp);
+	  } catch (e) {
+	    try {
+	      regexp[MATCH$1] = false;
+	      return '/./'[METHOD_NAME](regexp);
+	    } catch (f) { /* empty */ }
+	  } return false;
+	};
+
+	// `String.prototype.includes` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
+	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
+	  includes: function includes(searchString /* , position = 0 */) {
+	    return !!~String(requireObjectCoercible(this))
+	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
+	  }
+	});
+
+	var getOwnPropertyDescriptor$2 = objectGetOwnPropertyDescriptor.f;
+
+
+
+
+
+
+	var nativeStartsWith = ''.startsWith;
+	var min$2 = Math.min;
+
+	var CORRECT_IS_REGEXP_LOGIC = correctIsRegexpLogic('startsWith');
+	// https://github.com/zloirock/core-js/pull/702
+	var MDN_POLYFILL_BUG =  !CORRECT_IS_REGEXP_LOGIC && !!function () {
+	  var descriptor = getOwnPropertyDescriptor$2(String.prototype, 'startsWith');
+	  return descriptor && !descriptor.writable;
+	}();
+
+	// `String.prototype.startsWith` method
+	// https://tc39.github.io/ecma262/#sec-string.prototype.startswith
+	_export({ target: 'String', proto: true, forced: !MDN_POLYFILL_BUG && !CORRECT_IS_REGEXP_LOGIC }, {
+	  startsWith: function startsWith(searchString /* , position = 0 */) {
+	    var that = String(requireObjectCoercible(this));
+	    notARegexp(searchString);
+	    var index = toLength(min$2(arguments.length > 1 ? arguments[1] : undefined, that.length));
+	    var search = String(searchString);
+	    return nativeStartsWith
+	      ? nativeStartsWith.call(that, search, index)
+	      : that.slice(index, index + search.length) === search;
+	  }
+	});
+
+	if (typeof window !== "undefined") {
+	  (function () {
+	    var serializeXML = function (node, output) {
+	      var nodeType = node.nodeType;
+	      if (nodeType === 3) {
+	        output.push(node.textContent.replace(/&/, '&amp;').replace(/</, '&lt;').replace('>', '&gt;'));
+	      } else if (nodeType === 1) {
+	        output.push('<', node.tagName);
+	        if (node.hasAttributes()) {
+	          [].forEach.call(node.attributes, function(attrNode){
+	            output.push(' ', attrNode.item.name, '=\'', attrNode.item.value, '\'');
+	          });
+	        }
+	        if (node.hasChildNodes()) {
+	          output.push('>');
+	          [].forEach.call(node.childNodes, function(childNode){
+	            serializeXML(childNode, output);
+	          });
+	          output.push('</', node.tagName, '>');
+	        } else {
+	          output.push('/>');
+	        }
+	      } else if (nodeType == 8) {
+	        output.push('<!--', node.nodeValue, '-->');
+	      }
+	    };
+
+	    Object.defineProperty(SVGElement.prototype, 'innerHTML', {
+	      get: function () {
+	        var output = [];
+	        var childNode = this.firstChild;
+	        while (childNode) {
+	          serializeXML(childNode, output);
+	          childNode = childNode.nextSibling;
+	        }
+	        return output.join('');
+	      },
+	      set: function (markupText) {
+	        while (this.firstChild) {
+	          this.removeChild(this.firstChild);
+	        }
+
+	        try {
+	          var dXML = new DOMParser();
+	          dXML.async = false;
+
+	          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markupText + '</svg>';
+	          var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
+
+	          var childNode = svgDocElement.firstChild;
+	          while (childNode) {
+	            this.appendChild(this.ownerDocument.importNode(childNode, true));
+	            childNode = childNode.nextSibling;
+	          }
+	        } catch (e) {}      }
+	    });
+
+	    Object.defineProperty(SVGElement.prototype, 'innerSVG', {
+	      get: function () {
+	        return this.innerHTML;
+	      },
+	      set: function (markup) {
+	        this.innerHTML = markup;
+	      }
+	    });
+
+	  })();
+	}
+
+})));
 
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define('d3plus-network', ['exports'], factory) :
   (global = global || self, factory(global.d3plus = {}));
-}(this, function (exports) {
+}(this, (function (exports) {
   function _typeof(obj) {
+    "@babel/helpers - typeof";
+
     if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
       _typeof = function (obj) {
         return typeof obj;
@@ -80,13 +1110,13 @@
       var source = arguments[i] != null ? arguments[i] : {};
 
       if (i % 2) {
-        ownKeys(source, true).forEach(function (key) {
+        ownKeys(Object(source), true).forEach(function (key) {
           _defineProperty(target, key, source[key]);
         });
       } else if (Object.getOwnPropertyDescriptors) {
         Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
       } else {
-        ownKeys(source).forEach(function (key) {
+        ownKeys(Object(source)).forEach(function (key) {
           Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
         });
       }
@@ -126,6 +1156,19 @@
     return _setPrototypeOf(o, p);
   }
 
+  function _isNativeReflectConstruct() {
+    if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+    if (Reflect.construct.sham) return false;
+    if (typeof Proxy === "function") return true;
+
+    try {
+      Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function _assertThisInitialized(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -140,6 +1183,25 @@
     }
 
     return _assertThisInitialized(self);
+  }
+
+  function _createSuper(Derived) {
+    var hasNativeReflectConstruct = _isNativeReflectConstruct();
+
+    return function () {
+      var Super = _getPrototypeOf(Derived),
+          result;
+
+      if (hasNativeReflectConstruct) {
+        var NewTarget = _getPrototypeOf(this).constructor;
+
+        result = Reflect.construct(Super, arguments, NewTarget);
+      } else {
+        result = Super.apply(this, arguments);
+      }
+
+      return _possibleConstructorReturn(this, result);
+    };
   }
 
   function _superPropBase(object, property) {
@@ -170,6 +1232,78 @@
     }
 
     return _get(target, property, receiver || target);
+  }
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
+  function _createForOfIteratorHelper(o) {
+    if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {
+      if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) {
+        var i = 0;
+
+        var F = function () {};
+
+        return {
+          s: F,
+          n: function () {
+            if (i >= o.length) return {
+              done: true
+            };
+            return {
+              done: false,
+              value: o[i++]
+            };
+          },
+          e: function (e) {
+            throw e;
+          },
+          f: F
+        };
+      }
+
+      throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+    }
+
+    var it,
+        normalCompletion = true,
+        didErr = false,
+        err;
+    return {
+      s: function () {
+        it = o[Symbol.iterator]();
+      },
+      n: function () {
+        var step = it.next();
+        normalCompletion = step.done;
+        return step;
+      },
+      e: function (e) {
+        didErr = true;
+        err = e;
+      },
+      f: function () {
+        try {
+          if (!normalCompletion && it.return != null) it.return();
+        } finally {
+          if (didErr) throw err;
+        }
+      }
+    };
   }
 
   function ascending (a, b) {
@@ -1899,6 +3033,39 @@
     return inside;
   }
 
+  function initRange(domain, range) {
+    switch (arguments.length) {
+      case 0:
+        break;
+
+      case 1:
+        this.range(domain);
+        break;
+
+      default:
+        this.range(range).domain(domain);
+        break;
+    }
+
+    return this;
+  }
+  function initInterpolator(domain, interpolator) {
+    switch (arguments.length) {
+      case 0:
+        break;
+
+      case 1:
+        this.interpolator(domain);
+        break;
+
+      default:
+        this.interpolator(interpolator).domain(domain);
+        break;
+    }
+
+    return this;
+  }
+
   var array = Array.prototype;
   var map$1 = array.map;
   var slice = array.slice;
@@ -1906,11 +3073,11 @@
   var implicit = {
     name: "implicit"
   };
-  function ordinal(range) {
+  function ordinal() {
     var index = map(),
         domain = [],
+        range = [],
         unknown = implicit;
-    range = range == null ? [] : slice.call(range);
 
     function scale(d) {
       var key = d + "",
@@ -1948,9 +3115,10 @@
     };
 
     scale.copy = function () {
-      return ordinal().domain(domain).range(range).unknown(unknown);
+      return ordinal(domain, range).unknown(unknown);
     };
 
+    initRange.apply(scale, arguments);
     return scale;
   }
 
@@ -2008,15 +3176,15 @@
     };
 
     scale.padding = function (_) {
-      return arguments.length ? (paddingInner = paddingOuter = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
+      return arguments.length ? (paddingInner = Math.min(1, paddingOuter = +_), rescale()) : paddingInner;
     };
 
     scale.paddingInner = function (_) {
-      return arguments.length ? (paddingInner = Math.max(0, Math.min(1, _)), rescale()) : paddingInner;
+      return arguments.length ? (paddingInner = Math.min(1, _), rescale()) : paddingInner;
     };
 
     scale.paddingOuter = function (_) {
-      return arguments.length ? (paddingOuter = Math.max(0, Math.min(1, _)), rescale()) : paddingOuter;
+      return arguments.length ? (paddingOuter = +_, rescale()) : paddingOuter;
     };
 
     scale.align = function (_) {
@@ -2024,10 +3192,10 @@
     };
 
     scale.copy = function () {
-      return band().domain(domain()).range(range$1).round(round).paddingInner(paddingInner).paddingOuter(paddingOuter).align(align);
+      return band(domain(), range$1).round(round).paddingInner(paddingInner).paddingOuter(paddingOuter).align(align);
     };
 
-    return rescale();
+    return initRange.apply(rescale(), arguments);
   }
 
   function pointish(scale) {
@@ -2044,7 +3212,7 @@
   }
 
   function point() {
-    return pointish(band().paddingInner(1));
+    return pointish(band.apply(null, arguments).paddingInner(1));
   }
 
   function define (constructor, factory, prototype) {
@@ -2586,7 +3754,7 @@
         i;
 
     for (i = 0; i < na; ++i) {
-      x[i] = interpolate(a[i], b[i]);
+      x[i] = interpolateValue(a[i], b[i]);
     }
 
     for (; i < nb; ++i) {
@@ -2624,7 +3792,7 @@
 
     for (k in b) {
       if (k in a) {
-        i[k] = interpolate(a[k], b[k]);
+        i[k] = interpolateValue(a[k], b[k]);
       } else {
         c[k] = b[k];
       }
@@ -2714,7 +3882,7 @@
     });
   }
 
-  function interpolate (a, b) {
+  function interpolateValue (a, b) {
     var t = _typeof(b),
         c;
 
@@ -2929,42 +4097,40 @@
   }
 
   var unit = [0, 1];
-  function deinterpolateLinear(a, b) {
+  function identity$1(x) {
+    return x;
+  }
+
+  function normalize(a, b) {
     return (b -= a = +a) ? function (x) {
       return (x - a) / b;
-    } : constant$2(b);
+    } : constant$2(isNaN(b) ? NaN : 0.5);
   }
 
-  function deinterpolateClamp(deinterpolate) {
-    return function (a, b) {
-      var d = deinterpolate(a = +a, b = +b);
-      return function (x) {
-        return x <= a ? 0 : x >= b ? 1 : d(x);
-      };
+  function clamper(domain) {
+    var a = domain[0],
+        b = domain[domain.length - 1],
+        t;
+    if (a > b) t = a, a = b, b = t;
+    return function (x) {
+      return Math.max(a, Math.min(b, x));
     };
-  }
+  } // normalize(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
+  // interpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding range value x in [a,b].
 
-  function reinterpolateClamp(reinterpolate) {
-    return function (a, b) {
-      var r = reinterpolate(a = +a, b = +b);
-      return function (t) {
-        return t <= 0 ? a : t >= 1 ? b : r(t);
-      };
-    };
-  }
 
-  function bimap(domain, range, deinterpolate, reinterpolate) {
+  function bimap(domain, range, interpolate) {
     var d0 = domain[0],
         d1 = domain[1],
         r0 = range[0],
         r1 = range[1];
-    if (d1 < d0) d0 = deinterpolate(d1, d0), r0 = reinterpolate(r1, r0);else d0 = deinterpolate(d0, d1), r0 = reinterpolate(r0, r1);
+    if (d1 < d0) d0 = normalize(d1, d0), r0 = interpolate(r1, r0);else d0 = normalize(d0, d1), r0 = interpolate(r0, r1);
     return function (x) {
       return r0(d0(x));
     };
   }
 
-  function polymap(domain, range, deinterpolate, reinterpolate) {
+  function polymap(domain, range, interpolate) {
     var j = Math.min(domain.length, range.length) - 1,
         d = new Array(j),
         r = new Array(j),
@@ -2976,8 +4142,8 @@
     }
 
     while (++i < j) {
-      d[i] = deinterpolate(domain[i], domain[i + 1]);
-      r[i] = reinterpolate(range[i], range[i + 1]);
+      d[i] = normalize(domain[i], domain[i + 1]);
+      r[i] = interpolate(range[i], range[i + 1]);
     }
 
     return function (x) {
@@ -2987,15 +4153,16 @@
   }
 
   function copy(source, target) {
-    return target.domain(source.domain()).range(source.range()).interpolate(source.interpolate()).clamp(source.clamp());
-  } // deinterpolate(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
-  // reinterpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding domain value x in [a,b].
-
-  function continuous(deinterpolate, reinterpolate) {
+    return target.domain(source.domain()).range(source.range()).interpolate(source.interpolate()).clamp(source.clamp()).unknown(source.unknown());
+  }
+  function transformer() {
     var domain = unit,
         range = unit,
-        interpolate$1 = interpolate,
-        clamp = false,
+        interpolate = interpolateValue,
+        transform,
+        untransform,
+        unknown,
+        clamp = identity$1,
         piecewise,
         output,
         input;
@@ -3007,15 +4174,15 @@
     }
 
     function scale(x) {
-      return (output || (output = piecewise(domain, range, clamp ? deinterpolateClamp(deinterpolate) : deinterpolate, interpolate$1)))(+x);
+      return isNaN(x = +x) ? unknown : (output || (output = piecewise(domain.map(transform), range, interpolate)))(transform(clamp(x)));
     }
 
     scale.invert = function (y) {
-      return (input || (input = piecewise(range, domain, deinterpolateLinear, clamp ? reinterpolateClamp(reinterpolate) : reinterpolate)))(+y);
+      return clamp(untransform((input || (input = piecewise(range, domain.map(transform), interpolateNumber)))(y)));
     };
 
     scale.domain = function (_) {
-      return arguments.length ? (domain = map$1.call(_, number$1), rescale()) : domain.slice();
+      return arguments.length ? (domain = map$1.call(_, number$1), clamp === identity$1 || (clamp = clamper(domain)), rescale()) : domain.slice();
     };
 
     scale.range = function (_) {
@@ -3023,18 +4190,28 @@
     };
 
     scale.rangeRound = function (_) {
-      return range = slice.call(_), interpolate$1 = interpolateRound, rescale();
+      return range = slice.call(_), interpolate = interpolateRound, rescale();
     };
 
     scale.clamp = function (_) {
-      return arguments.length ? (clamp = !!_, rescale()) : clamp;
+      return arguments.length ? (clamp = _ ? clamper(domain) : identity$1, scale) : clamp !== identity$1;
     };
 
     scale.interpolate = function (_) {
-      return arguments.length ? (interpolate$1 = _, rescale()) : interpolate$1;
+      return arguments.length ? (interpolate = _, rescale()) : interpolate;
     };
 
-    return rescale();
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
+    };
+
+    return function (t, u) {
+      transform = t, untransform = u;
+      return rescale();
+    };
+  }
+  function continuous(transform, untransform) {
+    return transformer()(transform, untransform);
   }
 
   // Computes the decimal coefficient and exponent of the specified number x with
@@ -3190,16 +4367,16 @@
     }
   };
 
-  function identity$1 (x) {
+  function identity$2 (x) {
     return x;
   }
 
   var prefixes = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
   function formatLocale (locale) {
-    var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$1,
+    var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$2,
         currency = locale.currency,
         decimal = locale.decimal,
-        numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$1,
+        numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$2,
         percent = locale.percent || "%";
 
     function newFormat(specifier) {
@@ -3352,10 +4529,8 @@
     return Math.max(0, exponent(max) - exponent(step)) + 1;
   }
 
-  function tickFormat (domain, count, specifier) {
-    var start = domain[0],
-        stop = domain[domain.length - 1],
-        step = tickStep(start, stop, count == null ? 10 : count),
+  function tickFormat (start, stop, count, specifier) {
+    var step = tickStep(start, stop, count),
         precision;
     specifier = formatSpecifier(specifier == null ? ",f" : specifier);
 
@@ -3397,7 +4572,8 @@
     };
 
     scale.tickFormat = function (count, specifier) {
-      return tickFormat(domain(), count, specifier);
+      var d = domain();
+      return tickFormat(d[0], d[d.length - 1], count == null ? 10 : count, specifier);
     };
 
     scale.nice = function (count) {
@@ -3442,20 +4618,21 @@
     return scale;
   }
   function linear$1() {
-    var scale = continuous(deinterpolateLinear, interpolateNumber);
+    var scale = continuous(identity$1, identity$1);
 
     scale.copy = function () {
       return copy(scale, linear$1());
     };
 
+    initRange.apply(scale, arguments);
     return linearish(scale);
   }
 
-  function identity$2() {
-    var domain = [0, 1];
+  function identity$3(domain) {
+    var unknown;
 
     function scale(x) {
-      return +x;
+      return isNaN(x = +x) ? unknown : x;
     }
 
     scale.invert = scale;
@@ -3464,10 +4641,15 @@
       return arguments.length ? (domain = map$1.call(_, number$1), scale) : domain.slice();
     };
 
-    scale.copy = function () {
-      return identity$2().domain(domain);
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
     };
 
+    scale.copy = function () {
+      return identity$3(domain).unknown(unknown);
+    };
+
+    domain = arguments.length ? map$1.call(domain, number$1) : [0, 1];
     return linearish(scale);
   }
 
@@ -3489,18 +4671,20 @@
     return domain;
   }
 
-  function deinterpolate(a, b) {
-    return (b = Math.log(b / a)) ? function (x) {
-      return Math.log(x / a) / b;
-    } : constant$2(b);
+  function transformLog(x) {
+    return Math.log(x);
   }
 
-  function reinterpolate(a, b) {
-    return a < 0 ? function (t) {
-      return -Math.pow(-b, t) * Math.pow(-a, 1 - t);
-    } : function (t) {
-      return Math.pow(b, t) * Math.pow(a, 1 - t);
-    };
+  function transformExp(x) {
+    return Math.exp(x);
+  }
+
+  function transformLogn(x) {
+    return -Math.log(-x);
+  }
+
+  function transformExpn(x) {
+    return -Math.exp(-x);
   }
 
   function pow10(x) {
@@ -3525,16 +4709,23 @@
     };
   }
 
-  function log() {
-    var scale = continuous(deinterpolate, reinterpolate).domain([1, 10]),
+  function loggish(transform) {
+    var scale = transform(transformLog, transformExp),
         domain = scale.domain,
         base = 10,
-        logs = logp(10),
-        pows = powp(10);
+        logs,
+        pows;
 
     function rescale() {
       logs = logp(base), pows = powp(base);
-      if (domain()[0] < 0) logs = reflect(logs), pows = reflect(pows);
+
+      if (domain()[0] < 0) {
+        logs = reflect(logs), pows = reflect(pows);
+        transform(transformLogn, transformExpn);
+      } else {
+        transform(transformLog, transformExp);
+      }
+
       return scale;
     }
 
@@ -3609,53 +4800,98 @@
       }));
     };
 
+    return scale;
+  }
+  function log() {
+    var scale = loggish(transformer()).domain([1, 10]);
+
     scale.copy = function () {
-      return copy(scale, log().base(base));
+      return copy(scale, log()).base(scale.base());
     };
 
+    initRange.apply(scale, arguments);
     return scale;
   }
 
-  function raise(x, exponent) {
-    return x < 0 ? -Math.pow(-x, exponent) : Math.pow(x, exponent);
+  function transformSymlog(c) {
+    return function (x) {
+      return Math.sign(x) * Math.log1p(Math.abs(x / c));
+    };
   }
 
-  function pow() {
-    var exponent = 1,
-        scale = continuous(deinterpolate, reinterpolate),
-        domain = scale.domain;
-
-    function deinterpolate(a, b) {
-      return (b = raise(b, exponent) - (a = raise(a, exponent))) ? function (x) {
-        return (raise(x, exponent) - a) / b;
-      } : constant$2(b);
-    }
-
-    function reinterpolate(a, b) {
-      b = raise(b, exponent) - (a = raise(a, exponent));
-      return function (t) {
-        return raise(a + b * t, 1 / exponent);
-      };
-    }
-
-    scale.exponent = function (_) {
-      return arguments.length ? (exponent = +_, domain(domain())) : exponent;
+  function transformSymexp(c) {
+    return function (x) {
+      return Math.sign(x) * Math.expm1(Math.abs(x)) * c;
     };
+  }
 
-    scale.copy = function () {
-      return copy(scale, pow().exponent(exponent));
+  function symlogish(transform) {
+    var c = 1,
+        scale = transform(transformSymlog(c), transformSymexp(c));
+
+    scale.constant = function (_) {
+      return arguments.length ? transform(transformSymlog(c = +_), transformSymexp(c)) : c;
     };
 
     return linearish(scale);
   }
+  function symlog() {
+    var scale = symlogish(transformer());
+
+    scale.copy = function () {
+      return copy(scale, symlog()).constant(scale.constant());
+    };
+
+    return initRange.apply(scale, arguments);
+  }
+
+  function transformPow(exponent) {
+    return function (x) {
+      return x < 0 ? -Math.pow(-x, exponent) : Math.pow(x, exponent);
+    };
+  }
+
+  function transformSqrt(x) {
+    return x < 0 ? -Math.sqrt(-x) : Math.sqrt(x);
+  }
+
+  function transformSquare(x) {
+    return x < 0 ? -x * x : x * x;
+  }
+
+  function powish(transform) {
+    var scale = transform(identity$1, identity$1),
+        exponent = 1;
+
+    function rescale() {
+      return exponent === 1 ? transform(identity$1, identity$1) : exponent === 0.5 ? transform(transformSqrt, transformSquare) : transform(transformPow(exponent), transformPow(1 / exponent));
+    }
+
+    scale.exponent = function (_) {
+      return arguments.length ? (exponent = +_, rescale()) : exponent;
+    };
+
+    return linearish(scale);
+  }
+  function pow() {
+    var scale = powish(transformer());
+
+    scale.copy = function () {
+      return copy(scale, pow()).exponent(scale.exponent());
+    };
+
+    initRange.apply(scale, arguments);
+    return scale;
+  }
   function sqrt() {
-    return pow().exponent(0.5);
+    return pow.apply(null, arguments).exponent(0.5);
   }
 
   function quantile$1() {
     var domain = [],
         range = [],
-        thresholds = [];
+        thresholds = [],
+        unknown;
 
     function rescale() {
       var i = 0,
@@ -3670,7 +4906,7 @@
     }
 
     function scale(x) {
-      if (!isNaN(x = +x)) return range[bisectRight(thresholds, x)];
+      return isNaN(x = +x) ? unknown : range[bisectRight(thresholds, x)];
     }
 
     scale.invertExtent = function (y) {
@@ -3694,15 +4930,19 @@
       return arguments.length ? (range = slice.call(_), rescale()) : range.slice();
     };
 
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
+    };
+
     scale.quantiles = function () {
       return thresholds.slice();
     };
 
     scale.copy = function () {
-      return quantile$1().domain(domain).range(range);
+      return quantile$1().domain(domain).range(range).unknown(unknown);
     };
 
-    return scale;
+    return initRange.apply(scale, arguments);
   }
 
   function quantize() {
@@ -3710,10 +4950,11 @@
         x1 = 1,
         n = 1,
         domain = [0.5],
-        range = [0, 1];
+        range = [0, 1],
+        unknown;
 
     function scale(x) {
-      if (x <= x) return range[bisectRight(domain, x, 0, n)];
+      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
     }
 
     function rescale() {
@@ -3740,20 +4981,29 @@
       return i < 0 ? [NaN, NaN] : i < 1 ? [x0, domain[0]] : i >= n ? [domain[n - 1], x1] : [domain[i - 1], domain[i]];
     };
 
-    scale.copy = function () {
-      return quantize().domain([x0, x1]).range(range);
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : scale;
     };
 
-    return linearish(scale);
+    scale.thresholds = function () {
+      return domain.slice();
+    };
+
+    scale.copy = function () {
+      return quantize().domain([x0, x1]).range(range).unknown(unknown);
+    };
+
+    return initRange.apply(linearish(scale), arguments);
   }
 
   function threshold() {
     var domain = [0.5],
         range = [0, 1],
+        unknown,
         n = 1;
 
     function scale(x) {
-      if (x <= x) return range[bisectRight(domain, x, 0, n)];
+      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
     }
 
     scale.domain = function (_) {
@@ -3769,11 +5019,15 @@
       return [domain[i - 1], domain[i]];
     };
 
-    scale.copy = function () {
-      return threshold().domain(domain).range(range);
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
     };
 
-    return scale;
+    scale.copy = function () {
+      return threshold().domain(domain).range(range).unknown(unknown);
+    };
+
+    return initRange.apply(scale, arguments);
   }
 
   var t0$1 = new Date(),
@@ -4762,7 +6016,7 @@
   }
 
   function calendar(year, month, week, day, hour, minute, second, millisecond, format) {
-    var scale = continuous(deinterpolateLinear, interpolateNumber),
+    var scale = continuous(identity$1, identity$1),
         invert = scale.invert,
         domain = scale.domain;
     var formatMillisecond = format(".%L"),
@@ -4843,26 +6097,30 @@
     return scale;
   }
   function scaleTime () {
-    return calendar(year, month, sunday, day, hour, minute, second, millisecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]);
+    return initRange.apply(calendar(year, month, sunday, day, hour, minute, second, millisecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
   }
 
   function utcTime () {
-    return calendar(utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, second, millisecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]);
+    return initRange.apply(calendar(utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, second, millisecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
   }
 
-  function sequential(interpolator) {
+  function transformer$1() {
     var x0 = 0,
         x1 = 1,
-        k10 = 1,
-        clamp = false;
+        t0,
+        t1,
+        k10,
+        transform,
+        interpolator = identity$1,
+        clamp = false,
+        unknown;
 
     function scale(x) {
-      var t = (x - x0) * k10;
-      return interpolator(clamp ? Math.max(0, Math.min(1, t)) : t);
+      return isNaN(x = +x) ? unknown : interpolator(k10 === 0 ? 0.5 : (x = (transform(x) - t0) * k10, clamp ? Math.max(0, Math.min(1, x)) : x));
     }
 
     scale.domain = function (_) {
-      return arguments.length ? (x0 = +_[0], x1 = +_[1], k10 = x0 === x1 ? 0 : 1 / (x1 - x0), scale) : [x0, x1];
+      return arguments.length ? (t0 = transform(x0 = +_[0]), t1 = transform(x1 = +_[1]), k10 = t0 === t1 ? 0 : 1 / (t1 - t0), scale) : [x0, x1];
     };
 
     scale.clamp = function (_) {
@@ -4873,28 +6131,110 @@
       return arguments.length ? (interpolator = _, scale) : interpolator;
     };
 
-    scale.copy = function () {
-      return sequential(interpolator).domain([x0, x1]).clamp(clamp);
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
     };
 
-    return linearish(scale);
+    return function (t) {
+      transform = t, t0 = t(x0), t1 = t(x1), k10 = t0 === t1 ? 0 : 1 / (t1 - t0);
+      return scale;
+    };
   }
 
-  function diverging(interpolator) {
+  function copy$1(source, target) {
+    return target.domain(source.domain()).interpolator(source.interpolator()).clamp(source.clamp()).unknown(source.unknown());
+  }
+  function sequential() {
+    var scale = linearish(transformer$1()(identity$1));
+
+    scale.copy = function () {
+      return copy$1(scale, sequential());
+    };
+
+    return initInterpolator.apply(scale, arguments);
+  }
+  function sequentialLog() {
+    var scale = loggish(transformer$1()).domain([1, 10]);
+
+    scale.copy = function () {
+      return copy$1(scale, sequentialLog()).base(scale.base());
+    };
+
+    return initInterpolator.apply(scale, arguments);
+  }
+  function sequentialSymlog() {
+    var scale = symlogish(transformer$1());
+
+    scale.copy = function () {
+      return copy$1(scale, sequentialSymlog()).constant(scale.constant());
+    };
+
+    return initInterpolator.apply(scale, arguments);
+  }
+  function sequentialPow() {
+    var scale = powish(transformer$1());
+
+    scale.copy = function () {
+      return copy$1(scale, sequentialPow()).exponent(scale.exponent());
+    };
+
+    return initInterpolator.apply(scale, arguments);
+  }
+  function sequentialSqrt() {
+    return sequentialPow.apply(null, arguments).exponent(0.5);
+  }
+
+  function sequentialQuantile() {
+    var domain = [],
+        interpolator = identity$1;
+
+    function scale(x) {
+      if (!isNaN(x = +x)) return interpolator((bisectRight(domain, x) - 1) / (domain.length - 1));
+    }
+
+    scale.domain = function (_) {
+      if (!arguments.length) return domain.slice();
+      domain = [];
+
+      for (var i = 0, n = _.length, d; i < n; ++i) {
+        if (d = _[i], d != null && !isNaN(d = +d)) domain.push(d);
+      }
+
+      domain.sort(ascending);
+      return scale;
+    };
+
+    scale.interpolator = function (_) {
+      return arguments.length ? (interpolator = _, scale) : interpolator;
+    };
+
+    scale.copy = function () {
+      return sequentialQuantile(interpolator).domain(domain);
+    };
+
+    return initInterpolator.apply(scale, arguments);
+  }
+
+  function transformer$2() {
     var x0 = 0,
         x1 = 0.5,
         x2 = 1,
-        k10 = 1,
-        k21 = 1,
-        clamp = false;
+        t0,
+        t1,
+        t2,
+        k10,
+        k21,
+        interpolator = identity$1,
+        transform,
+        clamp = false,
+        unknown;
 
     function scale(x) {
-      var t = 0.5 + ((x = +x) - x1) * (x < x1 ? k10 : k21);
-      return interpolator(clamp ? Math.max(0, Math.min(1, t)) : t);
+      return isNaN(x = +x) ? unknown : (x = 0.5 + ((x = +transform(x)) - t1) * (x < t1 ? k10 : k21), interpolator(clamp ? Math.max(0, Math.min(1, x)) : x));
     }
 
     scale.domain = function (_) {
-      return arguments.length ? (x0 = +_[0], x1 = +_[1], x2 = +_[2], k10 = x0 === x1 ? 0 : 0.5 / (x1 - x0), k21 = x1 === x2 ? 0 : 0.5 / (x2 - x1), scale) : [x0, x1, x2];
+      return arguments.length ? (t0 = transform(x0 = +_[0]), t1 = transform(x1 = +_[1]), t2 = transform(x2 = +_[2]), k10 = t0 === t1 ? 0 : 0.5 / (t1 - t0), k21 = t1 === t2 ? 0 : 0.5 / (t2 - t1), scale) : [x0, x1, x2];
     };
 
     scale.clamp = function (_) {
@@ -4905,21 +6245,66 @@
       return arguments.length ? (interpolator = _, scale) : interpolator;
     };
 
-    scale.copy = function () {
-      return diverging(interpolator).domain([x0, x1, x2]).clamp(clamp);
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
     };
 
-    return linearish(scale);
+    return function (t) {
+      transform = t, t0 = t(x0), t1 = t(x1), t2 = t(x2), k10 = t0 === t1 ? 0 : 0.5 / (t1 - t0), k21 = t1 === t2 ? 0 : 0.5 / (t2 - t1);
+      return scale;
+    };
+  }
+
+  function diverging() {
+    var scale = linearish(transformer$2()(identity$1));
+
+    scale.copy = function () {
+      return copy$1(scale, diverging());
+    };
+
+    return initInterpolator.apply(scale, arguments);
+  }
+  function divergingLog() {
+    var scale = loggish(transformer$2()).domain([0.1, 1, 10]);
+
+    scale.copy = function () {
+      return copy$1(scale, divergingLog()).base(scale.base());
+    };
+
+    return initInterpolator.apply(scale, arguments);
+  }
+  function divergingSymlog() {
+    var scale = symlogish(transformer$2());
+
+    scale.copy = function () {
+      return copy$1(scale, divergingSymlog()).constant(scale.constant());
+    };
+
+    return initInterpolator.apply(scale, arguments);
+  }
+  function divergingPow() {
+    var scale = powish(transformer$2());
+
+    scale.copy = function () {
+      return copy$1(scale, divergingPow()).exponent(scale.exponent());
+    };
+
+    return initInterpolator.apply(scale, arguments);
+  }
+  function divergingSqrt() {
+    return divergingPow.apply(null, arguments).exponent(0.5);
   }
 
 
 
   var scales = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     scaleBand: band,
     scalePoint: point,
-    scaleIdentity: identity$2,
+    scaleIdentity: identity$3,
     scaleLinear: linear$1,
     scaleLog: log,
+    scaleSymlog: symlog,
     scaleOrdinal: ordinal,
     scaleImplicit: implicit,
     scalePow: pow,
@@ -4930,7 +6315,17 @@
     scaleTime: scaleTime,
     scaleUtc: utcTime,
     scaleSequential: sequential,
-    scaleDiverging: diverging
+    scaleSequentialLog: sequentialLog,
+    scaleSequentialPow: sequentialPow,
+    scaleSequentialSqrt: sequentialSqrt,
+    scaleSequentialSymlog: sequentialSymlog,
+    scaleSequentialQuantile: sequentialQuantile,
+    scaleDiverging: diverging,
+    scaleDivergingLog: divergingLog,
+    scaleDivergingPow: divergingPow,
+    scaleDivergingSqrt: divergingSqrt,
+    scaleDivergingSymlog: divergingSymlog,
+    tickFormat: tickFormat
   });
 
   var xhtml = "http://www.w3.org/1999/xhtml";
@@ -5547,12 +6942,12 @@
     return arguments.length ? this.each(value == null ? htmlRemove : (typeof value === "function" ? htmlFunction : htmlConstant)(value)) : this.node().innerHTML;
   }
 
-  function raise$1() {
+  function raise() {
     if (this.nextSibling) this.parentNode.appendChild(this);
   }
 
   function selection_raise () {
-    return this.each(raise$1);
+    return this.each(raise);
   }
 
   function lower() {
@@ -5592,11 +6987,15 @@
   }
 
   function selection_cloneShallow() {
-    return this.parentNode.insertBefore(this.cloneNode(false), this.nextSibling);
+    var clone = this.cloneNode(false),
+        parent = this.parentNode;
+    return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
   }
 
   function selection_cloneDeep() {
-    return this.parentNode.insertBefore(this.cloneNode(true), this.nextSibling);
+    var clone = this.cloneNode(true),
+        parent = this.parentNode;
+    return parent ? parent.insertBefore(clone, this.nextSibling) : clone;
   }
 
   function selection_clone (deep) {
@@ -6161,7 +7560,7 @@
     };
   }
 
-  function interpolate$1 (a, b) {
+  function interpolate (a, b) {
     var c;
     return (typeof b === "number" ? interpolateNumber : b instanceof color ? interpolateRgb : (c = color(b)) ? (b = c, interpolateRgb) : interpolateString)(a, b);
   }
@@ -6226,19 +7625,19 @@
 
   function transition_attr (name, value) {
     var fullname = namespace(name),
-        i = fullname === "transform" ? interpolateTransformSvg : interpolate$1;
+        i = fullname === "transform" ? interpolateTransformSvg : interpolate;
     return this.attrTween(name, typeof value === "function" ? (fullname.local ? attrFunctionNS$1 : attrFunction$1)(fullname, i, tweenValue(this, "attr." + name, value)) : value == null ? (fullname.local ? attrRemoveNS$1 : attrRemove$1)(fullname) : (fullname.local ? attrConstantNS$1 : attrConstant$1)(fullname, i, value));
   }
 
   function attrInterpolate(name, i) {
     return function (t) {
-      this.setAttribute(name, i(t));
+      this.setAttribute(name, i.call(this, t));
     };
   }
 
   function attrInterpolateNS(fullname, i) {
     return function (t) {
-      this.setAttributeNS(fullname.space, fullname.local, i(t));
+      this.setAttributeNS(fullname.space, fullname.local, i.call(this, t));
     };
   }
 
@@ -6501,13 +7900,13 @@
   }
 
   function transition_style (name, value, priority) {
-    var i = (name += "") === "transform" ? interpolateTransformCss : interpolate$1;
+    var i = (name += "") === "transform" ? interpolateTransformCss : interpolate;
     return value == null ? this.styleTween(name, styleNull(name, i)).on("end.style." + name, styleRemove$1(name)) : typeof value === "function" ? this.styleTween(name, styleFunction$1(name, i, tweenValue(this, "style." + name, value))).each(styleMaybeRemove(this._id, name)) : this.styleTween(name, styleConstant$1(name, i, value), priority).on("end.style." + name, null);
   }
 
   function styleInterpolate(name, i, priority) {
     return function (t) {
-      this.style.setProperty(name, i(t), priority);
+      this.style.setProperty(name, i.call(this, t), priority);
     };
   }
 
@@ -6547,6 +7946,33 @@
 
   function transition_text (value) {
     return this.tween("text", typeof value === "function" ? textFunction$1(tweenValue(this, "text", value)) : textConstant$1(value == null ? "" : value + ""));
+  }
+
+  function textInterpolate(i) {
+    return function (t) {
+      this.textContent = i.call(this, t);
+    };
+  }
+
+  function textTween(value) {
+    var t0, i0;
+
+    function tween() {
+      var i = value.apply(this, arguments);
+      if (i !== i0) t0 = (i0 = i) && textInterpolate(i);
+      return t0;
+    }
+
+    tween._value = value;
+    return tween;
+  }
+
+  function transition_textTween (value) {
+    var key = "text";
+    if (arguments.length < 1) return (key = this.tween(key)) && key._value;
+    if (value == null) return this.tween(key, null);
+    if (typeof value !== "function") throw new Error();
+    return this.tween(key, textTween(value));
   }
 
   function transition_transition () {
@@ -6641,6 +8067,7 @@
     style: transition_style,
     styleTween: transition_styleTween,
     text: transition_text,
+    textTween: transition_textTween,
     remove: transition_remove,
     tween: transition_tween,
     delay: transition_delay,
@@ -6652,10 +8079,6 @@
   function cubicInOut(t) {
     return ((t *= 2) <= 1 ? t * t * t : (t -= 2) * t * t + 2) / 2;
   }
-
-  var pi = Math.PI;
-
-  var tau = 2 * Math.PI;
 
   var defaultTiming = {
     time: null,
@@ -6753,10 +8176,14 @@
       return "translate(" + this.x + "," + this.y + ") scale(" + this.k + ")";
     }
   };
-  var identity$3 = new Transform(1, 0, 0);
+  var identity$4 = new Transform(1, 0, 0);
   transform.prototype = Transform.prototype;
   function transform(node) {
-    return node.__zoom || identity$3;
+    while (!node.__zoom) {
+      if (!(node = node.parentNode)) return identity$4;
+    }
+
+    return node.__zoom;
   }
 
   function nopropagation() {
@@ -6768,36 +8195,36 @@
   }
 
   function defaultFilter() {
-    return !event$1.button;
+    return !event$1.ctrlKey && !event$1.button;
   }
 
   function defaultExtent() {
-    var e = this,
-        w,
-        h;
+    var e = this;
 
     if (e instanceof SVGElement) {
       e = e.ownerSVGElement || e;
-      w = e.width.baseVal.value;
-      h = e.height.baseVal.value;
-    } else {
-      w = e.clientWidth;
-      h = e.clientHeight;
+
+      if (e.hasAttribute("viewBox")) {
+        e = e.viewBox.baseVal;
+        return [[e.x, e.y], [e.x + e.width, e.y + e.height]];
+      }
+
+      return [[0, 0], [e.width.baseVal.value, e.height.baseVal.value]];
     }
 
-    return [[0, 0], [w, h]];
+    return [[0, 0], [e.clientWidth, e.clientHeight]];
   }
 
   function defaultTransform() {
-    return this.__zoom || identity$3;
+    return this.__zoom || identity$4;
   }
 
   function defaultWheelDelta() {
-    return -event$1.deltaY * (event$1.deltaMode ? 120 : 1) / 500;
+    return -event$1.deltaY * (event$1.deltaMode === 1 ? 0.05 : event$1.deltaMode ? 1 : 0.002);
   }
 
   function defaultTouchable() {
-    return "ontouchstart" in this;
+    return navigator.maxTouchPoints || "ontouchstart" in this;
   }
 
   function defaultConstrain(transform, extent, translateExtent) {
@@ -6818,7 +8245,6 @@
         translateExtent = [[-Infinity, -Infinity], [Infinity, Infinity]],
         duration = 250,
         interpolate = interpolateZoom,
-        gestures = [],
         listeners = dispatch("start", "zoom", "end"),
         touchstarting,
         touchending,
@@ -6830,12 +8256,12 @@
       selection.property("__zoom", defaultTransform).on("wheel.zoom", wheeled).on("mousedown.zoom", mousedowned).on("dblclick.zoom", dblclicked).filter(touchable).on("touchstart.zoom", touchstarted).on("touchmove.zoom", touchmoved).on("touchend.zoom touchcancel.zoom", touchended).style("touch-action", "none").style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
     }
 
-    zoom.transform = function (collection, transform) {
+    zoom.transform = function (collection, transform, point) {
       var selection = collection.selection ? collection.selection() : collection;
       selection.property("__zoom", defaultTransform);
 
       if (collection !== selection) {
-        schedule(collection, transform);
+        schedule(collection, transform, point);
       } else {
         selection.interrupt().each(function () {
           gesture(this, arguments).start().zoom(null, typeof transform === "function" ? transform.apply(this, arguments) : transform).end();
@@ -6843,23 +8269,23 @@
       }
     };
 
-    zoom.scaleBy = function (selection, k) {
+    zoom.scaleBy = function (selection, k, p) {
       zoom.scaleTo(selection, function () {
         var k0 = this.__zoom.k,
             k1 = typeof k === "function" ? k.apply(this, arguments) : k;
         return k0 * k1;
-      });
+      }, p);
     };
 
-    zoom.scaleTo = function (selection, k) {
+    zoom.scaleTo = function (selection, k, p) {
       zoom.transform(selection, function () {
         var e = extent.apply(this, arguments),
             t0 = this.__zoom,
-            p0 = centroid(e),
+            p0 = p == null ? centroid(e) : typeof p === "function" ? p.apply(this, arguments) : p,
             p1 = t0.invert(p0),
             k1 = typeof k === "function" ? k.apply(this, arguments) : k;
         return constrain(translate(scale(t0, k1), p0, p1), e, translateExtent);
-      });
+      }, p);
     };
 
     zoom.translateBy = function (selection, x, y) {
@@ -6868,13 +8294,13 @@
       });
     };
 
-    zoom.translateTo = function (selection, x, y) {
+    zoom.translateTo = function (selection, x, y, p) {
       zoom.transform(selection, function () {
         var e = extent.apply(this, arguments),
             t = this.__zoom,
-            p = centroid(e);
-        return constrain(identity$3.translate(p[0], p[1]).scale(t.k).translate(typeof x === "function" ? -x.apply(this, arguments) : -x, typeof y === "function" ? -y.apply(this, arguments) : -y), e, translateExtent);
-      });
+            p0 = p == null ? centroid(e) : typeof p === "function" ? p.apply(this, arguments) : p;
+        return constrain(identity$4.translate(p0[0], p0[1]).scale(t.k).translate(typeof x === "function" ? -x.apply(this, arguments) : -x, typeof y === "function" ? -y.apply(this, arguments) : -y), e, translateExtent);
+      }, p);
     };
 
     function scale(transform, k) {
@@ -6892,7 +8318,7 @@
       return [(+extent[0][0] + +extent[1][0]) / 2, (+extent[0][1] + +extent[1][1]) / 2];
     }
 
-    function schedule(transition, transform, center) {
+    function schedule(transition, transform, point) {
       transition.on("start.zoom", function () {
         gesture(this, arguments).start();
       }).on("interrupt.zoom end.zoom", function () {
@@ -6902,7 +8328,7 @@
             args = arguments,
             g = gesture(that, args),
             e = extent.apply(that, args),
-            p = center || centroid(e),
+            p = point == null ? centroid(e) : typeof point === "function" ? point.apply(that, args) : point,
             w = Math.max(e[1][0] - e[0][0], e[1][1] - e[0][1]),
             a = that.__zoom,
             b = typeof transform === "function" ? transform.apply(that, args) : transform,
@@ -6919,28 +8345,22 @@
       });
     }
 
-    function gesture(that, args) {
-      for (var i = 0, n = gestures.length, g; i < n; ++i) {
-        if ((g = gestures[i]).that === that) {
-          return g;
-        }
-      }
-
-      return new Gesture(that, args);
+    function gesture(that, args, clean) {
+      return !clean && that.__zooming || new Gesture(that, args);
     }
 
     function Gesture(that, args) {
       this.that = that;
       this.args = args;
-      this.index = -1;
       this.active = 0;
       this.extent = extent.apply(that, args);
+      this.taps = 0;
     }
 
     Gesture.prototype = {
       start: function start() {
         if (++this.active === 1) {
-          this.index = gestures.push(this) - 1;
+          this.that.__zooming = this;
           this.emit("start");
         }
 
@@ -6956,8 +8376,7 @@
       },
       end: function end() {
         if (--this.active === 0) {
-          gestures.splice(this.index, 1);
-          this.index = -1;
+          delete this.that.__zooming;
           this.emit("end");
         }
 
@@ -7002,7 +8421,7 @@
 
     function mousedowned() {
       if (touchending || !filter.apply(this, arguments)) return;
-      var g = gesture(this, arguments),
+      var g = gesture(this, arguments, true),
           v = _select(event$1.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
           p = mouse(this),
           x0 = event$1.clientX,
@@ -7046,10 +8465,10 @@
 
     function touchstarted() {
       if (!filter.apply(this, arguments)) return;
-      var g = gesture(this, arguments),
-          touches = event$1.changedTouches,
-          started,
+      var touches = event$1.touches,
           n = touches.length,
+          g = gesture(this, arguments, event$1.changedTouches.length === n),
+          started,
           i,
           t,
           p;
@@ -7058,23 +8477,13 @@
       for (i = 0; i < n; ++i) {
         t = touches[i], p = touch(this, touches, t.identifier);
         p = [p, this.__zoom.invert(p), t.identifier];
-        if (!g.touch0) g.touch0 = p, started = true;else if (!g.touch1) g.touch1 = p;
-      } // If this is a dbltap, reroute to the (optional) dblclick.zoom handler.
-
-
-      if (touchstarting) {
-        touchstarting = clearTimeout(touchstarting);
-
-        if (!g.touch1) {
-          g.end();
-          p = _select(this).on("dblclick.zoom");
-          if (p) p.apply(this, arguments);
-          return;
-        }
+        if (!g.touch0) g.touch0 = p, started = true, g.taps = 1 + !!touchstarting;else if (!g.touch1 && g.touch0[2] !== p[2]) g.touch1 = p, g.taps = 0;
       }
 
+      if (touchstarting) touchstarting = clearTimeout(touchstarting);
+
       if (started) {
-        touchstarting = setTimeout(function () {
+        if (g.taps < 2) touchstarting = setTimeout(function () {
           touchstarting = null;
         }, touchDelay);
         interrupt(this);
@@ -7083,6 +8492,7 @@
     }
 
     function touchmoved() {
+      if (!this.__zooming) return;
       var g = gesture(this, arguments),
           touches = event$1.changedTouches,
           n = touches.length,
@@ -7092,6 +8502,7 @@
           l;
       noevent$1();
       if (touchstarting) touchstarting = clearTimeout(touchstarting);
+      g.taps = 0;
 
       for (i = 0; i < n; ++i) {
         t = touches[i], p = touch(this, touches, t.identifier);
@@ -7116,6 +8527,7 @@
     }
 
     function touchended() {
+      if (!this.__zooming) return;
       var g = gesture(this, arguments),
           touches = event$1.changedTouches,
           n = touches.length,
@@ -7133,7 +8545,14 @@
       }
 
       if (g.touch1 && !g.touch0) g.touch0 = g.touch1, delete g.touch1;
-      if (g.touch0) g.touch0[1] = this.__zoom.invert(g.touch0[0]);else g.end();
+      if (g.touch0) g.touch0[1] = this.__zoom.invert(g.touch0[0]);else {
+        g.end(); // If this was a dbltap, reroute to the (optional) dblclick.zoom handler.
+
+        if (g.taps === 2) {
+          var p = _select(this).on("dblclick.zoom");
+          if (p) p.apply(this, arguments);
+        }
+      }
     }
 
     zoom.wheelDelta = function (_) {
@@ -7286,6 +8705,11178 @@
     }
   }
 
+  var aa = {
+  	language: "Afar",
+  	location: null,
+  	id: 4096,
+  	tag: "aa",
+  	version: "Release 10"
+  };
+  var af = {
+  	language: "Afrikaans",
+  	location: null,
+  	id: 54,
+  	tag: "af",
+  	version: "Release 7"
+  };
+  var agq = {
+  	language: "Aghem",
+  	location: null,
+  	id: 4096,
+  	tag: "agq",
+  	version: "Release 10"
+  };
+  var ak = {
+  	language: "Akan",
+  	location: null,
+  	id: 4096,
+  	tag: "ak",
+  	version: "Release 10"
+  };
+  var sq = {
+  	language: "Albanian",
+  	location: null,
+  	id: 28,
+  	tag: "sq",
+  	version: "Release 7"
+  };
+  var gsw = {
+  	language: "Alsatian",
+  	location: null,
+  	id: 132,
+  	tag: "gsw",
+  	version: "Release 7"
+  };
+  var am = {
+  	language: "Amharic",
+  	location: null,
+  	id: 94,
+  	tag: "am",
+  	version: "Release 7"
+  };
+  var ar = {
+  	language: "Arabic",
+  	location: null,
+  	id: 1,
+  	tag: "ar",
+  	version: "Release 7"
+  };
+  var hy = {
+  	language: "Armenian",
+  	location: null,
+  	id: 43,
+  	tag: "hy",
+  	version: "Release 7"
+  };
+  var as = {
+  	language: "Assamese",
+  	location: null,
+  	id: 77,
+  	tag: "as",
+  	version: "Release 7"
+  };
+  var ast = {
+  	language: "Asturian",
+  	location: null,
+  	id: 4096,
+  	tag: "ast",
+  	version: "Release 10"
+  };
+  var asa = {
+  	language: "Asu",
+  	location: null,
+  	id: 4096,
+  	tag: "asa",
+  	version: "Release 10"
+  };
+  var az = {
+  	language: "Azerbaijani (Latin)",
+  	location: null,
+  	id: 44,
+  	tag: "az",
+  	version: "Release 7"
+  };
+  var ksf = {
+  	language: "Bafia",
+  	location: null,
+  	id: 4096,
+  	tag: "ksf",
+  	version: "Release 10"
+  };
+  var bm = {
+  	language: "Bamanankan",
+  	location: null,
+  	id: 4096,
+  	tag: "bm",
+  	version: "Release 10"
+  };
+  var bn = {
+  	language: "Bangla",
+  	location: null,
+  	id: 69,
+  	tag: "bn",
+  	version: "Release 7"
+  };
+  var bas = {
+  	language: "Basaa",
+  	location: null,
+  	id: 4096,
+  	tag: "bas",
+  	version: "Release 10"
+  };
+  var ba = {
+  	language: "Bashkir",
+  	location: null,
+  	id: 109,
+  	tag: "ba",
+  	version: "Release 7"
+  };
+  var eu = {
+  	language: "Basque",
+  	location: null,
+  	id: 45,
+  	tag: "eu",
+  	version: "Release 7"
+  };
+  var be = {
+  	language: "Belarusian",
+  	location: null,
+  	id: 35,
+  	tag: "be",
+  	version: "Release 7"
+  };
+  var bem = {
+  	language: "Bemba",
+  	location: null,
+  	id: 4096,
+  	tag: "bem",
+  	version: "Release 10"
+  };
+  var bez = {
+  	language: "Bena",
+  	location: null,
+  	id: 4096,
+  	tag: "bez",
+  	version: "Release 10"
+  };
+  var byn = {
+  	language: "Blin",
+  	location: null,
+  	id: 4096,
+  	tag: "byn",
+  	version: "Release 10"
+  };
+  var brx = {
+  	language: "Bodo",
+  	location: null,
+  	id: 4096,
+  	tag: "brx",
+  	version: "Release 10"
+  };
+  var bs = {
+  	language: "Bosnian (Latin)",
+  	location: null,
+  	id: 30746,
+  	tag: "bs",
+  	version: "Release 7"
+  };
+  var br = {
+  	language: "Breton",
+  	location: null,
+  	id: 126,
+  	tag: "br",
+  	version: "Release 7"
+  };
+  var bg = {
+  	language: "Bulgarian",
+  	location: null,
+  	id: 2,
+  	tag: "bg",
+  	version: "Release 7"
+  };
+  var my = {
+  	language: "Burmese",
+  	location: null,
+  	id: 85,
+  	tag: "my",
+  	version: "Release 8.1"
+  };
+  var ca = {
+  	language: "Catalan",
+  	location: null,
+  	id: 3,
+  	tag: "ca",
+  	version: "Release 7"
+  };
+  var ku = {
+  	language: "Central Kurdish",
+  	location: null,
+  	id: 146,
+  	tag: "ku",
+  	version: "Release 8"
+  };
+  var chr = {
+  	language: "Cherokee",
+  	location: null,
+  	id: 92,
+  	tag: "chr",
+  	version: "Release 8"
+  };
+  var cgg = {
+  	language: "Chiga",
+  	location: null,
+  	id: 4096,
+  	tag: "cgg",
+  	version: "Release 10"
+  };
+  var zh = {
+  	language: "Chinese (Simplified)",
+  	location: null,
+  	id: 30724,
+  	tag: "zh",
+  	version: "Windows 7"
+  };
+  var swc = {
+  	language: "Congo Swahili",
+  	location: null,
+  	id: 4096,
+  	tag: "swc",
+  	version: "Release 10"
+  };
+  var kw = {
+  	language: "Cornish",
+  	location: null,
+  	id: 4096,
+  	tag: "kw",
+  	version: "Release 10"
+  };
+  var co = {
+  	language: "Corsican",
+  	location: null,
+  	id: 131,
+  	tag: "co",
+  	version: "Release 7"
+  };
+  var cs = {
+  	language: "Czech",
+  	location: null,
+  	id: 5,
+  	tag: "cs",
+  	version: "Release 7"
+  };
+  var da = {
+  	language: "Danish",
+  	location: null,
+  	id: 6,
+  	tag: "da",
+  	version: "Release 7"
+  };
+  var prs = {
+  	language: "Dari",
+  	location: null,
+  	id: 140,
+  	tag: "prs",
+  	version: "Release 7"
+  };
+  var dv = {
+  	language: "Divehi",
+  	location: null,
+  	id: 101,
+  	tag: "dv",
+  	version: "Release 7"
+  };
+  var dua = {
+  	language: "Duala",
+  	location: null,
+  	id: 4096,
+  	tag: "dua",
+  	version: "Release 10"
+  };
+  var nl = {
+  	language: "Dutch",
+  	location: null,
+  	id: 19,
+  	tag: "nl",
+  	version: "Release 7"
+  };
+  var dz = {
+  	language: "Dzongkha",
+  	location: null,
+  	id: 4096,
+  	tag: "dz",
+  	version: "Release 10"
+  };
+  var ebu = {
+  	language: "Embu",
+  	location: null,
+  	id: 4096,
+  	tag: "ebu",
+  	version: "Release 10"
+  };
+  var en = {
+  	language: "English",
+  	location: null,
+  	id: 9,
+  	tag: "en",
+  	version: "Release 7"
+  };
+  var eo = {
+  	language: "Esperanto",
+  	location: null,
+  	id: 4096,
+  	tag: "eo",
+  	version: "Release 10"
+  };
+  var et = {
+  	language: "Estonian",
+  	location: null,
+  	id: 37,
+  	tag: "et",
+  	version: "Release 7"
+  };
+  var ee = {
+  	language: "Ewe",
+  	location: null,
+  	id: 4096,
+  	tag: "ee",
+  	version: "Release 10"
+  };
+  var ewo = {
+  	language: "Ewondo",
+  	location: null,
+  	id: 4096,
+  	tag: "ewo",
+  	version: "Release 10"
+  };
+  var fo = {
+  	language: "Faroese",
+  	location: null,
+  	id: 56,
+  	tag: "fo",
+  	version: "Release 7"
+  };
+  var fil = {
+  	language: "Filipino",
+  	location: null,
+  	id: 100,
+  	tag: "fil",
+  	version: "Release 7"
+  };
+  var fi = {
+  	language: "Finnish",
+  	location: null,
+  	id: 11,
+  	tag: "fi",
+  	version: "Release 7"
+  };
+  var fr = {
+  	language: "French",
+  	location: null,
+  	id: 12,
+  	tag: "fr",
+  	version: "Release 7"
+  };
+  var fy = {
+  	language: "Frisian",
+  	location: null,
+  	id: 98,
+  	tag: "fy",
+  	version: "Release 7"
+  };
+  var fur = {
+  	language: "Friulian",
+  	location: null,
+  	id: 4096,
+  	tag: "fur",
+  	version: "Release 10"
+  };
+  var ff = {
+  	language: "Fulah",
+  	location: null,
+  	id: 103,
+  	tag: "ff",
+  	version: "Release 8"
+  };
+  var gl = {
+  	language: "Galician",
+  	location: null,
+  	id: 86,
+  	tag: "gl",
+  	version: "Release 7"
+  };
+  var lg = {
+  	language: "Ganda",
+  	location: null,
+  	id: 4096,
+  	tag: "lg",
+  	version: "Release 10"
+  };
+  var ka = {
+  	language: "Georgian",
+  	location: null,
+  	id: 55,
+  	tag: "ka",
+  	version: "Release 7"
+  };
+  var de = {
+  	language: "German",
+  	location: null,
+  	id: 7,
+  	tag: "de",
+  	version: "Release 7"
+  };
+  var el = {
+  	language: "Greek",
+  	location: null,
+  	id: 8,
+  	tag: "el",
+  	version: "Release 7"
+  };
+  var kl = {
+  	language: "Greenlandic",
+  	location: null,
+  	id: 111,
+  	tag: "kl",
+  	version: "Release 7"
+  };
+  var gn = {
+  	language: "Guarani",
+  	location: null,
+  	id: 116,
+  	tag: "gn",
+  	version: "Release 8.1"
+  };
+  var gu = {
+  	language: "Gujarati",
+  	location: null,
+  	id: 71,
+  	tag: "gu",
+  	version: "Release 7"
+  };
+  var guz = {
+  	language: "Gusii",
+  	location: null,
+  	id: 4096,
+  	tag: "guz",
+  	version: "Release 10"
+  };
+  var ha = {
+  	language: "Hausa (Latin)",
+  	location: null,
+  	id: 104,
+  	tag: "ha",
+  	version: "Release 7"
+  };
+  var haw = {
+  	language: "Hawaiian",
+  	location: null,
+  	id: 117,
+  	tag: "haw",
+  	version: "Release 8"
+  };
+  var he = {
+  	language: "Hebrew",
+  	location: null,
+  	id: 13,
+  	tag: "he",
+  	version: "Release 7"
+  };
+  var hi = {
+  	language: "Hindi",
+  	location: null,
+  	id: 57,
+  	tag: "hi",
+  	version: "Release 7"
+  };
+  var hu = {
+  	language: "Hungarian",
+  	location: null,
+  	id: 14,
+  	tag: "hu",
+  	version: "Release 7"
+  };
+  var is = {
+  	language: "Icelandic",
+  	location: null,
+  	id: 15,
+  	tag: "is",
+  	version: "Release 7"
+  };
+  var ig = {
+  	language: "Igbo",
+  	location: null,
+  	id: 112,
+  	tag: "ig",
+  	version: "Release 7"
+  };
+  var id$1 = {
+  	language: "Indonesian",
+  	location: null,
+  	id: 33,
+  	tag: "id",
+  	version: "Release 7"
+  };
+  var ia = {
+  	language: "Interlingua",
+  	location: null,
+  	id: 4096,
+  	tag: "ia",
+  	version: "Release 10"
+  };
+  var iu = {
+  	language: "Inuktitut (Latin)",
+  	location: null,
+  	id: 93,
+  	tag: "iu",
+  	version: "Release 7"
+  };
+  var ga = {
+  	language: "Irish",
+  	location: null,
+  	id: 60,
+  	tag: "ga",
+  	version: "Windows 7"
+  };
+  var it = {
+  	language: "Italian",
+  	location: null,
+  	id: 16,
+  	tag: "it",
+  	version: "Release 7"
+  };
+  var ja = {
+  	language: "Japanese",
+  	location: null,
+  	id: 17,
+  	tag: "ja",
+  	version: "Release 7"
+  };
+  var jv = {
+  	language: "Javanese",
+  	location: null,
+  	id: 4096,
+  	tag: "jv",
+  	version: "Release 8.1"
+  };
+  var dyo = {
+  	language: "Jola-Fonyi",
+  	location: null,
+  	id: 4096,
+  	tag: "dyo",
+  	version: "Release 10"
+  };
+  var kea = {
+  	language: "Kabuverdianu",
+  	location: null,
+  	id: 4096,
+  	tag: "kea",
+  	version: "Release 10"
+  };
+  var kab = {
+  	language: "Kabyle",
+  	location: null,
+  	id: 4096,
+  	tag: "kab",
+  	version: "Release 10"
+  };
+  var kkj = {
+  	language: "Kako",
+  	location: null,
+  	id: 4096,
+  	tag: "kkj",
+  	version: "Release 10"
+  };
+  var kln = {
+  	language: "Kalenjin",
+  	location: null,
+  	id: 4096,
+  	tag: "kln",
+  	version: "Release 10"
+  };
+  var kam = {
+  	language: "Kamba",
+  	location: null,
+  	id: 4096,
+  	tag: "kam",
+  	version: "Release 10"
+  };
+  var kn = {
+  	language: "Kannada",
+  	location: null,
+  	id: 75,
+  	tag: "kn",
+  	version: "Release 7"
+  };
+  var ks = {
+  	language: "Kashmiri",
+  	location: null,
+  	id: 96,
+  	tag: "ks",
+  	version: "Release 10"
+  };
+  var kk = {
+  	language: "Kazakh",
+  	location: null,
+  	id: 63,
+  	tag: "kk",
+  	version: "Release 7"
+  };
+  var km = {
+  	language: "Khmer",
+  	location: null,
+  	id: 83,
+  	tag: "km",
+  	version: "Release 7"
+  };
+  var quc = {
+  	language: "K'iche",
+  	location: null,
+  	id: 134,
+  	tag: "quc",
+  	version: "Release 10"
+  };
+  var ki = {
+  	language: "Kikuyu",
+  	location: null,
+  	id: 4096,
+  	tag: "ki",
+  	version: "Release 10"
+  };
+  var rw = {
+  	language: "Kinyarwanda",
+  	location: null,
+  	id: 135,
+  	tag: "rw",
+  	version: "Release 7"
+  };
+  var sw = {
+  	language: "Kiswahili",
+  	location: null,
+  	id: 65,
+  	tag: "sw",
+  	version: "Release 7"
+  };
+  var kok = {
+  	language: "Konkani",
+  	location: null,
+  	id: 87,
+  	tag: "kok",
+  	version: "Release 7"
+  };
+  var ko = {
+  	language: "Korean",
+  	location: null,
+  	id: 18,
+  	tag: "ko",
+  	version: "Release 7"
+  };
+  var khq = {
+  	language: "Koyra Chiini",
+  	location: null,
+  	id: 4096,
+  	tag: "khq",
+  	version: "Release 10"
+  };
+  var ses = {
+  	language: "Koyraboro Senni",
+  	location: null,
+  	id: 4096,
+  	tag: "ses",
+  	version: "Release 10"
+  };
+  var nmg = {
+  	language: "Kwasio",
+  	location: null,
+  	id: 4096,
+  	tag: "nmg",
+  	version: "Release 10"
+  };
+  var ky = {
+  	language: "Kyrgyz",
+  	location: null,
+  	id: 64,
+  	tag: "ky",
+  	version: "Release 7"
+  };
+  var lkt = {
+  	language: "Lakota",
+  	location: null,
+  	id: 4096,
+  	tag: "lkt",
+  	version: "Release 10"
+  };
+  var lag = {
+  	language: "Langi",
+  	location: null,
+  	id: 4096,
+  	tag: "lag",
+  	version: "Release 10"
+  };
+  var lo = {
+  	language: "Lao",
+  	location: null,
+  	id: 84,
+  	tag: "lo",
+  	version: "Release 7"
+  };
+  var lv = {
+  	language: "Latvian",
+  	location: null,
+  	id: 38,
+  	tag: "lv",
+  	version: "Release 7"
+  };
+  var ln = {
+  	language: "Lingala",
+  	location: null,
+  	id: 4096,
+  	tag: "ln",
+  	version: "Release 10"
+  };
+  var lt = {
+  	language: "Lithuanian",
+  	location: null,
+  	id: 39,
+  	tag: "lt",
+  	version: "Release 7"
+  };
+  var nds = {
+  	language: "Low German",
+  	location: null,
+  	id: 4096,
+  	tag: "nds",
+  	version: "Release 10.2"
+  };
+  var dsb = {
+  	language: "Lower Sorbian",
+  	location: null,
+  	id: 31790,
+  	tag: "dsb",
+  	version: "Windows 7"
+  };
+  var lu = {
+  	language: "Luba-Katanga",
+  	location: null,
+  	id: 4096,
+  	tag: "lu",
+  	version: "Release 10"
+  };
+  var luo = {
+  	language: "Luo",
+  	location: null,
+  	id: 4096,
+  	tag: "luo",
+  	version: "Release 10"
+  };
+  var lb = {
+  	language: "Luxembourgish",
+  	location: null,
+  	id: 110,
+  	tag: "lb",
+  	version: "Release 7"
+  };
+  var luy = {
+  	language: "Luyia",
+  	location: null,
+  	id: 4096,
+  	tag: "luy",
+  	version: "Release 10"
+  };
+  var mk = {
+  	language: "Macedonian",
+  	location: null,
+  	id: 47,
+  	tag: "mk",
+  	version: "Release 7"
+  };
+  var jmc = {
+  	language: "Machame",
+  	location: null,
+  	id: 4096,
+  	tag: "jmc",
+  	version: "Release 10"
+  };
+  var mgh = {
+  	language: "Makhuwa-Meetto",
+  	location: null,
+  	id: 4096,
+  	tag: "mgh",
+  	version: "Release 10"
+  };
+  var kde = {
+  	language: "Makonde",
+  	location: null,
+  	id: 4096,
+  	tag: "kde",
+  	version: "Release 10"
+  };
+  var mg = {
+  	language: "Malagasy",
+  	location: null,
+  	id: 4096,
+  	tag: "mg",
+  	version: "Release 8.1"
+  };
+  var ms = {
+  	language: "Malay",
+  	location: null,
+  	id: 62,
+  	tag: "ms",
+  	version: "Release 7"
+  };
+  var ml = {
+  	language: "Malayalam",
+  	location: null,
+  	id: 76,
+  	tag: "ml",
+  	version: "Release 7"
+  };
+  var mt = {
+  	language: "Maltese",
+  	location: null,
+  	id: 58,
+  	tag: "mt",
+  	version: "Release 7"
+  };
+  var gv = {
+  	language: "Manx",
+  	location: null,
+  	id: 4096,
+  	tag: "gv",
+  	version: "Release 10"
+  };
+  var mi = {
+  	language: "Maori",
+  	location: null,
+  	id: 129,
+  	tag: "mi",
+  	version: "Release 7"
+  };
+  var arn = {
+  	language: "Mapudungun",
+  	location: null,
+  	id: 122,
+  	tag: "arn",
+  	version: "Release 7"
+  };
+  var mr = {
+  	language: "Marathi",
+  	location: null,
+  	id: 78,
+  	tag: "mr",
+  	version: "Release 7"
+  };
+  var mas = {
+  	language: "Masai",
+  	location: null,
+  	id: 4096,
+  	tag: "mas",
+  	version: "Release 10"
+  };
+  var mer = {
+  	language: "Meru",
+  	location: null,
+  	id: 4096,
+  	tag: "mer",
+  	version: "Release 10"
+  };
+  var mgo = {
+  	language: "Meta'",
+  	location: null,
+  	id: 4096,
+  	tag: "mgo",
+  	version: "Release 10"
+  };
+  var moh = {
+  	language: "Mohawk",
+  	location: null,
+  	id: 124,
+  	tag: "moh",
+  	version: "Release 7"
+  };
+  var mn = {
+  	language: "Mongolian (Cyrillic)",
+  	location: null,
+  	id: 80,
+  	tag: "mn",
+  	version: "Release 7"
+  };
+  var mfe = {
+  	language: "Morisyen",
+  	location: null,
+  	id: 4096,
+  	tag: "mfe",
+  	version: "Release 10"
+  };
+  var mua = {
+  	language: "Mundang",
+  	location: null,
+  	id: 4096,
+  	tag: "mua",
+  	version: "Release 10"
+  };
+  var nqo = {
+  	language: "N'ko",
+  	location: null,
+  	id: 4096,
+  	tag: "nqo",
+  	version: "Release 8.1"
+  };
+  var naq = {
+  	language: "Nama",
+  	location: null,
+  	id: 4096,
+  	tag: "naq",
+  	version: "Release 10"
+  };
+  var ne = {
+  	language: "Nepali",
+  	location: null,
+  	id: 97,
+  	tag: "ne",
+  	version: "Release 7"
+  };
+  var nnh = {
+  	language: "Ngiemboon",
+  	location: null,
+  	id: 4096,
+  	tag: "nnh",
+  	version: "Release 10"
+  };
+  var jgo = {
+  	language: "Ngomba",
+  	location: null,
+  	id: 4096,
+  	tag: "jgo",
+  	version: "Release 10"
+  };
+  var nd = {
+  	language: "North Ndebele",
+  	location: null,
+  	id: 4096,
+  	tag: "nd",
+  	version: "Release 10"
+  };
+  var no = {
+  	language: "Norwegian (Bokmal)",
+  	location: null,
+  	id: 20,
+  	tag: "no",
+  	version: "Release 7"
+  };
+  var nb = {
+  	language: "Norwegian (Bokmal)",
+  	location: null,
+  	id: 31764,
+  	tag: "nb",
+  	version: "Release 7"
+  };
+  var nn = {
+  	language: "Norwegian (Nynorsk)",
+  	location: null,
+  	id: 30740,
+  	tag: "nn",
+  	version: "Release 7"
+  };
+  var nus = {
+  	language: "Nuer",
+  	location: null,
+  	id: 4096,
+  	tag: "nus",
+  	version: "Release 10"
+  };
+  var nyn = {
+  	language: "Nyankole",
+  	location: null,
+  	id: 4096,
+  	tag: "nyn",
+  	version: "Release 10"
+  };
+  var oc = {
+  	language: "Occitan",
+  	location: null,
+  	id: 130,
+  	tag: "oc",
+  	version: "Release 7"
+  };
+  var or = {
+  	language: "Odia",
+  	location: null,
+  	id: 72,
+  	tag: "or",
+  	version: "Release 7"
+  };
+  var om = {
+  	language: "Oromo",
+  	location: null,
+  	id: 114,
+  	tag: "om",
+  	version: "Release 8.1"
+  };
+  var os = {
+  	language: "Ossetian",
+  	location: null,
+  	id: 4096,
+  	tag: "os",
+  	version: "Release 10"
+  };
+  var ps = {
+  	language: "Pashto",
+  	location: null,
+  	id: 99,
+  	tag: "ps",
+  	version: "Release 7"
+  };
+  var fa = {
+  	language: "Persian",
+  	location: null,
+  	id: 41,
+  	tag: "fa",
+  	version: "Release 7"
+  };
+  var pl = {
+  	language: "Polish",
+  	location: null,
+  	id: 21,
+  	tag: "pl",
+  	version: "Release 7"
+  };
+  var pt = {
+  	language: "Portuguese",
+  	location: null,
+  	id: 22,
+  	tag: "pt",
+  	version: "Release 7"
+  };
+  var pa = {
+  	language: "Punjabi",
+  	location: null,
+  	id: 70,
+  	tag: "pa",
+  	version: "Release 7"
+  };
+  var quz = {
+  	language: "Quechua",
+  	location: null,
+  	id: 107,
+  	tag: "quz",
+  	version: "Release 7"
+  };
+  var ksh = {
+  	language: "Ripuarian",
+  	location: null,
+  	id: 4096,
+  	tag: "ksh",
+  	version: "Release 10"
+  };
+  var ro = {
+  	language: "Romanian",
+  	location: null,
+  	id: 24,
+  	tag: "ro",
+  	version: "Release 7"
+  };
+  var rm = {
+  	language: "Romansh",
+  	location: null,
+  	id: 23,
+  	tag: "rm",
+  	version: "Release 7"
+  };
+  var rof = {
+  	language: "Rombo",
+  	location: null,
+  	id: 4096,
+  	tag: "rof",
+  	version: "Release 10"
+  };
+  var rn = {
+  	language: "Rundi",
+  	location: null,
+  	id: 4096,
+  	tag: "rn",
+  	version: "Release 10"
+  };
+  var ru = {
+  	language: "Russian",
+  	location: null,
+  	id: 25,
+  	tag: "ru",
+  	version: "Release 7"
+  };
+  var rwk = {
+  	language: "Rwa",
+  	location: null,
+  	id: 4096,
+  	tag: "rwk",
+  	version: "Release 10"
+  };
+  var ssy = {
+  	language: "Saho",
+  	location: null,
+  	id: 4096,
+  	tag: "ssy",
+  	version: "Release 10"
+  };
+  var sah = {
+  	language: "Sakha",
+  	location: null,
+  	id: 133,
+  	tag: "sah",
+  	version: "Release 7"
+  };
+  var saq = {
+  	language: "Samburu",
+  	location: null,
+  	id: 4096,
+  	tag: "saq",
+  	version: "Release 10"
+  };
+  var smn = {
+  	language: "Sami (Inari)",
+  	location: null,
+  	id: 28731,
+  	tag: "smn",
+  	version: "Windows 7"
+  };
+  var smj = {
+  	language: "Sami (Lule)",
+  	location: null,
+  	id: 31803,
+  	tag: "smj",
+  	version: "Windows 7"
+  };
+  var se = {
+  	language: "Sami (Northern)",
+  	location: null,
+  	id: 59,
+  	tag: "se",
+  	version: "Release 7"
+  };
+  var sms = {
+  	language: "Sami (Skolt)",
+  	location: null,
+  	id: 29755,
+  	tag: "sms",
+  	version: "Windows 7"
+  };
+  var sma = {
+  	language: "Sami (Southern)",
+  	location: null,
+  	id: 30779,
+  	tag: "sma",
+  	version: "Windows 7"
+  };
+  var sg = {
+  	language: "Sango",
+  	location: null,
+  	id: 4096,
+  	tag: "sg",
+  	version: "Release 10"
+  };
+  var sbp = {
+  	language: "Sangu",
+  	location: null,
+  	id: 4096,
+  	tag: "sbp",
+  	version: "Release 10"
+  };
+  var sa = {
+  	language: "Sanskrit",
+  	location: null,
+  	id: 79,
+  	tag: "sa",
+  	version: "Release 7"
+  };
+  var gd = {
+  	language: "Scottish Gaelic",
+  	location: null,
+  	id: 145,
+  	tag: "gd",
+  	version: "Windows 7"
+  };
+  var seh = {
+  	language: "Sena",
+  	location: null,
+  	id: 4096,
+  	tag: "seh",
+  	version: "Release 10"
+  };
+  var sr = {
+  	language: "Serbian (Latin)",
+  	location: null,
+  	id: 31770,
+  	tag: "sr",
+  	version: "Release 7"
+  };
+  var nso = {
+  	language: "Sesotho sa Leboa",
+  	location: null,
+  	id: 108,
+  	tag: "nso",
+  	version: "Release 7"
+  };
+  var tn = {
+  	language: "Setswana",
+  	location: null,
+  	id: 50,
+  	tag: "tn",
+  	version: "Release 7"
+  };
+  var ksb = {
+  	language: "Shambala",
+  	location: null,
+  	id: 4096,
+  	tag: "ksb",
+  	version: "Release 10"
+  };
+  var sn = {
+  	language: "Shona",
+  	location: null,
+  	id: 4096,
+  	tag: "sn",
+  	version: "Release 8.1"
+  };
+  var sd = {
+  	language: "Sindhi",
+  	location: null,
+  	id: 89,
+  	tag: "sd",
+  	version: "Release 8"
+  };
+  var si = {
+  	language: "Sinhala",
+  	location: null,
+  	id: 91,
+  	tag: "si",
+  	version: "Release 7"
+  };
+  var sk = {
+  	language: "Slovak",
+  	location: null,
+  	id: 27,
+  	tag: "sk",
+  	version: "Release 7"
+  };
+  var sl = {
+  	language: "Slovenian",
+  	location: null,
+  	id: 36,
+  	tag: "sl",
+  	version: "Release 7"
+  };
+  var xog = {
+  	language: "Soga",
+  	location: null,
+  	id: 4096,
+  	tag: "xog",
+  	version: "Release 10"
+  };
+  var so = {
+  	language: "Somali",
+  	location: null,
+  	id: 119,
+  	tag: "so",
+  	version: "Release 8.1"
+  };
+  var st = {
+  	language: "Sotho",
+  	location: null,
+  	id: 48,
+  	tag: "st",
+  	version: "Release 8.1"
+  };
+  var nr = {
+  	language: "South Ndebele",
+  	location: null,
+  	id: 4096,
+  	tag: "nr",
+  	version: "Release 10"
+  };
+  var es = {
+  	language: "Spanish",
+  	location: null,
+  	id: 10,
+  	tag: "es",
+  	version: "Release 7"
+  };
+  var zgh = {
+  	language: "Standard Moroccan ",
+  	location: null,
+  	id: 4096,
+  	tag: "zgh",
+  	version: "Release 8.1"
+  };
+  var ss = {
+  	language: "Swati",
+  	location: null,
+  	id: 4096,
+  	tag: "ss",
+  	version: "Release 10"
+  };
+  var sv = {
+  	language: "Swedish",
+  	location: null,
+  	id: 29,
+  	tag: "sv",
+  	version: "Release 7"
+  };
+  var syr = {
+  	language: "Syriac",
+  	location: null,
+  	id: 90,
+  	tag: "syr",
+  	version: "Release 7"
+  };
+  var shi = {
+  	language: "Tachelhit",
+  	location: null,
+  	id: 4096,
+  	tag: "shi",
+  	version: "Release 10"
+  };
+  var dav = {
+  	language: "Taita",
+  	location: null,
+  	id: 4096,
+  	tag: "dav",
+  	version: "Release 10"
+  };
+  var tg = {
+  	language: "Tajik (Cyrillic)",
+  	location: null,
+  	id: 40,
+  	tag: "tg",
+  	version: "Release 7"
+  };
+  var tzm = {
+  	language: "Tamazight (Latin)",
+  	location: null,
+  	id: 95,
+  	tag: "tzm",
+  	version: "Release 7"
+  };
+  var ta = {
+  	language: "Tamil",
+  	location: null,
+  	id: 73,
+  	tag: "ta",
+  	version: "Release 7"
+  };
+  var twq = {
+  	language: "Tasawaq",
+  	location: null,
+  	id: 4096,
+  	tag: "twq",
+  	version: "Release 10"
+  };
+  var tt = {
+  	language: "Tatar",
+  	location: null,
+  	id: 68,
+  	tag: "tt",
+  	version: "Release 7"
+  };
+  var te = {
+  	language: "Telugu",
+  	location: null,
+  	id: 74,
+  	tag: "te",
+  	version: "Release 7"
+  };
+  var teo = {
+  	language: "Teso",
+  	location: null,
+  	id: 4096,
+  	tag: "teo",
+  	version: "Release 10"
+  };
+  var th = {
+  	language: "Thai",
+  	location: null,
+  	id: 30,
+  	tag: "th",
+  	version: "Release 7"
+  };
+  var bo = {
+  	language: "Tibetan",
+  	location: null,
+  	id: 81,
+  	tag: "bo",
+  	version: "Release 7"
+  };
+  var tig = {
+  	language: "Tigre",
+  	location: null,
+  	id: 4096,
+  	tag: "tig",
+  	version: "Release 10"
+  };
+  var ti = {
+  	language: "Tigrinya",
+  	location: null,
+  	id: 115,
+  	tag: "ti",
+  	version: "Release 8"
+  };
+  var to = {
+  	language: "Tongan",
+  	location: null,
+  	id: 4096,
+  	tag: "to",
+  	version: "Release 10"
+  };
+  var ts = {
+  	language: "Tsonga",
+  	location: null,
+  	id: 49,
+  	tag: "ts",
+  	version: "Release 8.1"
+  };
+  var tr = {
+  	language: "Turkish",
+  	location: null,
+  	id: 31,
+  	tag: "tr",
+  	version: "Release 7"
+  };
+  var tk = {
+  	language: "Turkmen",
+  	location: null,
+  	id: 66,
+  	tag: "tk",
+  	version: "Release 7"
+  };
+  var uk = {
+  	language: "Ukrainian",
+  	location: null,
+  	id: 34,
+  	tag: "uk",
+  	version: "Release 7"
+  };
+  var hsb = {
+  	language: "Upper Sorbian",
+  	location: null,
+  	id: 46,
+  	tag: "hsb",
+  	version: "Release 7"
+  };
+  var ur = {
+  	language: "Urdu",
+  	location: null,
+  	id: 32,
+  	tag: "ur",
+  	version: "Release 7"
+  };
+  var ug = {
+  	language: "Uyghur",
+  	location: null,
+  	id: 128,
+  	tag: "ug",
+  	version: "Release 7"
+  };
+  var uz = {
+  	language: "Uzbek (Latin)",
+  	location: null,
+  	id: 67,
+  	tag: "uz",
+  	version: "Release 7"
+  };
+  var vai = {
+  	language: "Vai",
+  	location: null,
+  	id: 4096,
+  	tag: "vai",
+  	version: "Release 10"
+  };
+  var ve = {
+  	language: "Venda",
+  	location: null,
+  	id: 51,
+  	tag: "ve",
+  	version: "Release 10"
+  };
+  var vi = {
+  	language: "Vietnamese",
+  	location: null,
+  	id: 42,
+  	tag: "vi",
+  	version: "Release 7"
+  };
+  var vo = {
+  	language: "Volapük",
+  	location: null,
+  	id: 4096,
+  	tag: "vo",
+  	version: "Release 10"
+  };
+  var vun = {
+  	language: "Vunjo",
+  	location: null,
+  	id: 4096,
+  	tag: "vun",
+  	version: "Release 10"
+  };
+  var wae = {
+  	language: "Walser",
+  	location: null,
+  	id: 4096,
+  	tag: "wae",
+  	version: "Release 10"
+  };
+  var cy = {
+  	language: "Welsh",
+  	location: null,
+  	id: 82,
+  	tag: "cy",
+  	version: "Release 7"
+  };
+  var wal = {
+  	language: "Wolaytta",
+  	location: null,
+  	id: 4096,
+  	tag: "wal",
+  	version: "Release 10"
+  };
+  var wo = {
+  	language: "Wolof",
+  	location: null,
+  	id: 136,
+  	tag: "wo",
+  	version: "Release 7"
+  };
+  var xh = {
+  	language: "Xhosa",
+  	location: null,
+  	id: 52,
+  	tag: "xh",
+  	version: "Release 7"
+  };
+  var yav = {
+  	language: "Yangben",
+  	location: null,
+  	id: 4096,
+  	tag: "yav",
+  	version: "Release 10"
+  };
+  var ii = {
+  	language: "Yi",
+  	location: null,
+  	id: 120,
+  	tag: "ii",
+  	version: "Release 7"
+  };
+  var yo = {
+  	language: "Yoruba",
+  	location: null,
+  	id: 106,
+  	tag: "yo",
+  	version: "Release 7"
+  };
+  var dje = {
+  	language: "Zarma",
+  	location: null,
+  	id: 4096,
+  	tag: "dje",
+  	version: "Release 10"
+  };
+  var zu = {
+  	language: "Zulu",
+  	location: null,
+  	id: 53,
+  	tag: "zu",
+  	version: "Release 7"
+  };
+  var lcid = {
+  	aa: aa,
+  	"aa-dj": {
+  	language: "Afar",
+  	location: "Djibouti",
+  	id: 4096,
+  	tag: "aa-DJ",
+  	version: "Release 10"
+  },
+  	"aa-er": {
+  	language: "Afar",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "aa-ER",
+  	version: "Release 10"
+  },
+  	"aa-et": {
+  	language: "Afar",
+  	location: "Ethiopia",
+  	id: 4096,
+  	tag: "aa-ET",
+  	version: "Release 10"
+  },
+  	af: af,
+  	"af-na": {
+  	language: "Afrikaans",
+  	location: "Namibia",
+  	id: 4096,
+  	tag: "af-NA",
+  	version: "Release 10"
+  },
+  	"af-za": {
+  	language: "Afrikaans",
+  	location: "South Africa",
+  	id: 1078,
+  	tag: "af-ZA",
+  	version: "Release B"
+  },
+  	agq: agq,
+  	"agq-cm": {
+  	language: "Aghem",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "agq-CM",
+  	version: "Release 10"
+  },
+  	ak: ak,
+  	"ak-gh": {
+  	language: "Akan",
+  	location: "Ghana",
+  	id: 4096,
+  	tag: "ak-GH",
+  	version: "Release 10"
+  },
+  	sq: sq,
+  	"sq-al": {
+  	language: "Albanian",
+  	location: "Albania",
+  	id: 1052,
+  	tag: "sq-AL",
+  	version: "Release B"
+  },
+  	"sq-mk": {
+  	language: "Albanian",
+  	location: "North Macedonia",
+  	id: 4096,
+  	tag: "sq-MK",
+  	version: "Release 10"
+  },
+  	gsw: gsw,
+  	"gsw-fr": {
+  	language: "Alsatian",
+  	location: "France",
+  	id: 1156,
+  	tag: "gsw-FR",
+  	version: "Release V"
+  },
+  	"gsw-li": {
+  	language: "Alsatian",
+  	location: "Liechtenstein",
+  	id: 4096,
+  	tag: "gsw-LI",
+  	version: "Release 10"
+  },
+  	"gsw-ch": {
+  	language: "Alsatian",
+  	location: "Switzerland",
+  	id: 4096,
+  	tag: "gsw-CH",
+  	version: "Release 10"
+  },
+  	am: am,
+  	"am-et": {
+  	language: "Amharic",
+  	location: "Ethiopia",
+  	id: 1118,
+  	tag: "am-ET",
+  	version: "Release V"
+  },
+  	ar: ar,
+  	"ar-dz": {
+  	language: "Arabic",
+  	location: "Algeria",
+  	id: 5121,
+  	tag: "ar-DZ",
+  	version: "Release B"
+  },
+  	"ar-bh": {
+  	language: "Arabic",
+  	location: "Bahrain",
+  	id: 15361,
+  	tag: "ar-BH",
+  	version: "Release B"
+  },
+  	"ar-td": {
+  	language: "Arabic",
+  	location: "Chad",
+  	id: 4096,
+  	tag: "ar-TD",
+  	version: "Release 10"
+  },
+  	"ar-km": {
+  	language: "Arabic",
+  	location: "Comoros",
+  	id: 4096,
+  	tag: "ar-KM",
+  	version: "Release 10"
+  },
+  	"ar-dj": {
+  	language: "Arabic",
+  	location: "Djibouti",
+  	id: 4096,
+  	tag: "ar-DJ",
+  	version: "Release 10"
+  },
+  	"ar-eg": {
+  	language: "Arabic",
+  	location: "Egypt",
+  	id: 3073,
+  	tag: "ar-EG",
+  	version: "Release B"
+  },
+  	"ar-er": {
+  	language: "Arabic",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "ar-ER",
+  	version: "Release 10"
+  },
+  	"ar-iq": {
+  	language: "Arabic",
+  	location: "Iraq",
+  	id: 2049,
+  	tag: "ar-IQ",
+  	version: "Release B"
+  },
+  	"ar-il": {
+  	language: "Arabic",
+  	location: "Israel",
+  	id: 4096,
+  	tag: "ar-IL",
+  	version: "Release 10"
+  },
+  	"ar-jo": {
+  	language: "Arabic",
+  	location: "Jordan",
+  	id: 11265,
+  	tag: "ar-JO",
+  	version: "Release B"
+  },
+  	"ar-kw": {
+  	language: "Arabic",
+  	location: "Kuwait",
+  	id: 13313,
+  	tag: "ar-KW",
+  	version: "Release B"
+  },
+  	"ar-lb": {
+  	language: "Arabic",
+  	location: "Lebanon",
+  	id: 12289,
+  	tag: "ar-LB",
+  	version: "Release B"
+  },
+  	"ar-ly": {
+  	language: "Arabic",
+  	location: "Libya",
+  	id: 4097,
+  	tag: "ar-LY",
+  	version: "Release B"
+  },
+  	"ar-mr": {
+  	language: "Arabic",
+  	location: "Mauritania",
+  	id: 4096,
+  	tag: "ar-MR",
+  	version: "Release 10"
+  },
+  	"ar-ma": {
+  	language: "Arabic",
+  	location: "Morocco",
+  	id: 6145,
+  	tag: "ar-MA",
+  	version: "Release B"
+  },
+  	"ar-om": {
+  	language: "Arabic",
+  	location: "Oman",
+  	id: 8193,
+  	tag: "ar-OM",
+  	version: "Release B"
+  },
+  	"ar-ps": {
+  	language: "Arabic",
+  	location: "Palestinian Authority",
+  	id: 4096,
+  	tag: "ar-PS",
+  	version: "Release 10"
+  },
+  	"ar-qa": {
+  	language: "Arabic",
+  	location: "Qatar",
+  	id: 16385,
+  	tag: "ar-QA",
+  	version: "Release B"
+  },
+  	"ar-sa": {
+  	language: "Arabic",
+  	location: "Saudi Arabia",
+  	id: 1025,
+  	tag: "ar-SA",
+  	version: "Release B"
+  },
+  	"ar-so": {
+  	language: "Arabic",
+  	location: "Somalia",
+  	id: 4096,
+  	tag: "ar-SO",
+  	version: "Release 10"
+  },
+  	"ar-ss": {
+  	language: "Arabic",
+  	location: "South Sudan",
+  	id: 4096,
+  	tag: "ar-SS",
+  	version: "Release 10"
+  },
+  	"ar-sd": {
+  	language: "Arabic",
+  	location: "Sudan",
+  	id: 4096,
+  	tag: "ar-SD",
+  	version: "Release 10"
+  },
+  	"ar-sy": {
+  	language: "Arabic",
+  	location: "Syria",
+  	id: 10241,
+  	tag: "ar-SY",
+  	version: "Release B"
+  },
+  	"ar-tn": {
+  	language: "Arabic",
+  	location: "Tunisia",
+  	id: 7169,
+  	tag: "ar-TN",
+  	version: "Release B"
+  },
+  	"ar-ae": {
+  	language: "Arabic",
+  	location: "U.A.E.",
+  	id: 14337,
+  	tag: "ar-AE",
+  	version: "Release B"
+  },
+  	"ar-001": {
+  	language: "Arabic",
+  	location: "World",
+  	id: 4096,
+  	tag: "ar-001",
+  	version: "Release 10"
+  },
+  	"ar-ye": {
+  	language: "Arabic",
+  	location: "Yemen",
+  	id: 9217,
+  	tag: "ar-YE",
+  	version: "Release B"
+  },
+  	hy: hy,
+  	"hy-am": {
+  	language: "Armenian",
+  	location: "Armenia",
+  	id: 1067,
+  	tag: "hy-AM",
+  	version: "Release C"
+  },
+  	as: as,
+  	"as-in": {
+  	language: "Assamese",
+  	location: "India",
+  	id: 1101,
+  	tag: "as-IN",
+  	version: "Release V"
+  },
+  	ast: ast,
+  	"ast-es": {
+  	language: "Asturian",
+  	location: "Spain",
+  	id: 4096,
+  	tag: "ast-ES",
+  	version: "Release 10"
+  },
+  	asa: asa,
+  	"asa-tz": {
+  	language: "Asu",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "asa-TZ",
+  	version: "Release 10"
+  },
+  	"az-cyrl": {
+  	language: "Azerbaijani (Cyrillic)",
+  	location: null,
+  	id: 29740,
+  	tag: "az-Cyrl",
+  	version: "Windows 7"
+  },
+  	"az-cyrl-az": {
+  	language: "Azerbaijani (Cyrillic)",
+  	location: "Azerbaijan",
+  	id: 2092,
+  	tag: "az-Cyrl-AZ",
+  	version: "Release C"
+  },
+  	az: az,
+  	"az-latn": {
+  	language: "Azerbaijani (Latin)",
+  	location: null,
+  	id: 30764,
+  	tag: "az-Latn",
+  	version: "Windows 7"
+  },
+  	"az-latn-az": {
+  	language: "Azerbaijani (Latin)",
+  	location: "Azerbaijan",
+  	id: 1068,
+  	tag: "az-Latn-AZ",
+  	version: "Release C"
+  },
+  	ksf: ksf,
+  	"ksf-cm": {
+  	language: "Bafia",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "ksf-CM",
+  	version: "Release 10"
+  },
+  	bm: bm,
+  	"bm-latn-ml": {
+  	language: "Bamanankan (Latin)",
+  	location: "Mali",
+  	id: 4096,
+  	tag: "bm-Latn-ML",
+  	version: "Release 10"
+  },
+  	bn: bn,
+  	"bn-bd": {
+  	language: "Bangla",
+  	location: "Bangladesh",
+  	id: 2117,
+  	tag: "bn-BD",
+  	version: "Release V"
+  },
+  	"bn-in": {
+  	language: "Bangla",
+  	location: "India",
+  	id: 1093,
+  	tag: "bn-IN",
+  	version: "Release E1"
+  },
+  	bas: bas,
+  	"bas-cm": {
+  	language: "Basaa",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "bas-CM",
+  	version: "Release 10"
+  },
+  	ba: ba,
+  	"ba-ru": {
+  	language: "Bashkir",
+  	location: "Russia",
+  	id: 1133,
+  	tag: "ba-RU",
+  	version: "Release V"
+  },
+  	eu: eu,
+  	"eu-es": {
+  	language: "Basque",
+  	location: "Spain",
+  	id: 1069,
+  	tag: "eu-ES",
+  	version: "Release B"
+  },
+  	be: be,
+  	"be-by": {
+  	language: "Belarusian",
+  	location: "Belarus",
+  	id: 1059,
+  	tag: "be-BY",
+  	version: "Release B"
+  },
+  	bem: bem,
+  	"bem-zm": {
+  	language: "Bemba",
+  	location: "Zambia",
+  	id: 4096,
+  	tag: "bem-ZM",
+  	version: "Release 10"
+  },
+  	bez: bez,
+  	"bez-tz": {
+  	language: "Bena",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "bez-TZ",
+  	version: "Release 10"
+  },
+  	byn: byn,
+  	"byn-er": {
+  	language: "Blin",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "byn-ER",
+  	version: "Release 10"
+  },
+  	brx: brx,
+  	"brx-in": {
+  	language: "Bodo",
+  	location: "India",
+  	id: 4096,
+  	tag: "brx-IN",
+  	version: "Release 10"
+  },
+  	"bs-cyrl": {
+  	language: "Bosnian (Cyrillic)",
+  	location: null,
+  	id: 25626,
+  	tag: "bs-Cyrl",
+  	version: "Windows 7"
+  },
+  	"bs-cyrl-ba": {
+  	language: "Bosnian (Cyrillic)",
+  	location: "Bosnia and Herzegovina",
+  	id: 8218,
+  	tag: "bs-Cyrl-BA",
+  	version: "Release E1"
+  },
+  	"bs-latn": {
+  	language: "Bosnian (Latin)",
+  	location: null,
+  	id: 26650,
+  	tag: "bs-Latn",
+  	version: "Windows 7"
+  },
+  	bs: bs,
+  	"bs-latn-ba": {
+  	language: "Bosnian (Latin)",
+  	location: "Bosnia and Herzegovina",
+  	id: 5146,
+  	tag: "bs-Latn-BA",
+  	version: "Release E1"
+  },
+  	br: br,
+  	"br-fr": {
+  	language: "Breton",
+  	location: "France",
+  	id: 1150,
+  	tag: "br-FR",
+  	version: "Release V"
+  },
+  	bg: bg,
+  	"bg-bg": {
+  	language: "Bulgarian",
+  	location: "Bulgaria",
+  	id: 1026,
+  	tag: "bg-BG",
+  	version: "Release B"
+  },
+  	my: my,
+  	"my-mm": {
+  	language: "Burmese",
+  	location: "Myanmar",
+  	id: 1109,
+  	tag: "my-MM",
+  	version: "Release 8.1"
+  },
+  	ca: ca,
+  	"ca-ad": {
+  	language: "Catalan",
+  	location: "Andorra",
+  	id: 4096,
+  	tag: "ca-AD",
+  	version: "Release 10"
+  },
+  	"ca-fr": {
+  	language: "Catalan",
+  	location: "France",
+  	id: 4096,
+  	tag: "ca-FR",
+  	version: "Release 10"
+  },
+  	"ca-it": {
+  	language: "Catalan",
+  	location: "Italy",
+  	id: 4096,
+  	tag: "ca-IT",
+  	version: "Release 10"
+  },
+  	"ca-es": {
+  	language: "Catalan",
+  	location: "Spain",
+  	id: 1027,
+  	tag: "ca-ES",
+  	version: "Release B"
+  },
+  	"tzm-latn-": {
+  	language: "Central Atlas Tamazight ",
+  	location: "Morocco",
+  	id: 4096,
+  	tag: "tzm-Latn-",
+  	version: "Release 10"
+  },
+  	ku: ku,
+  	"ku-arab": {
+  	language: "Central Kurdish",
+  	location: null,
+  	id: 31890,
+  	tag: "ku-Arab",
+  	version: "Release 8"
+  },
+  	"ku-arab-iq": {
+  	language: "Central Kurdish",
+  	location: "Iraq",
+  	id: 1170,
+  	tag: "ku-Arab-IQ",
+  	version: "Release 8"
+  },
+  	"cd-ru": {
+  	language: "Chechen",
+  	location: "Russia",
+  	id: 4096,
+  	tag: "cd-RU",
+  	version: "Release 10.1"
+  },
+  	chr: chr,
+  	"chr-cher": {
+  	language: "Cherokee",
+  	location: null,
+  	id: 31836,
+  	tag: "chr-Cher",
+  	version: "Release 8"
+  },
+  	"chr-cher-us": {
+  	language: "Cherokee",
+  	location: "United States",
+  	id: 1116,
+  	tag: "chr-Cher-US",
+  	version: "Release 8"
+  },
+  	cgg: cgg,
+  	"cgg-ug": {
+  	language: "Chiga",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "cgg-UG",
+  	version: "Release 10"
+  },
+  	"zh-hans": {
+  	language: "Chinese (Simplified)",
+  	location: null,
+  	id: 4,
+  	tag: "zh-Hans",
+  	version: "Release A"
+  },
+  	zh: zh,
+  	"zh-cn": {
+  	language: "Chinese (Simplified)",
+  	location: "People's Republic of China",
+  	id: 2052,
+  	tag: "zh-CN",
+  	version: "Release A"
+  },
+  	"zh-sg": {
+  	language: "Chinese (Simplified)",
+  	location: "Singapore",
+  	id: 4100,
+  	tag: "zh-SG",
+  	version: "Release A"
+  },
+  	"zh-hant": {
+  	language: "Chinese (Traditional)",
+  	location: null,
+  	id: 31748,
+  	tag: "zh-Hant",
+  	version: "Release A"
+  },
+  	"zh-hk": {
+  	language: "Chinese (Traditional)",
+  	location: "Hong Kong S.A.R.",
+  	id: 3076,
+  	tag: "zh-HK",
+  	version: "Release A"
+  },
+  	"zh-mo": {
+  	language: "Chinese (Traditional)",
+  	location: "Macao S.A.R.",
+  	id: 5124,
+  	tag: "zh-MO",
+  	version: "Release D"
+  },
+  	"zh-tw": {
+  	language: "Chinese (Traditional)",
+  	location: "Taiwan",
+  	id: 1028,
+  	tag: "zh-TW",
+  	version: "Release A"
+  },
+  	"cu-ru": {
+  	language: "Church Slavic",
+  	location: "Russia",
+  	id: 4096,
+  	tag: "cu-RU",
+  	version: "Release 10.1"
+  },
+  	swc: swc,
+  	"swc-cd": {
+  	language: "Congo Swahili",
+  	location: "Congo DRC",
+  	id: 4096,
+  	tag: "swc-CD",
+  	version: "Release 10"
+  },
+  	kw: kw,
+  	"kw-gb": {
+  	language: "Cornish",
+  	location: "United Kingdom",
+  	id: 4096,
+  	tag: "kw-GB",
+  	version: "Release 10"
+  },
+  	co: co,
+  	"co-fr": {
+  	language: "Corsican",
+  	location: "France",
+  	id: 1155,
+  	tag: "co-FR",
+  	version: "Release V"
+  },
+  	"hr,": {
+  	language: "Croatian",
+  	location: null,
+  	id: 26,
+  	tag: "hr,",
+  	version: "Release 7"
+  },
+  	"hr-hr": {
+  	language: "Croatian",
+  	location: "Croatia",
+  	id: 1050,
+  	tag: "hr-HR",
+  	version: "Release A"
+  },
+  	"hr-ba": {
+  	language: "Croatian (Latin)",
+  	location: "Bosnia and Herzegovina",
+  	id: 4122,
+  	tag: "hr-BA",
+  	version: "Release E1"
+  },
+  	cs: cs,
+  	"cs-cz": {
+  	language: "Czech",
+  	location: "Czech Republic",
+  	id: 1029,
+  	tag: "cs-CZ",
+  	version: "Release A"
+  },
+  	da: da,
+  	"da-dk": {
+  	language: "Danish",
+  	location: "Denmark",
+  	id: 1030,
+  	tag: "da-DK",
+  	version: "Release A"
+  },
+  	"da-gl": {
+  	language: "Danish",
+  	location: "Greenland",
+  	id: 4096,
+  	tag: "da-GL",
+  	version: "Release 10"
+  },
+  	prs: prs,
+  	"prs-af": {
+  	language: "Dari",
+  	location: "Afghanistan",
+  	id: 1164,
+  	tag: "prs-AF",
+  	version: "Release V"
+  },
+  	dv: dv,
+  	"dv-mv": {
+  	language: "Divehi",
+  	location: "Maldives",
+  	id: 1125,
+  	tag: "dv-MV",
+  	version: "ReleaseD"
+  },
+  	dua: dua,
+  	"dua-cm": {
+  	language: "Duala",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "dua-CM",
+  	version: "Release 10"
+  },
+  	nl: nl,
+  	"nl-aw": {
+  	language: "Dutch",
+  	location: "Aruba",
+  	id: 4096,
+  	tag: "nl-AW",
+  	version: "Release 10"
+  },
+  	"nl-be": {
+  	language: "Dutch",
+  	location: "Belgium",
+  	id: 2067,
+  	tag: "nl-BE",
+  	version: "Release A"
+  },
+  	"nl-bq": {
+  	language: "Dutch",
+  	location: "Bonaire, Sint Eustatius and Saba",
+  	id: 4096,
+  	tag: "nl-BQ",
+  	version: "Release 10"
+  },
+  	"nl-cw": {
+  	language: "Dutch",
+  	location: "Curaçao",
+  	id: 4096,
+  	tag: "nl-CW",
+  	version: "Release 10"
+  },
+  	"nl-nl": {
+  	language: "Dutch",
+  	location: "Netherlands",
+  	id: 1043,
+  	tag: "nl-NL",
+  	version: "Release A"
+  },
+  	"nl-sx": {
+  	language: "Dutch",
+  	location: "Sint Maarten",
+  	id: 4096,
+  	tag: "nl-SX",
+  	version: "Release 10"
+  },
+  	"nl-sr": {
+  	language: "Dutch",
+  	location: "Suriname",
+  	id: 4096,
+  	tag: "nl-SR",
+  	version: "Release 10"
+  },
+  	dz: dz,
+  	"dz-bt": {
+  	language: "Dzongkha",
+  	location: "Bhutan",
+  	id: 3153,
+  	tag: "dz-BT",
+  	version: "Release 10"
+  },
+  	ebu: ebu,
+  	"ebu-ke": {
+  	language: "Embu",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "ebu-KE",
+  	version: "Release 10"
+  },
+  	en: en,
+  	"en-as": {
+  	language: "English",
+  	location: "American Samoa",
+  	id: 4096,
+  	tag: "en-AS",
+  	version: "Release 10"
+  },
+  	"en-ai": {
+  	language: "English",
+  	location: "Anguilla",
+  	id: 4096,
+  	tag: "en-AI",
+  	version: "Release 10"
+  },
+  	"en-ag": {
+  	language: "English",
+  	location: "Antigua and Barbuda",
+  	id: 4096,
+  	tag: "en-AG",
+  	version: "Release 10"
+  },
+  	"en-au": {
+  	language: "English",
+  	location: "Australia",
+  	id: 3081,
+  	tag: "en-AU",
+  	version: "Release A"
+  },
+  	"en-at": {
+  	language: "English",
+  	location: "Austria",
+  	id: 4096,
+  	tag: "en-AT",
+  	version: "Release 10.1"
+  },
+  	"en-bs": {
+  	language: "English",
+  	location: "Bahamas",
+  	id: 4096,
+  	tag: "en-BS",
+  	version: "Release 10"
+  },
+  	"en-bb": {
+  	language: "English",
+  	location: "Barbados",
+  	id: 4096,
+  	tag: "en-BB",
+  	version: "Release 10"
+  },
+  	"en-be": {
+  	language: "English",
+  	location: "Belgium",
+  	id: 4096,
+  	tag: "en-BE",
+  	version: "Release 10"
+  },
+  	"en-bz": {
+  	language: "English",
+  	location: "Belize",
+  	id: 10249,
+  	tag: "en-BZ",
+  	version: "Release B"
+  },
+  	"en-bm": {
+  	language: "English",
+  	location: "Bermuda",
+  	id: 4096,
+  	tag: "en-BM",
+  	version: "Release 10"
+  },
+  	"en-bw": {
+  	language: "English",
+  	location: "Botswana",
+  	id: 4096,
+  	tag: "en-BW",
+  	version: "Release 10"
+  },
+  	"en-io": {
+  	language: "English",
+  	location: "British Indian Ocean Territory",
+  	id: 4096,
+  	tag: "en-IO",
+  	version: "Release 10"
+  },
+  	"en-vg": {
+  	language: "English",
+  	location: "British Virgin Islands",
+  	id: 4096,
+  	tag: "en-VG",
+  	version: "Release 10"
+  },
+  	"en-bi": {
+  	language: "English",
+  	location: "Burundi",
+  	id: 4096,
+  	tag: "en-BI",
+  	version: "Release 10.1"
+  },
+  	"en-cm": {
+  	language: "English",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "en-CM",
+  	version: "Release 10"
+  },
+  	"en-ca": {
+  	language: "English",
+  	location: "Canada",
+  	id: 4105,
+  	tag: "en-CA",
+  	version: "Release A"
+  },
+  	"en-029": {
+  	language: "English",
+  	location: "Caribbean",
+  	id: 9225,
+  	tag: "en-029",
+  	version: "Release B"
+  },
+  	"en-ky": {
+  	language: "English",
+  	location: "Cayman Islands",
+  	id: 4096,
+  	tag: "en-KY",
+  	version: "Release 10"
+  },
+  	"en-cx": {
+  	language: "English",
+  	location: "Christmas Island",
+  	id: 4096,
+  	tag: "en-CX",
+  	version: "Release 10"
+  },
+  	"en-cc": {
+  	language: "English",
+  	location: "Cocos [Keeling] Islands",
+  	id: 4096,
+  	tag: "en-CC",
+  	version: "Release 10"
+  },
+  	"en-ck": {
+  	language: "English",
+  	location: "Cook Islands",
+  	id: 4096,
+  	tag: "en-CK",
+  	version: "Release 10"
+  },
+  	"en-cy": {
+  	language: "English",
+  	location: "Cyprus",
+  	id: 4096,
+  	tag: "en-CY",
+  	version: "Release 10.1"
+  },
+  	"en-dk": {
+  	language: "English",
+  	location: "Denmark",
+  	id: 4096,
+  	tag: "en-DK",
+  	version: "Release 10.1"
+  },
+  	"en-dm": {
+  	language: "English",
+  	location: "Dominica",
+  	id: 4096,
+  	tag: "en-DM",
+  	version: "Release 10"
+  },
+  	"en-er": {
+  	language: "English",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "en-ER",
+  	version: "Release 10"
+  },
+  	"en-150": {
+  	language: "English",
+  	location: "Europe",
+  	id: 4096,
+  	tag: "en-150",
+  	version: "Release 10"
+  },
+  	"en-fk": {
+  	language: "English",
+  	location: "Falkland Islands",
+  	id: 4096,
+  	tag: "en-FK",
+  	version: "Release 10"
+  },
+  	"en-fi": {
+  	language: "English",
+  	location: "Finland",
+  	id: 4096,
+  	tag: "en-FI",
+  	version: "Release 10.1"
+  },
+  	"en-fj": {
+  	language: "English",
+  	location: "Fiji",
+  	id: 4096,
+  	tag: "en-FJ",
+  	version: "Release 10"
+  },
+  	"en-gm": {
+  	language: "English",
+  	location: "Gambia",
+  	id: 4096,
+  	tag: "en-GM",
+  	version: "Release 10"
+  },
+  	"en-de": {
+  	language: "English",
+  	location: "Germany",
+  	id: 4096,
+  	tag: "en-DE",
+  	version: "Release 10.1"
+  },
+  	"en-gh": {
+  	language: "English",
+  	location: "Ghana",
+  	id: 4096,
+  	tag: "en-GH",
+  	version: "Release 10"
+  },
+  	"en-gi": {
+  	language: "English",
+  	location: "Gibraltar",
+  	id: 4096,
+  	tag: "en-GI",
+  	version: "Release 10"
+  },
+  	"en-gd": {
+  	language: "English",
+  	location: "Grenada",
+  	id: 4096,
+  	tag: "en-GD",
+  	version: "Release 10"
+  },
+  	"en-gu": {
+  	language: "English",
+  	location: "Guam",
+  	id: 4096,
+  	tag: "en-GU",
+  	version: "Release 10"
+  },
+  	"en-gg": {
+  	language: "English",
+  	location: "Guernsey",
+  	id: 4096,
+  	tag: "en-GG",
+  	version: "Release 10"
+  },
+  	"en-gy": {
+  	language: "English",
+  	location: "Guyana",
+  	id: 4096,
+  	tag: "en-GY",
+  	version: "Release 10"
+  },
+  	"en-hk": {
+  	language: "English",
+  	location: "Hong Kong",
+  	id: 15369,
+  	tag: "en-HK",
+  	version: "Release 8.1"
+  },
+  	"en-in": {
+  	language: "English",
+  	location: "India",
+  	id: 16393,
+  	tag: "en-IN",
+  	version: "Release V"
+  },
+  	"en-ie": {
+  	language: "English",
+  	location: "Ireland",
+  	id: 6153,
+  	tag: "en-IE",
+  	version: "Release A"
+  },
+  	"en-im": {
+  	language: "English",
+  	location: "Isle of Man",
+  	id: 4096,
+  	tag: "en-IM",
+  	version: "Release 10"
+  },
+  	"en-il": {
+  	language: "English",
+  	location: "Israel",
+  	id: 4096,
+  	tag: "en-IL",
+  	version: "Release 10.1"
+  },
+  	"en-jm": {
+  	language: "English",
+  	location: "Jamaica",
+  	id: 8201,
+  	tag: "en-JM",
+  	version: "Release B"
+  },
+  	"en-je": {
+  	language: "English",
+  	location: "Jersey",
+  	id: 4096,
+  	tag: "en-JE",
+  	version: "Release 10"
+  },
+  	"en-ke": {
+  	language: "English",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "en-KE",
+  	version: "Release 10"
+  },
+  	"en-ki": {
+  	language: "English",
+  	location: "Kiribati",
+  	id: 4096,
+  	tag: "en-KI",
+  	version: "Release 10"
+  },
+  	"en-ls": {
+  	language: "English",
+  	location: "Lesotho",
+  	id: 4096,
+  	tag: "en-LS",
+  	version: "Release 10"
+  },
+  	"en-lr": {
+  	language: "English",
+  	location: "Liberia",
+  	id: 4096,
+  	tag: "en-LR",
+  	version: "Release 10"
+  },
+  	"en-mo": {
+  	language: "English",
+  	location: "Macao SAR",
+  	id: 4096,
+  	tag: "en-MO",
+  	version: "Release 10"
+  },
+  	"en-mg": {
+  	language: "English",
+  	location: "Madagascar",
+  	id: 4096,
+  	tag: "en-MG",
+  	version: "Release 10"
+  },
+  	"en-mw": {
+  	language: "English",
+  	location: "Malawi",
+  	id: 4096,
+  	tag: "en-MW",
+  	version: "Release 10"
+  },
+  	"en-my": {
+  	language: "English",
+  	location: "Malaysia",
+  	id: 17417,
+  	tag: "en-MY",
+  	version: "Release V"
+  },
+  	"en-mt": {
+  	language: "English",
+  	location: "Malta",
+  	id: 4096,
+  	tag: "en-MT",
+  	version: "Release 10"
+  },
+  	"en-mh": {
+  	language: "English",
+  	location: "Marshall Islands",
+  	id: 4096,
+  	tag: "en-MH",
+  	version: "Release 10"
+  },
+  	"en-mu": {
+  	language: "English",
+  	location: "Mauritius",
+  	id: 4096,
+  	tag: "en-MU",
+  	version: "Release 10"
+  },
+  	"en-fm": {
+  	language: "English",
+  	location: "Micronesia",
+  	id: 4096,
+  	tag: "en-FM",
+  	version: "Release 10"
+  },
+  	"en-ms": {
+  	language: "English",
+  	location: "Montserrat",
+  	id: 4096,
+  	tag: "en-MS",
+  	version: "Release 10"
+  },
+  	"en-na": {
+  	language: "English",
+  	location: "Namibia",
+  	id: 4096,
+  	tag: "en-NA",
+  	version: "Release 10"
+  },
+  	"en-nr": {
+  	language: "English",
+  	location: "Nauru",
+  	id: 4096,
+  	tag: "en-NR",
+  	version: "Release 10"
+  },
+  	"en-nl": {
+  	language: "English",
+  	location: "Netherlands",
+  	id: 4096,
+  	tag: "en-NL",
+  	version: "Release 10.1"
+  },
+  	"en-nz": {
+  	language: "English",
+  	location: "New Zealand",
+  	id: 5129,
+  	tag: "en-NZ",
+  	version: "Release A"
+  },
+  	"en-ng": {
+  	language: "English",
+  	location: "Nigeria",
+  	id: 4096,
+  	tag: "en-NG",
+  	version: "Release 10"
+  },
+  	"en-nu": {
+  	language: "English",
+  	location: "Niue",
+  	id: 4096,
+  	tag: "en-NU",
+  	version: "Release 10"
+  },
+  	"en-nf": {
+  	language: "English",
+  	location: "Norfolk Island",
+  	id: 4096,
+  	tag: "en-NF",
+  	version: "Release 10"
+  },
+  	"en-mp": {
+  	language: "English",
+  	location: "Northern Mariana Islands",
+  	id: 4096,
+  	tag: "en-MP",
+  	version: "Release 10"
+  },
+  	"en-pk": {
+  	language: "English",
+  	location: "Pakistan",
+  	id: 4096,
+  	tag: "en-PK",
+  	version: "Release 10"
+  },
+  	"en-pw": {
+  	language: "English",
+  	location: "Palau",
+  	id: 4096,
+  	tag: "en-PW",
+  	version: "Release 10"
+  },
+  	"en-pg": {
+  	language: "English",
+  	location: "Papua New Guinea",
+  	id: 4096,
+  	tag: "en-PG",
+  	version: "Release 10"
+  },
+  	"en-pn": {
+  	language: "English",
+  	location: "Pitcairn Islands",
+  	id: 4096,
+  	tag: "en-PN",
+  	version: "Release 10"
+  },
+  	"en-pr": {
+  	language: "English",
+  	location: "Puerto Rico",
+  	id: 4096,
+  	tag: "en-PR",
+  	version: "Release 10"
+  },
+  	"en-ph": {
+  	language: "English",
+  	location: "Republic of the Philippines",
+  	id: 13321,
+  	tag: "en-PH",
+  	version: "Release C"
+  },
+  	"en-rw": {
+  	language: "English",
+  	location: "Rwanda",
+  	id: 4096,
+  	tag: "en-RW",
+  	version: "Release 10"
+  },
+  	"en-kn": {
+  	language: "English",
+  	location: "Saint Kitts and Nevis",
+  	id: 4096,
+  	tag: "en-KN",
+  	version: "Release 10"
+  },
+  	"en-lc": {
+  	language: "English",
+  	location: "Saint Lucia",
+  	id: 4096,
+  	tag: "en-LC",
+  	version: "Release 10"
+  },
+  	"en-vc": {
+  	language: "English",
+  	location: "Saint Vincent and the Grenadines",
+  	id: 4096,
+  	tag: "en-VC",
+  	version: "Release 10"
+  },
+  	"en-ws": {
+  	language: "English",
+  	location: "Samoa",
+  	id: 4096,
+  	tag: "en-WS",
+  	version: "Release 10"
+  },
+  	"en-sc": {
+  	language: "English",
+  	location: "Seychelles",
+  	id: 4096,
+  	tag: "en-SC",
+  	version: "Release 10"
+  },
+  	"en-sl": {
+  	language: "English",
+  	location: "Sierra Leone",
+  	id: 4096,
+  	tag: "en-SL",
+  	version: "Release 10"
+  },
+  	"en-sg": {
+  	language: "English",
+  	location: "Singapore",
+  	id: 18441,
+  	tag: "en-SG",
+  	version: "Release V"
+  },
+  	"en-sx": {
+  	language: "English",
+  	location: "Sint Maarten",
+  	id: 4096,
+  	tag: "en-SX",
+  	version: "Release 10"
+  },
+  	"en-si": {
+  	language: "English",
+  	location: "Slovenia",
+  	id: 4096,
+  	tag: "en-SI",
+  	version: "Release 10.1"
+  },
+  	"en-sb": {
+  	language: "English",
+  	location: "Solomon Islands",
+  	id: 4096,
+  	tag: "en-SB",
+  	version: "Release 10"
+  },
+  	"en-za": {
+  	language: "English",
+  	location: "South Africa",
+  	id: 7177,
+  	tag: "en-ZA",
+  	version: "Release B"
+  },
+  	"en-ss": {
+  	language: "English",
+  	location: "South Sudan",
+  	id: 4096,
+  	tag: "en-SS",
+  	version: "Release 10"
+  },
+  	"en-sh": {
+  	language: "English",
+  	location: "St Helena, Ascension, Tristan da ",
+  	id: 4096,
+  	tag: "en-SH",
+  	version: "Release 10"
+  },
+  	"en-sd": {
+  	language: "English",
+  	location: "Sudan",
+  	id: 4096,
+  	tag: "en-SD",
+  	version: "Release 10"
+  },
+  	"en-sz": {
+  	language: "English",
+  	location: "Swaziland",
+  	id: 4096,
+  	tag: "en-SZ",
+  	version: "Release 10"
+  },
+  	"en-se": {
+  	language: "English",
+  	location: "Sweden",
+  	id: 4096,
+  	tag: "en-SE",
+  	version: "Release 10.1"
+  },
+  	"en-ch": {
+  	language: "English",
+  	location: "Switzerland",
+  	id: 4096,
+  	tag: "en-CH",
+  	version: "Release 10.1"
+  },
+  	"en-tz": {
+  	language: "English",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "en-TZ",
+  	version: "Release 10"
+  },
+  	"en-tk": {
+  	language: "English",
+  	location: "Tokelau",
+  	id: 4096,
+  	tag: "en-TK",
+  	version: "Release 10"
+  },
+  	"en-to": {
+  	language: "English",
+  	location: "Tonga",
+  	id: 4096,
+  	tag: "en-TO",
+  	version: "Release 10"
+  },
+  	"en-tt": {
+  	language: "English",
+  	location: "Trinidad and Tobago",
+  	id: 11273,
+  	tag: "en-TT",
+  	version: "Release B"
+  },
+  	"en-tc": {
+  	language: "English",
+  	location: "Turks and Caicos Islands",
+  	id: 4096,
+  	tag: "en-TC",
+  	version: "Release 10"
+  },
+  	"en-tv": {
+  	language: "English",
+  	location: "Tuvalu",
+  	id: 4096,
+  	tag: "en-TV",
+  	version: "Release 10"
+  },
+  	"en-ug": {
+  	language: "English",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "en-UG",
+  	version: "Release 10"
+  },
+  	"en-gb": {
+  	language: "English",
+  	location: "United Kingdom",
+  	id: 2057,
+  	tag: "en-GB",
+  	version: "Release A"
+  },
+  	"en-us": {
+  	language: "English",
+  	location: "United States",
+  	id: 1033,
+  	tag: "en-US",
+  	version: "Release A"
+  },
+  	"en-um": {
+  	language: "English",
+  	location: "US Minor Outlying Islands",
+  	id: 4096,
+  	tag: "en-UM",
+  	version: "Release 10"
+  },
+  	"en-vi": {
+  	language: "English",
+  	location: "US Virgin Islands",
+  	id: 4096,
+  	tag: "en-VI",
+  	version: "Release 10"
+  },
+  	"en-vu": {
+  	language: "English",
+  	location: "Vanuatu",
+  	id: 4096,
+  	tag: "en-VU",
+  	version: "Release 10"
+  },
+  	"en-001": {
+  	language: "English",
+  	location: "World",
+  	id: 4096,
+  	tag: "en-001",
+  	version: "Release 10"
+  },
+  	"en-zm": {
+  	language: "English",
+  	location: "Zambia",
+  	id: 4096,
+  	tag: "en-ZM",
+  	version: "Release 10"
+  },
+  	"en-zw": {
+  	language: "English",
+  	location: "Zimbabwe",
+  	id: 12297,
+  	tag: "en-ZW",
+  	version: "Release C"
+  },
+  	eo: eo,
+  	"eo-001": {
+  	language: "Esperanto",
+  	location: "World",
+  	id: 4096,
+  	tag: "eo-001",
+  	version: "Release 10"
+  },
+  	et: et,
+  	"et-ee": {
+  	language: "Estonian",
+  	location: "Estonia",
+  	id: 1061,
+  	tag: "et-EE",
+  	version: "Release B"
+  },
+  	ee: ee,
+  	"ee-gh": {
+  	language: "Ewe",
+  	location: "Ghana",
+  	id: 4096,
+  	tag: "ee-GH",
+  	version: "Release 10"
+  },
+  	"ee-tg": {
+  	language: "Ewe",
+  	location: "Togo",
+  	id: 4096,
+  	tag: "ee-TG",
+  	version: "Release 10"
+  },
+  	ewo: ewo,
+  	"ewo-cm": {
+  	language: "Ewondo",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "ewo-CM",
+  	version: "Release 10"
+  },
+  	fo: fo,
+  	"fo-dk": {
+  	language: "Faroese",
+  	location: "Denmark",
+  	id: 4096,
+  	tag: "fo-DK",
+  	version: "Release 10.1"
+  },
+  	"fo-fo": {
+  	language: "Faroese",
+  	location: "Faroe Islands",
+  	id: 1080,
+  	tag: "fo-FO",
+  	version: "Release B"
+  },
+  	fil: fil,
+  	"fil-ph": {
+  	language: "Filipino",
+  	location: "Philippines",
+  	id: 1124,
+  	tag: "fil-PH",
+  	version: "Release E2"
+  },
+  	fi: fi,
+  	"fi-fi": {
+  	language: "Finnish",
+  	location: "Finland",
+  	id: 1035,
+  	tag: "fi-FI",
+  	version: "Release A"
+  },
+  	fr: fr,
+  	"fr-dz": {
+  	language: "French",
+  	location: "Algeria",
+  	id: 4096,
+  	tag: "fr-DZ",
+  	version: "Release 10"
+  },
+  	"fr-be": {
+  	language: "French",
+  	location: "Belgium",
+  	id: 2060,
+  	tag: "fr-BE",
+  	version: "Release A"
+  },
+  	"fr-bj": {
+  	language: "French",
+  	location: "Benin",
+  	id: 4096,
+  	tag: "fr-BJ",
+  	version: "Release 10"
+  },
+  	"fr-bf": {
+  	language: "French",
+  	location: "Burkina Faso",
+  	id: 4096,
+  	tag: "fr-BF",
+  	version: "Release 10"
+  },
+  	"fr-bi": {
+  	language: "French",
+  	location: "Burundi",
+  	id: 4096,
+  	tag: "fr-BI",
+  	version: "Release 10"
+  },
+  	"fr-cm": {
+  	language: "French",
+  	location: "Cameroon",
+  	id: 11276,
+  	tag: "fr-CM",
+  	version: "Release 8.1"
+  },
+  	"fr-ca": {
+  	language: "French",
+  	location: "Canada",
+  	id: 3084,
+  	tag: "fr-CA",
+  	version: "Release A"
+  },
+  	"fr-cf": {
+  	language: "French",
+  	location: "Central African Republic",
+  	id: 4096,
+  	tag: "fr-CF",
+  	version: "Release 10"
+  },
+  	"fr-td": {
+  	language: "French",
+  	location: "Chad",
+  	id: 4096,
+  	tag: "fr-TD",
+  	version: "Release 10"
+  },
+  	"fr-km": {
+  	language: "French",
+  	location: "Comoros",
+  	id: 4096,
+  	tag: "fr-KM",
+  	version: "Release 10"
+  },
+  	"fr-cg": {
+  	language: "French",
+  	location: "Congo",
+  	id: 4096,
+  	tag: "fr-CG",
+  	version: "Release 10"
+  },
+  	"fr-cd": {
+  	language: "French",
+  	location: "Congo, DRC",
+  	id: 9228,
+  	tag: "fr-CD",
+  	version: "Release 8.1"
+  },
+  	"fr-ci": {
+  	language: "French",
+  	location: "Côte d'Ivoire",
+  	id: 12300,
+  	tag: "fr-CI",
+  	version: "Release 8.1"
+  },
+  	"fr-dj": {
+  	language: "French",
+  	location: "Djibouti",
+  	id: 4096,
+  	tag: "fr-DJ",
+  	version: "Release 10"
+  },
+  	"fr-gq": {
+  	language: "French",
+  	location: "Equatorial Guinea",
+  	id: 4096,
+  	tag: "fr-GQ",
+  	version: "Release 10"
+  },
+  	"fr-fr": {
+  	language: "French",
+  	location: "France",
+  	id: 1036,
+  	tag: "fr-FR",
+  	version: "Release A"
+  },
+  	"fr-gf": {
+  	language: "French",
+  	location: "French Guiana",
+  	id: 4096,
+  	tag: "fr-GF",
+  	version: "Release 10"
+  },
+  	"fr-pf": {
+  	language: "French",
+  	location: "French Polynesia",
+  	id: 4096,
+  	tag: "fr-PF",
+  	version: "Release 10"
+  },
+  	"fr-ga": {
+  	language: "French",
+  	location: "Gabon",
+  	id: 4096,
+  	tag: "fr-GA",
+  	version: "Release 10"
+  },
+  	"fr-gp": {
+  	language: "French",
+  	location: "Guadeloupe",
+  	id: 4096,
+  	tag: "fr-GP",
+  	version: "Release 10"
+  },
+  	"fr-gn": {
+  	language: "French",
+  	location: "Guinea",
+  	id: 4096,
+  	tag: "fr-GN",
+  	version: "Release 10"
+  },
+  	"fr-ht": {
+  	language: "French",
+  	location: "Haiti",
+  	id: 15372,
+  	tag: "fr-HT",
+  	version: "Release 8.1"
+  },
+  	"fr-lu": {
+  	language: "French",
+  	location: "Luxembourg",
+  	id: 5132,
+  	tag: "fr-LU",
+  	version: "Release A"
+  },
+  	"fr-mg": {
+  	language: "French",
+  	location: "Madagascar",
+  	id: 4096,
+  	tag: "fr-MG",
+  	version: "Release 10"
+  },
+  	"fr-ml": {
+  	language: "French",
+  	location: "Mali",
+  	id: 13324,
+  	tag: "fr-ML",
+  	version: "Release 8.1"
+  },
+  	"fr-mq": {
+  	language: "French",
+  	location: "Martinique",
+  	id: 4096,
+  	tag: "fr-MQ",
+  	version: "Release 10"
+  },
+  	"fr-mr": {
+  	language: "French",
+  	location: "Mauritania",
+  	id: 4096,
+  	tag: "fr-MR",
+  	version: "Release 10"
+  },
+  	"fr-mu": {
+  	language: "French",
+  	location: "Mauritius",
+  	id: 4096,
+  	tag: "fr-MU",
+  	version: "Release 10"
+  },
+  	"fr-yt": {
+  	language: "French",
+  	location: "Mayotte",
+  	id: 4096,
+  	tag: "fr-YT",
+  	version: "Release 10"
+  },
+  	"fr-ma": {
+  	language: "French",
+  	location: "Morocco",
+  	id: 14348,
+  	tag: "fr-MA",
+  	version: "Release 8.1"
+  },
+  	"fr-nc": {
+  	language: "French",
+  	location: "New Caledonia",
+  	id: 4096,
+  	tag: "fr-NC",
+  	version: "Release 10"
+  },
+  	"fr-ne": {
+  	language: "French",
+  	location: "Niger",
+  	id: 4096,
+  	tag: "fr-NE",
+  	version: "Release 10"
+  },
+  	"fr-mc": {
+  	language: "French",
+  	location: "Principality of Monaco",
+  	id: 6156,
+  	tag: "fr-MC",
+  	version: "Release A"
+  },
+  	"fr-re": {
+  	language: "French",
+  	location: "Reunion",
+  	id: 8204,
+  	tag: "fr-RE",
+  	version: "Release 8.1"
+  },
+  	"fr-rw": {
+  	language: "French",
+  	location: "Rwanda",
+  	id: 4096,
+  	tag: "fr-RW",
+  	version: "Release 10"
+  },
+  	"fr-bl": {
+  	language: "French",
+  	location: "Saint Barthélemy",
+  	id: 4096,
+  	tag: "fr-BL",
+  	version: "Release 10"
+  },
+  	"fr-mf": {
+  	language: "French",
+  	location: "Saint Martin",
+  	id: 4096,
+  	tag: "fr-MF",
+  	version: "Release 10"
+  },
+  	"fr-pm": {
+  	language: "French",
+  	location: "Saint Pierre and Miquelon",
+  	id: 4096,
+  	tag: "fr-PM",
+  	version: "Release 10"
+  },
+  	"fr-sn": {
+  	language: "French",
+  	location: "Senegal",
+  	id: 10252,
+  	tag: "fr-SN",
+  	version: "Release 8.1"
+  },
+  	"fr-sc": {
+  	language: "French",
+  	location: "Seychelles",
+  	id: 4096,
+  	tag: "fr-SC",
+  	version: "Release 10"
+  },
+  	"fr-ch": {
+  	language: "French",
+  	location: "Switzerland",
+  	id: 4108,
+  	tag: "fr-CH",
+  	version: "Release A"
+  },
+  	"fr-sy": {
+  	language: "French",
+  	location: "Syria",
+  	id: 4096,
+  	tag: "fr-SY",
+  	version: "Release 10"
+  },
+  	"fr-tg": {
+  	language: "French",
+  	location: "Togo",
+  	id: 4096,
+  	tag: "fr-TG",
+  	version: "Release 10"
+  },
+  	"fr-tn": {
+  	language: "French",
+  	location: "Tunisia",
+  	id: 4096,
+  	tag: "fr-TN",
+  	version: "Release 10"
+  },
+  	"fr-vu": {
+  	language: "French",
+  	location: "Vanuatu",
+  	id: 4096,
+  	tag: "fr-VU",
+  	version: "Release 10"
+  },
+  	"fr-wf": {
+  	language: "French",
+  	location: "Wallis and Futuna",
+  	id: 4096,
+  	tag: "fr-WF",
+  	version: "Release 10"
+  },
+  	fy: fy,
+  	"fy-nl": {
+  	language: "Frisian",
+  	location: "Netherlands",
+  	id: 1122,
+  	tag: "fy-NL",
+  	version: "Release E2"
+  },
+  	fur: fur,
+  	"fur-it": {
+  	language: "Friulian",
+  	location: "Italy",
+  	id: 4096,
+  	tag: "fur-IT",
+  	version: "Release 10"
+  },
+  	ff: ff,
+  	"ff-latn": {
+  	language: "Fulah (Latin)",
+  	location: null,
+  	id: 31847,
+  	tag: "ff-Latn",
+  	version: "Release 8"
+  },
+  	"ff-latn-bf": {
+  	language: "Fulah (Latin)",
+  	location: "Burkina Faso",
+  	id: 4096,
+  	tag: "ff-Latn-BF",
+  	version: "Release 10.4"
+  },
+  	"ff-cm": {
+  	language: "Fulah",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "ff-CM",
+  	version: "Release 10"
+  },
+  	"ff-latn-cm": {
+  	language: "Fulah (Latin)",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "ff-Latn-CM",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-gm": {
+  	language: "Fulah (Latin)",
+  	location: "Gambia",
+  	id: 4096,
+  	tag: "ff-Latn-GM",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-gh": {
+  	language: "Fulah (Latin)",
+  	location: "Ghana",
+  	id: 4096,
+  	tag: "ff-Latn-GH",
+  	version: "Release 10.4"
+  },
+  	"ff-gn": {
+  	language: "Fulah",
+  	location: "Guinea",
+  	id: 4096,
+  	tag: "ff-GN",
+  	version: "Release 10"
+  },
+  	"ff-latn-gn": {
+  	language: "Fulah (Latin)",
+  	location: "Guinea",
+  	id: 4096,
+  	tag: "ff-Latn-GN",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-gw": {
+  	language: "Fulah (Latin)",
+  	location: "Guinea-Bissau",
+  	id: 4096,
+  	tag: "ff-Latn-GW",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-lr": {
+  	language: "Fulah (Latin)",
+  	location: "Liberia",
+  	id: 4096,
+  	tag: "ff-Latn-LR",
+  	version: "Release 10.4"
+  },
+  	"ff-mr": {
+  	language: "Fulah",
+  	location: "Mauritania",
+  	id: 4096,
+  	tag: "ff-MR",
+  	version: "Release 10"
+  },
+  	"ff-latn-mr": {
+  	language: "Fulah (Latin)",
+  	location: "Mauritania",
+  	id: 4096,
+  	tag: "ff-Latn-MR",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-ne": {
+  	language: "Fulah (Latin)",
+  	location: "Niger",
+  	id: 4096,
+  	tag: "ff-Latn-NE",
+  	version: "Release 10.4"
+  },
+  	"ff-ng": {
+  	language: "Fulah",
+  	location: "Nigeria",
+  	id: 4096,
+  	tag: "ff-NG",
+  	version: "Release 10"
+  },
+  	"ff-latn-ng": {
+  	language: "Fulah (Latin)",
+  	location: "Nigeria",
+  	id: 4096,
+  	tag: "ff-Latn-NG",
+  	version: "Release 10.4"
+  },
+  	"ff-latn-sn": {
+  	language: "Fulah",
+  	location: "Senegal",
+  	id: 2151,
+  	tag: "ff-Latn-SN",
+  	version: "Release 8"
+  },
+  	"ff-latn-sl": {
+  	language: "Fulah (Latin)",
+  	location: "Sierra Leone",
+  	id: 4096,
+  	tag: "ff-Latn-SL",
+  	version: "Release 10.4"
+  },
+  	gl: gl,
+  	"gl-es": {
+  	language: "Galician",
+  	location: "Spain",
+  	id: 1110,
+  	tag: "gl-ES",
+  	version: "Release D"
+  },
+  	lg: lg,
+  	"lg-ug": {
+  	language: "Ganda",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "lg-UG",
+  	version: "Release 10"
+  },
+  	ka: ka,
+  	"ka-ge": {
+  	language: "Georgian",
+  	location: "Georgia",
+  	id: 1079,
+  	tag: "ka-GE",
+  	version: "Release C"
+  },
+  	de: de,
+  	"de-at": {
+  	language: "German",
+  	location: "Austria",
+  	id: 3079,
+  	tag: "de-AT",
+  	version: "Release A"
+  },
+  	"de-be": {
+  	language: "German",
+  	location: "Belgium",
+  	id: 4096,
+  	tag: "de-BE",
+  	version: "Release 10"
+  },
+  	"de-de": {
+  	language: "German",
+  	location: "Germany",
+  	id: 1031,
+  	tag: "de-DE",
+  	version: "Release A"
+  },
+  	"de-it": {
+  	language: "German",
+  	location: "Italy",
+  	id: 4096,
+  	tag: "de-IT",
+  	version: "Release 10.2"
+  },
+  	"de-li": {
+  	language: "German",
+  	location: "Liechtenstein",
+  	id: 5127,
+  	tag: "de-LI",
+  	version: "Release B"
+  },
+  	"de-lu": {
+  	language: "German",
+  	location: "Luxembourg",
+  	id: 4103,
+  	tag: "de-LU",
+  	version: "Release B"
+  },
+  	"de-ch": {
+  	language: "German",
+  	location: "Switzerland",
+  	id: 2055,
+  	tag: "de-CH",
+  	version: "Release A"
+  },
+  	el: el,
+  	"el-cy": {
+  	language: "Greek",
+  	location: "Cyprus",
+  	id: 4096,
+  	tag: "el-CY",
+  	version: "Release 10"
+  },
+  	"el-gr": {
+  	language: "Greek",
+  	location: "Greece",
+  	id: 1032,
+  	tag: "el-GR",
+  	version: "Release A"
+  },
+  	kl: kl,
+  	"kl-gl": {
+  	language: "Greenlandic",
+  	location: "Greenland",
+  	id: 1135,
+  	tag: "kl-GL",
+  	version: "Release V"
+  },
+  	gn: gn,
+  	"gn-py": {
+  	language: "Guarani",
+  	location: "Paraguay",
+  	id: 1140,
+  	tag: "gn-PY",
+  	version: "Release 8.1"
+  },
+  	gu: gu,
+  	"gu-in": {
+  	language: "Gujarati",
+  	location: "India",
+  	id: 1095,
+  	tag: "gu-IN",
+  	version: "Release D"
+  },
+  	guz: guz,
+  	"guz-ke": {
+  	language: "Gusii",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "guz-KE",
+  	version: "Release 10"
+  },
+  	ha: ha,
+  	"ha-latn": {
+  	language: "Hausa (Latin)",
+  	location: null,
+  	id: 31848,
+  	tag: "ha-Latn",
+  	version: "Windows 7"
+  },
+  	"ha-latn-gh": {
+  	language: "Hausa (Latin)",
+  	location: "Ghana",
+  	id: 4096,
+  	tag: "ha-Latn-GH",
+  	version: "Release 10"
+  },
+  	"ha-latn-ne": {
+  	language: "Hausa (Latin)",
+  	location: "Niger",
+  	id: 4096,
+  	tag: "ha-Latn-NE",
+  	version: "Release 10"
+  },
+  	"ha-latn-ng": {
+  	language: "Hausa (Latin)",
+  	location: "Nigeria",
+  	id: 1128,
+  	tag: "ha-Latn-NG",
+  	version: "Release V"
+  },
+  	haw: haw,
+  	"haw-us": {
+  	language: "Hawaiian",
+  	location: "United States",
+  	id: 1141,
+  	tag: "haw-US",
+  	version: "Release 8"
+  },
+  	he: he,
+  	"he-il": {
+  	language: "Hebrew",
+  	location: "Israel",
+  	id: 1037,
+  	tag: "he-IL",
+  	version: "Release B"
+  },
+  	hi: hi,
+  	"hi-in": {
+  	language: "Hindi",
+  	location: "India",
+  	id: 1081,
+  	tag: "hi-IN",
+  	version: "Release C"
+  },
+  	hu: hu,
+  	"hu-hu": {
+  	language: "Hungarian",
+  	location: "Hungary",
+  	id: 1038,
+  	tag: "hu-HU",
+  	version: "Release A"
+  },
+  	is: is,
+  	"is-is": {
+  	language: "Icelandic",
+  	location: "Iceland",
+  	id: 1039,
+  	tag: "is-IS",
+  	version: "Release A"
+  },
+  	ig: ig,
+  	"ig-ng": {
+  	language: "Igbo",
+  	location: "Nigeria",
+  	id: 1136,
+  	tag: "ig-NG",
+  	version: "Release V"
+  },
+  	id: id$1,
+  	"id-id": {
+  	language: "Indonesian",
+  	location: "Indonesia",
+  	id: 1057,
+  	tag: "id-ID",
+  	version: "Release B"
+  },
+  	ia: ia,
+  	"ia-fr": {
+  	language: "Interlingua",
+  	location: "France",
+  	id: 4096,
+  	tag: "ia-FR",
+  	version: "Release 10"
+  },
+  	"ia-001": {
+  	language: "Interlingua",
+  	location: "World",
+  	id: 4096,
+  	tag: "ia-001",
+  	version: "Release 10"
+  },
+  	iu: iu,
+  	"iu-latn": {
+  	language: "Inuktitut (Latin)",
+  	location: null,
+  	id: 31837,
+  	tag: "iu-Latn",
+  	version: "Windows 7"
+  },
+  	"iu-latn-ca": {
+  	language: "Inuktitut (Latin)",
+  	location: "Canada",
+  	id: 2141,
+  	tag: "iu-Latn-CA",
+  	version: "Release E2"
+  },
+  	"iu-cans": {
+  	language: "Inuktitut (Syllabics)",
+  	location: null,
+  	id: 30813,
+  	tag: "iu-Cans",
+  	version: "Windows 7"
+  },
+  	"iu-cans-ca": {
+  	language: "Inuktitut (Syllabics)",
+  	location: "Canada",
+  	id: 1117,
+  	tag: "iu-Cans-CA",
+  	version: "Release V"
+  },
+  	ga: ga,
+  	"ga-ie": {
+  	language: "Irish",
+  	location: "Ireland",
+  	id: 2108,
+  	tag: "ga-IE",
+  	version: "Release E2"
+  },
+  	it: it,
+  	"it-it": {
+  	language: "Italian",
+  	location: "Italy",
+  	id: 1040,
+  	tag: "it-IT",
+  	version: "Release A"
+  },
+  	"it-sm": {
+  	language: "Italian",
+  	location: "San Marino",
+  	id: 4096,
+  	tag: "it-SM",
+  	version: "Release 10"
+  },
+  	"it-ch": {
+  	language: "Italian",
+  	location: "Switzerland",
+  	id: 2064,
+  	tag: "it-CH",
+  	version: "Release A"
+  },
+  	"it-va": {
+  	language: "Italian",
+  	location: "Vatican City",
+  	id: 4096,
+  	tag: "it-VA",
+  	version: "Release 10.3"
+  },
+  	ja: ja,
+  	"ja-jp": {
+  	language: "Japanese",
+  	location: "Japan",
+  	id: 1041,
+  	tag: "ja-JP",
+  	version: "Release A"
+  },
+  	jv: jv,
+  	"jv-latn": {
+  	language: "Javanese",
+  	location: "Latin",
+  	id: 4096,
+  	tag: "jv-Latn",
+  	version: "Release 8.1"
+  },
+  	"jv-latn-id": {
+  	language: "Javanese",
+  	location: "Latin, Indonesia",
+  	id: 4096,
+  	tag: "jv-Latn-ID",
+  	version: "Release 8.1"
+  },
+  	dyo: dyo,
+  	"dyo-sn": {
+  	language: "Jola-Fonyi",
+  	location: "Senegal",
+  	id: 4096,
+  	tag: "dyo-SN",
+  	version: "Release 10"
+  },
+  	kea: kea,
+  	"kea-cv": {
+  	language: "Kabuverdianu",
+  	location: "Cabo Verde",
+  	id: 4096,
+  	tag: "kea-CV",
+  	version: "Release 10"
+  },
+  	kab: kab,
+  	"kab-dz": {
+  	language: "Kabyle",
+  	location: "Algeria",
+  	id: 4096,
+  	tag: "kab-DZ",
+  	version: "Release 10"
+  },
+  	kkj: kkj,
+  	"kkj-cm": {
+  	language: "Kako",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "kkj-CM",
+  	version: "Release 10"
+  },
+  	kln: kln,
+  	"kln-ke": {
+  	language: "Kalenjin",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "kln-KE",
+  	version: "Release 10"
+  },
+  	kam: kam,
+  	"kam-ke": {
+  	language: "Kamba",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "kam-KE",
+  	version: "Release 10"
+  },
+  	kn: kn,
+  	"kn-in": {
+  	language: "Kannada",
+  	location: "India",
+  	id: 1099,
+  	tag: "kn-IN",
+  	version: "Release D"
+  },
+  	ks: ks,
+  	"ks-arab": {
+  	language: "Kashmiri",
+  	location: "Perso-Arabic",
+  	id: 1120,
+  	tag: "ks-Arab",
+  	version: "Release 10"
+  },
+  	"ks-arab-in": {
+  	language: "Kashmiri",
+  	location: "Perso-Arabic",
+  	id: 4096,
+  	tag: "ks-Arab-IN",
+  	version: "Release 10"
+  },
+  	kk: kk,
+  	"kk-kz": {
+  	language: "Kazakh",
+  	location: "Kazakhstan",
+  	id: 1087,
+  	tag: "kk-KZ",
+  	version: "Release C"
+  },
+  	km: km,
+  	"km-kh": {
+  	language: "Khmer",
+  	location: "Cambodia",
+  	id: 1107,
+  	tag: "km-KH",
+  	version: "Release V"
+  },
+  	quc: quc,
+  	"quc-latn-gt": {
+  	language: "K'iche",
+  	location: "Guatemala",
+  	id: 1158,
+  	tag: "quc-Latn-GT",
+  	version: "Release 10"
+  },
+  	ki: ki,
+  	"ki-ke": {
+  	language: "Kikuyu",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "ki-KE",
+  	version: "Release 10"
+  },
+  	rw: rw,
+  	"rw-rw": {
+  	language: "Kinyarwanda",
+  	location: "Rwanda",
+  	id: 1159,
+  	tag: "rw-RW",
+  	version: "Release V"
+  },
+  	sw: sw,
+  	"sw-ke": {
+  	language: "Kiswahili",
+  	location: "Kenya",
+  	id: 1089,
+  	tag: "sw-KE",
+  	version: "Release C"
+  },
+  	"sw-tz": {
+  	language: "Kiswahili",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "sw-TZ",
+  	version: "Release 10"
+  },
+  	"sw-ug": {
+  	language: "Kiswahili",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "sw-UG",
+  	version: "Release 10"
+  },
+  	kok: kok,
+  	"kok-in": {
+  	language: "Konkani",
+  	location: "India",
+  	id: 1111,
+  	tag: "kok-IN",
+  	version: "Release C"
+  },
+  	ko: ko,
+  	"ko-kr": {
+  	language: "Korean",
+  	location: "Korea",
+  	id: 1042,
+  	tag: "ko-KR",
+  	version: "Release A"
+  },
+  	"ko-kp": {
+  	language: "Korean",
+  	location: "North Korea",
+  	id: 4096,
+  	tag: "ko-KP",
+  	version: "Release 10.1"
+  },
+  	khq: khq,
+  	"khq-ml": {
+  	language: "Koyra Chiini",
+  	location: "Mali",
+  	id: 4096,
+  	tag: "khq-ML",
+  	version: "Release 10"
+  },
+  	ses: ses,
+  	"ses-ml": {
+  	language: "Koyraboro Senni",
+  	location: "Mali",
+  	id: 4096,
+  	tag: "ses-ML",
+  	version: "Release 10"
+  },
+  	nmg: nmg,
+  	"nmg-cm": {
+  	language: "Kwasio",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "nmg-CM",
+  	version: "Release 10"
+  },
+  	ky: ky,
+  	"ky-kg": {
+  	language: "Kyrgyz",
+  	location: "Kyrgyzstan",
+  	id: 1088,
+  	tag: "ky-KG",
+  	version: "Release D"
+  },
+  	"ku-arab-ir": {
+  	language: "Kurdish",
+  	location: "Perso-Arabic, Iran",
+  	id: 4096,
+  	tag: "ku-Arab-IR",
+  	version: "Release 10.1"
+  },
+  	lkt: lkt,
+  	"lkt-us": {
+  	language: "Lakota",
+  	location: "United States",
+  	id: 4096,
+  	tag: "lkt-US",
+  	version: "Release 10"
+  },
+  	lag: lag,
+  	"lag-tz": {
+  	language: "Langi",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "lag-TZ",
+  	version: "Release 10"
+  },
+  	lo: lo,
+  	"lo-la": {
+  	language: "Lao",
+  	location: "Lao P.D.R.",
+  	id: 1108,
+  	tag: "lo-LA",
+  	version: "Release V"
+  },
+  	lv: lv,
+  	"lv-lv": {
+  	language: "Latvian",
+  	location: "Latvia",
+  	id: 1062,
+  	tag: "lv-LV",
+  	version: "Release B"
+  },
+  	ln: ln,
+  	"ln-ao": {
+  	language: "Lingala",
+  	location: "Angola",
+  	id: 4096,
+  	tag: "ln-AO",
+  	version: "Release 10"
+  },
+  	"ln-cf": {
+  	language: "Lingala",
+  	location: "Central African Republic",
+  	id: 4096,
+  	tag: "ln-CF",
+  	version: "Release 10"
+  },
+  	"ln-cg": {
+  	language: "Lingala",
+  	location: "Congo",
+  	id: 4096,
+  	tag: "ln-CG",
+  	version: "Release 10"
+  },
+  	"ln-cd": {
+  	language: "Lingala",
+  	location: "Congo DRC",
+  	id: 4096,
+  	tag: "ln-CD",
+  	version: "Release 10"
+  },
+  	lt: lt,
+  	"lt-lt": {
+  	language: "Lithuanian",
+  	location: "Lithuania",
+  	id: 1063,
+  	tag: "lt-LT",
+  	version: "Release B"
+  },
+  	nds: nds,
+  	"nds-de": {
+  	language: "Low German ",
+  	location: "Germany",
+  	id: 4096,
+  	tag: "nds-DE",
+  	version: "Release 10.2"
+  },
+  	"nds-nl": {
+  	language: "Low German",
+  	location: "Netherlands",
+  	id: 4096,
+  	tag: "nds-NL",
+  	version: "Release 10.2"
+  },
+  	dsb: dsb,
+  	"dsb-de": {
+  	language: "Lower Sorbian",
+  	location: "Germany",
+  	id: 2094,
+  	tag: "dsb-DE",
+  	version: "Release V"
+  },
+  	lu: lu,
+  	"lu-cd": {
+  	language: "Luba-Katanga",
+  	location: "Congo DRC",
+  	id: 4096,
+  	tag: "lu-CD",
+  	version: "Release 10"
+  },
+  	luo: luo,
+  	"luo-ke": {
+  	language: "Luo",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "luo-KE",
+  	version: "Release 10"
+  },
+  	lb: lb,
+  	"lb-lu": {
+  	language: "Luxembourgish",
+  	location: "Luxembourg",
+  	id: 1134,
+  	tag: "lb-LU",
+  	version: "Release E2"
+  },
+  	luy: luy,
+  	"luy-ke": {
+  	language: "Luyia",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "luy-KE",
+  	version: "Release 10"
+  },
+  	mk: mk,
+  	"mk-mk": {
+  	language: "Macedonian",
+  	location: "North Macedonia ",
+  	id: 1071,
+  	tag: "mk-MK",
+  	version: "Release C"
+  },
+  	jmc: jmc,
+  	"jmc-tz": {
+  	language: "Machame",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "jmc-TZ",
+  	version: "Release 10"
+  },
+  	mgh: mgh,
+  	"mgh-mz": {
+  	language: "Makhuwa-Meetto",
+  	location: "Mozambique",
+  	id: 4096,
+  	tag: "mgh-MZ",
+  	version: "Release 10"
+  },
+  	kde: kde,
+  	"kde-tz": {
+  	language: "Makonde",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "kde-TZ",
+  	version: "Release 10"
+  },
+  	mg: mg,
+  	"mg-mg": {
+  	language: "Malagasy",
+  	location: "Madagascar",
+  	id: 4096,
+  	tag: "mg-MG",
+  	version: "Release 8.1"
+  },
+  	ms: ms,
+  	"ms-bn": {
+  	language: "Malay",
+  	location: "Brunei Darussalam",
+  	id: 2110,
+  	tag: "ms-BN",
+  	version: "Release C"
+  },
+  	"ms-my": {
+  	language: "Malay",
+  	location: "Malaysia",
+  	id: 1086,
+  	tag: "ms-MY",
+  	version: "Release C"
+  },
+  	ml: ml,
+  	"ml-in": {
+  	language: "Malayalam",
+  	location: "India",
+  	id: 1100,
+  	tag: "ml-IN",
+  	version: "Release E1"
+  },
+  	mt: mt,
+  	"mt-mt": {
+  	language: "Maltese",
+  	location: "Malta",
+  	id: 1082,
+  	tag: "mt-MT",
+  	version: "Release E1"
+  },
+  	gv: gv,
+  	"gv-im": {
+  	language: "Manx",
+  	location: "Isle of Man",
+  	id: 4096,
+  	tag: "gv-IM",
+  	version: "Release 10"
+  },
+  	mi: mi,
+  	"mi-nz": {
+  	language: "Maori",
+  	location: "New Zealand",
+  	id: 1153,
+  	tag: "mi-NZ",
+  	version: "Release E1"
+  },
+  	arn: arn,
+  	"arn-cl": {
+  	language: "Mapudungun",
+  	location: "Chile",
+  	id: 1146,
+  	tag: "arn-CL",
+  	version: "Release E2"
+  },
+  	mr: mr,
+  	"mr-in": {
+  	language: "Marathi",
+  	location: "India",
+  	id: 1102,
+  	tag: "mr-IN",
+  	version: "Release C"
+  },
+  	mas: mas,
+  	"mas-ke": {
+  	language: "Masai",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "mas-KE",
+  	version: "Release 10"
+  },
+  	"mas-tz": {
+  	language: "Masai",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "mas-TZ",
+  	version: "Release 10"
+  },
+  	"mzn-ir": {
+  	language: "Mazanderani",
+  	location: "Iran",
+  	id: 4096,
+  	tag: "mzn-IR",
+  	version: "Release 10.1"
+  },
+  	mer: mer,
+  	"mer-ke": {
+  	language: "Meru",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "mer-KE",
+  	version: "Release 10"
+  },
+  	mgo: mgo,
+  	"mgo-cm": {
+  	language: "Meta'",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "mgo-CM",
+  	version: "Release 10"
+  },
+  	moh: moh,
+  	"moh-ca": {
+  	language: "Mohawk",
+  	location: "Canada",
+  	id: 1148,
+  	tag: "moh-CA",
+  	version: "Release E2"
+  },
+  	mn: mn,
+  	"mn-cyrl": {
+  	language: "Mongolian (Cyrillic)",
+  	location: null,
+  	id: 30800,
+  	tag: "mn-Cyrl",
+  	version: "Windows 7"
+  },
+  	"mn-mn": {
+  	language: "Mongolian (Cyrillic)",
+  	location: "Mongolia",
+  	id: 1104,
+  	tag: "mn-MN",
+  	version: "Release D"
+  },
+  	"mn-mong": {
+  	language: "Mongolian (Traditional ",
+  	location: null,
+  	id: 31824,
+  	tag: "mn-Mong",
+  	version: "Windows 7"
+  },
+  	"mn-mong-": {
+  	language: "Mongolian (Traditional ",
+  	location: "Mongolia",
+  	id: 3152,
+  	tag: "mn-Mong-",
+  	version: "Windows 7"
+  },
+  	mfe: mfe,
+  	"mfe-mu": {
+  	language: "Morisyen",
+  	location: "Mauritius",
+  	id: 4096,
+  	tag: "mfe-MU",
+  	version: "Release 10"
+  },
+  	mua: mua,
+  	"mua-cm": {
+  	language: "Mundang",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "mua-CM",
+  	version: "Release 10"
+  },
+  	nqo: nqo,
+  	"nqo-gn": {
+  	language: "N'ko",
+  	location: "Guinea",
+  	id: 4096,
+  	tag: "nqo-GN",
+  	version: "Release 8.1"
+  },
+  	naq: naq,
+  	"naq-na": {
+  	language: "Nama",
+  	location: "Namibia",
+  	id: 4096,
+  	tag: "naq-NA",
+  	version: "Release 10"
+  },
+  	ne: ne,
+  	"ne-in": {
+  	language: "Nepali",
+  	location: "India",
+  	id: 2145,
+  	tag: "ne-IN",
+  	version: "Release 8.1"
+  },
+  	"ne-np": {
+  	language: "Nepali",
+  	location: "Nepal",
+  	id: 1121,
+  	tag: "ne-NP",
+  	version: "Release E2"
+  },
+  	nnh: nnh,
+  	"nnh-cm": {
+  	language: "Ngiemboon",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "nnh-CM",
+  	version: "Release 10"
+  },
+  	jgo: jgo,
+  	"jgo-cm": {
+  	language: "Ngomba",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "jgo-CM",
+  	version: "Release 10"
+  },
+  	"lrc-iq": {
+  	language: "Northern Luri",
+  	location: "Iraq",
+  	id: 4096,
+  	tag: "lrc-IQ",
+  	version: "Release 10.1"
+  },
+  	"lrc-ir": {
+  	language: "Northern Luri",
+  	location: "Iran",
+  	id: 4096,
+  	tag: "lrc-IR",
+  	version: "Release 10.1"
+  },
+  	nd: nd,
+  	"nd-zw": {
+  	language: "North Ndebele",
+  	location: "Zimbabwe",
+  	id: 4096,
+  	tag: "nd-ZW",
+  	version: "Release 10"
+  },
+  	no: no,
+  	nb: nb,
+  	"nb-no": {
+  	language: "Norwegian (Bokmal)",
+  	location: "Norway",
+  	id: 1044,
+  	tag: "nb-NO",
+  	version: "Release A"
+  },
+  	nn: nn,
+  	"nn-no": {
+  	language: "Norwegian (Nynorsk)",
+  	location: "Norway",
+  	id: 2068,
+  	tag: "nn-NO",
+  	version: "Release A"
+  },
+  	"nb-sj": {
+  	language: "Norwegian Bokmål",
+  	location: "Svalbard and Jan Mayen",
+  	id: 4096,
+  	tag: "nb-SJ",
+  	version: "Release 10"
+  },
+  	nus: nus,
+  	"nus-sd": {
+  	language: "Nuer",
+  	location: "Sudan",
+  	id: 4096,
+  	tag: "nus-SD",
+  	version: "Release 10"
+  },
+  	"nus-ss": {
+  	language: "Nuer",
+  	location: "South Sudan",
+  	id: 4096,
+  	tag: "nus-SS",
+  	version: "Release 10.1"
+  },
+  	nyn: nyn,
+  	"nyn-ug": {
+  	language: "Nyankole",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "nyn-UG",
+  	version: "Release 10"
+  },
+  	oc: oc,
+  	"oc-fr": {
+  	language: "Occitan",
+  	location: "France",
+  	id: 1154,
+  	tag: "oc-FR",
+  	version: "Release V"
+  },
+  	or: or,
+  	"or-in": {
+  	language: "Odia",
+  	location: "India",
+  	id: 1096,
+  	tag: "or-IN",
+  	version: "Release V"
+  },
+  	om: om,
+  	"om-et": {
+  	language: "Oromo",
+  	location: "Ethiopia",
+  	id: 1138,
+  	tag: "om-ET",
+  	version: "Release 8.1"
+  },
+  	"om-ke": {
+  	language: "Oromo",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "om-KE",
+  	version: "Release 10"
+  },
+  	os: os,
+  	"os-ge": {
+  	language: "Ossetian",
+  	location: "Cyrillic, Georgia",
+  	id: 4096,
+  	tag: "os-GE",
+  	version: "Release 10"
+  },
+  	"os-ru": {
+  	language: "Ossetian",
+  	location: "Cyrillic, Russia",
+  	id: 4096,
+  	tag: "os-RU",
+  	version: "Release 10"
+  },
+  	ps: ps,
+  	"ps-af": {
+  	language: "Pashto",
+  	location: "Afghanistan",
+  	id: 1123,
+  	tag: "ps-AF",
+  	version: "Release E2"
+  },
+  	fa: fa,
+  	"fa-af": {
+  	language: "Persian",
+  	location: "Afghanistan",
+  	id: 4096,
+  	tag: "fa-AF",
+  	version: "Release 10"
+  },
+  	"fa-ir": {
+  	language: "Persian",
+  	location: "Iran",
+  	id: 1065,
+  	tag: "fa-IR",
+  	version: "Release B"
+  },
+  	pl: pl,
+  	"pl-pl": {
+  	language: "Polish",
+  	location: "Poland",
+  	id: 1045,
+  	tag: "pl-PL",
+  	version: "Release A"
+  },
+  	pt: pt,
+  	"pt-ao": {
+  	language: "Portuguese",
+  	location: "Angola",
+  	id: 4096,
+  	tag: "pt-AO",
+  	version: "Release 8.1"
+  },
+  	"pt-br": {
+  	language: "Portuguese",
+  	location: "Brazil",
+  	id: 1046,
+  	tag: "pt-BR",
+  	version: "ReleaseA"
+  },
+  	"pt-cv": {
+  	language: "Portuguese",
+  	location: "Cabo Verde",
+  	id: 4096,
+  	tag: "pt-CV",
+  	version: "Release 10"
+  },
+  	"pt-gq": {
+  	language: "Portuguese",
+  	location: "Equatorial Guinea",
+  	id: 4096,
+  	tag: "pt-GQ",
+  	version: "Release 10.2"
+  },
+  	"pt-gw": {
+  	language: "Portuguese",
+  	location: "Guinea-Bissau",
+  	id: 4096,
+  	tag: "pt-GW",
+  	version: "Release 10"
+  },
+  	"pt-lu": {
+  	language: "Portuguese",
+  	location: "Luxembourg",
+  	id: 4096,
+  	tag: "pt-LU",
+  	version: "Release 10.2"
+  },
+  	"pt-mo": {
+  	language: "Portuguese",
+  	location: "Macao SAR",
+  	id: 4096,
+  	tag: "pt-MO",
+  	version: "Release 10"
+  },
+  	"pt-mz": {
+  	language: "Portuguese",
+  	location: "Mozambique",
+  	id: 4096,
+  	tag: "pt-MZ",
+  	version: "Release 10"
+  },
+  	"pt-pt": {
+  	language: "Portuguese",
+  	location: "Portugal",
+  	id: 2070,
+  	tag: "pt-PT",
+  	version: "Release A"
+  },
+  	"pt-st": {
+  	language: "Portuguese",
+  	location: "São Tomé and Príncipe",
+  	id: 4096,
+  	tag: "pt-ST",
+  	version: "Release 10"
+  },
+  	"pt-ch": {
+  	language: "Portuguese",
+  	location: "Switzerland",
+  	id: 4096,
+  	tag: "pt-CH",
+  	version: "Release 10.2"
+  },
+  	"pt-tl": {
+  	language: "Portuguese",
+  	location: "Timor-Leste",
+  	id: 4096,
+  	tag: "pt-TL",
+  	version: "Release 10"
+  },
+  	"prg-001": {
+  	language: "Prussian",
+  	location: null,
+  	id: 4096,
+  	tag: "prg-001",
+  	version: "Release 10.1"
+  },
+  	"qps-ploca": {
+  	language: "Pseudo Language",
+  	location: "Pseudo locale for east Asian/complex ",
+  	id: 1534,
+  	tag: "qps-ploca",
+  	version: "Release 7"
+  },
+  	"qps-ploc": {
+  	language: "Pseudo Language",
+  	location: "Pseudo locale used for localization ",
+  	id: 1281,
+  	tag: "qps-ploc",
+  	version: "Release 7"
+  },
+  	"qps-plocm": {
+  	language: "Pseudo Language",
+  	location: "Pseudo locale used for localization ",
+  	id: 2559,
+  	tag: "qps-plocm",
+  	version: "Release 7"
+  },
+  	pa: pa,
+  	"pa-arab": {
+  	language: "Punjabi",
+  	location: null,
+  	id: 31814,
+  	tag: "pa-Arab",
+  	version: "Release 8"
+  },
+  	"pa-in": {
+  	language: "Punjabi",
+  	location: "India",
+  	id: 1094,
+  	tag: "pa-IN",
+  	version: "Release D"
+  },
+  	"pa-arab-pk": {
+  	language: "Punjabi",
+  	location: "Islamic Republic of Pakistan",
+  	id: 2118,
+  	tag: "pa-Arab-PK",
+  	version: "Release 8"
+  },
+  	quz: quz,
+  	"quz-bo": {
+  	language: "Quechua",
+  	location: "Bolivia",
+  	id: 1131,
+  	tag: "quz-BO",
+  	version: "Release E1"
+  },
+  	"quz-ec": {
+  	language: "Quechua",
+  	location: "Ecuador",
+  	id: 2155,
+  	tag: "quz-EC",
+  	version: "Release E1"
+  },
+  	"quz-pe": {
+  	language: "Quechua",
+  	location: "Peru",
+  	id: 3179,
+  	tag: "quz-PE",
+  	version: "Release E1"
+  },
+  	ksh: ksh,
+  	"ksh-de": {
+  	language: "Ripuarian",
+  	location: "Germany",
+  	id: 4096,
+  	tag: "ksh-DE",
+  	version: "Release 10"
+  },
+  	ro: ro,
+  	"ro-md": {
+  	language: "Romanian",
+  	location: "Moldova",
+  	id: 2072,
+  	tag: "ro-MD",
+  	version: "Release 8.1"
+  },
+  	"ro-ro": {
+  	language: "Romanian",
+  	location: "Romania",
+  	id: 1048,
+  	tag: "ro-RO",
+  	version: "Release A"
+  },
+  	rm: rm,
+  	"rm-ch": {
+  	language: "Romansh",
+  	location: "Switzerland",
+  	id: 1047,
+  	tag: "rm-CH",
+  	version: "Release E2"
+  },
+  	rof: rof,
+  	"rof-tz": {
+  	language: "Rombo",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "rof-TZ",
+  	version: "Release 10"
+  },
+  	rn: rn,
+  	"rn-bi": {
+  	language: "Rundi",
+  	location: "Burundi",
+  	id: 4096,
+  	tag: "rn-BI",
+  	version: "Release 10"
+  },
+  	ru: ru,
+  	"ru-by": {
+  	language: "Russian",
+  	location: "Belarus",
+  	id: 4096,
+  	tag: "ru-BY",
+  	version: "Release 10"
+  },
+  	"ru-kz": {
+  	language: "Russian",
+  	location: "Kazakhstan",
+  	id: 4096,
+  	tag: "ru-KZ",
+  	version: "Release 10"
+  },
+  	"ru-kg": {
+  	language: "Russian",
+  	location: "Kyrgyzstan",
+  	id: 4096,
+  	tag: "ru-KG",
+  	version: "Release 10"
+  },
+  	"ru-md": {
+  	language: "Russian",
+  	location: "Moldova",
+  	id: 2073,
+  	tag: "ru-MD",
+  	version: "Release 10"
+  },
+  	"ru-ru": {
+  	language: "Russian",
+  	location: "Russia",
+  	id: 1049,
+  	tag: "ru-RU",
+  	version: "Release A"
+  },
+  	"ru-ua": {
+  	language: "Russian",
+  	location: "Ukraine",
+  	id: 4096,
+  	tag: "ru-UA",
+  	version: "Release 10"
+  },
+  	rwk: rwk,
+  	"rwk-tz": {
+  	language: "Rwa",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "rwk-TZ",
+  	version: "Release 10"
+  },
+  	ssy: ssy,
+  	"ssy-er": {
+  	language: "Saho",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "ssy-ER",
+  	version: "Release 10"
+  },
+  	sah: sah,
+  	"sah-ru": {
+  	language: "Sakha",
+  	location: "Russia",
+  	id: 1157,
+  	tag: "sah-RU",
+  	version: "Release V"
+  },
+  	saq: saq,
+  	"saq-ke": {
+  	language: "Samburu",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "saq-KE",
+  	version: "Release 10"
+  },
+  	smn: smn,
+  	"smn-fi": {
+  	language: "Sami (Inari)",
+  	location: "Finland",
+  	id: 9275,
+  	tag: "smn-FI",
+  	version: "Release E1"
+  },
+  	smj: smj,
+  	"smj-no": {
+  	language: "Sami (Lule)",
+  	location: "Norway",
+  	id: 4155,
+  	tag: "smj-NO",
+  	version: "Release E1"
+  },
+  	"smj-se": {
+  	language: "Sami (Lule)",
+  	location: "Sweden",
+  	id: 5179,
+  	tag: "smj-SE",
+  	version: "Release E1"
+  },
+  	se: se,
+  	"se-fi": {
+  	language: "Sami (Northern)",
+  	location: "Finland",
+  	id: 3131,
+  	tag: "se-FI",
+  	version: "Release E1"
+  },
+  	"se-no": {
+  	language: "Sami (Northern)",
+  	location: "Norway",
+  	id: 1083,
+  	tag: "se-NO",
+  	version: "Release E1"
+  },
+  	"se-se": {
+  	language: "Sami (Northern)",
+  	location: "Sweden",
+  	id: 2107,
+  	tag: "se-SE",
+  	version: "Release E1"
+  },
+  	sms: sms,
+  	"sms-fi": {
+  	language: "Sami (Skolt)",
+  	location: "Finland",
+  	id: 8251,
+  	tag: "sms-FI",
+  	version: "Release E1"
+  },
+  	sma: sma,
+  	"sma-no": {
+  	language: "Sami (Southern)",
+  	location: "Norway",
+  	id: 6203,
+  	tag: "sma-NO",
+  	version: "Release E1"
+  },
+  	"sma-se": {
+  	language: "Sami (Southern)",
+  	location: "Sweden",
+  	id: 7227,
+  	tag: "sma-SE",
+  	version: "Release E1"
+  },
+  	sg: sg,
+  	"sg-cf": {
+  	language: "Sango",
+  	location: "Central African Republic",
+  	id: 4096,
+  	tag: "sg-CF",
+  	version: "Release 10"
+  },
+  	sbp: sbp,
+  	"sbp-tz": {
+  	language: "Sangu",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "sbp-TZ",
+  	version: "Release 10"
+  },
+  	sa: sa,
+  	"sa-in": {
+  	language: "Sanskrit",
+  	location: "India",
+  	id: 1103,
+  	tag: "sa-IN",
+  	version: "Release C"
+  },
+  	gd: gd,
+  	"gd-gb": {
+  	language: "Scottish Gaelic",
+  	location: "United Kingdom",
+  	id: 1169,
+  	tag: "gd-GB",
+  	version: "Release 7"
+  },
+  	seh: seh,
+  	"seh-mz": {
+  	language: "Sena",
+  	location: "Mozambique",
+  	id: 4096,
+  	tag: "seh-MZ",
+  	version: "Release 10"
+  },
+  	"sr-cyrl": {
+  	language: "Serbian (Cyrillic)",
+  	location: null,
+  	id: 27674,
+  	tag: "sr-Cyrl",
+  	version: "Windows 7"
+  },
+  	"sr-cyrl-ba": {
+  	language: "Serbian (Cyrillic)",
+  	location: "Bosnia and Herzegovina",
+  	id: 7194,
+  	tag: "sr-Cyrl-BA",
+  	version: "Release E1"
+  },
+  	"sr-cyrl-me": {
+  	language: "Serbian (Cyrillic)",
+  	location: "Montenegro",
+  	id: 12314,
+  	tag: "sr-Cyrl-ME",
+  	version: "Release 7"
+  },
+  	"sr-cyrl-rs": {
+  	language: "Serbian (Cyrillic)",
+  	location: "Serbia",
+  	id: 10266,
+  	tag: "sr-Cyrl-RS",
+  	version: "Release 7"
+  },
+  	"sr-cyrl-cs": {
+  	language: "Serbian (Cyrillic)",
+  	location: "Serbia and Montenegro (Former)",
+  	id: 3098,
+  	tag: "sr-Cyrl-CS",
+  	version: "Release B"
+  },
+  	"sr-latn": {
+  	language: "Serbian (Latin)",
+  	location: null,
+  	id: 28698,
+  	tag: "sr-Latn",
+  	version: "Windows 7"
+  },
+  	sr: sr,
+  	"sr-latn-ba": {
+  	language: "Serbian (Latin)",
+  	location: "Bosnia and Herzegovina",
+  	id: 6170,
+  	tag: "sr-Latn-BA",
+  	version: "Release E1"
+  },
+  	"sr-latn-me": {
+  	language: "Serbian (Latin)",
+  	location: "Montenegro",
+  	id: 11290,
+  	tag: "sr-Latn-ME",
+  	version: "Release 7"
+  },
+  	"sr-latn-rs": {
+  	language: "Serbian (Latin)",
+  	location: "Serbia",
+  	id: 9242,
+  	tag: "sr-Latn-RS",
+  	version: "Release 7"
+  },
+  	"sr-latn-cs": {
+  	language: "Serbian (Latin)",
+  	location: "Serbia and Montenegro (Former)",
+  	id: 2074,
+  	tag: "sr-Latn-CS",
+  	version: "Release B"
+  },
+  	nso: nso,
+  	"nso-za": {
+  	language: "Sesotho sa Leboa",
+  	location: "South Africa",
+  	id: 1132,
+  	tag: "nso-ZA",
+  	version: "Release E1"
+  },
+  	tn: tn,
+  	"tn-bw": {
+  	language: "Setswana",
+  	location: "Botswana",
+  	id: 2098,
+  	tag: "tn-BW",
+  	version: "Release 8"
+  },
+  	"tn-za": {
+  	language: "Setswana",
+  	location: "South Africa",
+  	id: 1074,
+  	tag: "tn-ZA",
+  	version: "Release E1"
+  },
+  	ksb: ksb,
+  	"ksb-tz": {
+  	language: "Shambala",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "ksb-TZ",
+  	version: "Release 10"
+  },
+  	sn: sn,
+  	"sn-latn": {
+  	language: "Shona",
+  	location: "Latin",
+  	id: 4096,
+  	tag: "sn-Latn",
+  	version: "Release 8.1"
+  },
+  	"sn-latn-zw": {
+  	language: "Shona",
+  	location: "Zimbabwe",
+  	id: 4096,
+  	tag: "sn-Latn-ZW",
+  	version: "Release 8.1"
+  },
+  	sd: sd,
+  	"sd-arab": {
+  	language: "Sindhi",
+  	location: null,
+  	id: 31833,
+  	tag: "sd-Arab",
+  	version: "Release 8"
+  },
+  	"sd-arab-pk": {
+  	language: "Sindhi",
+  	location: "Islamic Republic of Pakistan",
+  	id: 2137,
+  	tag: "sd-Arab-PK",
+  	version: "Release 8"
+  },
+  	si: si,
+  	"si-lk": {
+  	language: "Sinhala",
+  	location: "Sri Lanka",
+  	id: 1115,
+  	tag: "si-LK",
+  	version: "Release V"
+  },
+  	sk: sk,
+  	"sk-sk": {
+  	language: "Slovak",
+  	location: "Slovakia",
+  	id: 1051,
+  	tag: "sk-SK",
+  	version: "Release A"
+  },
+  	sl: sl,
+  	"sl-si": {
+  	language: "Slovenian",
+  	location: "Slovenia",
+  	id: 1060,
+  	tag: "sl-SI",
+  	version: "Release A"
+  },
+  	xog: xog,
+  	"xog-ug": {
+  	language: "Soga",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "xog-UG",
+  	version: "Release 10"
+  },
+  	so: so,
+  	"so-dj": {
+  	language: "Somali",
+  	location: "Djibouti",
+  	id: 4096,
+  	tag: "so-DJ",
+  	version: "Release 10"
+  },
+  	"so-et": {
+  	language: "Somali",
+  	location: "Ethiopia",
+  	id: 4096,
+  	tag: "so-ET",
+  	version: "Release 10"
+  },
+  	"so-ke": {
+  	language: "Somali",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "so-KE",
+  	version: "Release 10"
+  },
+  	"so-so": {
+  	language: "Somali",
+  	location: "Somalia",
+  	id: 1143,
+  	tag: "so-SO",
+  	version: "Release 8.1"
+  },
+  	st: st,
+  	"st-za": {
+  	language: "Sotho",
+  	location: "South Africa",
+  	id: 1072,
+  	tag: "st-ZA",
+  	version: "Release 8.1"
+  },
+  	nr: nr,
+  	"nr-za": {
+  	language: "South Ndebele",
+  	location: "South Africa",
+  	id: 4096,
+  	tag: "nr-ZA",
+  	version: "Release 10"
+  },
+  	"st-ls": {
+  	language: "Southern Sotho",
+  	location: "Lesotho",
+  	id: 4096,
+  	tag: "st-LS",
+  	version: "Release 10"
+  },
+  	es: es,
+  	"es-ar": {
+  	language: "Spanish",
+  	location: "Argentina",
+  	id: 11274,
+  	tag: "es-AR",
+  	version: "Release B"
+  },
+  	"es-bz": {
+  	language: "Spanish",
+  	location: "Belize",
+  	id: 4096,
+  	tag: "es-BZ",
+  	version: "Release 10.3"
+  },
+  	"es-ve": {
+  	language: "Spanish",
+  	location: "Bolivarian Republic of Venezuela",
+  	id: 8202,
+  	tag: "es-VE",
+  	version: "Release B"
+  },
+  	"es-bo": {
+  	language: "Spanish",
+  	location: "Bolivia",
+  	id: 16394,
+  	tag: "es-BO",
+  	version: "Release B"
+  },
+  	"es-br": {
+  	language: "Spanish",
+  	location: "Brazil",
+  	id: 4096,
+  	tag: "es-BR",
+  	version: "Release 10.2"
+  },
+  	"es-cl": {
+  	language: "Spanish",
+  	location: "Chile",
+  	id: 13322,
+  	tag: "es-CL",
+  	version: "Release B"
+  },
+  	"es-co": {
+  	language: "Spanish",
+  	location: "Colombia",
+  	id: 9226,
+  	tag: "es-CO",
+  	version: "Release B"
+  },
+  	"es-cr": {
+  	language: "Spanish",
+  	location: "Costa Rica",
+  	id: 5130,
+  	tag: "es-CR",
+  	version: "Release B"
+  },
+  	"es-cu": {
+  	language: "Spanish",
+  	location: "Cuba",
+  	id: 23562,
+  	tag: "es-CU",
+  	version: "Release 10"
+  },
+  	"es-do": {
+  	language: "Spanish",
+  	location: "Dominican Republic",
+  	id: 7178,
+  	tag: "es-DO",
+  	version: "Release B"
+  },
+  	"es-ec": {
+  	language: "Spanish",
+  	location: "Ecuador",
+  	id: 12298,
+  	tag: "es-EC",
+  	version: "Release B"
+  },
+  	"es-sv": {
+  	language: "Spanish",
+  	location: "El Salvador",
+  	id: 17418,
+  	tag: "es-SV",
+  	version: "Release B"
+  },
+  	"es-gq": {
+  	language: "Spanish",
+  	location: "Equatorial Guinea",
+  	id: 4096,
+  	tag: "es-GQ",
+  	version: "Release 10"
+  },
+  	"es-gt": {
+  	language: "Spanish",
+  	location: "Guatemala",
+  	id: 4106,
+  	tag: "es-GT",
+  	version: "Release B"
+  },
+  	"es-hn": {
+  	language: "Spanish",
+  	location: "Honduras",
+  	id: 18442,
+  	tag: "es-HN",
+  	version: "Release B"
+  },
+  	"es-419": {
+  	language: "Spanish",
+  	location: "Latin America",
+  	id: 22538,
+  	tag: "es-419",
+  	version: "Release 8.1"
+  },
+  	"es-mx": {
+  	language: "Spanish",
+  	location: "Mexico",
+  	id: 2058,
+  	tag: "es-MX",
+  	version: "Release A"
+  },
+  	"es-ni": {
+  	language: "Spanish",
+  	location: "Nicaragua",
+  	id: 19466,
+  	tag: "es-NI",
+  	version: "Release B"
+  },
+  	"es-pa": {
+  	language: "Spanish",
+  	location: "Panama",
+  	id: 6154,
+  	tag: "es-PA",
+  	version: "Release B"
+  },
+  	"es-py": {
+  	language: "Spanish",
+  	location: "Paraguay",
+  	id: 15370,
+  	tag: "es-PY",
+  	version: "Release B"
+  },
+  	"es-pe": {
+  	language: "Spanish",
+  	location: "Peru",
+  	id: 10250,
+  	tag: "es-PE",
+  	version: "Release B"
+  },
+  	"es-ph": {
+  	language: "Spanish",
+  	location: "Philippines",
+  	id: 4096,
+  	tag: "es-PH",
+  	version: "Release 10"
+  },
+  	"es-pr": {
+  	language: "Spanish",
+  	location: "Puerto Rico",
+  	id: 20490,
+  	tag: "es-PR",
+  	version: "Release B"
+  },
+  	"es-es_tradnl": {
+  	language: "Spanish",
+  	location: "Spain",
+  	id: 1034,
+  	tag: "es-ES_tradnl",
+  	version: "Release A"
+  },
+  	"es-es": {
+  	language: "Spanish",
+  	location: "Spain",
+  	id: 3082,
+  	tag: "es-ES",
+  	version: "Release A"
+  },
+  	"es-us": {
+  	language: "Spanish",
+  	location: "United States",
+  	id: 21514,
+  	tag: "es-US",
+  	version: "Release V"
+  },
+  	"es-uy": {
+  	language: "Spanish",
+  	location: "Uruguay",
+  	id: 14346,
+  	tag: "es-UY",
+  	version: "Release B"
+  },
+  	zgh: zgh,
+  	"zgh-tfng-ma": {
+  	language: "Standard Moroccan ",
+  	location: "Morocco",
+  	id: 4096,
+  	tag: "zgh-Tfng-MA",
+  	version: "Release 8.1"
+  },
+  	"zgh-tfng": {
+  	language: "Standard Moroccan ",
+  	location: "Tifinagh",
+  	id: 4096,
+  	tag: "zgh-Tfng",
+  	version: "Release 8.1"
+  },
+  	ss: ss,
+  	"ss-za": {
+  	language: "Swati",
+  	location: "South Africa",
+  	id: 4096,
+  	tag: "ss-ZA",
+  	version: "Release 10"
+  },
+  	"ss-sz": {
+  	language: "Swati",
+  	location: "Swaziland",
+  	id: 4096,
+  	tag: "ss-SZ",
+  	version: "Release 10"
+  },
+  	sv: sv,
+  	"sv-ax": {
+  	language: "Swedish",
+  	location: "Åland Islands",
+  	id: 4096,
+  	tag: "sv-AX",
+  	version: "Release 10"
+  },
+  	"sv-fi": {
+  	language: "Swedish",
+  	location: "Finland",
+  	id: 2077,
+  	tag: "sv-FI",
+  	version: "ReleaseB"
+  },
+  	"sv-se": {
+  	language: "Swedish",
+  	location: "Sweden",
+  	id: 1053,
+  	tag: "sv-SE",
+  	version: "Release A"
+  },
+  	syr: syr,
+  	"syr-sy": {
+  	language: "Syriac",
+  	location: "Syria",
+  	id: 1114,
+  	tag: "syr-SY",
+  	version: "Release D"
+  },
+  	shi: shi,
+  	"shi-tfng": {
+  	language: "Tachelhit",
+  	location: "Tifinagh",
+  	id: 4096,
+  	tag: "shi-Tfng",
+  	version: "Release 10"
+  },
+  	"shi-tfng-ma": {
+  	language: "Tachelhit",
+  	location: "Tifinagh, Morocco",
+  	id: 4096,
+  	tag: "shi-Tfng-MA",
+  	version: "Release 10"
+  },
+  	"shi-latn": {
+  	language: "Tachelhit (Latin)",
+  	location: null,
+  	id: 4096,
+  	tag: "shi-Latn",
+  	version: "Release 10"
+  },
+  	"shi-latn-ma": {
+  	language: "Tachelhit (Latin)",
+  	location: "Morocco",
+  	id: 4096,
+  	tag: "shi-Latn-MA",
+  	version: "Release 10"
+  },
+  	dav: dav,
+  	"dav-ke": {
+  	language: "Taita",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "dav-KE",
+  	version: "Release 10"
+  },
+  	tg: tg,
+  	"tg-cyrl": {
+  	language: "Tajik (Cyrillic)",
+  	location: null,
+  	id: 31784,
+  	tag: "tg-Cyrl",
+  	version: "Windows 7"
+  },
+  	"tg-cyrl-tj": {
+  	language: "Tajik (Cyrillic)",
+  	location: "Tajikistan",
+  	id: 1064,
+  	tag: "tg-Cyrl-TJ",
+  	version: "Release V"
+  },
+  	tzm: tzm,
+  	"tzm-latn": {
+  	language: "Tamazight (Latin)",
+  	location: null,
+  	id: 31839,
+  	tag: "tzm-Latn",
+  	version: "Windows 7"
+  },
+  	"tzm-latn-dz": {
+  	language: "Tamazight (Latin)",
+  	location: "Algeria",
+  	id: 2143,
+  	tag: "tzm-Latn-DZ",
+  	version: "Release V"
+  },
+  	ta: ta,
+  	"ta-in": {
+  	language: "Tamil",
+  	location: "India",
+  	id: 1097,
+  	tag: "ta-IN",
+  	version: "Release C"
+  },
+  	"ta-my": {
+  	language: "Tamil",
+  	location: "Malaysia",
+  	id: 4096,
+  	tag: "ta-MY",
+  	version: "Release 10"
+  },
+  	"ta-sg": {
+  	language: "Tamil",
+  	location: "Singapore",
+  	id: 4096,
+  	tag: "ta-SG",
+  	version: "Release 10"
+  },
+  	"ta-lk": {
+  	language: "Tamil",
+  	location: "Sri Lanka",
+  	id: 2121,
+  	tag: "ta-LK",
+  	version: "Release 8"
+  },
+  	twq: twq,
+  	"twq-ne": {
+  	language: "Tasawaq",
+  	location: "Niger",
+  	id: 4096,
+  	tag: "twq-NE",
+  	version: "Release 10"
+  },
+  	tt: tt,
+  	"tt-ru": {
+  	language: "Tatar",
+  	location: "Russia",
+  	id: 1092,
+  	tag: "tt-RU",
+  	version: "Release D"
+  },
+  	te: te,
+  	"te-in": {
+  	language: "Telugu",
+  	location: "India",
+  	id: 1098,
+  	tag: "te-IN",
+  	version: "Release D"
+  },
+  	teo: teo,
+  	"teo-ke": {
+  	language: "Teso",
+  	location: "Kenya",
+  	id: 4096,
+  	tag: "teo-KE",
+  	version: "Release 10"
+  },
+  	"teo-ug": {
+  	language: "Teso",
+  	location: "Uganda",
+  	id: 4096,
+  	tag: "teo-UG",
+  	version: "Release 10"
+  },
+  	th: th,
+  	"th-th": {
+  	language: "Thai",
+  	location: "Thailand",
+  	id: 1054,
+  	tag: "th-TH",
+  	version: "Release B"
+  },
+  	bo: bo,
+  	"bo-in": {
+  	language: "Tibetan",
+  	location: "India",
+  	id: 4096,
+  	tag: "bo-IN",
+  	version: "Release 10"
+  },
+  	"bo-cn": {
+  	language: "Tibetan",
+  	location: "People's Republic of China",
+  	id: 1105,
+  	tag: "bo-CN",
+  	version: "Release V"
+  },
+  	tig: tig,
+  	"tig-er": {
+  	language: "Tigre",
+  	location: "Eritrea",
+  	id: 4096,
+  	tag: "tig-ER",
+  	version: "Release 10"
+  },
+  	ti: ti,
+  	"ti-er": {
+  	language: "Tigrinya",
+  	location: "Eritrea",
+  	id: 2163,
+  	tag: "ti-ER",
+  	version: "Release 8"
+  },
+  	"ti-et": {
+  	language: "Tigrinya",
+  	location: "Ethiopia",
+  	id: 1139,
+  	tag: "ti-ET",
+  	version: "Release 8"
+  },
+  	to: to,
+  	"to-to": {
+  	language: "Tongan",
+  	location: "Tonga",
+  	id: 4096,
+  	tag: "to-TO",
+  	version: "Release 10"
+  },
+  	ts: ts,
+  	"ts-za": {
+  	language: "Tsonga",
+  	location: "South Africa",
+  	id: 1073,
+  	tag: "ts-ZA",
+  	version: "Release 8.1"
+  },
+  	tr: tr,
+  	"tr-cy": {
+  	language: "Turkish",
+  	location: "Cyprus",
+  	id: 4096,
+  	tag: "tr-CY",
+  	version: "Release 10"
+  },
+  	"tr-tr": {
+  	language: "Turkish",
+  	location: "Turkey",
+  	id: 1055,
+  	tag: "tr-TR",
+  	version: "Release A"
+  },
+  	tk: tk,
+  	"tk-tm": {
+  	language: "Turkmen",
+  	location: "Turkmenistan",
+  	id: 1090,
+  	tag: "tk-TM",
+  	version: "Release V"
+  },
+  	uk: uk,
+  	"uk-ua": {
+  	language: "Ukrainian",
+  	location: "Ukraine",
+  	id: 1058,
+  	tag: "uk-UA",
+  	version: "Release B"
+  },
+  	hsb: hsb,
+  	"hsb-de": {
+  	language: "Upper Sorbian",
+  	location: "Germany",
+  	id: 1070,
+  	tag: "hsb-DE",
+  	version: "Release V"
+  },
+  	ur: ur,
+  	"ur-in": {
+  	language: "Urdu",
+  	location: "India",
+  	id: 2080,
+  	tag: "ur-IN",
+  	version: "Release 8.1"
+  },
+  	"ur-pk": {
+  	language: "Urdu",
+  	location: "Islamic Republic of Pakistan",
+  	id: 1056,
+  	tag: "ur-PK",
+  	version: "Release C"
+  },
+  	ug: ug,
+  	"ug-cn": {
+  	language: "Uyghur",
+  	location: "People's Republic of China",
+  	id: 1152,
+  	tag: "ug-CN",
+  	version: "Release V"
+  },
+  	"uz-arab": {
+  	language: "Uzbek",
+  	location: "Perso-Arabic",
+  	id: 4096,
+  	tag: "uz-Arab",
+  	version: "Release 10"
+  },
+  	"uz-arab-af": {
+  	language: "Uzbek",
+  	location: "Perso-Arabic, Afghanistan",
+  	id: 4096,
+  	tag: "uz-Arab-AF",
+  	version: "Release 10"
+  },
+  	"uz-cyrl": {
+  	language: "Uzbek (Cyrillic)",
+  	location: null,
+  	id: 30787,
+  	tag: "uz-Cyrl",
+  	version: "Windows 7"
+  },
+  	"uz-cyrl-uz": {
+  	language: "Uzbek (Cyrillic)",
+  	location: "Uzbekistan",
+  	id: 2115,
+  	tag: "uz-Cyrl-UZ",
+  	version: "Release C"
+  },
+  	uz: uz,
+  	"uz-latn": {
+  	language: "Uzbek (Latin)",
+  	location: null,
+  	id: 31811,
+  	tag: "uz-Latn",
+  	version: "Windows 7"
+  },
+  	"uz-latn-uz": {
+  	language: "Uzbek (Latin)",
+  	location: "Uzbekistan",
+  	id: 1091,
+  	tag: "uz-Latn-UZ",
+  	version: "Release C"
+  },
+  	vai: vai,
+  	"vai-vaii": {
+  	language: "Vai",
+  	location: null,
+  	id: 4096,
+  	tag: "vai-Vaii",
+  	version: "Release 10"
+  },
+  	"vai-vaii-lr": {
+  	language: "Vai",
+  	location: "Liberia",
+  	id: 4096,
+  	tag: "vai-Vaii-LR",
+  	version: "Release 10"
+  },
+  	"vai-latn-lr": {
+  	language: "Vai (Latin)",
+  	location: "Liberia",
+  	id: 4096,
+  	tag: "vai-Latn-LR",
+  	version: "Release 10"
+  },
+  	"vai-latn": {
+  	language: "Vai (Latin)",
+  	location: null,
+  	id: 4096,
+  	tag: "vai-Latn",
+  	version: "Release 10"
+  },
+  	"ca-es-": {
+  	language: "Valencian",
+  	location: "Spain",
+  	id: 2051,
+  	tag: "ca-ES-",
+  	version: "Release 8"
+  },
+  	ve: ve,
+  	"ve-za": {
+  	language: "Venda",
+  	location: "South Africa",
+  	id: 1075,
+  	tag: "ve-ZA",
+  	version: "Release 10"
+  },
+  	vi: vi,
+  	"vi-vn": {
+  	language: "Vietnamese",
+  	location: "Vietnam",
+  	id: 1066,
+  	tag: "vi-VN",
+  	version: "Release B"
+  },
+  	vo: vo,
+  	"vo-001": {
+  	language: "Volapük",
+  	location: "World",
+  	id: 4096,
+  	tag: "vo-001",
+  	version: "Release 10"
+  },
+  	vun: vun,
+  	"vun-tz": {
+  	language: "Vunjo",
+  	location: "Tanzania",
+  	id: 4096,
+  	tag: "vun-TZ",
+  	version: "Release 10"
+  },
+  	wae: wae,
+  	"wae-ch": {
+  	language: "Walser",
+  	location: "Switzerland",
+  	id: 4096,
+  	tag: "wae-CH",
+  	version: "Release 10"
+  },
+  	cy: cy,
+  	"cy-gb": {
+  	language: "Welsh",
+  	location: "United Kingdom",
+  	id: 1106,
+  	tag: "cy-GB",
+  	version: "ReleaseE1"
+  },
+  	wal: wal,
+  	"wal-et": {
+  	language: "Wolaytta",
+  	location: "Ethiopia",
+  	id: 4096,
+  	tag: "wal-ET",
+  	version: "Release 10"
+  },
+  	wo: wo,
+  	"wo-sn": {
+  	language: "Wolof",
+  	location: "Senegal",
+  	id: 1160,
+  	tag: "wo-SN",
+  	version: "Release V"
+  },
+  	xh: xh,
+  	"xh-za": {
+  	language: "Xhosa",
+  	location: "South Africa",
+  	id: 1076,
+  	tag: "xh-ZA",
+  	version: "Release E1"
+  },
+  	yav: yav,
+  	"yav-cm": {
+  	language: "Yangben",
+  	location: "Cameroon",
+  	id: 4096,
+  	tag: "yav-CM",
+  	version: "Release 10"
+  },
+  	ii: ii,
+  	"ii-cn": {
+  	language: "Yi",
+  	location: "People's Republic of China",
+  	id: 1144,
+  	tag: "ii-CN",
+  	version: "Release V"
+  },
+  	yo: yo,
+  	"yo-bj": {
+  	language: "Yoruba",
+  	location: "Benin",
+  	id: 4096,
+  	tag: "yo-BJ",
+  	version: "Release 10"
+  },
+  	"yo-ng": {
+  	language: "Yoruba",
+  	location: "Nigeria",
+  	id: 1130,
+  	tag: "yo-NG",
+  	version: "Release V"
+  },
+  	dje: dje,
+  	"dje-ne": {
+  	language: "Zarma",
+  	location: "Niger",
+  	id: 4096,
+  	tag: "dje-NE",
+  	version: "Release 10"
+  },
+  	zu: zu,
+  	"zu-za": {
+  	language: "Zulu",
+  	location: "South Africa",
+  	id: 1077,
+  	tag: "zu-ZA",
+  	version: "Release E1"
+  }
+  };
+
+  var Abkhazian = {
+  	name: "Abkhazian",
+  	names: [
+  		"Abkhazian"
+  	],
+  	"iso639-2": "abk",
+  	"iso639-1": "ab"
+  };
+  var Achinese = {
+  	name: "Achinese",
+  	names: [
+  		"Achinese"
+  	],
+  	"iso639-2": "ace",
+  	"iso639-1": null
+  };
+  var Acoli = {
+  	name: "Acoli",
+  	names: [
+  		"Acoli"
+  	],
+  	"iso639-2": "ach",
+  	"iso639-1": null
+  };
+  var Adangme = {
+  	name: "Adangme",
+  	names: [
+  		"Adangme"
+  	],
+  	"iso639-2": "ada",
+  	"iso639-1": null
+  };
+  var Adygei = {
+  	name: "Adygei",
+  	names: [
+  		"Adyghe",
+  		"Adygei"
+  	],
+  	"iso639-2": "ady",
+  	"iso639-1": null
+  };
+  var Adyghe = {
+  	name: "Adyghe",
+  	names: [
+  		"Adyghe",
+  		"Adygei"
+  	],
+  	"iso639-2": "ady",
+  	"iso639-1": null
+  };
+  var Afar = {
+  	name: "Afar",
+  	names: [
+  		"Afar"
+  	],
+  	"iso639-2": "aar",
+  	"iso639-1": "aa"
+  };
+  var Afrihili = {
+  	name: "Afrihili",
+  	names: [
+  		"Afrihili"
+  	],
+  	"iso639-2": "afh",
+  	"iso639-1": null
+  };
+  var Afrikaans = {
+  	name: "Afrikaans",
+  	names: [
+  		"Afrikaans"
+  	],
+  	"iso639-2": "afr",
+  	"iso639-1": "af"
+  };
+  var Ainu = {
+  	name: "Ainu",
+  	names: [
+  		"Ainu"
+  	],
+  	"iso639-2": "ain",
+  	"iso639-1": null
+  };
+  var Akan = {
+  	name: "Akan",
+  	names: [
+  		"Akan"
+  	],
+  	"iso639-2": "aka",
+  	"iso639-1": "ak"
+  };
+  var Akkadian = {
+  	name: "Akkadian",
+  	names: [
+  		"Akkadian"
+  	],
+  	"iso639-2": "akk",
+  	"iso639-1": null
+  };
+  var Albanian = {
+  	name: "Albanian",
+  	names: [
+  		"Albanian"
+  	],
+  	"iso639-2": "alb/sqi",
+  	"iso639-1": "sq"
+  };
+  var Alemannic = {
+  	name: "Alemannic",
+  	names: [
+  		"Swiss German",
+  		"Alemannic",
+  		"Alsatian"
+  	],
+  	"iso639-2": "gsw",
+  	"iso639-1": null
+  };
+  var Aleut = {
+  	name: "Aleut",
+  	names: [
+  		"Aleut"
+  	],
+  	"iso639-2": "ale",
+  	"iso639-1": null
+  };
+  var Alsatian = {
+  	name: "Alsatian",
+  	names: [
+  		"Swiss German",
+  		"Alemannic",
+  		"Alsatian"
+  	],
+  	"iso639-2": "gsw",
+  	"iso639-1": null
+  };
+  var Amharic = {
+  	name: "Amharic",
+  	names: [
+  		"Amharic"
+  	],
+  	"iso639-2": "amh",
+  	"iso639-1": "am"
+  };
+  var Angika = {
+  	name: "Angika",
+  	names: [
+  		"Angika"
+  	],
+  	"iso639-2": "anp",
+  	"iso639-1": null
+  };
+  var Arabic = {
+  	name: "Arabic",
+  	names: [
+  		"Arabic"
+  	],
+  	"iso639-2": "ara",
+  	"iso639-1": "ar"
+  };
+  var Aragonese = {
+  	name: "Aragonese",
+  	names: [
+  		"Aragonese"
+  	],
+  	"iso639-2": "arg",
+  	"iso639-1": "an"
+  };
+  var Arapaho = {
+  	name: "Arapaho",
+  	names: [
+  		"Arapaho"
+  	],
+  	"iso639-2": "arp",
+  	"iso639-1": null
+  };
+  var Arawak = {
+  	name: "Arawak",
+  	names: [
+  		"Arawak"
+  	],
+  	"iso639-2": "arw",
+  	"iso639-1": null
+  };
+  var Armenian = {
+  	name: "Armenian",
+  	names: [
+  		"Armenian"
+  	],
+  	"iso639-2": "arm/hye",
+  	"iso639-1": "hy"
+  };
+  var Aromanian = {
+  	name: "Aromanian",
+  	names: [
+  		"Aromanian",
+  		"Arumanian",
+  		"Macedo-Romanian"
+  	],
+  	"iso639-2": "rup",
+  	"iso639-1": null
+  };
+  var Arumanian = {
+  	name: "Arumanian",
+  	names: [
+  		"Aromanian",
+  		"Arumanian",
+  		"Macedo-Romanian"
+  	],
+  	"iso639-2": "rup",
+  	"iso639-1": null
+  };
+  var Assamese = {
+  	name: "Assamese",
+  	names: [
+  		"Assamese"
+  	],
+  	"iso639-2": "asm",
+  	"iso639-1": "as"
+  };
+  var Asturian = {
+  	name: "Asturian",
+  	names: [
+  		"Asturian",
+  		"Bable",
+  		"Leonese",
+  		"Asturleonese"
+  	],
+  	"iso639-2": "ast",
+  	"iso639-1": null
+  };
+  var Asturleonese = {
+  	name: "Asturleonese",
+  	names: [
+  		"Asturian",
+  		"Bable",
+  		"Leonese",
+  		"Asturleonese"
+  	],
+  	"iso639-2": "ast",
+  	"iso639-1": null
+  };
+  var Avaric = {
+  	name: "Avaric",
+  	names: [
+  		"Avaric"
+  	],
+  	"iso639-2": "ava",
+  	"iso639-1": "av"
+  };
+  var Avestan = {
+  	name: "Avestan",
+  	names: [
+  		"Avestan"
+  	],
+  	"iso639-2": "ave",
+  	"iso639-1": "ae"
+  };
+  var Awadhi = {
+  	name: "Awadhi",
+  	names: [
+  		"Awadhi"
+  	],
+  	"iso639-2": "awa",
+  	"iso639-1": null
+  };
+  var Aymara = {
+  	name: "Aymara",
+  	names: [
+  		"Aymara"
+  	],
+  	"iso639-2": "aym",
+  	"iso639-1": "ay"
+  };
+  var Azerbaijani = {
+  	name: "Azerbaijani",
+  	names: [
+  		"Azerbaijani"
+  	],
+  	"iso639-2": "aze",
+  	"iso639-1": "az"
+  };
+  var Bable = {
+  	name: "Bable",
+  	names: [
+  		"Asturian",
+  		"Bable",
+  		"Leonese",
+  		"Asturleonese"
+  	],
+  	"iso639-2": "ast",
+  	"iso639-1": null
+  };
+  var Balinese = {
+  	name: "Balinese",
+  	names: [
+  		"Balinese"
+  	],
+  	"iso639-2": "ban",
+  	"iso639-1": null
+  };
+  var Baluchi = {
+  	name: "Baluchi",
+  	names: [
+  		"Baluchi"
+  	],
+  	"iso639-2": "bal",
+  	"iso639-1": null
+  };
+  var Bambara = {
+  	name: "Bambara",
+  	names: [
+  		"Bambara"
+  	],
+  	"iso639-2": "bam",
+  	"iso639-1": "bm"
+  };
+  var Basa = {
+  	name: "Basa",
+  	names: [
+  		"Basa"
+  	],
+  	"iso639-2": "bas",
+  	"iso639-1": null
+  };
+  var Bashkir = {
+  	name: "Bashkir",
+  	names: [
+  		"Bashkir"
+  	],
+  	"iso639-2": "bak",
+  	"iso639-1": "ba"
+  };
+  var Basque = {
+  	name: "Basque",
+  	names: [
+  		"Basque"
+  	],
+  	"iso639-2": "baq/eus",
+  	"iso639-1": "eu"
+  };
+  var Bedawiyet = {
+  	name: "Bedawiyet",
+  	names: [
+  		"Beja",
+  		"Bedawiyet"
+  	],
+  	"iso639-2": "bej",
+  	"iso639-1": null
+  };
+  var Beja = {
+  	name: "Beja",
+  	names: [
+  		"Beja",
+  		"Bedawiyet"
+  	],
+  	"iso639-2": "bej",
+  	"iso639-1": null
+  };
+  var Belarusian = {
+  	name: "Belarusian",
+  	names: [
+  		"Belarusian"
+  	],
+  	"iso639-2": "bel",
+  	"iso639-1": "be"
+  };
+  var Bemba = {
+  	name: "Bemba",
+  	names: [
+  		"Bemba"
+  	],
+  	"iso639-2": "bem",
+  	"iso639-1": null
+  };
+  var Bengali = {
+  	name: "Bengali",
+  	names: [
+  		"Bengali"
+  	],
+  	"iso639-2": "ben",
+  	"iso639-1": "bn"
+  };
+  var Bhojpuri = {
+  	name: "Bhojpuri",
+  	names: [
+  		"Bhojpuri"
+  	],
+  	"iso639-2": "bho",
+  	"iso639-1": null
+  };
+  var Bikol = {
+  	name: "Bikol",
+  	names: [
+  		"Bikol"
+  	],
+  	"iso639-2": "bik",
+  	"iso639-1": null
+  };
+  var Bilin = {
+  	name: "Bilin",
+  	names: [
+  		"Blin",
+  		"Bilin"
+  	],
+  	"iso639-2": "byn",
+  	"iso639-1": null
+  };
+  var Bini = {
+  	name: "Bini",
+  	names: [
+  		"Bini",
+  		"Edo"
+  	],
+  	"iso639-2": "bin",
+  	"iso639-1": null
+  };
+  var Bislama = {
+  	name: "Bislama",
+  	names: [
+  		"Bislama"
+  	],
+  	"iso639-2": "bis",
+  	"iso639-1": "bi"
+  };
+  var Blin = {
+  	name: "Blin",
+  	names: [
+  		"Blin",
+  		"Bilin"
+  	],
+  	"iso639-2": "byn",
+  	"iso639-1": null
+  };
+  var Bliss = {
+  	name: "Bliss",
+  	names: [
+  		"Blissymbols",
+  		"Blissymbolics",
+  		"Bliss"
+  	],
+  	"iso639-2": "zbl",
+  	"iso639-1": null
+  };
+  var Blissymbolics = {
+  	name: "Blissymbolics",
+  	names: [
+  		"Blissymbols",
+  		"Blissymbolics",
+  		"Bliss"
+  	],
+  	"iso639-2": "zbl",
+  	"iso639-1": null
+  };
+  var Blissymbols = {
+  	name: "Blissymbols",
+  	names: [
+  		"Blissymbols",
+  		"Blissymbolics",
+  		"Bliss"
+  	],
+  	"iso639-2": "zbl",
+  	"iso639-1": null
+  };
+  var Bosnian = {
+  	name: "Bosnian",
+  	names: [
+  		"Bosnian"
+  	],
+  	"iso639-2": "bos",
+  	"iso639-1": "bs"
+  };
+  var Braj = {
+  	name: "Braj",
+  	names: [
+  		"Braj"
+  	],
+  	"iso639-2": "bra",
+  	"iso639-1": null
+  };
+  var Breton = {
+  	name: "Breton",
+  	names: [
+  		"Breton"
+  	],
+  	"iso639-2": "bre",
+  	"iso639-1": "br"
+  };
+  var Buginese = {
+  	name: "Buginese",
+  	names: [
+  		"Buginese"
+  	],
+  	"iso639-2": "bug",
+  	"iso639-1": null
+  };
+  var Bulgarian = {
+  	name: "Bulgarian",
+  	names: [
+  		"Bulgarian"
+  	],
+  	"iso639-2": "bul",
+  	"iso639-1": "bg"
+  };
+  var Buriat = {
+  	name: "Buriat",
+  	names: [
+  		"Buriat"
+  	],
+  	"iso639-2": "bua",
+  	"iso639-1": null
+  };
+  var Burmese = {
+  	name: "Burmese",
+  	names: [
+  		"Burmese"
+  	],
+  	"iso639-2": "bur/mya",
+  	"iso639-1": "my"
+  };
+  var Caddo = {
+  	name: "Caddo",
+  	names: [
+  		"Caddo"
+  	],
+  	"iso639-2": "cad",
+  	"iso639-1": null
+  };
+  var Castilian = {
+  	name: "Castilian",
+  	names: [
+  		"Spanish",
+  		"Castilian"
+  	],
+  	"iso639-2": "spa",
+  	"iso639-1": "es"
+  };
+  var Catalan = {
+  	name: "Catalan",
+  	names: [
+  		"Catalan",
+  		"Valencian"
+  	],
+  	"iso639-2": "cat",
+  	"iso639-1": "ca"
+  };
+  var Cebuano = {
+  	name: "Cebuano",
+  	names: [
+  		"Cebuano"
+  	],
+  	"iso639-2": "ceb",
+  	"iso639-1": null
+  };
+  var Chagatai = {
+  	name: "Chagatai",
+  	names: [
+  		"Chagatai"
+  	],
+  	"iso639-2": "chg",
+  	"iso639-1": null
+  };
+  var Chamorro = {
+  	name: "Chamorro",
+  	names: [
+  		"Chamorro"
+  	],
+  	"iso639-2": "cha",
+  	"iso639-1": "ch"
+  };
+  var Chechen = {
+  	name: "Chechen",
+  	names: [
+  		"Chechen"
+  	],
+  	"iso639-2": "che",
+  	"iso639-1": "ce"
+  };
+  var Cherokee = {
+  	name: "Cherokee",
+  	names: [
+  		"Cherokee"
+  	],
+  	"iso639-2": "chr",
+  	"iso639-1": null
+  };
+  var Chewa = {
+  	name: "Chewa",
+  	names: [
+  		"Chichewa",
+  		"Chewa",
+  		"Nyanja"
+  	],
+  	"iso639-2": "nya",
+  	"iso639-1": "ny"
+  };
+  var Cheyenne = {
+  	name: "Cheyenne",
+  	names: [
+  		"Cheyenne"
+  	],
+  	"iso639-2": "chy",
+  	"iso639-1": null
+  };
+  var Chibcha = {
+  	name: "Chibcha",
+  	names: [
+  		"Chibcha"
+  	],
+  	"iso639-2": "chb",
+  	"iso639-1": null
+  };
+  var Chichewa = {
+  	name: "Chichewa",
+  	names: [
+  		"Chichewa",
+  		"Chewa",
+  		"Nyanja"
+  	],
+  	"iso639-2": "nya",
+  	"iso639-1": "ny"
+  };
+  var Chinese = {
+  	name: "Chinese",
+  	names: [
+  		"Chinese"
+  	],
+  	"iso639-2": "chi/zho",
+  	"iso639-1": "zh"
+  };
+  var Chipewyan = {
+  	name: "Chipewyan",
+  	names: [
+  		"Chipewyan",
+  		"Dene Suline"
+  	],
+  	"iso639-2": "chp",
+  	"iso639-1": null
+  };
+  var Choctaw = {
+  	name: "Choctaw",
+  	names: [
+  		"Choctaw"
+  	],
+  	"iso639-2": "cho",
+  	"iso639-1": null
+  };
+  var Chuang = {
+  	name: "Chuang",
+  	names: [
+  		"Zhuang",
+  		"Chuang"
+  	],
+  	"iso639-2": "zha",
+  	"iso639-1": "za"
+  };
+  var Chuukese = {
+  	name: "Chuukese",
+  	names: [
+  		"Chuukese"
+  	],
+  	"iso639-2": "chk",
+  	"iso639-1": null
+  };
+  var Chuvash = {
+  	name: "Chuvash",
+  	names: [
+  		"Chuvash"
+  	],
+  	"iso639-2": "chv",
+  	"iso639-1": "cv"
+  };
+  var Coptic = {
+  	name: "Coptic",
+  	names: [
+  		"Coptic"
+  	],
+  	"iso639-2": "cop",
+  	"iso639-1": null
+  };
+  var Cornish = {
+  	name: "Cornish",
+  	names: [
+  		"Cornish"
+  	],
+  	"iso639-2": "cor",
+  	"iso639-1": "kw"
+  };
+  var Corsican = {
+  	name: "Corsican",
+  	names: [
+  		"Corsican"
+  	],
+  	"iso639-2": "cos",
+  	"iso639-1": "co"
+  };
+  var Cree = {
+  	name: "Cree",
+  	names: [
+  		"Cree"
+  	],
+  	"iso639-2": "cre",
+  	"iso639-1": "cr"
+  };
+  var Creek = {
+  	name: "Creek",
+  	names: [
+  		"Creek"
+  	],
+  	"iso639-2": "mus",
+  	"iso639-1": null
+  };
+  var Croatian = {
+  	name: "Croatian",
+  	names: [
+  		"Croatian"
+  	],
+  	"iso639-2": "hrv",
+  	"iso639-1": "hr"
+  };
+  var Czech = {
+  	name: "Czech",
+  	names: [
+  		"Czech"
+  	],
+  	"iso639-2": "cze/ces",
+  	"iso639-1": "cs"
+  };
+  var Dakota = {
+  	name: "Dakota",
+  	names: [
+  		"Dakota"
+  	],
+  	"iso639-2": "dak",
+  	"iso639-1": null
+  };
+  var Danish = {
+  	name: "Danish",
+  	names: [
+  		"Danish"
+  	],
+  	"iso639-2": "dan",
+  	"iso639-1": "da"
+  };
+  var Dargwa = {
+  	name: "Dargwa",
+  	names: [
+  		"Dargwa"
+  	],
+  	"iso639-2": "dar",
+  	"iso639-1": null
+  };
+  var Delaware = {
+  	name: "Delaware",
+  	names: [
+  		"Delaware"
+  	],
+  	"iso639-2": "del",
+  	"iso639-1": null
+  };
+  var Dhivehi = {
+  	name: "Dhivehi",
+  	names: [
+  		"Divehi",
+  		"Dhivehi",
+  		"Maldivian"
+  	],
+  	"iso639-2": "div",
+  	"iso639-1": "dv"
+  };
+  var Dimili = {
+  	name: "Dimili",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Dimli = {
+  	name: "Dimli",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Dinka = {
+  	name: "Dinka",
+  	names: [
+  		"Dinka"
+  	],
+  	"iso639-2": "din",
+  	"iso639-1": null
+  };
+  var Divehi = {
+  	name: "Divehi",
+  	names: [
+  		"Divehi",
+  		"Dhivehi",
+  		"Maldivian"
+  	],
+  	"iso639-2": "div",
+  	"iso639-1": "dv"
+  };
+  var Dogri = {
+  	name: "Dogri",
+  	names: [
+  		"Dogri"
+  	],
+  	"iso639-2": "doi",
+  	"iso639-1": null
+  };
+  var Dogrib = {
+  	name: "Dogrib",
+  	names: [
+  		"Dogrib"
+  	],
+  	"iso639-2": "dgr",
+  	"iso639-1": null
+  };
+  var Duala = {
+  	name: "Duala",
+  	names: [
+  		"Duala"
+  	],
+  	"iso639-2": "dua",
+  	"iso639-1": null
+  };
+  var Dutch = {
+  	name: "Dutch",
+  	names: [
+  		"Dutch",
+  		"Flemish"
+  	],
+  	"iso639-2": "dut/nld",
+  	"iso639-1": "nl"
+  };
+  var Dyula = {
+  	name: "Dyula",
+  	names: [
+  		"Dyula"
+  	],
+  	"iso639-2": "dyu",
+  	"iso639-1": null
+  };
+  var Dzongkha = {
+  	name: "Dzongkha",
+  	names: [
+  		"Dzongkha"
+  	],
+  	"iso639-2": "dzo",
+  	"iso639-1": "dz"
+  };
+  var Edo = {
+  	name: "Edo",
+  	names: [
+  		"Bini",
+  		"Edo"
+  	],
+  	"iso639-2": "bin",
+  	"iso639-1": null
+  };
+  var Efik = {
+  	name: "Efik",
+  	names: [
+  		"Efik"
+  	],
+  	"iso639-2": "efi",
+  	"iso639-1": null
+  };
+  var Ekajuk = {
+  	name: "Ekajuk",
+  	names: [
+  		"Ekajuk"
+  	],
+  	"iso639-2": "eka",
+  	"iso639-1": null
+  };
+  var Elamite = {
+  	name: "Elamite",
+  	names: [
+  		"Elamite"
+  	],
+  	"iso639-2": "elx",
+  	"iso639-1": null
+  };
+  var English = {
+  	name: "English",
+  	names: [
+  		"English"
+  	],
+  	"iso639-2": "eng",
+  	"iso639-1": "en"
+  };
+  var Erzya = {
+  	name: "Erzya",
+  	names: [
+  		"Erzya"
+  	],
+  	"iso639-2": "myv",
+  	"iso639-1": null
+  };
+  var Esperanto = {
+  	name: "Esperanto",
+  	names: [
+  		"Esperanto"
+  	],
+  	"iso639-2": "epo",
+  	"iso639-1": "eo"
+  };
+  var Estonian = {
+  	name: "Estonian",
+  	names: [
+  		"Estonian"
+  	],
+  	"iso639-2": "est",
+  	"iso639-1": "et"
+  };
+  var Ewe = {
+  	name: "Ewe",
+  	names: [
+  		"Ewe"
+  	],
+  	"iso639-2": "ewe",
+  	"iso639-1": "ee"
+  };
+  var Ewondo = {
+  	name: "Ewondo",
+  	names: [
+  		"Ewondo"
+  	],
+  	"iso639-2": "ewo",
+  	"iso639-1": null
+  };
+  var Fang = {
+  	name: "Fang",
+  	names: [
+  		"Fang"
+  	],
+  	"iso639-2": "fan",
+  	"iso639-1": null
+  };
+  var Fanti = {
+  	name: "Fanti",
+  	names: [
+  		"Fanti"
+  	],
+  	"iso639-2": "fat",
+  	"iso639-1": null
+  };
+  var Faroese = {
+  	name: "Faroese",
+  	names: [
+  		"Faroese"
+  	],
+  	"iso639-2": "fao",
+  	"iso639-1": "fo"
+  };
+  var Fijian = {
+  	name: "Fijian",
+  	names: [
+  		"Fijian"
+  	],
+  	"iso639-2": "fij",
+  	"iso639-1": "fj"
+  };
+  var Filipino = {
+  	name: "Filipino",
+  	names: [
+  		"Filipino",
+  		"Pilipino"
+  	],
+  	"iso639-2": "fil",
+  	"iso639-1": null
+  };
+  var Finnish = {
+  	name: "Finnish",
+  	names: [
+  		"Finnish"
+  	],
+  	"iso639-2": "fin",
+  	"iso639-1": "fi"
+  };
+  var Flemish = {
+  	name: "Flemish",
+  	names: [
+  		"Dutch",
+  		"Flemish"
+  	],
+  	"iso639-2": "dut/nld",
+  	"iso639-1": "nl"
+  };
+  var Fon = {
+  	name: "Fon",
+  	names: [
+  		"Fon"
+  	],
+  	"iso639-2": "fon",
+  	"iso639-1": null
+  };
+  var French = {
+  	name: "French",
+  	names: [
+  		"French"
+  	],
+  	"iso639-2": "fre/fra",
+  	"iso639-1": "fr"
+  };
+  var Friulian = {
+  	name: "Friulian",
+  	names: [
+  		"Friulian"
+  	],
+  	"iso639-2": "fur",
+  	"iso639-1": null
+  };
+  var Fulah = {
+  	name: "Fulah",
+  	names: [
+  		"Fulah"
+  	],
+  	"iso639-2": "ful",
+  	"iso639-1": "ff"
+  };
+  var Ga = {
+  	name: "Ga",
+  	names: [
+  		"Ga"
+  	],
+  	"iso639-2": "gaa",
+  	"iso639-1": null
+  };
+  var Gaelic = {
+  	name: "Gaelic",
+  	names: [
+  		"Gaelic",
+  		"Scottish Gaelic"
+  	],
+  	"iso639-2": "gla",
+  	"iso639-1": "gd"
+  };
+  var Galician = {
+  	name: "Galician",
+  	names: [
+  		"Galician"
+  	],
+  	"iso639-2": "glg",
+  	"iso639-1": "gl"
+  };
+  var Ganda = {
+  	name: "Ganda",
+  	names: [
+  		"Ganda"
+  	],
+  	"iso639-2": "lug",
+  	"iso639-1": "lg"
+  };
+  var Gayo = {
+  	name: "Gayo",
+  	names: [
+  		"Gayo"
+  	],
+  	"iso639-2": "gay",
+  	"iso639-1": null
+  };
+  var Gbaya = {
+  	name: "Gbaya",
+  	names: [
+  		"Gbaya"
+  	],
+  	"iso639-2": "gba",
+  	"iso639-1": null
+  };
+  var Geez = {
+  	name: "Geez",
+  	names: [
+  		"Geez"
+  	],
+  	"iso639-2": "gez",
+  	"iso639-1": null
+  };
+  var Georgian = {
+  	name: "Georgian",
+  	names: [
+  		"Georgian"
+  	],
+  	"iso639-2": "geo/kat",
+  	"iso639-1": "ka"
+  };
+  var German = {
+  	name: "German",
+  	names: [
+  		"German"
+  	],
+  	"iso639-2": "ger/deu",
+  	"iso639-1": "de"
+  };
+  var Gikuyu = {
+  	name: "Gikuyu",
+  	names: [
+  		"Kikuyu",
+  		"Gikuyu"
+  	],
+  	"iso639-2": "kik",
+  	"iso639-1": "ki"
+  };
+  var Gilbertese = {
+  	name: "Gilbertese",
+  	names: [
+  		"Gilbertese"
+  	],
+  	"iso639-2": "gil",
+  	"iso639-1": null
+  };
+  var Gondi = {
+  	name: "Gondi",
+  	names: [
+  		"Gondi"
+  	],
+  	"iso639-2": "gon",
+  	"iso639-1": null
+  };
+  var Gorontalo = {
+  	name: "Gorontalo",
+  	names: [
+  		"Gorontalo"
+  	],
+  	"iso639-2": "gor",
+  	"iso639-1": null
+  };
+  var Gothic = {
+  	name: "Gothic",
+  	names: [
+  		"Gothic"
+  	],
+  	"iso639-2": "got",
+  	"iso639-1": null
+  };
+  var Grebo = {
+  	name: "Grebo",
+  	names: [
+  		"Grebo"
+  	],
+  	"iso639-2": "grb",
+  	"iso639-1": null
+  };
+  var Greenlandic = {
+  	name: "Greenlandic",
+  	names: [
+  		"Kalaallisut",
+  		"Greenlandic"
+  	],
+  	"iso639-2": "kal",
+  	"iso639-1": "kl"
+  };
+  var Guarani = {
+  	name: "Guarani",
+  	names: [
+  		"Guarani"
+  	],
+  	"iso639-2": "grn",
+  	"iso639-1": "gn"
+  };
+  var Gujarati = {
+  	name: "Gujarati",
+  	names: [
+  		"Gujarati"
+  	],
+  	"iso639-2": "guj",
+  	"iso639-1": "gu"
+  };
+  var Haida = {
+  	name: "Haida",
+  	names: [
+  		"Haida"
+  	],
+  	"iso639-2": "hai",
+  	"iso639-1": null
+  };
+  var Haitian = {
+  	name: "Haitian",
+  	names: [
+  		"Haitian",
+  		"Haitian Creole"
+  	],
+  	"iso639-2": "hat",
+  	"iso639-1": "ht"
+  };
+  var Hausa = {
+  	name: "Hausa",
+  	names: [
+  		"Hausa"
+  	],
+  	"iso639-2": "hau",
+  	"iso639-1": "ha"
+  };
+  var Hawaiian = {
+  	name: "Hawaiian",
+  	names: [
+  		"Hawaiian"
+  	],
+  	"iso639-2": "haw",
+  	"iso639-1": null
+  };
+  var Hebrew = {
+  	name: "Hebrew",
+  	names: [
+  		"Hebrew"
+  	],
+  	"iso639-2": "heb",
+  	"iso639-1": "he"
+  };
+  var Herero = {
+  	name: "Herero",
+  	names: [
+  		"Herero"
+  	],
+  	"iso639-2": "her",
+  	"iso639-1": "hz"
+  };
+  var Hiligaynon = {
+  	name: "Hiligaynon",
+  	names: [
+  		"Hiligaynon"
+  	],
+  	"iso639-2": "hil",
+  	"iso639-1": null
+  };
+  var Hindi = {
+  	name: "Hindi",
+  	names: [
+  		"Hindi"
+  	],
+  	"iso639-2": "hin",
+  	"iso639-1": "hi"
+  };
+  var Hittite = {
+  	name: "Hittite",
+  	names: [
+  		"Hittite"
+  	],
+  	"iso639-2": "hit",
+  	"iso639-1": null
+  };
+  var Hmong = {
+  	name: "Hmong",
+  	names: [
+  		"Hmong",
+  		"Mong"
+  	],
+  	"iso639-2": "hmn",
+  	"iso639-1": null
+  };
+  var Hungarian = {
+  	name: "Hungarian",
+  	names: [
+  		"Hungarian"
+  	],
+  	"iso639-2": "hun",
+  	"iso639-1": "hu"
+  };
+  var Hupa = {
+  	name: "Hupa",
+  	names: [
+  		"Hupa"
+  	],
+  	"iso639-2": "hup",
+  	"iso639-1": null
+  };
+  var Iban = {
+  	name: "Iban",
+  	names: [
+  		"Iban"
+  	],
+  	"iso639-2": "iba",
+  	"iso639-1": null
+  };
+  var Icelandic = {
+  	name: "Icelandic",
+  	names: [
+  		"Icelandic"
+  	],
+  	"iso639-2": "ice/isl",
+  	"iso639-1": "is"
+  };
+  var Ido = {
+  	name: "Ido",
+  	names: [
+  		"Ido"
+  	],
+  	"iso639-2": "ido",
+  	"iso639-1": "io"
+  };
+  var Igbo = {
+  	name: "Igbo",
+  	names: [
+  		"Igbo"
+  	],
+  	"iso639-2": "ibo",
+  	"iso639-1": "ig"
+  };
+  var Iloko = {
+  	name: "Iloko",
+  	names: [
+  		"Iloko"
+  	],
+  	"iso639-2": "ilo",
+  	"iso639-1": null
+  };
+  var Indonesian = {
+  	name: "Indonesian",
+  	names: [
+  		"Indonesian"
+  	],
+  	"iso639-2": "ind",
+  	"iso639-1": "id"
+  };
+  var Ingush = {
+  	name: "Ingush",
+  	names: [
+  		"Ingush"
+  	],
+  	"iso639-2": "inh",
+  	"iso639-1": null
+  };
+  var Interlingue = {
+  	name: "Interlingue",
+  	names: [
+  		"Interlingue",
+  		"Occidental"
+  	],
+  	"iso639-2": "ile",
+  	"iso639-1": "ie"
+  };
+  var Inuktitut = {
+  	name: "Inuktitut",
+  	names: [
+  		"Inuktitut"
+  	],
+  	"iso639-2": "iku",
+  	"iso639-1": "iu"
+  };
+  var Inupiaq = {
+  	name: "Inupiaq",
+  	names: [
+  		"Inupiaq"
+  	],
+  	"iso639-2": "ipk",
+  	"iso639-1": "ik"
+  };
+  var Irish = {
+  	name: "Irish",
+  	names: [
+  		"Irish"
+  	],
+  	"iso639-2": "gle",
+  	"iso639-1": "ga"
+  };
+  var Italian = {
+  	name: "Italian",
+  	names: [
+  		"Italian"
+  	],
+  	"iso639-2": "ita",
+  	"iso639-1": "it"
+  };
+  var Japanese = {
+  	name: "Japanese",
+  	names: [
+  		"Japanese"
+  	],
+  	"iso639-2": "jpn",
+  	"iso639-1": "ja"
+  };
+  var Javanese = {
+  	name: "Javanese",
+  	names: [
+  		"Javanese"
+  	],
+  	"iso639-2": "jav",
+  	"iso639-1": "jv"
+  };
+  var Jingpho = {
+  	name: "Jingpho",
+  	names: [
+  		"Kachin",
+  		"Jingpho"
+  	],
+  	"iso639-2": "kac",
+  	"iso639-1": null
+  };
+  var Kabardian = {
+  	name: "Kabardian",
+  	names: [
+  		"Kabardian"
+  	],
+  	"iso639-2": "kbd",
+  	"iso639-1": null
+  };
+  var Kabyle = {
+  	name: "Kabyle",
+  	names: [
+  		"Kabyle"
+  	],
+  	"iso639-2": "kab",
+  	"iso639-1": null
+  };
+  var Kachin = {
+  	name: "Kachin",
+  	names: [
+  		"Kachin",
+  		"Jingpho"
+  	],
+  	"iso639-2": "kac",
+  	"iso639-1": null
+  };
+  var Kalaallisut = {
+  	name: "Kalaallisut",
+  	names: [
+  		"Kalaallisut",
+  		"Greenlandic"
+  	],
+  	"iso639-2": "kal",
+  	"iso639-1": "kl"
+  };
+  var Kalmyk = {
+  	name: "Kalmyk",
+  	names: [
+  		"Kalmyk",
+  		"Oirat"
+  	],
+  	"iso639-2": "xal",
+  	"iso639-1": null
+  };
+  var Kamba = {
+  	name: "Kamba",
+  	names: [
+  		"Kamba"
+  	],
+  	"iso639-2": "kam",
+  	"iso639-1": null
+  };
+  var Kannada = {
+  	name: "Kannada",
+  	names: [
+  		"Kannada"
+  	],
+  	"iso639-2": "kan",
+  	"iso639-1": "kn"
+  };
+  var Kanuri = {
+  	name: "Kanuri",
+  	names: [
+  		"Kanuri"
+  	],
+  	"iso639-2": "kau",
+  	"iso639-1": "kr"
+  };
+  var Kapampangan = {
+  	name: "Kapampangan",
+  	names: [
+  		"Pampanga",
+  		"Kapampangan"
+  	],
+  	"iso639-2": "pam",
+  	"iso639-1": null
+  };
+  var Karelian = {
+  	name: "Karelian",
+  	names: [
+  		"Karelian"
+  	],
+  	"iso639-2": "krl",
+  	"iso639-1": null
+  };
+  var Kashmiri = {
+  	name: "Kashmiri",
+  	names: [
+  		"Kashmiri"
+  	],
+  	"iso639-2": "kas",
+  	"iso639-1": "ks"
+  };
+  var Kashubian = {
+  	name: "Kashubian",
+  	names: [
+  		"Kashubian"
+  	],
+  	"iso639-2": "csb",
+  	"iso639-1": null
+  };
+  var Kawi = {
+  	name: "Kawi",
+  	names: [
+  		"Kawi"
+  	],
+  	"iso639-2": "kaw",
+  	"iso639-1": null
+  };
+  var Kazakh = {
+  	name: "Kazakh",
+  	names: [
+  		"Kazakh"
+  	],
+  	"iso639-2": "kaz",
+  	"iso639-1": "kk"
+  };
+  var Khasi = {
+  	name: "Khasi",
+  	names: [
+  		"Khasi"
+  	],
+  	"iso639-2": "kha",
+  	"iso639-1": null
+  };
+  var Khotanese = {
+  	name: "Khotanese",
+  	names: [
+  		"Khotanese",
+  		"Sakan"
+  	],
+  	"iso639-2": "kho",
+  	"iso639-1": null
+  };
+  var Kikuyu = {
+  	name: "Kikuyu",
+  	names: [
+  		"Kikuyu",
+  		"Gikuyu"
+  	],
+  	"iso639-2": "kik",
+  	"iso639-1": "ki"
+  };
+  var Kimbundu = {
+  	name: "Kimbundu",
+  	names: [
+  		"Kimbundu"
+  	],
+  	"iso639-2": "kmb",
+  	"iso639-1": null
+  };
+  var Kinyarwanda = {
+  	name: "Kinyarwanda",
+  	names: [
+  		"Kinyarwanda"
+  	],
+  	"iso639-2": "kin",
+  	"iso639-1": "rw"
+  };
+  var Kirdki = {
+  	name: "Kirdki",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Kirghiz = {
+  	name: "Kirghiz",
+  	names: [
+  		"Kirghiz",
+  		"Kyrgyz"
+  	],
+  	"iso639-2": "kir",
+  	"iso639-1": "ky"
+  };
+  var Kirmanjki = {
+  	name: "Kirmanjki",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Klingon = {
+  	name: "Klingon",
+  	names: [
+  		"Klingon",
+  		"tlhIngan-Hol"
+  	],
+  	"iso639-2": "tlh",
+  	"iso639-1": null
+  };
+  var Komi = {
+  	name: "Komi",
+  	names: [
+  		"Komi"
+  	],
+  	"iso639-2": "kom",
+  	"iso639-1": "kv"
+  };
+  var Kongo = {
+  	name: "Kongo",
+  	names: [
+  		"Kongo"
+  	],
+  	"iso639-2": "kon",
+  	"iso639-1": "kg"
+  };
+  var Konkani = {
+  	name: "Konkani",
+  	names: [
+  		"Konkani"
+  	],
+  	"iso639-2": "kok",
+  	"iso639-1": null
+  };
+  var Korean = {
+  	name: "Korean",
+  	names: [
+  		"Korean"
+  	],
+  	"iso639-2": "kor",
+  	"iso639-1": "ko"
+  };
+  var Kosraean = {
+  	name: "Kosraean",
+  	names: [
+  		"Kosraean"
+  	],
+  	"iso639-2": "kos",
+  	"iso639-1": null
+  };
+  var Kpelle = {
+  	name: "Kpelle",
+  	names: [
+  		"Kpelle"
+  	],
+  	"iso639-2": "kpe",
+  	"iso639-1": null
+  };
+  var Kuanyama = {
+  	name: "Kuanyama",
+  	names: [
+  		"Kuanyama",
+  		"Kwanyama"
+  	],
+  	"iso639-2": "kua",
+  	"iso639-1": "kj"
+  };
+  var Kumyk = {
+  	name: "Kumyk",
+  	names: [
+  		"Kumyk"
+  	],
+  	"iso639-2": "kum",
+  	"iso639-1": null
+  };
+  var Kurdish = {
+  	name: "Kurdish",
+  	names: [
+  		"Kurdish"
+  	],
+  	"iso639-2": "kur",
+  	"iso639-1": "ku"
+  };
+  var Kurukh = {
+  	name: "Kurukh",
+  	names: [
+  		"Kurukh"
+  	],
+  	"iso639-2": "kru",
+  	"iso639-1": null
+  };
+  var Kutenai = {
+  	name: "Kutenai",
+  	names: [
+  		"Kutenai"
+  	],
+  	"iso639-2": "kut",
+  	"iso639-1": null
+  };
+  var Kwanyama = {
+  	name: "Kwanyama",
+  	names: [
+  		"Kuanyama",
+  		"Kwanyama"
+  	],
+  	"iso639-2": "kua",
+  	"iso639-1": "kj"
+  };
+  var Kyrgyz = {
+  	name: "Kyrgyz",
+  	names: [
+  		"Kirghiz",
+  		"Kyrgyz"
+  	],
+  	"iso639-2": "kir",
+  	"iso639-1": "ky"
+  };
+  var Ladino = {
+  	name: "Ladino",
+  	names: [
+  		"Ladino"
+  	],
+  	"iso639-2": "lad",
+  	"iso639-1": null
+  };
+  var Lahnda = {
+  	name: "Lahnda",
+  	names: [
+  		"Lahnda"
+  	],
+  	"iso639-2": "lah",
+  	"iso639-1": null
+  };
+  var Lamba = {
+  	name: "Lamba",
+  	names: [
+  		"Lamba"
+  	],
+  	"iso639-2": "lam",
+  	"iso639-1": null
+  };
+  var Lao = {
+  	name: "Lao",
+  	names: [
+  		"Lao"
+  	],
+  	"iso639-2": "lao",
+  	"iso639-1": "lo"
+  };
+  var Latin = {
+  	name: "Latin",
+  	names: [
+  		"Latin"
+  	],
+  	"iso639-2": "lat",
+  	"iso639-1": "la"
+  };
+  var Latvian = {
+  	name: "Latvian",
+  	names: [
+  		"Latvian"
+  	],
+  	"iso639-2": "lav",
+  	"iso639-1": "lv"
+  };
+  var Leonese = {
+  	name: "Leonese",
+  	names: [
+  		"Asturian",
+  		"Bable",
+  		"Leonese",
+  		"Asturleonese"
+  	],
+  	"iso639-2": "ast",
+  	"iso639-1": null
+  };
+  var Letzeburgesch = {
+  	name: "Letzeburgesch",
+  	names: [
+  		"Luxembourgish",
+  		"Letzeburgesch"
+  	],
+  	"iso639-2": "ltz",
+  	"iso639-1": "lb"
+  };
+  var Lezghian = {
+  	name: "Lezghian",
+  	names: [
+  		"Lezghian"
+  	],
+  	"iso639-2": "lez",
+  	"iso639-1": null
+  };
+  var Limburgan = {
+  	name: "Limburgan",
+  	names: [
+  		"Limburgan",
+  		"Limburger",
+  		"Limburgish"
+  	],
+  	"iso639-2": "lim",
+  	"iso639-1": "li"
+  };
+  var Limburger = {
+  	name: "Limburger",
+  	names: [
+  		"Limburgan",
+  		"Limburger",
+  		"Limburgish"
+  	],
+  	"iso639-2": "lim",
+  	"iso639-1": "li"
+  };
+  var Limburgish = {
+  	name: "Limburgish",
+  	names: [
+  		"Limburgan",
+  		"Limburger",
+  		"Limburgish"
+  	],
+  	"iso639-2": "lim",
+  	"iso639-1": "li"
+  };
+  var Lingala = {
+  	name: "Lingala",
+  	names: [
+  		"Lingala"
+  	],
+  	"iso639-2": "lin",
+  	"iso639-1": "ln"
+  };
+  var Lithuanian = {
+  	name: "Lithuanian",
+  	names: [
+  		"Lithuanian"
+  	],
+  	"iso639-2": "lit",
+  	"iso639-1": "lt"
+  };
+  var Lojban = {
+  	name: "Lojban",
+  	names: [
+  		"Lojban"
+  	],
+  	"iso639-2": "jbo",
+  	"iso639-1": null
+  };
+  var Lozi = {
+  	name: "Lozi",
+  	names: [
+  		"Lozi"
+  	],
+  	"iso639-2": "loz",
+  	"iso639-1": null
+  };
+  var Luiseno = {
+  	name: "Luiseno",
+  	names: [
+  		"Luiseno"
+  	],
+  	"iso639-2": "lui",
+  	"iso639-1": null
+  };
+  var Lunda = {
+  	name: "Lunda",
+  	names: [
+  		"Lunda"
+  	],
+  	"iso639-2": "lun",
+  	"iso639-1": null
+  };
+  var Lushai = {
+  	name: "Lushai",
+  	names: [
+  		"Lushai"
+  	],
+  	"iso639-2": "lus",
+  	"iso639-1": null
+  };
+  var Luxembourgish = {
+  	name: "Luxembourgish",
+  	names: [
+  		"Luxembourgish",
+  		"Letzeburgesch"
+  	],
+  	"iso639-2": "ltz",
+  	"iso639-1": "lb"
+  };
+  var Macedonian = {
+  	name: "Macedonian",
+  	names: [
+  		"Macedonian"
+  	],
+  	"iso639-2": "mac/mkd",
+  	"iso639-1": "mk"
+  };
+  var Madurese = {
+  	name: "Madurese",
+  	names: [
+  		"Madurese"
+  	],
+  	"iso639-2": "mad",
+  	"iso639-1": null
+  };
+  var Magahi = {
+  	name: "Magahi",
+  	names: [
+  		"Magahi"
+  	],
+  	"iso639-2": "mag",
+  	"iso639-1": null
+  };
+  var Maithili = {
+  	name: "Maithili",
+  	names: [
+  		"Maithili"
+  	],
+  	"iso639-2": "mai",
+  	"iso639-1": null
+  };
+  var Makasar = {
+  	name: "Makasar",
+  	names: [
+  		"Makasar"
+  	],
+  	"iso639-2": "mak",
+  	"iso639-1": null
+  };
+  var Malagasy = {
+  	name: "Malagasy",
+  	names: [
+  		"Malagasy"
+  	],
+  	"iso639-2": "mlg",
+  	"iso639-1": "mg"
+  };
+  var Malay = {
+  	name: "Malay",
+  	names: [
+  		"Malay"
+  	],
+  	"iso639-2": "may/msa",
+  	"iso639-1": "ms"
+  };
+  var Malayalam = {
+  	name: "Malayalam",
+  	names: [
+  		"Malayalam"
+  	],
+  	"iso639-2": "mal",
+  	"iso639-1": "ml"
+  };
+  var Maldivian = {
+  	name: "Maldivian",
+  	names: [
+  		"Divehi",
+  		"Dhivehi",
+  		"Maldivian"
+  	],
+  	"iso639-2": "div",
+  	"iso639-1": "dv"
+  };
+  var Maltese = {
+  	name: "Maltese",
+  	names: [
+  		"Maltese"
+  	],
+  	"iso639-2": "mlt",
+  	"iso639-1": "mt"
+  };
+  var Manchu = {
+  	name: "Manchu",
+  	names: [
+  		"Manchu"
+  	],
+  	"iso639-2": "mnc",
+  	"iso639-1": null
+  };
+  var Mandar = {
+  	name: "Mandar",
+  	names: [
+  		"Mandar"
+  	],
+  	"iso639-2": "mdr",
+  	"iso639-1": null
+  };
+  var Mandingo = {
+  	name: "Mandingo",
+  	names: [
+  		"Mandingo"
+  	],
+  	"iso639-2": "man",
+  	"iso639-1": null
+  };
+  var Manipuri = {
+  	name: "Manipuri",
+  	names: [
+  		"Manipuri"
+  	],
+  	"iso639-2": "mni",
+  	"iso639-1": null
+  };
+  var Manx = {
+  	name: "Manx",
+  	names: [
+  		"Manx"
+  	],
+  	"iso639-2": "glv",
+  	"iso639-1": "gv"
+  };
+  var Maori = {
+  	name: "Maori",
+  	names: [
+  		"Maori"
+  	],
+  	"iso639-2": "mao/mri",
+  	"iso639-1": "mi"
+  };
+  var Mapuche = {
+  	name: "Mapuche",
+  	names: [
+  		"Mapudungun",
+  		"Mapuche"
+  	],
+  	"iso639-2": "arn",
+  	"iso639-1": null
+  };
+  var Mapudungun = {
+  	name: "Mapudungun",
+  	names: [
+  		"Mapudungun",
+  		"Mapuche"
+  	],
+  	"iso639-2": "arn",
+  	"iso639-1": null
+  };
+  var Marathi = {
+  	name: "Marathi",
+  	names: [
+  		"Marathi"
+  	],
+  	"iso639-2": "mar",
+  	"iso639-1": "mr"
+  };
+  var Mari = {
+  	name: "Mari",
+  	names: [
+  		"Mari"
+  	],
+  	"iso639-2": "chm",
+  	"iso639-1": null
+  };
+  var Marshallese = {
+  	name: "Marshallese",
+  	names: [
+  		"Marshallese"
+  	],
+  	"iso639-2": "mah",
+  	"iso639-1": "mh"
+  };
+  var Marwari = {
+  	name: "Marwari",
+  	names: [
+  		"Marwari"
+  	],
+  	"iso639-2": "mwr",
+  	"iso639-1": null
+  };
+  var Masai = {
+  	name: "Masai",
+  	names: [
+  		"Masai"
+  	],
+  	"iso639-2": "mas",
+  	"iso639-1": null
+  };
+  var Mende = {
+  	name: "Mende",
+  	names: [
+  		"Mende"
+  	],
+  	"iso639-2": "men",
+  	"iso639-1": null
+  };
+  var Micmac = {
+  	name: "Micmac",
+  	names: [
+  		"Mi'kmaq",
+  		"Micmac"
+  	],
+  	"iso639-2": "mic",
+  	"iso639-1": null
+  };
+  var Minangkabau = {
+  	name: "Minangkabau",
+  	names: [
+  		"Minangkabau"
+  	],
+  	"iso639-2": "min",
+  	"iso639-1": null
+  };
+  var Mirandese = {
+  	name: "Mirandese",
+  	names: [
+  		"Mirandese"
+  	],
+  	"iso639-2": "mwl",
+  	"iso639-1": null
+  };
+  var Mohawk = {
+  	name: "Mohawk",
+  	names: [
+  		"Mohawk"
+  	],
+  	"iso639-2": "moh",
+  	"iso639-1": null
+  };
+  var Moksha = {
+  	name: "Moksha",
+  	names: [
+  		"Moksha"
+  	],
+  	"iso639-2": "mdf",
+  	"iso639-1": null
+  };
+  var Moldavian = {
+  	name: "Moldavian",
+  	names: [
+  		"Romanian",
+  		"Moldavian",
+  		"Moldovan"
+  	],
+  	"iso639-2": "rum/ron",
+  	"iso639-1": "ro"
+  };
+  var Moldovan = {
+  	name: "Moldovan",
+  	names: [
+  		"Romanian",
+  		"Moldavian",
+  		"Moldovan"
+  	],
+  	"iso639-2": "rum/ron",
+  	"iso639-1": "ro"
+  };
+  var Mong = {
+  	name: "Mong",
+  	names: [
+  		"Hmong",
+  		"Mong"
+  	],
+  	"iso639-2": "hmn",
+  	"iso639-1": null
+  };
+  var Mongo = {
+  	name: "Mongo",
+  	names: [
+  		"Mongo"
+  	],
+  	"iso639-2": "lol",
+  	"iso639-1": null
+  };
+  var Mongolian = {
+  	name: "Mongolian",
+  	names: [
+  		"Mongolian"
+  	],
+  	"iso639-2": "mon",
+  	"iso639-1": "mn"
+  };
+  var Montenegrin = {
+  	name: "Montenegrin",
+  	names: [
+  		"Montenegrin"
+  	],
+  	"iso639-2": "cnr",
+  	"iso639-1": null
+  };
+  var Mossi = {
+  	name: "Mossi",
+  	names: [
+  		"Mossi"
+  	],
+  	"iso639-2": "mos",
+  	"iso639-1": null
+  };
+  var Nauru = {
+  	name: "Nauru",
+  	names: [
+  		"Nauru"
+  	],
+  	"iso639-2": "nau",
+  	"iso639-1": "na"
+  };
+  var Navaho = {
+  	name: "Navaho",
+  	names: [
+  		"Navajo",
+  		"Navaho"
+  	],
+  	"iso639-2": "nav",
+  	"iso639-1": "nv"
+  };
+  var Navajo = {
+  	name: "Navajo",
+  	names: [
+  		"Navajo",
+  		"Navaho"
+  	],
+  	"iso639-2": "nav",
+  	"iso639-1": "nv"
+  };
+  var Ndonga = {
+  	name: "Ndonga",
+  	names: [
+  		"Ndonga"
+  	],
+  	"iso639-2": "ndo",
+  	"iso639-1": "ng"
+  };
+  var Neapolitan = {
+  	name: "Neapolitan",
+  	names: [
+  		"Neapolitan"
+  	],
+  	"iso639-2": "nap",
+  	"iso639-1": null
+  };
+  var Nepali = {
+  	name: "Nepali",
+  	names: [
+  		"Nepali"
+  	],
+  	"iso639-2": "nep",
+  	"iso639-1": "ne"
+  };
+  var Newari = {
+  	name: "Newari",
+  	names: [
+  		"Nepal Bhasa",
+  		"Newari"
+  	],
+  	"iso639-2": "new",
+  	"iso639-1": null
+  };
+  var Nias = {
+  	name: "Nias",
+  	names: [
+  		"Nias"
+  	],
+  	"iso639-2": "nia",
+  	"iso639-1": null
+  };
+  var Niuean = {
+  	name: "Niuean",
+  	names: [
+  		"Niuean"
+  	],
+  	"iso639-2": "niu",
+  	"iso639-1": null
+  };
+  var Nogai = {
+  	name: "Nogai",
+  	names: [
+  		"Nogai"
+  	],
+  	"iso639-2": "nog",
+  	"iso639-1": null
+  };
+  var Norwegian = {
+  	name: "Norwegian",
+  	names: [
+  		"Norwegian"
+  	],
+  	"iso639-2": "nor",
+  	"iso639-1": "no"
+  };
+  var Nuosu = {
+  	name: "Nuosu",
+  	names: [
+  		"Sichuan Yi",
+  		"Nuosu"
+  	],
+  	"iso639-2": "iii",
+  	"iso639-1": "ii"
+  };
+  var Nyamwezi = {
+  	name: "Nyamwezi",
+  	names: [
+  		"Nyamwezi"
+  	],
+  	"iso639-2": "nym",
+  	"iso639-1": null
+  };
+  var Nyanja = {
+  	name: "Nyanja",
+  	names: [
+  		"Chichewa",
+  		"Chewa",
+  		"Nyanja"
+  	],
+  	"iso639-2": "nya",
+  	"iso639-1": "ny"
+  };
+  var Nyankole = {
+  	name: "Nyankole",
+  	names: [
+  		"Nyankole"
+  	],
+  	"iso639-2": "nyn",
+  	"iso639-1": null
+  };
+  var Nyoro = {
+  	name: "Nyoro",
+  	names: [
+  		"Nyoro"
+  	],
+  	"iso639-2": "nyo",
+  	"iso639-1": null
+  };
+  var Nzima = {
+  	name: "Nzima",
+  	names: [
+  		"Nzima"
+  	],
+  	"iso639-2": "nzi",
+  	"iso639-1": null
+  };
+  var Occidental = {
+  	name: "Occidental",
+  	names: [
+  		"Interlingue",
+  		"Occidental"
+  	],
+  	"iso639-2": "ile",
+  	"iso639-1": "ie"
+  };
+  var Oirat = {
+  	name: "Oirat",
+  	names: [
+  		"Kalmyk",
+  		"Oirat"
+  	],
+  	"iso639-2": "xal",
+  	"iso639-1": null
+  };
+  var Ojibwa = {
+  	name: "Ojibwa",
+  	names: [
+  		"Ojibwa"
+  	],
+  	"iso639-2": "oji",
+  	"iso639-1": "oj"
+  };
+  var Oriya = {
+  	name: "Oriya",
+  	names: [
+  		"Oriya"
+  	],
+  	"iso639-2": "ori",
+  	"iso639-1": "or"
+  };
+  var Oromo = {
+  	name: "Oromo",
+  	names: [
+  		"Oromo"
+  	],
+  	"iso639-2": "orm",
+  	"iso639-1": "om"
+  };
+  var Osage = {
+  	name: "Osage",
+  	names: [
+  		"Osage"
+  	],
+  	"iso639-2": "osa",
+  	"iso639-1": null
+  };
+  var Ossetian = {
+  	name: "Ossetian",
+  	names: [
+  		"Ossetian",
+  		"Ossetic"
+  	],
+  	"iso639-2": "oss",
+  	"iso639-1": "os"
+  };
+  var Ossetic = {
+  	name: "Ossetic",
+  	names: [
+  		"Ossetian",
+  		"Ossetic"
+  	],
+  	"iso639-2": "oss",
+  	"iso639-1": "os"
+  };
+  var Pahlavi = {
+  	name: "Pahlavi",
+  	names: [
+  		"Pahlavi"
+  	],
+  	"iso639-2": "pal",
+  	"iso639-1": null
+  };
+  var Palauan = {
+  	name: "Palauan",
+  	names: [
+  		"Palauan"
+  	],
+  	"iso639-2": "pau",
+  	"iso639-1": null
+  };
+  var Pali = {
+  	name: "Pali",
+  	names: [
+  		"Pali"
+  	],
+  	"iso639-2": "pli",
+  	"iso639-1": "pi"
+  };
+  var Pampanga = {
+  	name: "Pampanga",
+  	names: [
+  		"Pampanga",
+  		"Kapampangan"
+  	],
+  	"iso639-2": "pam",
+  	"iso639-1": null
+  };
+  var Pangasinan = {
+  	name: "Pangasinan",
+  	names: [
+  		"Pangasinan"
+  	],
+  	"iso639-2": "pag",
+  	"iso639-1": null
+  };
+  var Panjabi = {
+  	name: "Panjabi",
+  	names: [
+  		"Panjabi",
+  		"Punjabi"
+  	],
+  	"iso639-2": "pan",
+  	"iso639-1": "pa"
+  };
+  var Papiamento = {
+  	name: "Papiamento",
+  	names: [
+  		"Papiamento"
+  	],
+  	"iso639-2": "pap",
+  	"iso639-1": null
+  };
+  var Pashto = {
+  	name: "Pashto",
+  	names: [
+  		"Pushto",
+  		"Pashto"
+  	],
+  	"iso639-2": "pus",
+  	"iso639-1": "ps"
+  };
+  var Pedi = {
+  	name: "Pedi",
+  	names: [
+  		"Pedi",
+  		"Sepedi",
+  		"Northern Sotho"
+  	],
+  	"iso639-2": "nso",
+  	"iso639-1": null
+  };
+  var Persian = {
+  	name: "Persian",
+  	names: [
+  		"Persian"
+  	],
+  	"iso639-2": "per/fas",
+  	"iso639-1": "fa"
+  };
+  var Phoenician = {
+  	name: "Phoenician",
+  	names: [
+  		"Phoenician"
+  	],
+  	"iso639-2": "phn",
+  	"iso639-1": null
+  };
+  var Pilipino = {
+  	name: "Pilipino",
+  	names: [
+  		"Filipino",
+  		"Pilipino"
+  	],
+  	"iso639-2": "fil",
+  	"iso639-1": null
+  };
+  var Pohnpeian = {
+  	name: "Pohnpeian",
+  	names: [
+  		"Pohnpeian"
+  	],
+  	"iso639-2": "pon",
+  	"iso639-1": null
+  };
+  var Polish = {
+  	name: "Polish",
+  	names: [
+  		"Polish"
+  	],
+  	"iso639-2": "pol",
+  	"iso639-1": "pl"
+  };
+  var Portuguese = {
+  	name: "Portuguese",
+  	names: [
+  		"Portuguese"
+  	],
+  	"iso639-2": "por",
+  	"iso639-1": "pt"
+  };
+  var Punjabi = {
+  	name: "Punjabi",
+  	names: [
+  		"Panjabi",
+  		"Punjabi"
+  	],
+  	"iso639-2": "pan",
+  	"iso639-1": "pa"
+  };
+  var Pushto = {
+  	name: "Pushto",
+  	names: [
+  		"Pushto",
+  		"Pashto"
+  	],
+  	"iso639-2": "pus",
+  	"iso639-1": "ps"
+  };
+  var Quechua = {
+  	name: "Quechua",
+  	names: [
+  		"Quechua"
+  	],
+  	"iso639-2": "que",
+  	"iso639-1": "qu"
+  };
+  var Rajasthani = {
+  	name: "Rajasthani",
+  	names: [
+  		"Rajasthani"
+  	],
+  	"iso639-2": "raj",
+  	"iso639-1": null
+  };
+  var Rapanui = {
+  	name: "Rapanui",
+  	names: [
+  		"Rapanui"
+  	],
+  	"iso639-2": "rap",
+  	"iso639-1": null
+  };
+  var Rarotongan = {
+  	name: "Rarotongan",
+  	names: [
+  		"Rarotongan",
+  		"Cook Islands Maori"
+  	],
+  	"iso639-2": "rar",
+  	"iso639-1": null
+  };
+  var Romanian = {
+  	name: "Romanian",
+  	names: [
+  		"Romanian",
+  		"Moldavian",
+  		"Moldovan"
+  	],
+  	"iso639-2": "rum/ron",
+  	"iso639-1": "ro"
+  };
+  var Romansh = {
+  	name: "Romansh",
+  	names: [
+  		"Romansh"
+  	],
+  	"iso639-2": "roh",
+  	"iso639-1": "rm"
+  };
+  var Romany = {
+  	name: "Romany",
+  	names: [
+  		"Romany"
+  	],
+  	"iso639-2": "rom",
+  	"iso639-1": null
+  };
+  var Rundi = {
+  	name: "Rundi",
+  	names: [
+  		"Rundi"
+  	],
+  	"iso639-2": "run",
+  	"iso639-1": "rn"
+  };
+  var Russian = {
+  	name: "Russian",
+  	names: [
+  		"Russian"
+  	],
+  	"iso639-2": "rus",
+  	"iso639-1": "ru"
+  };
+  var Sakan = {
+  	name: "Sakan",
+  	names: [
+  		"Khotanese",
+  		"Sakan"
+  	],
+  	"iso639-2": "kho",
+  	"iso639-1": null
+  };
+  var Samoan = {
+  	name: "Samoan",
+  	names: [
+  		"Samoan"
+  	],
+  	"iso639-2": "smo",
+  	"iso639-1": "sm"
+  };
+  var Sandawe = {
+  	name: "Sandawe",
+  	names: [
+  		"Sandawe"
+  	],
+  	"iso639-2": "sad",
+  	"iso639-1": null
+  };
+  var Sango = {
+  	name: "Sango",
+  	names: [
+  		"Sango"
+  	],
+  	"iso639-2": "sag",
+  	"iso639-1": "sg"
+  };
+  var Sanskrit = {
+  	name: "Sanskrit",
+  	names: [
+  		"Sanskrit"
+  	],
+  	"iso639-2": "san",
+  	"iso639-1": "sa"
+  };
+  var Santali = {
+  	name: "Santali",
+  	names: [
+  		"Santali"
+  	],
+  	"iso639-2": "sat",
+  	"iso639-1": null
+  };
+  var Sardinian = {
+  	name: "Sardinian",
+  	names: [
+  		"Sardinian"
+  	],
+  	"iso639-2": "srd",
+  	"iso639-1": "sc"
+  };
+  var Sasak = {
+  	name: "Sasak",
+  	names: [
+  		"Sasak"
+  	],
+  	"iso639-2": "sas",
+  	"iso639-1": null
+  };
+  var Scots = {
+  	name: "Scots",
+  	names: [
+  		"Scots"
+  	],
+  	"iso639-2": "sco",
+  	"iso639-1": null
+  };
+  var Selkup = {
+  	name: "Selkup",
+  	names: [
+  		"Selkup"
+  	],
+  	"iso639-2": "sel",
+  	"iso639-1": null
+  };
+  var Sepedi = {
+  	name: "Sepedi",
+  	names: [
+  		"Pedi",
+  		"Sepedi",
+  		"Northern Sotho"
+  	],
+  	"iso639-2": "nso",
+  	"iso639-1": null
+  };
+  var Serbian = {
+  	name: "Serbian",
+  	names: [
+  		"Serbian"
+  	],
+  	"iso639-2": "srp",
+  	"iso639-1": "sr"
+  };
+  var Serer = {
+  	name: "Serer",
+  	names: [
+  		"Serer"
+  	],
+  	"iso639-2": "srr",
+  	"iso639-1": null
+  };
+  var Shan = {
+  	name: "Shan",
+  	names: [
+  		"Shan"
+  	],
+  	"iso639-2": "shn",
+  	"iso639-1": null
+  };
+  var Shona = {
+  	name: "Shona",
+  	names: [
+  		"Shona"
+  	],
+  	"iso639-2": "sna",
+  	"iso639-1": "sn"
+  };
+  var Sicilian = {
+  	name: "Sicilian",
+  	names: [
+  		"Sicilian"
+  	],
+  	"iso639-2": "scn",
+  	"iso639-1": null
+  };
+  var Sidamo = {
+  	name: "Sidamo",
+  	names: [
+  		"Sidamo"
+  	],
+  	"iso639-2": "sid",
+  	"iso639-1": null
+  };
+  var Siksika = {
+  	name: "Siksika",
+  	names: [
+  		"Siksika"
+  	],
+  	"iso639-2": "bla",
+  	"iso639-1": null
+  };
+  var Sindhi = {
+  	name: "Sindhi",
+  	names: [
+  		"Sindhi"
+  	],
+  	"iso639-2": "snd",
+  	"iso639-1": "sd"
+  };
+  var Sinhala = {
+  	name: "Sinhala",
+  	names: [
+  		"Sinhala",
+  		"Sinhalese"
+  	],
+  	"iso639-2": "sin",
+  	"iso639-1": "si"
+  };
+  var Sinhalese = {
+  	name: "Sinhalese",
+  	names: [
+  		"Sinhala",
+  		"Sinhalese"
+  	],
+  	"iso639-2": "sin",
+  	"iso639-1": "si"
+  };
+  var Slovak = {
+  	name: "Slovak",
+  	names: [
+  		"Slovak"
+  	],
+  	"iso639-2": "slo/slk",
+  	"iso639-1": "sk"
+  };
+  var Slovenian = {
+  	name: "Slovenian",
+  	names: [
+  		"Slovenian"
+  	],
+  	"iso639-2": "slv",
+  	"iso639-1": "sl"
+  };
+  var Sogdian = {
+  	name: "Sogdian",
+  	names: [
+  		"Sogdian"
+  	],
+  	"iso639-2": "sog",
+  	"iso639-1": null
+  };
+  var Somali = {
+  	name: "Somali",
+  	names: [
+  		"Somali"
+  	],
+  	"iso639-2": "som",
+  	"iso639-1": "so"
+  };
+  var Soninke = {
+  	name: "Soninke",
+  	names: [
+  		"Soninke"
+  	],
+  	"iso639-2": "snk",
+  	"iso639-1": null
+  };
+  var Spanish = {
+  	name: "Spanish",
+  	names: [
+  		"Spanish",
+  		"Castilian"
+  	],
+  	"iso639-2": "spa",
+  	"iso639-1": "es"
+  };
+  var Sukuma = {
+  	name: "Sukuma",
+  	names: [
+  		"Sukuma"
+  	],
+  	"iso639-2": "suk",
+  	"iso639-1": null
+  };
+  var Sumerian = {
+  	name: "Sumerian",
+  	names: [
+  		"Sumerian"
+  	],
+  	"iso639-2": "sux",
+  	"iso639-1": null
+  };
+  var Sundanese = {
+  	name: "Sundanese",
+  	names: [
+  		"Sundanese"
+  	],
+  	"iso639-2": "sun",
+  	"iso639-1": "su"
+  };
+  var Susu = {
+  	name: "Susu",
+  	names: [
+  		"Susu"
+  	],
+  	"iso639-2": "sus",
+  	"iso639-1": null
+  };
+  var Swahili = {
+  	name: "Swahili",
+  	names: [
+  		"Swahili"
+  	],
+  	"iso639-2": "swa",
+  	"iso639-1": "sw"
+  };
+  var Swati = {
+  	name: "Swati",
+  	names: [
+  		"Swati"
+  	],
+  	"iso639-2": "ssw",
+  	"iso639-1": "ss"
+  };
+  var Swedish = {
+  	name: "Swedish",
+  	names: [
+  		"Swedish"
+  	],
+  	"iso639-2": "swe",
+  	"iso639-1": "sv"
+  };
+  var Syriac = {
+  	name: "Syriac",
+  	names: [
+  		"Syriac"
+  	],
+  	"iso639-2": "syr",
+  	"iso639-1": null
+  };
+  var Tagalog = {
+  	name: "Tagalog",
+  	names: [
+  		"Tagalog"
+  	],
+  	"iso639-2": "tgl",
+  	"iso639-1": "tl"
+  };
+  var Tahitian = {
+  	name: "Tahitian",
+  	names: [
+  		"Tahitian"
+  	],
+  	"iso639-2": "tah",
+  	"iso639-1": "ty"
+  };
+  var Tajik = {
+  	name: "Tajik",
+  	names: [
+  		"Tajik"
+  	],
+  	"iso639-2": "tgk",
+  	"iso639-1": "tg"
+  };
+  var Tamashek = {
+  	name: "Tamashek",
+  	names: [
+  		"Tamashek"
+  	],
+  	"iso639-2": "tmh",
+  	"iso639-1": null
+  };
+  var Tamil = {
+  	name: "Tamil",
+  	names: [
+  		"Tamil"
+  	],
+  	"iso639-2": "tam",
+  	"iso639-1": "ta"
+  };
+  var Tatar = {
+  	name: "Tatar",
+  	names: [
+  		"Tatar"
+  	],
+  	"iso639-2": "tat",
+  	"iso639-1": "tt"
+  };
+  var Telugu = {
+  	name: "Telugu",
+  	names: [
+  		"Telugu"
+  	],
+  	"iso639-2": "tel",
+  	"iso639-1": "te"
+  };
+  var Tereno = {
+  	name: "Tereno",
+  	names: [
+  		"Tereno"
+  	],
+  	"iso639-2": "ter",
+  	"iso639-1": null
+  };
+  var Tetum = {
+  	name: "Tetum",
+  	names: [
+  		"Tetum"
+  	],
+  	"iso639-2": "tet",
+  	"iso639-1": null
+  };
+  var Thai = {
+  	name: "Thai",
+  	names: [
+  		"Thai"
+  	],
+  	"iso639-2": "tha",
+  	"iso639-1": "th"
+  };
+  var Tibetan = {
+  	name: "Tibetan",
+  	names: [
+  		"Tibetan"
+  	],
+  	"iso639-2": "tib/bod",
+  	"iso639-1": "bo"
+  };
+  var Tigre = {
+  	name: "Tigre",
+  	names: [
+  		"Tigre"
+  	],
+  	"iso639-2": "tig",
+  	"iso639-1": null
+  };
+  var Tigrinya = {
+  	name: "Tigrinya",
+  	names: [
+  		"Tigrinya"
+  	],
+  	"iso639-2": "tir",
+  	"iso639-1": "ti"
+  };
+  var Timne = {
+  	name: "Timne",
+  	names: [
+  		"Timne"
+  	],
+  	"iso639-2": "tem",
+  	"iso639-1": null
+  };
+  var Tiv = {
+  	name: "Tiv",
+  	names: [
+  		"Tiv"
+  	],
+  	"iso639-2": "tiv",
+  	"iso639-1": null
+  };
+  var Tlingit = {
+  	name: "Tlingit",
+  	names: [
+  		"Tlingit"
+  	],
+  	"iso639-2": "tli",
+  	"iso639-1": null
+  };
+  var Tokelau = {
+  	name: "Tokelau",
+  	names: [
+  		"Tokelau"
+  	],
+  	"iso639-2": "tkl",
+  	"iso639-1": null
+  };
+  var Tsimshian = {
+  	name: "Tsimshian",
+  	names: [
+  		"Tsimshian"
+  	],
+  	"iso639-2": "tsi",
+  	"iso639-1": null
+  };
+  var Tsonga = {
+  	name: "Tsonga",
+  	names: [
+  		"Tsonga"
+  	],
+  	"iso639-2": "tso",
+  	"iso639-1": "ts"
+  };
+  var Tswana = {
+  	name: "Tswana",
+  	names: [
+  		"Tswana"
+  	],
+  	"iso639-2": "tsn",
+  	"iso639-1": "tn"
+  };
+  var Tumbuka = {
+  	name: "Tumbuka",
+  	names: [
+  		"Tumbuka"
+  	],
+  	"iso639-2": "tum",
+  	"iso639-1": null
+  };
+  var Turkish = {
+  	name: "Turkish",
+  	names: [
+  		"Turkish"
+  	],
+  	"iso639-2": "tur",
+  	"iso639-1": "tr"
+  };
+  var Turkmen = {
+  	name: "Turkmen",
+  	names: [
+  		"Turkmen"
+  	],
+  	"iso639-2": "tuk",
+  	"iso639-1": "tk"
+  };
+  var Tuvalu = {
+  	name: "Tuvalu",
+  	names: [
+  		"Tuvalu"
+  	],
+  	"iso639-2": "tvl",
+  	"iso639-1": null
+  };
+  var Tuvinian = {
+  	name: "Tuvinian",
+  	names: [
+  		"Tuvinian"
+  	],
+  	"iso639-2": "tyv",
+  	"iso639-1": null
+  };
+  var Twi = {
+  	name: "Twi",
+  	names: [
+  		"Twi"
+  	],
+  	"iso639-2": "twi",
+  	"iso639-1": "tw"
+  };
+  var Udmurt = {
+  	name: "Udmurt",
+  	names: [
+  		"Udmurt"
+  	],
+  	"iso639-2": "udm",
+  	"iso639-1": null
+  };
+  var Ugaritic = {
+  	name: "Ugaritic",
+  	names: [
+  		"Ugaritic"
+  	],
+  	"iso639-2": "uga",
+  	"iso639-1": null
+  };
+  var Uighur = {
+  	name: "Uighur",
+  	names: [
+  		"Uighur",
+  		"Uyghur"
+  	],
+  	"iso639-2": "uig",
+  	"iso639-1": "ug"
+  };
+  var Ukrainian = {
+  	name: "Ukrainian",
+  	names: [
+  		"Ukrainian"
+  	],
+  	"iso639-2": "ukr",
+  	"iso639-1": "uk"
+  };
+  var Umbundu = {
+  	name: "Umbundu",
+  	names: [
+  		"Umbundu"
+  	],
+  	"iso639-2": "umb",
+  	"iso639-1": null
+  };
+  var Undetermined = {
+  	name: "Undetermined",
+  	names: [
+  		"Undetermined"
+  	],
+  	"iso639-2": "und",
+  	"iso639-1": null
+  };
+  var Urdu = {
+  	name: "Urdu",
+  	names: [
+  		"Urdu"
+  	],
+  	"iso639-2": "urd",
+  	"iso639-1": "ur"
+  };
+  var Uyghur = {
+  	name: "Uyghur",
+  	names: [
+  		"Uighur",
+  		"Uyghur"
+  	],
+  	"iso639-2": "uig",
+  	"iso639-1": "ug"
+  };
+  var Uzbek = {
+  	name: "Uzbek",
+  	names: [
+  		"Uzbek"
+  	],
+  	"iso639-2": "uzb",
+  	"iso639-1": "uz"
+  };
+  var Vai = {
+  	name: "Vai",
+  	names: [
+  		"Vai"
+  	],
+  	"iso639-2": "vai",
+  	"iso639-1": null
+  };
+  var Valencian = {
+  	name: "Valencian",
+  	names: [
+  		"Catalan",
+  		"Valencian"
+  	],
+  	"iso639-2": "cat",
+  	"iso639-1": "ca"
+  };
+  var Venda = {
+  	name: "Venda",
+  	names: [
+  		"Venda"
+  	],
+  	"iso639-2": "ven",
+  	"iso639-1": "ve"
+  };
+  var Vietnamese = {
+  	name: "Vietnamese",
+  	names: [
+  		"Vietnamese"
+  	],
+  	"iso639-2": "vie",
+  	"iso639-1": "vi"
+  };
+  var Votic = {
+  	name: "Votic",
+  	names: [
+  		"Votic"
+  	],
+  	"iso639-2": "vot",
+  	"iso639-1": null
+  };
+  var Walloon = {
+  	name: "Walloon",
+  	names: [
+  		"Walloon"
+  	],
+  	"iso639-2": "wln",
+  	"iso639-1": "wa"
+  };
+  var Waray = {
+  	name: "Waray",
+  	names: [
+  		"Waray"
+  	],
+  	"iso639-2": "war",
+  	"iso639-1": null
+  };
+  var Washo = {
+  	name: "Washo",
+  	names: [
+  		"Washo"
+  	],
+  	"iso639-2": "was",
+  	"iso639-1": null
+  };
+  var Welsh = {
+  	name: "Welsh",
+  	names: [
+  		"Welsh"
+  	],
+  	"iso639-2": "wel/cym",
+  	"iso639-1": "cy"
+  };
+  var Wolaitta = {
+  	name: "Wolaitta",
+  	names: [
+  		"Wolaitta",
+  		"Wolaytta"
+  	],
+  	"iso639-2": "wal",
+  	"iso639-1": null
+  };
+  var Wolaytta = {
+  	name: "Wolaytta",
+  	names: [
+  		"Wolaitta",
+  		"Wolaytta"
+  	],
+  	"iso639-2": "wal",
+  	"iso639-1": null
+  };
+  var Wolof = {
+  	name: "Wolof",
+  	names: [
+  		"Wolof"
+  	],
+  	"iso639-2": "wol",
+  	"iso639-1": "wo"
+  };
+  var Xhosa = {
+  	name: "Xhosa",
+  	names: [
+  		"Xhosa"
+  	],
+  	"iso639-2": "xho",
+  	"iso639-1": "xh"
+  };
+  var Yakut = {
+  	name: "Yakut",
+  	names: [
+  		"Yakut"
+  	],
+  	"iso639-2": "sah",
+  	"iso639-1": null
+  };
+  var Yao = {
+  	name: "Yao",
+  	names: [
+  		"Yao"
+  	],
+  	"iso639-2": "yao",
+  	"iso639-1": null
+  };
+  var Yapese = {
+  	name: "Yapese",
+  	names: [
+  		"Yapese"
+  	],
+  	"iso639-2": "yap",
+  	"iso639-1": null
+  };
+  var Yiddish = {
+  	name: "Yiddish",
+  	names: [
+  		"Yiddish"
+  	],
+  	"iso639-2": "yid",
+  	"iso639-1": "yi"
+  };
+  var Yoruba = {
+  	name: "Yoruba",
+  	names: [
+  		"Yoruba"
+  	],
+  	"iso639-2": "yor",
+  	"iso639-1": "yo"
+  };
+  var Zapotec = {
+  	name: "Zapotec",
+  	names: [
+  		"Zapotec"
+  	],
+  	"iso639-2": "zap",
+  	"iso639-1": null
+  };
+  var Zaza = {
+  	name: "Zaza",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Zazaki = {
+  	name: "Zazaki",
+  	names: [
+  		"Zaza",
+  		"Dimili",
+  		"Dimli",
+  		"Kirdki",
+  		"Kirmanjki",
+  		"Zazaki"
+  	],
+  	"iso639-2": "zza",
+  	"iso639-1": null
+  };
+  var Zenaga = {
+  	name: "Zenaga",
+  	names: [
+  		"Zenaga"
+  	],
+  	"iso639-2": "zen",
+  	"iso639-1": null
+  };
+  var Zhuang = {
+  	name: "Zhuang",
+  	names: [
+  		"Zhuang",
+  		"Chuang"
+  	],
+  	"iso639-2": "zha",
+  	"iso639-1": "za"
+  };
+  var Zulu = {
+  	name: "Zulu",
+  	names: [
+  		"Zulu"
+  	],
+  	"iso639-2": "zul",
+  	"iso639-1": "zu"
+  };
+  var Zuni = {
+  	name: "Zuni",
+  	names: [
+  		"Zuni"
+  	],
+  	"iso639-2": "zun",
+  	"iso639-1": null
+  };
+  var iso = {
+  	Abkhazian: Abkhazian,
+  	Achinese: Achinese,
+  	Acoli: Acoli,
+  	Adangme: Adangme,
+  	Adygei: Adygei,
+  	Adyghe: Adyghe,
+  	Afar: Afar,
+  	Afrihili: Afrihili,
+  	Afrikaans: Afrikaans,
+  	"Afro-Asiatic languages": {
+  	name: "Afro-Asiatic languages",
+  	names: [
+  		"Afro-Asiatic languages"
+  	],
+  	"iso639-2": "afa",
+  	"iso639-1": null
+  },
+  	Ainu: Ainu,
+  	Akan: Akan,
+  	Akkadian: Akkadian,
+  	Albanian: Albanian,
+  	Alemannic: Alemannic,
+  	Aleut: Aleut,
+  	"Algonquian languages": {
+  	name: "Algonquian languages",
+  	names: [
+  		"Algonquian languages"
+  	],
+  	"iso639-2": "alg",
+  	"iso639-1": null
+  },
+  	Alsatian: Alsatian,
+  	"Altaic languages": {
+  	name: "Altaic languages",
+  	names: [
+  		"Altaic languages"
+  	],
+  	"iso639-2": "tut",
+  	"iso639-1": null
+  },
+  	Amharic: Amharic,
+  	Angika: Angika,
+  	"Apache languages": {
+  	name: "Apache languages",
+  	names: [
+  		"Apache languages"
+  	],
+  	"iso639-2": "apa",
+  	"iso639-1": null
+  },
+  	Arabic: Arabic,
+  	Aragonese: Aragonese,
+  	Arapaho: Arapaho,
+  	Arawak: Arawak,
+  	Armenian: Armenian,
+  	Aromanian: Aromanian,
+  	"Artificial languages": {
+  	name: "Artificial languages",
+  	names: [
+  		"Artificial languages"
+  	],
+  	"iso639-2": "art",
+  	"iso639-1": null
+  },
+  	Arumanian: Arumanian,
+  	Assamese: Assamese,
+  	Asturian: Asturian,
+  	Asturleonese: Asturleonese,
+  	"Athapascan languages": {
+  	name: "Athapascan languages",
+  	names: [
+  		"Athapascan languages"
+  	],
+  	"iso639-2": "ath",
+  	"iso639-1": null
+  },
+  	"Australian languages": {
+  	name: "Australian languages",
+  	names: [
+  		"Australian languages"
+  	],
+  	"iso639-2": "aus",
+  	"iso639-1": null
+  },
+  	"Austronesian languages": {
+  	name: "Austronesian languages",
+  	names: [
+  		"Austronesian languages"
+  	],
+  	"iso639-2": "map",
+  	"iso639-1": null
+  },
+  	Avaric: Avaric,
+  	Avestan: Avestan,
+  	Awadhi: Awadhi,
+  	Aymara: Aymara,
+  	Azerbaijani: Azerbaijani,
+  	Bable: Bable,
+  	Balinese: Balinese,
+  	"Baltic languages": {
+  	name: "Baltic languages",
+  	names: [
+  		"Baltic languages"
+  	],
+  	"iso639-2": "bat",
+  	"iso639-1": null
+  },
+  	Baluchi: Baluchi,
+  	Bambara: Bambara,
+  	"Bamileke languages": {
+  	name: "Bamileke languages",
+  	names: [
+  		"Bamileke languages"
+  	],
+  	"iso639-2": "bai",
+  	"iso639-1": null
+  },
+  	"Banda languages": {
+  	name: "Banda languages",
+  	names: [
+  		"Banda languages"
+  	],
+  	"iso639-2": "bad",
+  	"iso639-1": null
+  },
+  	"Bantu languages": {
+  	name: "Bantu languages",
+  	names: [
+  		"Bantu languages"
+  	],
+  	"iso639-2": "bnt",
+  	"iso639-1": null
+  },
+  	Basa: Basa,
+  	Bashkir: Bashkir,
+  	Basque: Basque,
+  	"Batak languages": {
+  	name: "Batak languages",
+  	names: [
+  		"Batak languages"
+  	],
+  	"iso639-2": "btk",
+  	"iso639-1": null
+  },
+  	Bedawiyet: Bedawiyet,
+  	Beja: Beja,
+  	Belarusian: Belarusian,
+  	Bemba: Bemba,
+  	Bengali: Bengali,
+  	"Berber languages": {
+  	name: "Berber languages",
+  	names: [
+  		"Berber languages"
+  	],
+  	"iso639-2": "ber",
+  	"iso639-1": null
+  },
+  	Bhojpuri: Bhojpuri,
+  	"Bihari languages": {
+  	name: "Bihari languages",
+  	names: [
+  		"Bihari languages"
+  	],
+  	"iso639-2": "bih",
+  	"iso639-1": "bh"
+  },
+  	Bikol: Bikol,
+  	Bilin: Bilin,
+  	Bini: Bini,
+  	Bislama: Bislama,
+  	Blin: Blin,
+  	Bliss: Bliss,
+  	Blissymbolics: Blissymbolics,
+  	Blissymbols: Blissymbols,
+  	"Bokmål, Norwegian": {
+  	name: "Bokmål, Norwegian",
+  	names: [
+  		"Bokmål, Norwegian",
+  		"Norwegian Bokmål"
+  	],
+  	"iso639-2": "nob",
+  	"iso639-1": "nb"
+  },
+  	Bosnian: Bosnian,
+  	Braj: Braj,
+  	Breton: Breton,
+  	Buginese: Buginese,
+  	Bulgarian: Bulgarian,
+  	Buriat: Buriat,
+  	Burmese: Burmese,
+  	Caddo: Caddo,
+  	Castilian: Castilian,
+  	Catalan: Catalan,
+  	"Caucasian languages": {
+  	name: "Caucasian languages",
+  	names: [
+  		"Caucasian languages"
+  	],
+  	"iso639-2": "cau",
+  	"iso639-1": null
+  },
+  	Cebuano: Cebuano,
+  	"Celtic languages": {
+  	name: "Celtic languages",
+  	names: [
+  		"Celtic languages"
+  	],
+  	"iso639-2": "cel",
+  	"iso639-1": null
+  },
+  	"Central American Indian languages": {
+  	name: "Central American Indian languages",
+  	names: [
+  		"Central American Indian languages"
+  	],
+  	"iso639-2": "cai",
+  	"iso639-1": null
+  },
+  	"Central Khmer": {
+  	name: "Central Khmer",
+  	names: [
+  		"Central Khmer"
+  	],
+  	"iso639-2": "khm",
+  	"iso639-1": "km"
+  },
+  	Chagatai: Chagatai,
+  	"Chamic languages": {
+  	name: "Chamic languages",
+  	names: [
+  		"Chamic languages"
+  	],
+  	"iso639-2": "cmc",
+  	"iso639-1": null
+  },
+  	Chamorro: Chamorro,
+  	Chechen: Chechen,
+  	Cherokee: Cherokee,
+  	Chewa: Chewa,
+  	Cheyenne: Cheyenne,
+  	Chibcha: Chibcha,
+  	Chichewa: Chichewa,
+  	Chinese: Chinese,
+  	"Chinook jargon": {
+  	name: "Chinook jargon",
+  	names: [
+  		"Chinook jargon"
+  	],
+  	"iso639-2": "chn",
+  	"iso639-1": null
+  },
+  	Chipewyan: Chipewyan,
+  	Choctaw: Choctaw,
+  	Chuang: Chuang,
+  	"Church Slavic": {
+  	name: "Church Slavic",
+  	names: [
+  		"Church Slavic",
+  		"Old Slavonic",
+  		"Church Slavonic",
+  		"Old Bulgarian",
+  		"Old Church Slavonic"
+  	],
+  	"iso639-2": "chu",
+  	"iso639-1": "cu"
+  },
+  	"Church Slavonic": {
+  	name: "Church Slavonic",
+  	names: [
+  		"Church Slavic",
+  		"Old Slavonic",
+  		"Church Slavonic",
+  		"Old Bulgarian",
+  		"Old Church Slavonic"
+  	],
+  	"iso639-2": "chu",
+  	"iso639-1": "cu"
+  },
+  	Chuukese: Chuukese,
+  	Chuvash: Chuvash,
+  	"Classical Nepal Bhasa": {
+  	name: "Classical Nepal Bhasa",
+  	names: [
+  		"Classical Newari",
+  		"Old Newari",
+  		"Classical Nepal Bhasa"
+  	],
+  	"iso639-2": "nwc",
+  	"iso639-1": null
+  },
+  	"Classical Newari": {
+  	name: "Classical Newari",
+  	names: [
+  		"Classical Newari",
+  		"Old Newari",
+  		"Classical Nepal Bhasa"
+  	],
+  	"iso639-2": "nwc",
+  	"iso639-1": null
+  },
+  	"Classical Syriac": {
+  	name: "Classical Syriac",
+  	names: [
+  		"Classical Syriac"
+  	],
+  	"iso639-2": "syc",
+  	"iso639-1": null
+  },
+  	"Cook Islands Maori": {
+  	name: "Cook Islands Maori",
+  	names: [
+  		"Rarotongan",
+  		"Cook Islands Maori"
+  	],
+  	"iso639-2": "rar",
+  	"iso639-1": null
+  },
+  	Coptic: Coptic,
+  	Cornish: Cornish,
+  	Corsican: Corsican,
+  	Cree: Cree,
+  	Creek: Creek,
+  	"Creoles and pidgins": {
+  	name: "Creoles and pidgins",
+  	names: [
+  		"Creoles and pidgins"
+  	],
+  	"iso639-2": "crp",
+  	"iso639-1": null
+  },
+  	"Creoles and pidgins, English based": {
+  	name: "Creoles and pidgins, English based",
+  	names: [
+  		"Creoles and pidgins, English based"
+  	],
+  	"iso639-2": "cpe",
+  	"iso639-1": null
+  },
+  	"Creoles and pidgins, French-based": {
+  	name: "Creoles and pidgins, French-based",
+  	names: [
+  		"Creoles and pidgins, French-based"
+  	],
+  	"iso639-2": "cpf",
+  	"iso639-1": null
+  },
+  	"Creoles and pidgins, Portuguese-based": {
+  	name: "Creoles and pidgins, Portuguese-based",
+  	names: [
+  		"Creoles and pidgins, Portuguese-based"
+  	],
+  	"iso639-2": "cpp",
+  	"iso639-1": null
+  },
+  	"Crimean Tatar": {
+  	name: "Crimean Tatar",
+  	names: [
+  		"Crimean Tatar",
+  		"Crimean Turkish"
+  	],
+  	"iso639-2": "crh",
+  	"iso639-1": null
+  },
+  	"Crimean Turkish": {
+  	name: "Crimean Turkish",
+  	names: [
+  		"Crimean Tatar",
+  		"Crimean Turkish"
+  	],
+  	"iso639-2": "crh",
+  	"iso639-1": null
+  },
+  	Croatian: Croatian,
+  	"Cushitic languages": {
+  	name: "Cushitic languages",
+  	names: [
+  		"Cushitic languages"
+  	],
+  	"iso639-2": "cus",
+  	"iso639-1": null
+  },
+  	Czech: Czech,
+  	Dakota: Dakota,
+  	Danish: Danish,
+  	Dargwa: Dargwa,
+  	Delaware: Delaware,
+  	"Dene Suline": {
+  	name: "Dene Suline",
+  	names: [
+  		"Chipewyan",
+  		"Dene Suline"
+  	],
+  	"iso639-2": "chp",
+  	"iso639-1": null
+  },
+  	Dhivehi: Dhivehi,
+  	Dimili: Dimili,
+  	Dimli: Dimli,
+  	Dinka: Dinka,
+  	Divehi: Divehi,
+  	Dogri: Dogri,
+  	Dogrib: Dogrib,
+  	"Dravidian languages": {
+  	name: "Dravidian languages",
+  	names: [
+  		"Dravidian languages"
+  	],
+  	"iso639-2": "dra",
+  	"iso639-1": null
+  },
+  	Duala: Duala,
+  	Dutch: Dutch,
+  	"Dutch, Middle (ca.1050-1350)": {
+  	name: "Dutch, Middle (ca.1050-1350)",
+  	names: [
+  		"Dutch, Middle (ca.1050-1350)"
+  	],
+  	"iso639-2": "dum",
+  	"iso639-1": null
+  },
+  	Dyula: Dyula,
+  	Dzongkha: Dzongkha,
+  	"Eastern Frisian": {
+  	name: "Eastern Frisian",
+  	names: [
+  		"Eastern Frisian"
+  	],
+  	"iso639-2": "frs",
+  	"iso639-1": null
+  },
+  	Edo: Edo,
+  	Efik: Efik,
+  	"Egyptian (Ancient)": {
+  	name: "Egyptian (Ancient)",
+  	names: [
+  		"Egyptian (Ancient)"
+  	],
+  	"iso639-2": "egy",
+  	"iso639-1": null
+  },
+  	Ekajuk: Ekajuk,
+  	Elamite: Elamite,
+  	English: English,
+  	"English, Middle (1100-1500)": {
+  	name: "English, Middle (1100-1500)",
+  	names: [
+  		"English, Middle (1100-1500)"
+  	],
+  	"iso639-2": "enm",
+  	"iso639-1": null
+  },
+  	"English, Old (ca.450-1100)": {
+  	name: "English, Old (ca.450-1100)",
+  	names: [
+  		"English, Old (ca.450-1100)"
+  	],
+  	"iso639-2": "ang",
+  	"iso639-1": null
+  },
+  	Erzya: Erzya,
+  	Esperanto: Esperanto,
+  	Estonian: Estonian,
+  	Ewe: Ewe,
+  	Ewondo: Ewondo,
+  	Fang: Fang,
+  	Fanti: Fanti,
+  	Faroese: Faroese,
+  	Fijian: Fijian,
+  	Filipino: Filipino,
+  	Finnish: Finnish,
+  	"Finno-Ugrian languages": {
+  	name: "Finno-Ugrian languages",
+  	names: [
+  		"Finno-Ugrian languages"
+  	],
+  	"iso639-2": "fiu",
+  	"iso639-1": null
+  },
+  	Flemish: Flemish,
+  	Fon: Fon,
+  	French: French,
+  	"French, Middle (ca.1400-1600)": {
+  	name: "French, Middle (ca.1400-1600)",
+  	names: [
+  		"French, Middle (ca.1400-1600)"
+  	],
+  	"iso639-2": "frm",
+  	"iso639-1": null
+  },
+  	"French, Old (842-ca.1400)": {
+  	name: "French, Old (842-ca.1400)",
+  	names: [
+  		"French, Old (842-ca.1400)"
+  	],
+  	"iso639-2": "fro",
+  	"iso639-1": null
+  },
+  	Friulian: Friulian,
+  	Fulah: Fulah,
+  	Ga: Ga,
+  	Gaelic: Gaelic,
+  	"Galibi Carib": {
+  	name: "Galibi Carib",
+  	names: [
+  		"Galibi Carib"
+  	],
+  	"iso639-2": "car",
+  	"iso639-1": null
+  },
+  	Galician: Galician,
+  	Ganda: Ganda,
+  	Gayo: Gayo,
+  	Gbaya: Gbaya,
+  	Geez: Geez,
+  	Georgian: Georgian,
+  	German: German,
+  	"German, Low": {
+  	name: "German, Low",
+  	names: [
+  		"Low German",
+  		"Low Saxon",
+  		"German, Low",
+  		"Saxon, Low"
+  	],
+  	"iso639-2": "nds",
+  	"iso639-1": null
+  },
+  	"German, Middle High (ca.1050-1500)": {
+  	name: "German, Middle High (ca.1050-1500)",
+  	names: [
+  		"German, Middle High (ca.1050-1500)"
+  	],
+  	"iso639-2": "gmh",
+  	"iso639-1": null
+  },
+  	"German, Old High (ca.750-1050)": {
+  	name: "German, Old High (ca.750-1050)",
+  	names: [
+  		"German, Old High (ca.750-1050)"
+  	],
+  	"iso639-2": "goh",
+  	"iso639-1": null
+  },
+  	"Germanic languages": {
+  	name: "Germanic languages",
+  	names: [
+  		"Germanic languages"
+  	],
+  	"iso639-2": "gem",
+  	"iso639-1": null
+  },
+  	Gikuyu: Gikuyu,
+  	Gilbertese: Gilbertese,
+  	Gondi: Gondi,
+  	Gorontalo: Gorontalo,
+  	Gothic: Gothic,
+  	Grebo: Grebo,
+  	"Greek, Ancient (to 1453)": {
+  	name: "Greek, Ancient (to 1453)",
+  	names: [
+  		"Greek, Ancient (to 1453)"
+  	],
+  	"iso639-2": "grc",
+  	"iso639-1": null
+  },
+  	"Greek, Modern (1453-)": {
+  	name: "Greek, Modern (1453-)",
+  	names: [
+  		"Greek, Modern (1453-)"
+  	],
+  	"iso639-2": "gre/ell",
+  	"iso639-1": "el"
+  },
+  	Greenlandic: Greenlandic,
+  	Guarani: Guarani,
+  	Gujarati: Gujarati,
+  	"Gwich'in": {
+  	name: "Gwich'in",
+  	names: [
+  		"Gwich'in"
+  	],
+  	"iso639-2": "gwi",
+  	"iso639-1": null
+  },
+  	Haida: Haida,
+  	Haitian: Haitian,
+  	"Haitian Creole": {
+  	name: "Haitian Creole",
+  	names: [
+  		"Haitian",
+  		"Haitian Creole"
+  	],
+  	"iso639-2": "hat",
+  	"iso639-1": "ht"
+  },
+  	Hausa: Hausa,
+  	Hawaiian: Hawaiian,
+  	Hebrew: Hebrew,
+  	Herero: Herero,
+  	Hiligaynon: Hiligaynon,
+  	"Himachali languages": {
+  	name: "Himachali languages",
+  	names: [
+  		"Himachali languages",
+  		"Western Pahari languages"
+  	],
+  	"iso639-2": "him",
+  	"iso639-1": null
+  },
+  	Hindi: Hindi,
+  	"Hiri Motu": {
+  	name: "Hiri Motu",
+  	names: [
+  		"Hiri Motu"
+  	],
+  	"iso639-2": "hmo",
+  	"iso639-1": "ho"
+  },
+  	Hittite: Hittite,
+  	Hmong: Hmong,
+  	Hungarian: Hungarian,
+  	Hupa: Hupa,
+  	Iban: Iban,
+  	Icelandic: Icelandic,
+  	Ido: Ido,
+  	Igbo: Igbo,
+  	"Ijo languages": {
+  	name: "Ijo languages",
+  	names: [
+  		"Ijo languages"
+  	],
+  	"iso639-2": "ijo",
+  	"iso639-1": null
+  },
+  	Iloko: Iloko,
+  	"Imperial Aramaic (700-300 BCE)": {
+  	name: "Imperial Aramaic (700-300 BCE)",
+  	names: [
+  		"Official Aramaic (700-300 BCE)",
+  		"Imperial Aramaic (700-300 BCE)"
+  	],
+  	"iso639-2": "arc",
+  	"iso639-1": null
+  },
+  	"Inari Sami": {
+  	name: "Inari Sami",
+  	names: [
+  		"Inari Sami"
+  	],
+  	"iso639-2": "smn",
+  	"iso639-1": null
+  },
+  	"Indic languages": {
+  	name: "Indic languages",
+  	names: [
+  		"Indic languages"
+  	],
+  	"iso639-2": "inc",
+  	"iso639-1": null
+  },
+  	"Indo-European languages": {
+  	name: "Indo-European languages",
+  	names: [
+  		"Indo-European languages"
+  	],
+  	"iso639-2": "ine",
+  	"iso639-1": null
+  },
+  	Indonesian: Indonesian,
+  	Ingush: Ingush,
+  	"Interlingua (International Auxiliary Language Association)": {
+  	name: "Interlingua (International Auxiliary Language Association)",
+  	names: [
+  		"Interlingua (International Auxiliary Language Association)"
+  	],
+  	"iso639-2": "ina",
+  	"iso639-1": "ia"
+  },
+  	Interlingue: Interlingue,
+  	Inuktitut: Inuktitut,
+  	Inupiaq: Inupiaq,
+  	"Iranian languages": {
+  	name: "Iranian languages",
+  	names: [
+  		"Iranian languages"
+  	],
+  	"iso639-2": "ira",
+  	"iso639-1": null
+  },
+  	Irish: Irish,
+  	"Irish, Middle (900-1200)": {
+  	name: "Irish, Middle (900-1200)",
+  	names: [
+  		"Irish, Middle (900-1200)"
+  	],
+  	"iso639-2": "mga",
+  	"iso639-1": null
+  },
+  	"Irish, Old (to 900)": {
+  	name: "Irish, Old (to 900)",
+  	names: [
+  		"Irish, Old (to 900)"
+  	],
+  	"iso639-2": "sga",
+  	"iso639-1": null
+  },
+  	"Iroquoian languages": {
+  	name: "Iroquoian languages",
+  	names: [
+  		"Iroquoian languages"
+  	],
+  	"iso639-2": "iro",
+  	"iso639-1": null
+  },
+  	Italian: Italian,
+  	Japanese: Japanese,
+  	Javanese: Javanese,
+  	Jingpho: Jingpho,
+  	"Judeo-Arabic": {
+  	name: "Judeo-Arabic",
+  	names: [
+  		"Judeo-Arabic"
+  	],
+  	"iso639-2": "jrb",
+  	"iso639-1": null
+  },
+  	"Judeo-Persian": {
+  	name: "Judeo-Persian",
+  	names: [
+  		"Judeo-Persian"
+  	],
+  	"iso639-2": "jpr",
+  	"iso639-1": null
+  },
+  	Kabardian: Kabardian,
+  	Kabyle: Kabyle,
+  	Kachin: Kachin,
+  	Kalaallisut: Kalaallisut,
+  	Kalmyk: Kalmyk,
+  	Kamba: Kamba,
+  	Kannada: Kannada,
+  	Kanuri: Kanuri,
+  	Kapampangan: Kapampangan,
+  	"Kara-Kalpak": {
+  	name: "Kara-Kalpak",
+  	names: [
+  		"Kara-Kalpak"
+  	],
+  	"iso639-2": "kaa",
+  	"iso639-1": null
+  },
+  	"Karachay-Balkar": {
+  	name: "Karachay-Balkar",
+  	names: [
+  		"Karachay-Balkar"
+  	],
+  	"iso639-2": "krc",
+  	"iso639-1": null
+  },
+  	Karelian: Karelian,
+  	"Karen languages": {
+  	name: "Karen languages",
+  	names: [
+  		"Karen languages"
+  	],
+  	"iso639-2": "kar",
+  	"iso639-1": null
+  },
+  	Kashmiri: Kashmiri,
+  	Kashubian: Kashubian,
+  	Kawi: Kawi,
+  	Kazakh: Kazakh,
+  	Khasi: Khasi,
+  	"Khoisan languages": {
+  	name: "Khoisan languages",
+  	names: [
+  		"Khoisan languages"
+  	],
+  	"iso639-2": "khi",
+  	"iso639-1": null
+  },
+  	Khotanese: Khotanese,
+  	Kikuyu: Kikuyu,
+  	Kimbundu: Kimbundu,
+  	Kinyarwanda: Kinyarwanda,
+  	Kirdki: Kirdki,
+  	Kirghiz: Kirghiz,
+  	Kirmanjki: Kirmanjki,
+  	Klingon: Klingon,
+  	Komi: Komi,
+  	Kongo: Kongo,
+  	Konkani: Konkani,
+  	Korean: Korean,
+  	Kosraean: Kosraean,
+  	Kpelle: Kpelle,
+  	"Kru languages": {
+  	name: "Kru languages",
+  	names: [
+  		"Kru languages"
+  	],
+  	"iso639-2": "kro",
+  	"iso639-1": null
+  },
+  	Kuanyama: Kuanyama,
+  	Kumyk: Kumyk,
+  	Kurdish: Kurdish,
+  	Kurukh: Kurukh,
+  	Kutenai: Kutenai,
+  	Kwanyama: Kwanyama,
+  	Kyrgyz: Kyrgyz,
+  	Ladino: Ladino,
+  	Lahnda: Lahnda,
+  	Lamba: Lamba,
+  	"Land Dayak languages": {
+  	name: "Land Dayak languages",
+  	names: [
+  		"Land Dayak languages"
+  	],
+  	"iso639-2": "day",
+  	"iso639-1": null
+  },
+  	Lao: Lao,
+  	Latin: Latin,
+  	Latvian: Latvian,
+  	Leonese: Leonese,
+  	Letzeburgesch: Letzeburgesch,
+  	Lezghian: Lezghian,
+  	Limburgan: Limburgan,
+  	Limburger: Limburger,
+  	Limburgish: Limburgish,
+  	Lingala: Lingala,
+  	Lithuanian: Lithuanian,
+  	Lojban: Lojban,
+  	"Low German": {
+  	name: "Low German",
+  	names: [
+  		"Low German",
+  		"Low Saxon",
+  		"German, Low",
+  		"Saxon, Low"
+  	],
+  	"iso639-2": "nds",
+  	"iso639-1": null
+  },
+  	"Low Saxon": {
+  	name: "Low Saxon",
+  	names: [
+  		"Low German",
+  		"Low Saxon",
+  		"German, Low",
+  		"Saxon, Low"
+  	],
+  	"iso639-2": "nds",
+  	"iso639-1": null
+  },
+  	"Lower Sorbian": {
+  	name: "Lower Sorbian",
+  	names: [
+  		"Lower Sorbian"
+  	],
+  	"iso639-2": "dsb",
+  	"iso639-1": null
+  },
+  	Lozi: Lozi,
+  	"Luba-Katanga": {
+  	name: "Luba-Katanga",
+  	names: [
+  		"Luba-Katanga"
+  	],
+  	"iso639-2": "lub",
+  	"iso639-1": "lu"
+  },
+  	"Luba-Lulua": {
+  	name: "Luba-Lulua",
+  	names: [
+  		"Luba-Lulua"
+  	],
+  	"iso639-2": "lua",
+  	"iso639-1": null
+  },
+  	Luiseno: Luiseno,
+  	"Lule Sami": {
+  	name: "Lule Sami",
+  	names: [
+  		"Lule Sami"
+  	],
+  	"iso639-2": "smj",
+  	"iso639-1": null
+  },
+  	Lunda: Lunda,
+  	"Luo (Kenya and Tanzania)": {
+  	name: "Luo (Kenya and Tanzania)",
+  	names: [
+  		"Luo (Kenya and Tanzania)"
+  	],
+  	"iso639-2": "luo",
+  	"iso639-1": null
+  },
+  	Lushai: Lushai,
+  	Luxembourgish: Luxembourgish,
+  	"Macedo-Romanian": {
+  	name: "Macedo-Romanian",
+  	names: [
+  		"Aromanian",
+  		"Arumanian",
+  		"Macedo-Romanian"
+  	],
+  	"iso639-2": "rup",
+  	"iso639-1": null
+  },
+  	Macedonian: Macedonian,
+  	Madurese: Madurese,
+  	Magahi: Magahi,
+  	Maithili: Maithili,
+  	Makasar: Makasar,
+  	Malagasy: Malagasy,
+  	Malay: Malay,
+  	Malayalam: Malayalam,
+  	Maldivian: Maldivian,
+  	Maltese: Maltese,
+  	Manchu: Manchu,
+  	Mandar: Mandar,
+  	Mandingo: Mandingo,
+  	Manipuri: Manipuri,
+  	"Manobo languages": {
+  	name: "Manobo languages",
+  	names: [
+  		"Manobo languages"
+  	],
+  	"iso639-2": "mno",
+  	"iso639-1": null
+  },
+  	Manx: Manx,
+  	Maori: Maori,
+  	Mapuche: Mapuche,
+  	Mapudungun: Mapudungun,
+  	Marathi: Marathi,
+  	Mari: Mari,
+  	Marshallese: Marshallese,
+  	Marwari: Marwari,
+  	Masai: Masai,
+  	"Mayan languages": {
+  	name: "Mayan languages",
+  	names: [
+  		"Mayan languages"
+  	],
+  	"iso639-2": "myn",
+  	"iso639-1": null
+  },
+  	Mende: Mende,
+  	"Mi'kmaq": {
+  	name: "Mi'kmaq",
+  	names: [
+  		"Mi'kmaq",
+  		"Micmac"
+  	],
+  	"iso639-2": "mic",
+  	"iso639-1": null
+  },
+  	Micmac: Micmac,
+  	Minangkabau: Minangkabau,
+  	Mirandese: Mirandese,
+  	Mohawk: Mohawk,
+  	Moksha: Moksha,
+  	Moldavian: Moldavian,
+  	Moldovan: Moldovan,
+  	"Mon-Khmer languages": {
+  	name: "Mon-Khmer languages",
+  	names: [
+  		"Mon-Khmer languages"
+  	],
+  	"iso639-2": "mkh",
+  	"iso639-1": null
+  },
+  	Mong: Mong,
+  	Mongo: Mongo,
+  	Mongolian: Mongolian,
+  	Montenegrin: Montenegrin,
+  	Mossi: Mossi,
+  	"Multiple languages": {
+  	name: "Multiple languages",
+  	names: [
+  		"Multiple languages"
+  	],
+  	"iso639-2": "mul",
+  	"iso639-1": null
+  },
+  	"Munda languages": {
+  	name: "Munda languages",
+  	names: [
+  		"Munda languages"
+  	],
+  	"iso639-2": "mun",
+  	"iso639-1": null
+  },
+  	"N'Ko": {
+  	name: "N'Ko",
+  	names: [
+  		"N'Ko"
+  	],
+  	"iso639-2": "nqo",
+  	"iso639-1": null
+  },
+  	"Nahuatl languages": {
+  	name: "Nahuatl languages",
+  	names: [
+  		"Nahuatl languages"
+  	],
+  	"iso639-2": "nah",
+  	"iso639-1": null
+  },
+  	Nauru: Nauru,
+  	Navaho: Navaho,
+  	Navajo: Navajo,
+  	"Ndebele, North": {
+  	name: "Ndebele, North",
+  	names: [
+  		"Ndebele, North",
+  		"North Ndebele"
+  	],
+  	"iso639-2": "nde",
+  	"iso639-1": "nd"
+  },
+  	"Ndebele, South": {
+  	name: "Ndebele, South",
+  	names: [
+  		"Ndebele, South",
+  		"South Ndebele"
+  	],
+  	"iso639-2": "nbl",
+  	"iso639-1": "nr"
+  },
+  	Ndonga: Ndonga,
+  	Neapolitan: Neapolitan,
+  	"Nepal Bhasa": {
+  	name: "Nepal Bhasa",
+  	names: [
+  		"Nepal Bhasa",
+  		"Newari"
+  	],
+  	"iso639-2": "new",
+  	"iso639-1": null
+  },
+  	Nepali: Nepali,
+  	Newari: Newari,
+  	Nias: Nias,
+  	"Niger-Kordofanian languages": {
+  	name: "Niger-Kordofanian languages",
+  	names: [
+  		"Niger-Kordofanian languages"
+  	],
+  	"iso639-2": "nic",
+  	"iso639-1": null
+  },
+  	"Nilo-Saharan languages": {
+  	name: "Nilo-Saharan languages",
+  	names: [
+  		"Nilo-Saharan languages"
+  	],
+  	"iso639-2": "ssa",
+  	"iso639-1": null
+  },
+  	Niuean: Niuean,
+  	"No linguistic content": {
+  	name: "No linguistic content",
+  	names: [
+  		"No linguistic content",
+  		"Not applicable"
+  	],
+  	"iso639-2": "zxx",
+  	"iso639-1": null
+  },
+  	Nogai: Nogai,
+  	"Norse, Old": {
+  	name: "Norse, Old",
+  	names: [
+  		"Norse, Old"
+  	],
+  	"iso639-2": "non",
+  	"iso639-1": null
+  },
+  	"North American Indian languages": {
+  	name: "North American Indian languages",
+  	names: [
+  		"North American Indian languages"
+  	],
+  	"iso639-2": "nai",
+  	"iso639-1": null
+  },
+  	"North Ndebele": {
+  	name: "North Ndebele",
+  	names: [
+  		"Ndebele, North",
+  		"North Ndebele"
+  	],
+  	"iso639-2": "nde",
+  	"iso639-1": "nd"
+  },
+  	"Northern Frisian": {
+  	name: "Northern Frisian",
+  	names: [
+  		"Northern Frisian"
+  	],
+  	"iso639-2": "frr",
+  	"iso639-1": null
+  },
+  	"Northern Sami": {
+  	name: "Northern Sami",
+  	names: [
+  		"Northern Sami"
+  	],
+  	"iso639-2": "sme",
+  	"iso639-1": "se"
+  },
+  	"Northern Sotho": {
+  	name: "Northern Sotho",
+  	names: [
+  		"Pedi",
+  		"Sepedi",
+  		"Northern Sotho"
+  	],
+  	"iso639-2": "nso",
+  	"iso639-1": null
+  },
+  	Norwegian: Norwegian,
+  	"Norwegian Bokmål": {
+  	name: "Norwegian Bokmål",
+  	names: [
+  		"Bokmål, Norwegian",
+  		"Norwegian Bokmål"
+  	],
+  	"iso639-2": "nob",
+  	"iso639-1": "nb"
+  },
+  	"Norwegian Nynorsk": {
+  	name: "Norwegian Nynorsk",
+  	names: [
+  		"Norwegian Nynorsk",
+  		"Nynorsk, Norwegian"
+  	],
+  	"iso639-2": "nno",
+  	"iso639-1": "nn"
+  },
+  	"Not applicable": {
+  	name: "Not applicable",
+  	names: [
+  		"No linguistic content",
+  		"Not applicable"
+  	],
+  	"iso639-2": "zxx",
+  	"iso639-1": null
+  },
+  	"Nubian languages": {
+  	name: "Nubian languages",
+  	names: [
+  		"Nubian languages"
+  	],
+  	"iso639-2": "nub",
+  	"iso639-1": null
+  },
+  	Nuosu: Nuosu,
+  	Nyamwezi: Nyamwezi,
+  	Nyanja: Nyanja,
+  	Nyankole: Nyankole,
+  	"Nynorsk, Norwegian": {
+  	name: "Nynorsk, Norwegian",
+  	names: [
+  		"Norwegian Nynorsk",
+  		"Nynorsk, Norwegian"
+  	],
+  	"iso639-2": "nno",
+  	"iso639-1": "nn"
+  },
+  	Nyoro: Nyoro,
+  	Nzima: Nzima,
+  	Occidental: Occidental,
+  	"Occitan (post 1500)": {
+  	name: "Occitan (post 1500)",
+  	names: [
+  		"Occitan (post 1500)"
+  	],
+  	"iso639-2": "oci",
+  	"iso639-1": "oc"
+  },
+  	"Occitan, Old (to 1500)": {
+  	name: "Occitan, Old (to 1500)",
+  	names: [
+  		"Provençal, Old (to 1500)",
+  		"Occitan, Old (to 1500)"
+  	],
+  	"iso639-2": "pro",
+  	"iso639-1": null
+  },
+  	"Official Aramaic (700-300 BCE)": {
+  	name: "Official Aramaic (700-300 BCE)",
+  	names: [
+  		"Official Aramaic (700-300 BCE)",
+  		"Imperial Aramaic (700-300 BCE)"
+  	],
+  	"iso639-2": "arc",
+  	"iso639-1": null
+  },
+  	Oirat: Oirat,
+  	Ojibwa: Ojibwa,
+  	"Old Bulgarian": {
+  	name: "Old Bulgarian",
+  	names: [
+  		"Church Slavic",
+  		"Old Slavonic",
+  		"Church Slavonic",
+  		"Old Bulgarian",
+  		"Old Church Slavonic"
+  	],
+  	"iso639-2": "chu",
+  	"iso639-1": "cu"
+  },
+  	"Old Church Slavonic": {
+  	name: "Old Church Slavonic",
+  	names: [
+  		"Church Slavic",
+  		"Old Slavonic",
+  		"Church Slavonic",
+  		"Old Bulgarian",
+  		"Old Church Slavonic"
+  	],
+  	"iso639-2": "chu",
+  	"iso639-1": "cu"
+  },
+  	"Old Newari": {
+  	name: "Old Newari",
+  	names: [
+  		"Classical Newari",
+  		"Old Newari",
+  		"Classical Nepal Bhasa"
+  	],
+  	"iso639-2": "nwc",
+  	"iso639-1": null
+  },
+  	"Old Slavonic": {
+  	name: "Old Slavonic",
+  	names: [
+  		"Church Slavic",
+  		"Old Slavonic",
+  		"Church Slavonic",
+  		"Old Bulgarian",
+  		"Old Church Slavonic"
+  	],
+  	"iso639-2": "chu",
+  	"iso639-1": "cu"
+  },
+  	Oriya: Oriya,
+  	Oromo: Oromo,
+  	Osage: Osage,
+  	Ossetian: Ossetian,
+  	Ossetic: Ossetic,
+  	"Otomian languages": {
+  	name: "Otomian languages",
+  	names: [
+  		"Otomian languages"
+  	],
+  	"iso639-2": "oto",
+  	"iso639-1": null
+  },
+  	Pahlavi: Pahlavi,
+  	Palauan: Palauan,
+  	Pali: Pali,
+  	Pampanga: Pampanga,
+  	Pangasinan: Pangasinan,
+  	Panjabi: Panjabi,
+  	Papiamento: Papiamento,
+  	"Papuan languages": {
+  	name: "Papuan languages",
+  	names: [
+  		"Papuan languages"
+  	],
+  	"iso639-2": "paa",
+  	"iso639-1": null
+  },
+  	Pashto: Pashto,
+  	Pedi: Pedi,
+  	Persian: Persian,
+  	"Persian, Old (ca.600-400 B.C.)": {
+  	name: "Persian, Old (ca.600-400 B.C.)",
+  	names: [
+  		"Persian, Old (ca.600-400 B.C.)"
+  	],
+  	"iso639-2": "peo",
+  	"iso639-1": null
+  },
+  	"Philippine languages": {
+  	name: "Philippine languages",
+  	names: [
+  		"Philippine languages"
+  	],
+  	"iso639-2": "phi",
+  	"iso639-1": null
+  },
+  	Phoenician: Phoenician,
+  	Pilipino: Pilipino,
+  	Pohnpeian: Pohnpeian,
+  	Polish: Polish,
+  	Portuguese: Portuguese,
+  	"Prakrit languages": {
+  	name: "Prakrit languages",
+  	names: [
+  		"Prakrit languages"
+  	],
+  	"iso639-2": "pra",
+  	"iso639-1": null
+  },
+  	"Provençal, Old (to 1500)": {
+  	name: "Provençal, Old (to 1500)",
+  	names: [
+  		"Provençal, Old (to 1500)",
+  		"Occitan, Old (to 1500)"
+  	],
+  	"iso639-2": "pro",
+  	"iso639-1": null
+  },
+  	Punjabi: Punjabi,
+  	Pushto: Pushto,
+  	Quechua: Quechua,
+  	Rajasthani: Rajasthani,
+  	Rapanui: Rapanui,
+  	Rarotongan: Rarotongan,
+  	"Reserved for local use": {
+  	name: "Reserved for local use",
+  	names: [
+  		"Reserved for local use"
+  	],
+  	"iso639-2": "qaa-qtz",
+  	"iso639-1": null
+  },
+  	"Romance languages": {
+  	name: "Romance languages",
+  	names: [
+  		"Romance languages"
+  	],
+  	"iso639-2": "roa",
+  	"iso639-1": null
+  },
+  	Romanian: Romanian,
+  	Romansh: Romansh,
+  	Romany: Romany,
+  	Rundi: Rundi,
+  	Russian: Russian,
+  	Sakan: Sakan,
+  	"Salishan languages": {
+  	name: "Salishan languages",
+  	names: [
+  		"Salishan languages"
+  	],
+  	"iso639-2": "sal",
+  	"iso639-1": null
+  },
+  	"Samaritan Aramaic": {
+  	name: "Samaritan Aramaic",
+  	names: [
+  		"Samaritan Aramaic"
+  	],
+  	"iso639-2": "sam",
+  	"iso639-1": null
+  },
+  	"Sami languages": {
+  	name: "Sami languages",
+  	names: [
+  		"Sami languages"
+  	],
+  	"iso639-2": "smi",
+  	"iso639-1": null
+  },
+  	Samoan: Samoan,
+  	Sandawe: Sandawe,
+  	Sango: Sango,
+  	Sanskrit: Sanskrit,
+  	Santali: Santali,
+  	Sardinian: Sardinian,
+  	Sasak: Sasak,
+  	"Saxon, Low": {
+  	name: "Saxon, Low",
+  	names: [
+  		"Low German",
+  		"Low Saxon",
+  		"German, Low",
+  		"Saxon, Low"
+  	],
+  	"iso639-2": "nds",
+  	"iso639-1": null
+  },
+  	Scots: Scots,
+  	"Scottish Gaelic": {
+  	name: "Scottish Gaelic",
+  	names: [
+  		"Gaelic",
+  		"Scottish Gaelic"
+  	],
+  	"iso639-2": "gla",
+  	"iso639-1": "gd"
+  },
+  	Selkup: Selkup,
+  	"Semitic languages": {
+  	name: "Semitic languages",
+  	names: [
+  		"Semitic languages"
+  	],
+  	"iso639-2": "sem",
+  	"iso639-1": null
+  },
+  	Sepedi: Sepedi,
+  	Serbian: Serbian,
+  	Serer: Serer,
+  	Shan: Shan,
+  	Shona: Shona,
+  	"Sichuan Yi": {
+  	name: "Sichuan Yi",
+  	names: [
+  		"Sichuan Yi",
+  		"Nuosu"
+  	],
+  	"iso639-2": "iii",
+  	"iso639-1": "ii"
+  },
+  	Sicilian: Sicilian,
+  	Sidamo: Sidamo,
+  	"Sign Languages": {
+  	name: "Sign Languages",
+  	names: [
+  		"Sign Languages"
+  	],
+  	"iso639-2": "sgn",
+  	"iso639-1": null
+  },
+  	Siksika: Siksika,
+  	Sindhi: Sindhi,
+  	Sinhala: Sinhala,
+  	Sinhalese: Sinhalese,
+  	"Sino-Tibetan languages": {
+  	name: "Sino-Tibetan languages",
+  	names: [
+  		"Sino-Tibetan languages"
+  	],
+  	"iso639-2": "sit",
+  	"iso639-1": null
+  },
+  	"Siouan languages": {
+  	name: "Siouan languages",
+  	names: [
+  		"Siouan languages"
+  	],
+  	"iso639-2": "sio",
+  	"iso639-1": null
+  },
+  	"Skolt Sami": {
+  	name: "Skolt Sami",
+  	names: [
+  		"Skolt Sami"
+  	],
+  	"iso639-2": "sms",
+  	"iso639-1": null
+  },
+  	"Slave (Athapascan)": {
+  	name: "Slave (Athapascan)",
+  	names: [
+  		"Slave (Athapascan)"
+  	],
+  	"iso639-2": "den",
+  	"iso639-1": null
+  },
+  	"Slavic languages": {
+  	name: "Slavic languages",
+  	names: [
+  		"Slavic languages"
+  	],
+  	"iso639-2": "sla",
+  	"iso639-1": null
+  },
+  	Slovak: Slovak,
+  	Slovenian: Slovenian,
+  	Sogdian: Sogdian,
+  	Somali: Somali,
+  	"Songhai languages": {
+  	name: "Songhai languages",
+  	names: [
+  		"Songhai languages"
+  	],
+  	"iso639-2": "son",
+  	"iso639-1": null
+  },
+  	Soninke: Soninke,
+  	"Sorbian languages": {
+  	name: "Sorbian languages",
+  	names: [
+  		"Sorbian languages"
+  	],
+  	"iso639-2": "wen",
+  	"iso639-1": null
+  },
+  	"Sotho, Northern": {
+  	name: "Sotho, Northern",
+  	names: [
+  		"Pedi",
+  		"Sepedi",
+  		"Northern Sotho"
+  	],
+  	"iso639-2": "nso",
+  	"iso639-1": null
+  },
+  	"Sotho, Southern": {
+  	name: "Sotho, Southern",
+  	names: [
+  		"Sotho, Southern"
+  	],
+  	"iso639-2": "sot",
+  	"iso639-1": "st"
+  },
+  	"South American Indian languages": {
+  	name: "South American Indian languages",
+  	names: [
+  		"South American Indian languages"
+  	],
+  	"iso639-2": "sai",
+  	"iso639-1": null
+  },
+  	"South Ndebele": {
+  	name: "South Ndebele",
+  	names: [
+  		"Ndebele, South",
+  		"South Ndebele"
+  	],
+  	"iso639-2": "nbl",
+  	"iso639-1": "nr"
+  },
+  	"Southern Altai": {
+  	name: "Southern Altai",
+  	names: [
+  		"Southern Altai"
+  	],
+  	"iso639-2": "alt",
+  	"iso639-1": null
+  },
+  	"Southern Sami": {
+  	name: "Southern Sami",
+  	names: [
+  		"Southern Sami"
+  	],
+  	"iso639-2": "sma",
+  	"iso639-1": null
+  },
+  	Spanish: Spanish,
+  	"Sranan Tongo": {
+  	name: "Sranan Tongo",
+  	names: [
+  		"Sranan Tongo"
+  	],
+  	"iso639-2": "srn",
+  	"iso639-1": null
+  },
+  	"Standard Moroccan Tamazight": {
+  	name: "Standard Moroccan Tamazight",
+  	names: [
+  		"Standard Moroccan Tamazight"
+  	],
+  	"iso639-2": "zgh",
+  	"iso639-1": null
+  },
+  	Sukuma: Sukuma,
+  	Sumerian: Sumerian,
+  	Sundanese: Sundanese,
+  	Susu: Susu,
+  	Swahili: Swahili,
+  	Swati: Swati,
+  	Swedish: Swedish,
+  	"Swiss German": {
+  	name: "Swiss German",
+  	names: [
+  		"Swiss German",
+  		"Alemannic",
+  		"Alsatian"
+  	],
+  	"iso639-2": "gsw",
+  	"iso639-1": null
+  },
+  	Syriac: Syriac,
+  	Tagalog: Tagalog,
+  	Tahitian: Tahitian,
+  	"Tai languages": {
+  	name: "Tai languages",
+  	names: [
+  		"Tai languages"
+  	],
+  	"iso639-2": "tai",
+  	"iso639-1": null
+  },
+  	Tajik: Tajik,
+  	Tamashek: Tamashek,
+  	Tamil: Tamil,
+  	Tatar: Tatar,
+  	Telugu: Telugu,
+  	Tereno: Tereno,
+  	Tetum: Tetum,
+  	Thai: Thai,
+  	Tibetan: Tibetan,
+  	Tigre: Tigre,
+  	Tigrinya: Tigrinya,
+  	Timne: Timne,
+  	Tiv: Tiv,
+  	"tlhIngan-Hol": {
+  	name: "tlhIngan-Hol",
+  	names: [
+  		"Klingon",
+  		"tlhIngan-Hol"
+  	],
+  	"iso639-2": "tlh",
+  	"iso639-1": null
+  },
+  	Tlingit: Tlingit,
+  	"Tok Pisin": {
+  	name: "Tok Pisin",
+  	names: [
+  		"Tok Pisin"
+  	],
+  	"iso639-2": "tpi",
+  	"iso639-1": null
+  },
+  	Tokelau: Tokelau,
+  	"Tonga (Nyasa)": {
+  	name: "Tonga (Nyasa)",
+  	names: [
+  		"Tonga (Nyasa)"
+  	],
+  	"iso639-2": "tog",
+  	"iso639-1": null
+  },
+  	"Tonga (Tonga Islands)": {
+  	name: "Tonga (Tonga Islands)",
+  	names: [
+  		"Tonga (Tonga Islands)"
+  	],
+  	"iso639-2": "ton",
+  	"iso639-1": "to"
+  },
+  	Tsimshian: Tsimshian,
+  	Tsonga: Tsonga,
+  	Tswana: Tswana,
+  	Tumbuka: Tumbuka,
+  	"Tupi languages": {
+  	name: "Tupi languages",
+  	names: [
+  		"Tupi languages"
+  	],
+  	"iso639-2": "tup",
+  	"iso639-1": null
+  },
+  	Turkish: Turkish,
+  	"Turkish, Ottoman (1500-1928)": {
+  	name: "Turkish, Ottoman (1500-1928)",
+  	names: [
+  		"Turkish, Ottoman (1500-1928)"
+  	],
+  	"iso639-2": "ota",
+  	"iso639-1": null
+  },
+  	Turkmen: Turkmen,
+  	Tuvalu: Tuvalu,
+  	Tuvinian: Tuvinian,
+  	Twi: Twi,
+  	Udmurt: Udmurt,
+  	Ugaritic: Ugaritic,
+  	Uighur: Uighur,
+  	Ukrainian: Ukrainian,
+  	Umbundu: Umbundu,
+  	"Uncoded languages": {
+  	name: "Uncoded languages",
+  	names: [
+  		"Uncoded languages"
+  	],
+  	"iso639-2": "mis",
+  	"iso639-1": null
+  },
+  	Undetermined: Undetermined,
+  	"Upper Sorbian": {
+  	name: "Upper Sorbian",
+  	names: [
+  		"Upper Sorbian"
+  	],
+  	"iso639-2": "hsb",
+  	"iso639-1": null
+  },
+  	Urdu: Urdu,
+  	Uyghur: Uyghur,
+  	Uzbek: Uzbek,
+  	Vai: Vai,
+  	Valencian: Valencian,
+  	Venda: Venda,
+  	Vietnamese: Vietnamese,
+  	"Volapük": {
+  	name: "Volapük",
+  	names: [
+  		"Volapük"
+  	],
+  	"iso639-2": "vol",
+  	"iso639-1": "vo"
+  },
+  	Votic: Votic,
+  	"Wakashan languages": {
+  	name: "Wakashan languages",
+  	names: [
+  		"Wakashan languages"
+  	],
+  	"iso639-2": "wak",
+  	"iso639-1": null
+  },
+  	Walloon: Walloon,
+  	Waray: Waray,
+  	Washo: Washo,
+  	Welsh: Welsh,
+  	"Western Frisian": {
+  	name: "Western Frisian",
+  	names: [
+  		"Western Frisian"
+  	],
+  	"iso639-2": "fry",
+  	"iso639-1": "fy"
+  },
+  	"Western Pahari languages": {
+  	name: "Western Pahari languages",
+  	names: [
+  		"Himachali languages",
+  		"Western Pahari languages"
+  	],
+  	"iso639-2": "him",
+  	"iso639-1": null
+  },
+  	Wolaitta: Wolaitta,
+  	Wolaytta: Wolaytta,
+  	Wolof: Wolof,
+  	Xhosa: Xhosa,
+  	Yakut: Yakut,
+  	Yao: Yao,
+  	Yapese: Yapese,
+  	Yiddish: Yiddish,
+  	Yoruba: Yoruba,
+  	"Yupik languages": {
+  	name: "Yupik languages",
+  	names: [
+  		"Yupik languages"
+  	],
+  	"iso639-2": "ypk",
+  	"iso639-1": null
+  },
+  	"Zande languages": {
+  	name: "Zande languages",
+  	names: [
+  		"Zande languages"
+  	],
+  	"iso639-2": "znd",
+  	"iso639-1": null
+  },
+  	Zapotec: Zapotec,
+  	Zaza: Zaza,
+  	Zazaki: Zazaki,
+  	Zenaga: Zenaga,
+  	Zhuang: Zhuang,
+  	Zulu: Zulu,
+  	Zuni: Zuni
+  };
+
+  function _defineProperty$1(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+  var locales = [];
+  var isoKeys = Object.keys(iso);
+  Object.keys(lcid).map(function (id) {
+    var locale = lcid[id];
+    var isoLanguage = isoKeys.find(function (name) {
+      return name.toLowerCase() === locale.language.toLowerCase();
+    });
+
+    if (locale.location && isoLanguage) {
+      var _locales$push;
+
+      locales.push((_locales$push = {}, _defineProperty$1(_locales$push, "name", locale.language), _defineProperty$1(_locales$push, "location", locale.location), _defineProperty$1(_locales$push, "tag", locale.tag), _defineProperty$1(_locales$push, "lcid", locale.id), _defineProperty$1(_locales$push, "iso639-2", iso[isoLanguage]["iso639-2"]), _defineProperty$1(_locales$push, "iso639-1", iso[isoLanguage]["iso639-1"]), _locales$push));
+    }
+  });
+  var defaultLocales = {
+    ar: "ar-SA",
+    ca: "ca-ES",
+    da: "da-DK",
+    en: "en-US",
+    ko: "ko-KR",
+    pa: "pa-IN",
+    pt: "pt-BR",
+    sv: "sv-SE"
+  };
+  /**
+   * Converts a 2-digit language into a full language-LOCATION locale.
+   * @param {String} locale
+   */
+
+  function findLocale (locale) {
+    if (typeof locale !== "string" || locale.length === 5) return locale;
+    if (defaultLocales[locale]) return defaultLocales[locale];
+    var list = locales.filter(function (d) {
+      return d["iso639-1"] === locale;
+    });
+    if (!list.length) return locale;else if (list.length === 1) return list[0].tag;else if (list.find(function (d) {
+      return d.tag === "".concat(locale, "-").concat(locale.toUpperCase());
+    })) return "".concat(locale, "-").concat(locale.toUpperCase());else return list[0].tag;
+  }
+
   /**
       @function s
       @desc Returns 4 random characters, used for constructing unique identifiers.
@@ -7309,6 +19900,27 @@
       @desc String constant used to reset an individual config property.
   */
   var RESET = "D3PLUS-COMMON-RESET";
+
+  var esES = {
+    "and": "y",
+    "Back": "Atrás",
+    "Click to Expand": "Clic para Ampliar",
+    "Click to Hide": "Clic para Ocultar",
+    "Click to Highlight": "Clic para Resaltar",
+    "Click to Reset": "Clic para Restablecer",
+    "Download": "Descargar",
+    "Loading Visualization": "Cargando Visualización",
+    "No Data Available": "Datos No Disponibles",
+    "Powered by D3plus": "Funciona con D3plus",
+    "Share": "Porcentaje",
+    "Shift+Click to Hide": "Mayús+Clic para Ocultar",
+    "Total": "Total",
+    "Values": "Valores"
+  };
+
+  var dictionaries = {
+    "es-ES": esES
+  };
 
   function _classCallCheck$1(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -7345,7 +19957,7 @@
           var defaultValue = defaults && isObject(defaults) ? defaults[nestedKey] : undefined;
 
           if (obj[nestedKey] === RESET) {
-            obj[nestedKey] = defaultValue;
+            if (defaultValue) obj[nestedKey] = defaultValue;else delete obj[nestedKey];
           } else if (isObject(obj[nestedKey])) {
             nestedReset(obj[nestedKey], defaultValue);
           }
@@ -7354,24 +19966,50 @@
     }
   }
   /**
+   * @desc finds all prototype methods of a class and it's parent classes
+   * @param {*} obj
+   * @private
+   */
+
+
+  function getAllMethods(obj) {
+    var props = [];
+
+    do {
+      props = props.concat(Object.getOwnPropertyNames(obj));
+      obj = Object.getPrototypeOf(obj);
+    } while (obj && obj !== Object.prototype);
+
+    return props.filter(function (e) {
+      return e.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(e);
+    });
+  }
+  /**
       @class BaseClass
       @summary An abstract class that contains some global methods and functionality.
   */
 
 
-  var BaseClass =
-  /*#__PURE__*/
-  function () {
+  var BaseClass = /*#__PURE__*/function () {
     /**
         @memberof BaseClass
         @desc Invoked when creating a new class instance, and sets any default parameters.
         @private
     */
     function BaseClass() {
+      var _this = this;
+
       _classCallCheck$1(this, BaseClass);
 
       this._locale = "en-US";
       this._on = {};
+
+      this._translate = function (d) {
+        var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _this._locale;
+        var dictionary = dictionaries[locale];
+        return dictionary && dictionary[d] ? dictionary[d] : d;
+      };
+
       this._uuid = uuid();
     }
     /**
@@ -7385,30 +20023,28 @@
     _createClass$1(BaseClass, [{
       key: "config",
       value: function config(_) {
+        var _this2 = this;
+
         if (!this._configDefault) {
           var config = {};
+          getAllMethods(this.__proto__).forEach(function (k) {
+            var v = _this2[k]();
 
-          for (var k in this.__proto__) {
-            if (k.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(k)) {
-              var v = this[k]();
-              config[k] = isObject(v) ? assign({}, v) : v;
-            }
-          }
-
+            config[k] = isObject(v) ? assign({}, v) : v;
+          });
           this._configDefault = config;
         }
 
         if (arguments.length) {
-          for (var _k in _) {
-            if ({}.hasOwnProperty.call(_, _k) && _k in this) {
-              var _v = _[_k];
+          for (var k in _) {
+            if ({}.hasOwnProperty.call(_, k) && k in this) {
+              var v = _[k];
 
-              if (_v === RESET) {
-                if (_k === "on") this._on = this._configDefault[_k];else this[_k](this._configDefault[_k]);
+              if (v === RESET) {
+                if (k === "on") this._on = this._configDefault[k];else this[k](this._configDefault[k]);
               } else {
-                nestedReset(_v, this._configDefault[_k]);
-
-                this[_k](_v);
+                nestedReset(v, this._configDefault[k]);
+                this[k](v);
               }
             }
           }
@@ -7416,17 +20052,15 @@
           return this;
         } else {
           var _config = {};
-
-          for (var _k2 in this.__proto__) {
-            if (_k2.indexOf("_") !== 0 && !["config", "constructor", "render"].includes(_k2)) _config[_k2] = this[_k2]();
-          }
-
+          getAllMethods(this.__proto__).forEach(function (k) {
+            _config[k] = _this2[k]();
+          });
           return _config;
         }
       }
       /**
           @memberof BaseClass
-          @desc If *value* is specified, sets the locale to the specified string and returns the current class instance. This method supports the locales defined in [d3plus-format](https://github.com/d3plus/d3plus-format/blob/master/src/locale.js). In another case, you can define an Object with a custom locale.
+          @desc Sets the locale used for all text and number formatting. This method supports the locales defined in [d3plus-format](https://github.com/d3plus/d3plus-format/blob/master/src/locale.js). The locale can be defined as a complex Object (like in d3plus-format), a locale code (like "en-US"), or a 2-digit language code (like "en"). If a 2-digit code is provided, the "findLocale" function is used to identify the most approximate locale from d3plus-format.
           @param {Object|String} [*value* = "en-US"]
           @chainable
           @example
@@ -7445,7 +20079,7 @@
     }, {
       key: "locale",
       value: function locale(_) {
-        return arguments.length ? (this._locale = _, this) : this._locale;
+        return arguments.length ? (this._locale = findLocale(_), this) : this._locale;
       }
       /**
           @memberof BaseClass
@@ -7467,6 +20101,34 @@
       key: "on",
       value: function on(_, f) {
         return arguments.length === 2 ? (this._on[_] = f, this) : arguments.length ? typeof _ === "string" ? this._on[_] : (this._on = Object.assign({}, this._on, _), this) : this._on;
+      }
+      /**
+          @memberof BaseClass
+          @desc Defines how informational text strings should be displayed. By default, this function will try to find the string in question (which is the first argument provided to this function) inside of an internally managed translation Object. If you'd like to override to use custom text, simply pass this method your own custom formatting function.
+          @param {Function} [*value*]
+          @chainable
+          @example <caption>For example, if we wanted to only change the string "Back" and allow all other string to return in English:</caption>
+      .translate(function(d) {
+      return d === "Back" ? "Get outta here" : d;
+      })
+      */
+
+    }, {
+      key: "translate",
+      value: function translate(_) {
+        return arguments.length ? (this._translate = _, this) : this._translate;
+      }
+      /**
+          @memberof Viz
+          @desc If *value* is specified, sets the config method for each shape and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "shapeConfig",
+      value: function shapeConfig(_) {
+        return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
       }
     }]);
 
@@ -7685,9 +20347,12 @@
         } else if (types.indexOf(String) >= 0) {
           value = unique(values);
           if (value.length === 1) value = value[0];
-        } else if (types.indexOf(Number) >= 0) value = sum(values);else if (types.indexOf(Object) >= 0) value = objectMerge(values.filter(function (v) {
-          return v;
-        }));else {
+        } else if (types.indexOf(Number) >= 0) value = sum(values);else if (types.indexOf(Object) >= 0) {
+          value = unique(values.filter(function (v) {
+            return v;
+          }));
+          if (value.length === 1) value = value[0];else value = objectMerge(value);
+        } else {
           value = unique(values.filter(function (v) {
             return v !== void 0;
           }));
@@ -7773,9 +20438,7 @@
   image().data([data])(function() { alert("draw complete!"); })
   */
 
-  var Image$1 =
-  /*#__PURE__*/
-  function () {
+  var Image$1 = /*#__PURE__*/function () {
     /**
         @memberof Image
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -7787,6 +20450,7 @@
       this._duration = 600;
       this._height = accessor("height");
       this._id = accessor("id");
+      this._opacity = constant$5(1);
       this._pointerEvents = constant$5("auto");
       this._select;
       this._url = accessor("url");
@@ -7819,7 +20483,7 @@
         var t = transition().duration(this._duration),
             that = this,
             update = enter.merge(images);
-        update.attr("xlink:href", this._url).style("pointer-events", this._pointerEvents).transition(t).attr("opacity", 1).attr("width", function (d, i) {
+        update.attr("xlink:href", this._url).style("pointer-events", this._pointerEvents).transition(t).attr("opacity", this._opacity).attr("width", function (d, i) {
           return _this._width(d, i);
         }).attr("height", function (d, i) {
           return _this._height(d, i);
@@ -7915,6 +20579,18 @@
       key: "id",
       value: function id(_) {
         return arguments.length ? (this._id = _, this) : this._id;
+      }
+      /**
+          @memberof Image
+          @desc Sets the opacity of the image.
+          @param {Number} [*value* = 1]
+          @chainable
+      */
+
+    }, {
+      key: "opacity",
+      value: function opacity(_) {
+        return arguments.length ? (this._opacity = typeof _ === "function" ? _ : constant$5(_), this) : this._opacity;
       }
       /**
           @memberof Image
@@ -8030,8 +20706,7 @@
   var reI$1 = "\\s*([+-]?\\d+)\\s*",
       reN$1 = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
       reP$1 = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
-      reHex3$1 = /^#([0-9a-f]{3})$/,
-      reHex6$1 = /^#([0-9a-f]{6})$/,
+      reHex = /^#([0-9a-f]{3,8})$/,
       reRgbInteger$1 = new RegExp("^rgb\\(" + [reI$1, reI$1, reI$1] + "\\)$"),
       reRgbPercent$1 = new RegExp("^rgb\\(" + [reP$1, reP$1, reP$1] + "\\)$"),
       reRgbaInteger$1 = new RegExp("^rgba\\(" + [reI$1, reI$1, reI$1, reN$1] + "\\)$"),
@@ -8189,28 +20864,48 @@
     yellowgreen: 0x9acd32
   };
   define$1(Color$1, color$1, {
+    copy: function copy(channels) {
+      return Object.assign(new this.constructor(), this, channels);
+    },
     displayable: function displayable() {
       return this.rgb().displayable();
     },
-    hex: function hex() {
-      return this.rgb().hex();
-    },
-    toString: function toString() {
-      return this.rgb() + "";
-    }
+    hex: color_formatHex,
+    // Deprecated! Use color.formatHex.
+    formatHex: color_formatHex,
+    formatHsl: color_formatHsl,
+    formatRgb: color_formatRgb,
+    toString: color_formatRgb
   });
+
+  function color_formatHex() {
+    return this.rgb().formatHex();
+  }
+
+  function color_formatHsl() {
+    return hslConvert$1(this).formatHsl();
+  }
+
+  function color_formatRgb() {
+    return this.rgb().formatRgb();
+  }
+
   function color$1(format) {
-    var m;
+    var m, l;
     format = (format + "").trim().toLowerCase();
-    return (m = reHex3$1.exec(format)) ? (m = parseInt(m[1], 16), new Rgb$1(m >> 8 & 0xf | m >> 4 & 0x0f0, m >> 4 & 0xf | m & 0xf0, (m & 0xf) << 4 | m & 0xf, 1) // #f00
-    ) : (m = reHex6$1.exec(format)) ? rgbn$1(parseInt(m[1], 16)) // #ff0000
-    : (m = reRgbInteger$1.exec(format)) ? new Rgb$1(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
+    return (m = reHex.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn$1(m) // #ff0000
+    : l === 3 ? new Rgb$1(m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, (m & 0xf) << 4 | m & 0xf, 1) // #f00
+    : l === 8 ? rgba$1(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
+    : l === 4 ? rgba$1(m >> 12 & 0xf | m >> 8 & 0xf0, m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, ((m & 0xf) << 4 | m & 0xf) / 0xff) // #f000
+    : null // invalid hex
+    ) : (m = reRgbInteger$1.exec(format)) ? new Rgb$1(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
     : (m = reRgbPercent$1.exec(format)) ? new Rgb$1(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
     : (m = reRgbaInteger$1.exec(format)) ? rgba$1(m[1], m[2], m[3], m[4]) // rgba(255, 0, 0, 1)
     : (m = reRgbaPercent$1.exec(format)) ? rgba$1(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
     : (m = reHslPercent$1.exec(format)) ? hsla$1(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
     : (m = reHslaPercent$1.exec(format)) ? hsla$1(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
-    : named$1.hasOwnProperty(format) ? rgbn$1(named$1[format]) : format === "transparent" ? new Rgb$1(NaN, NaN, NaN, 0) : null;
+    : named$1.hasOwnProperty(format) ? rgbn$1(named$1[format]) // eslint-disable-line no-prototype-builtins
+    : format === "transparent" ? new Rgb$1(NaN, NaN, NaN, 0) : null;
   }
 
   function rgbn$1(n) {
@@ -8252,17 +20947,24 @@
     displayable: function displayable() {
       return -0.5 <= this.r && this.r < 255.5 && -0.5 <= this.g && this.g < 255.5 && -0.5 <= this.b && this.b < 255.5 && 0 <= this.opacity && this.opacity <= 1;
     },
-    hex: function hex() {
-      return "#" + _hex$1(this.r) + _hex$1(this.g) + _hex$1(this.b);
-    },
-    toString: function toString() {
-      var a = this.opacity;
-      a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-      return (a === 1 ? "rgb(" : "rgba(") + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.b) || 0)) + (a === 1 ? ")" : ", " + a + ")");
-    }
+    hex: rgb_formatHex,
+    // Deprecated! Use color.formatHex.
+    formatHex: rgb_formatHex,
+    formatRgb: rgb_formatRgb,
+    toString: rgb_formatRgb
   }));
 
-  function _hex$1(value) {
+  function rgb_formatHex() {
+    return "#" + hex(this.r) + hex(this.g) + hex(this.b);
+  }
+
+  function rgb_formatRgb() {
+    var a = this.opacity;
+    a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+    return (a === 1 ? "rgb(" : "rgba(") + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.b) || 0)) + (a === 1 ? ")" : ", " + a + ")");
+  }
+
+  function hex(value) {
     value = Math.max(0, Math.min(255, Math.round(value) || 0));
     return (value < 16 ? "0" : "") + value.toString(16);
   }
@@ -8327,6 +21029,11 @@
     },
     displayable: function displayable() {
       return (0 <= this.s && this.s <= 1 || isNaN(this.s)) && 0 <= this.l && this.l <= 1 && 0 <= this.opacity && this.opacity <= 1;
+    },
+    formatHsl: function formatHsl() {
+      var a = this.opacity;
+      a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+      return (a === 1 ? "hsl(" : "hsla(") + (this.h || 0) + ", " + (this.s || 0) * 100 + "%, " + (this.l || 0) * 100 + "%" + (a === 1 ? ")" : ", " + a + ")");
     }
   }));
   /* From FvD 13.37, CSS Color Module Level 3 */
@@ -8334,164 +21041,6 @@
   function hsl2rgb$1(h, m1, m2) {
     return (h < 60 ? m1 + (m2 - m1) * h / 60 : h < 180 ? m2 : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60 : m1) * 255;
   }
-
-  var deg2rad$1 = Math.PI / 180;
-  var rad2deg$1 = 180 / Math.PI;
-
-  var K$1 = 18,
-      Xn$1 = 0.96422,
-      Yn$1 = 1,
-      Zn$1 = 0.82521,
-      t0$2 = 4 / 29,
-      t1$2 = 6 / 29,
-      t2$1 = 3 * t1$2 * t1$2,
-      t3$1 = t1$2 * t1$2 * t1$2;
-
-  function labConvert$1(o) {
-    if (o instanceof Lab$1) return new Lab$1(o.l, o.a, o.b, o.opacity);
-    if (o instanceof Hcl$1) return hcl2lab(o);
-    if (!(o instanceof Rgb$1)) o = rgbConvert$1(o);
-    var r = rgb2lrgb$1(o.r),
-        g = rgb2lrgb$1(o.g),
-        b = rgb2lrgb$1(o.b),
-        y = xyz2lab$1((0.2225045 * r + 0.7168786 * g + 0.0606169 * b) / Yn$1),
-        x,
-        z;
-    if (r === g && g === b) x = z = y;else {
-      x = xyz2lab$1((0.4360747 * r + 0.3850649 * g + 0.1430804 * b) / Xn$1);
-      z = xyz2lab$1((0.0139322 * r + 0.0971045 * g + 0.7141733 * b) / Zn$1);
-    }
-    return new Lab$1(116 * y - 16, 500 * (x - y), 200 * (y - z), o.opacity);
-  }
-  function lab$1(l, a, b, opacity) {
-    return arguments.length === 1 ? labConvert$1(l) : new Lab$1(l, a, b, opacity == null ? 1 : opacity);
-  }
-  function Lab$1(l, a, b, opacity) {
-    this.l = +l;
-    this.a = +a;
-    this.b = +b;
-    this.opacity = +opacity;
-  }
-  define$1(Lab$1, lab$1, extend$1(Color$1, {
-    brighter: function brighter(k) {
-      return new Lab$1(this.l + K$1 * (k == null ? 1 : k), this.a, this.b, this.opacity);
-    },
-    darker: function darker(k) {
-      return new Lab$1(this.l - K$1 * (k == null ? 1 : k), this.a, this.b, this.opacity);
-    },
-    rgb: function rgb() {
-      var y = (this.l + 16) / 116,
-          x = isNaN(this.a) ? y : y + this.a / 500,
-          z = isNaN(this.b) ? y : y - this.b / 200;
-      x = Xn$1 * lab2xyz$1(x);
-      y = Yn$1 * lab2xyz$1(y);
-      z = Zn$1 * lab2xyz$1(z);
-      return new Rgb$1(lrgb2rgb$1(3.1338561 * x - 1.6168667 * y - 0.4906146 * z), lrgb2rgb$1(-0.9787684 * x + 1.9161415 * y + 0.0334540 * z), lrgb2rgb$1(0.0719453 * x - 0.2289914 * y + 1.4052427 * z), this.opacity);
-    }
-  }));
-
-  function xyz2lab$1(t) {
-    return t > t3$1 ? Math.pow(t, 1 / 3) : t / t2$1 + t0$2;
-  }
-
-  function lab2xyz$1(t) {
-    return t > t1$2 ? t * t * t : t2$1 * (t - t0$2);
-  }
-
-  function lrgb2rgb$1(x) {
-    return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055);
-  }
-
-  function rgb2lrgb$1(x) {
-    return (x /= 255) <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
-  }
-
-  function hclConvert$1(o) {
-    if (o instanceof Hcl$1) return new Hcl$1(o.h, o.c, o.l, o.opacity);
-    if (!(o instanceof Lab$1)) o = labConvert$1(o);
-    if (o.a === 0 && o.b === 0) return new Hcl$1(NaN, 0 < o.l && o.l < 100 ? 0 : NaN, o.l, o.opacity);
-    var h = Math.atan2(o.b, o.a) * rad2deg$1;
-    return new Hcl$1(h < 0 ? h + 360 : h, Math.sqrt(o.a * o.a + o.b * o.b), o.l, o.opacity);
-  }
-  function hcl$1(h, c, l, opacity) {
-    return arguments.length === 1 ? hclConvert$1(h) : new Hcl$1(h, c, l, opacity == null ? 1 : opacity);
-  }
-  function Hcl$1(h, c, l, opacity) {
-    this.h = +h;
-    this.c = +c;
-    this.l = +l;
-    this.opacity = +opacity;
-  }
-
-  function hcl2lab(o) {
-    if (isNaN(o.h)) return new Lab$1(o.l, 0, 0, o.opacity);
-    var h = o.h * deg2rad$1;
-    return new Lab$1(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
-  }
-
-  define$1(Hcl$1, hcl$1, extend$1(Color$1, {
-    brighter: function brighter(k) {
-      return new Hcl$1(this.h, this.c, this.l + K$1 * (k == null ? 1 : k), this.opacity);
-    },
-    darker: function darker(k) {
-      return new Hcl$1(this.h, this.c, this.l - K$1 * (k == null ? 1 : k), this.opacity);
-    },
-    rgb: function rgb() {
-      return hcl2lab(this).rgb();
-    }
-  }));
-
-  var A$1 = -0.14861,
-      B$1 = +1.78277,
-      C$1 = -0.29227,
-      D$1 = -0.90649,
-      E$1 = +1.97294,
-      ED$1 = E$1 * D$1,
-      EB$1 = E$1 * B$1,
-      BC_DA$1 = B$1 * C$1 - D$1 * A$1;
-
-  function cubehelixConvert$1(o) {
-    if (o instanceof Cubehelix$1) return new Cubehelix$1(o.h, o.s, o.l, o.opacity);
-    if (!(o instanceof Rgb$1)) o = rgbConvert$1(o);
-    var r = o.r / 255,
-        g = o.g / 255,
-        b = o.b / 255,
-        l = (BC_DA$1 * b + ED$1 * r - EB$1 * g) / (BC_DA$1 + ED$1 - EB$1),
-        bl = b - l,
-        k = (E$1 * (g - l) - C$1 * bl) / D$1,
-        s = Math.sqrt(k * k + bl * bl) / (E$1 * l * (1 - l)),
-        // NaN if l=0 or l=1
-    h = s ? Math.atan2(k, bl) * rad2deg$1 - 120 : NaN;
-    return new Cubehelix$1(h < 0 ? h + 360 : h, s, l, o.opacity);
-  }
-
-  function cubehelix$1(h, s, l, opacity) {
-    return arguments.length === 1 ? cubehelixConvert$1(h) : new Cubehelix$1(h, s, l, opacity == null ? 1 : opacity);
-  }
-  function Cubehelix$1(h, s, l, opacity) {
-    this.h = +h;
-    this.s = +s;
-    this.l = +l;
-    this.opacity = +opacity;
-  }
-  define$1(Cubehelix$1, cubehelix$1, extend$1(Color$1, {
-    brighter: function brighter(k) {
-      k = k == null ? _brighter$1 : Math.pow(_brighter$1, k);
-      return new Cubehelix$1(this.h, this.s, this.l * k, this.opacity);
-    },
-    darker: function darker(k) {
-      k = k == null ? _darker$1 : Math.pow(_darker$1, k);
-      return new Cubehelix$1(this.h, this.s, this.l * k, this.opacity);
-    },
-    rgb: function rgb() {
-      var h = isNaN(this.h) ? 0 : (this.h + 120) * deg2rad$1,
-          l = +this.l,
-          a = isNaN(this.s) ? 0 : this.s * l * (1 - l),
-          cosh = Math.cos(h),
-          sinh = Math.sin(h);
-      return new Rgb$1(255 * (l + a * (A$1 * cosh + B$1 * sinh)), 255 * (l + a * (C$1 * cosh + D$1 * sinh)), 255 * (l + a * (E$1 * cosh)), this.opacity);
-    }
-  }));
 
   function define$2 (constructor, factory, prototype) {
     constructor.prototype = factory.prototype = prototype;
@@ -8514,8 +21063,7 @@
   var reI$2 = "\\s*([+-]?\\d+)\\s*",
       reN$2 = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
       reP$2 = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
-      reHex3$2 = /^#([0-9a-f]{3})$/,
-      reHex6$2 = /^#([0-9a-f]{6})$/,
+      reHex$1 = /^#([0-9a-f]{3,8})$/,
       reRgbInteger$2 = new RegExp("^rgb\\(" + [reI$2, reI$2, reI$2] + "\\)$"),
       reRgbPercent$2 = new RegExp("^rgb\\(" + [reP$2, reP$2, reP$2] + "\\)$"),
       reRgbaInteger$2 = new RegExp("^rgba\\(" + [reI$2, reI$2, reI$2, reN$2] + "\\)$"),
@@ -8673,28 +21221,48 @@
     yellowgreen: 0x9acd32
   };
   define$2(Color$2, color$2, {
+    copy: function copy(channels) {
+      return Object.assign(new this.constructor(), this, channels);
+    },
     displayable: function displayable() {
       return this.rgb().displayable();
     },
-    hex: function hex() {
-      return this.rgb().hex();
-    },
-    toString: function toString() {
-      return this.rgb() + "";
-    }
+    hex: color_formatHex$1,
+    // Deprecated! Use color.formatHex.
+    formatHex: color_formatHex$1,
+    formatHsl: color_formatHsl$1,
+    formatRgb: color_formatRgb$1,
+    toString: color_formatRgb$1
   });
+
+  function color_formatHex$1() {
+    return this.rgb().formatHex();
+  }
+
+  function color_formatHsl$1() {
+    return hslConvert$2(this).formatHsl();
+  }
+
+  function color_formatRgb$1() {
+    return this.rgb().formatRgb();
+  }
+
   function color$2(format) {
-    var m;
+    var m, l;
     format = (format + "").trim().toLowerCase();
-    return (m = reHex3$2.exec(format)) ? (m = parseInt(m[1], 16), new Rgb$2(m >> 8 & 0xf | m >> 4 & 0x0f0, m >> 4 & 0xf | m & 0xf0, (m & 0xf) << 4 | m & 0xf, 1) // #f00
-    ) : (m = reHex6$2.exec(format)) ? rgbn$2(parseInt(m[1], 16)) // #ff0000
-    : (m = reRgbInteger$2.exec(format)) ? new Rgb$2(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
+    return (m = reHex$1.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn$2(m) // #ff0000
+    : l === 3 ? new Rgb$2(m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, (m & 0xf) << 4 | m & 0xf, 1) // #f00
+    : l === 8 ? rgba$2(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
+    : l === 4 ? rgba$2(m >> 12 & 0xf | m >> 8 & 0xf0, m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, ((m & 0xf) << 4 | m & 0xf) / 0xff) // #f000
+    : null // invalid hex
+    ) : (m = reRgbInteger$2.exec(format)) ? new Rgb$2(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
     : (m = reRgbPercent$2.exec(format)) ? new Rgb$2(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
     : (m = reRgbaInteger$2.exec(format)) ? rgba$2(m[1], m[2], m[3], m[4]) // rgba(255, 0, 0, 1)
     : (m = reRgbaPercent$2.exec(format)) ? rgba$2(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
     : (m = reHslPercent$2.exec(format)) ? hsla$2(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
     : (m = reHslaPercent$2.exec(format)) ? hsla$2(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
-    : named$2.hasOwnProperty(format) ? rgbn$2(named$2[format]) : format === "transparent" ? new Rgb$2(NaN, NaN, NaN, 0) : null;
+    : named$2.hasOwnProperty(format) ? rgbn$2(named$2[format]) // eslint-disable-line no-prototype-builtins
+    : format === "transparent" ? new Rgb$2(NaN, NaN, NaN, 0) : null;
   }
 
   function rgbn$2(n) {
@@ -8736,17 +21304,24 @@
     displayable: function displayable() {
       return -0.5 <= this.r && this.r < 255.5 && -0.5 <= this.g && this.g < 255.5 && -0.5 <= this.b && this.b < 255.5 && 0 <= this.opacity && this.opacity <= 1;
     },
-    hex: function hex() {
-      return "#" + _hex$2(this.r) + _hex$2(this.g) + _hex$2(this.b);
-    },
-    toString: function toString() {
-      var a = this.opacity;
-      a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-      return (a === 1 ? "rgb(" : "rgba(") + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.b) || 0)) + (a === 1 ? ")" : ", " + a + ")");
-    }
+    hex: rgb_formatHex$1,
+    // Deprecated! Use color.formatHex.
+    formatHex: rgb_formatHex$1,
+    formatRgb: rgb_formatRgb$1,
+    toString: rgb_formatRgb$1
   }));
 
-  function _hex$2(value) {
+  function rgb_formatHex$1() {
+    return "#" + hex$1(this.r) + hex$1(this.g) + hex$1(this.b);
+  }
+
+  function rgb_formatRgb$1() {
+    var a = this.opacity;
+    a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+    return (a === 1 ? "rgb(" : "rgba(") + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.b) || 0)) + (a === 1 ? ")" : ", " + a + ")");
+  }
+
+  function hex$1(value) {
     value = Math.max(0, Math.min(255, Math.round(value) || 0));
     return (value < 16 ? "0" : "") + value.toString(16);
   }
@@ -8811,6 +21386,11 @@
     },
     displayable: function displayable() {
       return (0 <= this.s && this.s <= 1 || isNaN(this.s)) && 0 <= this.l && this.l <= 1 && 0 <= this.opacity && this.opacity <= 1;
+    },
+    formatHsl: function formatHsl() {
+      var a = this.opacity;
+      a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+      return (a === 1 ? "hsl(" : "hsla(") + (this.h || 0) + ", " + (this.s || 0) * 100 + "%, " + (this.l || 0) * 100 + "%" + (a === 1 ? ")" : ", " + a + ")");
     }
   }));
   /* From FvD 13.37, CSS Color Module Level 3 */
@@ -8819,165 +21399,7 @@
     return (h < 60 ? m1 + (m2 - m1) * h / 60 : h < 180 ? m2 : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60 : m1) * 255;
   }
 
-  var deg2rad$2 = Math.PI / 180;
-  var rad2deg$2 = 180 / Math.PI;
-
-  var K$2 = 18,
-      Xn$2 = 0.96422,
-      Yn$2 = 1,
-      Zn$2 = 0.82521,
-      t0$3 = 4 / 29,
-      t1$3 = 6 / 29,
-      t2$2 = 3 * t1$3 * t1$3,
-      t3$2 = t1$3 * t1$3 * t1$3;
-
-  function labConvert$2(o) {
-    if (o instanceof Lab$2) return new Lab$2(o.l, o.a, o.b, o.opacity);
-    if (o instanceof Hcl$2) return hcl2lab$1(o);
-    if (!(o instanceof Rgb$2)) o = rgbConvert$2(o);
-    var r = rgb2lrgb$2(o.r),
-        g = rgb2lrgb$2(o.g),
-        b = rgb2lrgb$2(o.b),
-        y = xyz2lab$2((0.2225045 * r + 0.7168786 * g + 0.0606169 * b) / Yn$2),
-        x,
-        z;
-    if (r === g && g === b) x = z = y;else {
-      x = xyz2lab$2((0.4360747 * r + 0.3850649 * g + 0.1430804 * b) / Xn$2);
-      z = xyz2lab$2((0.0139322 * r + 0.0971045 * g + 0.7141733 * b) / Zn$2);
-    }
-    return new Lab$2(116 * y - 16, 500 * (x - y), 200 * (y - z), o.opacity);
-  }
-  function lab$2(l, a, b, opacity) {
-    return arguments.length === 1 ? labConvert$2(l) : new Lab$2(l, a, b, opacity == null ? 1 : opacity);
-  }
-  function Lab$2(l, a, b, opacity) {
-    this.l = +l;
-    this.a = +a;
-    this.b = +b;
-    this.opacity = +opacity;
-  }
-  define$2(Lab$2, lab$2, extend$2(Color$2, {
-    brighter: function brighter(k) {
-      return new Lab$2(this.l + K$2 * (k == null ? 1 : k), this.a, this.b, this.opacity);
-    },
-    darker: function darker(k) {
-      return new Lab$2(this.l - K$2 * (k == null ? 1 : k), this.a, this.b, this.opacity);
-    },
-    rgb: function rgb() {
-      var y = (this.l + 16) / 116,
-          x = isNaN(this.a) ? y : y + this.a / 500,
-          z = isNaN(this.b) ? y : y - this.b / 200;
-      x = Xn$2 * lab2xyz$2(x);
-      y = Yn$2 * lab2xyz$2(y);
-      z = Zn$2 * lab2xyz$2(z);
-      return new Rgb$2(lrgb2rgb$2(3.1338561 * x - 1.6168667 * y - 0.4906146 * z), lrgb2rgb$2(-0.9787684 * x + 1.9161415 * y + 0.0334540 * z), lrgb2rgb$2(0.0719453 * x - 0.2289914 * y + 1.4052427 * z), this.opacity);
-    }
-  }));
-
-  function xyz2lab$2(t) {
-    return t > t3$2 ? Math.pow(t, 1 / 3) : t / t2$2 + t0$3;
-  }
-
-  function lab2xyz$2(t) {
-    return t > t1$3 ? t * t * t : t2$2 * (t - t0$3);
-  }
-
-  function lrgb2rgb$2(x) {
-    return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055);
-  }
-
-  function rgb2lrgb$2(x) {
-    return (x /= 255) <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
-  }
-
-  function hclConvert$2(o) {
-    if (o instanceof Hcl$2) return new Hcl$2(o.h, o.c, o.l, o.opacity);
-    if (!(o instanceof Lab$2)) o = labConvert$2(o);
-    if (o.a === 0 && o.b === 0) return new Hcl$2(NaN, 0 < o.l && o.l < 100 ? 0 : NaN, o.l, o.opacity);
-    var h = Math.atan2(o.b, o.a) * rad2deg$2;
-    return new Hcl$2(h < 0 ? h + 360 : h, Math.sqrt(o.a * o.a + o.b * o.b), o.l, o.opacity);
-  }
-  function hcl$2(h, c, l, opacity) {
-    return arguments.length === 1 ? hclConvert$2(h) : new Hcl$2(h, c, l, opacity == null ? 1 : opacity);
-  }
-  function Hcl$2(h, c, l, opacity) {
-    this.h = +h;
-    this.c = +c;
-    this.l = +l;
-    this.opacity = +opacity;
-  }
-
-  function hcl2lab$1(o) {
-    if (isNaN(o.h)) return new Lab$2(o.l, 0, 0, o.opacity);
-    var h = o.h * deg2rad$2;
-    return new Lab$2(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
-  }
-
-  define$2(Hcl$2, hcl$2, extend$2(Color$2, {
-    brighter: function brighter(k) {
-      return new Hcl$2(this.h, this.c, this.l + K$2 * (k == null ? 1 : k), this.opacity);
-    },
-    darker: function darker(k) {
-      return new Hcl$2(this.h, this.c, this.l - K$2 * (k == null ? 1 : k), this.opacity);
-    },
-    rgb: function rgb() {
-      return hcl2lab$1(this).rgb();
-    }
-  }));
-
-  var A$2 = -0.14861,
-      B$2 = +1.78277,
-      C$2 = -0.29227,
-      D$2 = -0.90649,
-      E$2 = +1.97294,
-      ED$2 = E$2 * D$2,
-      EB$2 = E$2 * B$2,
-      BC_DA$2 = B$2 * C$2 - D$2 * A$2;
-
-  function cubehelixConvert$2(o) {
-    if (o instanceof Cubehelix$2) return new Cubehelix$2(o.h, o.s, o.l, o.opacity);
-    if (!(o instanceof Rgb$2)) o = rgbConvert$2(o);
-    var r = o.r / 255,
-        g = o.g / 255,
-        b = o.b / 255,
-        l = (BC_DA$2 * b + ED$2 * r - EB$2 * g) / (BC_DA$2 + ED$2 - EB$2),
-        bl = b - l,
-        k = (E$2 * (g - l) - C$2 * bl) / D$2,
-        s = Math.sqrt(k * k + bl * bl) / (E$2 * l * (1 - l)),
-        // NaN if l=0 or l=1
-    h = s ? Math.atan2(k, bl) * rad2deg$2 - 120 : NaN;
-    return new Cubehelix$2(h < 0 ? h + 360 : h, s, l, o.opacity);
-  }
-
-  function cubehelix$2(h, s, l, opacity) {
-    return arguments.length === 1 ? cubehelixConvert$2(h) : new Cubehelix$2(h, s, l, opacity == null ? 1 : opacity);
-  }
-  function Cubehelix$2(h, s, l, opacity) {
-    this.h = +h;
-    this.s = +s;
-    this.l = +l;
-    this.opacity = +opacity;
-  }
-  define$2(Cubehelix$2, cubehelix$2, extend$2(Color$2, {
-    brighter: function brighter(k) {
-      k = k == null ? _brighter$2 : Math.pow(_brighter$2, k);
-      return new Cubehelix$2(this.h, this.s, this.l * k, this.opacity);
-    },
-    darker: function darker(k) {
-      k = k == null ? _darker$2 : Math.pow(_darker$2, k);
-      return new Cubehelix$2(this.h, this.s, this.l * k, this.opacity);
-    },
-    rgb: function rgb() {
-      var h = isNaN(this.h) ? 0 : (this.h + 120) * deg2rad$2,
-          l = +this.l,
-          a = isNaN(this.s) ? 0 : this.s * l * (1 - l),
-          cosh = Math.cos(h),
-          sinh = Math.sin(h);
-      return new Rgb$2(255 * (l + a * (A$2 * cosh + B$2 * sinh)), 255 * (l + a * (C$2 * cosh + D$2 * sinh)), 255 * (l + a * (E$2 * cosh)), this.opacity);
-    }
-  }));
-
-  function initRange(domain, range) {
+  function initRange$1(domain, range) {
     switch (arguments.length) {
       case 0:
         break;
@@ -9045,7 +21467,7 @@
       return ordinal$1(domain, range).unknown(unknown);
     };
 
-    initRange.apply(scale, arguments);
+    initRange$1.apply(scale, arguments);
     return scale;
   }
 
@@ -9152,10 +21574,10 @@
     return c.toString();
   }
 
-  var pi$1 = Math.PI,
-      tau$1 = 2 * pi$1,
+  var pi = Math.PI,
+      tau = 2 * pi,
       epsilon = 1e-6,
-      tauEpsilon = tau$1 - epsilon;
+      tauEpsilon = tau - epsilon;
 
   function Path() {
     this._x0 = this._y0 = // start of current subpath
@@ -9216,7 +21638,7 @@
                   l20_2 = x20 * x20 + y20 * y20,
                   l21 = Math.sqrt(l21_2),
                   l01 = Math.sqrt(l01_2),
-                  l = r * Math.tan((pi$1 - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
+                  l = r * Math.tan((pi - Math.acos((l21_2 + l01_2 - l20_2) / (2 * l21 * l01))) / 2),
                   t01 = l / l01,
                   t21 = l / l21; // If the start tangent is not coincident with (x0,y0), line to.
 
@@ -9248,13 +21670,13 @@
 
       if (!r) return; // Does the angle go the wrong way? Flip the direction.
 
-      if (da < 0) da = da % tau$1 + tau$1; // Is this a complete circle? Draw two arcs to complete the circle.
+      if (da < 0) da = da % tau + tau; // Is this a complete circle? Draw two arcs to complete the circle.
 
       if (da > tauEpsilon) {
         this._ += "A" + r + "," + r + ",0,1," + cw + "," + (x - dx) + "," + (y - dy) + "A" + r + "," + r + ",0,1," + cw + "," + (this._x1 = x0) + "," + (this._y1 = y0);
       } // Is this arc non-empty? Draw an arc!
       else if (da > epsilon) {
-          this._ += "A" + r + "," + r + ",0," + +(da >= pi$1) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
+          this._ += "A" + r + "," + r + ",0," + +(da >= pi) + "," + cw + "," + (this._x1 = x + r * Math.cos(a1)) + "," + (this._y1 = y + r * Math.sin(a1));
         }
     },
     rect: function rect(x, y, w, h) {
@@ -9279,11 +21701,11 @@
   var sin = Math.sin;
   var sqrt$1 = Math.sqrt;
   var epsilon$1 = 1e-12;
-  var pi$2 = Math.PI;
-  var halfPi = pi$2 / 2;
-  var tau$2 = 2 * pi$2;
+  var pi$1 = Math.PI;
+  var halfPi = pi$1 / 2;
+  var tau$1 = 2 * pi$1;
   function acos(x) {
-    return x > 1 ? 0 : x < -1 ? pi$2 : Math.acos(x);
+    return x > 1 ? 0 : x < -1 ? pi$1 : Math.acos(x);
   }
   function asin(x) {
     return x >= 1 ? halfPi : x <= -1 ? -halfPi : Math.asin(x);
@@ -9385,7 +21807,7 @@
       if (r1 < r0) r = r1, r1 = r0, r0 = r; // Is it a point?
 
       if (!(r1 > epsilon$1)) context.moveTo(0, 0); // Or is it a circle or annulus?
-      else if (da > tau$2 - epsilon$1) {
+      else if (da > tau$1 - epsilon$1) {
           context.moveTo(r1 * cos(a0), r1 * sin(a0));
           context.arc(0, 0, r1, a0, a1, !cw);
 
@@ -9428,7 +21850,7 @@
                   y00 = r0 * sin(a00),
                   oc; // Restrict the corner radius according to the sector angle.
 
-              if (da < pi$2 && (oc = intersect(x01, y01, x00, y00, x11, y11, x10, y10))) {
+              if (da < pi$1 && (oc = intersect(x01, y01, x00, y00, x11, y11, x10, y10))) {
                 var ax = x01 - oc[0],
                     ay = y01 - oc[1],
                     bx = x11 - oc[0],
@@ -9478,7 +21900,7 @@
 
     arc.centroid = function () {
       var r = (+innerRadius.apply(this, arguments) + +outerRadius.apply(this, arguments)) / 2,
-          a = (+startAngle.apply(this, arguments) + +endAngle.apply(this, arguments)) / 2 - pi$2 / 2;
+          a = (+startAngle.apply(this, arguments) + +endAngle.apply(this, arguments)) / 2 - pi$1 / 2;
       return [cos(a) * r, sin(a) * r];
     };
 
@@ -9725,16 +22147,16 @@
     return b < a ? -1 : b > a ? 1 : b >= a ? 0 : NaN;
   }
 
-  function identity$4 (d) {
+  function identity$5 (d) {
     return d;
   }
 
   function pie () {
-    var value = identity$4,
+    var value = identity$5,
         sortValues = descending,
         sort = null,
         startAngle = constant$6(0),
-        endAngle = constant$6(tau$2),
+        endAngle = constant$6(tau$1),
         padAngle = constant$6(0);
 
     function pie(data) {
@@ -9746,7 +22168,7 @@
           index = new Array(n),
           arcs = new Array(n),
           a0 = +startAngle.apply(this, arguments),
-          da = Math.min(tau$2, Math.max(-tau$2, endAngle.apply(this, arguments) - a0)),
+          da = Math.min(tau$1, Math.max(-tau$1, endAngle.apply(this, arguments) - a0)),
           a1,
           p = Math.min(Math.abs(da) / n, padAngle.apply(this, arguments)),
           pa = p * (da < 0 ? -1 : 1),
@@ -9974,9 +22396,9 @@
 
   var circle = {
     draw: function draw(context, size) {
-      var r = Math.sqrt(size / pi$2);
+      var r = Math.sqrt(size / pi$1);
       context.moveTo(r, 0);
-      context.arc(0, 0, r, 0, tau$2);
+      context.arc(0, 0, r, 0, tau$1);
     }
   };
 
@@ -10013,20 +22435,20 @@
     }
   };
 
-  var ka = 0.89081309152928522810,
-      kr = Math.sin(pi$2 / 10) / Math.sin(7 * pi$2 / 10),
-      kx = Math.sin(tau$2 / 10) * kr,
-      ky = -Math.cos(tau$2 / 10) * kr;
+  var ka$1 = 0.89081309152928522810,
+      kr = Math.sin(pi$1 / 10) / Math.sin(7 * pi$1 / 10),
+      kx = Math.sin(tau$1 / 10) * kr,
+      ky$1 = -Math.cos(tau$1 / 10) * kr;
   var star = {
     draw: function draw(context, size) {
-      var r = Math.sqrt(size * ka),
+      var r = Math.sqrt(size * ka$1),
           x = kx * r,
-          y = ky * r;
+          y = ky$1 * r;
       context.moveTo(0, -r);
       context.lineTo(x, y);
 
       for (var i = 1; i < 5; ++i) {
-        var a = tau$2 * i / 5,
+        var a = tau$1 * i / 5,
             c = Math.cos(a),
             s = Math.sin(a);
         context.lineTo(s * r, -c * r);
@@ -11253,12 +23675,12 @@
 
     for (var i, j = 0, d, dy, yp, yn, n, m = series[order[0]].length; j < m; ++j) {
       for (yp = yn = 0, i = 0; i < n; ++i) {
-        if ((dy = (d = series[order[i]][j])[1] - d[0]) >= 0) {
+        if ((dy = (d = series[order[i]][j])[1] - d[0]) > 0) {
           d[0] = yp, d[1] = yp += dy;
         } else if (dy < 0) {
           d[1] = yn, d[0] = yn += dy;
         } else {
-          d[0] = yp;
+          d[0] = 0, d[1] = dy;
         }
       }
     }
@@ -11383,6 +23805,7 @@
 
 
   var paths = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     arc: arc,
     area: area,
     line: line,
@@ -11441,9 +23864,9 @@
    * @param {String} input
    */
   function htmlDecode(input) {
-    if (input === " ") return input;
+    if (input.replace(/\s+/g, "") === "") return input;
     var doc = new DOMParser().parseFromString(input.replace(/<[^>]+>/g, ""), "text/html");
-    return doc.documentElement.textContent;
+    return doc.documentElement ? doc.documentElement.textContent : input;
   }
   /**
       @function textWidth
@@ -11481,7 +23904,7 @@
       @param {String} str
   */
   function trim(str) {
-    return str.replace(/^\s+|\s+$/g, "");
+    return str.toString().replace(/^\s+|\s+$/g, "");
   }
   /**
       @function trimRight
@@ -11491,7 +23914,7 @@
 
 
   function trimRight(str) {
-    return str.replace(/\s+$/, "");
+    return str.toString().replace(/\s+$/, "");
   }
 
   var alpha = "abcdefghiABCDEFGHI_!@#$%^&*()_+1234567890",
@@ -11566,7 +23989,7 @@
   }
 
   // great unicode list: http://asecuritysite.com/coding/asc2
-  var diacritics = [[/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"], [/[\306]/g, "AE"], [/[\346]/g, "ae"], [/[\337]/g, "B"], [/[\307]/g, "C"], [/[\347]/g, "c"], [/[\320\336\376]/g, "D"], [/[\360]/g, "d"], [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"], [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"], [/[\321]/g, "N"], [/[\361]/g, "n"], [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"], [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"], [/[\327]/g, "x"], [/[\335]/g, "Y"], [/[\375\377]/g, "y"]];
+  var diacritics = [[/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"], [/[\306]/g, "AE"], [/[\346]/g, "ae"], [/[\337]/g, "B"], [/[\307]/g, "C"], [/[\347]/g, "c"], [/[\320\336\376]/g, "D"], [/[\360]/g, "d"], [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"], [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"], [/[\321]/g, "N"], [/[\361]/g, "n"], [/[\u014c\322-\326\330]/g, "O"], [/[\u014d\362-\366\370]/g, "o"], [/[\u016a\331-\334]/g, "U"], [/[\u016b\371-\374]/g, "u"], [/[\327]/g, "x"], [/[\335]/g, "Y"], [/[\375\377]/g, "y"]];
   /**
       @function strip
       @desc Removes all non ASCII characters from a string.
@@ -11597,7 +24020,7 @@
   var b = ["u0300", "u0301", "u0302", "u0303", "u0304", "u0305", "u0306", "u0307", "u0308", "u0309", "u030A", "u030B", "u030C", "u030D", "u030E", "u030F", "u0310", "u0311", "u0312", "u0313", "u0314", "u0315", "u0316", "u0317", "u0318", "u0319", "u031A", "u031B", "u031C", "u031D", "u031E", "u031F", "u0320", "u0321", "u0322", "u0323", "u0324", "u0325", "u0326", "u0327", "u0328", "u0329", "u032A", "u032B", "u032C", "u032D", "u032E", "u032F", "u0330", "u0331", "u0332", "u0333", "u0334", "u0335", "u0336", "u0337", "u0338", "u0339", "u033A", "u033B", "u033C", "u033D", "u033E", "u033F", "u0340", "u0341", "u0342", "u0343", "u0344", "u0345", "u0346", "u0347", "u0348", "u0349", "u034A", "u034B", "u034C", "u034D", "u034E", "u034F", "u0350", "u0351", "u0352", "u0353", "u0354", "u0355", "u0356", "u0357", "u0358", "u0359", "u035A", "u035B", "u035C", "u035D", "u035E", "u035F", "u0360", "u0361", "u0362", "u0363", "u0364", "u0365", "u0366", "u0367", "u0368", "u0369", "u036A", "u036B", "u036C", "u036D", "u036E", "u036F", "u0483", "u0484", "u0485", "u0486", "u0487", "u0591", "u0592", "u0593", "u0594", "u0595", "u0596", "u0597", "u0598", "u0599", "u059A", "u059B", "u059C", "u059D", "u059E", "u059F", "u05A0", "u05A1", "u05A2", "u05A3", "u05A4", "u05A5", "u05A6", "u05A7", "u05A8", "u05A9", "u05AA", "u05AB", "u05AC", "u05AD", "u05AE", "u05AF", "u05B0", "u05B1", "u05B2", "u05B3", "u05B4", "u05B5", "u05B6", "u05B7", "u05B8", "u05B9", "u05BA", "u05BB", "u05BC", "u05BD", "u05BF", "u05C1", "u05C2", "u05C4", "u05C5", "u05C7", "u0610", "u0611", "u0612", "u0613", "u0614", "u0615", "u0616", "u0617", "u0618", "u0619", "u061A", "u064B", "u064C", "u064D", "u064E", "u064F", "u0650", "u0651", "u0652", "u0653", "u0654", "u0655", "u0656", "u0657", "u0658", "u0659", "u065A", "u065B", "u065C", "u065D", "u065E", "u065F", "u0670", "u06D6", "u06D7", "u06D8", "u06D9", "u06DA", "u06DB", "u06DC", "u06DF", "u06E0", "u06E1", "u06E2", "u06E3", "u06E4", "u06E7", "u06E8", "u06EA", "u06EB", "u06EC", "u06ED", "u0711", "u0730", "u0731", "u0732", "u0733", "u0734", "u0735", "u0736", "u0737", "u0738", "u0739", "u073A", "u073B", "u073C", "u073D", "u073E", "u073F", "u0740", "u0741", "u0742", "u0743", "u0744", "u0745", "u0746", "u0747", "u0748", "u0749", "u074A", "u07A6", "u07A7", "u07A8", "u07A9", "u07AA", "u07AB", "u07AC", "u07AD", "u07AE", "u07AF", "u07B0", "u07EB", "u07EC", "u07ED", "u07EE", "u07EF", "u07F0", "u07F1", "u07F2", "u07F3", "u0816", "u0817", "u0818", "u0819", "u081B", "u081C", "u081D", "u081E", "u081F", "u0820", "u0821", "u0822", "u0823", "u0825", "u0826", "u0827", "u0829", "u082A", "u082B", "u082C", "u082D", "u0859", "u085A", "u085B", "u08E3", "u08E4", "u08E5", "u08E6", "u08E7", "u08E8", "u08E9", "u08EA", "u08EB", "u08EC", "u08ED", "u08EE", "u08EF", "u08F0", "u08F1", "u08F2", "u08F3", "u08F4", "u08F5", "u08F6", "u08F7", "u08F8", "u08F9", "u08FA", "u08FB", "u08FC", "u08FD", "u08FE", "u08FF", "u0900", "u0901", "u0902", "u093A", "u093C", "u0941", "u0942", "u0943", "u0944", "u0945", "u0946", "u0947", "u0948", "u094D", "u0951", "u0952", "u0953", "u0954", "u0955", "u0956", "u0957", "u0962", "u0963", "u0981", "u09BC", "u09C1", "u09C2", "u09C3", "u09C4", "u09CD", "u09E2", "u09E3", "u0A01", "u0A02", "u0A3C", "u0A41", "u0A42", "u0A47", "u0A48", "u0A4B", "u0A4C", "u0A4D", "u0A51", "u0A70", "u0A71", "u0A75", "u0A81", "u0A82", "u0ABC", "u0AC1", "u0AC2", "u0AC3", "u0AC4", "u0AC5", "u0AC7", "u0AC8", "u0ACD", "u0AE2", "u0AE3", "u0B01", "u0B3C", "u0B3F", "u0B41", "u0B42", "u0B43", "u0B44", "u0B4D", "u0B56", "u0B62", "u0B63", "u0B82", "u0BC0", "u0BCD", "u0C00", "u0C3E", "u0C3F", "u0C40", "u0C46", "u0C47", "u0C48", "u0C4A", "u0C4B", "u0C4C", "u0C4D", "u0C55", "u0C56", "u0C62", "u0C63", "u0C81", "u0CBC", "u0CBF", "u0CC6", "u0CCC", "u0CCD", "u0CE2", "u0CE3", "u0D01", "u0D41", "u0D42", "u0D43", "u0D44", "u0D4D", "u0D62", "u0D63", "u0DCA", "u0DD2", "u0DD3", "u0DD4", "u0DD6", "u0E31", "u0E34", "u0E35", "u0E36", "u0E37", "u0E38", "u0E39", "u0E3A", "u0E47", "u0E48", "u0E49", "u0E4A", "u0E4B", "u0E4C", "u0E4D", "u0E4E", "u0EB1", "u0EB4", "u0EB5", "u0EB6", "u0EB7", "u0EB8", "u0EB9", "u0EBB", "u0EBC", "u0EC8", "u0EC9", "u0ECA", "u0ECB", "u0ECC", "u0ECD", "u0F18", "u0F19", "u0F35", "u0F37", "u0F39", "u0F71", "u0F72", "u0F73", "u0F74", "u0F75", "u0F76", "u0F77", "u0F78", "u0F79", "u0F7A", "u0F7B", "u0F7C", "u0F7D", "u0F7E", "u0F80", "u0F81", "u0F82", "u0F83", "u0F84", "u0F86", "u0F87", "u0F8D", "u0F8E", "u0F8F", "u0F90", "u0F91", "u0F92", "u0F93", "u0F94", "u0F95", "u0F96", "u0F97", "u0F99", "u0F9A", "u0F9B", "u0F9C", "u0F9D", "u0F9E", "u0F9F", "u0FA0", "u0FA1", "u0FA2", "u0FA3", "u0FA4", "u0FA5", "u0FA6", "u0FA7", "u0FA8", "u0FA9", "u0FAA", "u0FAB", "u0FAC", "u0FAD", "u0FAE", "u0FAF", "u0FB0", "u0FB1", "u0FB2", "u0FB3", "u0FB4", "u0FB5", "u0FB6", "u0FB7", "u0FB8", "u0FB9", "u0FBA", "u0FBB", "u0FBC", "u0FC6", "u102D", "u102E", "u102F", "u1030", "u1032", "u1033", "u1034", "u1035", "u1036", "u1037", "u1039", "u103A", "u103D", "u103E", "u1058", "u1059", "u105E", "u105F", "u1060", "u1071", "u1072", "u1073", "u1074", "u1082", "u1085", "u1086", "u108D", "u109D", "u135D", "u135E", "u135F", "u1712", "u1713", "u1714", "u1732", "u1733", "u1734", "u1752", "u1753", "u1772", "u1773", "u17B4", "u17B5", "u17B7", "u17B8", "u17B9", "u17BA", "u17BB", "u17BC", "u17BD", "u17C6", "u17C9", "u17CA", "u17CB", "u17CC", "u17CD", "u17CE", "u17CF", "u17D0", "u17D1", "u17D2", "u17D3", "u17DD", "u180B", "u180C", "u180D", "u18A9", "u1920", "u1921", "u1922", "u1927", "u1928", "u1932", "u1939", "u193A", "u193B", "u1A17", "u1A18", "u1A1B", "u1A56", "u1A58", "u1A59", "u1A5A", "u1A5B", "u1A5C", "u1A5D", "u1A5E", "u1A60", "u1A62", "u1A65", "u1A66", "u1A67", "u1A68", "u1A69", "u1A6A", "u1A6B", "u1A6C", "u1A73", "u1A74", "u1A75", "u1A76", "u1A77", "u1A78", "u1A79", "u1A7A", "u1A7B", "u1A7C", "u1A7F", "u1AB0", "u1AB1", "u1AB2", "u1AB3", "u1AB4", "u1AB5", "u1AB6", "u1AB7", "u1AB8", "u1AB9", "u1ABA", "u1ABB", "u1ABC", "u1ABD", "u1B00", "u1B01", "u1B02", "u1B03", "u1B34", "u1B36", "u1B37", "u1B38", "u1B39", "u1B3A", "u1B3C", "u1B42", "u1B6B", "u1B6C", "u1B6D", "u1B6E", "u1B6F", "u1B70", "u1B71", "u1B72", "u1B73", "u1B80", "u1B81", "u1BA2", "u1BA3", "u1BA4", "u1BA5", "u1BA8", "u1BA9", "u1BAB", "u1BAC", "u1BAD", "u1BE6", "u1BE8", "u1BE9", "u1BED", "u1BEF", "u1BF0", "u1BF1", "u1C2C", "u1C2D", "u1C2E", "u1C2F", "u1C30", "u1C31", "u1C32", "u1C33", "u1C36", "u1C37", "u1CD0", "u1CD1", "u1CD2", "u1CD4", "u1CD5", "u1CD6", "u1CD7", "u1CD8", "u1CD9", "u1CDA", "u1CDB", "u1CDC", "u1CDD", "u1CDE", "u1CDF", "u1CE0", "u1CE2", "u1CE3", "u1CE4", "u1CE5", "u1CE6", "u1CE7", "u1CE8", "u1CED", "u1CF4", "u1CF8", "u1CF9", "u1DC0", "u1DC1", "u1DC2", "u1DC3", "u1DC4", "u1DC5", "u1DC6", "u1DC7", "u1DC8", "u1DC9", "u1DCA", "u1DCB", "u1DCC", "u1DCD", "u1DCE", "u1DCF", "u1DD0", "u1DD1", "u1DD2", "u1DD3", "u1DD4", "u1DD5", "u1DD6", "u1DD7", "u1DD8", "u1DD9", "u1DDA", "u1DDB", "u1DDC", "u1DDD", "u1DDE", "u1DDF", "u1DE0", "u1DE1", "u1DE2", "u1DE3", "u1DE4", "u1DE5", "u1DE6", "u1DE7", "u1DE8", "u1DE9", "u1DEA", "u1DEB", "u1DEC", "u1DED", "u1DEE", "u1DEF", "u1DF0", "u1DF1", "u1DF2", "u1DF3", "u1DF4", "u1DF5", "u1DFC", "u1DFD", "u1DFE", "u1DFF", "u20D0", "u20D1", "u20D2", "u20D3", "u20D4", "u20D5", "u20D6", "u20D7", "u20D8", "u20D9", "u20DA", "u20DB", "u20DC", "u20E1", "u20E5", "u20E6", "u20E7", "u20E8", "u20E9", "u20EA", "u20EB", "u20EC", "u20ED", "u20EE", "u20EF", "u20F0", "u2CEF", "u2CF0", "u2CF1", "u2D7F", "u2DE0", "u2DE1", "u2DE2", "u2DE3", "u2DE4", "u2DE5", "u2DE6", "u2DE7", "u2DE8", "u2DE9", "u2DEA", "u2DEB", "u2DEC", "u2DED", "u2DEE", "u2DEF", "u2DF0", "u2DF1", "u2DF2", "u2DF3", "u2DF4", "u2DF5", "u2DF6", "u2DF7", "u2DF8", "u2DF9", "u2DFA", "u2DFB", "u2DFC", "u2DFD", "u2DFE", "u2DFF", "u302A", "u302B", "u302C", "u302D", "u3099", "u309A", "uA66F", "uA674", "uA675", "uA676", "uA677", "uA678", "uA679", "uA67A", "uA67B", "uA67C", "uA67D", "uA69E", "uA69F", "uA6F0", "uA6F1", "uA802", "uA806", "uA80B", "uA825", "uA826", "uA8C4", "uA8E0", "uA8E1", "uA8E2", "uA8E3", "uA8E4", "uA8E5", "uA8E6", "uA8E7", "uA8E8", "uA8E9", "uA8EA", "uA8EB", "uA8EC", "uA8ED", "uA8EE", "uA8EF", "uA8F0", "uA8F1", "uA926", "uA927", "uA928", "uA929", "uA92A", "uA92B", "uA92C", "uA92D", "uA947", "uA948", "uA949", "uA94A", "uA94B", "uA94C", "uA94D", "uA94E", "uA94F", "uA950", "uA951", "uA980", "uA981", "uA982", "uA9B3", "uA9B6", "uA9B7", "uA9B8", "uA9B9", "uA9BC", "uA9E5", "uAA29", "uAA2A", "uAA2B", "uAA2C", "uAA2D", "uAA2E", "uAA31", "uAA32", "uAA35", "uAA36", "uAA43", "uAA4C", "uAA7C", "uAAB0", "uAAB2", "uAAB3", "uAAB4", "uAAB7", "uAAB8", "uAABE", "uAABF", "uAAC1", "uAAEC", "uAAED", "uAAF6", "uABE5", "uABE8", "uABED", "uFB1E", "uFE00", "uFE01", "uFE02", "uFE03", "uFE04", "uFE05", "uFE06", "uFE07", "uFE08", "uFE09", "uFE0A", "uFE0B", "uFE0C", "uFE0D", "uFE0E", "uFE0F", "uFE20", "uFE21", "uFE22", "uFE23", "uFE24", "uFE25", "uFE26", "uFE27", "uFE28", "uFE29", "uFE2A", "uFE2B", "uFE2C", "uFE2D", "uFE2E", "uFE2F"];
   var combiningMarks = a$1.concat(b);
 
-  var splitChars = ["-", ";", ":", "&", "u0E2F", // thai character pairannoi
+  var splitChars = ["-", ";", ":", "&", "|", "u0E2F", // thai character pairannoi
   "u0EAF", // lao ellipsis
   "u0EC6", // lao ko la (word repetition)
   "u0ECC", // lao cancellation mark
@@ -11697,7 +24120,7 @@
             break;
           }
 
-          lineData[line - 1] = trimRight(lineData[line - 1]);
+          if (lineData.length >= line) lineData[line - 1] = trimRight(lineData[line - 1]);
           line++;
 
           if (lineHeight * line > height || wordWidth > width && !overflow || maxLines && line > maxLines) {
@@ -11898,7 +24321,7 @@
 
     return _setPrototypeOf$1(o, p);
   }
-  var tagLookup = {
+  var defaultHtmlLookup = {
     i: "font-style: italic;",
     em: "font-style: italic;",
     b: "font-weight: bold;",
@@ -11910,9 +24333,7 @@
       @desc Creates a wrapped text box for each point in an array of data. See [this example](https://d3plus.org/examples/d3plus-text/getting-started/) for help getting started using the TextBox class.
   */
 
-  var TextBox =
-  /*#__PURE__*/
-  function (_BaseClass) {
+  var TextBox = /*#__PURE__*/function (_BaseClass) {
     _inherits$1(TextBox, _BaseClass);
     /**
         @memberof TextBox
@@ -11944,7 +24365,7 @@
       _this._fontSize = constant$5(10);
       _this._fontWeight = constant$5(400);
       _this._height = accessor("height", 200);
-      _this._html = true;
+      _this._html = defaultHtmlLookup;
 
       _this._id = function (d, i) {
         return d.id || "".concat(i);
@@ -11993,6 +24414,7 @@
           var t = _this2._text(d, i);
 
           if (t === void 0) return arr;
+          t = trim(t);
 
           var resize = _this2._fontResize(d, i);
 
@@ -12013,7 +24435,7 @@
           var padding = parseSides(_this2._padding(d, i));
           var h = _this2._height(d, i) - (padding.top + padding.bottom),
               w = _this2._width(d, i) - (padding.left + padding.right);
-          var wrapper = textWrap().fontFamily(style["font-family"]).fontSize(fS).fontWeight(style["font-weight"]).lineHeight(lH).maxLines(_this2._maxLines(d, i)).height(h).overflow(_this2._overflow(d, i)).width(w);
+          var wrapper = textWrap().fontFamily(style["font-family"]).fontSize(fS).fontWeight(style["font-weight"]).lineHeight(lH).maxLines(_this2._maxLines(d, i)).height(h).overflow(_this2._overflow(d, i)).width(w).split(_this2._split);
 
           var fMax = _this2._fontMax(d, i),
               fMin = _this2._fontMin(d, i),
@@ -12168,7 +24590,7 @@
                 return "".concat(b.replace("</", "<")).concat(a).concat(b);
               }) // ands start tag to lines after mid-HTML break
               .replace(/<([A-z]+)[^>]*>([^<^>]+)<\/[^>]+>/g, function (str, a, b) {
-                var tag = tagLookup[a] ? "<tspan style=\"".concat(tagLookup[a], "\">") : "";
+                var tag = that._html[a] ? "<tspan style=\"".concat(that._html[a], "\">") : "";
                 return "".concat(tag.length ? tag : "").concat(b).concat(tag.length ? "</tspan>" : "");
               });
             });
@@ -12391,15 +24813,20 @@
       }
       /**
           @memberof TextBox
-          @desc Toggles the ability to render simple HTML tags. Currently supports `<b>`, `<strong>`, `<i>`, and `<em>`.
-          @param {Boolean} [*value* = true]
+          @desc Configures the ability to render simple HTML tags. Defaults to supporting `<b>`, `<strong>`, `<i>`, and `<em>`, set to false to disable or provide a mapping of tags to svg styles
+          @param {Object|Boolean} [*value* = {
+                    i: 'font-style: italic;',
+                    em: 'font-style: italic;',
+                    b: 'font-weight: bold;',
+                    strong: 'font-weight: bold;'
+                }]
           @chainable
       */
 
     }, {
       key: "html",
       value: function html(_) {
-        return arguments.length ? (this._html = _, this) : this._html;
+        return arguments.length ? (this._html = typeof _ === "boolean" ? _ ? defaultHtmlLookup : false : _, this) : this._html;
       }
       /**
           @memberof TextBox
@@ -12731,9 +25158,7 @@
       @desc An abstracted class for generating shapes.
   */
 
-  var Shape =
-  /*#__PURE__*/
-  function (_BaseClass) {
+  var Shape = /*#__PURE__*/function (_BaseClass) {
     _inherits$2(Shape, _BaseClass);
     /**
         @memberof Shape
@@ -13090,7 +25515,7 @@
           }
         });
 
-        this._backgroundImageClass.data(imageData).duration(this._duration).pointerEvents("none").select(elem("g.d3plus-".concat(this._name, "-image"), {
+        this._backgroundImageClass.data(imageData).duration(this._duration).opacity(this._nestWrapper(this._opacity)).pointerEvents("none").select(elem("g.d3plus-".concat(this._name, "-image"), {
           parent: this._group,
           update: {
             opacity: this._active ? this._activeOpacity : 1
@@ -13159,7 +25584,7 @@
           }
         });
 
-        this._labelClass.data(labelData).duration(this._duration).pointerEvents("none").rotate(function (d) {
+        this._labelClass.data(labelData).duration(this._duration).fontOpacity(this._nestWrapper(this._opacity)).pointerEvents("none").rotate(function (d) {
           return d.__d3plus__ ? d.r : d.data.r;
         }).rotateAnchor(function (d) {
           return d.__d3plus__ ? d.rotateAnchor : d.data.rotateAnchor;
@@ -13223,16 +25648,29 @@
           }
         }).selectAll(".d3plus-".concat(this._name)).data(data, key); // Orders and transforms the updating Shapes.
 
-        update.order().transition(this._transition).call(this._applyTransform.bind(this)); // Makes the enter state of the group selection accessible.
+        update.order();
+
+        if (this._duration) {
+          update.transition(this._transition).call(this._applyTransform.bind(this));
+        } else {
+          update.call(this._applyTransform.bind(this));
+        } // Makes the enter state of the group selection accessible.
+
 
         var enter = this._enter = update.enter().append(this._tagName).attr("class", function (d, i) {
           return "d3plus-Shape d3plus-".concat(_this6._name, " d3plus-id-").concat(strip(_this6._nestWrapper(_this6._id)(d, i)));
         }).call(this._applyTransform.bind(this)).attr("aria-label", this._ariaLabel).attr("role", this._role).attr("opacity", this._nestWrapper(this._opacity));
         var enterUpdate = enter.merge(update);
-        enterUpdate.attr("shape-rendering", this._nestWrapper(this._shapeRendering)).attr("pointer-events", "none").transition(this._transition).attr("opacity", this._nestWrapper(this._opacity)).attr("pointer-events", this._pointerEvents); // Makes the exit state of the group selection accessible.
+        var enterUpdateRender = enterUpdate.attr("shape-rendering", this._nestWrapper(this._shapeRendering));
+
+        if (this._duration) {
+          enterUpdateRender = enterUpdateRender.attr("pointer-events", "none").transition(this._transition).transition().delay(100).attr("pointer-events", this._pointerEvents);
+        }
+
+        enterUpdateRender.attr("opacity", this._nestWrapper(this._opacity)); // Makes the exit state of the group selection accessible.
 
         var exit = this._exit = update.exit();
-        exit.transition().delay(this._duration).remove();
+        if (this._duration) exit.transition().delay(this._duration).remove();else exit.remove();
 
         this._renderImage();
 
@@ -13245,7 +25683,7 @@
           parent: this._group
         });
 
-        var hitAreas = this._group.selectAll(".d3plus-HitArea").data(this._hitArea ? data : [], key);
+        var hitAreas = this._group.selectAll(".d3plus-HitArea").data(this._hitArea && Object.keys(this._on).length ? data : [], key);
 
         hitAreas.order().call(this._applyTransform.bind(this));
         var isLine = this._name === "Line";
@@ -13917,7 +26355,7 @@
     return splitCurveAsPoints(points, segmentCount).map(pointsToCommand);
   }
 
-  var commandTokenRegex = /[MLCSTQAHVmlcstqahv]|[\d.-]+/g;
+  var commandTokenRegex = /[MLCSTQAHVmlcstqahv]|-?[\d.e+-]+/g;
   /**
    * List of params for each command type in a path `d` attribute
    */
@@ -14242,56 +26680,42 @@
           var aCommand = aCommands[i];
           var bCommand = bCommands[i];
           var interpolatedCommand = interpolatedCommands[i];
-          var _iteratorNormalCompletion = true;
-          var _didIteratorError = false;
-          var _iteratorError = undefined;
+
+          var _iterator = _createForOfIteratorHelper(typeMap[interpolatedCommand.type]),
+              _step;
 
           try {
-            for (var _iterator = typeMap[interpolatedCommand.type][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            for (_iterator.s(); !(_step = _iterator.n()).done;) {
               var arg = _step.value;
-              interpolatedCommand[arg] = (1 - t) * aCommand[arg] + t * bCommand[arg];
+              interpolatedCommand[arg] = (1 - t) * aCommand[arg] + t * bCommand[arg]; // do not use floats for flags (#27), round to integer
+
+              if (arg === 'largeArcFlag' || arg === 'sweepFlag') {
+                interpolatedCommand[arg] = Math.round(interpolatedCommand[arg]);
+              }
             }
           } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
+            _iterator.e(err);
           } finally {
-            try {
-              if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-                _iterator["return"]();
-              }
-            } finally {
-              if (_didIteratorError) {
-                throw _iteratorError;
-              }
-            }
+            _iterator.f();
           }
         }
       } // convert to a string (fastest concat: https://jsperf.com/join-concat/150)
 
 
       var interpolatedString = '';
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
+
+      var _iterator2 = _createForOfIteratorHelper(interpolatedCommands),
+          _step2;
 
       try {
-        for (var _iterator2 = interpolatedCommands[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
           var _interpolatedCommand = _step2.value;
           interpolatedString += commandToString(_interpolatedCommand);
         }
       } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
+        _iterator2.e(err);
       } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-            _iterator2["return"]();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
+        _iterator2.f();
       }
 
       if (addZ) {
@@ -14337,6 +26761,10 @@
   }
 
   function _iterableToArrayLimit(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -14439,6 +26867,10 @@
   }
 
   function _iterableToArrayLimit$1(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -14684,6 +27116,10 @@
   }
 
   function _iterableToArrayLimit$2(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -15125,9 +27561,7 @@
       @desc Creates SVG areas based on an array of data.
   */
 
-  var Area =
-  /*#__PURE__*/
-  function (_Shape) {
+  var Area = /*#__PURE__*/function (_Shape) {
     _inherits$3(Area, _Shape);
     /**
         @memberof Area
@@ -15248,18 +27682,30 @@
     }, {
       key: "render",
       value: function render(callback) {
+        var _this4 = this;
+
         _get$1(_getPrototypeOf$3(Area.prototype), "render", this).call(this, callback);
 
         var path = this._path = area().defined(this._defined).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
         var exitPath = area().defined(function (d) {
           return d;
-        }).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).x0(this._x0).x1(this._x1).y(this._y).y0(this._y0).y1(this._y1);
+        }).curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).x(this._x).y(this._y).x0(function (d, i) {
+          return _this4._x1 ? _this4._x0(d, i) + (_this4._x1(d, i) - _this4._x0(d, i)) / 2 : _this4._x0(d, i);
+        }).x1(function (d, i) {
+          return _this4._x1 ? _this4._x0(d, i) + (_this4._x1(d, i) - _this4._x0(d, i)) / 2 : _this4._x0(d, i);
+        }).y0(function (d, i) {
+          return _this4._y1 ? _this4._y0(d, i) + (_this4._y1(d, i) - _this4._y0(d, i)) / 2 : _this4._y0(d, i);
+        }).y1(function (d, i) {
+          return _this4._y1 ? _this4._y0(d, i) + (_this4._y1(d, i) - _this4._y0(d, i)) / 2 : _this4._y0(d, i);
+        });
 
         this._enter.append("path").attr("transform", function (d) {
           return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
         }).attr("d", function (d) {
-          return path(d.values);
-        }).call(this._applyStyle.bind(this));
+          return exitPath(d.values);
+        }).call(this._applyStyle.bind(this)).transition(this._transition).attrTween("d", function (d) {
+          return interpolatePath(_select(this).attr("d"), path(d.values));
+        });
 
         this._update.select("path").transition(this._transition).attr("transform", function (d) {
           return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
@@ -15504,9 +27950,7 @@
       @desc Creates SVG areas based on an array of data.
   */
 
-  var Bar =
-  /*#__PURE__*/
-  function (_Shape) {
+  var Bar = /*#__PURE__*/function (_Shape) {
     _inherits$4(Bar, _Shape);
     /**
         @memberof Bar
@@ -15557,7 +28001,7 @@
 
         _get$2(_getPrototypeOf$4(Bar.prototype), "render", this).call(this, callback);
 
-        this._enter.attr("width", function (d, i) {
+        var enter = this._enter.attr("width", function (d, i) {
           return _this2._x1 === null ? _this2._getWidth(d, i) : 0;
         }).attr("height", function (d, i) {
           return _this2._x1 !== null ? _this2._getHeight(d, i) : 0;
@@ -15565,20 +28009,27 @@
           return _this2._x1 === null ? -_this2._getWidth(d, i) / 2 : 0;
         }).attr("y", function (d, i) {
           return _this2._x1 !== null ? -_this2._getHeight(d, i) / 2 : 0;
-        }).call(this._applyStyle.bind(this)).transition(this._transition).call(this._applyPosition.bind(this));
+        }).call(this._applyStyle.bind(this));
 
-        this._update.transition(this._transition).call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
+        var update = this._update;
 
-        this._exit.transition(this._transition).attr("width", function (d, i) {
-          return _this2._x1 === null ? _this2._getWidth(d, i) : 0;
-        }).attr("height", function (d, i) {
-          return _this2._x1 !== null ? _this2._getHeight(d, i) : 0;
-        }).attr("x", function (d, i) {
-          return _this2._x1 === null ? -_this2._getWidth(d, i) / 2 : 0;
-        }).attr("y", function (d, i) {
-          return _this2._x1 !== null ? -_this2._getHeight(d, i) / 2 : 0;
-        });
+        if (this._duration) {
+          enter = enter.transition(this._transition);
+          update = update.transition(this._transition);
 
+          this._exit.transition(this._transition).attr("width", function (d, i) {
+            return _this2._x1 === null ? _this2._getWidth(d, i) : 0;
+          }).attr("height", function (d, i) {
+            return _this2._x1 !== null ? _this2._getHeight(d, i) : 0;
+          }).attr("x", function (d, i) {
+            return _this2._x1 === null ? -_this2._getWidth(d, i) / 2 : 0;
+          }).attr("y", function (d, i) {
+            return _this2._x1 !== null ? -_this2._getHeight(d, i) / 2 : 0;
+          });
+        }
+
+        enter.call(this._applyPosition.bind(this));
+        update.call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
         return this;
       }
       /**
@@ -15884,9 +28335,7 @@
       @desc Creates SVG circles based on an array of data.
   */
 
-  var Circle =
-  /*#__PURE__*/
-  function (_Shape) {
+  var Circle = /*#__PURE__*/function (_Shape) {
     _inherits$5(Circle, _Shape);
     /**
         @memberof Circle
@@ -15951,12 +28400,20 @@
       value: function render(callback) {
         _get$3(_getPrototypeOf$5(Circle.prototype), "render", this).call(this, callback);
 
-        this._enter.attr("r", 0).attr("x", 0).attr("y", 0).call(this._applyStyle.bind(this)).transition(this._transition).call(this._applyPosition.bind(this));
+        var enter = this._enter.call(this._applyStyle.bind(this));
 
-        this._update.transition(this._transition).call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
+        var update = this._update;
 
-        this._exit.transition(this._transition).attr("r", 0).attr("x", 0).attr("y", 0);
+        if (this._duration) {
+          enter.attr("r", 0).attr("x", 0).attr("y", 0).transition(this._transition).call(this._applyPosition.bind(this));
+          update = update.transition(this._transition);
 
+          this._exit.transition(this._transition).attr("r", 0).attr("x", 0).attr("y", 0);
+        } else {
+          enter.call(this._applyPosition.bind(this));
+        }
+
+        update.call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
         return this;
       }
       /**
@@ -16113,9 +28570,7 @@
       @desc Creates SVG rectangles based on an array of data. See [this example](https://d3plus.org/examples/d3plus-shape/getting-started/) for help getting started using the rectangle generator.
   */
 
-  var Rect =
-  /*#__PURE__*/
-  function (_Shape) {
+  var Rect = /*#__PURE__*/function (_Shape) {
     _inherits$6(Rect, _Shape);
     /**
         @memberof Rect
@@ -16158,12 +28613,19 @@
       value: function render(callback) {
         _get$4(_getPrototypeOf$6(Rect.prototype), "render", this).call(this, callback);
 
-        this._enter.attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0).call(this._applyStyle.bind(this)).transition(this._transition).call(this._applyPosition.bind(this));
+        var enter = this._enter.attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0).call(this._applyStyle.bind(this));
 
-        this._update.transition(this._transition).call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
+        var update = this._update;
 
-        this._exit.transition(this._transition).attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0);
+        if (this._duration) {
+          enter = enter.transition(this._transition);
+          update = update.transition(this._transition);
 
+          this._exit.transition(this._transition).attr("width", 0).attr("height", 0).attr("x", 0).attr("y", 0);
+        }
+
+        enter.call(this._applyPosition.bind(this));
+        update.call(this._applyStyle.bind(this)).call(this._applyPosition.bind(this));
         return this;
       }
       /**
@@ -16359,9 +28821,7 @@
       @desc Creates SVG lines based on an array of data.
   */
 
-  var Line =
-  /*#__PURE__*/
-  function (_Shape) {
+  var Line = /*#__PURE__*/function (_Shape) {
     _inherits$7(Line, _Shape);
     /**
         @memberof Line
@@ -16448,21 +28908,72 @@
         _get$5(_getPrototypeOf$7(Line.prototype), "render", this).call(this, callback);
 
         var that = this;
+        /**
+            @desc Calculates the stroke-dasharray used for animations
+            @param {Object} *d* data point
+            @private
+        */
+
+        function calculateStrokeDashArray(d) {
+          d.initialLength = this.getTotalLength();
+
+          var strokeArray = that._strokeDasharray(d.values[0], that._data.indexOf(d.values[0])).split(" ").map(Number);
+
+          if (strokeArray.length === 1 && strokeArray[0] === 0) strokeArray = [d.initialLength];else if (strokeArray.length === 1) strokeArray.push(strokeArray[0]);else if (strokeArray.length % 2) strokeArray = strokeArray.concat(strokeArray);
+          var newStrokeArray = [];
+          var strokeLength = 0;
+
+          while (strokeLength < d.initialLength) {
+            for (var i = 0; i < strokeArray.length; i++) {
+              var num = strokeArray[i];
+              strokeLength += num;
+              newStrokeArray.push(num);
+              if (strokeLength >= d.initialLength) break;
+            }
+          }
+
+          if (newStrokeArray.length > 1 && newStrokeArray.length % 2) newStrokeArray.pop();
+          newStrokeArray[newStrokeArray.length - 1] += d.initialLength - sum(newStrokeArray);
+          if (newStrokeArray.length % 2 === 0) newStrokeArray.push(0);
+          d.initialStrokeArray = newStrokeArray.join(" ");
+        }
 
         this._path.curve(paths["curve".concat(this._curve.charAt(0).toUpperCase()).concat(this._curve.slice(1))]).defined(this._defined).x(this._x).y(this._y);
 
-        this._enter.append("path").attr("transform", function (d) {
+        var enter = this._enter.append("path").attr("transform", function (d) {
           return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
         }).attr("d", function (d) {
           return _this3._path(d.values);
         }).call(this._applyStyle.bind(this));
 
-        this._update.select("path").transition(this._transition).attr("transform", function (d) {
-          return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
-        }).attrTween("d", function (d) {
-          return interpolatePath(_select(this).attr("d"), that._path(d.values));
-        }).call(this._applyStyle.bind(this));
+        var update = this._update.select("path").attr("stroke-dasharray", function (d) {
+          return that._strokeDasharray(d.values[0], that._data.indexOf(d.values[0]));
+        });
 
+        if (this._duration) {
+          enter.each(calculateStrokeDashArray).attr("stroke-dasharray", function (d) {
+            return "".concat(d.initialStrokeArray, " ").concat(d.initialLength);
+          }).attr("stroke-dashoffset", function (d) {
+            return d.initialLength;
+          }).transition(this._transition).attr("stroke-dashoffset", 0);
+          update = update.transition(this._transition).attrTween("d", function (d) {
+            return interpolatePath(_select(this).attr("d"), that._path(d.values));
+          });
+
+          this._exit.selectAll("path").each(calculateStrokeDashArray).attr("stroke-dasharray", function (d) {
+            return "".concat(d.initialStrokeArray, " ").concat(d.initialLength);
+          }).transition(this._transition).attr("stroke-dashoffset", function (d) {
+            return -d.initialLength;
+          });
+        } else {
+          update = update.attr("d", function (d) {
+            return that._path(d.values);
+          });
+        }
+
+        update.attr("transform", function (d) {
+          return "translate(".concat(-d.xR[0] - d.width / 2, ", ").concat(-d.yR[0] - d.height / 2, ")");
+        }).call(this._applyStyle.bind(this));
         return this;
       }
       /**
@@ -16605,9 +29116,7 @@
       @desc Creates SVG whisker based on an array of data.
   */
 
-  var Whisker =
-  /*#__PURE__*/
-  function (_BaseClass) {
+  var Whisker = /*#__PURE__*/function (_BaseClass) {
     _inherits$8(Whisker, _BaseClass);
     /**
         @memberof Whisker
@@ -16972,9 +29481,7 @@
       @desc Creates SVG box based on an array of data.
   */
 
-  var Box =
-  /*#__PURE__*/
-  function (_BaseClass) {
+  var Box = /*#__PURE__*/function (_BaseClass) {
     _inherits$9(Box, _BaseClass);
     /**
         @memberof Box
@@ -17385,7 +29892,7 @@
     return Box;
   }(BaseClass);
 
-  var pi$3 = Math.PI;
+  var pi$2 = Math.PI;
   /**
       @function shapeEdgePoint
       @desc Calculates the x/y position of a point at the edge of a shape, from the center of the shape, given a specified pixel distance and radian angle.
@@ -17396,34 +29903,34 @@
 
   var shapeEdgePoint = (function (angle, distance) {
     var shape = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "circle";
-    if (angle < 0) angle = pi$3 * 2 + angle;
+    if (angle < 0) angle = pi$2 * 2 + angle;
 
     if (shape === "square") {
-      var diagonal = 45 * (pi$3 / 180);
+      var diagonal = 45 * (pi$2 / 180);
       var x = 0,
           y = 0;
 
-      if (angle < pi$3 / 2) {
+      if (angle < pi$2 / 2) {
         var tan = Math.tan(angle);
         x += angle < diagonal ? distance : distance / tan;
         y += angle < diagonal ? tan * distance : distance;
-      } else if (angle <= pi$3) {
-        var _tan = Math.tan(pi$3 - angle);
+      } else if (angle <= pi$2) {
+        var _tan = Math.tan(pi$2 - angle);
 
-        x -= angle < pi$3 - diagonal ? distance / _tan : distance;
-        y += angle < pi$3 - diagonal ? distance : _tan * distance;
-      } else if (angle < diagonal + pi$3) {
+        x -= angle < pi$2 - diagonal ? distance / _tan : distance;
+        y += angle < pi$2 - diagonal ? distance : _tan * distance;
+      } else if (angle < diagonal + pi$2) {
         x -= distance;
-        y -= Math.tan(angle - pi$3) * distance;
-      } else if (angle < 3 * pi$3 / 2) {
-        x -= distance / Math.tan(angle - pi$3);
+        y -= Math.tan(angle - pi$2) * distance;
+      } else if (angle < 3 * pi$2 / 2) {
+        x -= distance / Math.tan(angle - pi$2);
         y -= distance;
-      } else if (angle < 2 * pi$3 - diagonal) {
-        x += distance / Math.tan(2 * pi$3 - angle);
+      } else if (angle < 2 * pi$2 - diagonal) {
+        x += distance / Math.tan(2 * pi$2 - angle);
         y -= distance;
       } else {
         x += distance;
-        y -= Math.tan(2 * pi$3 - angle) * distance;
+        y -= Math.tan(2 * pi$2 - angle) * distance;
       }
 
       return [x, y];
@@ -17432,7 +29939,7 @@
     } else return null;
   });
 
-  var pi$4 = Math.PI;
+  var pi$3 = Math.PI;
   /**
       @function path2polygon
       @desc Transforms a path string into an Array of points.
@@ -17455,9 +29962,9 @@
             radius = points[0],
             width = pointDistance(prev, last);
         var angle = Math.acos((radius * radius + radius * radius - width * width) / (2 * radius * radius));
-        if (points[2]) angle = pi$4 * 2 - angle;
-        var step = angle / (angle / (pi$4 * 2) * (radius * pi$4 * 2) / segmentLength);
-        var start = Math.atan2(-prev[1], -prev[0]) - pi$4;
+        if (points[2]) angle = pi$3 * 2 - angle;
+        var step = angle / (angle / (pi$3 * 2) * (radius * pi$3 * 2) / segmentLength);
+        var start = Math.atan2(-prev[1], -prev[0]) - pi$3;
         var i = step;
 
         while (i < angle) {
@@ -17591,9 +30098,7 @@
       @desc Creates SVG Paths based on an array of data.
   */
 
-  var Path$1 =
-  /*#__PURE__*/
-  function (_Shape) {
+  var Path$1 = /*#__PURE__*/function (_Shape) {
     _inherits$a(Path, _Shape);
     /**
         @memberof Path
@@ -17658,12 +30163,18 @@
       value: function render(callback) {
         _get$6(_getPrototypeOf$a(Path.prototype), "render", this).call(this, callback);
 
-        this._enter.attr("opacity", 0).attr("d", this._d).call(this._applyStyle.bind(this)).transition(this._transition).attr("opacity", 1);
+        var enter = this._enter.attr("d", this._d).call(this._applyStyle.bind(this));
 
-        this._update.transition(this._transition).call(this._applyStyle.bind(this)).attr("opacity", 1).attr("d", this._d);
+        var update = this._update;
 
-        this._exit.transition(this._transition).attr("opacity", 0);
+        if (this._duration) {
+          enter.attr("opacity", 0).transition(this._transition).attr("opacity", 1);
+          update = update.transition(this._transition);
 
+          this._exit.transition(this._transition).attr("opacity", 0);
+        }
+
+        update.call(this._applyStyle.bind(this)).attr("d", this._d);
         return this;
       }
       /**
@@ -17690,6 +30201,7 @@
 
 
   var shapes$2 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     Image: Image$1,
     Shape: Shape,
     Area: Area,
@@ -17713,6 +30225,31 @@
     segmentsIntersect: segmentsIntersect,
     shapeEdgePoint: shapeEdgePoint,
     simplify: simplify
+  });
+
+  /**
+    @function dataConcat
+    @desc Reduce and concat all the elements included in arrayOfArrays if they are arrays. If it is a JSON object try to concat the array under given key data. If the key doesn't exists in object item, a warning message is lauched to the console. You need to implement DataFormat callback to concat the arrays manually.
+    @param {Array} arrayOfArray Array of elements
+    @param {String} [data = "data"] The key used for the flat data array if exists inside of the JSON object.
+  */
+  var concat = (function (arrayOfArrays) {
+    var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "data";
+    return arrayOfArrays.reduce(function (acc, item) {
+      var dataArray = [];
+
+      if (Array.isArray(item)) {
+        dataArray = item;
+      } else {
+        if (item[data]) {
+          dataArray = item[data];
+        } else {
+          console.warn("d3plus-viz: Please implement a \"dataFormat\" callback to concat the arrays manually (consider using the d3plus.dataConcat method in your callback). Currently unable to concatenate (using key: \"".concat(data, "\") the following response:"), item);
+        }
+      }
+
+      return acc.concat(dataArray);
+    }, []);
   });
 
   /**
@@ -17899,7 +30436,7 @@
 
   function objectConverter(columns) {
     return new Function("d", "return {" + columns.map(function (name, i) {
-      return JSON.stringify(name) + ": d[" + i + "]";
+      return JSON.stringify(name) + ": d[" + i + "] || \"\"";
     }).join(",") + "}");
   }
 
@@ -18056,7 +30593,9 @@
       parseRows: parseRows,
       format: format,
       formatBody: formatBody,
-      formatRows: formatRows
+      formatRows: formatRows,
+      formatRow: formatRow,
+      formatValue: formatValue
     };
   }
 
@@ -18090,10 +30629,23 @@
 
   var tsv$1 = dsv$1("text/tab-separated-values", tsvParse);
 
+  function _typeof$d(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$d = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$d = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$d(obj);
+  }
   /**
     @function dataLoad
     @desc Loads data from a filepath or URL, converts it to a valid JSON object, and returns it to a callback function.
-    @param {Array|String} path The path to the file or url to be loaded. If an Array is passed, the xhr request logic is skipped.
+    @param {Array|String} path The path to the file or url to be loaded. Also support array of paths strings. If an Array of objects is passed, the xhr request logic is skipped.
     @param {Function} [formatter] An optional formatter function that is run on the loaded data.
     @param {String} [key] The key in the `this` context to save the resulting data to.
     @param {Function} [callback] A function that is called when the final data is loaded. It is passed 2 variables, any error present and the data loaded.
@@ -18102,27 +30654,128 @@
   function load (path, formatter, key, callback) {
     var _this = this;
 
-    if (typeof path !== "string") {
-      var data = formatter ? formatter(path) : path;
+    var parser;
+
+    var getParser = function getParser(path) {
+      var ext = path.slice(path.length - 4);
+
+      switch (ext) {
+        case ".csv":
+          return csv$1;
+
+        case ".tsv":
+          return tsv$1;
+
+        case ".txt":
+          return text;
+
+        default:
+          return json;
+      }
+    };
+
+    var validateData = function validateData(err, parser, data) {
+      if (parser !== json && !err && data && data instanceof Array) {
+        data.forEach(function (d) {
+          for (var k in d) {
+            if (!isNaN(d[k])) d[k] = parseFloat(d[k]);else if (d[k].toLowerCase() === "false") d[k] = false;else if (d[k].toLowerCase() === "true") d[k] = true;else if (d[k].toLowerCase() === "null") d[k] = null;else if (d[k].toLowerCase() === "undefined") d[k] = undefined;
+          }
+        });
+      }
+
+      return data;
+    };
+
+    var loadedLength = function loadedLength(loadedArray) {
+      return loadedArray.reduce(function (prev, current) {
+        return current ? prev + 1 : prev;
+      }, 0);
+    };
+
+    var getPathIndex = function getPathIndex(url, array) {
+      return array.indexOf(url);
+    }; // If path param is a not an Array then convert path to a 1 element Array to re-use logic
+
+
+    if (!(path instanceof Array)) path = [path];
+
+    var isData = function isData(dataItem) {
+      return typeof dataItem === "string" || _typeof$d(dataItem) === "object" && dataItem.url && dataItem.headers;
+    };
+
+    var needToLoad = path.find(isData);
+    var loaded = new Array(path.length);
+    var toLoad = []; // If there is a string I'm assuming is a Array to merge, urls or data
+
+    if (needToLoad) {
+      path.forEach(function (dataItem, ix) {
+        if (isData(dataItem)) toLoad.push(dataItem);else loaded[ix] = dataItem;
+      });
+    } // Data array itself
+    else {
+        loaded[0] = path;
+      } // Load all urls an combine them with data arrays
+
+
+    var alreadyLoaded = loadedLength(loaded);
+    toLoad.forEach(function (dataItem) {
+      var headers = {},
+          url = dataItem;
+
+      if (_typeof$d(dataItem) === "object") {
+        url = dataItem.url;
+        headers = dataItem.headers;
+      }
+
+      parser = getParser(url);
+      var request = parser(url);
+
+      for (var _key in headers) {
+        if ({}.hasOwnProperty.call(headers, _key)) {
+          request.header(_key, headers[_key]);
+        }
+      }
+
+      request.get(function (err, data) {
+        data = err ? [] : data;
+        if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
+        data = validateData(err, parser, data);
+        loaded[getPathIndex(url, path)] = data;
+
+        if (loadedLength(loaded) - alreadyLoaded === toLoad.length) {
+          // All urls loaded
+          // Format data
+          data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
+          if (_this._cache) _this._lrucache.set("".concat(key, "_").concat(url), data);
+
+          if (formatter) {
+            data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+          } else if (key === "data") {
+            data = concat(loaded, "data");
+          }
+
+          if (key && "_".concat(key) in _this) _this["_".concat(key)] = data;
+          if (callback) callback(err, data);
+        }
+      });
+    }); // If there is no data to Load response is immediately
+
+    if (toLoad.length === 0) {
+      loaded = loaded.map(function (data) {
+        if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
+        return data;
+      }); // Format data
+
+      var data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
+
+      if (formatter) {
+        data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+      } else if (key === "data") {
+        data = concat(loaded, "data");
+      }
+
       if (key && "_".concat(key) in this) this["_".concat(key)] = data;
       if (callback) callback(null, data);
-    } else {
-      var parser = path.slice(path.length - 4) === ".csv" ? csv$1 : path.slice(path.length - 4) === ".tsv" ? tsv$1 : path.slice(path.length - 4) === ".txt" ? text : json;
-      parser(path, function (err, data) {
-        if (parser !== json && !err && data && data instanceof Array) {
-          data.forEach(function (d) {
-            for (var k in d) {
-              if (!isNaN(d[k])) d[k] = parseFloat(d[k]);else if (d[k].toLowerCase() === "false") d[k] = false;else if (d[k].toLowerCase() === "true") d[k] = true;else if (d[k].toLowerCase() === "null") d[k] = null;else if (d[k].toLowerCase() === "undefined") d[k] = undefined;
-            }
-          });
-        }
-
-        data = err ? [] : formatter ? formatter(data) : data;
-        if (data && !(data instanceof Array) && data.data && data.headers) data = fold(data);
-        if (key && "_".concat(key) in _this) _this["_".concat(key)] = data;
-        if (_this._cache) _this._lrucache.set(path, data);
-        if (callback) callback(err, data);
-      });
     }
   }
 
@@ -18158,11 +30811,26 @@
       MODE_CENTER = {
     name: "center"
   };
+
+  function number1(e) {
+    return [+e[0], +e[1]];
+  }
+
+  function number2(e) {
+    return [number1(e[0]), number1(e[1])];
+  }
+
+  function toucher(identifier) {
+    return function (target) {
+      return touch(target, event$1.touches, identifier);
+    };
+  }
+
   var X = {
     name: "x",
-    handles: ["e", "w"].map(type$1),
+    handles: ["w", "e"].map(type$1),
     input: function input(x, e) {
-      return x && [[x[0], e[0][1]], [x[1], e[1][1]]];
+      return x == null ? null : [[+x[0], e[0][1]], [+x[1], e[1][1]]];
     },
     output: function output(xy) {
       return xy && [xy[0][0], xy[1][0]];
@@ -18172,7 +30840,7 @@
     name: "y",
     handles: ["n", "s"].map(type$1),
     input: function input(y, e) {
-      return y && [[e[0][0], y[0]], [e[1][0], y[1]]];
+      return y == null ? null : [[e[0][0], +y[0]], [e[1][0], +y[1]]];
     },
     output: function output(xy) {
       return xy && [xy[0][1], xy[1][1]];
@@ -18180,9 +30848,9 @@
   };
   var XY = {
     name: "xy",
-    handles: ["n", "e", "s", "w", "nw", "ne", "se", "sw"].map(type$1),
+    handles: ["n", "w", "e", "s", "nw", "ne", "sw", "se"].map(type$1),
     input: function input(xy) {
-      return xy;
+      return xy == null ? null : number2(xy);
     },
     output: function output(xy) {
       return xy;
@@ -18249,12 +30917,22 @@
 
 
   function defaultFilter$1() {
-    return !event$1.button;
+    return !event$1.ctrlKey && !event$1.button;
   }
 
   function defaultExtent$1() {
     var svg = this.ownerSVGElement || this;
+
+    if (svg.hasAttribute("viewBox")) {
+      svg = svg.viewBox.baseVal;
+      return [[svg.x, svg.y], [svg.x + svg.width, svg.y + svg.height]];
+    }
+
     return [[0, 0], [svg.width.baseVal.value, svg.height.baseVal.value]];
+  }
+
+  function defaultTouchable$1() {
+    return navigator.maxTouchPoints || "ontouchstart" in this;
   } // Like d3.local, but with the name “__brush” rather than auto-generated.
 
 
@@ -18279,7 +30957,9 @@
   function brush$1(dim) {
     var extent = defaultExtent$1,
         filter = defaultFilter$1,
-        listeners = dispatch(brush, "start", "brush", "end"),
+        touchable = defaultTouchable$1,
+        keys = true,
+        listeners = dispatch("start", "brush", "end"),
         handleSize = 6,
         touchending;
 
@@ -18299,7 +30979,7 @@
       }).attr("cursor", function (d) {
         return cursors[d.type];
       });
-      group.each(redraw).attr("fill", "none").attr("pointer-events", "all").style("-webkit-tap-highlight-color", "rgba(0,0,0,0)").on("mousedown.brush touchstart.brush", started);
+      group.each(redraw).attr("fill", "none").attr("pointer-events", "all").on("mousedown.brush", started).filter(touchable).on("touchstart.brush", started).on("touchmove.brush", touchmoved).on("touchend.brush touchcancel.brush", touchended).style("touch-action", "none").style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
     }
 
     brush.move = function (group, selection) {
@@ -18314,15 +30994,15 @@
               emit = emitter(that, arguments),
               selection0 = state.selection,
               selection1 = dim.input(typeof selection === "function" ? selection.apply(this, arguments) : selection, state.extent),
-              i = interpolate(selection0, selection1);
+              i = interpolateValue(selection0, selection1);
 
           function tween(t) {
-            state.selection = t === 1 && empty$1(selection1) ? null : i(t);
+            state.selection = t === 1 && selection1 === null ? null : i(t);
             redraw.call(that);
             emit.brush();
           }
 
-          return selection0 && selection1 ? tween : tween(1);
+          return selection0 !== null && selection1 !== null ? tween : tween(1);
         });
       } else {
         group.each(function () {
@@ -18332,11 +31012,15 @@
               selection1 = dim.input(typeof selection === "function" ? selection.apply(that, args) : selection, state.extent),
               emit = emitter(that, args).beforestart();
           interrupt(that);
-          state.selection = selection1 == null || empty$1(selection1) ? null : selection1;
+          state.selection = selection1 === null ? null : selection1;
           redraw.call(that);
           emit.start().brush().end();
         });
       }
+    };
+
+    brush.clear = function (group) {
+      brush.move(group, null);
     };
 
     function redraw() {
@@ -18359,8 +31043,8 @@
       }
     }
 
-    function emitter(that, args) {
-      return that.__brush.emitter || new Emitter(that, args);
+    function emitter(that, args, clean) {
+      return !clean && that.__brush.emitter || new Emitter(that, args);
     }
 
     function Emitter(that, args) {
@@ -18376,7 +31060,7 @@
         return this;
       },
       start: function start() {
-        if (this.starting) this.starting = false, this.emit("start");
+        if (this.starting) this.starting = false, this.emit("start");else this.emit("brush");
         return this;
       },
       brush: function brush() {
@@ -18393,14 +31077,11 @@
     };
 
     function started() {
-      if (event$1.touches) {
-        if (event$1.changedTouches.length < event$1.touches.length) return noevent$2();
-      } else if (touchending) return;
-
+      if (touchending && !event$1.touches) return;
       if (!filter.apply(this, arguments)) return;
       var that = this,
           type = event$1.target.__data__.type,
-          mode = (event$1.metaKey ? type = "overlay" : type) === "selection" ? MODE_DRAG : event$1.altKey ? MODE_CENTER : MODE_HANDLE,
+          mode = (keys && event$1.metaKey ? type = "overlay" : type) === "selection" ? MODE_DRAG : keys && event$1.altKey ? MODE_CENTER : MODE_HANDLE,
           signX = dim === Y ? null : signsX[type],
           signY = dim === X ? null : signsY[type],
           state = local(that),
@@ -18418,17 +31099,19 @@
           S = extent[1][1],
           s0,
           s1,
-          dx,
-          dy,
+          dx = 0,
+          dy = 0,
           moving,
-          shifting = signX && signY && event$1.shiftKey,
+          shifting = signX && signY && keys && event$1.shiftKey,
           lockX,
           lockY,
-          point0 = mouse(that),
+          pointer = event$1.touches ? toucher(event$1.changedTouches[0].identifier) : mouse,
+          point0 = pointer(that),
           point = point0,
-          emit = emitter(that, arguments).beforestart();
+          emit = emitter(that, arguments, true).beforestart();
 
       if (type === "overlay") {
+        if (selection) moving = true;
         state.selection = selection = [[w0 = dim === Y ? W : point0[0], n0 = dim === X ? N : point0[1]], [e0 = dim === Y ? E : w0, s0 = dim === X ? S : n0]];
       } else {
         w0 = selection[0][0];
@@ -18445,9 +31128,11 @@
       var overlay = group.selectAll(".overlay").attr("cursor", cursors[type]);
 
       if (event$1.touches) {
-        group.on("touchmove.brush", moved, true).on("touchend.brush touchcancel.brush", ended, true);
+        emit.moved = moved;
+        emit.ended = ended;
       } else {
-        var view = _select(event$1.view).on("keydown.brush", keydowned, true).on("keyup.brush", keyupped, true).on("mousemove.brush", moved, true).on("mouseup.brush", ended, true);
+        var view = _select(event$1.view).on("mousemove.brush", moved, true).on("mouseup.brush", ended, true);
+        if (keys) view.on("keydown.brush", keydowned, true).on("keyup.brush", keyupped, true);
         dragDisable(event$1.view);
       }
 
@@ -18457,7 +31142,7 @@
       emit.start();
 
       function moved() {
-        var point1 = mouse(that);
+        var point1 = pointer(that);
 
         if (shifting && !lockX && !lockY) {
           if (Math.abs(point1[0] - point[0]) > Math.abs(point1[1] - point[1])) lockY = true;else lockX = true;
@@ -18533,8 +31218,6 @@
           touchending = setTimeout(function () {
             touchending = null;
           }, 500); // Ghost clicks are delayed!
-
-          group.on("touchmove.brush touchend.brush touchcancel.brush", null);
         } else {
           yesdrag(event$1.view, moving);
           view.on("keydown.brush keyup.brush mousemove.brush mouseup.brush", null);
@@ -18646,25 +31329,41 @@
       }
     }
 
+    function touchmoved() {
+      emitter(this, arguments).moved();
+    }
+
+    function touchended() {
+      emitter(this, arguments).ended();
+    }
+
     function initialize() {
       var state = this.__brush || {
         selection: null
       };
-      state.extent = extent.apply(this, arguments);
+      state.extent = number2(extent.apply(this, arguments));
       state.dim = dim;
       return state;
     }
 
     brush.extent = function (_) {
-      return arguments.length ? (extent = typeof _ === "function" ? _ : constant$7([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), brush) : extent;
+      return arguments.length ? (extent = typeof _ === "function" ? _ : constant$7(number2(_)), brush) : extent;
     };
 
     brush.filter = function (_) {
       return arguments.length ? (filter = typeof _ === "function" ? _ : constant$7(!!_), brush) : filter;
     };
 
+    brush.touchable = function (_) {
+      return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$7(!!_), brush) : touchable;
+    };
+
     brush.handleSize = function (_) {
       return arguments.length ? (handleSize = +_, brush) : handleSize;
+    };
+
+    brush.keyModifiers = function (_) {
+      return arguments.length ? (keys = !!_, brush) : keys;
     };
 
     brush.on = function () {
@@ -18696,8 +31395,7 @@
   var reI$3 = "\\s*([+-]?\\d+)\\s*",
       reN$3 = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)\\s*",
       reP$3 = "\\s*([+-]?\\d*\\.?\\d+(?:[eE][+-]?\\d+)?)%\\s*",
-      reHex3$3 = /^#([0-9a-f]{3})$/,
-      reHex6$3 = /^#([0-9a-f]{6})$/,
+      reHex$2 = /^#([0-9a-f]{3,8})$/,
       reRgbInteger$3 = new RegExp("^rgb\\(" + [reI$3, reI$3, reI$3] + "\\)$"),
       reRgbPercent$3 = new RegExp("^rgb\\(" + [reP$3, reP$3, reP$3] + "\\)$"),
       reRgbaInteger$3 = new RegExp("^rgba\\(" + [reI$3, reI$3, reI$3, reN$3] + "\\)$"),
@@ -18855,28 +31553,48 @@
     yellowgreen: 0x9acd32
   };
   define$3(Color$3, color$3, {
+    copy: function copy(channels) {
+      return Object.assign(new this.constructor(), this, channels);
+    },
     displayable: function displayable() {
       return this.rgb().displayable();
     },
-    hex: function hex() {
-      return this.rgb().hex();
-    },
-    toString: function toString() {
-      return this.rgb() + "";
-    }
+    hex: color_formatHex$2,
+    // Deprecated! Use color.formatHex.
+    formatHex: color_formatHex$2,
+    formatHsl: color_formatHsl$2,
+    formatRgb: color_formatRgb$2,
+    toString: color_formatRgb$2
   });
+
+  function color_formatHex$2() {
+    return this.rgb().formatHex();
+  }
+
+  function color_formatHsl$2() {
+    return hslConvert$3(this).formatHsl();
+  }
+
+  function color_formatRgb$2() {
+    return this.rgb().formatRgb();
+  }
+
   function color$3(format) {
-    var m;
+    var m, l;
     format = (format + "").trim().toLowerCase();
-    return (m = reHex3$3.exec(format)) ? (m = parseInt(m[1], 16), new Rgb$3(m >> 8 & 0xf | m >> 4 & 0x0f0, m >> 4 & 0xf | m & 0xf0, (m & 0xf) << 4 | m & 0xf, 1) // #f00
-    ) : (m = reHex6$3.exec(format)) ? rgbn$3(parseInt(m[1], 16)) // #ff0000
-    : (m = reRgbInteger$3.exec(format)) ? new Rgb$3(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
+    return (m = reHex$2.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn$3(m) // #ff0000
+    : l === 3 ? new Rgb$3(m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, (m & 0xf) << 4 | m & 0xf, 1) // #f00
+    : l === 8 ? rgba$3(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
+    : l === 4 ? rgba$3(m >> 12 & 0xf | m >> 8 & 0xf0, m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, ((m & 0xf) << 4 | m & 0xf) / 0xff) // #f000
+    : null // invalid hex
+    ) : (m = reRgbInteger$3.exec(format)) ? new Rgb$3(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
     : (m = reRgbPercent$3.exec(format)) ? new Rgb$3(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
     : (m = reRgbaInteger$3.exec(format)) ? rgba$3(m[1], m[2], m[3], m[4]) // rgba(255, 0, 0, 1)
     : (m = reRgbaPercent$3.exec(format)) ? rgba$3(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, m[4]) // rgb(100%, 0%, 0%, 1)
     : (m = reHslPercent$3.exec(format)) ? hsla$3(m[1], m[2] / 100, m[3] / 100, 1) // hsl(120, 50%, 50%)
     : (m = reHslaPercent$3.exec(format)) ? hsla$3(m[1], m[2] / 100, m[3] / 100, m[4]) // hsla(120, 50%, 50%, 1)
-    : named$3.hasOwnProperty(format) ? rgbn$3(named$3[format]) : format === "transparent" ? new Rgb$3(NaN, NaN, NaN, 0) : null;
+    : named$3.hasOwnProperty(format) ? rgbn$3(named$3[format]) // eslint-disable-line no-prototype-builtins
+    : format === "transparent" ? new Rgb$3(NaN, NaN, NaN, 0) : null;
   }
 
   function rgbn$3(n) {
@@ -18918,17 +31636,24 @@
     displayable: function displayable() {
       return -0.5 <= this.r && this.r < 255.5 && -0.5 <= this.g && this.g < 255.5 && -0.5 <= this.b && this.b < 255.5 && 0 <= this.opacity && this.opacity <= 1;
     },
-    hex: function hex() {
-      return "#" + _hex$3(this.r) + _hex$3(this.g) + _hex$3(this.b);
-    },
-    toString: function toString() {
-      var a = this.opacity;
-      a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
-      return (a === 1 ? "rgb(" : "rgba(") + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.b) || 0)) + (a === 1 ? ")" : ", " + a + ")");
-    }
+    hex: rgb_formatHex$2,
+    // Deprecated! Use color.formatHex.
+    formatHex: rgb_formatHex$2,
+    formatRgb: rgb_formatRgb$2,
+    toString: rgb_formatRgb$2
   }));
 
-  function _hex$3(value) {
+  function rgb_formatHex$2() {
+    return "#" + hex$2(this.r) + hex$2(this.g) + hex$2(this.b);
+  }
+
+  function rgb_formatRgb$2() {
+    var a = this.opacity;
+    a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+    return (a === 1 ? "rgb(" : "rgba(") + Math.max(0, Math.min(255, Math.round(this.r) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.g) || 0)) + ", " + Math.max(0, Math.min(255, Math.round(this.b) || 0)) + (a === 1 ? ")" : ", " + a + ")");
+  }
+
+  function hex$2(value) {
     value = Math.max(0, Math.min(255, Math.round(value) || 0));
     return (value < 16 ? "0" : "") + value.toString(16);
   }
@@ -18993,6 +31718,11 @@
     },
     displayable: function displayable() {
       return (0 <= this.s && this.s <= 1 || isNaN(this.s)) && 0 <= this.l && this.l <= 1 && 0 <= this.opacity && this.opacity <= 1;
+    },
+    formatHsl: function formatHsl() {
+      var a = this.opacity;
+      a = isNaN(a) ? 1 : Math.max(0, Math.min(1, a));
+      return (a === 1 ? "hsl(" : "hsla(") + (this.h || 0) + ", " + (this.s || 0) * 100 + "%, " + (this.l || 0) * 100 + "%" + (a === 1 ? ")" : ", " + a + ")");
     }
   }));
   /* From FvD 13.37, CSS Color Module Level 3 */
@@ -19000,164 +31730,6 @@
   function hsl2rgb$3(h, m1, m2) {
     return (h < 60 ? m1 + (m2 - m1) * h / 60 : h < 180 ? m2 : h < 240 ? m1 + (m2 - m1) * (240 - h) / 60 : m1) * 255;
   }
-
-  var deg2rad$3 = Math.PI / 180;
-  var rad2deg$3 = 180 / Math.PI;
-
-  var K$3 = 18,
-      Xn$3 = 0.96422,
-      Yn$3 = 1,
-      Zn$3 = 0.82521,
-      t0$4 = 4 / 29,
-      t1$4 = 6 / 29,
-      t2$3 = 3 * t1$4 * t1$4,
-      t3$3 = t1$4 * t1$4 * t1$4;
-
-  function labConvert$3(o) {
-    if (o instanceof Lab$3) return new Lab$3(o.l, o.a, o.b, o.opacity);
-    if (o instanceof Hcl$3) return hcl2lab$2(o);
-    if (!(o instanceof Rgb$3)) o = rgbConvert$3(o);
-    var r = rgb2lrgb$3(o.r),
-        g = rgb2lrgb$3(o.g),
-        b = rgb2lrgb$3(o.b),
-        y = xyz2lab$3((0.2225045 * r + 0.7168786 * g + 0.0606169 * b) / Yn$3),
-        x,
-        z;
-    if (r === g && g === b) x = z = y;else {
-      x = xyz2lab$3((0.4360747 * r + 0.3850649 * g + 0.1430804 * b) / Xn$3);
-      z = xyz2lab$3((0.0139322 * r + 0.0971045 * g + 0.7141733 * b) / Zn$3);
-    }
-    return new Lab$3(116 * y - 16, 500 * (x - y), 200 * (y - z), o.opacity);
-  }
-  function lab$3(l, a, b, opacity) {
-    return arguments.length === 1 ? labConvert$3(l) : new Lab$3(l, a, b, opacity == null ? 1 : opacity);
-  }
-  function Lab$3(l, a, b, opacity) {
-    this.l = +l;
-    this.a = +a;
-    this.b = +b;
-    this.opacity = +opacity;
-  }
-  define$3(Lab$3, lab$3, extend$4(Color$3, {
-    brighter: function brighter(k) {
-      return new Lab$3(this.l + K$3 * (k == null ? 1 : k), this.a, this.b, this.opacity);
-    },
-    darker: function darker(k) {
-      return new Lab$3(this.l - K$3 * (k == null ? 1 : k), this.a, this.b, this.opacity);
-    },
-    rgb: function rgb() {
-      var y = (this.l + 16) / 116,
-          x = isNaN(this.a) ? y : y + this.a / 500,
-          z = isNaN(this.b) ? y : y - this.b / 200;
-      x = Xn$3 * lab2xyz$3(x);
-      y = Yn$3 * lab2xyz$3(y);
-      z = Zn$3 * lab2xyz$3(z);
-      return new Rgb$3(lrgb2rgb$3(3.1338561 * x - 1.6168667 * y - 0.4906146 * z), lrgb2rgb$3(-0.9787684 * x + 1.9161415 * y + 0.0334540 * z), lrgb2rgb$3(0.0719453 * x - 0.2289914 * y + 1.4052427 * z), this.opacity);
-    }
-  }));
-
-  function xyz2lab$3(t) {
-    return t > t3$3 ? Math.pow(t, 1 / 3) : t / t2$3 + t0$4;
-  }
-
-  function lab2xyz$3(t) {
-    return t > t1$4 ? t * t * t : t2$3 * (t - t0$4);
-  }
-
-  function lrgb2rgb$3(x) {
-    return 255 * (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055);
-  }
-
-  function rgb2lrgb$3(x) {
-    return (x /= 255) <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
-  }
-
-  function hclConvert$3(o) {
-    if (o instanceof Hcl$3) return new Hcl$3(o.h, o.c, o.l, o.opacity);
-    if (!(o instanceof Lab$3)) o = labConvert$3(o);
-    if (o.a === 0 && o.b === 0) return new Hcl$3(NaN, 0 < o.l && o.l < 100 ? 0 : NaN, o.l, o.opacity);
-    var h = Math.atan2(o.b, o.a) * rad2deg$3;
-    return new Hcl$3(h < 0 ? h + 360 : h, Math.sqrt(o.a * o.a + o.b * o.b), o.l, o.opacity);
-  }
-  function hcl$3(h, c, l, opacity) {
-    return arguments.length === 1 ? hclConvert$3(h) : new Hcl$3(h, c, l, opacity == null ? 1 : opacity);
-  }
-  function Hcl$3(h, c, l, opacity) {
-    this.h = +h;
-    this.c = +c;
-    this.l = +l;
-    this.opacity = +opacity;
-  }
-
-  function hcl2lab$2(o) {
-    if (isNaN(o.h)) return new Lab$3(o.l, 0, 0, o.opacity);
-    var h = o.h * deg2rad$3;
-    return new Lab$3(o.l, Math.cos(h) * o.c, Math.sin(h) * o.c, o.opacity);
-  }
-
-  define$3(Hcl$3, hcl$3, extend$4(Color$3, {
-    brighter: function brighter(k) {
-      return new Hcl$3(this.h, this.c, this.l + K$3 * (k == null ? 1 : k), this.opacity);
-    },
-    darker: function darker(k) {
-      return new Hcl$3(this.h, this.c, this.l - K$3 * (k == null ? 1 : k), this.opacity);
-    },
-    rgb: function rgb() {
-      return hcl2lab$2(this).rgb();
-    }
-  }));
-
-  var A$3 = -0.14861,
-      B$3 = +1.78277,
-      C$3 = -0.29227,
-      D$3 = -0.90649,
-      E$3 = +1.97294,
-      ED$3 = E$3 * D$3,
-      EB$3 = E$3 * B$3,
-      BC_DA$3 = B$3 * C$3 - D$3 * A$3;
-
-  function cubehelixConvert$3(o) {
-    if (o instanceof Cubehelix$3) return new Cubehelix$3(o.h, o.s, o.l, o.opacity);
-    if (!(o instanceof Rgb$3)) o = rgbConvert$3(o);
-    var r = o.r / 255,
-        g = o.g / 255,
-        b = o.b / 255,
-        l = (BC_DA$3 * b + ED$3 * r - EB$3 * g) / (BC_DA$3 + ED$3 - EB$3),
-        bl = b - l,
-        k = (E$3 * (g - l) - C$3 * bl) / D$3,
-        s = Math.sqrt(k * k + bl * bl) / (E$3 * l * (1 - l)),
-        // NaN if l=0 or l=1
-    h = s ? Math.atan2(k, bl) * rad2deg$3 - 120 : NaN;
-    return new Cubehelix$3(h < 0 ? h + 360 : h, s, l, o.opacity);
-  }
-
-  function cubehelix$3(h, s, l, opacity) {
-    return arguments.length === 1 ? cubehelixConvert$3(h) : new Cubehelix$3(h, s, l, opacity == null ? 1 : opacity);
-  }
-  function Cubehelix$3(h, s, l, opacity) {
-    this.h = +h;
-    this.s = +s;
-    this.l = +l;
-    this.opacity = +opacity;
-  }
-  define$3(Cubehelix$3, cubehelix$3, extend$4(Color$3, {
-    brighter: function brighter(k) {
-      k = k == null ? _brighter$3 : Math.pow(_brighter$3, k);
-      return new Cubehelix$3(this.h, this.s, this.l * k, this.opacity);
-    },
-    darker: function darker(k) {
-      k = k == null ? _darker$3 : Math.pow(_darker$3, k);
-      return new Cubehelix$3(this.h, this.s, this.l * k, this.opacity);
-    },
-    rgb: function rgb() {
-      var h = isNaN(this.h) ? 0 : (this.h + 120) * deg2rad$3,
-          l = +this.l,
-          a = isNaN(this.s) ? 0 : this.s * l * (1 - l),
-          cosh = Math.cos(h),
-          sinh = Math.sin(h);
-      return new Rgb$3(255 * (l + a * (A$3 * cosh + B$3 * sinh)), 255 * (l + a * (C$3 * cosh + D$3 * sinh)), 255 * (l + a * (E$3 * cosh)), this.opacity);
-    }
-  }));
 
   var slice$3 = [].slice;
 
@@ -19451,6 +32023,1445 @@
     });
   });
 
+  function initRange$2(domain, range) {
+    switch (arguments.length) {
+      case 0:
+        break;
+
+      case 1:
+        this.range(domain);
+        break;
+
+      default:
+        this.range(range).domain(domain);
+        break;
+    }
+
+    return this;
+  }
+  function initInterpolator$1(domain, interpolator) {
+    switch (arguments.length) {
+      case 0:
+        break;
+
+      case 1:
+        this.interpolator(domain);
+        break;
+
+      default:
+        this.interpolator(interpolator).domain(domain);
+        break;
+    }
+
+    return this;
+  }
+
+  var array$3 = Array.prototype;
+  var map$2 = array$3.map;
+  var slice$4 = array$3.slice;
+
+  var implicit$2 = {
+    name: "implicit"
+  };
+  function ordinal$2() {
+    var index = map(),
+        domain = [],
+        range = [],
+        unknown = implicit$2;
+
+    function scale(d) {
+      var key = d + "",
+          i = index.get(key);
+
+      if (!i) {
+        if (unknown !== implicit$2) return unknown;
+        index.set(key, i = domain.push(d));
+      }
+
+      return range[(i - 1) % range.length];
+    }
+
+    scale.domain = function (_) {
+      if (!arguments.length) return domain.slice();
+      domain = [], index = map();
+      var i = -1,
+          n = _.length,
+          d,
+          key;
+
+      while (++i < n) {
+        if (!index.has(key = (d = _[i]) + "")) index.set(key, domain.push(d));
+      }
+
+      return scale;
+    };
+
+    scale.range = function (_) {
+      return arguments.length ? (range = slice$4.call(_), scale) : range.slice();
+    };
+
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
+    };
+
+    scale.copy = function () {
+      return ordinal$2(domain, range).unknown(unknown);
+    };
+
+    initRange$2.apply(scale, arguments);
+    return scale;
+  }
+
+  function band$1() {
+    var scale = ordinal$2().unknown(undefined),
+        domain = scale.domain,
+        ordinalRange = scale.range,
+        range$1 = [0, 1],
+        step,
+        bandwidth,
+        round = false,
+        paddingInner = 0,
+        paddingOuter = 0,
+        align = 0.5;
+    delete scale.unknown;
+
+    function rescale() {
+      var n = domain().length,
+          reverse = range$1[1] < range$1[0],
+          start = range$1[reverse - 0],
+          stop = range$1[1 - reverse];
+      step = (stop - start) / Math.max(1, n - paddingInner + paddingOuter * 2);
+      if (round) step = Math.floor(step);
+      start += (stop - start - step * (n - paddingInner)) * align;
+      bandwidth = step * (1 - paddingInner);
+      if (round) start = Math.round(start), bandwidth = Math.round(bandwidth);
+      var values = range(n).map(function (i) {
+        return start + step * i;
+      });
+      return ordinalRange(reverse ? values.reverse() : values);
+    }
+
+    scale.domain = function (_) {
+      return arguments.length ? (domain(_), rescale()) : domain();
+    };
+
+    scale.range = function (_) {
+      return arguments.length ? (range$1 = [+_[0], +_[1]], rescale()) : range$1.slice();
+    };
+
+    scale.rangeRound = function (_) {
+      return range$1 = [+_[0], +_[1]], round = true, rescale();
+    };
+
+    scale.bandwidth = function () {
+      return bandwidth;
+    };
+
+    scale.step = function () {
+      return step;
+    };
+
+    scale.round = function (_) {
+      return arguments.length ? (round = !!_, rescale()) : round;
+    };
+
+    scale.padding = function (_) {
+      return arguments.length ? (paddingInner = Math.min(1, paddingOuter = +_), rescale()) : paddingInner;
+    };
+
+    scale.paddingInner = function (_) {
+      return arguments.length ? (paddingInner = Math.min(1, _), rescale()) : paddingInner;
+    };
+
+    scale.paddingOuter = function (_) {
+      return arguments.length ? (paddingOuter = +_, rescale()) : paddingOuter;
+    };
+
+    scale.align = function (_) {
+      return arguments.length ? (align = Math.max(0, Math.min(1, _)), rescale()) : align;
+    };
+
+    scale.copy = function () {
+      return band$1(domain(), range$1).round(round).paddingInner(paddingInner).paddingOuter(paddingOuter).align(align);
+    };
+
+    return initRange$2.apply(rescale(), arguments);
+  }
+
+  function pointish$1(scale) {
+    var copy = scale.copy;
+    scale.padding = scale.paddingOuter;
+    delete scale.paddingInner;
+    delete scale.paddingOuter;
+
+    scale.copy = function () {
+      return pointish$1(copy());
+    };
+
+    return scale;
+  }
+
+  function point$2() {
+    return pointish$1(band$1.apply(null, arguments).paddingInner(1));
+  }
+
+  function constant$8 (x) {
+    return function () {
+      return x;
+    };
+  }
+
+  function number$3 (x) {
+    return +x;
+  }
+
+  var unit$1 = [0, 1];
+  function identity$6(x) {
+    return x;
+  }
+
+  function normalize$1(a, b) {
+    return (b -= a = +a) ? function (x) {
+      return (x - a) / b;
+    } : constant$8(isNaN(b) ? NaN : 0.5);
+  }
+
+  function clamper$1(domain) {
+    var a = domain[0],
+        b = domain[domain.length - 1],
+        t;
+    if (a > b) t = a, a = b, b = t;
+    return function (x) {
+      return Math.max(a, Math.min(b, x));
+    };
+  } // normalize(a, b)(x) takes a domain value x in [a,b] and returns the corresponding parameter t in [0,1].
+  // interpolate(a, b)(t) takes a parameter t in [0,1] and returns the corresponding range value x in [a,b].
+
+
+  function bimap$1(domain, range, interpolate) {
+    var d0 = domain[0],
+        d1 = domain[1],
+        r0 = range[0],
+        r1 = range[1];
+    if (d1 < d0) d0 = normalize$1(d1, d0), r0 = interpolate(r1, r0);else d0 = normalize$1(d0, d1), r0 = interpolate(r0, r1);
+    return function (x) {
+      return r0(d0(x));
+    };
+  }
+
+  function polymap$1(domain, range, interpolate) {
+    var j = Math.min(domain.length, range.length) - 1,
+        d = new Array(j),
+        r = new Array(j),
+        i = -1; // Reverse descending domains.
+
+    if (domain[j] < domain[0]) {
+      domain = domain.slice().reverse();
+      range = range.slice().reverse();
+    }
+
+    while (++i < j) {
+      d[i] = normalize$1(domain[i], domain[i + 1]);
+      r[i] = interpolate(range[i], range[i + 1]);
+    }
+
+    return function (x) {
+      var i = bisectRight(domain, x, 1, j) - 1;
+      return r[i](d[i](x));
+    };
+  }
+
+  function copy$2(source, target) {
+    return target.domain(source.domain()).range(source.range()).interpolate(source.interpolate()).clamp(source.clamp()).unknown(source.unknown());
+  }
+  function transformer$3() {
+    var domain = unit$1,
+        range = unit$1,
+        interpolate = interpolateValue,
+        transform,
+        untransform,
+        unknown,
+        clamp = identity$6,
+        piecewise,
+        output,
+        input;
+
+    function rescale() {
+      piecewise = Math.min(domain.length, range.length) > 2 ? polymap$1 : bimap$1;
+      output = input = null;
+      return scale;
+    }
+
+    function scale(x) {
+      return isNaN(x = +x) ? unknown : (output || (output = piecewise(domain.map(transform), range, interpolate)))(transform(clamp(x)));
+    }
+
+    scale.invert = function (y) {
+      return clamp(untransform((input || (input = piecewise(range, domain.map(transform), interpolateNumber)))(y)));
+    };
+
+    scale.domain = function (_) {
+      return arguments.length ? (domain = map$2.call(_, number$3), clamp === identity$6 || (clamp = clamper$1(domain)), rescale()) : domain.slice();
+    };
+
+    scale.range = function (_) {
+      return arguments.length ? (range = slice$4.call(_), rescale()) : range.slice();
+    };
+
+    scale.rangeRound = function (_) {
+      return range = slice$4.call(_), interpolate = interpolateRound, rescale();
+    };
+
+    scale.clamp = function (_) {
+      return arguments.length ? (clamp = _ ? clamper$1(domain) : identity$6, scale) : clamp !== identity$6;
+    };
+
+    scale.interpolate = function (_) {
+      return arguments.length ? (interpolate = _, rescale()) : interpolate;
+    };
+
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
+    };
+
+    return function (t, u) {
+      transform = t, untransform = u;
+      return rescale();
+    };
+  }
+  function continuous$1(transform, untransform) {
+    return transformer$3()(transform, untransform);
+  }
+
+  function tickFormat$1 (start, stop, count, specifier) {
+    var step = tickStep(start, stop, count),
+        precision;
+    specifier = formatSpecifier(specifier == null ? ",f" : specifier);
+
+    switch (specifier.type) {
+      case "s":
+        {
+          var value = Math.max(Math.abs(start), Math.abs(stop));
+          if (specifier.precision == null && !isNaN(precision = precisionPrefix(step, value))) specifier.precision = precision;
+          return formatPrefix(specifier, value);
+        }
+
+      case "":
+      case "e":
+      case "g":
+      case "p":
+      case "r":
+        {
+          if (specifier.precision == null && !isNaN(precision = precisionRound(step, Math.max(Math.abs(start), Math.abs(stop))))) specifier.precision = precision - (specifier.type === "e");
+          break;
+        }
+
+      case "f":
+      case "%":
+        {
+          if (specifier.precision == null && !isNaN(precision = precisionFixed(step))) specifier.precision = precision - (specifier.type === "%") * 2;
+          break;
+        }
+    }
+
+    return format(specifier);
+  }
+
+  function linearish$1(scale) {
+    var domain = scale.domain;
+
+    scale.ticks = function (count) {
+      var d = domain();
+      return d3Ticks(d[0], d[d.length - 1], count == null ? 10 : count);
+    };
+
+    scale.tickFormat = function (count, specifier) {
+      var d = domain();
+      return tickFormat$1(d[0], d[d.length - 1], count == null ? 10 : count, specifier);
+    };
+
+    scale.nice = function (count) {
+      if (count == null) count = 10;
+      var d = domain(),
+          i0 = 0,
+          i1 = d.length - 1,
+          start = d[i0],
+          stop = d[i1],
+          step;
+
+      if (stop < start) {
+        step = start, start = stop, stop = step;
+        step = i0, i0 = i1, i1 = step;
+      }
+
+      step = tickIncrement(start, stop, count);
+
+      if (step > 0) {
+        start = Math.floor(start / step) * step;
+        stop = Math.ceil(stop / step) * step;
+        step = tickIncrement(start, stop, count);
+      } else if (step < 0) {
+        start = Math.ceil(start * step) / step;
+        stop = Math.floor(stop * step) / step;
+        step = tickIncrement(start, stop, count);
+      }
+
+      if (step > 0) {
+        d[i0] = Math.floor(start / step) * step;
+        d[i1] = Math.ceil(stop / step) * step;
+        domain(d);
+      } else if (step < 0) {
+        d[i0] = Math.ceil(start * step) / step;
+        d[i1] = Math.floor(stop * step) / step;
+        domain(d);
+      }
+
+      return scale;
+    };
+
+    return scale;
+  }
+  function linear$2() {
+    var scale = continuous$1(identity$6, identity$6);
+
+    scale.copy = function () {
+      return copy$2(scale, linear$2());
+    };
+
+    initRange$2.apply(scale, arguments);
+    return linearish$1(scale);
+  }
+
+  function identity$7(domain) {
+    var unknown;
+
+    function scale(x) {
+      return isNaN(x = +x) ? unknown : x;
+    }
+
+    scale.invert = scale;
+
+    scale.domain = scale.range = function (_) {
+      return arguments.length ? (domain = map$2.call(_, number$3), scale) : domain.slice();
+    };
+
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
+    };
+
+    scale.copy = function () {
+      return identity$7(domain).unknown(unknown);
+    };
+
+    domain = arguments.length ? map$2.call(domain, number$3) : [0, 1];
+    return linearish$1(scale);
+  }
+
+  function nice$1 (domain, interval) {
+    domain = domain.slice();
+    var i0 = 0,
+        i1 = domain.length - 1,
+        x0 = domain[i0],
+        x1 = domain[i1],
+        t;
+
+    if (x1 < x0) {
+      t = i0, i0 = i1, i1 = t;
+      t = x0, x0 = x1, x1 = t;
+    }
+
+    domain[i0] = interval.floor(x0);
+    domain[i1] = interval.ceil(x1);
+    return domain;
+  }
+
+  function transformLog$1(x) {
+    return Math.log(x);
+  }
+
+  function transformExp$1(x) {
+    return Math.exp(x);
+  }
+
+  function transformLogn$1(x) {
+    return -Math.log(-x);
+  }
+
+  function transformExpn$1(x) {
+    return -Math.exp(-x);
+  }
+
+  function pow10$1(x) {
+    return isFinite(x) ? +("1e" + x) : x < 0 ? 0 : x;
+  }
+
+  function powp$1(base) {
+    return base === 10 ? pow10$1 : base === Math.E ? Math.exp : function (x) {
+      return Math.pow(base, x);
+    };
+  }
+
+  function logp$1(base) {
+    return base === Math.E ? Math.log : base === 10 && Math.log10 || base === 2 && Math.log2 || (base = Math.log(base), function (x) {
+      return Math.log(x) / base;
+    });
+  }
+
+  function reflect$1(f) {
+    return function (x) {
+      return -f(-x);
+    };
+  }
+
+  function loggish$1(transform) {
+    var scale = transform(transformLog$1, transformExp$1),
+        domain = scale.domain,
+        base = 10,
+        logs,
+        pows;
+
+    function rescale() {
+      logs = logp$1(base), pows = powp$1(base);
+
+      if (domain()[0] < 0) {
+        logs = reflect$1(logs), pows = reflect$1(pows);
+        transform(transformLogn$1, transformExpn$1);
+      } else {
+        transform(transformLog$1, transformExp$1);
+      }
+
+      return scale;
+    }
+
+    scale.base = function (_) {
+      return arguments.length ? (base = +_, rescale()) : base;
+    };
+
+    scale.domain = function (_) {
+      return arguments.length ? (domain(_), rescale()) : domain();
+    };
+
+    scale.ticks = function (count) {
+      var d = domain(),
+          u = d[0],
+          v = d[d.length - 1],
+          r;
+      if (r = v < u) i = u, u = v, v = i;
+      var i = logs(u),
+          j = logs(v),
+          p,
+          k,
+          t,
+          n = count == null ? 10 : +count,
+          z = [];
+
+      if (!(base % 1) && j - i < n) {
+        i = Math.round(i) - 1, j = Math.round(j) + 1;
+        if (u > 0) for (; i < j; ++i) {
+          for (k = 1, p = pows(i); k < base; ++k) {
+            t = p * k;
+            if (t < u) continue;
+            if (t > v) break;
+            z.push(t);
+          }
+        } else for (; i < j; ++i) {
+          for (k = base - 1, p = pows(i); k >= 1; --k) {
+            t = p * k;
+            if (t < u) continue;
+            if (t > v) break;
+            z.push(t);
+          }
+        }
+      } else {
+        z = d3Ticks(i, j, Math.min(j - i, n)).map(pows);
+      }
+
+      return r ? z.reverse() : z;
+    };
+
+    scale.tickFormat = function (count, specifier) {
+      if (specifier == null) specifier = base === 10 ? ".0e" : ",";
+      if (typeof specifier !== "function") specifier = format(specifier);
+      if (count === Infinity) return specifier;
+      if (count == null) count = 10;
+      var k = Math.max(1, base * count / scale.ticks().length); // TODO fast estimate?
+
+      return function (d) {
+        var i = d / pows(Math.round(logs(d)));
+        if (i * base < base - 0.5) i *= base;
+        return i <= k ? specifier(d) : "";
+      };
+    };
+
+    scale.nice = function () {
+      return domain(nice$1(domain(), {
+        floor: function floor(x) {
+          return pows(Math.floor(logs(x)));
+        },
+        ceil: function ceil(x) {
+          return pows(Math.ceil(logs(x)));
+        }
+      }));
+    };
+
+    return scale;
+  }
+  function log$1() {
+    var scale = loggish$1(transformer$3()).domain([1, 10]);
+
+    scale.copy = function () {
+      return copy$2(scale, log$1()).base(scale.base());
+    };
+
+    initRange$2.apply(scale, arguments);
+    return scale;
+  }
+
+  function transformSymlog$1(c) {
+    return function (x) {
+      return Math.sign(x) * Math.log1p(Math.abs(x / c));
+    };
+  }
+
+  function transformSymexp$1(c) {
+    return function (x) {
+      return Math.sign(x) * Math.expm1(Math.abs(x)) * c;
+    };
+  }
+
+  function symlogish$1(transform) {
+    var c = 1,
+        scale = transform(transformSymlog$1(c), transformSymexp$1(c));
+
+    scale.constant = function (_) {
+      return arguments.length ? transform(transformSymlog$1(c = +_), transformSymexp$1(c)) : c;
+    };
+
+    return linearish$1(scale);
+  }
+  function symlog$1() {
+    var scale = symlogish$1(transformer$3());
+
+    scale.copy = function () {
+      return copy$2(scale, symlog$1()).constant(scale.constant());
+    };
+
+    return initRange$2.apply(scale, arguments);
+  }
+
+  function transformPow$1(exponent) {
+    return function (x) {
+      return x < 0 ? -Math.pow(-x, exponent) : Math.pow(x, exponent);
+    };
+  }
+
+  function transformSqrt$1(x) {
+    return x < 0 ? -Math.sqrt(-x) : Math.sqrt(x);
+  }
+
+  function transformSquare$1(x) {
+    return x < 0 ? -x * x : x * x;
+  }
+
+  function powish$1(transform) {
+    var scale = transform(identity$6, identity$6),
+        exponent = 1;
+
+    function rescale() {
+      return exponent === 1 ? transform(identity$6, identity$6) : exponent === 0.5 ? transform(transformSqrt$1, transformSquare$1) : transform(transformPow$1(exponent), transformPow$1(1 / exponent));
+    }
+
+    scale.exponent = function (_) {
+      return arguments.length ? (exponent = +_, rescale()) : exponent;
+    };
+
+    return linearish$1(scale);
+  }
+  function pow$1() {
+    var scale = powish$1(transformer$3());
+
+    scale.copy = function () {
+      return copy$2(scale, pow$1()).exponent(scale.exponent());
+    };
+
+    initRange$2.apply(scale, arguments);
+    return scale;
+  }
+  function sqrt$2() {
+    return pow$1.apply(null, arguments).exponent(0.5);
+  }
+
+  function quantile$2() {
+    var domain = [],
+        range = [],
+        thresholds = [],
+        unknown;
+
+    function rescale() {
+      var i = 0,
+          n = Math.max(1, range.length);
+      thresholds = new Array(n - 1);
+
+      while (++i < n) {
+        thresholds[i - 1] = quantile(domain, i / n);
+      }
+
+      return scale;
+    }
+
+    function scale(x) {
+      return isNaN(x = +x) ? unknown : range[bisectRight(thresholds, x)];
+    }
+
+    scale.invertExtent = function (y) {
+      var i = range.indexOf(y);
+      return i < 0 ? [NaN, NaN] : [i > 0 ? thresholds[i - 1] : domain[0], i < thresholds.length ? thresholds[i] : domain[domain.length - 1]];
+    };
+
+    scale.domain = function (_) {
+      if (!arguments.length) return domain.slice();
+      domain = [];
+
+      for (var i = 0, n = _.length, d; i < n; ++i) {
+        if (d = _[i], d != null && !isNaN(d = +d)) domain.push(d);
+      }
+
+      domain.sort(ascending);
+      return rescale();
+    };
+
+    scale.range = function (_) {
+      return arguments.length ? (range = slice$4.call(_), rescale()) : range.slice();
+    };
+
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
+    };
+
+    scale.quantiles = function () {
+      return thresholds.slice();
+    };
+
+    scale.copy = function () {
+      return quantile$2().domain(domain).range(range).unknown(unknown);
+    };
+
+    return initRange$2.apply(scale, arguments);
+  }
+
+  function quantize$1() {
+    var x0 = 0,
+        x1 = 1,
+        n = 1,
+        domain = [0.5],
+        range = [0, 1],
+        unknown;
+
+    function scale(x) {
+      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
+    }
+
+    function rescale() {
+      var i = -1;
+      domain = new Array(n);
+
+      while (++i < n) {
+        domain[i] = ((i + 1) * x1 - (i - n) * x0) / (n + 1);
+      }
+
+      return scale;
+    }
+
+    scale.domain = function (_) {
+      return arguments.length ? (x0 = +_[0], x1 = +_[1], rescale()) : [x0, x1];
+    };
+
+    scale.range = function (_) {
+      return arguments.length ? (n = (range = slice$4.call(_)).length - 1, rescale()) : range.slice();
+    };
+
+    scale.invertExtent = function (y) {
+      var i = range.indexOf(y);
+      return i < 0 ? [NaN, NaN] : i < 1 ? [x0, domain[0]] : i >= n ? [domain[n - 1], x1] : [domain[i - 1], domain[i]];
+    };
+
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : scale;
+    };
+
+    scale.thresholds = function () {
+      return domain.slice();
+    };
+
+    scale.copy = function () {
+      return quantize$1().domain([x0, x1]).range(range).unknown(unknown);
+    };
+
+    return initRange$2.apply(linearish$1(scale), arguments);
+  }
+
+  function threshold$1() {
+    var domain = [0.5],
+        range = [0, 1],
+        unknown,
+        n = 1;
+
+    function scale(x) {
+      return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
+    }
+
+    scale.domain = function (_) {
+      return arguments.length ? (domain = slice$4.call(_), n = Math.min(domain.length, range.length - 1), scale) : domain.slice();
+    };
+
+    scale.range = function (_) {
+      return arguments.length ? (range = slice$4.call(_), n = Math.min(domain.length, range.length - 1), scale) : range.slice();
+    };
+
+    scale.invertExtent = function (y) {
+      var i = range.indexOf(y);
+      return [domain[i - 1], domain[i]];
+    };
+
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
+    };
+
+    scale.copy = function () {
+      return threshold$1().domain(domain).range(range).unknown(unknown);
+    };
+
+    return initRange$2.apply(scale, arguments);
+  }
+
+  var durationSecond$2 = 1000,
+      durationMinute$2 = durationSecond$2 * 60,
+      durationHour$2 = durationMinute$2 * 60,
+      durationDay$2 = durationHour$2 * 24,
+      durationWeek$2 = durationDay$2 * 7,
+      durationMonth$1 = durationDay$2 * 30,
+      durationYear$1 = durationDay$2 * 365;
+
+  function date$2(t) {
+    return new Date(t);
+  }
+
+  function number$4(t) {
+    return t instanceof Date ? +t : +new Date(+t);
+  }
+
+  function calendar$1(year, month, week, day, hour, minute, second, millisecond, format) {
+    var scale = continuous$1(identity$6, identity$6),
+        invert = scale.invert,
+        domain = scale.domain;
+    var formatMillisecond = format(".%L"),
+        formatSecond = format(":%S"),
+        formatMinute = format("%I:%M"),
+        formatHour = format("%I %p"),
+        formatDay = format("%a %d"),
+        formatWeek = format("%b %d"),
+        formatMonth = format("%B"),
+        formatYear = format("%Y");
+    var tickIntervals = [[second, 1, durationSecond$2], [second, 5, 5 * durationSecond$2], [second, 15, 15 * durationSecond$2], [second, 30, 30 * durationSecond$2], [minute, 1, durationMinute$2], [minute, 5, 5 * durationMinute$2], [minute, 15, 15 * durationMinute$2], [minute, 30, 30 * durationMinute$2], [hour, 1, durationHour$2], [hour, 3, 3 * durationHour$2], [hour, 6, 6 * durationHour$2], [hour, 12, 12 * durationHour$2], [day, 1, durationDay$2], [day, 2, 2 * durationDay$2], [week, 1, durationWeek$2], [month, 1, durationMonth$1], [month, 3, 3 * durationMonth$1], [year, 1, durationYear$1]];
+
+    function tickFormat(date) {
+      return (second(date) < date ? formatMillisecond : minute(date) < date ? formatSecond : hour(date) < date ? formatMinute : day(date) < date ? formatHour : month(date) < date ? week(date) < date ? formatDay : formatWeek : year(date) < date ? formatMonth : formatYear)(date);
+    }
+
+    function tickInterval(interval, start, stop, step) {
+      if (interval == null) interval = 10; // If a desired tick count is specified, pick a reasonable tick interval
+      // based on the extent of the domain and a rough estimate of tick size.
+      // Otherwise, assume interval is already a time interval and use it.
+
+      if (typeof interval === "number") {
+        var target = Math.abs(stop - start) / interval,
+            i = bisector(function (i) {
+          return i[2];
+        }).right(tickIntervals, target);
+
+        if (i === tickIntervals.length) {
+          step = tickStep(start / durationYear$1, stop / durationYear$1, interval);
+          interval = year;
+        } else if (i) {
+          i = tickIntervals[target / tickIntervals[i - 1][2] < tickIntervals[i][2] / target ? i - 1 : i];
+          step = i[1];
+          interval = i[0];
+        } else {
+          step = Math.max(tickStep(start, stop, interval), 1);
+          interval = millisecond;
+        }
+      }
+
+      return step == null ? interval : interval.every(step);
+    }
+
+    scale.invert = function (y) {
+      return new Date(invert(y));
+    };
+
+    scale.domain = function (_) {
+      return arguments.length ? domain(map$2.call(_, number$4)) : domain().map(date$2);
+    };
+
+    scale.ticks = function (interval, step) {
+      var d = domain(),
+          t0 = d[0],
+          t1 = d[d.length - 1],
+          r = t1 < t0,
+          t;
+      if (r) t = t0, t0 = t1, t1 = t;
+      t = tickInterval(interval, t0, t1, step);
+      t = t ? t.range(t0, t1 + 1) : []; // inclusive stop
+
+      return r ? t.reverse() : t;
+    };
+
+    scale.tickFormat = function (count, specifier) {
+      return specifier == null ? tickFormat : format(specifier);
+    };
+
+    scale.nice = function (interval, step) {
+      var d = domain();
+      return (interval = tickInterval(interval, d[0], d[d.length - 1], step)) ? domain(nice$1(d, interval)) : scale;
+    };
+
+    scale.copy = function () {
+      return copy$2(scale, calendar$1(year, month, week, day, hour, minute, second, millisecond, format));
+    };
+
+    return scale;
+  }
+  function time () {
+    return initRange$2.apply(calendar$1(year, month, sunday, day, hour, minute, second, millisecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
+  }
+
+  function utcTime$1 () {
+    return initRange$2.apply(calendar$1(utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, second, millisecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
+  }
+
+  function transformer$4() {
+    var x0 = 0,
+        x1 = 1,
+        t0,
+        t1,
+        k10,
+        transform,
+        interpolator = identity$6,
+        clamp = false,
+        unknown;
+
+    function scale(x) {
+      return isNaN(x = +x) ? unknown : interpolator(k10 === 0 ? 0.5 : (x = (transform(x) - t0) * k10, clamp ? Math.max(0, Math.min(1, x)) : x));
+    }
+
+    scale.domain = function (_) {
+      return arguments.length ? (t0 = transform(x0 = +_[0]), t1 = transform(x1 = +_[1]), k10 = t0 === t1 ? 0 : 1 / (t1 - t0), scale) : [x0, x1];
+    };
+
+    scale.clamp = function (_) {
+      return arguments.length ? (clamp = !!_, scale) : clamp;
+    };
+
+    scale.interpolator = function (_) {
+      return arguments.length ? (interpolator = _, scale) : interpolator;
+    };
+
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
+    };
+
+    return function (t) {
+      transform = t, t0 = t(x0), t1 = t(x1), k10 = t0 === t1 ? 0 : 1 / (t1 - t0);
+      return scale;
+    };
+  }
+
+  function copy$3(source, target) {
+    return target.domain(source.domain()).interpolator(source.interpolator()).clamp(source.clamp()).unknown(source.unknown());
+  }
+  function sequential$1() {
+    var scale = linearish$1(transformer$4()(identity$6));
+
+    scale.copy = function () {
+      return copy$3(scale, sequential$1());
+    };
+
+    return initInterpolator$1.apply(scale, arguments);
+  }
+  function sequentialLog$1() {
+    var scale = loggish$1(transformer$4()).domain([1, 10]);
+
+    scale.copy = function () {
+      return copy$3(scale, sequentialLog$1()).base(scale.base());
+    };
+
+    return initInterpolator$1.apply(scale, arguments);
+  }
+  function sequentialSymlog$1() {
+    var scale = symlogish$1(transformer$4());
+
+    scale.copy = function () {
+      return copy$3(scale, sequentialSymlog$1()).constant(scale.constant());
+    };
+
+    return initInterpolator$1.apply(scale, arguments);
+  }
+  function sequentialPow$1() {
+    var scale = powish$1(transformer$4());
+
+    scale.copy = function () {
+      return copy$3(scale, sequentialPow$1()).exponent(scale.exponent());
+    };
+
+    return initInterpolator$1.apply(scale, arguments);
+  }
+  function sequentialSqrt$1() {
+    return sequentialPow$1.apply(null, arguments).exponent(0.5);
+  }
+
+  function sequentialQuantile$1() {
+    var domain = [],
+        interpolator = identity$6;
+
+    function scale(x) {
+      if (!isNaN(x = +x)) return interpolator((bisectRight(domain, x) - 1) / (domain.length - 1));
+    }
+
+    scale.domain = function (_) {
+      if (!arguments.length) return domain.slice();
+      domain = [];
+
+      for (var i = 0, n = _.length, d; i < n; ++i) {
+        if (d = _[i], d != null && !isNaN(d = +d)) domain.push(d);
+      }
+
+      domain.sort(ascending);
+      return scale;
+    };
+
+    scale.interpolator = function (_) {
+      return arguments.length ? (interpolator = _, scale) : interpolator;
+    };
+
+    scale.copy = function () {
+      return sequentialQuantile$1(interpolator).domain(domain);
+    };
+
+    return initInterpolator$1.apply(scale, arguments);
+  }
+
+  function transformer$5() {
+    var x0 = 0,
+        x1 = 0.5,
+        x2 = 1,
+        t0,
+        t1,
+        t2,
+        k10,
+        k21,
+        interpolator = identity$6,
+        transform,
+        clamp = false,
+        unknown;
+
+    function scale(x) {
+      return isNaN(x = +x) ? unknown : (x = 0.5 + ((x = +transform(x)) - t1) * (x < t1 ? k10 : k21), interpolator(clamp ? Math.max(0, Math.min(1, x)) : x));
+    }
+
+    scale.domain = function (_) {
+      return arguments.length ? (t0 = transform(x0 = +_[0]), t1 = transform(x1 = +_[1]), t2 = transform(x2 = +_[2]), k10 = t0 === t1 ? 0 : 0.5 / (t1 - t0), k21 = t1 === t2 ? 0 : 0.5 / (t2 - t1), scale) : [x0, x1, x2];
+    };
+
+    scale.clamp = function (_) {
+      return arguments.length ? (clamp = !!_, scale) : clamp;
+    };
+
+    scale.interpolator = function (_) {
+      return arguments.length ? (interpolator = _, scale) : interpolator;
+    };
+
+    scale.unknown = function (_) {
+      return arguments.length ? (unknown = _, scale) : unknown;
+    };
+
+    return function (t) {
+      transform = t, t0 = t(x0), t1 = t(x1), t2 = t(x2), k10 = t0 === t1 ? 0 : 0.5 / (t1 - t0), k21 = t1 === t2 ? 0 : 0.5 / (t2 - t1);
+      return scale;
+    };
+  }
+
+  function diverging$2() {
+    var scale = linearish$1(transformer$5()(identity$6));
+
+    scale.copy = function () {
+      return copy$3(scale, diverging$2());
+    };
+
+    return initInterpolator$1.apply(scale, arguments);
+  }
+  function divergingLog$1() {
+    var scale = loggish$1(transformer$5()).domain([0.1, 1, 10]);
+
+    scale.copy = function () {
+      return copy$3(scale, divergingLog$1()).base(scale.base());
+    };
+
+    return initInterpolator$1.apply(scale, arguments);
+  }
+  function divergingSymlog$1() {
+    var scale = symlogish$1(transformer$5());
+
+    scale.copy = function () {
+      return copy$3(scale, divergingSymlog$1()).constant(scale.constant());
+    };
+
+    return initInterpolator$1.apply(scale, arguments);
+  }
+  function divergingPow$1() {
+    var scale = powish$1(transformer$5());
+
+    scale.copy = function () {
+      return copy$3(scale, divergingPow$1()).exponent(scale.exponent());
+    };
+
+    return initInterpolator$1.apply(scale, arguments);
+  }
+  function divergingSqrt$1() {
+    return divergingPow$1.apply(null, arguments).exponent(0.5);
+  }
+
+
+
+  var scales$1 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    scaleBand: band$1,
+    scalePoint: point$2,
+    scaleIdentity: identity$7,
+    scaleLinear: linear$2,
+    scaleLog: log$1,
+    scaleSymlog: symlog$1,
+    scaleOrdinal: ordinal$2,
+    scaleImplicit: implicit$2,
+    scalePow: pow$1,
+    scaleSqrt: sqrt$2,
+    scaleQuantile: quantile$2,
+    scaleQuantize: quantize$1,
+    scaleThreshold: threshold$1,
+    scaleTime: time,
+    scaleUtc: utcTime$1,
+    scaleSequential: sequential$1,
+    scaleSequentialLog: sequentialLog$1,
+    scaleSequentialPow: sequentialPow$1,
+    scaleSequentialSqrt: sequentialSqrt$1,
+    scaleSequentialSymlog: sequentialSymlog$1,
+    scaleSequentialQuantile: sequentialQuantile$1,
+    scaleDiverging: diverging$2,
+    scaleDivergingLog: divergingLog$1,
+    scaleDivergingPow: divergingPow$1,
+    scaleDivergingSqrt: divergingSqrt$1,
+    scaleDivergingSymlog: divergingSymlog$1,
+    tickFormat: tickFormat$1
+  });
+
+  // Computes the decimal coefficient and exponent of the specified number x with
+  // significant digits p, where x is positive and p is in [1, 21] or undefined.
+  // For example, formatDecimal(1.23) returns ["123", 0].
+  function formatDecimal$1 (x, p) {
+    if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
+
+    var i,
+        coefficient = x.slice(0, i); // The string returned by toExponential either has the form \d\.\d+e[-+]\d+
+    // (e.g., 1.2e+3) or the form \de[-+]\d+ (e.g., 1e+3).
+
+    return [coefficient.length > 1 ? coefficient[0] + coefficient.slice(2) : coefficient, +x.slice(i + 1)];
+  }
+
+  function exponent$1 (x) {
+    return x = formatDecimal$1(Math.abs(x)), x ? x[1] : NaN;
+  }
+
+  function formatGroup$1 (grouping, thousands) {
+    return function (value, width) {
+      var i = value.length,
+          t = [],
+          j = 0,
+          g = grouping[0],
+          length = 0;
+
+      while (i > 0 && g > 0) {
+        if (length + g + 1 > width) g = Math.max(1, width - length);
+        t.push(value.substring(i -= g, i + g));
+        if ((length += g + 1) > width) break;
+        g = grouping[j = (j + 1) % grouping.length];
+      }
+
+      return t.reverse().join(thousands);
+    };
+  }
+
+  function formatNumerals$1 (numerals) {
+    return function (value) {
+      return value.replace(/[0-9]/g, function (i) {
+        return numerals[+i];
+      });
+    };
+  }
+
+  // [[fill]align][sign][symbol][0][width][,][.precision][~][type]
+  var re$1 = /^(?:(.)?([<>=^]))?([+\-( ])?([$#])?(0)?(\d+)?(,)?(\.\d+)?(~)?([a-z%])?$/i;
+  function formatSpecifier$1(specifier) {
+    if (!(match = re$1.exec(specifier))) throw new Error("invalid format: " + specifier);
+    var match;
+    return new FormatSpecifier$1({
+      fill: match[1],
+      align: match[2],
+      sign: match[3],
+      symbol: match[4],
+      zero: match[5],
+      width: match[6],
+      comma: match[7],
+      precision: match[8] && match[8].slice(1),
+      trim: match[9],
+      type: match[10]
+    });
+  }
+  formatSpecifier$1.prototype = FormatSpecifier$1.prototype; // instanceof
+
+  function FormatSpecifier$1(specifier) {
+    this.fill = specifier.fill === undefined ? " " : specifier.fill + "";
+    this.align = specifier.align === undefined ? ">" : specifier.align + "";
+    this.sign = specifier.sign === undefined ? "-" : specifier.sign + "";
+    this.symbol = specifier.symbol === undefined ? "" : specifier.symbol + "";
+    this.zero = !!specifier.zero;
+    this.width = specifier.width === undefined ? undefined : +specifier.width;
+    this.comma = !!specifier.comma;
+    this.precision = specifier.precision === undefined ? undefined : +specifier.precision;
+    this.trim = !!specifier.trim;
+    this.type = specifier.type === undefined ? "" : specifier.type + "";
+  }
+
+  FormatSpecifier$1.prototype.toString = function () {
+    return this.fill + this.align + this.sign + this.symbol + (this.zero ? "0" : "") + (this.width === undefined ? "" : Math.max(1, this.width | 0)) + (this.comma ? "," : "") + (this.precision === undefined ? "" : "." + Math.max(0, this.precision | 0)) + (this.trim ? "~" : "") + this.type;
+  };
+
+  // Trims insignificant zeros, e.g., replaces 1.2000k with 1.2k.
+  function formatTrim$1 (s) {
+    out: for (var n = s.length, i = 1, i0 = -1, i1; i < n; ++i) {
+      switch (s[i]) {
+        case ".":
+          i0 = i1 = i;
+          break;
+
+        case "0":
+          if (i0 === 0) i0 = i;
+          i1 = i;
+          break;
+
+        default:
+          if (!+s[i]) break out;
+          if (i0 > 0) i0 = 0;
+          break;
+      }
+    }
+
+    return i0 > 0 ? s.slice(0, i0) + s.slice(i1 + 1) : s;
+  }
+
+  var prefixExponent$1;
+  function formatPrefixAuto$1 (x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1],
+        i = exponent - (prefixExponent$1 = Math.max(-8, Math.min(8, Math.floor(exponent / 3))) * 3) + 1,
+        n = coefficient.length;
+    return i === n ? coefficient : i > n ? coefficient + new Array(i - n + 1).join("0") : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i) : "0." + new Array(1 - i).join("0") + formatDecimal$1(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+  }
+
+  function formatRounded$1 (x, p) {
+    var d = formatDecimal$1(x, p);
+    if (!d) return x + "";
+    var coefficient = d[0],
+        exponent = d[1];
+    return exponent < 0 ? "0." + new Array(-exponent).join("0") + coefficient : coefficient.length > exponent + 1 ? coefficient.slice(0, exponent + 1) + "." + coefficient.slice(exponent + 1) : coefficient + new Array(exponent - coefficient.length + 2).join("0");
+  }
+
+  var formatTypes$1 = {
+    "%": function _(x, p) {
+      return (x * 100).toFixed(p);
+    },
+    "b": function b(x) {
+      return Math.round(x).toString(2);
+    },
+    "c": function c(x) {
+      return x + "";
+    },
+    "d": function d(x) {
+      return Math.round(x).toString(10);
+    },
+    "e": function e(x, p) {
+      return x.toExponential(p);
+    },
+    "f": function f(x, p) {
+      return x.toFixed(p);
+    },
+    "g": function g(x, p) {
+      return x.toPrecision(p);
+    },
+    "o": function o(x) {
+      return Math.round(x).toString(8);
+    },
+    "p": function p(x, _p) {
+      return formatRounded$1(x * 100, _p);
+    },
+    "r": formatRounded$1,
+    "s": formatPrefixAuto$1,
+    "X": function X(x) {
+      return Math.round(x).toString(16).toUpperCase();
+    },
+    "x": function x(_x) {
+      return Math.round(_x).toString(16);
+    }
+  };
+
+  function identity$8 (x) {
+    return x;
+  }
+
+  var map$3 = Array.prototype.map,
+      prefixes$1 = ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"];
+  function formatLocale$2 (locale) {
+    var group = locale.grouping === undefined || locale.thousands === undefined ? identity$8 : formatGroup$1(map$3.call(locale.grouping, Number), locale.thousands + ""),
+        currencyPrefix = locale.currency === undefined ? "" : locale.currency[0] + "",
+        currencySuffix = locale.currency === undefined ? "" : locale.currency[1] + "",
+        decimal = locale.decimal === undefined ? "." : locale.decimal + "",
+        numerals = locale.numerals === undefined ? identity$8 : formatNumerals$1(map$3.call(locale.numerals, String)),
+        percent = locale.percent === undefined ? "%" : locale.percent + "",
+        minus = locale.minus === undefined ? "-" : locale.minus + "",
+        nan = locale.nan === undefined ? "NaN" : locale.nan + "";
+
+    function newFormat(specifier) {
+      specifier = formatSpecifier$1(specifier);
+      var fill = specifier.fill,
+          align = specifier.align,
+          sign = specifier.sign,
+          symbol = specifier.symbol,
+          zero = specifier.zero,
+          width = specifier.width,
+          comma = specifier.comma,
+          precision = specifier.precision,
+          trim = specifier.trim,
+          type = specifier.type; // The "n" type is an alias for ",g".
+
+      if (type === "n") comma = true, type = "g"; // The "" type, and any invalid type, is an alias for ".12~g".
+      else if (!formatTypes$1[type]) precision === undefined && (precision = 12), trim = true, type = "g"; // If zero fill is specified, padding goes after sign and before digits.
+
+      if (zero || fill === "0" && align === "=") zero = true, fill = "0", align = "="; // Compute the prefix and suffix.
+      // For SI-prefix, the suffix is lazily computed.
+
+      var prefix = symbol === "$" ? currencyPrefix : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
+          suffix = symbol === "$" ? currencySuffix : /[%p]/.test(type) ? percent : ""; // What format function should we use?
+      // Is this an integer type?
+      // Can this type generate exponential notation?
+
+      var formatType = formatTypes$1[type],
+          maybeSuffix = /[defgprs%]/.test(type); // Set the default precision if not specified,
+      // or clamp the specified precision to the supported range.
+      // For significant precision, it must be in [1, 21].
+      // For fixed precision, it must be in [0, 20].
+
+      precision = precision === undefined ? 6 : /[gprs]/.test(type) ? Math.max(1, Math.min(21, precision)) : Math.max(0, Math.min(20, precision));
+
+      function format(value) {
+        var valuePrefix = prefix,
+            valueSuffix = suffix,
+            i,
+            n,
+            c;
+
+        if (type === "c") {
+          valueSuffix = formatType(value) + valueSuffix;
+          value = "";
+        } else {
+          value = +value; // Determine the sign. -0 is not less than 0, but 1 / -0 is!
+
+          var valueNegative = value < 0 || 1 / value < 0; // Perform the initial formatting.
+
+          value = isNaN(value) ? nan : formatType(Math.abs(value), precision); // Trim insignificant zeros.
+
+          if (trim) value = formatTrim$1(value); // If a negative value rounds to zero after formatting, and no explicit positive sign is requested, hide the sign.
+
+          if (valueNegative && +value === 0 && sign !== "+") valueNegative = false; // Compute the prefix and suffix.
+
+          valuePrefix = (valueNegative ? sign === "(" ? sign : minus : sign === "-" || sign === "(" ? "" : sign) + valuePrefix;
+          valueSuffix = (type === "s" ? prefixes$1[8 + prefixExponent$1 / 3] : "") + valueSuffix + (valueNegative && sign === "(" ? ")" : ""); // Break the formatted value into the integer “value” part that can be
+          // grouped, and fractional or exponential “suffix” part that is not.
+
+          if (maybeSuffix) {
+            i = -1, n = value.length;
+
+            while (++i < n) {
+              if (c = value.charCodeAt(i), 48 > c || c > 57) {
+                valueSuffix = (c === 46 ? decimal + value.slice(i + 1) : value.slice(i)) + valueSuffix;
+                value = value.slice(0, i);
+                break;
+              }
+            }
+          }
+        } // If the fill character is not "0", grouping is applied before padding.
+
+
+        if (comma && !zero) value = group(value, Infinity); // Compute the padding.
+
+        var length = valuePrefix.length + value.length + valueSuffix.length,
+            padding = length < width ? new Array(width - length + 1).join(fill) : ""; // If the fill character is "0", grouping is applied after padding.
+
+        if (comma && zero) value = group(padding + value, padding.length ? width - valueSuffix.length : Infinity), padding = ""; // Reconstruct the final output based on the desired alignment.
+
+        switch (align) {
+          case "<":
+            value = valuePrefix + value + valueSuffix + padding;
+            break;
+
+          case "=":
+            value = valuePrefix + padding + value + valueSuffix;
+            break;
+
+          case "^":
+            value = padding.slice(0, length = padding.length >> 1) + valuePrefix + value + valueSuffix + padding.slice(length);
+            break;
+
+          default:
+            value = padding + valuePrefix + value + valueSuffix;
+            break;
+        }
+
+        return numerals(value);
+      }
+
+      format.toString = function () {
+        return specifier + "";
+      };
+
+      return format;
+    }
+
+    function formatPrefix(specifier, value) {
+      var f = newFormat((specifier = formatSpecifier$1(specifier), specifier.type = "f", specifier)),
+          e = Math.max(-8, Math.min(8, Math.floor(exponent$1(value) / 3))) * 3,
+          k = Math.pow(10, -e),
+          prefix = prefixes$1[8 + e / 3];
+      return function (value) {
+        return f(k * value) + prefix;
+      };
+    }
+
+    return {
+      format: newFormat,
+      formatPrefix: formatPrefix
+    };
+  }
+
   /**
       @namespace {Object} formatLocale
       @desc A set of default locale formatters used when assigning suffixes and currency in numbers.
@@ -19463,10 +33474,10 @@
         * | delimiters | {thousands: ",", decimal: "."} | Decimal and group separators. |
         * | currency | ["$", ""] | The currency prefix and suffix. |
   */
-  var formatLocale$2 = {
+  var formatLocale$3 = {
     "en-GB": {
       separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: ",",
@@ -19476,7 +33487,27 @@
     },
     "en-US": {
       separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ",",
+        decimal: "."
+      },
+      currency: ["$", ""]
+    },
+    "es-CL": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "MM", "B", "T", "Q", "Z", "Y"],
+      grouping: [3],
+      delimiters: {
+        thousands: ".",
+        decimal: ","
+      },
+      currency: ["$", ""]
+    },
+    "es-MX": {
+      separator: "",
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "MM", "B", "T", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: ",",
@@ -19493,16 +33524,6 @@
         decimal: ","
       },
       currency: ["€", ""]
-    },
-    "es-CL": {
-      separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
-      grouping: [3],
-      delimiters: {
-        thousands: ".",
-        decimal: ","
-      },
-      currency: ["$", ""]
     },
     "et-EE": {
       separator: " ",
@@ -19525,18 +33546,20 @@
     }
   };
 
-  function _typeof$d(obj) {
-    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$d = function _typeof$1(obj) {
-        return _typeof(obj);
+  function _typeof$e(obj) {
+    "@babel/helpers - typeof";
+
+    if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+      _typeof$e = function _typeof(obj) {
+        return typeof obj;
       };
     } else {
-      _typeof$d = function _typeof$1(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      _typeof$e = function _typeof(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
       };
     }
 
-    return _typeof$d(obj);
+    return _typeof$e(obj);
   }
 
   var round = function round(x, n) {
@@ -19591,13 +33614,14 @@
     var locale = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "en-US";
     var precision = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
     if (isFinite(n)) n *= 1;else return "N/A";
+    var negative = n < 0;
     var length = n.toString().split(".")[0].replace("-", "").length,
-        localeConfig = _typeof$d(locale) === "object" ? locale : formatLocale$2[locale] || formatLocale$2["en-US"],
+        localeConfig = _typeof$e(locale) === "object" ? locale : formatLocale$3[locale] || formatLocale$3["en-US"],
         suffixes = localeConfig.suffixes.map(parseSuffixes);
     var decimal = localeConfig.delimiters.decimal || ".",
         separator = localeConfig.separator || "",
         thousands = localeConfig.delimiters.thousands || ",";
-    var d3plusFormatLocale = formatLocale({
+    var d3plusFormatLocale = formatLocale$2({
       currency: localeConfig.currency || ["$", ""],
       decimal: decimal,
       grouping: localeConfig.grouping || [3],
@@ -19610,8 +33634,8 @@
       var _char = f.symbol;
       val = "".concat(num).concat(separator).concat(_char);
     } else if (length === 3) val = d3plusFormatLocale.format(",f")(n);else if (n < 1 && n > -1) val = d3plusFormatLocale.format(".2g")(n);else val = d3plusFormatLocale.format(".3g")(n);
-    return val.replace(/(\.[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
-    .replace(/[.]$/g, ""); // removes any trailing decimal point
+    return "".concat(negative && val.charAt(0) !== "-" ? "-" : "").concat(val).replace(/(\.[0]*[1-9]*)[0]*$/g, "$1") // removes any trailing zeros
+    .replace(/\.[0]*$/g, ""); // removes any trailing decimal point
   }
 
   /**
@@ -19620,7 +33644,7 @@
       @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
       @param {Number|String} *date*
   */
-  function date$2 (d) {
+  function date$3 (d) {
     // returns if already Date object
     if (d.constructor === Date) return d; // detects if milliseconds
     else if (d.constructor === Number && "".concat(d).length > 5 && d % 1 === 0) return new Date(d);
@@ -19655,7 +33679,90 @@
         else return new Date(s);
   }
 
-  function _defineProperty$1(obj, key, value) {
+  var locale$2 = {
+    "de-DE": {
+      dateTime: "%A, der %e. %B %Y, %X",
+      date: "%d.%m.%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    },
+    "en-GB": {
+      dateTime: "%a %e %b %X %Y",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "en-US": {
+      dateTime: "%x, %X",
+      date: "%-m/%-d/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "es-ES": {
+      dateTime: "%A, %e de %B de %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "es-MX": {
+      dateTime: "%x, %X",
+      date: "%d/%m/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "fr-FR": {
+      dateTime: "%A, le %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+      shortDays: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
+      months: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+      shortMonths: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."]
+    },
+    "it-IT": {
+      dateTime: "%A %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+      shortDays: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
+      months: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+      shortMonths: ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
+    },
+    "pt-BR": {
+      dateTime: "%A, %e de %B de %Y. %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"],
+      shortDays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+      months: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+      shortMonths: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+    }
+  };
+
+  function _defineProperty$2(obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
@@ -19668,20 +33775,6 @@
     }
 
     return obj;
-  }
-
-  function _typeof$e(obj) {
-    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$e = function _typeof$1(obj) {
-        return _typeof(obj);
-      };
-    } else {
-      _typeof$e = function _typeof$1(obj) {
-        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
-      };
-    }
-
-    return _typeof$e(obj);
   }
 
   function _toConsumableArray(arr) {
@@ -19704,6 +33797,20 @@
 
       return arr2;
     }
+  }
+
+  function _typeof$f(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$f = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$f = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$f(obj);
   }
 
   function _classCallCheck$d(instance, Constructor) {
@@ -19729,7 +33836,7 @@
   }
 
   function _possibleConstructorReturn$b(self, call) {
-    if (call && (_typeof$e(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$f(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -19774,23 +33881,13 @@
 
     return _setPrototypeOf$b(o, p);
   }
-  var formatDay = timeFormat("%a %d"),
-      formatHour = timeFormat("%I %p"),
-      formatMillisecond = timeFormat(".%L"),
-      formatMinute = timeFormat("%I:%M"),
-      formatMonth = timeFormat("%b"),
-      formatSecond = timeFormat(":%S"),
-      formatWeek = timeFormat("%b %d"),
-      formatYear$2 = timeFormat("%Y");
   /**
       @class Axis
       @extends external:BaseClass
       @desc Creates an SVG scale based on an array of data.
   */
 
-  var Axis =
-  /*#__PURE__*/
-  function (_BaseClass) {
+  var Axis = /*#__PURE__*/function (_BaseClass) {
     _inherits$b(Axis, _BaseClass);
     /**
         @memberof Axis
@@ -19833,6 +33930,7 @@
       _this._paddingOuter = 0.1;
       _this._rotateLabels = false;
       _this._scale = "linear";
+      _this._scalePadding = 0.5;
       _this._shape = "Line";
       _this._shapeConfig = {
         fill: "#000",
@@ -19872,6 +33970,7 @@
       _this._tickSpecifier = undefined;
       _this._tickSuffix = "normal";
       _this._tickUnit = 0;
+      _this._timeLocale = undefined;
       _this._titleClass = new TextBox();
       _this._titleConfig = {
         fontSize: 12,
@@ -19900,7 +33999,9 @@
             offset = this._margin[opposite],
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
 
-        bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - (this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : 0)).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + (this._scale === "band" ? this._d3Scale.step() : 0)).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
+        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**
           @memberof Axis
@@ -19914,7 +34015,7 @@
         var ticks = [];
         if (this._d3ScaleNegative) ticks = this._d3ScaleNegative.domain();
         if (this._d3Scale) ticks = ticks.concat(this._d3Scale.domain());
-        var domain = this._scale === "ordinal" ? ticks : extent(ticks);
+        var domain = ["band", "ordinal", "point"].includes(this._scale) ? ticks : extent(ticks);
         return ticks[0] > ticks[1] ? domain.reverse() : domain;
       }
       /**
@@ -19952,7 +34053,7 @@
     }, {
       key: "_getTicks",
       value: function _getTicks() {
-        var tickScale = sqrt().domain([10, 400]).range([10, 50]);
+        var tickScale = sqrt$2().domain([10, 400]).range([10, 50]);
         var ticks = [];
 
         if (this._d3ScaleNegative) {
@@ -20010,7 +34111,7 @@
     }, {
       key: "render",
       value: function render(callback) {
-        var _this3 = this,
+        var _this2 = this,
             _this$_outerBounds;
         /**
          * Creates an SVG element to contain the axis if none
@@ -20021,10 +34122,20 @@
         if (this._select === void 0) {
           this.select(_select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node());
         }
+
+        var timeLocale = this._timeLocale || locale$2[this._locale] || locale$2["en-US"];
+        defaultLocale$1(timeLocale).format();
+        var formatDay = timeFormat("%a %d"),
+            formatHour = timeFormat("%I %p"),
+            formatMillisecond = timeFormat(".%L"),
+            formatMinute = timeFormat("%I:%M"),
+            formatMonth = timeFormat("%b"),
+            formatSecond = timeFormat(":%S"),
+            formatWeek = timeFormat("%b %d"),
+            formatYear = timeFormat("%Y");
         /**
          * Declares some commonly used variables.
          */
-
 
         var _this$_position3 = this._position,
             width = _this$_position3.width,
@@ -20055,12 +34166,38 @@
         };
         var labels, range$1, ticks;
         /**
+         * Constructs the tick formatter function.
+         */
+
+        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
+          if (_this2._scale === "time") {
+            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear)(d);
+          } else if (["band", "ordinal", "point"].includes(_this2._scale)) {
+            return d;
+          }
+
+          if (isNaN(d)) {
+            return d;
+          } else if (_this2._scale === "linear" && _this2._tickSuffix === "smallest") {
+            var _locale = _typeof$f(_this2._locale) === "object" ? _this2._locale : formatLocale$3[_this2._locale];
+
+            var separator = _locale.separator,
+                suffixes = _locale.suffixes;
+            var suff = d >= 1000 ? suffixes[_this2._tickUnit + 8] : "";
+            var tick = d / Math.pow(10, 3 * _this2._tickUnit);
+            var number = formatAbbreviate(tick, _locale, ",.".concat(tick.toString().length, "r"));
+            return "".concat(number).concat(separator).concat(suff);
+          } else {
+            return formatAbbreviate(d, _this2._locale);
+          }
+        };
+        /**
          * (Re)calculates the internal d3 scale
          * @param {} newRange
          */
 
         function setScale() {
-          var _this2 = this;
+          var _this3 = this;
 
           var newRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._range;
           /**
@@ -20098,11 +34235,11 @@
               });
             }
           } else if (newRange === this._range) {
-            var tickScale = sqrt().domain([10, 400]).range([10, 50]);
-            var domain = this._scale === "time" ? this._domain.map(date$2) : this._domain;
+            var tickScale = sqrt$2().domain([10, 400]).range([10, 50]);
+            var domain = this._scale === "time" ? this._domain.map(date$3) : this._domain;
             var scaleTicks = d3Ticks(domain[0], domain[1], Math.floor(sizeInner / tickScale(sizeInner)));
-            ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks : scaleTicks).slice();
-            labels = (this._labels ? this._scale === "time" ? this._labels.map(date$2) : this._labels : scaleTicks).slice();
+            ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date$3) : this._ticks : scaleTicks).slice();
+            labels = (this._labels ? this._scale === "time" ? this._labels.map(date$3) : this._labels : scaleTicks).slice();
             var _buckets2 = labels.length;
 
             if (_buckets2) {
@@ -20116,11 +34253,11 @@
            */
 
 
-          this._d3Scale = scales["scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1))]().domain(this._scale === "time" ? this._domain.map(date$2) : this._domain);
-          if (this._d3Scale.round) this._d3Scale.round(true);
+          var scale = "scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1));
+          this._d3Scale = scales$1[scale]().domain(this._scale === "time" ? this._domain.map(date$3) : this._domain).range(range$1);
+          if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
           if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
           if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
-          if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range$1);else this._d3Scale.range(range$1);
           /**
            * Constructs a separate "negative only" scale for logarithmic
            * domains, as they cannot pass zero.
@@ -20131,8 +34268,13 @@
           if (this._scale === "log") {
             var _domain = this._d3Scale.domain();
 
-            if (_domain[0] === 0) _domain[0] = 1;
-            if (_domain[_domain.length - 1] === 0) _domain[_domain.length - 1] = -1;
+            if (_domain[0] === 0) {
+              _domain[0] = Math.abs(_domain[_domain.length - 1]) <= 1 ? 1e-6 : 1;
+              if (_domain[_domain.length - 1] < 0) _domain[0] *= -1;
+            } else if (_domain[_domain.length - 1] === 0) {
+              _domain[_domain.length - 1] = Math.abs(_domain[0]) <= 1 ? 1e-6 : 1;
+              if (_domain[0] < 0) _domain[_domain.length - 1] *= -1;
+            }
 
             var _range = this._d3Scale.range();
 
@@ -20142,7 +34284,7 @@
             } else if (_domain[0] > 0 && _domain[_domain.length - 1] > 0) {
               this._d3Scale.domain(_domain).range(_range);
             } else {
-              var percentScale = log().domain([1, _domain[_domain[1] > 0 ? 1 : 0]]).range([0, 1]);
+              var percentScale = log$1().domain([1, _domain[_domain[1] > 0 ? 1 : 0]]).range([0, 1]);
               var leftPercentage = percentScale(Math.abs(_domain[_domain[1] < 0 ? 1 : 0]));
               var zero = leftPercentage / (leftPercentage + 1) * (_range[1] - _range[0]);
               if (_domain[0] > 0) zero = _range[1] - _range[0] - zero;
@@ -20157,23 +34299,34 @@
            */
 
 
-          ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date$2) : this._ticks : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : this._domain).slice();
-          labels = (this._labels ? this._scale === "time" ? this._labels.map(date$2) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
+          ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date$3) : this._ticks : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : this._domain).slice();
+          labels = (this._labels ? this._scale === "time" ? this._labels.map(date$3) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
 
           if (this._scale === "log") {
-            labels = labels.filter(function (t) {
-              return Math.abs(t).toString().charAt(0) === "1" && (_this2._d3Scale ? t !== -1 : t !== 1);
+            var tens = labels.filter(function (t) {
+              return Math.abs(t).toString().charAt(0) === "1" && (_this3._d3Scale ? t !== -1 : t !== 1);
             });
-          } else if (this._scale === "time") {
+
+            if (tens.length > 2) {
+              labels = tens;
+              ticks = tens;
+            } else if (labels.length >= 10) {
+              labels = labels.filter(function (t) {
+                return t % 5 === 0 || tickFormat(t).substr(-1) === "1";
+              });
+            }
+          }
+
+          if (this._scale === "time") {
             ticks = ticks.map(Number);
             labels = labels.map(Number);
           }
 
           ticks = ticks.sort(function (a, b) {
-            return _this2._getPosition(a) - _this2._getPosition(b);
+            return _this3._getPosition(a) - _this3._getPosition(b);
           });
           labels = labels.sort(function (a, b) {
-            return _this2._getPosition(a) - _this2._getPosition(b);
+            return _this3._getPosition(a) - _this3._getPosition(b);
           });
           /**
            * Get the smallest suffix.
@@ -20213,9 +34366,9 @@
               id: d,
               tick: true
             }, i);
-            if (_this2._shape === "Circle") s *= 2;
+            if (_this3._shape === "Circle") s *= 2;
 
-            var t = _this2._getPosition(d);
+            var t = _this3._getPosition(d);
 
             if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) pixels.push(t);else pixels.push(false);
           });
@@ -20239,57 +34392,18 @@
           if (this._scale === "band") {
             return this._d3Scale.bandwidth();
           } else {
-            var prevPosition = i - diff < 0 ? rangeOuter[0] : position - (position - textData[i - diff].position) / 2;
+            var prevPosition = i - diff < 0 ? textData.length === 1 || !this._range ? rangeOuter[0] : (position - textData[i + diff].position) / 2 - position : position - (position - textData[i - diff].position) / 2;
             var prevSpace = Math.abs(position - prevPosition);
-            var nextPosition = i + diff > textData.length - 1 ? rangeOuter[1] : position - (position - textData[i + diff].position) / 2;
+            var nextPosition = i + diff > textData.length - 1 ? textData.length === 1 || !this._range ? rangeOuter[1] : (position - textData[i - diff].position) / 2 - position : position - (position - textData[i + diff].position) / 2;
             var nextSpace = Math.abs(position - nextPosition);
             return min([prevSpace, nextSpace]) * 2;
           }
         }
         /**
-         * Constructs the tick formatter function.
-         */
-
-
-        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
-          if (_this3._scale === "log") {
-            var _p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
-
-            var _t = Math.abs(d).toString().charAt(0);
-
-            var _n = "10 ".concat("".concat(_p).split("").map(function (c) {
-              return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c];
-            }).join(""));
-
-            if (_t !== "1") _n = "".concat(_t, " x ").concat(_n);
-            return d < 0 ? "-".concat(_n) : _n;
-          } else if (_this3._scale === "time") {
-            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear$2)(d);
-          } else if (_this3._scale === "ordinal") {
-            return d;
-          }
-
-          var n = _this3._d3Scale.tickFormat ? _this3._d3Scale.tickFormat(labels.length - 1)(d) : d;
-          n = n.replace(/[^\d\.\-\+]/g, "") * 1;
-
-          if (isNaN(n)) {
-            return n;
-          } else if (_this3._scale === "linear" && _this3._tickSuffix === "smallest") {
-            var locale = _typeof$e(_this3._locale) === "object" ? _this3._locale : formatLocale$2[_this3._locale];
-            var separator = locale.separator,
-                suffixes = locale.suffixes;
-            var suff = n >= 1000 ? suffixes[_this3._tickUnit + 8] : "";
-            var tick = n / Math.pow(10, 3 * _this3._tickUnit);
-            var number = formatAbbreviate(tick, locale, ",.".concat(tick.toString().length, "r"));
-            return "".concat(number).concat(separator).concat(suff);
-          } else {
-            return formatAbbreviate(n, _this3._locale);
-          }
-        };
-        /**
          * Pre-calculates the size of the title, if defined, in order
          * to adjust the internal margins.
          */
+
 
         if (this._title) {
           var _this$_titleConfig = this._titleConfig,
@@ -20319,11 +34433,11 @@
          */
 
         var textData = labels.map(function (d, i) {
-          var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
-              fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
-              position = _this3._getPosition(d);
+          var fF = _this2._shapeConfig.labelConfig.fontFamily(d, i),
+              fS = _this2._shapeConfig.labelConfig.fontSize(d, i),
+              position = _this2._getPosition(d);
 
-          var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+          var lineHeight = _this2._shapeConfig.lineHeight ? _this2._shapeConfig.lineHeight(d, i) : fS * 1.4;
           return {
             d: d,
             i: i,
@@ -20347,7 +34461,9 @@
               space = datum.space;
           var h = rotate ? "width" : "height",
               w = rotate ? "height" : "width";
-          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : min([this._maxSize, this._width]) - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? min([this._maxSize, this._height]) - hBuff - p - this._margin.top - this._margin.bottom : space);
+          var wSize = min([this._maxSize, this._width]);
+          var hSize = min([this._maxSize, this._height]);
+          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : wSize - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? hSize - hBuff - p - this._margin.top - this._margin.bottom : space);
           var res = wrap(tickFormat(d));
           res.lines = res.lines.filter(function (d) {
             return d !== "";
@@ -20360,9 +34476,9 @@
         }
 
         textData = textData.map(function (datum) {
-          datum.rotate = _this3._labelRotation;
-          datum.space = calculateSpace.bind(_this3)(datum);
-          var res = calculateLabelSize.bind(_this3)(datum);
+          datum.rotate = _this2._labelRotation;
+          datum.space = calculateSpace.bind(_this2)(datum);
+          var res = calculateLabelSize.bind(_this2)(datum);
           return Object.assign(res, datum);
         });
         this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (d) {
@@ -20372,7 +34488,7 @@
         if (this._rotateLabels) {
           textData = textData.map(function (datum) {
             datum.rotate = true;
-            var res = calculateLabelSize.bind(_this3)(datum);
+            var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(datum, res);
           });
         }
@@ -20409,11 +34525,11 @@
         if (newRange[0] !== first || newRange[1] !== last) {
           setScale.bind(this)(newRange);
           textData = labels.map(function (d, i) {
-            var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
-                fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
-                position = _this3._getPosition(d);
+            var fF = _this2._shapeConfig.labelConfig.fontFamily(d, i),
+                fS = _this2._shapeConfig.labelConfig.fontSize(d, i),
+                position = _this2._getPosition(d);
 
-            var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+            var lineHeight = _this2._shapeConfig.lineHeight ? _this2._shapeConfig.lineHeight(d, i) : fS * 1.4;
             return {
               d: d,
               i: i,
@@ -20424,9 +34540,9 @@
             };
           });
           textData = textData.map(function (datum) {
-            datum.rotate = _this3._rotateLabels;
-            datum.space = calculateSpace.bind(_this3)(datum);
-            var res = calculateLabelSize.bind(_this3)(datum);
+            datum.rotate = _this2._rotateLabels;
+            datum.space = calculateSpace.bind(_this2)(datum);
+            var res = calculateLabelSize.bind(_this2)(datum);
             return Object.assign(res, datum);
           });
         }
@@ -20446,8 +34562,8 @@
         if (this._rotateLabels) {
           var offset = 0;
           textData = textData.map(function (datum) {
-            datum.space = calculateSpace.bind(_this3)(datum, 2);
-            var res = calculateLabelSize.bind(_this3)(datum);
+            datum.space = calculateSpace.bind(_this2)(datum, 2);
+            var res = calculateLabelSize.bind(_this2)(datum);
             datum = Object.assign(datum, res);
             var prev = textData[datum.i - 1];
 
@@ -20471,9 +34587,10 @@
           return datum.offset = datum.offset ? globalOffset : 0;
         });
         var tBuff = this._shape === "Line" ? 0 : hBuff;
-        var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$1(_this$_outerBounds, height, (max(textData, function (t) {
+        var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$2(_this$_outerBounds, height, (max(textData, function (t) {
           return Math.ceil(t[t.rotate || !horizontal ? "width" : "height"] + t.offset);
-        }) || 0) + (textData.length ? p : 0)), _defineProperty$1(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$1(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
+        }) || 0) + (textData.length ? p : 0)), _defineProperty$2(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$2(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
+        bounds[height] = max([this._minSize, bounds[height]]);
         margin[this._orient] += hBuff;
         margin[opposite] = this._gridSize !== undefined ? max([this._gridSize, tBuff]) : this["_".concat(height)] - margin[this._orient] - bounds[height] - p;
         bounds[height] += margin[opposite] + margin[this._orient];
@@ -20506,13 +34623,13 @@
             return td.d === d;
           });
 
-          var xPos = _this3._getPosition(d);
+          var xPos = _this2._getPosition(d);
 
           var space = data ? data.space : 0;
           var lines = data ? data.lines.length : 1;
           var lineHeight = data ? data.lineHeight : 1;
-          var labelOffset = data && _this3._labelOffset ? data.offset : 0;
-          var labelWidth = horizontal ? space : bounds.width - margin[_this3._position.opposite] - hBuff - margin[_this3._orient] + p;
+          var labelOffset = data && _this2._labelOffset ? data.offset : 0;
+          var labelWidth = horizontal ? space : bounds.width - margin[_this2._position.opposite] - hBuff - margin[_this2._orient] + p;
           var offset = margin[opposite],
               size = (hBuff + labelOffset) * (flip ? -1 : 1),
               yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
@@ -20520,12 +34637,12 @@
             id: d,
             labelBounds: rotated && data ? {
               x: -data.width / 2 + data.fS / 4,
-              y: _this3._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
+              y: _this2._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
               width: data.width,
               height: data.height
             } : {
-              x: horizontal ? -space / 2 : _this3._orient === "left" ? -labelWidth - p + size : size + p,
-              y: horizontal ? _this3._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
+              x: horizontal ? -space / 2 : _this2._orient === "left" ? -labelWidth - p + size : size + p,
+              y: horizontal ? _this2._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
               width: horizontal ? space : labelWidth,
               height: horizontal ? labelHeight : space
             },
@@ -20533,7 +34650,7 @@
             size: labels.includes(d) ? size : 0,
             text: labels.includes(d) ? tickFormat(d) : false,
             tick: ticks.includes(d)
-          }, _defineProperty$1(_tickConfig, x, xPos + (_this3._scale === "band" ? _this3._d3Scale.bandwidth() / 2 : 0)), _defineProperty$1(_tickConfig, y, yPos), _tickConfig);
+          }, _defineProperty$2(_tickConfig, x, xPos + (_this2._scale === "band" ? _this2._d3Scale.bandwidth() / 2 : 0)), _defineProperty$2(_tickConfig, y, yPos), _tickConfig);
           return tickConfig;
         });
 
@@ -20564,7 +34681,7 @@
           parent: group
         }).node()).text(function (d) {
           return d.text;
-        }).verticalAlign("middle").width(range$1[range$1.length - 1] - range$1[0]).x(horizontal ? range$1[0] : this._orient === "left" ? margin[this._orient] / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2 + p : p - margin.right / 2).y(horizontal ? this._orient === "bottom" ? bounds.height - margin.bottom + p : bounds.y : range$1[0] + (range$1[range$1.length - 1] - range$1[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
+        }).verticalAlign("middle").width(range$1[range$1.length - 1] - range$1[0]).x(horizontal ? range$1[0] : this._orient === "left" ? bounds.x + margin.left / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2 : bounds.x + bounds.width - margin.right / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom : bounds.y : range$1[0] + (range$1[range$1.length - 1] - range$1[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
 
         this._lastScale = this._getPosition.bind(this);
         if (callback) setTimeout(callback, this._duration + 100);
@@ -20728,6 +34845,18 @@
       }
       /**
           @memberof Axis
+          @desc If *value* is specified, sets the minimum size alloted for the space that contains the axis tick labels and title.
+          @param {Number}
+          @chainable
+       */
+
+    }, {
+      key: "minSize",
+      value: function minSize(_) {
+        return arguments.length ? (this._minSize = _, this) : this._minSize;
+      }
+      /**
+          @memberof Axis
           @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
           @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
           @chainable
@@ -20831,6 +34960,18 @@
       }
       /**
           @memberof Axis
+          @desc Sets the "padding" property of the scale, often used in point scales.
+          @param {Number} [*value* = 0.5]
+          @chainable
+      */
+
+    }, {
+      key: "scalePadding",
+      value: function scalePadding(_) {
+        return arguments.length ? (this._scalePadding = _, this) : this._scalePadding;
+      }
+      /**
+          @memberof Axis
           @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
           @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
           @chainable
@@ -20915,7 +35056,7 @@
       }
       /**
           @memberof Axis
-          @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick). 
+          @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick).
           @param {String} [*value* = "normal"]
           @chainable
       */
@@ -20924,6 +35065,18 @@
       key: "tickSuffix",
       value: function tickSuffix(_) {
         return arguments.length ? (this._tickSuffix = _, this) : this._tickSuffix;
+      }
+      /**
+          @memberof Axis
+          @desc Defines a custom locale object to be used in time scale. This object must include the following properties: dateTime, date, time, periods, days, shortDays, months, shortMonths. For more information, you can revise [d3p.d3-time-format](https://github.com/d3/d3-time-format/blob/master/README.md#timeFormatLocale).
+          @param {Object} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "timeLocale",
+      value: function timeLocale(_) {
+        return arguments.length ? (this._timeLocale = _, this) : this._timeLocale;
       }
       /**
           @memberof Axis
@@ -20966,18 +35119,18 @@
     return Axis;
   }(BaseClass);
 
-  function _typeof$f(obj) {
+  function _typeof$g(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$f = function _typeof$1(obj) {
+      _typeof$g = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$f = function _typeof$1(obj) {
+      _typeof$g = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$f(obj);
+    return _typeof$g(obj);
   }
 
   function _classCallCheck$e(instance, Constructor) {
@@ -21003,7 +35156,7 @@
   }
 
   function _possibleConstructorReturn$c(self, call) {
-    if (call && (_typeof$f(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$g(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -21054,9 +35207,7 @@
       @desc Creates a set of HTML radio input elements.
   */
 
-  var Button =
-  /*#__PURE__*/
-  function (_BaseClass) {
+  var Button = /*#__PURE__*/function (_BaseClass) {
     _inherits$c(Button, _BaseClass);
     /**
         @memberof Button
@@ -21178,18 +35329,18 @@
     return Button;
   }(BaseClass);
 
-  function _typeof$g(obj) {
+  function _typeof$h(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$g = function _typeof$1(obj) {
+      _typeof$h = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$g = function _typeof$1(obj) {
+      _typeof$h = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$g(obj);
+    return _typeof$h(obj);
   }
 
   function _classCallCheck$f(instance, Constructor) {
@@ -21215,7 +35366,7 @@
   }
 
   function _possibleConstructorReturn$d(self, call) {
-    if (call && (_typeof$g(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$h(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -21266,9 +35417,7 @@
       @desc Creates a set of HTML radio input elements.
   */
 
-  var Radio =
-  /*#__PURE__*/
-  function (_BaseClass) {
+  var Radio = /*#__PURE__*/function (_BaseClass) {
     _inherits$d(Radio, _BaseClass);
     /**
         @memberof Radio
@@ -21471,18 +35620,18 @@
     return Radio;
   }(BaseClass);
 
-  function _typeof$h(obj) {
+  function _typeof$i(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$h = function _typeof$1(obj) {
+      _typeof$i = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$h = function _typeof$1(obj) {
+      _typeof$i = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$h(obj);
+    return _typeof$i(obj);
   }
 
   function _classCallCheck$g(instance, Constructor) {
@@ -21508,7 +35657,7 @@
   }
 
   function _possibleConstructorReturn$e(self, call) {
-    if (call && (_typeof$h(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$i(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -21559,9 +35708,7 @@
       @desc Creates an HTML select element.
   */
 
-  var Select =
-  /*#__PURE__*/
-  function (_BaseClass) {
+  var Select = /*#__PURE__*/function (_BaseClass) {
     _inherits$e(Select, _BaseClass);
     /**
         @memberof Select
@@ -22002,18 +36149,18 @@
     return clusters;
   }
 
-  function _typeof$i(obj) {
+  function _typeof$j(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$i = function _typeof$1(obj) {
+      _typeof$j = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$i = function _typeof$1(obj) {
+      _typeof$j = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$i(obj);
+    return _typeof$j(obj);
   }
 
   function _classCallCheck$h(instance, Constructor) {
@@ -22039,7 +36186,7 @@
   }
 
   function _possibleConstructorReturn$f(self, call) {
-    if (call && (_typeof$i(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$j(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -22090,9 +36237,7 @@
       @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
   */
 
-  var Legend =
-  /*#__PURE__*/
-  function (_BaseClass) {
+  var Legend = /*#__PURE__*/function (_BaseClass) {
     _inherits$f(Legend, _BaseClass);
     /**
         @memberof Legend
@@ -22125,7 +36270,6 @@
       _this._shape = constant$5("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
-        duration: _this._duration,
         fill: accessor("color"),
         height: constant$5(10),
         hitArea: function hitArea(dd, i) {
@@ -22138,21 +36282,24 @@
             y: -h / 2
           };
         },
-        labelBounds: function labelBounds(dd, i, s) {
-          var d = _this._lineData[i],
-              w = s.r !== void 0 ? s.r : s.width / 2;
+        labelBounds: function labelBounds(dd, i) {
+          var d = _this._lineData[i];
+          var x = d.shapeWidth;
+          if (d.shape === "Circle") x -= d.shapeR;
+          var height = max([d.shapeHeight, d.height]);
           return {
             width: d.width,
-            height: d.height,
-            x: w + _this._padding,
-            y: -d.height / 2 + (d.lh - d.s) / 2 + 1
+            height: height,
+            x: x,
+            y: -height / 2
           };
         },
         labelConfig: {
           fontColor: constant$5("#444"),
           fontFamily: new TextBox().fontFamily(),
           fontResize: false,
-          fontSize: constant$5(10)
+          fontSize: constant$5(10),
+          verticalAlign: "middle"
         },
         opacity: 1,
         r: constant$5(5),
@@ -22193,7 +36340,7 @@
     _createClass$h(Legend, [{
       key: "_fetchConfig",
       value: function _fetchConfig(key, d, i) {
-        var val = this._shapeConfig[key] || this._shapeConfig.labelConfig[key];
+        var val = this._shapeConfig[key] !== undefined ? this._shapeConfig[key] : this._shapeConfig.labelConfig[key];
         if (!val && key === "lineHeight") return this._fetchConfig("fontSize", d, i) * 1.4;
         return typeof val === "function" ? val(d, i) : val;
       }
@@ -22228,10 +36375,16 @@
       value: function render(callback) {
         var _this3 = this;
 
-        if (this._select === void 0) this.select(_select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node()); // Shape <g> Group
+        if (this._select === void 0) this.select(_select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node()); // Legend Container <g> Groups
 
         this._group = elem("g.d3plus-Legend", {
           parent: this._select
+        });
+        this._titleGroup = elem("g.d3plus-Legend-title", {
+          parent: this._group
+        });
+        this._shapeGroup = elem("g.d3plus-Legend-shape", {
+          parent: this._group
         });
         var availableHeight = this._height;
         this._titleHeight = 0;
@@ -22254,12 +36407,18 @@
         this._lineData = this._data.map(function (d, i) {
           var label = _this3._label(d, i);
 
+          var shape = _this3._shape(d, i);
+
+          var r = _this3._fetchConfig("r", d, i);
+
           var res = {
             data: d,
             i: i,
             id: _this3._id(d, i),
-            shapeWidth: _this3._fetchConfig("width", d, i),
-            shapeHeight: _this3._fetchConfig("height", d, i),
+            shape: shape,
+            shapeR: r,
+            shapeWidth: shape === "Circle" ? r * 2 : _this3._fetchConfig("width", d, i),
+            shapeHeight: shape === "Circle" ? r * 2 : _this3._fetchConfig("height", d, i),
             y: 0
           };
 
@@ -22436,7 +36595,7 @@
 
         this._titleClass.data(this._title ? [{
           text: this._title
-        }] : []).duration(this._duration).select(this._group.node()).textAnchor({
+        }] : []).duration(this._duration).select(this._titleGroup.node()).textAnchor({
           left: "start",
           center: "middle",
           right: "end"
@@ -22476,7 +36635,7 @@
             return d.shape === Shape;
           })).duration(_this3._duration).labelConfig({
             padding: 0
-          }).select(_this3._group.node()).verticalAlign("top").config(assign({}, baseConfig, config)).render());
+          }).select(_this3._shapeGroup.node()).verticalAlign("top").config(assign({}, baseConfig, config)).render());
         });
         if (callback) setTimeout(callback, this._duration + 100);
         return this;
@@ -22714,21 +36873,21 @@
     return Legend;
   }(BaseClass);
 
-  function _typeof$j(obj) {
+  function _typeof$k(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$j = function _typeof$1(obj) {
+      _typeof$k = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$j = function _typeof$1(obj) {
+      _typeof$k = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$j(obj);
+    return _typeof$k(obj);
   }
 
-  function _defineProperty$2(obj, key, value) {
+  function _defineProperty$3(obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
         value: value,
@@ -22766,7 +36925,7 @@
   }
 
   function _possibleConstructorReturn$g(self, call) {
-    if (call && (_typeof$j(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -22817,9 +36976,7 @@
       @desc Creates an SVG scale based on an array of data. If *data* is specified, immediately draws based on the specified array and returns the current class instance. If *data* is not specified on instantiation, it can be passed/updated after instantiation using the [data](#shape.data) method.
   */
 
-  var ColorScale =
-  /*#__PURE__*/
-  function (_BaseClass) {
+  var ColorScale = /*#__PURE__*/function (_BaseClass) {
     _inherits$g(ColorScale, _BaseClass);
     /**
         @memberof ColorScale
@@ -22848,11 +37005,15 @@
       };
       _this._axisTest = new Axis();
       _this._align = "middle";
+      _this._buckets = 5;
       _this._bucketAxis = false;
-      _this._color = "#0C8040";
+      _this._colorMax = "#0C8040";
+      _this._colorMid = "#f7f7f7";
+      _this._colorMin = "#b22200";
       _this._data = [];
       _this._duration = 600;
       _this._height = 200;
+      _this._labelClass = new TextBox();
       _this._legendClass = new Legend();
       _this._legendConfig = {
         shapeConfig: {
@@ -22863,6 +37024,7 @@
           strokeWidth: 1
         }
       };
+      _this._midpoint = 0;
       _this._orient = "bottom";
       _this._outerBounds = {
         width: 0,
@@ -22905,13 +37067,23 @@
         this._group = elem("g.d3plus-ColorScale", {
           parent: this._select
         });
-        var domain = extent(this._data, this._value);
+
+        var allValues = this._data.map(this._value).sort(function (a, b) {
+          return a - b;
+        });
+
+        var domain = extent(allValues);
+        var negative = domain[0] < this._midpoint;
+        var positive = domain[1] > this._midpoint;
+        var diverging = negative && positive;
         var colors = this._color,
             labels,
             ticks;
 
-        if (!(colors instanceof Array)) {
-          colors = [colorLighter(colors, 0.9), colorLighter(colors, 0.75), colorLighter(colors, 0.5), colorLighter(colors, 0.25), colors];
+        if (colors && !(colors instanceof Array)) {
+          colors = range(0, this._buckets, 1).map(function (i) {
+            return colorLighter(colors, (i + 1) / _this2._buckets);
+          }).reverse();
         }
 
         if (this._scale === "jenks") {
@@ -22919,11 +37091,8 @@
             return d !== null && typeof d === "number";
           });
 
-          if (data.length <= colors.length) {
-            colors = colors.slice(colors.length - data.length);
-          }
-
-          var jenks = ckmeans(data, colors.length);
+          var buckets = min([colors ? colors.length : this._buckets, data.length]);
+          var jenks = ckmeans(data, buckets);
           ticks = merge(jenks.map(function (c, i) {
             return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]];
           }));
@@ -22933,17 +37102,156 @@
             labels = Array.from(tickSet);
           }
 
+          if (!colors) {
+            if (diverging) {
+              colors = [this._colorMin, this._colorMid, this._colorMax];
+              var negatives = ticks.slice(0, buckets).filter(function (d, i) {
+                return d < _this2._midpoint && ticks[i + 1] <= _this2._midpoint;
+              });
+              var spanning = ticks.slice(0, buckets).filter(function (d, i) {
+                return d <= _this2._midpoint && ticks[i + 1] > _this2._midpoint;
+              });
+              var positives = ticks.slice(0, buckets).filter(function (d, i) {
+                return d > _this2._midpoint && ticks[i + 1] > _this2._midpoint;
+              });
+              var negativeColors = negatives.map(function (d, i) {
+                return !i ? colors[0] : colorLighter(colors[0], i / negatives.length);
+              });
+              var spanningColors = spanning.map(function () {
+                return colors[1];
+              });
+              var positiveColors = positives.map(function (d, i) {
+                return i === positives.length - 1 ? colors[2] : colorLighter(colors[2], 1 - (i + 1) / positives.length);
+              });
+              colors = negativeColors.concat(spanningColors).concat(positiveColors);
+            } else {
+              colors = range(0, this._buckets, 1).map(function (i) {
+                return colorLighter(_this2._colorMax, i / _this2._buckets);
+              }).reverse();
+            }
+          }
+
+          if (data.length <= buckets) {
+            colors = colors.slice(buckets - data.length);
+          }
+
           this._colorScale = threshold().domain(ticks).range(["black"].concat(colors).concat(colors[colors.length - 1]));
         } else {
-          var step = (domain[1] - domain[0]) / (colors.length - 1);
-          var buckets = range(domain[0], domain[1] + step / 2, step);
-          if (this._scale === "buckets") ticks = buckets;
-          this._colorScale = linear$1().domain(buckets).range(colors);
+          var _buckets;
+
+          if (diverging && !colors) {
+            var half = Math.floor(this._buckets / 2);
+
+            var _negativeColors = range(0, half, 1).map(function (i) {
+              return !i ? _this2._colorMin : colorLighter(_this2._colorMin, i / half);
+            });
+
+            var _spanningColors = (this._buckets % 2 ? [0] : []).map(function () {
+              return _this2._colorMid;
+            });
+
+            var _positiveColors = range(0, half, 1).map(function (i) {
+              return !i ? _this2._colorMax : colorLighter(_this2._colorMax, i / half);
+            }).reverse();
+
+            colors = _negativeColors.concat(_spanningColors).concat(_positiveColors);
+            var step = (colors.length - 1) / 2;
+            _buckets = [domain[0], this._midpoint, domain[1]];
+            _buckets = range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+          } else {
+            if (!colors) {
+              if (this._scale === "buckets" || this._scale === "quantile") {
+                colors = range(0, this._buckets, 1).map(function (i) {
+                  return colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / _this2._buckets);
+                });
+                if (positive) colors = colors.reverse();
+              } else {
+                colors = negative ? [this._colorMin, colorLighter(this._colorMin, 0.8)] : [colorLighter(this._colorMax, 0.8), this._colorMax];
+              }
+            }
+
+            if (this._scale === "quantile") {
+              var _step = 1 / (colors.length - 1);
+
+              _buckets = range(0, 1 + _step / 2, _step).map(function (d) {
+                return quantile(allValues, d);
+              });
+            } else {
+              var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
+
+              _buckets = range(domain[0], domain[1] + _step2 / 2, _step2);
+            }
+          }
+
+          if (this._scale === "buckets" || this._scale === "quantile") {
+            ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
+          } else if (this._scale === "log") {
+            var negativeBuckets = _buckets.filter(function (d) {
+              return d < 0;
+            });
+
+            if (negativeBuckets.length) {
+              var minVal = negativeBuckets[0];
+              var newNegativeBuckets = negativeBuckets.map(function (d) {
+                return -Math.pow(Math.abs(minVal), d / minVal);
+              });
+              negativeBuckets.forEach(function (bucket, i) {
+                _buckets[_buckets.indexOf(bucket)] = newNegativeBuckets[i];
+              });
+            }
+
+            var positiveBuckets = _buckets.filter(function (d) {
+              return d > 0;
+            });
+
+            if (positiveBuckets.length) {
+              var maxVal = positiveBuckets[positiveBuckets.length - 1];
+              var newPositiveBuckets = positiveBuckets.map(function (d) {
+                return Math.pow(maxVal, d / maxVal);
+              });
+              positiveBuckets.forEach(function (bucket, i) {
+                _buckets[_buckets.indexOf(bucket)] = newPositiveBuckets[i];
+              });
+            }
+
+            if (_buckets.includes(0)) _buckets[_buckets.indexOf(0)] = 1;
+          }
+
+          this._colorScale = linear$1().domain(_buckets).range(colors);
         }
 
-        if (this._bucketAxis || !["buckets", "jenks"].includes(this._scale)) {
-          var _this$_rectClass$data;
+        var gradient = this._bucketAxis || !["buckets", "jenks", "quantile"].includes(this._scale);
+        var t = transition().duration(this._duration);
+        var groupParams = {
+          enter: {
+            opacity: 0
+          },
+          exit: {
+            opacity: 0
+          },
+          parent: this._group,
+          transition: t,
+          update: {
+            opacity: 1
+          }
+        };
+        var labelGroup = elem("g.d3plus-ColorScale-labels", Object.assign({
+          condition: gradient
+        }, groupParams));
+        var rectGroup = elem("g.d3plus-ColorScale-Rect", Object.assign({
+          condition: gradient
+        }, groupParams));
+        var legendGroup = elem("g.d3plus-ColorScale-legend", Object.assign({
+          condition: !gradient
+        }, groupParams));
 
+        if (gradient) {
+          var _assign;
+
+          var offsets = {
+            x: 0,
+            y: 0
+          };
           var axisConfig = assign({
             domain: horizontal ? domain : domain.reverse(),
             duration: this._duration,
@@ -22951,9 +37259,52 @@
             labels: labels || ticks,
             orient: this._orient,
             padding: this._padding,
+            scale: this._scale === "log" ? "log" : "linear",
             ticks: ticks,
             width: this._width
           }, this._axisConfig);
+          var labelConfig = assign({
+            height: this["_".concat(height)] / 2,
+            width: this["_".concat(width)] / 2
+          }, this._labelConfig || this._axisConfig.titleConfig);
+
+          this._labelClass.config(labelConfig);
+
+          var labelData = [];
+
+          if (horizontal && this._labelMin) {
+            var labelCSS = {
+              "font-family": this._labelClass.fontFamily()(this._labelMin),
+              "font-size": this._labelClass.fontSize()(this._labelMin),
+              "font-weight": this._labelClass.fontWeight()(this._labelMin)
+            };
+            if (labelCSS["font-family"] instanceof Array) labelCSS["font-family"] = labelCSS["font-family"][0];
+            var labelMinWidth = textWidth(this._labelMin, labelCSS);
+
+            if (labelMinWidth && labelMinWidth < this["_".concat(width)] / 2) {
+              labelData.push(this._labelMin);
+              labelMinWidth += this._padding;
+              if (horizontal) offsets.x += labelMinWidth;
+              axisConfig[width] -= labelMinWidth;
+            }
+          }
+
+          if (horizontal && this._labelMax) {
+            var _labelCSS = {
+              "font-family": this._labelClass.fontFamily()(this._labelMax),
+              "font-size": this._labelClass.fontSize()(this._labelMax),
+              "font-weight": this._labelClass.fontWeight()(this._labelMax)
+            };
+            if (_labelCSS["font-family"] instanceof Array) _labelCSS["font-family"] = _labelCSS["font-family"][0];
+            var labelMaxWidth = textWidth(this._labelMax, _labelCSS);
+
+            if (labelMaxWidth && labelMaxWidth < this["_".concat(width)] / 2) {
+              labelData.push(this._labelMax);
+              labelMaxWidth += this._padding;
+              if (!horizontal) offsets.y += labelMaxWidth;
+              axisConfig[width] -= labelMaxWidth;
+            }
+          }
 
           this._axisTest.select(elem("g.d3plus-ColorScale-axisTest", {
             enter: {
@@ -22970,14 +37321,19 @@
           this._outerBounds[y] = this._padding;
           if (this._align === "middle") this._outerBounds[y] = (this["_".concat(height)] - this._outerBounds[height]) / 2;else if (this._align === "end") this._outerBounds[y] = this["_".concat(height)] - this._padding - this._outerBounds[height];
 
-          var groupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
+          var axisGroupOffset = this._outerBounds[y] + (["bottom", "right"].includes(this._orient) ? this._size : 0) - (axisConfig.padding || this._axisClass.padding());
 
-          this._axisClass.select(elem("g.d3plus-ColorScale-axis", {
-            parent: this._group,
+          var transform = "translate(".concat(offsets.x + (horizontal ? 0 : axisGroupOffset), ", ").concat(offsets.y + (horizontal ? axisGroupOffset : 0), ")");
+
+          this._axisClass.select(elem("g.d3plus-ColorScale-axis", assign(groupParams, {
+            condition: true,
+            enter: {
+              transform: transform
+            },
             update: {
-              transform: "translate(".concat(horizontal ? 0 : groupOffset, ", ").concat(horizontal ? groupOffset : 0, ")")
+              transform: transform
             }
-          }).node()).config(axisConfig).align("start").render();
+          })).node()).config(axisConfig).align("start").render();
 
           var axisScale = this._axisTest._getPosition.bind(this._axisTest);
 
@@ -22989,9 +37345,13 @@
           defsEnter.append("linearGradient").attr("id", "gradient-".concat(this._uuid));
           defs = defsEnter.merge(defs);
           defs.select("linearGradient").attr("".concat(x, "1"), horizontal ? "0%" : "100%").attr("".concat(x, "2"), horizontal ? "100%" : "0%").attr("".concat(y, "1"), "0%").attr("".concat(y, "2"), "0%");
-          var stops = defs.select("linearGradient").selectAll("stop").data(colors);
+          var stops = defs.select("linearGradient").selectAll("stop").data(horizontal ? colors : colors);
+
+          var scaleDomain = this._colorScale.domain();
+
+          var offsetScale = linear$1().domain(scaleRange).range(horizontal ? [0, 100] : [100, 0]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
-            return "".concat(i / (colors.length - 1) * 100, "%");
+            return "".concat(offsetScale(axisScale(scaleDomain[i])), "%");
           }).attr("stop-color", String);
           /** determines the width of buckets */
 
@@ -23000,24 +37360,35 @@
             return w || 2;
           };
 
-          this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
-            return i;
-          }).select(elem("g.d3plus-ColorScale-Rect", {
-            parent: this._group
-          }).node()).config((_this$_rectClass$data = {
+          var rectConfig = assign((_assign = {
             duration: this._duration,
             fill: ticks ? function (d) {
               return _this2._colorScale(d);
             } : "url(#gradient-".concat(this._uuid, ")")
-          }, _defineProperty$2(_this$_rectClass$data, x, ticks ? function (d, i) {
+          }, _defineProperty$3(_assign, x, ticks ? function (d, i) {
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
-          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2), _defineProperty$2(_this$_rectClass$data, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2), _defineProperty$2(_this$_rectClass$data, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$2(_this$_rectClass$data, height, this._size), _this$_rectClass$data)).config(this._rectConfig).render();
-        } else {
-          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : function (d) {
-            return d;
-          };
+          } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2 + offsets[x]), _defineProperty$3(_assign, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2 + offsets[y]), _defineProperty$3(_assign, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty$3(_assign, height, this._size), _assign), this._rectConfig);
 
-          var _data = ticks.reduce(function (arr, tick, i) {
+          this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
+            return i;
+          }).select(rectGroup.node()).config(rectConfig).render();
+
+          labelConfig.height = this._outerBounds[height];
+          labelConfig.width = this._outerBounds[width];
+
+          this._labelClass.config(labelConfig).data(labelData).select(labelGroup.node()).x(function (d) {
+            return d === _this2._labelMax ? rectConfig.x + rectConfig.width / 2 + _this2._padding : _this2._outerBounds.x;
+          }).y(function (d) {
+            return rectConfig.y - _this2._labelClass.fontSize()(d) / 2;
+          }).text(function (d) {
+            return d;
+          }).rotate(horizontal ? 0 : this._orient === "right" ? 90 : -90).render();
+        } else {
+          elem("g.d3plus-ColorScale-axis", Object.assign({
+            condition: gradient
+          }, groupParams));
+          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : formatAbbreviate;
+          var legendData = ticks.reduce(function (arr, tick, i) {
             if (i !== ticks.length - 1) {
               var next = ticks[i + 1];
               arr.push({
@@ -23028,7 +37399,6 @@
 
             return arr;
           }, []);
-
           var legendConfig = assign({
             align: horizontal ? "center" : {
               start: "left",
@@ -23052,9 +37422,7 @@
             }[this._align] : "middle"
           }, this._legendConfig);
 
-          this._legendClass.data(_data).select(elem("g.d3plus-ColorScale-legend", {
-            parent: this._group
-          }).node()).config(legendConfig).render();
+          this._legendClass.data(legendData).select(legendGroup.node()).config(legendConfig).render();
 
           this._outerBounds = this._legendClass.outerBounds();
         }
@@ -23088,6 +37456,18 @@
       }
       /**
           @memberof ColorScale
+          @desc The number of discrete buckets to create in a bucketed color scale. Will be overridden by any custom Array of colors passed to the `color` method.
+          @param {Number} [*value* = 5]
+          @chainable
+      */
+
+    }, {
+      key: "buckets",
+      value: function buckets(_) {
+        return arguments.length ? (this._buckets = _, this) : this._buckets;
+      }
+      /**
+          @memberof ColorScale
           @desc Determines whether or not to use an Axis to display bucket scales (both "buckets" and "jenks"). When set to `false`, bucketed scales will use the `Legend` class to display squares for each range of data. When set to `true`, bucketed scales will be displayed on an `Axis`, similar to "linear" scales.
           @param {Boolean} [*value* = false]
           @chainable
@@ -23100,8 +37480,8 @@
       }
       /**
           @memberof ColorScale
-          @desc Defines the color or colors to be used for the scale. If only a single color is given as a String, then the scale is interpolated by lightening that color. Otherwise, the function expects an Array of color values to be used in order for the scale.
-          @param {String|Array} [*value* = "#0C8040"]
+          @desc Overrides the default internal logic of `colorMin`, `colorMid`, and `colorMax` to only use just this specified color. If a single color is given as a String, then the scale is interpolated by lightening that color. Otherwise, the function expects an Array of color values to be used in order for the scale.
+          @param {String|Array} [*value*]
           @chainable
       */
 
@@ -23109,6 +37489,42 @@
       key: "color",
       value: function color(_) {
         return arguments.length ? (this._color = _, this) : this._color;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for numbers greater than the value of the `midpoint` on the scale (defaults to `0`). Colors in between this value and the value of `colorMid` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#0C8040"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMax",
+      value: function colorMax(_) {
+        return arguments.length ? (this._colorMax = _, this) : this._colorMax;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for the midpoint of a diverging scale, based on the current value of the `midpoint` method (defaults to `0`). Colors in between this value and the values of `colorMin` and `colorMax` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#f7f7f7"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMid",
+      value: function colorMid(_) {
+        return arguments.length ? (this._colorMid = _, this) : this._colorMid;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines the color to be used for numbers less than the value of the `midpoint` on the scale (defaults to `0`). Colors in between this value and the value of `colorMid` will be interpolated, unless a custom Array of colors has been specified using the `color` method.
+          @param {String} [*value* = "#b22200"]
+          @chainable
+      */
+
+    }, {
+      key: "colorMin",
+      value: function colorMin(_) {
+        return arguments.length ? (this._colorMin = _, this) : this._colorMin;
       }
       /**
           @memberof ColorScale
@@ -23148,6 +37564,42 @@
       }
       /**
           @memberof ColorScale
+          @desc A pass-through for the [TextBox](http://d3plus.org/docs/#TextBox) class used to style the labelMin and labelMax text.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labelConfig",
+      value: function labelConfig(_) {
+        return arguments.length ? (this._labelConfig = _, this) : this._labelConfig;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines a text label to be displayed off of the end of the minimum point in the scale (currently only available in horizontal orientation).
+          @param {String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labelMin",
+      value: function labelMin(_) {
+        return arguments.length ? (this._labelMin = _, this) : this._labelMin;
+      }
+      /**
+          @memberof ColorScale
+          @desc Defines a text label to be displayed off of the end of the maximum point in the scale (currently only available in horizontal orientation).
+          @param {String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labelMax",
+      value: function labelMax(_) {
+        return arguments.length ? (this._labelMax = _, this) : this._labelMax;
+      }
+      /**
+          @memberof ColorScale
           @desc The [ColorScale](http://d3plus.org/docs/#ColorScale) is constructed by combining an [Axis](http://d3plus.org/docs/#Axis) for the ticks/labels and a [Rect](http://d3plus.org/docs/#Rect) for the actual color box (or multiple boxes, as in a jenks scale). Because of this, there are separate configs for the [Axis](http://d3plus.org/docs/#Axis) class used to display the text ([axisConfig](http://d3plus.org/docs/#ColorScale.axisConfig)) and the [Rect](http://d3plus.org/docs/#Rect) class used to draw the color breaks ([rectConfig](http://d3plus.org/docs/#ColorScale.rectConfig)). This method acts as a pass-through to the config method of the [Axis](http://d3plus.org/docs/#Axis). An example usage of this method can be seen [here](http://d3plus.org/examples/d3plus-legend/colorScale-dark/).
           @param {Object} [*value*]
           @chainable
@@ -23157,6 +37609,18 @@
       key: "legendConfig",
       value: function legendConfig(_) {
         return arguments.length ? (this._legendConfig = assign(this._legendConfig, _), this) : this._legendConfig;
+      }
+      /**
+          @memberof ColorScale
+          @desc The number value to be used as the anchor for `colorMid`, and defines the center point of the diverging color scale.
+          @param {Number} [*value* = 0]
+          @chainable
+      */
+
+    }, {
+      key: "midpoint",
+      value: function midpoint(_) {
+        return arguments.length ? (this._midpoint = _, this) : this._midpoint;
       }
       /**
           @memberof ColorScale
@@ -23275,18 +37739,179 @@
     return ColorScale;
   }(BaseClass);
 
-  function _typeof$k(obj) {
+  /**
+      @function date
+      @summary Parses numbers and strings to valid Javascript Date objects.
+      @description Returns a javascript Date object for a given a Number (representing either a 4-digit year or milliseconds since epoch) or a String that is in [valid dateString format](http://dygraphs.com/date-formats.html). Besides the 4-digit year parsing, this function is useful when needing to parse negative (BC) years, which the vanilla Date object cannot parse.
+      @param {Number|String} *date*
+  */
+  function date$4 (d) {
+    // returns if already Date object
+    if (d.constructor === Date) return d; // detects if milliseconds
+    else if (d.constructor === Number && "".concat(d).length > 5 && d % 1 === 0) return new Date(d);
+    var s = "".concat(d);
+    var dayFormat = new RegExp(/^\d{1,2}[./-]\d{1,2}[./-](-*\d{1,4})$/g).exec(s),
+        strFormat = new RegExp(/^[A-z]{1,3} [A-z]{1,3} \d{1,2} (-*\d{1,4}) \d{1,2}:\d{1,2}:\d{1,2} [A-z]{1,3}-*\d{1,4} \([A-z]{1,3}\)/g).exec(s); // tests for XX/XX/XXXX format
+
+    if (dayFormat) {
+      var year = dayFormat[1];
+      if (year.indexOf("-") === 0) s = s.replace(year, year.substr(1));
+      var date = new Date(s);
+      date.setFullYear(year);
+      return date;
+    } // tests for full Date object string format
+    else if (strFormat) {
+        var _year = strFormat[1];
+        if (_year.indexOf("-") === 0) s = s.replace(_year, _year.substr(1));
+
+        var _date = new Date(s);
+
+        _date.setFullYear(_year);
+
+        return _date;
+      } // detects if only passing a year value
+      else if (!s.includes("/") && !s.includes(" ") && (!s.includes("-") || !s.indexOf("-"))) {
+          var _date2 = new Date("".concat(s, "/01/01"));
+
+          _date2.setFullYear(d);
+
+          return _date2;
+        } // parses string to Date object
+        else return new Date(s);
+  }
+
+  var locale$3 = {
+    "de-DE": {
+      dateTime: "%A, der %e. %B %Y, %X",
+      date: "%d.%m.%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"],
+      shortDays: ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"],
+      months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+      shortMonths: ["Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+    },
+    "en-GB": {
+      dateTime: "%a %e %b %X %Y",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "en-US": {
+      dateTime: "%x, %X",
+      date: "%-m/%-d/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      shortDays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+      shortMonths: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    },
+    "es-ES": {
+      dateTime: "%A, %e de %B de %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "es-MX": {
+      dateTime: "%x, %X",
+      date: "%d/%m/%Y",
+      time: "%-I:%M:%S %p",
+      periods: ["AM", "PM"],
+      days: ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"],
+      shortDays: ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"],
+      months: ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+      shortMonths: ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    },
+    "fr-FR": {
+      dateTime: "%A, le %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"],
+      shortDays: ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."],
+      months: ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+      shortMonths: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."]
+    },
+    "it-IT": {
+      dateTime: "%A %e %B %Y, %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domenica", "Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato"],
+      shortDays: ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
+      months: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+      shortMonths: ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"]
+    },
+    "pt-BR": {
+      dateTime: "%A, %e de %B de %Y. %X",
+      date: "%d/%m/%Y",
+      time: "%H:%M:%S",
+      periods: ["AM", "PM"],
+      days: ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"],
+      shortDays: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+      months: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+      shortMonths: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"]
+    }
+  };
+
+  function _defineProperty$4(obj, key, value) {
+    if (key in obj) {
+      Object.defineProperty(obj, key, {
+        value: value,
+        enumerable: true,
+        configurable: true,
+        writable: true
+      });
+    } else {
+      obj[key] = value;
+    }
+
+    return obj;
+  }
+
+  function _typeof$l(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$k = function _typeof$1(obj) {
+      _typeof$l = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$k = function _typeof$1(obj) {
+      _typeof$l = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$k(obj);
+    return _typeof$l(obj);
+  }
+
+  function _toConsumableArray$1(arr) {
+    return _arrayWithoutHoles$1(arr) || _iterableToArray$1(arr) || _nonIterableSpread$1();
+  }
+
+  function _nonIterableSpread$1() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance");
+  }
+
+  function _iterableToArray$1(iter) {
+    if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+  }
+
+  function _arrayWithoutHoles$1(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
+        arr2[i] = arr[i];
+      }
+
+      return arr2;
+    }
   }
 
   function _classCallCheck$j(instance, Constructor) {
@@ -23312,7 +37937,7 @@
   }
 
   function _possibleConstructorReturn$h(self, call) {
-    if (call && (_typeof$k(call) === "object" || typeof call === "function")) {
+    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
       return call;
     }
 
@@ -23325,36 +37950,6 @@
     }
 
     return self;
-  }
-
-  function _get$7(target, property, receiver) {
-    if (typeof Reflect !== "undefined" && Reflect.get) {
-      _get$7 = Reflect.get;
-    } else {
-      _get$7 = function _get(target, property, receiver) {
-        var base = _superPropBase$7(target, property);
-
-        if (!base) return;
-        var desc = Object.getOwnPropertyDescriptor(base, property);
-
-        if (desc.get) {
-          return desc.get.call(receiver);
-        }
-
-        return desc.value;
-      };
-    }
-
-    return _get$7(target, property, receiver || target);
-  }
-
-  function _superPropBase$7(object, property) {
-    while (!Object.prototype.hasOwnProperty.call(object, property)) {
-      object = _getPrototypeOf$h(object);
-      if (object === null) break;
-    }
-
-    return object;
   }
 
   function _getPrototypeOf$h(o) {
@@ -23388,14 +37983,1361 @@
     return _setPrototypeOf$h(o, p);
   }
   /**
+      @class Axis
+      @extends external:BaseClass
+      @desc Creates an SVG scale based on an array of data.
+  */
+
+  var Axis$1 = /*#__PURE__*/function (_BaseClass) {
+    _inherits$h(Axis, _BaseClass);
+    /**
+        @memberof Axis
+        @desc Invoked when creating a new class instance, and sets any default parameters.
+        @private
+    */
+
+
+    function Axis() {
+      var _this;
+
+      _classCallCheck$j(this, Axis);
+
+      _this = _possibleConstructorReturn$h(this, _getPrototypeOf$h(Axis).call(this));
+      _this._align = "middle";
+      _this._barConfig = {
+        "stroke": "#000",
+        "stroke-width": 1
+      };
+      _this._domain = [0, 10];
+      _this._duration = 600;
+      _this._gridConfig = {
+        "stroke": "#ccc",
+        "stroke-width": 1
+      };
+      _this._gridLog = false;
+      _this._height = 400;
+      _this._labelOffset = true;
+
+      _this.orient("bottom");
+
+      _this._outerBounds = {
+        width: 0,
+        height: 0,
+        x: 0,
+        y: 0
+      };
+      _this._padding = 5;
+      _this._paddingInner = 0.1;
+      _this._paddingOuter = 0.1;
+      _this._rotateLabels = false;
+      _this._scale = "linear";
+      _this._scalePadding = 0.5;
+      _this._shape = "Line";
+      _this._shapeConfig = {
+        fill: "#000",
+        height: function height(d) {
+          return d.tick ? 8 : 0;
+        },
+        label: function label(d) {
+          return d.text;
+        },
+        labelBounds: function labelBounds(d) {
+          return d.labelBounds;
+        },
+        labelConfig: {
+          fontColor: "#000",
+          fontFamily: new TextBox().fontFamily(),
+          fontResize: false,
+          fontSize: constant$5(10),
+          padding: 0,
+          textAnchor: function textAnchor() {
+            var rtl = detectRTL();
+            return _this._orient === "left" ? rtl ? "start" : "end" : _this._orient === "right" ? rtl ? "end" : "start" : _this._rotateLabels ? _this._orient === "bottom" ? "end" : "start" : "middle";
+          },
+          verticalAlign: function verticalAlign() {
+            return _this._orient === "bottom" ? "top" : _this._orient === "top" ? "bottom" : "middle";
+          }
+        },
+        r: function r(d) {
+          return d.tick ? 4 : 0;
+        },
+        stroke: "#000",
+        strokeWidth: 1,
+        width: function width(d) {
+          return d.tick ? 8 : 0;
+        }
+      };
+      _this._tickSize = 5;
+      _this._tickSpecifier = undefined;
+      _this._tickSuffix = "normal";
+      _this._tickUnit = 0;
+      _this._timeLocale = undefined;
+      _this._titleClass = new TextBox();
+      _this._titleConfig = {
+        fontSize: 12,
+        textAnchor: "middle"
+      };
+      _this._width = 400;
+      return _this;
+    }
+    /**
+        @memberof Axis
+        @desc Sets positioning for the axis bar.
+        @param {D3Selection} *bar*
+        @private
+    */
+
+
+    _createClass$j(Axis, [{
+      key: "_barPosition",
+      value: function _barPosition(bar) {
+        var _this$_position = this._position,
+            height = _this$_position.height,
+            x = _this$_position.x,
+            y = _this$_position.y,
+            opposite = _this$_position.opposite,
+            domain = this._getDomain(),
+            offset = this._margin[opposite],
+            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
+
+        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
+      }
+      /**
+          @memberof Axis
+          @desc Returns the scale's domain, taking into account negative and positive log scales.
+          @private
+      */
+
+    }, {
+      key: "_getDomain",
+      value: function _getDomain() {
+        var ticks = [];
+        if (this._d3ScaleNegative) ticks = this._d3ScaleNegative.domain();
+        if (this._d3Scale) ticks = ticks.concat(this._d3Scale.domain());
+        var domain = ["band", "ordinal", "point"].includes(this._scale) ? ticks : extent(ticks);
+        return ticks[0] > ticks[1] ? domain.reverse() : domain;
+      }
+      /**
+          @memberof Axis
+          @desc Returns a value's scale position, taking into account negative and positive log scales.
+          @param {Number|String} *d*
+          @private
+      */
+
+    }, {
+      key: "_getPosition",
+      value: function _getPosition(d) {
+        return d < 0 && this._d3ScaleNegative ? this._d3ScaleNegative(d) : this._d3Scale(d);
+      }
+      /**
+          @memberof Axis
+          @desc Returns the scale's range, taking into account negative and positive log scales.
+          @private
+      */
+
+    }, {
+      key: "_getRange",
+      value: function _getRange() {
+        var ticks = [];
+        if (this._d3ScaleNegative) ticks = this._d3ScaleNegative.range();
+        if (this._d3Scale) ticks = ticks.concat(this._d3Scale.range());
+        return ticks[0] > ticks[1] ? extent(ticks).reverse() : extent(ticks);
+      }
+      /**
+          @memberof Axis
+          @desc Returns the scale's ticks, taking into account negative and positive log scales.
+          @private
+      */
+
+    }, {
+      key: "_getTicks",
+      value: function _getTicks() {
+        var tickScale = sqrt().domain([10, 400]).range([10, 50]);
+        var ticks = [];
+
+        if (this._d3ScaleNegative) {
+          var negativeRange = this._d3ScaleNegative.range();
+
+          var size = negativeRange[1] - negativeRange[0];
+          ticks = this._d3ScaleNegative.ticks(Math.floor(size / tickScale(size)));
+        }
+
+        if (this._d3Scale) {
+          var positiveRange = this._d3Scale.range();
+
+          var _size = positiveRange[1] - positiveRange[0];
+
+          ticks = ticks.concat(this._d3Scale.ticks(Math.floor(_size / tickScale(_size))));
+        }
+
+        return ticks;
+      }
+      /**
+          @memberof Axis
+          @desc Sets positioning for the grid lines.
+          @param {D3Selection} *lines*
+          @private
+      */
+
+    }, {
+      key: "_gridPosition",
+      value: function _gridPosition(lines) {
+        var last = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+        var _this$_position2 = this._position,
+            height = _this$_position2.height,
+            x = _this$_position2.x,
+            y = _this$_position2.y,
+            opposite = _this$_position2.opposite,
+            offset = this._margin[opposite],
+            position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset,
+            scale = last ? this._lastScale || this._getPosition.bind(this) : this._getPosition.bind(this),
+            size = ["top", "left"].includes(this._orient) ? offset : -offset,
+            xDiff = this._scale === "band" ? this._d3Scale.bandwidth() / 2 : 0,
+            xPos = function xPos(d) {
+          return scale(d.id) + xDiff;
+        };
+
+        lines.call(attrize, this._gridConfig).attr("".concat(x, "1"), xPos).attr("".concat(x, "2"), xPos).attr("".concat(y, "1"), position).attr("".concat(y, "2"), last ? position : position + size);
+      }
+      /**
+          @memberof Axis
+          @desc Renders the current Axis to the page. If a *callback* is specified, it will be called once the legend is done drawing.
+          @param {Function} [*callback* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "render",
+      value: function render(callback) {
+        var _this3 = this,
+            _this$_outerBounds;
+        /**
+         * Creates an SVG element to contain the axis if none
+         * has been specified using the "select" method.
+         */
+
+
+        if (this._select === void 0) {
+          this.select(_select("body").append("svg").attr("width", "".concat(this._width, "px")).attr("height", "".concat(this._height, "px")).node());
+        }
+
+        var timeLocale = this._timeLocale || locale$3[this._locale] || locale$3["en-US"];
+        defaultLocale$1(timeLocale).format();
+        var formatDay = timeFormat("%a %d"),
+            formatHour = timeFormat("%I %p"),
+            formatMillisecond = timeFormat(".%L"),
+            formatMinute = timeFormat("%I:%M"),
+            formatMonth = timeFormat("%b"),
+            formatSecond = timeFormat(":%S"),
+            formatWeek = timeFormat("%b %d"),
+            formatYear = timeFormat("%Y");
+        /**
+         * Declares some commonly used variables.
+         */
+
+        var _this$_position3 = this._position,
+            width = _this$_position3.width,
+            height = _this$_position3.height,
+            x = _this$_position3.x,
+            y = _this$_position3.y,
+            horizontal = _this$_position3.horizontal,
+            opposite = _this$_position3.opposite,
+            clipId = "d3plus-Axis-clip-".concat(this._uuid),
+            flip = ["top", "left"].includes(this._orient),
+            p = this._padding,
+            parent = this._select,
+            rangeOuter = [p, this["_".concat(width)] - p],
+            t = transition().duration(this._duration);
+        var tickValue = this._shape === "Circle" ? this._shapeConfig.r : this._shape === "Rect" ? this._shapeConfig[width] : this._shapeConfig.strokeWidth;
+        var tickGet = typeof tickValue !== "function" ? function () {
+          return tickValue;
+        } : tickValue;
+        /**
+         * Zeros out the margins for re-calculation.
+         */
+
+        var margin = this._margin = {
+          top: 0,
+          right: 0,
+          bottom: 0,
+          left: 0
+        };
+        var labels, range$1, ticks;
+        /**
+         * (Re)calculates the internal d3 scale
+         * @param {} newRange
+         */
+
+        function setScale() {
+          var _this2 = this;
+
+          var newRange = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._range;
+          /**
+           * Calculates the internal "range" array to use, including
+           * fallbacks if not specified with the "range" method.
+           */
+
+          range$1 = newRange ? newRange.slice() : [undefined, undefined];
+          var minRange = rangeOuter[0],
+              maxRange = rangeOuter[1];
+
+          if (this._range) {
+            if (this._range[0] !== undefined) minRange = this._range[0];
+            if (this._range[this._range.length - 1] !== undefined) maxRange = this._range[this._range.length - 1];
+          }
+
+          if (range$1[0] === undefined || range$1[0] < minRange) range$1[0] = minRange;
+          if (range$1[1] === undefined || range$1[1] > maxRange) range$1[1] = maxRange;
+          var sizeInner = maxRange - minRange;
+
+          if (this._scale === "ordinal" && this._domain.length > range$1.length) {
+            if (newRange === this._range) {
+              var buckets = this._domain.length + 1;
+              range$1 = range(buckets).map(function (d) {
+                return range$1[0] + sizeInner * (d / (buckets - 1));
+              }).slice(1, buckets);
+              range$1 = range$1.map(function (d) {
+                return d - range$1[0] / 2;
+              });
+            } else {
+              var _buckets = this._domain.length;
+              var size = range$1[1] - range$1[0];
+              range$1 = range(_buckets).map(function (d) {
+                return range$1[0] + size * (d / (_buckets - 1));
+              });
+            }
+          } else if (newRange === this._range) {
+            var tickScale = sqrt().domain([10, 400]).range([10, 50]);
+            var domain = this._scale === "time" ? this._domain.map(date$4) : this._domain;
+            var scaleTicks = d3Ticks(domain[0], domain[1], Math.floor(sizeInner / tickScale(sizeInner)));
+            ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date$4) : this._ticks : scaleTicks).slice();
+            labels = (this._labels ? this._scale === "time" ? this._labels.map(date$4) : this._labels : scaleTicks).slice();
+            var _buckets2 = labels.length;
+
+            if (_buckets2) {
+              var pad = Math.ceil(sizeInner / _buckets2 / 2);
+              range$1 = [range$1[0] + pad, range$1[1] - pad];
+            }
+          }
+          /**
+           * Sets up the initial d3 scale, using this._domain and the
+           * previously defined range variable.
+           */
+
+
+          this._d3Scale = scales["scale".concat(this._scale.charAt(0).toUpperCase()).concat(this._scale.slice(1))]().domain(this._scale === "time" ? this._domain.map(date$4) : this._domain);
+          if (this._d3Scale.round) this._d3Scale.round(true);
+          if (this._d3Scale.padding) this._d3Scale.padding(this._scalePadding);
+          if (this._d3Scale.paddingInner) this._d3Scale.paddingInner(this._paddingInner);
+          if (this._d3Scale.paddingOuter) this._d3Scale.paddingOuter(this._paddingOuter);
+          if (this._d3Scale.rangeRound) this._d3Scale.rangeRound(range$1);else this._d3Scale.range(range$1);
+          /**
+           * Constructs a separate "negative only" scale for logarithmic
+           * domains, as they cannot pass zero.
+           */
+
+          this._d3ScaleNegative = null;
+
+          if (this._scale === "log") {
+            var _domain = this._d3Scale.domain();
+
+            if (_domain[0] === 0) _domain[0] = 1;
+            if (_domain[_domain.length - 1] === 0) _domain[_domain.length - 1] = -1;
+
+            var _range = this._d3Scale.range();
+
+            if (_domain[0] < 0 && _domain[_domain.length - 1] < 0) {
+              this._d3ScaleNegative = this._d3Scale.copy().domain(_domain).range(_range);
+              this._d3Scale = null;
+            } else if (_domain[0] > 0 && _domain[_domain.length - 1] > 0) {
+              this._d3Scale.domain(_domain).range(_range);
+            } else {
+              var percentScale = log().domain([1, _domain[_domain[1] > 0 ? 1 : 0]]).range([0, 1]);
+              var leftPercentage = percentScale(Math.abs(_domain[_domain[1] < 0 ? 1 : 0]));
+              var zero = leftPercentage / (leftPercentage + 1) * (_range[1] - _range[0]);
+              if (_domain[0] > 0) zero = _range[1] - _range[0] - zero;
+              this._d3ScaleNegative = this._d3Scale.copy();
+              (_domain[0] < 0 ? this._d3Scale : this._d3ScaleNegative).domain([Math.sign(_domain[1]), _domain[1]]).range([_range[0] + zero, _range[1]]);
+              (_domain[0] < 0 ? this._d3ScaleNegative : this._d3Scale).domain([_domain[0], Math.sign(_domain[0])]).range([_range[0], _range[0] + zero]);
+            }
+          }
+          /**
+           * Determines the of values array to use
+           * for the "ticks" and the "labels"
+           */
+
+
+          ticks = (this._ticks ? this._scale === "time" ? this._ticks.map(date$4) : this._ticks : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : this._domain).slice();
+          labels = (this._labels ? this._scale === "time" ? this._labels.map(date$4) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
+
+          if (this._scale === "log") {
+            labels = labels.filter(function (t) {
+              return Math.abs(t).toString().charAt(0) === "1" && (_this2._d3Scale ? t !== -1 : t !== 1);
+            });
+          } else if (this._scale === "time") {
+            ticks = ticks.map(Number);
+            labels = labels.map(Number);
+          }
+
+          ticks = ticks.sort(function (a, b) {
+            return _this2._getPosition(a) - _this2._getPosition(b);
+          });
+          labels = labels.sort(function (a, b) {
+            return _this2._getPosition(a) - _this2._getPosition(b);
+          });
+          /**
+           * Get the smallest suffix.
+           */
+
+          if (this._scale === "linear" && this._tickSuffix === "smallest") {
+            var suffixes = labels.filter(function (d) {
+              return d >= 1000;
+            });
+
+            if (suffixes.length > 0) {
+              var _min = Math.min.apply(Math, _toConsumableArray$1(suffixes));
+
+              var i = 1;
+
+              while (i && i < 7) {
+                var n = Math.pow(10, 3 * i);
+
+                if (_min / n >= 1) {
+                  this._tickUnit = i;
+                  i += 1;
+                } else {
+                  break;
+                }
+              }
+            }
+          }
+          /**
+           * Removes ticks when they overlap other ticks.
+           */
+
+
+          var pixels = [];
+          this._availableTicks = ticks;
+          ticks.forEach(function (d, i) {
+            var s = tickGet({
+              id: d,
+              tick: true
+            }, i);
+            if (_this2._shape === "Circle") s *= 2;
+
+            var t = _this2._getPosition(d);
+
+            if (!pixels.length || Math.abs(closest(t, pixels) - t) > s * 2) pixels.push(t);else pixels.push(false);
+          });
+          ticks = ticks.filter(function (d, i) {
+            return pixels[i] !== false;
+          });
+          this._visibleTicks = ticks;
+        }
+
+        setScale.bind(this)();
+        /**
+         * Calculates the space available for a given label.
+         * @param {Object} datum
+         */
+
+        function calculateSpace(datum) {
+          var diff = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+          var i = datum.i,
+              position = datum.position;
+
+          if (this._scale === "band") {
+            return this._d3Scale.bandwidth();
+          } else {
+            var prevPosition = i - diff < 0 ? textData.length === 1 || !this._range ? rangeOuter[0] : (position - textData[i + diff].position) / 2 - position : position - (position - textData[i - diff].position) / 2;
+            var prevSpace = Math.abs(position - prevPosition);
+            var nextPosition = i + diff > textData.length - 1 ? textData.length === 1 || !this._range ? rangeOuter[1] : (position - textData[i - diff].position) / 2 - position : position - (position - textData[i + diff].position) / 2;
+            var nextSpace = Math.abs(position - nextPosition);
+            return min([prevSpace, nextSpace]) * 2;
+          }
+        }
+        /**
+         * Constructs the tick formatter function.
+         */
+
+
+        var tickFormat = this._tickFormat ? this._tickFormat : function (d) {
+          if (_this3._scale === "log") {
+            var _p = Math.round(Math.log(Math.abs(d)) / Math.LN10);
+
+            var _t = Math.abs(d).toString().charAt(0);
+
+            var _n = "10 ".concat("".concat(_p).split("").map(function (c) {
+              return "⁰¹²³⁴⁵⁶⁷⁸⁹"[c];
+            }).join(""));
+
+            if (_t !== "1") _n = "".concat(_t, " x ").concat(_n);
+            return d < 0 ? "-".concat(_n) : _n;
+          } else if (_this3._scale === "time") {
+            return (second(d) < d ? formatMillisecond : minute(d) < d ? formatSecond : hour(d) < d ? formatMinute : day(d) < d ? formatHour : month(d) < d ? sunday(d) < d ? formatDay : formatWeek : year(d) < d ? formatMonth : formatYear)(d);
+          } else if (["band", "ordinal", "point"].includes(_this3._scale)) {
+            return d;
+          }
+
+          var n = _this3._d3Scale.tickFormat ? _this3._d3Scale.tickFormat(labels.length - 1)(d) : d;
+          n = typeof n === "string" ? n.replace(/[^\d\.\-\+]/g, "") * 1 : n;
+
+          if (isNaN(n)) {
+            return n;
+          } else if (_this3._scale === "linear" && _this3._tickSuffix === "smallest") {
+            var _locale = _typeof$l(_this3._locale) === "object" ? _this3._locale : formatLocale$3[_this3._locale];
+
+            var separator = _locale.separator,
+                suffixes = _locale.suffixes;
+            var suff = n >= 1000 ? suffixes[_this3._tickUnit + 8] : "";
+            var tick = n / Math.pow(10, 3 * _this3._tickUnit);
+            var number = formatAbbreviate(tick, _locale, ",.".concat(tick.toString().length, "r"));
+            return "".concat(number).concat(separator).concat(suff);
+          } else {
+            return formatAbbreviate(n, _this3._locale);
+          }
+        };
+        /**
+         * Pre-calculates the size of the title, if defined, in order
+         * to adjust the internal margins.
+         */
+
+        if (this._title) {
+          var _this$_titleConfig = this._titleConfig,
+              fontFamily = _this$_titleConfig.fontFamily,
+              fontSize = _this$_titleConfig.fontSize,
+              lineHeight = _this$_titleConfig.lineHeight;
+          var titleWrap = textWrap().fontFamily(typeof fontFamily === "function" ? fontFamily() : fontFamily).fontSize(typeof fontSize === "function" ? fontSize() : fontSize).lineHeight(typeof lineHeight === "function" ? lineHeight() : lineHeight).width(range$1[range$1.length - 1] - range$1[0] - p * 2).height(this["_".concat(height)] - this._tickSize - p * 2);
+          var lines = titleWrap(this._title).lines.length;
+          margin[this._orient] = lines * titleWrap.lineHeight() + p;
+        }
+
+        var hBuff = this._shape === "Circle" ? typeof this._shapeConfig.r === "function" ? this._shapeConfig.r({
+          tick: true
+        }) : this._shapeConfig.r : this._shape === "Rect" ? typeof this._shapeConfig[height] === "function" ? this._shapeConfig[height]({
+          tick: true
+        }) : this._shapeConfig[height] : this._tickSize,
+            wBuff = tickGet({
+          tick: true
+        });
+        if (typeof hBuff === "function") hBuff = max(ticks.map(hBuff));
+        if (this._shape === "Rect") hBuff /= 2;
+        if (typeof wBuff === "function") wBuff = max(ticks.map(wBuff));
+        if (this._shape !== "Circle") wBuff /= 2;
+        /**
+         * Calculates the space each label would take up, given
+         * the provided this._space size.
+         */
+
+        var textData = labels.map(function (d, i) {
+          var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
+              fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
+              position = _this3._getPosition(d);
+
+          var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+          return {
+            d: d,
+            i: i,
+            fF: fF,
+            fS: fS,
+            lineHeight: lineHeight,
+            position: position
+          };
+        });
+        /**
+         * Calculates the text wrapping and size of a given textData object.
+         * @param {Object} datum
+         */
+
+        function calculateLabelSize(datum) {
+          var d = datum.d,
+              i = datum.i,
+              fF = datum.fF,
+              fS = datum.fS,
+              rotate = datum.rotate,
+              space = datum.space;
+          var h = rotate ? "width" : "height",
+              w = rotate ? "height" : "width";
+          var wSize = min([this._maxSize, this._width]);
+          var hSize = min([this._maxSize, this._height]);
+          var wrap = textWrap().fontFamily(fF).fontSize(fS).lineHeight(this._shapeConfig.lineHeight ? this._shapeConfig.lineHeight(d, i) : undefined)[w](horizontal ? space : wSize - hBuff - p - this._margin.left - this._margin.right)[h](horizontal ? hSize - hBuff - p - this._margin.top - this._margin.bottom : space);
+          var res = wrap(tickFormat(d));
+          res.lines = res.lines.filter(function (d) {
+            return d !== "";
+          });
+          res.width = res.lines.length ? Math.ceil(max(res.widths)) + fS / 4 : 0;
+          if (res.width % 2) res.width++;
+          res.height = res.lines.length ? Math.ceil(res.lines.length * wrap.lineHeight()) + fS / 4 : 0;
+          if (res.height % 2) res.height++;
+          return res;
+        }
+
+        textData = textData.map(function (datum) {
+          datum.rotate = _this3._labelRotation;
+          datum.space = calculateSpace.bind(_this3)(datum);
+          var res = calculateLabelSize.bind(_this3)(datum);
+          return Object.assign(res, datum);
+        });
+        this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (d) {
+          return d.truncated;
+        }) : this._labelRotation;
+
+        if (this._rotateLabels) {
+          textData = textData.map(function (datum) {
+            datum.rotate = true;
+            var res = calculateLabelSize.bind(_this3)(datum);
+            return Object.assign(datum, res);
+          });
+        }
+        /**
+         * "spillover" will contain the pixel spillover of the first and last label,
+         * and then adjust the scale range accordingly.
+         */
+
+
+        var spillover = [0, 0];
+
+        for (var index = 0; index < 2; index++) {
+          var datum = textData[index ? textData.length - 1 : 0];
+          if (!datum) break;
+          var _height = datum.height,
+              position = datum.position,
+              rotate = datum.rotate,
+              _width = datum.width;
+          var compPosition = index ? rangeOuter[1] : rangeOuter[0];
+          var halfSpace = (rotate || !horizontal ? _height : _width) / 2;
+          var spill = index ? position + halfSpace - compPosition : position - halfSpace - compPosition;
+          spillover[index] = spill;
+        }
+
+        var first = range$1[0];
+        var last = range$1[range$1.length - 1];
+        var newRange = [first - spillover[0], last - spillover[1]];
+
+        if (this._range) {
+          if (this._range[0] !== undefined) newRange[0] = this._range[0];
+          if (this._range[this._range.length - 1] !== undefined) newRange[1] = this._range[this._range.length - 1];
+        }
+
+        if (newRange[0] !== first || newRange[1] !== last) {
+          setScale.bind(this)(newRange);
+          textData = labels.map(function (d, i) {
+            var fF = _this3._shapeConfig.labelConfig.fontFamily(d, i),
+                fS = _this3._shapeConfig.labelConfig.fontSize(d, i),
+                position = _this3._getPosition(d);
+
+            var lineHeight = _this3._shapeConfig.lineHeight ? _this3._shapeConfig.lineHeight(d, i) : fS * 1.4;
+            return {
+              d: d,
+              i: i,
+              fF: fF,
+              fS: fS,
+              lineHeight: lineHeight,
+              position: position
+            };
+          });
+          textData = textData.map(function (datum) {
+            datum.rotate = _this3._rotateLabels;
+            datum.space = calculateSpace.bind(_this3)(datum);
+            var res = calculateLabelSize.bind(_this3)(datum);
+            return Object.assign(res, datum);
+          });
+        }
+
+        var labelHeight = max(textData, function (t) {
+          return t.height;
+        }) || 0;
+        this._rotateLabels = horizontal && this._labelRotation === undefined ? textData.some(function (datum) {
+          var i = datum.i,
+              height = datum.height,
+              position = datum.position,
+              truncated = datum.truncated;
+          var prev = textData[i - 1];
+          return truncated || i && prev.position + prev.height / 2 > position - height / 2;
+        }) : this._labelRotation;
+
+        if (this._rotateLabels) {
+          var offset = 0;
+          textData = textData.map(function (datum) {
+            datum.space = calculateSpace.bind(_this3)(datum, 2);
+            var res = calculateLabelSize.bind(_this3)(datum);
+            datum = Object.assign(datum, res);
+            var prev = textData[datum.i - 1];
+
+            if (!prev) {
+              offset = 1;
+            } else if (prev.position + prev.height / 2 > datum.position) {
+              if (offset) {
+                datum.offset = prev.width;
+                offset = 0;
+              } else offset = 1;
+            }
+
+            return datum;
+          });
+        }
+
+        var globalOffset = this._labelOffset ? max(textData, function (d) {
+          return d.offset || 0;
+        }) : 0;
+        textData.forEach(function (datum) {
+          return datum.offset = datum.offset ? globalOffset : 0;
+        });
+        var tBuff = this._shape === "Line" ? 0 : hBuff;
+        var bounds = this._outerBounds = (_this$_outerBounds = {}, _defineProperty$4(_this$_outerBounds, height, (max(textData, function (t) {
+          return Math.ceil(t[t.rotate || !horizontal ? "width" : "height"] + t.offset);
+        }) || 0) + (textData.length ? p : 0)), _defineProperty$4(_this$_outerBounds, width, rangeOuter[rangeOuter.length - 1] - rangeOuter[0]), _defineProperty$4(_this$_outerBounds, x, rangeOuter[0]), _this$_outerBounds);
+        bounds[height] = max([this._minSize, bounds[height]]);
+        margin[this._orient] += hBuff;
+        margin[opposite] = this._gridSize !== undefined ? max([this._gridSize, tBuff]) : this["_".concat(height)] - margin[this._orient] - bounds[height] - p;
+        bounds[height] += margin[opposite] + margin[this._orient];
+        bounds[y] = this._align === "start" ? this._padding : this._align === "end" ? this["_".concat(height)] - bounds[height] - this._padding : this["_".concat(height)] / 2 - bounds[height] / 2;
+        var group = elem("g#d3plus-Axis-".concat(this._uuid), {
+          parent: parent
+        });
+        this._group = group;
+        var grid = elem("g.grid", {
+          parent: group
+        }).selectAll("line").data((this._gridSize !== 0 ? this._grid || this._scale === "log" && !this._gridLog ? labels : ticks : []).map(function (d) {
+          return {
+            id: d
+          };
+        }), function (d) {
+          return d.id;
+        });
+        grid.exit().transition(t).attr("opacity", 0).call(this._gridPosition.bind(this)).remove();
+        grid.enter().append("line").attr("opacity", 0).attr("clip-path", "url(#".concat(clipId, ")")).call(this._gridPosition.bind(this), true).merge(grid).transition(t).attr("opacity", 1).call(this._gridPosition.bind(this));
+        var labelOnly = labels.filter(function (d, i) {
+          return textData[i].lines.length && !ticks.includes(d);
+        });
+        var rotated = textData.some(function (d) {
+          return d.rotate;
+        });
+        var tickData = ticks.concat(labelOnly).map(function (d) {
+          var _tickConfig;
+
+          var data = textData.find(function (td) {
+            return td.d === d;
+          });
+
+          var xPos = _this3._getPosition(d);
+
+          var space = data ? data.space : 0;
+          var lines = data ? data.lines.length : 1;
+          var lineHeight = data ? data.lineHeight : 1;
+          var labelOffset = data && _this3._labelOffset ? data.offset : 0;
+          var labelWidth = horizontal ? space : bounds.width - margin[_this3._position.opposite] - hBuff - margin[_this3._orient] + p;
+          var offset = margin[opposite],
+              size = (hBuff + labelOffset) * (flip ? -1 : 1),
+              yPos = flip ? bounds[y] + bounds[height] - offset : bounds[y] + offset;
+          var tickConfig = (_tickConfig = {
+            id: d,
+            labelBounds: rotated && data ? {
+              x: -data.width / 2 + data.fS / 4,
+              y: _this3._orient === "bottom" ? size + p + (data.width - lineHeight * lines) / 2 : size - p * 2 - (data.width + lineHeight * lines) / 2,
+              width: data.width,
+              height: data.height
+            } : {
+              x: horizontal ? -space / 2 : _this3._orient === "left" ? -labelWidth - p + size : size + p,
+              y: horizontal ? _this3._orient === "bottom" ? size + p : size - p - labelHeight : -space / 2,
+              width: horizontal ? space : labelWidth,
+              height: horizontal ? labelHeight : space
+            },
+            rotate: data ? data.rotate : false,
+            size: labels.includes(d) ? size : 0,
+            text: labels.includes(d) ? tickFormat(d) : false,
+            tick: ticks.includes(d)
+          }, _defineProperty$4(_tickConfig, x, xPos + (_this3._scale === "band" ? _this3._d3Scale.bandwidth() / 2 : 0)), _defineProperty$4(_tickConfig, y, yPos), _tickConfig);
+          return tickConfig;
+        });
+
+        if (this._shape === "Line") {
+          tickData = tickData.concat(tickData.map(function (d) {
+            var dupe = Object.assign({}, d);
+            dupe[y] += d.size;
+            return dupe;
+          }));
+        }
+
+        new shapes$2[this._shape]().data(tickData).duration(this._duration).labelConfig({
+          ellipsis: function ellipsis(d) {
+            return d && d.length ? "".concat(d, "...") : "";
+          },
+          rotate: function rotate(d) {
+            return d.rotate ? -90 : 0;
+          }
+        }).select(elem("g.ticks", {
+          parent: group
+        }).node()).config(this._shapeConfig).render();
+        var bar = group.selectAll("line.bar").data([null]);
+        bar.enter().append("line").attr("class", "bar").attr("opacity", 0).call(this._barPosition.bind(this)).merge(bar).transition(t).attr("opacity", 1).call(this._barPosition.bind(this));
+
+        this._titleClass.data(this._title ? [{
+          text: this._title
+        }] : []).duration(this._duration).height(margin[this._orient]).rotate(this._orient === "left" ? -90 : this._orient === "right" ? 90 : 0).select(elem("g.d3plus-Axis-title", {
+          parent: group
+        }).node()).text(function (d) {
+          return d.text;
+        }).verticalAlign("middle").width(range$1[range$1.length - 1] - range$1[0]).x(horizontal ? range$1[0] : this._orient === "left" ? bounds.x + margin.left / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2 : bounds.x + bounds.width - margin.right / 2 - (range$1[range$1.length - 1] - range$1[0]) / 2).y(horizontal ? this._orient === "bottom" ? bounds.y + bounds.height - margin.bottom : bounds.y : range$1[0] + (range$1[range$1.length - 1] - range$1[0]) / 2 - margin[this._orient] / 2).config(this._titleConfig).render();
+
+        this._lastScale = this._getPosition.bind(this);
+        if (callback) setTimeout(callback, this._duration + 100);
+        return this;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the horizontal alignment to the specified value and returns the current class instance.
+          @param {String} [*value* = "center"] Supports `"left"` and `"center"` and `"right"`.
+          @chainable
+      */
+
+    }, {
+      key: "align",
+      value: function align(_) {
+        return arguments.length ? (this._align = _, this) : this._align;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the axis line style and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "barConfig",
+      value: function barConfig(_) {
+        return arguments.length ? (this._barConfig = Object.assign(this._barConfig, _), this) : this._barConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the scale domain of the axis and returns the current class instance.
+          @param {Array} [*value* = [0, 10]]
+          @chainable
+      */
+
+    }, {
+      key: "domain",
+      value: function domain(_) {
+        return arguments.length ? (this._domain = _, this) : this._domain;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the transition duration of the axis and returns the current class instance.
+          @param {Number} [*value* = 600]
+          @chainable
+      */
+
+    }, {
+      key: "duration",
+      value: function duration(_) {
+        return arguments.length ? (this._duration = _, this) : this._duration;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid values of the axis and returns the current class instance.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "grid",
+      value: function grid(_) {
+        return arguments.length ? (this._grid = _, this) : this._grid;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid config of the axis and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "gridConfig",
+      value: function gridConfig(_) {
+        return arguments.length ? (this._gridConfig = Object.assign(this._gridConfig, _), this) : this._gridConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid behavior of the axis when scale is logarithmic and returns the current class instance.
+          @param {Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "gridLog",
+      value: function gridLog(_) {
+        return arguments.length ? (this._gridLog = _, this) : this._gridLog;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the grid size of the axis and returns the current class instance.
+          @param {Number} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "gridSize",
+      value: function gridSize(_) {
+        return arguments.length ? (this._gridSize = _, this) : this._gridSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the overall height of the axis and returns the current class instance.
+          @param {Number} [*value* = 100]
+          @chainable
+      */
+
+    }, {
+      key: "height",
+      value: function height(_) {
+        return arguments.length ? (this._height = _, this) : this._height;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the visible tick labels of the axis and returns the current class instance.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "labels",
+      value: function labels(_) {
+        return arguments.length ? (this._labels = _, this) : this._labels;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets whether offsets will be used to position some labels further away from the axis in order to allow space for the text.
+          @param {Boolean} [*value* = true]
+          @chainable
+       */
+
+    }, {
+      key: "labelOffset",
+      value: function labelOffset(_) {
+        return arguments.length ? (this._labelOffset = _, this) : this._labelOffset;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets whether whether horizontal axis labels are rotated -90 degrees.
+          @param {Boolean}
+          @chainable
+       */
+
+    }, {
+      key: "labelRotation",
+      value: function labelRotation(_) {
+        return arguments.length ? (this._labelRotation = _, this) : this._labelRotation;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the maximum size allowed for the space that contains the axis tick labels and title.
+          @param {Number}
+          @chainable
+       */
+
+    }, {
+      key: "maxSize",
+      value: function maxSize(_) {
+        return arguments.length ? (this._maxSize = _, this) : this._maxSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the minimum size alloted for the space that contains the axis tick labels and title.
+          @param {Number}
+          @chainable
+       */
+
+    }, {
+      key: "minSize",
+      value: function minSize(_) {
+        return arguments.length ? (this._minSize = _, this) : this._minSize;
+      }
+      /**
+          @memberof Axis
+          @desc If *orient* is specified, sets the orientation of the shape and returns the current class instance. If *orient* is not specified, returns the current orientation.
+          @param {String} [*orient* = "bottom"] Supports `"top"`, `"right"`, `"bottom"`, and `"left"` orientations.
+          @chainable
+      */
+
+    }, {
+      key: "orient",
+      value: function orient(_) {
+        if (arguments.length) {
+          var horizontal = ["top", "bottom"].includes(_),
+              opps = {
+            top: "bottom",
+            right: "left",
+            bottom: "top",
+            left: "right"
+          };
+          this._position = {
+            horizontal: horizontal,
+            width: horizontal ? "width" : "height",
+            height: horizontal ? "height" : "width",
+            x: horizontal ? "x" : "y",
+            y: horizontal ? "y" : "x",
+            opposite: opps[_]
+          };
+          return this._orient = _, this;
+        }
+
+        return this._orient;
+      }
+      /**
+          @memberof Axis
+          @desc If called after the elements have been drawn to DOM, will returns the outer bounds of the axis content.
+          @example
+      {"width": 180, "height": 24, "x": 10, "y": 20}
+      */
+
+    }, {
+      key: "outerBounds",
+      value: function outerBounds() {
+        return this._outerBounds;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the padding between each tick label to the specified number and returns the current class instance.
+          @param {Number} [*value* = 10]
+          @chainable
+      */
+
+    }, {
+      key: "padding",
+      value: function padding(_) {
+        return arguments.length ? (this._padding = _, this) : this._padding;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the inner padding of band scale to the specified number and returns the current class instance.
+          @param {Number} [*value* = 0.1]
+          @chainable
+      */
+
+    }, {
+      key: "paddingInner",
+      value: function paddingInner(_) {
+        return arguments.length ? (this._paddingInner = _, this) : this._paddingInner;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the outer padding of band scales to the specified number and returns the current class instance.
+          @param {Number} [*value* = 0.1]
+          @chainable
+      */
+
+    }, {
+      key: "paddingOuter",
+      value: function paddingOuter(_) {
+        return arguments.length ? (this._paddingOuter = _, this) : this._paddingOuter;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the scale range (in pixels) of the axis and returns the current class instance. The given array must have 2 values, but one may be `undefined` to allow the default behavior for that value.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "range",
+      value: function range(_) {
+        return arguments.length ? (this._range = _, this) : this._range;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the scale of the axis and returns the current class instance.
+          @param {String} [*value* = "linear"]
+          @chainable
+      */
+
+    }, {
+      key: "scale",
+      value: function scale(_) {
+        return arguments.length ? (this._scale = _, this) : this._scale;
+      }
+      /**
+          @memberof Axis
+          @desc Sets the "padding" property of the scale, often used in point scales.
+          @param {Number} [*value* = 0.5]
+          @chainable
+      */
+
+    }, {
+      key: "scalePadding",
+      value: function scalePadding(_) {
+        return arguments.length ? (this._scalePadding = _, this) : this._scalePadding;
+      }
+      /**
+          @memberof Axis
+          @desc If *selector* is specified, sets the SVG container element to the specified d3 selector or DOM element and returns the current class instance. If *selector* is not specified, returns the current SVG container element.
+          @param {String|HTMLElement} [*selector* = d3.select("body").append("svg")]
+          @chainable
+      */
+
+    }, {
+      key: "select",
+      value: function select(_) {
+        return arguments.length ? (this._select = _select(_), this) : this._select;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick shape constructor and returns the current class instance.
+          @param {String} [*value* = "Line"]
+          @chainable
+      */
+
+    }, {
+      key: "shape",
+      value: function shape(_) {
+        return arguments.length ? (this._shape = _, this) : this._shape;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick style of the axis and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "shapeConfig",
+      value: function shapeConfig(_) {
+        return arguments.length ? (this._shapeConfig = assign(this._shapeConfig, _), this) : this._shapeConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick formatter and returns the current class instance.
+          @param {Function} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "tickFormat",
+      value: function tickFormat(_) {
+        return arguments.length ? (this._tickFormat = _, this) : this._tickFormat;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick values of the axis and returns the current class instance.
+          @param {Array} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "ticks",
+      value: function ticks(_) {
+        return arguments.length ? (this._ticks = _, this) : this._ticks;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the tick size of the axis and returns the current class instance.
+          @param {Number} [*value* = 5]
+          @chainable
+      */
+
+    }, {
+      key: "tickSize",
+      value: function tickSize(_) {
+        return arguments.length ? (this._tickSize = _, this) : this._tickSize;
+      }
+      /**
+          @memberof Axis
+          @desc Sets the tick specifier for the [tickFormat](https://github.com/d3/d3-scale#continuous_tickFormat) function. If this method is called without any arguments, the default tick specifier is returned.
+          @param {String} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "tickSpecifier",
+      value: function tickSpecifier(_) {
+        return arguments.length ? (this._tickSpecifier = _, this) : this._tickSpecifier;
+      }
+      /**
+          @memberof Axis
+          @desc Sets the behavior of the abbreviations when you are using linear scale. This method accepts two options: "normal" (uses formatAbbreviate to determinate the abbreviation) and "smallest" (uses suffix from the smallest tick as reference in every tick).
+          @param {String} [*value* = "normal"]
+          @chainable
+      */
+
+    }, {
+      key: "tickSuffix",
+      value: function tickSuffix(_) {
+        return arguments.length ? (this._tickSuffix = _, this) : this._tickSuffix;
+      }
+      /**
+          @memberof Axis
+          @desc Defines a custom locale object to be used in time scale. This object must include the following properties: dateTime, date, time, periods, days, shortDays, months, shortMonths. For more information, you can revise [d3p.d3-time-format](https://github.com/d3/d3-time-format/blob/master/README.md#timeFormatLocale).
+          @param {Object} [*value* = undefined]
+          @chainable
+      */
+
+    }, {
+      key: "timeLocale",
+      value: function timeLocale(_) {
+        return arguments.length ? (this._timeLocale = _, this) : this._timeLocale;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the title of the axis and returns the current class instance.
+          @param {String} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "title",
+      value: function title(_) {
+        return arguments.length ? (this._title = _, this) : this._title;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the title configuration of the axis and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "titleConfig",
+      value: function titleConfig(_) {
+        return arguments.length ? (this._titleConfig = Object.assign(this._titleConfig, _), this) : this._titleConfig;
+      }
+      /**
+          @memberof Axis
+          @desc If *value* is specified, sets the overall width of the axis and returns the current class instance.
+          @param {Number} [*value* = 400]
+          @chainable
+      */
+
+    }, {
+      key: "width",
+      value: function width(_) {
+        return arguments.length ? (this._width = _, this) : this._width;
+      }
+    }]);
+
+    return Axis;
+  }(BaseClass);
+
+  function _typeof$m(obj) {
+    if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
+      _typeof$m = function _typeof$1(obj) {
+        return _typeof(obj);
+      };
+    } else {
+      _typeof$m = function _typeof$1(obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
+      };
+    }
+
+    return _typeof$m(obj);
+  }
+
+  function _classCallCheck$k(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+      throw new TypeError("Cannot call a class as a function");
+    }
+  }
+
+  function _defineProperties$k(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass$k(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$k(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$k(Constructor, staticProps);
+    return Constructor;
+  }
+
+  function _possibleConstructorReturn$i(self, call) {
+    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
+      return call;
+    }
+
+    return _assertThisInitialized$i(self);
+  }
+
+  function _assertThisInitialized$i(self) {
+    if (self === void 0) {
+      throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }
+
+    return self;
+  }
+
+  function _get$7(target, property, receiver) {
+    if (typeof Reflect !== "undefined" && Reflect.get) {
+      _get$7 = Reflect.get;
+    } else {
+      _get$7 = function _get(target, property, receiver) {
+        var base = _superPropBase$7(target, property);
+
+        if (!base) return;
+        var desc = Object.getOwnPropertyDescriptor(base, property);
+
+        if (desc.get) {
+          return desc.get.call(receiver);
+        }
+
+        return desc.value;
+      };
+    }
+
+    return _get$7(target, property, receiver || target);
+  }
+
+  function _superPropBase$7(object, property) {
+    while (!Object.prototype.hasOwnProperty.call(object, property)) {
+      object = _getPrototypeOf$i(object);
+      if (object === null) break;
+    }
+
+    return object;
+  }
+
+  function _getPrototypeOf$i(o) {
+    _getPrototypeOf$i = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+      return o.__proto__ || Object.getPrototypeOf(o);
+    };
+    return _getPrototypeOf$i(o);
+  }
+
+  function _inherits$i(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    subClass.prototype = Object.create(superClass && superClass.prototype, {
+      constructor: {
+        value: subClass,
+        writable: true,
+        configurable: true
+      }
+    });
+    if (superClass) _setPrototypeOf$i(subClass, superClass);
+  }
+
+  function _setPrototypeOf$i(o, p) {
+    _setPrototypeOf$i = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+      o.__proto__ = p;
+      return o;
+    };
+
+    return _setPrototypeOf$i(o, p);
+  }
+  /**
       @class Timeline
       @extends external:Axis
   */
 
-  var Timeline =
-  /*#__PURE__*/
-  function (_Axis) {
-    _inherits$h(Timeline, _Axis);
+  var Timeline = /*#__PURE__*/function (_Axis) {
+    _inherits$i(Timeline, _Axis);
     /**
         @memberof Timeline
         @desc Invoked when creating a new class instance, and overrides any default parameters inherited from Axis.
@@ -23406,9 +39348,9 @@
     function Timeline() {
       var _this;
 
-      _classCallCheck$j(this, Timeline);
+      _classCallCheck$k(this, Timeline);
 
-      _this = _possibleConstructorReturn$h(this, _getPrototypeOf$h(Timeline).call(this));
+      _this = _possibleConstructorReturn$i(this, _getPrototypeOf$i(Timeline).call(this));
       _this._barConfig = Object.assign({}, _this._barConfig, {
         "stroke-width": function strokeWidth() {
           return _this._buttonBehaviorCurrent === "buttons" ? 0 : 1;
@@ -23459,7 +39401,7 @@
         },
         width: function width(d) {
           return _this._buttonBehaviorCurrent === "buttons" ? _this._ticksWidth / _this._availableTicks.length : d.tick ? _this._domain.map(function (t) {
-            return date$2(t).getTime();
+            return date$4(t).getTime();
           }).includes(d.id) ? 2 : 1 : 0;
         },
         y: function y(d) {
@@ -23476,7 +39418,7 @@
     */
 
 
-    _createClass$j(Timeline, [{
+    _createClass$k(Timeline, [{
       key: "_brushBrush",
       value: function _brushBrush() {
         if (event$1.sourceEvent && event$1.sourceEvent.offsetX && event$1.selection !== null && (!this._brushing || this._snapping)) {
@@ -23583,8 +39525,8 @@
         var ticks = this._buttonBehaviorCurrent === "ticks" ? this._availableTicks.map(Number) : this._d3Scale.range();
 
         if (this._buttonBehaviorCurrent === "ticks") {
-          domain[0] = date$2(closest(domain[0], ticks));
-          domain[1] = date$2(closest(domain[1], ticks));
+          domain[0] = date$4(closest(domain[0], ticks));
+          domain[1] = date$4(closest(domain[1], ticks));
         } else {
           domain[0] = closest(domain[0], ticks);
           domain[1] = closest(domain[1], ticks);
@@ -23593,7 +39535,7 @@
         var single = +domain[0] === +domain[1];
 
         if (event$1.type === "brush" || event$1.type === "end") {
-          this._selection = this._buttonBehaviorCurrent === "ticks" ? single ? domain[0] : domain : single ? date$2(this._availableTicks[ticks.indexOf(domain[0])]) : [date$2(this._availableTicks[ticks.indexOf(domain[0])]), date$2(this._availableTicks[ticks.indexOf(domain[1])])];
+          this._selection = this._buttonBehaviorCurrent === "ticks" ? single ? domain[0] : domain : single ? date$4(this._availableTicks[ticks.indexOf(domain[0])]) : [date$4(this._availableTicks[ticks.indexOf(domain[0])]), date$4(this._availableTicks[ticks.indexOf(domain[1])])];
         }
 
         return domain;
@@ -23607,7 +39549,7 @@
     }, {
       key: "_updateBrushLimit",
       value: function _updateBrushLimit(domain) {
-        var selection = this._buttonBehaviorCurrent === "ticks" ? domain.map(date$2).map(this._d3Scale) : domain;
+        var selection = this._buttonBehaviorCurrent === "ticks" ? domain.map(date$4).map(this._d3Scale) : domain;
 
         if (selection[0] === selection[1]) {
           selection[0] -= 0.1;
@@ -23639,7 +39581,7 @@
             y = _this$_position.y;
 
         if (this._buttonBehavior !== "ticks") {
-          var ticks = this._ticks ? this._ticks.map(date$2) : this._domain.map(date$2);
+          var ticks = this._ticks ? this._ticks.map(date$4) : this._domain.map(date$4);
           var d3Scale = scaleTime().domain(ticks).range([0, this._width]);
           ticks = this._ticks ? ticks : d3Scale.ticks();
           if (!this._tickFormat) this._tickFormat = d3Scale.tickFormat(ticks.length - 1, this._tickSpecifier); // Measures size of ticks
@@ -23669,10 +39611,10 @@
           this._scale = "ordinal";
           this._labelRotation = 0;
           if (!this._brushing) this._handleSize = 0;
-          var domain = scaleTime().domain(this._domain.map(date$2)).ticks().map(this._tickFormat).map(Number);
-          this._domain = this._ticks ? this._ticks.map(date$2) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) {
+          var domain = scaleTime().domain(this._domain.map(date$4)).ticks().map(this._tickFormat).map(Number);
+          this._domain = this._ticks ? this._ticks.map(date$4) : Array.from(Array(domain[domain.length - 1] - domain[0] + 1), function (_, x) {
             return domain[0] + x;
-          }).map(date$2);
+          }).map(date$4);
           this._ticks = this._domain;
           var buttonMargin = 0.5 * this._ticksWidth / this._ticks.length;
           this._marginLeft = this._buttonAlign === "middle" ? (this._width - this._ticksWidth) / 2 : this._buttonAlign === "end" ? this._width - this._ticksWidth : 0;
@@ -23680,10 +39622,10 @@
           this._range = [this._buttonAlign === "start" ? undefined : this._marginLeft + buttonMargin, this._buttonAlign === "end" ? undefined : marginRight - buttonMargin];
         }
 
-        if (this._ticks) this._domain = this._buttonBehaviorCurrent === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(date$2);
+        if (this._ticks) this._domain = this._buttonBehaviorCurrent === "ticks" ? [this._ticks[0], this._ticks[this._ticks.length - 1]] : this._ticks.map(date$4);
         this._labels = this._ticks;
 
-        _get$7(_getPrototypeOf$h(Timeline.prototype), "render", this).call(this, callback);
+        _get$7(_getPrototypeOf$i(Timeline.prototype), "render", this).call(this, callback);
 
         var offset = this._outerBounds[y],
             range = this._d3Scale.range();
@@ -23858,11 +39800,11 @@
     }]);
 
     return Timeline;
-  }(Axis);
+  }(Axis$1);
 
   /**!
    * @fileOverview Kickass library to create and place poppers near their reference elements.
-   * @version 1.15.0
+   * @version 1.16.1
    * @license
    * Copyright (c) 2016 Federico Zivolo and contributors
    *
@@ -23884,16 +39826,19 @@
    * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    * SOFTWARE.
    */
-  var isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined';
-  var longerTimeoutBrowsers = ['Edge', 'Trident', 'Firefox'];
-  var timeoutDuration = 0;
+  var isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined' && typeof navigator !== 'undefined';
 
-  for (var i = 0; i < longerTimeoutBrowsers.length; i += 1) {
-    if (isBrowser && navigator.userAgent.indexOf(longerTimeoutBrowsers[i]) >= 0) {
-      timeoutDuration = 1;
-      break;
+  var timeoutDuration = function () {
+    var longerTimeoutBrowsers = ['Edge', 'Trident', 'Firefox'];
+
+    for (var i = 0; i < longerTimeoutBrowsers.length; i += 1) {
+      if (isBrowser && navigator.userAgent.indexOf(longerTimeoutBrowsers[i]) >= 0) {
+        return 1;
+      }
     }
-  }
+
+    return 0;
+  }();
 
   function microtaskDebounce(fn) {
     var called = false;
@@ -24017,6 +39962,18 @@
     }
 
     return getScrollParent(getParentNode(element));
+  }
+  /**
+   * Returns the reference node of the reference object, or the reference object itself.
+   * @method
+   * @memberof Popper.Utils
+   * @param {Element|Object} reference - the reference element (the popper will be relative to this)
+   * @returns {Element} parent
+   */
+
+
+  function getReferenceNode(reference) {
+    return reference && reference.referenceNode ? reference.referenceNode : reference;
   }
 
   var isIE11 = isBrowser && !!(window.MSInputMethodContext && document.documentMode);
@@ -24204,7 +40161,7 @@
   function getBordersSize(styles, axis) {
     var sideA = axis === 'x' ? 'Left' : 'Top';
     var sideB = sideA === 'Left' ? 'Right' : 'Bottom';
-    return parseFloat(styles['border' + sideA + 'Width'], 10) + parseFloat(styles['border' + sideB + 'Width'], 10);
+    return parseFloat(styles['border' + sideA + 'Width']) + parseFloat(styles['border' + sideB + 'Width']);
   }
 
   function getSize(axis, body, html, computedStyle) {
@@ -24324,8 +40281,8 @@
     }; // subtract scrollbar size from sizes
 
     var sizes = element.nodeName === 'HTML' ? getWindowSizes(element.ownerDocument) : {};
-    var width = sizes.width || element.clientWidth || result.right - result.left;
-    var height = sizes.height || element.clientHeight || result.bottom - result.top;
+    var width = sizes.width || element.clientWidth || result.width;
+    var height = sizes.height || element.clientHeight || result.height;
     var horizScrollbar = element.offsetWidth - width;
     var vertScrollbar = element.offsetHeight - height; // if an hypothetical scrollbar is detected, we must be sure it's not a `border`
     // we make this check conditional for performance reasons
@@ -24349,8 +40306,8 @@
     var parentRect = getBoundingClientRect(parent);
     var scrollParent = getScrollParent(children);
     var styles = getStyleComputedProperty(parent);
-    var borderTopWidth = parseFloat(styles.borderTopWidth, 10);
-    var borderLeftWidth = parseFloat(styles.borderLeftWidth, 10); // In cases where the parent is fixed, we must ignore negative scroll in offset calc
+    var borderTopWidth = parseFloat(styles.borderTopWidth);
+    var borderLeftWidth = parseFloat(styles.borderLeftWidth); // In cases where the parent is fixed, we must ignore negative scroll in offset calc
 
     if (fixedPosition && isHTML) {
       parentRect.top = Math.max(parentRect.top, 0);
@@ -24370,8 +40327,8 @@
     // the box of the documentElement, in the other cases not.
 
     if (!isIE10 && isHTML) {
-      var marginTop = parseFloat(styles.marginTop, 10);
-      var marginLeft = parseFloat(styles.marginLeft, 10);
+      var marginTop = parseFloat(styles.marginTop);
+      var marginLeft = parseFloat(styles.marginLeft);
       offsets.top -= borderTopWidth - marginTop;
       offsets.bottom -= borderTopWidth - marginTop;
       offsets.left -= borderLeftWidth - marginLeft;
@@ -24476,7 +40433,7 @@
       top: 0,
       left: 0
     };
-    var offsetParent = fixedPosition ? getFixedPositionOffsetParent(popper) : findCommonOffsetParent(popper, reference); // Handle viewport case
+    var offsetParent = fixedPosition ? getFixedPositionOffsetParent(popper) : findCommonOffsetParent(popper, getReferenceNode(reference)); // Handle viewport case
 
     if (boundariesElement === 'viewport') {
       boundaries = getViewportOffsetRectRelativeToArtbitraryNode(offsetParent, fixedPosition);
@@ -24597,7 +40554,7 @@
 
   function getReferenceOffsets(state, popper, reference) {
     var fixedPosition = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
-    var commonOffsetParent = fixedPosition ? getFixedPositionOffsetParent(popper) : findCommonOffsetParent(popper, reference);
+    var commonOffsetParent = fixedPosition ? getFixedPositionOffsetParent(popper) : findCommonOffsetParent(popper, getReferenceNode(reference));
     return getOffsetRectRelativeToArbitraryNode(reference, commonOffsetParent, fixedPosition);
   }
   /**
@@ -24861,7 +40818,7 @@
       this.popper.style[getSupportedPropertyName('transform')] = '';
     }
 
-    this.disableEventListeners(); // remove the popper if user explicity asked for the deletion on destroy
+    this.disableEventListeners(); // remove the popper if user explicitly asked for the deletion on destroy
     // do not use `remove` because IE11 doesn't support it
 
     if (this.options.removeOnDestroy) {
@@ -25311,8 +41268,8 @@
     // take popper margin in account because we don't have this info available
 
     var css = getStyleComputedProperty(data.instance.popper);
-    var popperMarginSide = parseFloat(css['margin' + sideCapitalized], 10);
-    var popperBorderSide = parseFloat(css['border' + sideCapitalized + 'Width'], 10);
+    var popperMarginSide = parseFloat(css['margin' + sideCapitalized]);
+    var popperBorderSide = parseFloat(css['border' + sideCapitalized + 'Width']);
     var sideValue = center - data.offsets.popper[side] - popperMarginSide - popperBorderSide; // prevent arrowElement from being placed not contiguously to its popper
 
     sideValue = Math.max(Math.min(popper[len] - arrowElementSize, sideValue), 0);
@@ -26460,27 +42417,27 @@
   Popper.placements = placements;
   Popper.Defaults = Defaults;
 
-  function _typeof$l(obj) {
+  function _typeof$n(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$l = function _typeof$1(obj) {
+      _typeof$n = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$l = function _typeof$1(obj) {
+      _typeof$n = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$l(obj);
+    return _typeof$n(obj);
   }
 
-  function _classCallCheck$k(instance, Constructor) {
+  function _classCallCheck$l(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$k(target, props) {
+  function _defineProperties$l(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -26490,21 +42447,21 @@
     }
   }
 
-  function _createClass$k(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$k(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$k(Constructor, staticProps);
+  function _createClass$l(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$l(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$l(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$i(self, call) {
-    if (call && (_typeof$l(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$j(self, call) {
+    if (call && (_typeof$n(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$i(self);
+    return _assertThisInitialized$j(self);
   }
 
-  function _assertThisInitialized$i(self) {
+  function _assertThisInitialized$j(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -26512,14 +42469,14 @@
     return self;
   }
 
-  function _getPrototypeOf$i(o) {
-    _getPrototypeOf$i = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$j(o) {
+    _getPrototypeOf$j = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$i(o);
+    return _getPrototypeOf$j(o);
   }
 
-  function _inherits$i(subClass, superClass) {
+  function _inherits$j(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -26531,16 +42488,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$i(subClass, superClass);
+    if (superClass) _setPrototypeOf$j(subClass, superClass);
   }
 
-  function _setPrototypeOf$i(o, p) {
-    _setPrototypeOf$i = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$j(o, p) {
+    _setPrototypeOf$j = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$i(o, p);
+    return _setPrototypeOf$j(o, p);
   }
   /**
       @class Tooltip
@@ -26548,10 +42505,8 @@
       @desc Creates HTML tooltips in the body of a webpage.
   */
 
-  var Tooltip =
-  /*#__PURE__*/
-  function (_BaseClass) {
-    _inherits$i(Tooltip, _BaseClass);
+  var Tooltip = /*#__PURE__*/function (_BaseClass) {
+    _inherits$j(Tooltip, _BaseClass);
     /**
         @memberof Tooltip
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -26562,9 +42517,9 @@
     function Tooltip() {
       var _this;
 
-      _classCallCheck$k(this, Tooltip);
+      _classCallCheck$l(this, Tooltip);
 
-      _this = _possibleConstructorReturn$i(this, _getPrototypeOf$i(Tooltip).call(this));
+      _this = _possibleConstructorReturn$j(this, _getPrototypeOf$j(Tooltip).call(this));
       _this._arrow = accessor("arrow", "");
       _this._arrowStyle = {
         "content": "",
@@ -26639,6 +42594,7 @@
       _this._trStyle = {
         "border-top": "1px solid rgba(0, 0, 0, 0.1)"
       };
+      _this._tdStyle = {};
       _this._width = constant$5("auto");
       return _this;
     }
@@ -26648,7 +42604,7 @@
     */
 
 
-    _createClass$k(Tooltip, [{
+    _createClass$l(Tooltip, [{
       key: "render",
       value: function render(callback) {
         var _this2 = this;
@@ -26668,6 +42624,10 @@
           });
           var div = update.select(".d3plus-tooltip-".concat(cat)).html(function (d, i) {
             return that["_".concat(cat)](d, i);
+          }).style("display", function (d, i) {
+            var val = that["_".concat(cat)](d, i);
+            var visible = val !== false && val !== undefined && val !== null;
+            return visible ? "block" : "none";
           });
           stylize(div, that["_".concat(cat, "Style")]);
         }
@@ -26719,6 +42679,7 @@
           return d;
         });
         td.enter().append("td").merge(td).html(cellContent);
+        stylize(td, this._tdStyle);
         divElement("footer");
         divElement("arrow");
         enter.attr("id", function (d, i) {
@@ -27157,7 +43118,7 @@
       }
       /**
           @memberof Tooltip
-          @desc If *value* is specified, sets the table row styles to the specified values and returns this generator. If *value* is not specified, returns the current table row styles.
+          @desc An object with CSS keys and values to be applied to all <tr> elements inside of each <tbody>.
           @param {Object} [*value*]
           @example <caption>default styles</caption>
       {
@@ -27169,6 +43130,17 @@
       key: "trStyle",
       value: function trStyle(_) {
         return arguments.length ? (this._trStyle = Object.assign(this._trStyle, _), this) : this._trStyle;
+      }
+      /**
+          @memberof Tooltip
+          @desc An object with CSS keys and values to be applied to all <td> elements inside of each <tr>.
+          @param {Object} [*value*]
+       */
+
+    }, {
+      key: "tdStyle",
+      value: function tdStyle(_) {
+        return arguments.length ? (this._tdStyle = Object.assign(this._tdStyle, _), this) : this._tdStyle;
       }
       /**
           @memberof Tooltip
@@ -27186,13 +43158,13 @@
     return Tooltip;
   }(BaseClass);
 
-  function _classCallCheck$l(instance, Constructor) {
+  function _classCallCheck$m(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$l(target, props) {
+  function _defineProperties$m(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -27202,9 +43174,9 @@
     }
   }
 
-  function _createClass$l(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$l(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$l(Constructor, staticProps);
+  function _createClass$m(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$m(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$m(Constructor, staticProps);
     return Constructor;
   }
   /**
@@ -27213,16 +43185,14 @@
       @private
   */
 
-  var Message =
-  /*#__PURE__*/
-  function () {
+  var Message = /*#__PURE__*/function () {
     /**
         @memberof Message
         @desc Invoked when creating a new class instance, and sets any default parameters.
         @private
     */
     function Message() {
-      _classCallCheck$l(this, Message);
+      _classCallCheck$m(this, Message);
 
       this._isVisible = false;
     }
@@ -27233,7 +43203,7 @@
     */
 
 
-    _createClass$l(Message, [{
+    _createClass$m(Message, [{
       key: "exit",
       value: function exit(elem, duration) {
         elem.transition().duration(duration).style("opacity", 0).transition().remove();
@@ -27278,7 +43248,7 @@
             _ref2$html = _ref2.html,
             html = _ref2$html === void 0 ? "Please Wait" : _ref2$html,
             _ref2$mask = _ref2.mask,
-            mask = _ref2$mask === void 0 ? "rgba(0, 0, 0, 0.1)" : _ref2$mask,
+            mask = _ref2$mask === void 0 ? "rgba(0, 0, 0, 0.05)" : _ref2$mask,
             _ref2$style = _ref2.style,
             style = _ref2$style === void 0 ? {} : _ref2$style;
 
@@ -27323,12 +43293,12 @@
     }).node();
 
     this._backClass.data(visible ? [{
-      text: "Back",
+      text: "\u2190 ".concat(this._translate("Back")),
       x: 0,
       y: 0
     }] : []).select(backGroup).config(this._backConfig).render();
 
-    this._margin.top += visible ? this._backClass.fontSize()() : 0;
+    this._margin.top += visible ? this._backClass.fontSize()() + this._backClass.padding()() * 2 : 0;
   }
 
   /**
@@ -30348,7 +46318,7 @@
           var decode64 = utils.decode64;
 
           function Proxy(src, proxyUrl, document) {
-            var supportsCORS = 'withCredentials' in new XMLHttpRequest();
+            var supportsCORS = ('withCredentials' in new XMLHttpRequest());
 
             if (!proxyUrl) {
               return Promise.reject("No proxy configured");
@@ -30364,7 +46334,7 @@
           var proxyCount = 0;
 
           function ProxyURL(src, proxyUrl, document) {
-            var supportsCORSImage = 'crossOrigin' in new Image();
+            var supportsCORSImage = ('crossOrigin' in new Image());
             var callback = createCallback(supportsCORSImage);
             var url = createProxyUrl(proxyUrl, src, callback);
             return supportsCORSImage ? Promise.resolve(url) : jsonp(document, url, callback).then(function (response) {
@@ -32553,7 +48523,7 @@
    * @see http://www.w3.org/TR/REC-DOM-Level-1/ecma-script-language-binding.html
    * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/ecma-script-binding.html
    */
-  function copy$1(src, dest) {
+  function copy$4(src, dest) {
     for (var p in src) {
       dest[p] = src[p];
     }
@@ -32576,7 +48546,7 @@
       var t = function t() {};
       t.prototype = Super.prototype;
       t = new t();
-      copy$1(pt, t);
+      copy$4(pt, t);
       Class.prototype = pt = t;
     }
 
@@ -32639,7 +48609,7 @@
     return error;
   }
   DOMException.prototype = Error.prototype;
-  copy$1(ExceptionCode, DOMException);
+  copy$4(ExceptionCode, DOMException);
   /**
    * @see http://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-536297177
    * The NodeList interface provides the abstraction of an ordered collection of nodes, without defining or constraining how this collection is implemented. NodeList objects in the DOM are live.
@@ -32690,7 +48660,7 @@
 
       __set__(list, 'length', ls.length);
 
-      copy$1(ls, list);
+      copy$4(ls, list);
       list._inc = inc;
     }
   }
@@ -33027,8 +48997,8 @@
     return c == '<' && '&lt;' || c == '>' && '&gt;' || c == '&' && '&amp;' || c == '"' && '&quot;' || '&#' + c.charCodeAt() + ';';
   }
 
-  copy$1(NodeType, Node$1);
-  copy$1(NodeType, Node$1.prototype);
+  copy$4(NodeType, Node$1);
+  copy$4(NodeType, Node$1.prototype);
   /**
    * @param callback return true for continue,false for break
    * @return boolean true: break visit;
@@ -33582,9 +49552,9 @@
         //isHTML = true;
         var visibleNamespaces = [{
           namespace: uri,
-          prefix: null //{namespace:uri,prefix:''}
-
-        }];
+          prefix: null
+        } //{namespace:uri,prefix:''}
+        ];
       }
     }
 
@@ -33877,7 +49847,6 @@
         }
 
         break;
-
 
       case ATTRIBUTE_NODE:
         deep = true;
@@ -35798,7 +51767,6 @@
             case 'a':
             case 'z':
               return true;
-              break;
           }
 
           return false;
@@ -37610,6 +53578,10 @@
   }
 
   function _iterableToArrayLimit$3(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -37849,6 +53821,11 @@
             data.loaded = true;
           };
 
+          img.onerror = function () {
+            data.loaded = true;
+            data.value = false;
+          };
+
           img.src = url;
         }
       } else if (!["svg", "g", "text"].includes(tag) && !_select(this).selectAll("svg").size()) {
@@ -38022,13 +53999,16 @@
 
         switch (layer.type) {
           case "img":
-            context.save();
-            context.beginPath();
-            context.translate(options.padding + clip.x, options.padding + clip.y);
-            context.rect(0, 0, clip.width, clip.height);
-            context.clip();
-            context.drawImage(layer.value, layer.x + clip.x, layer.y + clip.y, layer.width, layer.height);
-            context.restore();
+            if (layer.value) {
+              context.save();
+              context.beginPath();
+              context.translate(options.padding + clip.x, options.padding + clip.y);
+              context.rect(0, 0, clip.width, clip.height);
+              context.clip();
+              context.drawImage(layer.value, layer.x + clip.x, layer.y + clip.y, layer.width, layer.height);
+              context.restore();
+            }
+
             break;
 
           case "html":
@@ -38248,7 +54228,7 @@
         return view.URL || view.webkitURL || view;
       },
           save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a"),
-          can_use_save_link = "download" in save_link,
+          can_use_save_link = ("download" in save_link),
           click = function click(node) {
         var event = new MouseEvent("click");
         node.dispatchEvent(event);
@@ -38518,7 +54498,7 @@
       if (_this._downloadButton && _this._downloadPosition === area) {
         controls.push({
           data: [{
-            text: "Download",
+            text: _this._translate("Download"),
             value: 1
           }],
           label: "downloadButton",
@@ -38626,9 +54606,7 @@
   */
 
   function legendLabel(d, i) {
-    var l = this._drawLabel(d, i);
-
-    return l instanceof Array ? l.join(", ") : l;
+    return this._drawLabel(d, i, this._legendDepth);
   }
   /**
       @function _drawLegend
@@ -38690,6 +54668,29 @@
         return _this._colorScale(d, i) === undefined;
       }) : data);
       legendData.sort(this._legendSort);
+      var labels = legendData.map(function (d, i) {
+        return _this._ids(d, i).slice(0, _this._drawDepth + 1);
+      });
+      this._legendDepth = 0;
+
+      var _loop = function _loop(x) {
+        var values = labels.map(function (l) {
+          return l[x];
+        });
+
+        if (!values.some(function (v) {
+          return v instanceof Array;
+        }) && Array.from(new Set(values)).length === legendData.length) {
+          _this._legendDepth = x;
+          return "break";
+        }
+      };
+
+      for (var x = 0; x <= this._drawDepth; x++) {
+        var _ret = _loop(x);
+
+        if (_ret === "break") break;
+      }
 
       var hidden = function hidden(d, i) {
         var id = _this._id(d, i);
@@ -38732,7 +54733,7 @@
       this._timelineSelection = s;
       s = s.map(Number);
       this.timeFilter(function (d) {
-        var ms = date$2(_this._time(d)).getTime();
+        var ms = date$3(_this._time(d)).getTime();
         return ms >= s[0] && ms <= s[1];
       }).render();
     }
@@ -38750,7 +54751,7 @@
 
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
     var timelinePossible = this._time && this._timeline;
-    var ticks = timelinePossible ? unique(this._data.map(this._time)).map(date$2) : [];
+    var ticks = timelinePossible ? unique(this._data.map(this._time)).map(date$3) : [];
     timelinePossible = timelinePossible && ticks.length > 1;
     var padding = this._timelinePadding() ? this._padding : {
       top: 0,
@@ -38775,7 +54776,7 @@
       })).width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right));
 
       if (timeline.selection() === undefined) {
-        this._timelineSelection = extent(data, this._time).map(date$2);
+        this._timelineSelection = extent(data, this._time).map(date$3);
         timeline.selection(this._timelineSelection);
       }
 
@@ -38933,17 +54934,18 @@
       var filterGroup = this._groupBy[this._drawDepth],
           filterId = filterGroup(d, i);
       this.hover(false);
-      if (this._tooltip) this._tooltipClass.data([]).render();
+      if (this._tooltip(d, i)) this._tooltipClass.data([]).render();
+      var oldFilter = this._filter;
 
       this._history.push({
         depth: this._depth,
-        filter: this._filter
+        filter: oldFilter
       });
 
       this.config({
         depth: this._drawDepth + 1,
         filter: function filter(f, x) {
-          return filterGroup(f, x) === filterId;
+          return (!oldFilter || oldFilter(f, x)) && filterGroup(f, x) === filterId;
         }
       }).render();
     }
@@ -38961,7 +54963,7 @@
 
     this._select.style("cursor", "auto");
 
-    if (this._tooltip) this._tooltipClass.data([]).render();
+    if (this._tooltip(d, i)) this._tooltipClass.data([]).render();
 
     var id = this._id(d, i);
 
@@ -39002,6 +55004,31 @@
     }
   }
 
+  var flattenIds = function flattenIds(levels) {
+    return levels.reduce(function (arr, level) {
+      if (level instanceof Array) {
+        if (arr.length) {
+          var oldArray = arr.slice();
+          arr = [];
+          level.forEach(function (id) {
+            return arr = arr.concat(oldArray.map(function (a) {
+              return "".concat(a, "_").concat(id);
+            }));
+          });
+        } else {
+          arr = level.slice();
+        }
+      } else if (arr.length) {
+        arr = arr.map(function (a) {
+          return "".concat(a, "_").concat(level);
+        });
+      } else {
+        arr.push(level);
+      }
+
+      return arr;
+    }, []);
+  };
   /**
       @desc On mouseenter event for all shapes in a Viz.
       @param {Object} *d* The data object being interacted with.
@@ -39009,17 +55036,17 @@
       @private
   */
 
+
   function mouseenter (d, i) {
     var _this = this;
 
     if (this._shapeConfig.hoverOpacity !== 1) {
-      var filterId = this._ids(d, i);
-
+      var filterIds = flattenIds(this._ids(d, i));
       this.hover(function (h, x) {
-        var ids = _this._ids(h, x);
-
-        var index = min([ids.length - 1, filterId.length - 1, _this._drawDepth]);
-        return filterId.slice(0, index + 1).join("_") === ids.slice(0, index + 1).join("_");
+        var ids = flattenIds(_this._ids(h, x));
+        return filterIds.some(function (id) {
+          return ids.includes(id);
+        });
       });
     }
   }
@@ -39040,7 +55067,7 @@
 
       var tooltipData = _this._tooltipClass.data();
 
-      if (tooltipData.length && _this._tooltip) {
+      if (tooltipData.length && _this._tooltip(d, i)) {
         var tooltipDatum = tooltipData[0];
 
         while (tooltipDatum.__d3plus__ && tooltipDatum.data) {
@@ -39073,14 +55100,15 @@
       return id;
     })).length;
 
-    if (this._tooltip && d) {
+    if (d && this._tooltip(d, i)) {
       var id = this._id(d, i);
 
       if (id instanceof Array) id = id[0];
+      var t = this._translate;
 
       this._select.style("cursor", "pointer");
 
-      this._tooltipClass.data([x || d]).footer(this._solo.length && !this._solo.includes(id) ? "Click to Highlight" : this._solo.length === 1 && this._solo.includes(id) || this._hidden.length === dataLength - 1 ? "Click to Reset" : this._solo.includes(id) ? "Click to Hide" : this._hidden.includes(id) ? "Click to Highlight" : "Click to Highlight<br />Shift+Click to Hide").title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this)).position(position).config(configPrep.bind(this)(this._tooltipConfig)).config(configPrep.bind(this)(this._legendTooltip)).render();
+      this._tooltipClass.data([x || d]).footer(this._solo.length && !this._solo.includes(id) ? t("Click to Highlight") : this._solo.length === 1 && this._solo.includes(id) || this._hidden.length === dataLength - 1 ? t("Click to Reset") : this._solo.includes(id) ? t("Click to Hide") : this._hidden.includes(id) ? t("Click to Highlight") : "".concat(t("Click to Highlight"), "<br />").concat(t("Shift+Click to Hide"))).title(this._legendConfig.label ? this._legendClass.label() : legendLabel.bind(this)).position(position).config(configPrep.bind(this)(this._tooltipConfig)).config(configPrep.bind(this)(this._legendTooltip)).render();
     }
   }
 
@@ -39093,12 +55121,12 @@
   */
 
   function mousemoveShape (d, i, x) {
-    if (this._tooltip && d) {
+    if (d && this._tooltip(d, i)) {
       this._select.style("cursor", "pointer");
 
       var position = event$1.touches ? [event$1.touches[0].clientX, event$1.touches[0].clientY] : [event$1.clientX, event$1.clientY];
 
-      this._tooltipClass.data([x || d]).footer(this._drawDepth < this._groupBy.length - 1 ? "Click to Expand" : "").title(this._drawLabel).position(position).config(configPrep.bind(this)(this._tooltipConfig)).render();
+      this._tooltipClass.data([x || d]).footer(this._drawDepth < this._groupBy.length - 1 ? this._translate("Click to Expand") : false).title(this._drawLabel).position(position).config(configPrep.bind(this)(this._tooltipConfig)).render();
     }
   }
 
@@ -39110,7 +55138,7 @@
   function touchstartBody (d) {
     event$1.preventDefault();
     event$1.stopPropagation();
-    if (this._tooltip && !d) this._tooltipClass.data([]).render();
+    if (!d) this._tooltipClass.data([]).render();
   }
 
   function _slicedToArray$4(arr, i) {
@@ -39122,6 +55150,10 @@
   }
 
   function _iterableToArrayLimit$4(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -39370,19 +55402,19 @@
     this._brushGroup.selectAll(".handle").call(attrize, this._zoomBrushHandleStyle || {});
   }
 
-  function _toConsumableArray$1(arr) {
-    return _arrayWithoutHoles$1(arr) || _iterableToArray$1(arr) || _nonIterableSpread$1();
+  function _toConsumableArray$2(arr) {
+    return _arrayWithoutHoles$2(arr) || _iterableToArray$2(arr) || _nonIterableSpread$2();
   }
 
-  function _nonIterableSpread$1() {
+  function _nonIterableSpread$2() {
     throw new TypeError("Invalid attempt to spread non-iterable instance");
   }
 
-  function _iterableToArray$1(iter) {
+  function _iterableToArray$2(iter) {
     if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
   }
 
-  function _arrayWithoutHoles$1(arr) {
+  function _arrayWithoutHoles$2(arr) {
     if (Array.isArray(arr)) {
       for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) {
         arr2[i] = arr[i];
@@ -39401,6 +55433,10 @@
   }
 
   function _iterableToArrayLimit$5(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -39430,27 +55466,27 @@
     if (Array.isArray(arr)) return arr;
   }
 
-  function _typeof$m(obj) {
+  function _typeof$o(obj) {
     if (typeof Symbol === "function" && _typeof(Symbol.iterator) === "symbol") {
-      _typeof$m = function _typeof$1(obj) {
+      _typeof$o = function _typeof$1(obj) {
         return _typeof(obj);
       };
     } else {
-      _typeof$m = function _typeof$1(obj) {
+      _typeof$o = function _typeof$1(obj) {
         return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof(obj);
       };
     }
 
-    return _typeof$m(obj);
+    return _typeof$o(obj);
   }
 
-  function _classCallCheck$m(instance, Constructor) {
+  function _classCallCheck$n(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   }
 
-  function _defineProperties$m(target, props) {
+  function _defineProperties$n(target, props) {
     for (var i = 0; i < props.length; i++) {
       var descriptor = props[i];
       descriptor.enumerable = descriptor.enumerable || false;
@@ -39460,28 +55496,28 @@
     }
   }
 
-  function _createClass$m(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties$m(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties$m(Constructor, staticProps);
+  function _createClass$n(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties$n(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties$n(Constructor, staticProps);
     return Constructor;
   }
 
-  function _possibleConstructorReturn$j(self, call) {
-    if (call && (_typeof$m(call) === "object" || typeof call === "function")) {
+  function _possibleConstructorReturn$k(self, call) {
+    if (call && (_typeof$o(call) === "object" || typeof call === "function")) {
       return call;
     }
 
-    return _assertThisInitialized$j(self);
+    return _assertThisInitialized$k(self);
   }
 
-  function _getPrototypeOf$j(o) {
-    _getPrototypeOf$j = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
+  function _getPrototypeOf$k(o) {
+    _getPrototypeOf$k = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
       return o.__proto__ || Object.getPrototypeOf(o);
     };
-    return _getPrototypeOf$j(o);
+    return _getPrototypeOf$k(o);
   }
 
-  function _assertThisInitialized$j(self) {
+  function _assertThisInitialized$k(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     }
@@ -39489,7 +55525,7 @@
     return self;
   }
 
-  function _inherits$j(subClass, superClass) {
+  function _inherits$k(subClass, superClass) {
     if (typeof superClass !== "function" && superClass !== null) {
       throw new TypeError("Super expression must either be null or a function");
     }
@@ -39501,16 +55537,16 @@
         configurable: true
       }
     });
-    if (superClass) _setPrototypeOf$j(subClass, superClass);
+    if (superClass) _setPrototypeOf$k(subClass, superClass);
   }
 
-  function _setPrototypeOf$j(o, p) {
-    _setPrototypeOf$j = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+  function _setPrototypeOf$k(o, p) {
+    _setPrototypeOf$k = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
       o.__proto__ = p;
       return o;
     };
 
-    return _setPrototypeOf$j(o, p);
+    return _setPrototypeOf$k(o, p);
   }
   /**
    * Default padding logic that will return false if the screen is less than 600 pixels wide.
@@ -39537,10 +55573,8 @@
   */
 
 
-  var Viz =
-  /*#__PURE__*/
-  function (_BaseClass) {
-    _inherits$j(Viz, _BaseClass);
+  var Viz = /*#__PURE__*/function (_BaseClass) {
+    _inherits$k(Viz, _BaseClass);
     /**
         @memberof Viz
         @desc Invoked when creating a new class instance, and sets any default parameters.
@@ -39551,9 +55585,9 @@
     function Viz() {
       var _this;
 
-      _classCallCheck$m(this, Viz);
+      _classCallCheck$n(this, Viz);
 
-      _this = _possibleConstructorReturn$j(this, _getPrototypeOf$j(Viz).call(this));
+      _this = _possibleConstructorReturn$k(this, _getPrototypeOf$k(Viz).call(this));
       _this._aggs = {};
       _this._ariaHidden = true;
       _this._backClass = new TextBox().on("click", function () {
@@ -39605,9 +55639,9 @@
       _this._legend = true;
       _this._legendClass = new Legend();
       _this._legendConfig = {
-        label: legendLabel.bind(_assertThisInitialized$j(_this)),
+        label: legendLabel.bind(_assertThisInitialized$k(_this)),
         shapeConfig: {
-          ariaLabel: legendLabel.bind(_assertThisInitialized$j(_this)),
+          ariaLabel: legendLabel.bind(_assertThisInitialized$k(_this)),
           labelConfig: {
             fontColor: undefined,
             fontResize: false,
@@ -39624,30 +55658,39 @@
       };
 
       _this._legendTooltip = {};
-      _this._loadingHTML = constant$5("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>Loading Visualization</strong>\n      <sub style=\"display: block; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">Powered by D3plus</a></sub>\n    </div>");
+
+      _this._loadingHTML = function () {
+        return "\n    <div style=\"left: 50%; top: 50%; position: absolute; transform: translate(-50%, -50%); font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>".concat(_this._translate("Loading Visualization"), "</strong>\n      <sub style=\"bottom: 0; display: block; line-height: 1; margin-top: 5px;\"><a href=\"https://d3plus.org\" target=\"_blank\">").concat(_this._translate("Powered by D3plus"), "</a></sub>\n    </div>");
+      };
+
       _this._loadingMessage = true;
       _this._lrucache = lrucache(10);
       _this._messageClass = new Message();
-      _this._messageMask = "rgba(0, 0, 0, 0.1)";
+      _this._messageMask = "rgba(0, 0, 0, 0.05)";
       _this._messageStyle = {
-        "left": "0px",
+        "bottom": "0",
+        "left": "0",
         "position": "absolute",
+        "right": "0",
         "text-align": "center",
-        "top": "45%",
-        "width": "100%"
+        "top": "0"
       };
-      _this._noDataHTML = constant$5("\n    <div style=\"font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>No Data Available</strong>\n    </div>");
+
+      _this._noDataHTML = function () {
+        return "\n    <div style=\"left: 50%; top: 50%; position: absolute; transform: translate(-50%, -50%); font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;\">\n      <strong>".concat(_this._translate("No Data Available"), "</strong>\n    </div>");
+      };
+
       _this._noDataMessage = true;
       _this._on = {
-        "click.shape": clickShape.bind(_assertThisInitialized$j(_this)),
-        "click.legend": clickLegend.bind(_assertThisInitialized$j(_this)),
-        "mouseenter": mouseenter.bind(_assertThisInitialized$j(_this)),
-        "mouseleave": mouseleave.bind(_assertThisInitialized$j(_this)),
-        "mousemove.shape": mousemoveShape.bind(_assertThisInitialized$j(_this)),
-        "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$j(_this))
+        "click.shape": clickShape.bind(_assertThisInitialized$k(_this)),
+        "click.legend": clickLegend.bind(_assertThisInitialized$k(_this)),
+        "mouseenter": mouseenter.bind(_assertThisInitialized$k(_this)),
+        "mouseleave": mouseleave.bind(_assertThisInitialized$k(_this)),
+        "mousemove.shape": mousemoveShape.bind(_assertThisInitialized$k(_this)),
+        "mousemove.legend": mousemoveLegend.bind(_assertThisInitialized$k(_this))
       };
       _this._queue = [];
-      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$m(window)) === undefined ? "" : window;
+      _this._scrollContainer = (typeof window === "undefined" ? "undefined" : _typeof$o(window)) === undefined ? "" : window;
       _this._shape = constant$5("Rect");
       _this._shapes = [];
       _this._shapeConfig = {
@@ -39704,7 +55747,11 @@
       _this._timelinePadding = defaultPadding;
       _this._threshold = constant$5(0.0001);
       _this._thresholdKey = undefined;
-      _this._thresholdName = "Values";
+
+      _this._thresholdName = function () {
+        return _this._translate("Values");
+      };
+
       _this._titleClass = new TextBox();
       _this._titleConfig = {
         ariaHidden: true,
@@ -39714,7 +55761,7 @@
         textAnchor: "middle"
       };
       _this._titlePadding = defaultPadding;
-      _this._tooltip = true;
+      _this._tooltip = constant$5(true);
       _this._tooltipClass = new Tooltip();
       _this._tooltipConfig = {
         pointerEvents: "none",
@@ -39731,7 +55778,7 @@
       };
 
       _this._totalFormat = function (d) {
-        return "Total: ".concat(formatAbbreviate(d, _this._locale));
+        return "".concat(_this._translate("Total"), ": ").concat(formatAbbreviate(d, _this._locale));
       };
 
       _this._totalPadding = defaultPadding;
@@ -39782,7 +55829,7 @@
      */
 
 
-    _createClass$m(Viz, [{
+    _createClass$n(Viz, [{
       key: "_preDraw",
       value: function _preDraw() {
         var _this2 = this;
@@ -39801,10 +55848,11 @@
         };
 
         this._drawLabel = function (d, i) {
+          var depth = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : _this2._drawDepth;
           if (!d) return "";
 
           if (d._isAggregation) {
-            return "".concat(_this2._thresholdName, " < ").concat(formatAbbreviate(d._threshold * 100, _this2._locale), "%");
+            return "".concat(_this2._thresholdName(d, i), " < ").concat(formatAbbreviate(d._threshold * 100, _this2._locale), "%");
           }
 
           while (d.__d3plus__ && d.data) {
@@ -39812,19 +55860,19 @@
             i = d.i;
           }
 
-          if (_this2._label) return _this2._label(d, i);
+          if (_this2._label) return "".concat(_this2._label(d, i));
 
-          var l = that._ids(d, i).slice(0, _this2._drawDepth + 1);
+          var l = that._ids(d, i).slice(0, depth + 1);
 
           var n = l.reverse().find(function (ll) {
             return !(ll instanceof Array);
           }) || l[l.length - 1];
-          return n instanceof Array ? listify(n) : n;
+          return n instanceof Array ? listify(n) : "".concat(n);
         }; // set the default timeFilter if it has not been specified
 
 
         if (this._time && !this._timeFilter && this._data.length) {
-          var dates = this._data.map(this._time).map(date$2);
+          var dates = this._data.map(this._time).map(date$3);
 
           var d = this._data[0],
               i = 0;
@@ -39837,7 +55885,7 @@
             var latestTime = +max(dates);
 
             this._timeFilter = function (d, i) {
-              return +date$2(_this2._time(d, i)) === latestTime;
+              return +date$3(_this2._time(d, i)) === latestTime;
             };
           }
         }
@@ -39858,11 +55906,17 @@
           if (this._discrete && "_".concat(this._discrete) in this) dataNest.key(this["_".concat(this._discrete)]);
           if (this._discrete && "_".concat(this._discrete, "2") in this) dataNest.key(this["_".concat(this._discrete, "2")]);
           var tree = dataNest.rollup(function (leaves) {
+            var index = _this2._data.indexOf(leaves[0]);
+
+            var shape = _this2._shape(leaves[0], index);
+
+            var id = _this2._id(leaves[0], index);
+
             var d = objectMerge(leaves, _this2._aggs);
 
-            var id = _this2._id(d);
-
-            if (!_this2._hidden.includes(id) && (!_this2._solo.length || _this2._solo.includes(id))) _this2._filteredData.push(d);
+            if (!_this2._hidden.includes(id) && (!_this2._solo.length || _this2._solo.includes(id))) {
+              if (!_this2._discrete && shape === "Line") _this2._filteredData = _this2._filteredData.concat(leaves);else _this2._filteredData.push(d);
+            }
 
             _this2._legendData.push(d);
           }).entries(flatData);
@@ -39874,16 +55928,19 @@
 
         if (uniqueIds > this._dataCutoff) {
           if (this._userHover === undefined) this._userHover = this._shapeConfig.hoverOpacity || 0.5;
+          if (this._userDuration === undefined) this._userDuration = this._shapeConfig.duration || 600;
           this._shapeConfig.hoverOpacity = 1;
+          this._shapeConfig.duration = 0;
         } else if (this._userHover !== undefined) {
           this._shapeConfig.hoverOpacity = this._userHover;
+          this._shapeConfig.duration = this._userDuration;
         }
 
         if (this._noDataMessage && !this._filteredData.length) {
           this._messageClass.render({
             container: this._select.node().parentNode,
             html: this._noDataHTML(this),
-            mask: this._messageMask,
+            mask: false,
             style: this._messageStyle
           });
         }
@@ -39928,20 +55985,21 @@
         // this._zoomGroup = enter.merge(this._zoomGroup);
         // const testConfig = {
         //   on: {
+        //     click: this._on["click.shape"],
         //     mouseenter: this._on.mouseenter,
         //     mouseleave: this._on.mouseleave,
         //     mousemove: this._on["mousemove.shape"]
         //   }
         // };
-        // const testWidth = 5;
+        // const testWidth = 20;
         // this._shapes.push(new Rect()
         //   .config(this._shapeConfig)
-        //   .config(configPrep(testConfig))
+        //   .config(configPrep.bind(this)(testConfig))
         //   .data(this._filteredData)
         //   .label("Test Label")
         //   .select(this._zoomGroup.node())
         //   .id(this._id)
-        //   .x((d, i) => i * testWidth)
+        //   .x((d, i) => i * testWidth + testWidth / 2)
         //   .y(200)
         //   .width(testWidth)
         //   .height(100)
@@ -40029,7 +56087,7 @@
           setSVGSize.bind(this)();
         }
 
-        this._select.attr("class", "d3plus-viz").attr("aria-hidden", this._ariaHidden).attr("aria-labelledby", "".concat(this._uuid, "-title ").concat(this._uuid, "-desc")).attr("role", "img").transition(transition).style("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).style("height", this._height !== undefined ? "".concat(this._height, "px") : undefined).attr("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).attr("height", this._height !== undefined ? "".concat(this._height, "px") : undefined); // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
+        this._select.attr("class", "d3plus-viz").attr("aria-hidden", this._ariaHidden).attr("aria-labelledby", "".concat(this._uuid, "-title ").concat(this._uuid, "-desc")).attr("role", "img").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xlink", "http://www.w3.org/1999/xlink").transition(transition).style("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).style("height", this._height !== undefined ? "".concat(this._height, "px") : undefined).attr("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).attr("height", this._height !== undefined ? "".concat(this._height, "px") : undefined); // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
 
 
         var svgTitle = this._select.selectAll("title").data([0]);
@@ -40086,14 +56144,14 @@
             this._messageClass.render({
               container: this._select.node().parentNode,
               html: this._loadingHTML(this),
-              mask: this._messageMask,
+              mask: this._filteredData ? this._messageMask : false,
               style: this._messageStyle
             });
           }
 
           this._queue.forEach(function (p) {
-            var cache = _this3._cache ? _this3._lrucache.get(p[1]) : undefined;
-            if (!cache) q.defer.apply(q, _toConsumableArray$1(p));else _this3["_".concat(p[3])] = cache;
+            var cache = _this3._cache ? _this3._lrucache.get("".concat(p[3], "_").concat(p[1])) : undefined;
+            if (!cache) q.defer.apply(q, _toConsumableArray$2(p));else _this3["_".concat(p[3])] = p[2] ? p[2](cache) : cache;
           });
 
           this._queue = [];
@@ -40330,6 +56388,7 @@
       /**
           @memberof Viz
           @desc Sets the primary data array to be used when drawing the visualization. The value passed should be an *Array* of objects or a *String* representing a filepath or URL to be loaded. The following filetypes are supported: `csv`, `tsv`, `txt`, and `json`.
+      If your data URL needs specific headers to be set, an Object with "url" and "headers" keys may also be passed.
       Additionally, a custom formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final array of obejcts to be used as the primary data array. For example, some JSON APIs return the headers split from the data values to save bandwidth. These would need be joined using a custom formatter.
       If *data* is not specified, this method returns the current primary data array, which defaults to an empty array (`[]`);
           @param {Array|String} *data* = []
@@ -40892,14 +56951,14 @@
       /**
           @memberof Viz
           @desc If *value* is specified, sets the label for the bucket item, and returns the current class instance.
-          @param {String} [value]
+          @param {Function|String} [value]
           @chainable
        */
 
     }, {
       key: "thresholdName",
       value: function thresholdName(_) {
-        return arguments.length ? (this._thresholdName = _, this) : this._thresholdName;
+        return arguments.length ? (this._thresholdName = typeof _ === "function" ? _ : constant$5(_), this) : this._thresholdName;
       }
       /**
           @memberof Viz
@@ -41016,14 +57075,14 @@
       /**
           @memberof Viz
           @desc If *value* is specified, toggles the tooltip based on the specified boolean and returns the current class instance.
-          @param {Boolean} [*value* = true]
+          @param {Boolean|Function} [*value* = true]
           @chainable
       */
 
     }, {
       key: "tooltip",
       value: function tooltip(_) {
-        return arguments.length ? (this._tooltip = _, this) : this._tooltip;
+        return arguments.length ? (this._tooltip = typeof _ === "function" ? _ : constant$5(_), this) : this._tooltip;
       }
       /**
           @memberof Viz
@@ -41255,10 +57314,10 @@
       @desc Creates a network visualization based on a defined set of nodes and edges. [Click here](http://d3plus.org/examples/d3plus-network/getting-started/) for help getting started using the Network class.
   */
 
-  var Network =
-  /*#__PURE__*/
-  function (_Viz) {
+  var Network = /*#__PURE__*/function (_Viz) {
     _inherits(Network, _Viz);
+
+    var _super = _createSuper(Network);
 
     /**
         @memberof Network
@@ -41270,7 +57329,7 @@
 
       _classCallCheck(this, Network);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Network).call(this));
+      _this = _super.call(this);
       _this._links = [];
       _this._linkSize = constant$5(1);
       _this._linkSizeMin = 1;
@@ -41916,10 +57975,10 @@
       @desc Creates a ring visualization based on a defined set of nodes and edges. [Click here](http://d3plus.org/examples/d3plus-network/simple-rings/) for help getting started using the Rings class.
   */
 
-  var Rings =
-  /*#__PURE__*/
-  function (_Viz) {
+  var Rings = /*#__PURE__*/function (_Viz) {
     _inherits(Rings, _Viz);
+
+    var _super = _createSuper(Rings);
 
     /**
         @memberof Rings
@@ -41931,7 +57990,7 @@
 
       _classCallCheck(this, Rings);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Rings).call(this));
+      _this = _super.call(this);
       _this._links = [];
       _this._linkSize = constant$5(1);
       _this._linkSizeMin = 1;
@@ -41978,7 +58037,22 @@
       };
 
       _this._on["click.shape"] = function (d) {
-        _this._center = d.id;
+        _this._center = d.id; // Need to resets margins and padding because we are
+        // skipping over the default render method and using
+        // _draw directly.
+
+        _this._margin = {
+          bottom: 0,
+          left: 0,
+          right: 0,
+          top: 0
+        };
+        _this._padding = {
+          bottom: 0,
+          left: 0,
+          right: 0,
+          top: 0
+        };
 
         _this._draw();
       };
@@ -42611,7 +58685,7 @@
     return node.targetLinks.length ? node.depth : node.sourceLinks.length ? min(node.sourceLinks, targetDepth) - 1 : 0;
   }
 
-  function constant$8(x) {
+  function constant$9(x) {
     return function () {
       return x;
     };
@@ -42633,18 +58707,6 @@
     return d.value;
   }
 
-  function nodeCenter(node) {
-    return (node.y0 + node.y1) / 2;
-  }
-
-  function weightedSource(link) {
-    return nodeCenter(link.source) * link.value;
-  }
-
-  function weightedTarget(link) {
-    return nodeCenter(link.target) * link.value;
-  }
-
   function defaultId(d) {
     return d.index;
   }
@@ -42663,7 +58725,7 @@
     return node;
   }
 
-  function sankey () {
+  function Sankey() {
     var x0 = 0,
         y0 = 0,
         x1 = 1,
@@ -42675,9 +58737,11 @@
         // nodePadding
     id = defaultId,
         align = justify,
+        sort,
+        linkSort,
         nodes = defaultNodes,
         links = defaultLinks,
-        iterations = 32;
+        iterations = 6;
 
     function sankey() {
       var graph = {
@@ -42698,11 +58762,15 @@
     };
 
     sankey.nodeId = function (_) {
-      return arguments.length ? (id = typeof _ === "function" ? _ : constant$8(_), sankey) : id;
+      return arguments.length ? (id = typeof _ === "function" ? _ : constant$9(_), sankey) : id;
     };
 
     sankey.nodeAlign = function (_) {
-      return arguments.length ? (align = typeof _ === "function" ? _ : constant$8(_), sankey) : align;
+      return arguments.length ? (align = typeof _ === "function" ? _ : constant$9(_), sankey) : align;
+    };
+
+    sankey.nodeSort = function (_) {
+      return arguments.length ? (sort = _, sankey) : sort;
     };
 
     sankey.nodeWidth = function (_) {
@@ -42714,11 +58782,15 @@
     };
 
     sankey.nodes = function (_) {
-      return arguments.length ? (nodes = typeof _ === "function" ? _ : constant$8(_), sankey) : nodes;
+      return arguments.length ? (nodes = typeof _ === "function" ? _ : constant$9(_), sankey) : nodes;
     };
 
     sankey.links = function (_) {
-      return arguments.length ? (links = typeof _ === "function" ? _ : constant$8(_), sankey) : links;
+      return arguments.length ? (links = typeof _ === "function" ? _ : constant$9(_), sankey) : links;
+    };
+
+    sankey.linkSort = function (_) {
+      return arguments.length ? (linkSort = _, sankey) : linkSort;
     };
 
     sankey.size = function (_) {
@@ -42765,9 +58837,13 @@
 
 
     function computeNodeDepths(graph) {
-      var nodes, next, x;
+      var nodes,
+          next,
+          x,
+          n = graph.nodes.length;
 
       for (nodes = graph.nodes, next = [], x = 0; nodes.length; ++x, nodes = next, next = []) {
+        if (x > n) throw new Error("circular link");
         nodes.forEach(function (node) {
           node.depth = x;
           node.sourceLinks.forEach(function (link) {
@@ -42779,6 +58855,7 @@
       }
 
       for (nodes = graph.nodes, next = [], x = 0; nodes.length; ++x, nodes = next, next = []) {
+        if (x > n) throw new Error("circular link");
         nodes.forEach(function (node) {
           node.height = x;
           node.targetLinks.forEach(function (link) {
@@ -42791,7 +58868,8 @@
 
       var kx = (x1 - x0 - dx) / (x - 1);
       graph.nodes.forEach(function (node) {
-        node.x1 = (node.x0 = x0 + Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x)))) * kx) + dx;
+        node.layer = Math.max(0, Math.min(x - 1, Math.floor(align.call(null, node, x))));
+        node.x1 = (node.x0 = x0 + node.layer * kx) + dx;
       });
     }
 
@@ -42803,13 +58881,18 @@
       }); //
 
       initializeNodeBreadth();
-      resolveCollisions();
 
-      for (var alpha = 1, n = iterations; n > 0; --n) {
-        relaxRightToLeft(alpha *= 0.99);
-        resolveCollisions();
-        relaxLeftToRight(alpha);
-        resolveCollisions();
+      for (var i = 0, n = iterations; i < n; ++i) {
+        var a = Math.pow(0.99, i);
+        var b = (i + 1) / n;
+        reorderLinks(graph);
+        relaxRightToLeft(a);
+        resolveCollisionsTopToBottom(b);
+        resolveCollisionsBottomToTop(b);
+        reorderLinks(graph);
+        relaxLeftToRight(a);
+        resolveCollisionsTopToBottom(b);
+        resolveCollisionsBottomToTop(b);
       }
 
       function initializeNodeBreadth() {
@@ -42817,76 +58900,137 @@
           return (y1 - y0 - (nodes.length - 1) * py) / sum(nodes, value);
         });
         columns.forEach(function (nodes) {
-          nodes.forEach(function (node, i) {
-            node.y1 = (node.y0 = i) + node.value * ky;
+          if (sort != null) nodes.sort(sort);
+          var y = y0;
+          nodes.forEach(function (node) {
+            node.y0 = y;
+            node.y1 = y + node.value * ky;
+            y = node.y1 + py;
           });
         });
         graph.links.forEach(function (link) {
           link.width = link.value * ky;
         });
-      }
+        if (linkSort != null) graph.nodes.forEach(function (node) {
+          node.sourceLinks.sort(linkSort);
+          node.targetLinks.sort(linkSort);
+        });
+      } // Reposition each node based on its incoming (target) links.
+
 
       function relaxLeftToRight(alpha) {
-        columns.forEach(function (nodes) {
-          nodes.forEach(function (node) {
-            if (node.targetLinks.length) {
-              var dy = (sum(node.targetLinks, weightedSource) / sum(node.targetLinks, value) - nodeCenter(node)) * alpha;
-              node.y0 += dy, node.y1 += dy;
+        columns.slice(1).forEach(function (nodes) {
+          nodes.forEach(function (target) {
+            var y = 0;
+            var w = 0;
+
+            var _iterator = _createForOfIteratorHelper(target.targetLinks),
+                _step;
+
+            try {
+              for (_iterator.s(); !(_step = _iterator.n()).done;) {
+                var _step$value = _step.value,
+                    source = _step$value.source,
+                    _value = _step$value.value;
+                var v = _value * (target.layer - source.layer);
+                y += targetTop(source, target) * v;
+                w += v;
+              }
+            } catch (err) {
+              _iterator.e(err);
+            } finally {
+              _iterator.f();
             }
+
+            if (!(w > 0)) return;
+            var dy = (y / w - target.y0) * alpha;
+            target.y0 += dy;
+            target.y1 += dy;
           });
         });
-      }
+      } // Reposition each node based on its outgoing (source) links.
+
 
       function relaxRightToLeft(alpha) {
-        columns.slice().reverse().forEach(function (nodes) {
-          nodes.forEach(function (node) {
-            if (node.sourceLinks.length) {
-              var dy = (sum(node.sourceLinks, weightedTarget) / sum(node.sourceLinks, value) - nodeCenter(node)) * alpha;
-              node.y0 += dy, node.y1 += dy;
+        columns.slice(0, -1).reverse().forEach(function (nodes) {
+          nodes.forEach(function (source) {
+            var y = 0;
+            var w = 0;
+
+            var _iterator2 = _createForOfIteratorHelper(source.sourceLinks),
+                _step2;
+
+            try {
+              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+                var _step2$value = _step2.value,
+                    target = _step2$value.target,
+                    _value2 = _step2$value.value;
+                var v = _value2 * (target.layer - source.layer);
+                y += sourceTop(source, target) * v;
+                w += v;
+              }
+            } catch (err) {
+              _iterator2.e(err);
+            } finally {
+              _iterator2.f();
             }
+
+            if (!(w > 0)) return;
+            var dy = (y / w - source.y0) * alpha;
+            source.y0 += dy;
+            source.y1 += dy;
           });
         });
-      }
+      } // Push any overlapping nodes down.
 
-      function resolveCollisions() {
+
+      function resolveCollisionsTopToBottom(alpha) {
         columns.forEach(function (nodes) {
           var node,
               dy,
               y = y0,
               n = nodes.length,
-              i; // Push any overlapping nodes down.
-
-          nodes.sort(ascendingBreadth);
+              i;
+          if (sort === undefined) nodes.sort(ascendingBreadth);
 
           for (i = 0; i < n; ++i) {
             node = nodes[i];
-            dy = y - node.y0;
-            if (dy > 0) node.y0 += dy, node.y1 += dy;
+            dy = (y - node.y0) * alpha;
+            if (dy > 1e-6) node.y0 += dy, node.y1 += dy;
             y = node.y1 + py;
-          } // If the bottommost node goes outside the bounds, push it back up.
+          }
+        });
+      } // Push any overlapping nodes up.
 
 
-          dy = y - py - y1;
+      function resolveCollisionsBottomToTop(alpha) {
+        columns.forEach(function (nodes) {
+          var node,
+              dy,
+              y = y1,
+              n = nodes.length,
+              i;
+          if (sort === undefined) nodes.sort(ascendingBreadth);
 
-          if (dy > 0) {
-            y = node.y0 -= dy, node.y1 -= dy; // Push any overlapping nodes back up.
-
-            for (i = n - 2; i >= 0; --i) {
-              node = nodes[i];
-              dy = node.y1 + py - y;
-              if (dy > 0) node.y0 -= dy, node.y1 -= dy;
-              y = node.y0;
-            }
+          for (i = n - 1; i >= 0; --i) {
+            node = nodes[i];
+            dy = (node.y1 - y) * alpha;
+            if (dy > 1e-6) node.y0 -= dy, node.y1 -= dy;
+            y = node.y0 - py;
           }
         });
       }
     }
 
-    function computeLinkBreadths(graph) {
-      graph.nodes.forEach(function (node) {
+    function reorderLinks(graph) {
+      if (linkSort === undefined) graph.nodes.forEach(function (node) {
         node.sourceLinks.sort(ascendingTargetBreadth);
         node.targetLinks.sort(ascendingSourceBreadth);
       });
+    }
+
+    function computeLinkBreadths(graph) {
+      reorderLinks(graph);
       graph.nodes.forEach(function (node) {
         var y0 = node.y0,
             y1 = y0;
@@ -42897,18 +59041,98 @@
           link.y1 = y1 + link.width / 2, y1 += link.width;
         });
       });
+    } // Returns the target.y0 that would produce an ideal link from source to target.
+
+
+    function targetTop(source, target) {
+      var y = source.y0 - (source.sourceLinks.length - 1) * py / 2;
+
+      var _iterator3 = _createForOfIteratorHelper(source.sourceLinks),
+          _step3;
+
+      try {
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var _step3$value = _step3.value,
+              node = _step3$value.target,
+              width = _step3$value.width;
+          if (node === target) break;
+          y += width + py;
+        }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
+      }
+
+      var _iterator4 = _createForOfIteratorHelper(target.targetLinks),
+          _step4;
+
+      try {
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var _step4$value = _step4.value,
+              _node = _step4$value.source,
+              _width = _step4$value.width;
+          if (_node === source) break;
+          y -= _width;
+        }
+      } catch (err) {
+        _iterator4.e(err);
+      } finally {
+        _iterator4.f();
+      }
+
+      return y;
+    } // Returns the source.y0 that would produce an ideal link from source to target.
+
+
+    function sourceTop(source, target) {
+      var y = target.y0 - (target.targetLinks.length - 1) * py / 2;
+
+      var _iterator5 = _createForOfIteratorHelper(target.targetLinks),
+          _step5;
+
+      try {
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var _step5$value = _step5.value,
+              node = _step5$value.source,
+              width = _step5$value.width;
+          if (node === source) break;
+          y += width + py;
+        }
+      } catch (err) {
+        _iterator5.e(err);
+      } finally {
+        _iterator5.f();
+      }
+
+      var _iterator6 = _createForOfIteratorHelper(source.sourceLinks),
+          _step6;
+
+      try {
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var _step6$value = _step6.value,
+              _node2 = _step6$value.target,
+              _width2 = _step6$value.width;
+          if (_node2 === target) break;
+          y -= _width2;
+        }
+      } catch (err) {
+        _iterator6.e(err);
+      } finally {
+        _iterator6.f();
+      }
+
+      return y;
     }
 
     return sankey;
   }
 
-  function constant$9 (x) {
+  function constant$a (x) {
     return function constant() {
       return x;
     };
   }
-
-  var pi$5 = Math.PI;
 
   function x$2(p) {
     return p[0];
@@ -42917,7 +59141,7 @@
     return p[1];
   }
 
-  var slice$4 = Array.prototype.slice;
+  var slice$5 = Array.prototype.slice;
 
   function linkSource$1(d) {
     return d.source;
@@ -42936,7 +59160,7 @@
 
     function link() {
       var buffer,
-          argv = slice$4.call(arguments),
+          argv = slice$5.call(arguments),
           s = source.apply(this, argv),
           t = target.apply(this, argv);
       if (!context) context = buffer = path();
@@ -42953,11 +59177,11 @@
     };
 
     link.x = function (_) {
-      return arguments.length ? (x = typeof _ === "function" ? _ : constant$9(+_), link) : x;
+      return arguments.length ? (x = typeof _ === "function" ? _ : constant$a(+_), link) : x;
     };
 
     link.y = function (_) {
-      return arguments.length ? (y = typeof _ === "function" ? _ : constant$9(+_), link) : y;
+      return arguments.length ? (y = typeof _ === "function" ? _ : constant$a(+_), link) : y;
     };
 
     link.context = function (_) {
@@ -42975,134 +59199,6 @@
   function linkHorizontal$1() {
     return link$1(curveHorizontal$1);
   }
-
-  function sign$1(x) {
-    return x < 0 ? -1 : 1;
-  } // Calculate the slopes of the tangents (Hermite-type interpolation) based on
-  // the following paper: Steffen, M. 1990. A Simple Method for Monotonic
-  // Interpolation in One Dimension. Astronomy and Astrophysics, Vol. 239, NO.
-  // NOV(II), P. 443, 1990.
-
-
-  function slope3$1(that, x2, y2) {
-    var h0 = that._x1 - that._x0,
-        h1 = x2 - that._x1,
-        s0 = (that._y1 - that._y0) / (h0 || h1 < 0 && -0),
-        s1 = (y2 - that._y1) / (h1 || h0 < 0 && -0),
-        p = (s0 * h1 + s1 * h0) / (h0 + h1);
-    return (sign$1(s0) + sign$1(s1)) * Math.min(Math.abs(s0), Math.abs(s1), 0.5 * Math.abs(p)) || 0;
-  } // Calculate a one-sided slope.
-
-
-  function slope2$1(that, t) {
-    var h = that._x1 - that._x0;
-    return h ? (3 * (that._y1 - that._y0) / h - t) / 2 : t;
-  } // According to https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Representations
-  // "you can express cubic Hermite interpolation in terms of cubic Bézier curves
-  // with respect to the four values p0, p0 + m0 / 3, p1 - m1 / 3, p1".
-
-
-  function _point$4(that, t0, t1) {
-    var x0 = that._x0,
-        y0 = that._y0,
-        x1 = that._x1,
-        y1 = that._y1,
-        dx = (x1 - x0) / 3;
-
-    that._context.bezierCurveTo(x0 + dx, y0 + dx * t0, x1 - dx, y1 - dx * t1, x1, y1);
-  }
-
-  function MonotoneX$1(context) {
-    this._context = context;
-  }
-
-  MonotoneX$1.prototype = {
-    areaStart: function areaStart() {
-      this._line = 0;
-    },
-    areaEnd: function areaEnd() {
-      this._line = NaN;
-    },
-    lineStart: function lineStart() {
-      this._x0 = this._x1 = this._y0 = this._y1 = this._t0 = NaN;
-      this._point = 0;
-    },
-    lineEnd: function lineEnd() {
-      switch (this._point) {
-        case 2:
-          this._context.lineTo(this._x1, this._y1);
-
-          break;
-
-        case 3:
-          _point$4(this, this._t0, slope2$1(this, this._t0));
-
-          break;
-      }
-
-      if (this._line || this._line !== 0 && this._point === 1) this._context.closePath();
-      this._line = 1 - this._line;
-    },
-    point: function point(x, y) {
-      var t1 = NaN;
-      x = +x, y = +y;
-      if (x === this._x1 && y === this._y1) return; // Ignore coincident points.
-
-      switch (this._point) {
-        case 0:
-          this._point = 1;
-          this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y);
-          break;
-
-        case 1:
-          this._point = 2;
-          break;
-
-        case 2:
-          this._point = 3;
-
-          _point$4(this, slope2$1(this, t1 = slope3$1(this, x, y)), t1);
-
-          break;
-
-        default:
-          _point$4(this, this._t0, t1 = slope3$1(this, x, y));
-
-          break;
-      }
-
-      this._x0 = this._x1, this._x1 = x;
-      this._y0 = this._y1, this._y1 = y;
-      this._t0 = t1;
-    }
-  };
-
-  function MonotoneY$1(context) {
-    this._context = new ReflectContext$1(context);
-  }
-
-  (MonotoneY$1.prototype = Object.create(MonotoneX$1.prototype)).point = function (x, y) {
-    MonotoneX$1.prototype.point.call(this, y, x);
-  };
-
-  function ReflectContext$1(context) {
-    this._context = context;
-  }
-
-  ReflectContext$1.prototype = {
-    moveTo: function moveTo(x, y) {
-      this._context.moveTo(y, x);
-    },
-    closePath: function closePath() {
-      this._context.closePath();
-    },
-    lineTo: function lineTo(x, y) {
-      this._context.lineTo(y, x);
-    },
-    bezierCurveTo: function bezierCurveTo(x1, y1, x2, y2, x, y) {
-      this._context.bezierCurveTo(y1, x1, y2, x2, y, x);
-    }
-  };
 
   function horizontalSource(d) {
     return [d.source.x1, d.y0];
@@ -43128,22 +59224,22 @@
       @desc Creates a sankey visualization based on a defined set of nodes and links. [Click here](http://d3plus.org/examples/d3plus-network/sankey-diagram/) for help getting started using the Sankey class.
   */
 
-  var Sankey =
-  /*#__PURE__*/
-  function (_Viz) {
-    _inherits(Sankey, _Viz);
+  var Sankey$1 = /*#__PURE__*/function (_Viz) {
+    _inherits(Sankey$1, _Viz);
+
+    var _super = _createSuper(Sankey$1);
 
     /**
         @memberof Sankey
         @desc Invoked when creating a new class instance, and sets any default parameters.
         @private
     */
-    function Sankey() {
+    function Sankey$1() {
       var _this;
 
-      _classCallCheck(this, Sankey);
+      _classCallCheck(this, Sankey$1);
 
-      _this = _possibleConstructorReturn(this, _getPrototypeOf(Sankey).call(this));
+      _this = _super.call(this);
       _this._nodeId = accessor("id");
       _this._links = accessor("links");
       _this._linksSource = "source";
@@ -43196,7 +59292,7 @@
       };
 
       _this._path = sankeyLinkHorizontal();
-      _this._sankey = sankey();
+      _this._sankey = Sankey();
       _this._shape = constant$5("Rect");
       _this._shapeConfig = assign(_this._shapeConfig, {
         Path: {
@@ -43224,12 +59320,12 @@
     */
 
 
-    _createClass(Sankey, [{
+    _createClass(Sankey$1, [{
       key: "_draw",
       value: function _draw(callback) {
         var _this2 = this;
 
-        _get(_getPrototypeOf(Sankey.prototype), "_draw", this).call(this, callback);
+        _get(_getPrototypeOf(Sankey$1.prototype), "_draw", this).call(this, callback);
 
         var height = this._height - this._margin.top - this._margin.bottom,
             width = this._width - this._margin.left - this._margin.right;
@@ -43472,940 +59568,14 @@
       }
     }]);
 
-    return Sankey;
+    return Sankey$1;
   }(Viz);
 
   exports.Network = Network;
   exports.Rings = Rings;
-  exports.Sankey = Sankey;
+  exports.Sankey = Sankey$1;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
-}));
-(function (factory) {
-	typeof define === 'function' && define.amd ? define(factory) :
-	factory();
-}(function () { 'use strict';
-
-	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-	function createCommonjsModule(fn, module) {
-		return module = { exports: {} }, fn(module, module.exports), module.exports;
-	}
-
-	var O = 'object';
-	var check = function (it) {
-	  return it && it.Math == Math && it;
-	};
-
-	// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
-	var global_1 =
-	  // eslint-disable-next-line no-undef
-	  check(typeof globalThis == O && globalThis) ||
-	  check(typeof window == O && window) ||
-	  check(typeof self == O && self) ||
-	  check(typeof commonjsGlobal == O && commonjsGlobal) ||
-	  // eslint-disable-next-line no-new-func
-	  Function('return this')();
-
-	var fails = function (exec) {
-	  try {
-	    return !!exec();
-	  } catch (error) {
-	    return true;
-	  }
-	};
-
-	// Thank's IE8 for his funny defineProperty
-	var descriptors = !fails(function () {
-	  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
-	});
-
-	var nativePropertyIsEnumerable = {}.propertyIsEnumerable;
-	var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-
-	// Nashorn ~ JDK8 bug
-	var NASHORN_BUG = getOwnPropertyDescriptor && !nativePropertyIsEnumerable.call({ 1: 2 }, 1);
-
-	// `Object.prototype.propertyIsEnumerable` method implementation
-	// https://tc39.github.io/ecma262/#sec-object.prototype.propertyisenumerable
-	var f = NASHORN_BUG ? function propertyIsEnumerable(V) {
-	  var descriptor = getOwnPropertyDescriptor(this, V);
-	  return !!descriptor && descriptor.enumerable;
-	} : nativePropertyIsEnumerable;
-
-	var objectPropertyIsEnumerable = {
-		f: f
-	};
-
-	var createPropertyDescriptor = function (bitmap, value) {
-	  return {
-	    enumerable: !(bitmap & 1),
-	    configurable: !(bitmap & 2),
-	    writable: !(bitmap & 4),
-	    value: value
-	  };
-	};
-
-	var toString = {}.toString;
-
-	var classofRaw = function (it) {
-	  return toString.call(it).slice(8, -1);
-	};
-
-	var split = ''.split;
-
-	// fallback for non-array-like ES3 and non-enumerable old V8 strings
-	var indexedObject = fails(function () {
-	  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
-	  // eslint-disable-next-line no-prototype-builtins
-	  return !Object('z').propertyIsEnumerable(0);
-	}) ? function (it) {
-	  return classofRaw(it) == 'String' ? split.call(it, '') : Object(it);
-	} : Object;
-
-	// `RequireObjectCoercible` abstract operation
-	// https://tc39.github.io/ecma262/#sec-requireobjectcoercible
-	var requireObjectCoercible = function (it) {
-	  if (it == undefined) throw TypeError("Can't call method on " + it);
-	  return it;
-	};
-
-	// toObject with fallback for non-array-like ES3 strings
-
-
-
-	var toIndexedObject = function (it) {
-	  return indexedObject(requireObjectCoercible(it));
-	};
-
-	var isObject = function (it) {
-	  return typeof it === 'object' ? it !== null : typeof it === 'function';
-	};
-
-	// `ToPrimitive` abstract operation
-	// https://tc39.github.io/ecma262/#sec-toprimitive
-	// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-	// and the second argument - flag - preferred type is a string
-	var toPrimitive = function (input, PREFERRED_STRING) {
-	  if (!isObject(input)) return input;
-	  var fn, val;
-	  if (PREFERRED_STRING && typeof (fn = input.toString) == 'function' && !isObject(val = fn.call(input))) return val;
-	  if (typeof (fn = input.valueOf) == 'function' && !isObject(val = fn.call(input))) return val;
-	  if (!PREFERRED_STRING && typeof (fn = input.toString) == 'function' && !isObject(val = fn.call(input))) return val;
-	  throw TypeError("Can't convert object to primitive value");
-	};
-
-	var hasOwnProperty = {}.hasOwnProperty;
-
-	var has = function (it, key) {
-	  return hasOwnProperty.call(it, key);
-	};
-
-	var document = global_1.document;
-	// typeof document.createElement is 'object' in old IE
-	var EXISTS = isObject(document) && isObject(document.createElement);
-
-	var documentCreateElement = function (it) {
-	  return EXISTS ? document.createElement(it) : {};
-	};
-
-	// Thank's IE8 for his funny defineProperty
-	var ie8DomDefine = !descriptors && !fails(function () {
-	  return Object.defineProperty(documentCreateElement('div'), 'a', {
-	    get: function () { return 7; }
-	  }).a != 7;
-	});
-
-	var nativeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-
-	// `Object.getOwnPropertyDescriptor` method
-	// https://tc39.github.io/ecma262/#sec-object.getownpropertydescriptor
-	var f$1 = descriptors ? nativeGetOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
-	  O = toIndexedObject(O);
-	  P = toPrimitive(P, true);
-	  if (ie8DomDefine) try {
-	    return nativeGetOwnPropertyDescriptor(O, P);
-	  } catch (error) { /* empty */ }
-	  if (has(O, P)) return createPropertyDescriptor(!objectPropertyIsEnumerable.f.call(O, P), O[P]);
-	};
-
-	var objectGetOwnPropertyDescriptor = {
-		f: f$1
-	};
-
-	var anObject = function (it) {
-	  if (!isObject(it)) {
-	    throw TypeError(String(it) + ' is not an object');
-	  } return it;
-	};
-
-	var nativeDefineProperty = Object.defineProperty;
-
-	// `Object.defineProperty` method
-	// https://tc39.github.io/ecma262/#sec-object.defineproperty
-	var f$2 = descriptors ? nativeDefineProperty : function defineProperty(O, P, Attributes) {
-	  anObject(O);
-	  P = toPrimitive(P, true);
-	  anObject(Attributes);
-	  if (ie8DomDefine) try {
-	    return nativeDefineProperty(O, P, Attributes);
-	  } catch (error) { /* empty */ }
-	  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported');
-	  if ('value' in Attributes) O[P] = Attributes.value;
-	  return O;
-	};
-
-	var objectDefineProperty = {
-		f: f$2
-	};
-
-	var hide = descriptors ? function (object, key, value) {
-	  return objectDefineProperty.f(object, key, createPropertyDescriptor(1, value));
-	} : function (object, key, value) {
-	  object[key] = value;
-	  return object;
-	};
-
-	var setGlobal = function (key, value) {
-	  try {
-	    hide(global_1, key, value);
-	  } catch (error) {
-	    global_1[key] = value;
-	  } return value;
-	};
-
-	var shared = createCommonjsModule(function (module) {
-	var SHARED = '__core-js_shared__';
-	var store = global_1[SHARED] || setGlobal(SHARED, {});
-
-	(module.exports = function (key, value) {
-	  return store[key] || (store[key] = value !== undefined ? value : {});
-	})('versions', []).push({
-	  version: '3.1.3',
-	  mode:  'global',
-	  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
-	});
-	});
-
-	var functionToString = shared('native-function-to-string', Function.toString);
-
-	var WeakMap = global_1.WeakMap;
-
-	var nativeWeakMap = typeof WeakMap === 'function' && /native code/.test(functionToString.call(WeakMap));
-
-	var id = 0;
-	var postfix = Math.random();
-
-	var uid = function (key) {
-	  return 'Symbol(' + String(key === undefined ? '' : key) + ')_' + (++id + postfix).toString(36);
-	};
-
-	var keys = shared('keys');
-
-	var sharedKey = function (key) {
-	  return keys[key] || (keys[key] = uid(key));
-	};
-
-	var hiddenKeys = {};
-
-	var WeakMap$1 = global_1.WeakMap;
-	var set, get, has$1;
-
-	var enforce = function (it) {
-	  return has$1(it) ? get(it) : set(it, {});
-	};
-
-	var getterFor = function (TYPE) {
-	  return function (it) {
-	    var state;
-	    if (!isObject(it) || (state = get(it)).type !== TYPE) {
-	      throw TypeError('Incompatible receiver, ' + TYPE + ' required');
-	    } return state;
-	  };
-	};
-
-	if (nativeWeakMap) {
-	  var store = new WeakMap$1();
-	  var wmget = store.get;
-	  var wmhas = store.has;
-	  var wmset = store.set;
-	  set = function (it, metadata) {
-	    wmset.call(store, it, metadata);
-	    return metadata;
-	  };
-	  get = function (it) {
-	    return wmget.call(store, it) || {};
-	  };
-	  has$1 = function (it) {
-	    return wmhas.call(store, it);
-	  };
-	} else {
-	  var STATE = sharedKey('state');
-	  hiddenKeys[STATE] = true;
-	  set = function (it, metadata) {
-	    hide(it, STATE, metadata);
-	    return metadata;
-	  };
-	  get = function (it) {
-	    return has(it, STATE) ? it[STATE] : {};
-	  };
-	  has$1 = function (it) {
-	    return has(it, STATE);
-	  };
-	}
-
-	var internalState = {
-	  set: set,
-	  get: get,
-	  has: has$1,
-	  enforce: enforce,
-	  getterFor: getterFor
-	};
-
-	var redefine = createCommonjsModule(function (module) {
-	var getInternalState = internalState.get;
-	var enforceInternalState = internalState.enforce;
-	var TEMPLATE = String(functionToString).split('toString');
-
-	shared('inspectSource', function (it) {
-	  return functionToString.call(it);
-	});
-
-	(module.exports = function (O, key, value, options) {
-	  var unsafe = options ? !!options.unsafe : false;
-	  var simple = options ? !!options.enumerable : false;
-	  var noTargetGet = options ? !!options.noTargetGet : false;
-	  if (typeof value == 'function') {
-	    if (typeof key == 'string' && !has(value, 'name')) hide(value, 'name', key);
-	    enforceInternalState(value).source = TEMPLATE.join(typeof key == 'string' ? key : '');
-	  }
-	  if (O === global_1) {
-	    if (simple) O[key] = value;
-	    else setGlobal(key, value);
-	    return;
-	  } else if (!unsafe) {
-	    delete O[key];
-	  } else if (!noTargetGet && O[key]) {
-	    simple = true;
-	  }
-	  if (simple) O[key] = value;
-	  else hide(O, key, value);
-	// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
-	})(Function.prototype, 'toString', function toString() {
-	  return typeof this == 'function' && getInternalState(this).source || functionToString.call(this);
-	});
-	});
-
-	var path = global_1;
-
-	var aFunction = function (variable) {
-	  return typeof variable == 'function' ? variable : undefined;
-	};
-
-	var getBuiltIn = function (namespace, method) {
-	  return arguments.length < 2 ? aFunction(path[namespace]) || aFunction(global_1[namespace])
-	    : path[namespace] && path[namespace][method] || global_1[namespace] && global_1[namespace][method];
-	};
-
-	var ceil = Math.ceil;
-	var floor = Math.floor;
-
-	// `ToInteger` abstract operation
-	// https://tc39.github.io/ecma262/#sec-tointeger
-	var toInteger = function (argument) {
-	  return isNaN(argument = +argument) ? 0 : (argument > 0 ? floor : ceil)(argument);
-	};
-
-	var min = Math.min;
-
-	// `ToLength` abstract operation
-	// https://tc39.github.io/ecma262/#sec-tolength
-	var toLength = function (argument) {
-	  return argument > 0 ? min(toInteger(argument), 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
-	};
-
-	var max = Math.max;
-	var min$1 = Math.min;
-
-	// Helper for a popular repeating case of the spec:
-	// Let integer be ? ToInteger(index).
-	// If integer < 0, let result be max((length + integer), 0); else let result be min(length, length).
-	var toAbsoluteIndex = function (index, length) {
-	  var integer = toInteger(index);
-	  return integer < 0 ? max(integer + length, 0) : min$1(integer, length);
-	};
-
-	// `Array.prototype.{ indexOf, includes }` methods implementation
-	var createMethod = function (IS_INCLUDES) {
-	  return function ($this, el, fromIndex) {
-	    var O = toIndexedObject($this);
-	    var length = toLength(O.length);
-	    var index = toAbsoluteIndex(fromIndex, length);
-	    var value;
-	    // Array#includes uses SameValueZero equality algorithm
-	    // eslint-disable-next-line no-self-compare
-	    if (IS_INCLUDES && el != el) while (length > index) {
-	      value = O[index++];
-	      // eslint-disable-next-line no-self-compare
-	      if (value != value) return true;
-	    // Array#indexOf ignores holes, Array#includes - not
-	    } else for (;length > index; index++) {
-	      if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
-	    } return !IS_INCLUDES && -1;
-	  };
-	};
-
-	var arrayIncludes = {
-	  // `Array.prototype.includes` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.includes
-	  includes: createMethod(true),
-	  // `Array.prototype.indexOf` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.indexof
-	  indexOf: createMethod(false)
-	};
-
-	var indexOf = arrayIncludes.indexOf;
-
-
-	var objectKeysInternal = function (object, names) {
-	  var O = toIndexedObject(object);
-	  var i = 0;
-	  var result = [];
-	  var key;
-	  for (key in O) !has(hiddenKeys, key) && has(O, key) && result.push(key);
-	  // Don't enum bug & hidden keys
-	  while (names.length > i) if (has(O, key = names[i++])) {
-	    ~indexOf(result, key) || result.push(key);
-	  }
-	  return result;
-	};
-
-	// IE8- don't enum bug keys
-	var enumBugKeys = [
-	  'constructor',
-	  'hasOwnProperty',
-	  'isPrototypeOf',
-	  'propertyIsEnumerable',
-	  'toLocaleString',
-	  'toString',
-	  'valueOf'
-	];
-
-	var hiddenKeys$1 = enumBugKeys.concat('length', 'prototype');
-
-	// `Object.getOwnPropertyNames` method
-	// https://tc39.github.io/ecma262/#sec-object.getownpropertynames
-	var f$3 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
-	  return objectKeysInternal(O, hiddenKeys$1);
-	};
-
-	var objectGetOwnPropertyNames = {
-		f: f$3
-	};
-
-	var f$4 = Object.getOwnPropertySymbols;
-
-	var objectGetOwnPropertySymbols = {
-		f: f$4
-	};
-
-	// all object keys, includes non-enumerable and symbols
-	var ownKeys = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
-	  var keys = objectGetOwnPropertyNames.f(anObject(it));
-	  var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
-	  return getOwnPropertySymbols ? keys.concat(getOwnPropertySymbols(it)) : keys;
-	};
-
-	var copyConstructorProperties = function (target, source) {
-	  var keys = ownKeys(source);
-	  var defineProperty = objectDefineProperty.f;
-	  var getOwnPropertyDescriptor = objectGetOwnPropertyDescriptor.f;
-	  for (var i = 0; i < keys.length; i++) {
-	    var key = keys[i];
-	    if (!has(target, key)) defineProperty(target, key, getOwnPropertyDescriptor(source, key));
-	  }
-	};
-
-	var replacement = /#|\.prototype\./;
-
-	var isForced = function (feature, detection) {
-	  var value = data[normalize(feature)];
-	  return value == POLYFILL ? true
-	    : value == NATIVE ? false
-	    : typeof detection == 'function' ? fails(detection)
-	    : !!detection;
-	};
-
-	var normalize = isForced.normalize = function (string) {
-	  return String(string).replace(replacement, '.').toLowerCase();
-	};
-
-	var data = isForced.data = {};
-	var NATIVE = isForced.NATIVE = 'N';
-	var POLYFILL = isForced.POLYFILL = 'P';
-
-	var isForced_1 = isForced;
-
-	var getOwnPropertyDescriptor$1 = objectGetOwnPropertyDescriptor.f;
-
-
-
-
-
-
-	/*
-	  options.target      - name of the target object
-	  options.global      - target is the global object
-	  options.stat        - export as static methods of target
-	  options.proto       - export as prototype methods of target
-	  options.real        - real prototype method for the `pure` version
-	  options.forced      - export even if the native feature is available
-	  options.bind        - bind methods to the target, required for the `pure` version
-	  options.wrap        - wrap constructors to preventing global pollution, required for the `pure` version
-	  options.unsafe      - use the simple assignment of property instead of delete + defineProperty
-	  options.sham        - add a flag to not completely full polyfills
-	  options.enumerable  - export as enumerable property
-	  options.noTargetGet - prevent calling a getter on target
-	*/
-	var _export = function (options, source) {
-	  var TARGET = options.target;
-	  var GLOBAL = options.global;
-	  var STATIC = options.stat;
-	  var FORCED, target, key, targetProperty, sourceProperty, descriptor;
-	  if (GLOBAL) {
-	    target = global_1;
-	  } else if (STATIC) {
-	    target = global_1[TARGET] || setGlobal(TARGET, {});
-	  } else {
-	    target = (global_1[TARGET] || {}).prototype;
-	  }
-	  if (target) for (key in source) {
-	    sourceProperty = source[key];
-	    if (options.noTargetGet) {
-	      descriptor = getOwnPropertyDescriptor$1(target, key);
-	      targetProperty = descriptor && descriptor.value;
-	    } else targetProperty = target[key];
-	    FORCED = isForced_1(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
-	    // contained in target
-	    if (!FORCED && targetProperty !== undefined) {
-	      if (typeof sourceProperty === typeof targetProperty) continue;
-	      copyConstructorProperties(sourceProperty, targetProperty);
-	    }
-	    // add a flag to not completely full polyfills
-	    if (options.sham || (targetProperty && targetProperty.sham)) {
-	      hide(sourceProperty, 'sham', true);
-	    }
-	    // extend global
-	    redefine(target, key, sourceProperty, options);
-	  }
-	};
-
-	var aFunction$1 = function (it) {
-	  if (typeof it != 'function') {
-	    throw TypeError(String(it) + ' is not a function');
-	  } return it;
-	};
-
-	// optional / simple context binding
-	var bindContext = function (fn, that, length) {
-	  aFunction$1(fn);
-	  if (that === undefined) return fn;
-	  switch (length) {
-	    case 0: return function () {
-	      return fn.call(that);
-	    };
-	    case 1: return function (a) {
-	      return fn.call(that, a);
-	    };
-	    case 2: return function (a, b) {
-	      return fn.call(that, a, b);
-	    };
-	    case 3: return function (a, b, c) {
-	      return fn.call(that, a, b, c);
-	    };
-	  }
-	  return function (/* ...args */) {
-	    return fn.apply(that, arguments);
-	  };
-	};
-
-	// `ToObject` abstract operation
-	// https://tc39.github.io/ecma262/#sec-toobject
-	var toObject = function (argument) {
-	  return Object(requireObjectCoercible(argument));
-	};
-
-	// `IsArray` abstract operation
-	// https://tc39.github.io/ecma262/#sec-isarray
-	var isArray = Array.isArray || function isArray(arg) {
-	  return classofRaw(arg) == 'Array';
-	};
-
-	var nativeSymbol = !!Object.getOwnPropertySymbols && !fails(function () {
-	  // Chrome 38 Symbol has incorrect toString conversion
-	  // eslint-disable-next-line no-undef
-	  return !String(Symbol());
-	});
-
-	var Symbol$1 = global_1.Symbol;
-	var store$1 = shared('wks');
-
-	var wellKnownSymbol = function (name) {
-	  return store$1[name] || (store$1[name] = nativeSymbol && Symbol$1[name]
-	    || (nativeSymbol ? Symbol$1 : uid)('Symbol.' + name));
-	};
-
-	var SPECIES = wellKnownSymbol('species');
-
-	// `ArraySpeciesCreate` abstract operation
-	// https://tc39.github.io/ecma262/#sec-arrayspeciescreate
-	var arraySpeciesCreate = function (originalArray, length) {
-	  var C;
-	  if (isArray(originalArray)) {
-	    C = originalArray.constructor;
-	    // cross-realm fallback
-	    if (typeof C == 'function' && (C === Array || isArray(C.prototype))) C = undefined;
-	    else if (isObject(C)) {
-	      C = C[SPECIES];
-	      if (C === null) C = undefined;
-	    }
-	  } return new (C === undefined ? Array : C)(length === 0 ? 0 : length);
-	};
-
-	var push = [].push;
-
-	// `Array.prototype.{ forEach, map, filter, some, every, find, findIndex }` methods implementation
-	var createMethod$1 = function (TYPE) {
-	  var IS_MAP = TYPE == 1;
-	  var IS_FILTER = TYPE == 2;
-	  var IS_SOME = TYPE == 3;
-	  var IS_EVERY = TYPE == 4;
-	  var IS_FIND_INDEX = TYPE == 6;
-	  var NO_HOLES = TYPE == 5 || IS_FIND_INDEX;
-	  return function ($this, callbackfn, that, specificCreate) {
-	    var O = toObject($this);
-	    var self = indexedObject(O);
-	    var boundFunction = bindContext(callbackfn, that, 3);
-	    var length = toLength(self.length);
-	    var index = 0;
-	    var create = specificCreate || arraySpeciesCreate;
-	    var target = IS_MAP ? create($this, length) : IS_FILTER ? create($this, 0) : undefined;
-	    var value, result;
-	    for (;length > index; index++) if (NO_HOLES || index in self) {
-	      value = self[index];
-	      result = boundFunction(value, index, O);
-	      if (TYPE) {
-	        if (IS_MAP) target[index] = result; // map
-	        else if (result) switch (TYPE) {
-	          case 3: return true;              // some
-	          case 5: return value;             // find
-	          case 6: return index;             // findIndex
-	          case 2: push.call(target, value); // filter
-	        } else if (IS_EVERY) return false;  // every
-	      }
-	    }
-	    return IS_FIND_INDEX ? -1 : IS_SOME || IS_EVERY ? IS_EVERY : target;
-	  };
-	};
-
-	var arrayIteration = {
-	  // `Array.prototype.forEach` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.foreach
-	  forEach: createMethod$1(0),
-	  // `Array.prototype.map` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.map
-	  map: createMethod$1(1),
-	  // `Array.prototype.filter` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.filter
-	  filter: createMethod$1(2),
-	  // `Array.prototype.some` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.some
-	  some: createMethod$1(3),
-	  // `Array.prototype.every` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.every
-	  every: createMethod$1(4),
-	  // `Array.prototype.find` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.find
-	  find: createMethod$1(5),
-	  // `Array.prototype.findIndex` method
-	  // https://tc39.github.io/ecma262/#sec-array.prototype.findIndex
-	  findIndex: createMethod$1(6)
-	};
-
-	// `Object.keys` method
-	// https://tc39.github.io/ecma262/#sec-object.keys
-	var objectKeys = Object.keys || function keys(O) {
-	  return objectKeysInternal(O, enumBugKeys);
-	};
-
-	// `Object.defineProperties` method
-	// https://tc39.github.io/ecma262/#sec-object.defineproperties
-	var objectDefineProperties = descriptors ? Object.defineProperties : function defineProperties(O, Properties) {
-	  anObject(O);
-	  var keys = objectKeys(Properties);
-	  var length = keys.length;
-	  var index = 0;
-	  var key;
-	  while (length > index) objectDefineProperty.f(O, key = keys[index++], Properties[key]);
-	  return O;
-	};
-
-	var html = getBuiltIn('document', 'documentElement');
-
-	var IE_PROTO = sharedKey('IE_PROTO');
-
-	var PROTOTYPE = 'prototype';
-	var Empty = function () { /* empty */ };
-
-	// Create object with fake `null` prototype: use iframe Object with cleared prototype
-	var createDict = function () {
-	  // Thrash, waste and sodomy: IE GC bug
-	  var iframe = documentCreateElement('iframe');
-	  var length = enumBugKeys.length;
-	  var lt = '<';
-	  var script = 'script';
-	  var gt = '>';
-	  var js = 'java' + script + ':';
-	  var iframeDocument;
-	  iframe.style.display = 'none';
-	  html.appendChild(iframe);
-	  iframe.src = String(js);
-	  iframeDocument = iframe.contentWindow.document;
-	  iframeDocument.open();
-	  iframeDocument.write(lt + script + gt + 'document.F=Object' + lt + '/' + script + gt);
-	  iframeDocument.close();
-	  createDict = iframeDocument.F;
-	  while (length--) delete createDict[PROTOTYPE][enumBugKeys[length]];
-	  return createDict();
-	};
-
-	// `Object.create` method
-	// https://tc39.github.io/ecma262/#sec-object.create
-	var objectCreate = Object.create || function create(O, Properties) {
-	  var result;
-	  if (O !== null) {
-	    Empty[PROTOTYPE] = anObject(O);
-	    result = new Empty();
-	    Empty[PROTOTYPE] = null;
-	    // add "__proto__" for Object.getPrototypeOf polyfill
-	    result[IE_PROTO] = O;
-	  } else result = createDict();
-	  return Properties === undefined ? result : objectDefineProperties(result, Properties);
-	};
-
-	hiddenKeys[IE_PROTO] = true;
-
-	var UNSCOPABLES = wellKnownSymbol('unscopables');
-	var ArrayPrototype = Array.prototype;
-
-	// Array.prototype[@@unscopables]
-	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
-	if (ArrayPrototype[UNSCOPABLES] == undefined) {
-	  hide(ArrayPrototype, UNSCOPABLES, objectCreate(null));
-	}
-
-	// add a key to Array.prototype[@@unscopables]
-	var addToUnscopables = function (key) {
-	  ArrayPrototype[UNSCOPABLES][key] = true;
-	};
-
-	var $find = arrayIteration.find;
-
-
-	var FIND = 'find';
-	var SKIPS_HOLES = true;
-
-	// Shouldn't skip holes
-	if (FIND in []) Array(1)[FIND](function () { SKIPS_HOLES = false; });
-
-	// `Array.prototype.find` method
-	// https://tc39.github.io/ecma262/#sec-array.prototype.find
-	_export({ target: 'Array', proto: true, forced: SKIPS_HOLES }, {
-	  find: function find(callbackfn /* , that = undefined */) {
-	    return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
-	  }
-	});
-
-	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
-	addToUnscopables(FIND);
-
-	var $includes = arrayIncludes.includes;
-
-
-	// `Array.prototype.includes` method
-	// https://tc39.github.io/ecma262/#sec-array.prototype.includes
-	_export({ target: 'Array', proto: true }, {
-	  includes: function includes(el /* , fromIndex = 0 */) {
-	    return $includes(this, el, arguments.length > 1 ? arguments[1] : undefined);
-	  }
-	});
-
-	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
-	addToUnscopables('includes');
-
-	var nativeAssign = Object.assign;
-
-	// `Object.assign` method
-	// https://tc39.github.io/ecma262/#sec-object.assign
-	// should work with symbols and should have deterministic property order (V8 bug)
-	var objectAssign = !nativeAssign || fails(function () {
-	  var A = {};
-	  var B = {};
-	  // eslint-disable-next-line no-undef
-	  var symbol = Symbol();
-	  var alphabet = 'abcdefghijklmnopqrst';
-	  A[symbol] = 7;
-	  alphabet.split('').forEach(function (chr) { B[chr] = chr; });
-	  return nativeAssign({}, A)[symbol] != 7 || objectKeys(nativeAssign({}, B)).join('') != alphabet;
-	}) ? function assign(target, source) { // eslint-disable-line no-unused-vars
-	  var T = toObject(target);
-	  var argumentsLength = arguments.length;
-	  var index = 1;
-	  var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
-	  var propertyIsEnumerable = objectPropertyIsEnumerable.f;
-	  while (argumentsLength > index) {
-	    var S = indexedObject(arguments[index++]);
-	    var keys = getOwnPropertySymbols ? objectKeys(S).concat(getOwnPropertySymbols(S)) : objectKeys(S);
-	    var length = keys.length;
-	    var j = 0;
-	    var key;
-	    while (length > j) {
-	      key = keys[j++];
-	      if (!descriptors || propertyIsEnumerable.call(S, key)) T[key] = S[key];
-	    }
-	  } return T;
-	} : nativeAssign;
-
-	// `Object.assign` method
-	// https://tc39.github.io/ecma262/#sec-object.assign
-	_export({ target: 'Object', stat: true, forced: Object.assign !== objectAssign }, {
-	  assign: objectAssign
-	});
-
-	var MATCH = wellKnownSymbol('match');
-
-	// `IsRegExp` abstract operation
-	// https://tc39.github.io/ecma262/#sec-isregexp
-	var isRegexp = function (it) {
-	  var isRegExp;
-	  return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : classofRaw(it) == 'RegExp');
-	};
-
-	var notARegexp = function (it) {
-	  if (isRegexp(it)) {
-	    throw TypeError("The method doesn't accept regular expressions");
-	  } return it;
-	};
-
-	var MATCH$1 = wellKnownSymbol('match');
-
-	var correctIsRegexpLogic = function (METHOD_NAME) {
-	  var regexp = /./;
-	  try {
-	    '/./'[METHOD_NAME](regexp);
-	  } catch (e) {
-	    try {
-	      regexp[MATCH$1] = false;
-	      return '/./'[METHOD_NAME](regexp);
-	    } catch (f) { /* empty */ }
-	  } return false;
-	};
-
-	// `String.prototype.includes` method
-	// https://tc39.github.io/ecma262/#sec-string.prototype.includes
-	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('includes') }, {
-	  includes: function includes(searchString /* , position = 0 */) {
-	    return !!~String(requireObjectCoercible(this))
-	      .indexOf(notARegexp(searchString), arguments.length > 1 ? arguments[1] : undefined);
-	  }
-	});
-
-	var nativeStartsWith = ''.startsWith;
-	var min$2 = Math.min;
-
-	// `String.prototype.startsWith` method
-	// https://tc39.github.io/ecma262/#sec-string.prototype.startswith
-	_export({ target: 'String', proto: true, forced: !correctIsRegexpLogic('startsWith') }, {
-	  startsWith: function startsWith(searchString /* , position = 0 */) {
-	    var that = String(requireObjectCoercible(this));
-	    notARegexp(searchString);
-	    var index = toLength(min$2(arguments.length > 1 ? arguments[1] : undefined, that.length));
-	    var search = String(searchString);
-	    return nativeStartsWith
-	      ? nativeStartsWith.call(that, search, index)
-	      : that.slice(index, index + search.length) === search;
-	  }
-	});
-
-	if (typeof window !== "undefined") {
-	  (function () {
-	    var serializeXML = function (node, output) {
-	      var nodeType = node.nodeType;
-	      if (nodeType === 3) {
-	        output.push(node.textContent.replace(/&/, '&amp;').replace(/</, '&lt;').replace('>', '&gt;'));
-	      } else if (nodeType === 1) {
-	        output.push('<', node.tagName);
-	        if (node.hasAttributes()) {
-	          [].forEach.call(node.attributes, function(attrNode){
-	            output.push(' ', attrNode.item.name, '=\'', attrNode.item.value, '\'');
-	          });
-	        }
-	        if (node.hasChildNodes()) {
-	          output.push('>');
-	          [].forEach.call(node.childNodes, function(childNode){
-	            serializeXML(childNode, output);
-	          });
-	          output.push('</', node.tagName, '>');
-	        } else {
-	          output.push('/>');
-	        }
-	      } else if (nodeType == 8) {
-	        output.push('<!--', node.nodeValue, '-->');
-	      }
-	    };
-
-	    Object.defineProperty(SVGElement.prototype, 'innerHTML', {
-	      get: function () {
-	        var output = [];
-	        var childNode = this.firstChild;
-	        while (childNode) {
-	          serializeXML(childNode, output);
-	          childNode = childNode.nextSibling;
-	        }
-	        return output.join('');
-	      },
-	      set: function (markupText) {
-	        while (this.firstChild) {
-	          this.removeChild(this.firstChild);
-	        }
-
-	        try {
-	          var dXML = new DOMParser();
-	          dXML.async = false;
-
-	          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markupText + '</svg>';
-	          var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
-
-	          var childNode = svgDocElement.firstChild;
-	          while (childNode) {
-	            this.appendChild(this.ownerDocument.importNode(childNode, true));
-	            childNode = childNode.nextSibling;
-	          }
-	        } catch (e) {}      }
-	    });
-
-	    Object.defineProperty(SVGElement.prototype, 'innerSVG', {
-	      get: function () {
-	        return this.innerHTML;
-	      },
-	      set: function (markup) {
-	        this.innerHTML = markup;
-	      }
-	    });
-
-	  })();
-	}
-
-}));
+})));
 //# sourceMappingURL=d3plus-network.full.js.map
