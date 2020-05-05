@@ -20,6 +20,7 @@ This is a global function.
 | [options] | <code>Object</code> |  | Additional options to specify. |
 | [options.background] | <code>String</code> |  | Background color of the rendered canvas. |
 | [options.callback] | <code>function</code> |  | Callback function to be passed the canvas element after rendering. |
+| [options.canvas] | <code>HTMLElement</code> |  | A canvas DOM element to draw onto. If no element is supplied, a canvas element will be created in memory and passed to the callback function when drawing is complete. |
 | [options.excludes] | <code>Array</code> |  | An array of HTMLElement objects to be excluded from the render. |
 | [options.height] | <code>Number</code> |  | Pixel height for the final output. If a height value has not been passed, it will be inferred from the sizing of the first DOM element passed. |
 | [options.padding] | <code>Number</code> | <code>0</code> | Outer padding for the final file. |
