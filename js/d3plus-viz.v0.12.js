@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.52
+  d3plus-viz v0.12.53
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1603,100 +1603,103 @@
 
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
+    var legendBounds = this._legendClass.outerBounds();
+
+    var position = this._legendPosition;
+    var wide = ["top", "bottom"].includes(position);
+    var padding = this._legendPadding() ? this._padding : {
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0
+    };
+    var transform = {
+      transform: "translate(".concat(wide ? this._margin.left + padding.left : this._margin.left, ", ").concat(wide ? this._margin.top : this._margin.top + padding.top, ")")
+    };
+    var legendGroup = d3plusCommon.elem("g.d3plus-viz-legend", {
+      condition: this._legend && !this._legendConfig.select,
+      enter: transform,
+      parent: this._select,
+      transition: this._transition,
+      update: transform
+    }).node();
+    var legendData = [];
+
+    var color = function color(d, i) {
+      var shape = _this._shape(d, i);
+
+      var attr = shape === "Line" ? "stroke" : "fill";
+      var value = _this._shapeConfig[shape] && _this._shapeConfig[shape][attr] ? _this._shapeConfig[shape][attr] : _this._shapeConfig[attr];
+      return typeof value === "function" ? value(d, i) : value;
+    };
+
+    var opacity = function opacity(d, i) {
+      var shape = _this._shape(d, i);
+
+      var value = _this._shapeConfig[shape] && _this._shapeConfig[shape].opacity ? _this._shapeConfig[shape].opacity : _this._shapeConfig.opacity;
+      return typeof value === "function" ? value(d, i) : value;
+    };
+
+    var fill = function fill(d, i) {
+      return "".concat(color(d, i), "_").concat(opacity(d, i));
+    };
+
     if (this._legend) {
-      var legendBounds = this._legendClass.outerBounds();
-
-      var position = this._legendPosition;
-      var wide = ["top", "bottom"].includes(position);
-      var padding = this._legendPadding() ? this._padding : {
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0
-      };
-      var transform = {
-        transform: "translate(".concat(wide ? this._margin.left + padding.left : this._margin.left, ", ").concat(wide ? this._margin.top : this._margin.top + padding.top, ")")
-      };
-      var legendGroup = d3plusCommon.elem("g.d3plus-viz-legend", {
-        condition: this._legend && !this._legendConfig.select,
-        enter: transform,
-        parent: this._select,
-        transition: this._transition,
-        update: transform
-      }).node();
-      var legendData = [];
-
-      var color = function color(d, i) {
-        var shape = _this._shape(d, i);
-
-        var attr = shape === "Line" ? "stroke" : "fill";
-        var value = _this._shapeConfig[shape] && _this._shapeConfig[shape][attr] ? _this._shapeConfig[shape][attr] : _this._shapeConfig[attr];
-        return typeof value === "function" ? value(d, i) : value;
-      };
-
-      var opacity = function opacity(d, i) {
-        var shape = _this._shape(d, i);
-
-        var value = _this._shapeConfig[shape] && _this._shapeConfig[shape].opacity ? _this._shapeConfig[shape].opacity : _this._shapeConfig.opacity;
-        return typeof value === "function" ? value(d, i) : value;
-      };
-
-      var fill = function fill(d, i) {
-        return "".concat(color(d, i), "_").concat(opacity(d, i));
-      };
-
       d3Collection.nest().key(fill).rollup(function (leaves) {
         return legendData.push(d3plusCommon.merge(leaves, _this._aggs));
       }).entries(this._colorScale ? data.filter(function (d, i) {
         return _this._colorScale(d, i) === undefined;
       }) : data);
-      legendData.sort(this._legendSort);
-      var labels = legendData.map(function (d, i) {
-        return _this._ids(d, i).slice(0, _this._drawDepth + 1);
+    }
+
+    legendData.sort(this._legendSort);
+    var labels = legendData.map(function (d, i) {
+      return _this._ids(d, i).slice(0, _this._drawDepth + 1);
+    });
+    this._legendDepth = 0;
+
+    var _loop = function _loop(x) {
+      var values = labels.map(function (l) {
+        return l[x];
       });
-      this._legendDepth = 0;
 
-      var _loop = function _loop(x) {
-        var values = labels.map(function (l) {
-          return l[x];
-        });
+      if (!values.some(function (v) {
+        return v instanceof Array;
+      }) && Array.from(new Set(values)).length === legendData.length) {
+        _this._legendDepth = x;
+        return "break";
+      }
+    };
 
-        if (!values.some(function (v) {
-          return v instanceof Array;
-        }) && Array.from(new Set(values)).length === legendData.length) {
-          _this._legendDepth = x;
-          return "break";
+    for (var x = 0; x <= this._drawDepth; x++) {
+      var _ret = _loop(x);
+
+      if (_ret === "break") break;
+    }
+
+    var hidden = function hidden(d, i) {
+      var id = _this._id(d, i);
+
+      if (id instanceof Array) id = id[0];
+      return _this._hidden.includes(id) || _this._solo.length && !_this._solo.includes(id);
+    };
+
+    this._legendClass.id(fill).align(wide ? "center" : position).direction(wide ? "row" : "column").duration(this._duration).data(legendData.length > this._legendCutoff || this._colorScale ? legendData : []).height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top)).locale(this._locale).select(legendGroup).verticalAlign(!wide ? "middle" : position).width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right)).shapeConfig(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "legend")).config(this._legendConfig).shapeConfig({
+      fill: function fill(d, i) {
+        return hidden(d, i) ? _this._hiddenColor(d, i) : color(d, i);
+      },
+      labelConfig: {
+        fontOpacity: function fontOpacity(d, i) {
+          return hidden(d, i) ? _this._hiddenOpacity(d, i) : 1;
         }
-      };
+      },
+      opacity: opacity
+    }).render();
 
-      for (var x = 0; x <= this._drawDepth; x++) {
-        var _ret = _loop(x);
+    console.log(legendBounds.height);
 
-        if (_ret === "break") break;
-      }
-
-      var hidden = function hidden(d, i) {
-        var id = _this._id(d, i);
-
-        if (id instanceof Array) id = id[0];
-        return _this._hidden.includes(id) || _this._solo.length && !_this._solo.includes(id);
-      };
-
-      this._legendClass.id(fill).align(wide ? "center" : position).direction(wide ? "row" : "column").duration(this._duration).data(legendData.length > this._legendCutoff || this._colorScale ? legendData : []).height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top)).locale(this._locale).select(legendGroup).verticalAlign(!wide ? "middle" : position).width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right)).shapeConfig(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "legend")).config(this._legendConfig).shapeConfig({
-        fill: function fill(d, i) {
-          return hidden(d, i) ? _this._hiddenColor(d, i) : color(d, i);
-        },
-        labelConfig: {
-          fontOpacity: function fontOpacity(d, i) {
-            return hidden(d, i) ? _this._hiddenOpacity(d, i) : 1;
-          }
-        },
-        opacity: opacity
-      }).render();
-
-      if (!this._legendConfig.select && legendBounds.height) {
-        if (wide) this._margin[position] += legendBounds.height + this._legendClass.padding() * 2;else this._margin[position] += legendBounds.width + this._legendClass.padding() * 2;
-      }
+    if (!this._legendConfig.select && legendBounds.height) {
+      if (wide) this._margin[position] += legendBounds.height + this._legendClass.padding() * 2;else this._margin[position] += legendBounds.width + this._legendClass.padding() * 2;
     }
   }
 
@@ -2789,7 +2792,7 @@
         //     mousemove: this._on["mousemove.shape"]
         //   }
         // };
-        // const testWidth = 20;
+        // const testWidth = 10;
         // this._shapes.push(new Rect()
         //   .config(this._shapeConfig)
         //   .config(configPrep.bind(this)(testConfig))
@@ -2797,10 +2800,10 @@
         //   .label("Test Label")
         //   .select(this._zoomGroup.node())
         //   .id(this._id)
-        //   .x((d, i) => i * testWidth + testWidth / 2)
-        //   .y(200)
+        //   .x(() => Math.random() * bgWidth)
+        //   .y(() => Math.random() * bgHeight)
         //   .width(testWidth)
-        //   .height(100)
+        //   .height(testWidth)
         //   .render());
       }
       /**
@@ -2938,7 +2941,14 @@
         } else {
           var q = d3Queue.queue();
 
-          if (this._loadingMessage) {
+          this._queue.forEach(function (p) {
+            var cache = _this3._cache ? _this3._lrucache.get("".concat(p[3], "_").concat(p[1])) : undefined;
+            if (!cache) q.defer.apply(q, _toConsumableArray(p));else _this3["_".concat(p[3])] = p[2] ? p[2](cache) : cache;
+          });
+
+          this._queue = [];
+
+          if (this._loadingMessage && q._tasks.length) {
             this._messageClass.render({
               container: this._select.node().parentNode,
               html: this._loadingHTML(this),
@@ -2947,12 +2957,6 @@
             });
           }
 
-          this._queue.forEach(function (p) {
-            var cache = _this3._cache ? _this3._lrucache.get("".concat(p[3], "_").concat(p[1])) : undefined;
-            if (!cache) q.defer.apply(q, _toConsumableArray(p));else _this3["_".concat(p[3])] = p[2] ? p[2](cache) : cache;
-          });
-
-          this._queue = [];
           q.awaitAll(function () {
             var columns = _this3._data instanceof Array && _this3._data.length > 0 ? Object.keys(_this3._data[0]) : [];
 
