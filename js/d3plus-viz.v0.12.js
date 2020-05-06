@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.54
+  d3plus-viz v0.12.55
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1340,7 +1340,7 @@
             _ref2$style = _ref2.style,
             style = _ref2$style === void 0 ? {} : _ref2$style;
 
-        var parent = d3Selection.select(container).style("position", "relative");
+        var parent = d3Selection.select(container);
         this.mask = parent.selectAll("div.d3plus-Mask").data(mask ? [mask] : []);
         this.mask = this.mask.enter().append("div").attr("class", "d3plus-Mask").style("opacity", 1).merge(this.mask);
         this.mask.exit().call(this.exit.bind(this), duration);
@@ -2347,6 +2347,19 @@
   }
 
   /**
+      @name _drawAttribution
+      @desc Draws absolute positioned attribution text.
+      @private
+  */
+
+  function drawAttribution () {
+    var attr = d3Selection.select(this._select.node().parentNode).selectAll("div.d3plus-attribution").data(this._attribution ? [0] : []);
+    var attrEnter = attr.enter().append("div").attr("class", "d3plus-attribution");
+    attr.exit().remove();
+    attr = attr.merge(attrEnter).style("position", "absolute").html(this._attribution).style("right", "".concat(this._margin.right, "px")).style("bottom", "".concat(this._margin.bottom, "px")).call(d3plusCommon.stylize, this._attributionStyle);
+  }
+
+  /**
    * Default padding logic that will return false if the screen is less than 600 pixels wide.
    */
 
@@ -2389,6 +2402,17 @@
       _this = _possibleConstructorReturn(this, _getPrototypeOf(Viz).call(this));
       _this._aggs = {};
       _this._ariaHidden = true;
+      _this._attribution = false;
+      _this._attributionStyle = {
+        background: "rgba(255, 255, 255, 0.75)",
+        border: "1px solid rgba(0, 0, 0, 0.25)",
+        color: "rgba(0, 0, 0, 0.75)",
+        display: "block",
+        font: "400 11px/11px 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+        margin: "5px",
+        opacity: 0.75,
+        padding: "4px 6px 3px"
+      };
       _this._backClass = new d3plusText.TextBox().on("click", function () {
         if (_this._history.length) _this.config(_this._history.pop()).render();else _this.depth(_this._drawDepth - 1).filter(false).render();
       }).on("mousemove", function () {
@@ -2842,8 +2866,10 @@
         this._transition = d3Transition.transition().duration(this._duration); // Appends a fullscreen SVG to the BODY if a container has not been provided through .select().
 
         if (this._select === void 0 || this._select.node().tagName.toLowerCase() !== "svg") {
-          var parent = this._select === void 0 ? d3Selection.select("body").append("div") : this._select;
-          var svg = parent.append("svg");
+          var _parent = this._select === void 0 ? d3Selection.select("body").append("div") : this._select;
+
+          var svg = _parent.append("svg");
+
           this.select(svg.node());
         }
         /** detects width and height and sets SVG properties */
@@ -2886,8 +2912,13 @@
           setSVGSize.bind(this)();
         }
 
-        this._select.attr("class", "d3plus-viz").attr("aria-hidden", this._ariaHidden).attr("aria-labelledby", "".concat(this._uuid, "-title ").concat(this._uuid, "-desc")).attr("role", "img").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xlink", "http://www.w3.org/1999/xlink").transition(d3Transition.transition).style("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).style("height", this._height !== undefined ? "".concat(this._height, "px") : undefined).attr("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).attr("height", this._height !== undefined ? "".concat(this._height, "px") : undefined); // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
+        this._select.attr("class", "d3plus-viz").attr("aria-hidden", this._ariaHidden).attr("aria-labelledby", "".concat(this._uuid, "-title ").concat(this._uuid, "-desc")).attr("role", "img").attr("xmlns", "http://www.w3.org/2000/svg").attr("xmlns:xlink", "http://www.w3.org/1999/xlink").transition(d3Transition.transition).style("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).style("height", this._height !== undefined ? "".concat(this._height, "px") : undefined).attr("width", this._width !== undefined ? "".concat(this._width, "px") : undefined).attr("height", this._height !== undefined ? "".concat(this._height, "px") : undefined); // sets "position: relative" on the SVG parent if currently undefined
 
+
+        var parent = d3Selection.select(this._select.node().parentNode);
+
+        var position = parent.style("position");
+        if (position === "static") parent.style("position", "relative"); // Updates the <title> tag if already exists else creates a new <title> tag on this.select.
 
         var svgTitle = this._select.selectAll("title").data([0]);
 
@@ -2984,6 +3015,7 @@
             _this3._draw(callback);
 
             zoomControls.bind(_this3)();
+            drawAttribution.bind(_this3)();
             if (_this3._messageClass._isVisible && (!_this3._noDataMessage || _this3._filteredData.length)) _this3._messageClass.hide();
 
             if (_this3._detectResize && (_this3._autoWidth || _this3._autoHeight)) {
@@ -3052,6 +3084,30 @@
       key: "ariaHidden",
       value: function ariaHidden(_) {
         return arguments.length ? (this._ariaHidden = _, this) : this._ariaHidden;
+      }
+      /**
+          @memberof Viz
+          @desc Sets text to be shown positioned absolute on top of the visualization in the bottom-right corner. This is most often used in Geomaps to display the copyright of map tiles. The text is rendered as HTML, so any valid HTML string will render as expected (eg. anchor links work).
+          @param {HTMLString|Boolean} *value* = false
+          @chainable
+      */
+
+    }, {
+      key: "attribution",
+      value: function attribution(_) {
+        return arguments.length ? (this._attribution = _, this) : this._attribution;
+      }
+      /**
+          @memberof Viz
+          @desc If *value* is specified, sets the config method for the back button and returns the current class instance.
+          @param {Object} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "attributionStyle",
+      value: function attributionStyle(_) {
+        return arguments.length ? (this._attributionStyle = d3plusCommon.assign(this._attributionStyle, _), this) : this._attributionStyle;
       }
       /**
           @memberof Viz
