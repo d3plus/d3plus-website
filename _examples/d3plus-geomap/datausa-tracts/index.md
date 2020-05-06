@@ -2,8 +2,8 @@
 title: Income by Census Tract
 width: 990
 height: 550
-time: 1582645331121
-date: February 25, 2020
+time: 1588783022204
+date: May 06, 2020
 ---
 
 [height]: 550
