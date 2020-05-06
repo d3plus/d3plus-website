@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.6.12
+  d3plus-geomap v0.6.13
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -934,10 +934,10 @@
 })));
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-geo'), require('d3-geo-projection'), require('d3-scale'), require('d3-tile'), require('topojson-client'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
-  typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports', 'd3-array', 'd3-color', 'd3-geo', 'd3-geo-projection', 'd3-scale', 'd3-tile', 'topojson-client', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Color, global.d3GeoCore, global.d3GeoProjection, global.scales, global.d3Tile, global.topojsonClient, global.d3plusCommon, global.d3plusShape, global.d3plusViz));
-}(this, (function (exports, d3Array, d3Color, d3GeoCore, d3GeoProjection, scales, d3Tile, topojsonClient, d3plusCommon, d3plusShape, d3plusViz) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-zoom'), require('d3-geo'), require('d3-geo-projection'), require('d3-scale'), require('d3-tile'), require('topojson-client'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
+  typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports', 'd3-array', 'd3-color', 'd3-zoom', 'd3-geo', 'd3-geo-projection', 'd3-scale', 'd3-tile', 'topojson-client', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
+  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Color, global.d3Zoom, global.d3GeoCore, global.d3GeoProjection, global.scales, global.d3Tile, global.topojsonClient, global.d3plusCommon, global.d3plusShape, global.d3plusViz));
+}(this, (function (exports, d3Array, d3Color, d3Zoom, d3GeoCore, d3GeoProjection, scales, d3Tile, topojsonClient, d3plusCommon, d3plusShape, d3plusViz) { 'use strict';
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -1038,7 +1038,80 @@
     return _get(target, property, receiver || target);
   }
 
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  }
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
+      return;
+    }
+
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  }
+
+  var attributions = [{
+    matches: ["cartodb", "cartocdn"],
+    text: "© <a href='http://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap</a> contributors, © <a href='https://carto.com/attribution' target='_blank'>CARTO</a>"
+  }, {
+    matches: ["opentopomap.org"],
+    text: "© <a href='http://www.openstreetmap.org/copyright' target='_blank'>OpenStreetMap</a> contributors"
+  }, {
+    matches: ["arcgisonline.com"],
+    text: "Powered by <a href='https://developers.arcgis.com/terms/attribution/' target='_blank'>Esri</a>"
+  }, {
+    matches: ["/watercolor/"],
+    text: "Map tiles by <a href='http://stamen.com' target='_blank'>Stamen Design</a>, under <a href='http://creativecommons.org/licenses/by/3.0' target='_blank'>CC BY 3.0</a>. Data by <a href='http://openstreetmap.org' target='_blank'>OpenStreetMap</a>, under <a href='http://www.openstreetmap.org/copyright' target='_blank'>ODbL</a>."
+  }, {
+    matches: ["stamen-tiles", "stamen.com"],
+    text: "Map tiles by <a href='http://stamen.com' target='_blank'>Stamen Design</a>, under <a href='http://creativecommons.org/licenses/by/3.0' target='_blank'>CC BY 3.0</a>. Data by <a href='http://openstreetmap.org' target='_blank'>OpenStreetMap</a>, under <a href='http://creativecommons.org/licenses/by-sa/3.0' target='_blank'>CC BY SA</a>."
+  }];
+
   var d3Geo = Object.assign({}, d3GeoCore, d3GeoProjection);
+  /**
+   * @name findAttribution
+   * @param {String} url
+   * @private
+   */
+
+  function findAttribution(url) {
+    var a = attributions.find(function (d) {
+      return d.matches.some(function (m) {
+        return url.includes(m);
+      });
+    });
+    return a ? a.text : false;
+  }
   /**
       @name topo2feature
       @desc Converts a specific topojson object key into a feature ready for projection.
@@ -1047,9 +1120,10 @@
       @private
   */
 
+
   function topo2feature(topo, key) {
     var k = key && topo.objects[key] ? key : Object.keys(topo.objects)[0];
-    return topojsonClient.feature(topo, topo.objects[k]);
+    return topojsonClient.feature(topo, k);
   }
   /**
       @class Geomap
@@ -1132,8 +1206,10 @@
         }
       });
       _this._tiles = true;
-      _this._tileGen = d3Tile.tile().wrap(false);
-      _this._tileUrl = "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}@2x.png";
+      _this._tileGen = d3Tile.tile();
+
+      _this.tileUrl("https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}@2x.png");
+
       _this._topojson = false;
       _this._topojsonFill = d3plusCommon.constant("#f5f5f3");
 
@@ -1154,9 +1230,10 @@
 
     _createClass(Geomap, [{
       key: "_renderTiles",
-      value: function _renderTiles(transform) {
+      value: function _renderTiles() {
         var _this2 = this;
 
+        var transform = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : d3Zoom.zoomTransform(this._container.node());
         var duration = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
         var tileData = [];
 
@@ -1166,23 +1243,36 @@
           this._tileGroup.transition().duration(duration).attr("transform", transform);
         }
 
-        var images = this._tileGroup.selectAll("image.d3plus-geomap-tile").data(tileData, function (d) {
-          return "".concat(d.x, "-").concat(d.y, "-").concat(d.z);
+        var images = this._tileGroup.selectAll("image.d3plus-geomap-tile").data(tileData, function (_ref) {
+          var _ref2 = _slicedToArray(_ref, 3),
+              x = _ref2[0],
+              y = _ref2[1],
+              z = _ref2[2];
+
+          return "".concat(x, "-").concat(y, "-").concat(z);
         });
 
         images.exit().transition().duration(duration).attr("opacity", 0).remove();
         var scale = tileData.scale / transform.k;
-        images.enter().append("image").attr("class", "d3plus-geomap-tile").attr("opacity", 0).attr("xlink:href", function (d) {
-          return _this2._tileUrl.replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0]).replace("{z}", d.z).replace("{x}", d.x).replace("{y}", d.y);
-        }).attr("width", scale).attr("height", scale).attr("x", function (d) {
-          return d.x * scale + tileData.translate[0] * scale - transform.x / transform.k;
-        }).attr("y", function (d) {
-          return d.y * scale + tileData.translate[1] * scale - transform.y / transform.k;
-        }).transition().duration(duration).attr("opacity", 1);
-        images.attr("width", scale).attr("height", scale).attr("x", function (d) {
-          return d.x * scale + tileData.translate[0] * scale - transform.x / transform.k;
-        }).attr("y", function (d) {
-          return d.y * scale + tileData.translate[1] * scale - transform.y / transform.k;
+        var tileEnter = images.enter().append("image").attr("class", "d3plus-geomap-tile");
+        tileEnter.attr("opacity", 0).transition().duration(duration).attr("opacity", 1);
+        images.merge(tileEnter).attr("width", scale).attr("height", scale).attr("xlink:href", function (_ref3) {
+          var _ref4 = _slicedToArray(_ref3, 3),
+              x = _ref4[0],
+              y = _ref4[1],
+              z = _ref4[2];
+
+          return _this2._tileUrl.replace("{s}", ["a", "b", "c"][Math.random() * 3 | 0]).replace("{z}", z).replace("{x}", x).replace("{y}", y);
+        }).attr("x", function (_ref5) {
+          var _ref6 = _slicedToArray(_ref5, 1),
+              x = _ref6[0];
+
+          return x * scale + tileData.translate[0] * scale - transform.x / transform.k;
+        }).attr("y", function (_ref7) {
+          var _ref8 = _slicedToArray(_ref7, 2),
+              y = _ref8[1];
+
+          return y * scale + tileData.translate[1] * scale - transform.y / transform.k;
         });
       }
       /**
@@ -1518,7 +1608,7 @@
     }, {
       key: "projection",
       value: function projection(_) {
-        if (arguments.length && _ !== "geoMercator") this._tiles = false;
+        if (arguments.length && _ !== "geoMercator") this.tiles(false);
         return arguments.length ? (this._projection = typeof _ === "string" ? d3Geo[_] ? d3Geo[_]() : d3Geo.geoMercator() : _, this) : this._projection;
       }
       /**
@@ -1546,7 +1636,7 @@
         if (arguments.length) {
           this._projection.rotate(_);
 
-          this._tiles = false;
+          this.tiles(false);
           this._zoomSet = false;
           return this;
         } else {
@@ -1563,7 +1653,14 @@
     }, {
       key: "tiles",
       value: function tiles(_) {
-        return arguments.length ? (this._tiles = _, this) : this._tiles;
+        if (arguments.length) {
+          this._tiles = _;
+          var attribution = findAttribution(this._tileUrl);
+          if (_ && this._attribution === "") this._attribution = attribution;else if (!_ && this._attribution === attribution) this._attribution = "";
+          return this;
+        }
+
+        return this._tiles;
       }
       /**
           @memberof Geomap
@@ -1575,7 +1672,14 @@
     }, {
       key: "tileUrl",
       value: function tileUrl(_) {
-        return arguments.length ? (this._tileUrl = _, this) : this._tileUrl;
+        if (arguments.length) {
+          this._tileUrl = _;
+          if (this._tiles) this._attribution = findAttribution(_);
+          if (this._tileGroup) this._renderTiles.bind(this)();
+          return this;
+        }
+
+        return this._tileUrl;
       }
       /**
           @memberof Geomap
