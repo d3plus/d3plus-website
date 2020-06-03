@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.5.3
+  d3plus-axis v0.5.4
   Beautiful javascript scales and axes.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1299,8 +1299,8 @@
             offset = this._margin[opposite],
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
 
-        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
-        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() * -1 : 0;
+        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() * -1 : 0;
         bar.call(d3plusCommon.attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**

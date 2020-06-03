@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.5.3
+  d3plus-axis v0.5.4
   Beautiful javascript scales and axes.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -18896,7 +18896,7 @@
   var formatLocale$3 = {
     "en-GB": {
       separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: ",",
@@ -18906,7 +18906,7 @@
     },
     "en-US": {
       separator: "",
-      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "t", "q", "Q", "Z", "Y"],
+      suffixes: ["y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "B", "T", "q", "Q", "Z", "Y"],
       grouping: [3],
       delimiters: {
         thousands: ",",
@@ -19552,8 +19552,8 @@
     format = (format + "").trim().toLowerCase();
     return (m = reHex.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn$1(m) // #ff0000
     : l === 3 ? new Rgb$1(m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, (m & 0xf) << 4 | m & 0xf, 1) // #f00
-    : l === 8 ? new Rgb$1(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
-    : l === 4 ? new Rgb$1(m >> 12 & 0xf | m >> 8 & 0xf0, m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, ((m & 0xf) << 4 | m & 0xf) / 0xff) // #f000
+    : l === 8 ? rgba$1(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
+    : l === 4 ? rgba$1(m >> 12 & 0xf | m >> 8 & 0xf0, m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, ((m & 0xf) << 4 | m & 0xf) / 0xff) // #f000
     : null // invalid hex
     ) : (m = reRgbInteger$1.exec(format)) ? new Rgb$1(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
     : (m = reRgbPercent$1.exec(format)) ? new Rgb$1(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
@@ -19909,8 +19909,8 @@
     format = (format + "").trim().toLowerCase();
     return (m = reHex$1.exec(format)) ? (l = m[1].length, m = parseInt(m[1], 16), l === 6 ? rgbn$2(m) // #ff0000
     : l === 3 ? new Rgb$2(m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, (m & 0xf) << 4 | m & 0xf, 1) // #f00
-    : l === 8 ? new Rgb$2(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
-    : l === 4 ? new Rgb$2(m >> 12 & 0xf | m >> 8 & 0xf0, m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, ((m & 0xf) << 4 | m & 0xf) / 0xff) // #f000
+    : l === 8 ? rgba$2(m >> 24 & 0xff, m >> 16 & 0xff, m >> 8 & 0xff, (m & 0xff) / 0xff) // #ff000000
+    : l === 4 ? rgba$2(m >> 12 & 0xf | m >> 8 & 0xf0, m >> 8 & 0xf | m >> 4 & 0xf0, m >> 4 & 0xf | m & 0xf0, ((m & 0xf) << 4 | m & 0xf) / 0xff) // #f000
     : null // invalid hex
     ) : (m = reRgbInteger$2.exec(format)) ? new Rgb$2(m[1], m[2], m[3], 1) // rgb(255, 0, 0)
     : (m = reRgbPercent$2.exec(format)) ? new Rgb$2(m[1] * 255 / 100, m[2] * 255 / 100, m[3] * 255 / 100, 1) // rgb(100%, 0%, 0%)
@@ -22519,7 +22519,7 @@
   }
 
   // great unicode list: http://asecuritysite.com/coding/asc2
-  var diacritics = [[/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"], [/[\306]/g, "AE"], [/[\346]/g, "ae"], [/[\337]/g, "B"], [/[\307]/g, "C"], [/[\347]/g, "c"], [/[\320\336\376]/g, "D"], [/[\360]/g, "d"], [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"], [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"], [/[\321]/g, "N"], [/[\361]/g, "n"], [/[\322-\326\330]/g, "O"], [/[\362-\366\370]/g, "o"], [/[\331-\334]/g, "U"], [/[\371-\374]/g, "u"], [/[\327]/g, "x"], [/[\335]/g, "Y"], [/[\375\377]/g, "y"]];
+  var diacritics = [[/[\300-\305]/g, "A"], [/[\340-\345]/g, "a"], [/[\306]/g, "AE"], [/[\346]/g, "ae"], [/[\337]/g, "B"], [/[\307]/g, "C"], [/[\347]/g, "c"], [/[\320\336\376]/g, "D"], [/[\360]/g, "d"], [/[\310-\313]/g, "E"], [/[\350-\353]/g, "e"], [/[\314-\317]/g, "I"], [/[\354-\357]/g, "i"], [/[\321]/g, "N"], [/[\361]/g, "n"], [/[\u014c\322-\326\330]/g, "O"], [/[\u014d\362-\366\370]/g, "o"], [/[\u016a\331-\334]/g, "U"], [/[\u016b\371-\374]/g, "u"], [/[\327]/g, "x"], [/[\335]/g, "Y"], [/[\375\377]/g, "y"]];
   /**
       @function strip
       @desc Removes all non ASCII characters from a string.
@@ -24217,7 +24217,7 @@
           parent: this._group
         });
 
-        var hitAreas = this._group.selectAll(".d3plus-HitArea").data(this._hitArea ? data : [], key);
+        var hitAreas = this._group.selectAll(".d3plus-HitArea").data(this._hitArea && Object.keys(this._on).length ? data : [], key);
 
         hitAreas.order().call(this._applyTransform.bind(this));
         var isLine = this._name === "Line";
@@ -24889,7 +24889,7 @@
     return splitCurveAsPoints(points, segmentCount).map(pointsToCommand);
   }
 
-  var commandTokenRegex = /[MLCSTQAHVmlcstqahv]|[\d.-]+/g;
+  var commandTokenRegex = /[MLCSTQAHVmlcstqahv]|-?[\d.e+-]+/g;
   /**
    * List of params for each command type in a path `d` attribute
    */
@@ -29095,8 +29095,8 @@
             offset = this._margin[opposite],
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
 
-        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
-        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
+        var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() * -1 : 0;
+        var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() * -1 : 0;
         bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(domain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(domain[domain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**
