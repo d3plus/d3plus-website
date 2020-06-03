@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.38
+  d3plus-plot v0.8.39
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1357,21 +1357,10 @@
 
     if (axis.invert && needsBuffer()) {
       if (scale === "log") {
-        var decrease = index === 0 && domain[0] > 0 || index === 1 && domain[1] < 0;
-        var log = Math[decrease ? "ceil" : "floor"](Math.log10(Math.abs(domain[index]))); // console.log("Log start:", log, decrease);
-
-        while (needsBuffer() && log < 20) {
-          log = decrease ? log - 1 : log + 1;
-          var mod = domain[index] < 0 ? -1 : 1;
-
-          if (log < 0) {
-            log = 1;
-            decrease = !decrease;
-            mod = !mod;
-          }
-
-          domain[index] = Math.pow(10, log) * mod;
-          axis.domain(invert ? domain.slice().reverse() : domain); // console.log("change!", domain);
+        while (needsBuffer()) {
+          var mod = index === 0 ? -1 : 1;
+          domain[index] += domain[index] * 0.1 * mod;
+          axis.domain(invert ? domain.slice().reverse() : domain);
         }
       } else if (index === 0) {
         var v = axis.invert(axis(value) + size * (invert ? 1 : -1)); // console.log("value", v, domain);
@@ -2107,6 +2096,15 @@
           y: yDomain,
           y2: y2Domain || yDomain
         };
+        Object.keys(domains).forEach(function (axis) {
+          if (_this2["_".concat(axis, "Config")].scale === "log" && domains[axis].includes(0)) {
+            if (domains[axis][0] < domains[axis][1]) domains[axis][0] = d3Array.min(data.map(function (d) {
+              return d[axis];
+            }).filter(Boolean));else domains[axis][1] = d3Array.max(data, function (d) {
+              return d[axis];
+            });
+          }
+        });
         opps.forEach(function (opp) {
           if (_this2["_".concat(opp, "Config")].domain) {
             var _d2 = _this2["_".concat(opp, "Config")].domain;
@@ -2455,10 +2453,10 @@
 
         _x2 = function x(d, _x) {
           if (_x === "x2") {
-            if (_this2._x2Config.scale === "log" && d === 0) d = x2Domain[0] < 0 ? -1 : 1;
+            if (_this2._x2Config.scale === "log" && d === 0) d = x2Domain[0] < 0 ? _this2._x2Axis._d3Scale.domain()[1] : _this2._x2Axis._d3Scale.domain()[0];
             return _this2._x2Axis._getPosition.bind(_this2._x2Axis)(d);
           } else {
-            if (_this2._xConfig.scale === "log" && d === 0) d = xDomain[0] < 0 ? -1 : 1;
+            if (_this2._xConfig.scale === "log" && d === 0) d = xDomain[0] < 0 ? _this2._xAxis._d3Scale.domain()[1] : _this2._xAxis._d3Scale.domain()[0];
             return _this2._xAxis._getPosition.bind(_this2._xAxis)(d);
           }
         };
@@ -2473,10 +2471,10 @@
 
         _y2 = function y(d, _y) {
           if (_y === "y2") {
-            if (_this2._y2Config.scale === "log" && d === 0) d = y2Domain[0] < 0 ? -1 : 1;
+            if (_this2._y2Config.scale === "log" && d === 0) d = y2Domain[0] < 0 ? _this2._y2Axis._d3Scale.domain()[1] : _this2._y2Axis._d3Scale.domain()[0];
             return _this2._y2Axis._getPosition.bind(_this2._y2Axis)(d) - x2Height;
           } else {
-            if (_this2._yConfig.scale === "log" && d === 0) d = yDomain[0] < 0 ? -1 : 1;
+            if (_this2._yConfig.scale === "log" && d === 0) d = yDomain[0] < 0 ? _this2._yAxis._d3Scale.domain()[1] : _this2._yAxis._d3Scale.domain()[0];
             return _this2._yAxis._getPosition.bind(_this2._yAxis)(d) - x2Height;
           }
         };
