@@ -1,5 +1,5 @@
 /*
-  d3plus-geomap v0.6.13
+  d3plus-geomap v0.6.14
   A reusable geo map built on D3 and Topojson
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -934,10 +934,10 @@
 })));
 
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-zoom'), require('d3-geo'), require('d3-geo-projection'), require('d3-scale'), require('d3-tile'), require('topojson-client'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
-  typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports', 'd3-array', 'd3-color', 'd3-zoom', 'd3-geo', 'd3-geo-projection', 'd3-scale', 'd3-tile', 'topojson-client', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
-  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Color, global.d3Zoom, global.d3GeoCore, global.d3GeoProjection, global.scales, global.d3Tile, global.topojsonClient, global.d3plusCommon, global.d3plusShape, global.d3plusViz));
-}(this, (function (exports, d3Array, d3Color, d3Zoom, d3GeoCore, d3GeoProjection, scales, d3Tile, topojsonClient, d3plusCommon, d3plusShape, d3plusViz) { 'use strict';
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('d3-array'), require('d3-color'), require('d3-zoom'), require('d3-geo'), require('d3-geo-projection'), require('d3-composite-projections'), require('d3-scale'), require('d3-tile'), require('topojson-client'), require('d3plus-common'), require('d3plus-shape'), require('d3plus-viz')) :
+  typeof define === 'function' && define.amd ? define('d3plus-geomap', ['exports', 'd3-array', 'd3-color', 'd3-zoom', 'd3-geo', 'd3-geo-projection', 'd3-composite-projections', 'd3-scale', 'd3-tile', 'topojson-client', 'd3plus-common', 'd3plus-shape', 'd3plus-viz'], factory) :
+  (global = global || self, factory(global.d3plus = {}, global.d3Array, global.d3Color, global.d3Zoom, global.d3GeoCore, global.d3GeoProjection, global.d3CompositeProjections, global.scales, global.d3Tile, global.topojsonClient, global.d3plusCommon, global.d3plusShape, global.d3plusViz));
+}(this, (function (exports, d3Array, d3Color, d3Zoom, d3GeoCore, d3GeoProjection, d3CompositeProjections, scales, d3Tile, topojsonClient, d3plusCommon, d3plusShape, d3plusViz) { 'use strict';
 
   function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -1097,7 +1097,7 @@
     text: "Map tiles by <a href='http://stamen.com' target='_blank'>Stamen Design</a>, under <a href='http://creativecommons.org/licenses/by/3.0' target='_blank'>CC BY 3.0</a>. Data by <a href='http://openstreetmap.org' target='_blank'>OpenStreetMap</a>, under <a href='http://creativecommons.org/licenses/by-sa/3.0' target='_blank'>CC BY SA</a>."
   }];
 
-  var d3Geo = Object.assign({}, d3GeoCore, d3GeoProjection);
+  var d3Geo = Object.assign({}, d3GeoCore, d3GeoProjection, d3CompositeProjections);
   /**
    * @name findAttribution
    * @param {String} url
@@ -1600,7 +1600,7 @@
       }
       /**
           @memberof Geomap
-          @desc Sets the map projection used when displaying topojson and coordinate points. Any of the standard projections exported from [d3-geo](https://github.com/d3/d3-geo#projections) are accepted, whether as the string name (ie. "geoMercator") or the generator function itself. Map tiles are only usable when the projection is set to Mercator (which is also the default value).
+          @desc Sets the map projection used when displaying topojson and coordinate points. All of the projections exported from [d3-geo](https://github.com/d3/d3-geo#projections), [d3-geo-projection](https://github.com/d3/d3-geo-projection#api-reference), and [d3-composite-projections](http://geoexamples.com/d3-composite-projections/) are accepted, whether as the string name (ie. "geoMercator") or the generator function itself. Map tiles are only usable when the projection is set to Mercator (which is also the default value).
           @param {Function|String} *projection* = "geoMercator"
           @chainable
       */
