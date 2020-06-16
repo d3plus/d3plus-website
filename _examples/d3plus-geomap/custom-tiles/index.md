@@ -2,8 +2,8 @@
 title: Changing Geomap Tiles
 width: 990
 height: 700
-time: 1588783022204
-date: May 06, 2020
+time: 1592318759766
+date: June 16, 2020
 ---
 
 [height]: 700
