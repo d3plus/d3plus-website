@@ -1,41 +1,45 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-geomap.v0.6.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Disable Geomap Zooming | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-geomap.v0.6.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  new d3plus.Geomap()
-    .config({
-      data: "https://d3plus.org/data/city_coords.json",
-      groupBy: "slug",
-      colorScale: "dma_code",
-      label: function(d) {
-        return d.city + ", " + d.region;
-      },
-      point: function(d) {
-        return [d.longitude, d.latitude];
-      },
-      zoom: false
-    })
-    .render();
+    <script>
 
-</script>
+      new d3plus.Geomap()
+        .config({
+          data: "https://d3plus.org/data/city_coords.json",
+          groupBy: "slug",
+          colorScale: "dma_code",
+          label: function(d) {
+            return d.city + ", " + d.region;
+          },
+          point: function(d) {
+            return [d.longitude, d.latitude];
+          },
+          zoom: false
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>
