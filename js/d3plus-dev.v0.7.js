@@ -1,7 +1,7 @@
 /*
-  d3plus-dev v0.7.4
+  d3plus-dev v0.7.5
   A collection of scripts for developing D3plus modules.
-  Copyright (c) 2019 D3plus - https://d3plus.org
+  Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
 */
 
