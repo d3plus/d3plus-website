@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.56
+  d3plus-viz v0.12.57
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -51515,7 +51515,7 @@
       return _this._hidden.includes(id) || _this._solo.length && !_this._solo.includes(id);
     };
 
-    this._legendClass.id(fill).align(wide ? "center" : position).direction(wide ? "row" : "column").duration(this._duration).data(legendData.length > this._legendCutoff || this._colorScale ? legendData : []).height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top)).locale(this._locale).select(legendGroup).verticalAlign(!wide ? "middle" : position).width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right)).shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend")).config(this._legendConfig).shapeConfig({
+    this._legendClass.id(fill).align(wide ? "center" : position).direction(wide ? "row" : "column").duration(this._duration).data(legendData.length > this._legendCutoff || this._colorScale ? legendData : []).height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top)).locale(this._locale).parent(this).select(legendGroup).verticalAlign(!wide ? "middle" : position).width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right)).shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend")).config(this._legendConfig).shapeConfig({
       fill: function fill(d, i) {
         return hidden(d, i) ? _this._hiddenColor(d, i) : color(d, i);
       },
