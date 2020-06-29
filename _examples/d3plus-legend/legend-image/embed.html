@@ -1,42 +1,46 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-legend.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Images in Legends | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-legend.v0.8.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {id: "Apple", color: "orange", image: "https://datausa.io/images/attrs/thing_apple.png"},
-    {id: "Fish", color: "blue", image: "https://datausa.io/images/attrs/thing_fish.png"},
-    {id: "Tomato", color: "red", image: "https://datausa.io/images/attrs/thing_tomato.png"}
-  ];
-  
-  var legend = new d3plus.Legend()
-    .data(data)
-    .shapeConfig({
-      backgroundImage: function(d) { return d.image; },
-      fill: function(d) { return d.color; },
-      height: 25,
-      width: 25
-    })
-    .render();
+    <script>
 
-</script>
+      var data = [
+        {id: "Apple", color: "orange", image: "https://datausa.io/images/attrs/thing_apple.png"},
+        {id: "Fish", color: "blue", image: "https://datausa.io/images/attrs/thing_fish.png"},
+        {id: "Tomato", color: "red", image: "https://datausa.io/images/attrs/thing_tomato.png"}
+      ];
+      
+      var legend = new d3plus.Legend()
+        .data(data)
+        .shapeConfig({
+          backgroundImage: function(d) { return d.image; },
+          fill: function(d) { return d.color; },
+          height: 25,
+          width: 25
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>
