@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.33
+  d3plus-legend v0.8.34
   An easy to use javascript chart legend.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -2082,6 +2082,7 @@
       _this._align = "middle";
       _this._buckets = 5;
       _this._bucketAxis = false;
+      _this._centered = true;
       _this._colorMax = "#0C8040";
       _this._colorMid = "#f7f7f7";
       _this._colorMin = "#b22200";
@@ -2167,7 +2168,28 @@
           });
 
           var buckets = d3Array.min([colors ? colors.length : this._buckets, data.length]);
-          var jenks = ckmeans(data, buckets);
+          var jenks = [];
+
+          if (diverging && this._centered) {
+            var half = Math.floor(buckets / 2);
+            var residual = buckets % 2;
+            var negatives = data.filter(function (d) {
+              return d < _this2._midpoint;
+            });
+            var negativesDeviation = d3Array.deviation(negatives);
+            var positives = data.concat(this._midpoint).filter(function (d) {
+              return d >= _this2._midpoint;
+            });
+            var positivesDeviation = d3Array.deviation(positives);
+            var isNegativeMax = negativesDeviation > positivesDeviation ? 1 : 0;
+            var isPositiveMax = positivesDeviation > negativesDeviation ? 1 : 0;
+            var negativeJenks = ckmeans(negatives, half + residual * isNegativeMax);
+            var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
+            jenks = negativeJenks.concat(positiveJenks);
+          } else {
+            jenks = ckmeans(data, buckets);
+          }
+
           ticks = d3Array.merge(jenks.map(function (c, i) {
             return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]];
           }));
@@ -2180,24 +2202,31 @@
           if (!colors) {
             if (diverging) {
               colors = [this._colorMin, this._colorMid, this._colorMax];
-              var negatives = ticks.slice(0, buckets).filter(function (d, i) {
+
+              var _negatives = ticks.slice(0, buckets).filter(function (d, i) {
                 return d < _this2._midpoint && ticks[i + 1] <= _this2._midpoint;
               });
+
               var spanning = ticks.slice(0, buckets).filter(function (d, i) {
                 return d <= _this2._midpoint && ticks[i + 1] > _this2._midpoint;
               });
-              var positives = ticks.slice(0, buckets).filter(function (d, i) {
+
+              var _positives = ticks.slice(0, buckets).filter(function (d, i) {
                 return d > _this2._midpoint && ticks[i + 1] > _this2._midpoint;
               });
-              var negativeColors = negatives.map(function (d, i) {
-                return !i ? colors[0] : d3plusColor.colorLighter(colors[0], i / negatives.length);
+
+              var negativeColors = _negatives.map(function (d, i) {
+                return !i ? colors[0] : d3plusColor.colorLighter(colors[0], i / _negatives.length);
               });
+
               var spanningColors = spanning.map(function () {
                 return colors[1];
               });
-              var positiveColors = positives.map(function (d, i) {
-                return i === positives.length - 1 ? colors[2] : d3plusColor.colorLighter(colors[2], 1 - (i + 1) / positives.length);
+
+              var positiveColors = _positives.map(function (d, i) {
+                return i === _positives.length - 1 ? colors[2] : d3plusColor.colorLighter(colors[2], 1 - (i + 1) / _positives.length);
               });
+
               colors = negativeColors.concat(spanningColors).concat(positiveColors);
             } else {
               colors = d3Array.range(0, this._buckets, 1).map(function (i) {
@@ -2215,18 +2244,18 @@
           var _buckets;
 
           if (diverging && !colors) {
-            var half = Math.floor(this._buckets / 2);
+            var _half = Math.floor(this._buckets / 2);
 
-            var _negativeColors = d3Array.range(0, half, 1).map(function (i) {
-              return !i ? _this2._colorMin : d3plusColor.colorLighter(_this2._colorMin, i / half);
+            var _negativeColors = d3Array.range(0, _half, 1).map(function (i) {
+              return !i ? _this2._colorMin : d3plusColor.colorLighter(_this2._colorMin, i / _half);
             });
 
             var _spanningColors = (this._buckets % 2 ? [0] : []).map(function () {
               return _this2._colorMid;
             });
 
-            var _positiveColors = d3Array.range(0, half, 1).map(function (i) {
-              return !i ? _this2._colorMax : d3plusColor.colorLighter(_this2._colorMax, i / half);
+            var _positiveColors = d3Array.range(0, _half, 1).map(function (i) {
+              return !i ? _this2._colorMax : d3plusColor.colorLighter(_this2._colorMax, i / _half);
             }).reverse();
 
             colors = _negativeColors.concat(_spanningColors).concat(_positiveColors);
@@ -2251,6 +2280,12 @@
               _buckets = d3Array.range(0, 1 + _step / 2, _step).map(function (d) {
                 return d3Array.quantile(allValues, d);
               });
+            } else if (diverging && this._color && this._centered) {
+              var negativeStep = (this._midpoint - domain[0]) / Math.floor(colors.length / 2);
+              var positiveStep = (domain[1] - this._midpoint) / Math.floor(colors.length / 2);
+              var negativeBuckets = d3Array.range(domain[0], this._midpoint, negativeStep);
+              var positiveBuckets = d3Array.range(this._midpoint, domain[1] + positiveStep / 2, positiveStep);
+              _buckets = negativeBuckets.concat(positiveBuckets);
             } else {
               var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
 
@@ -2261,30 +2296,34 @@
           if (this._scale === "buckets" || this._scale === "quantile") {
             ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
           } else if (this._scale === "log") {
-            var negativeBuckets = _buckets.filter(function (d) {
+            var _negativeBuckets = _buckets.filter(function (d) {
               return d < 0;
             });
 
-            if (negativeBuckets.length) {
-              var minVal = negativeBuckets[0];
-              var newNegativeBuckets = negativeBuckets.map(function (d) {
+            if (_negativeBuckets.length) {
+              var minVal = _negativeBuckets[0];
+
+              var newNegativeBuckets = _negativeBuckets.map(function (d) {
                 return -Math.pow(Math.abs(minVal), d / minVal);
               });
-              negativeBuckets.forEach(function (bucket, i) {
+
+              _negativeBuckets.forEach(function (bucket, i) {
                 _buckets[_buckets.indexOf(bucket)] = newNegativeBuckets[i];
               });
             }
 
-            var positiveBuckets = _buckets.filter(function (d) {
+            var _positiveBuckets = _buckets.filter(function (d) {
               return d > 0;
             });
 
-            if (positiveBuckets.length) {
-              var maxVal = positiveBuckets[positiveBuckets.length - 1];
-              var newPositiveBuckets = positiveBuckets.map(function (d) {
+            if (_positiveBuckets.length) {
+              var maxVal = _positiveBuckets[_positiveBuckets.length - 1];
+
+              var newPositiveBuckets = _positiveBuckets.map(function (d) {
                 return Math.pow(maxVal, d / maxVal);
               });
-              positiveBuckets.forEach(function (bucket, i) {
+
+              _positiveBuckets.forEach(function (bucket, i) {
                 _buckets[_buckets.indexOf(bucket)] = newPositiveBuckets[i];
               });
             }
@@ -2552,6 +2591,18 @@
       key: "bucketAxis",
       value: function bucketAxis(_) {
         return arguments.length ? (this._bucketAxis = _, this) : this._bucketAxis;
+      }
+      /**
+          @memberof ColorScale
+          @desc Determines whether or not to display a midpoint centered Axis. Does not apply to quantile scales.
+          @param {Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "centered",
+      value: function centered(_) {
+        return arguments.length ? (this._centered = _, this) : this._centered;
       }
       /**
           @memberof ColorScale
