@@ -1,37 +1,41 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-shape.v0.16.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Drawing Rectangles | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-shape.v0.16.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {text: "Box #1", width: 200, height: 150, x: 100, y: 75,  color: "cornflowerblue"},
-    {text: "Box #2", width: 150, height: 100, x: 285, y: 100, color: "firebrick"}
-  ];
+    <script>
 
-  new d3plus.Rect()
-    .data(data)
-    .fill(function(d) { return d.color; })
-    .label(function(d) { return d.text; })
-    .render();
+      var data = [
+        {text: "Box #1", width: 200, height: 150, x: 100, y: 75,  color: "cornflowerblue"},
+        {text: "Box #2", width: 150, height: 100, x: 285, y: 100, color: "firebrick"}
+      ];
 
-</script>
+      new d3plus.Rect()
+        .data(data)
+        .fill(function(d) { return d.color; })
+        .label(function(d) { return d.text; })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

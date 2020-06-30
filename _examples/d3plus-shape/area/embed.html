@@ -1,40 +1,44 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-shape.v0.16.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Drawing Area Shapes | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-shape.v0.16.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {x: 0,   y0: 300, y1: 200},
-    {x: 150, y0: 100, y1: 0},
-    {x: 450, y0: 300, y1: 180},
-    {x: 700, y0: 140, y1: 40}
-  ];
-  
-  new d3plus.Area()
-    .data(data)
-    .y0(function(d) { return d.y0; })
-    .y1(function(d) { return d.y1; })
-    .label("An Example D3plus Area")
-    .render();
+    <script>
 
-</script>
+      var data = [
+        {x: 0,   y0: 300, y1: 200},
+        {x: 150, y0: 100, y1: 0},
+        {x: 450, y0: 300, y1: 180},
+        {x: 700, y0: 140, y1: 40}
+      ];
+      
+      new d3plus.Area()
+        .data(data)
+        .y0(function(d) { return d.y0; })
+        .y1(function(d) { return d.y1; })
+        .label("An Example D3plus Area")
+        .render();
+
+    </script>
+
+  </body>
 
 </html>
