@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.8.34
+  d3plus-legend v0.8.35
   An easy to use javascript chart legend.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1802,7 +1802,7 @@
 
         this._shapes = [];
         ["Circle", "Rect"].forEach(function (Shape) {
-          _this3._shapes.push(new shapes[Shape]().data(data.filter(function (d) {
+          _this3._shapes.push(new shapes[Shape]().parent(_this3).data(data.filter(function (d) {
             return d.shape === Shape;
           })).duration(_this3._duration).labelConfig({
             padding: 0
@@ -2109,7 +2109,7 @@
         y: 0
       };
       _this._padding = 5;
-      _this._rectClass = new shapes.Rect();
+      _this._rectClass = new shapes.Rect().parent(_assertThisInitialized(_this));
       _this._rectConfig = {
         stroke: "#444",
         strokeWidth: 1
