@@ -2,7 +2,7 @@
 title: Creating a Color Scale
 width: 400
 height: 200
-time: 1593533404039
+time: 1593534914102
 date: June 30, 2020
 ---
 
