@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.57
+  d3plus-viz v0.12.58
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -2267,6 +2267,41 @@
 
   function number (x) {
     return x === null ? NaN : +x;
+  }
+
+  function variance (values, valueof) {
+    var n = values.length,
+        m = 0,
+        i = -1,
+        mean = 0,
+        value,
+        delta,
+        sum = 0;
+
+    if (valueof == null) {
+      while (++i < n) {
+        if (!isNaN(value = number(values[i]))) {
+          delta = value - mean;
+          mean += delta / ++m;
+          sum += delta * (value - mean);
+        }
+      }
+    } else {
+      while (++i < n) {
+        if (!isNaN(value = number(valueof(values[i], i, values)))) {
+          delta = value - mean;
+          mean += delta / ++m;
+          sum += delta * (value - mean);
+        }
+      }
+    }
+
+    if (m > 1) return sum / (m - 1);
+  }
+
+  function deviation (array, f) {
+    var v = variance(array, f);
+    return v ? Math.sqrt(v) : v;
   }
 
   function extent (values, valueof) {
@@ -33429,7 +33464,7 @@
 
         this._shapes = [];
         ["Circle", "Rect"].forEach(function (Shape) {
-          _this3._shapes.push(new shapes$2[Shape]().data(data.filter(function (d) {
+          _this3._shapes.push(new shapes$2[Shape]().parent(_this3).data(data.filter(function (d) {
             return d.shape === Shape;
           })).duration(_this3._duration).labelConfig({
             padding: 0
@@ -33841,6 +33876,7 @@
       _this._align = "middle";
       _this._buckets = 5;
       _this._bucketAxis = false;
+      _this._centered = true;
       _this._colorMax = "#0C8040";
       _this._colorMid = "#f7f7f7";
       _this._colorMin = "#b22200";
@@ -33867,7 +33903,7 @@
         y: 0
       };
       _this._padding = 5;
-      _this._rectClass = new Rect();
+      _this._rectClass = new Rect().parent(_assertThisInitialized$g(_this));
       _this._rectConfig = {
         stroke: "#444",
         strokeWidth: 1
@@ -33926,7 +33962,28 @@
           });
 
           var buckets = min([colors ? colors.length : this._buckets, data.length]);
-          var jenks = ckmeans(data, buckets);
+          var jenks = [];
+
+          if (diverging && this._centered) {
+            var half = Math.floor(buckets / 2);
+            var residual = buckets % 2;
+            var negatives = data.filter(function (d) {
+              return d < _this2._midpoint;
+            });
+            var negativesDeviation = deviation(negatives);
+            var positives = data.concat(this._midpoint).filter(function (d) {
+              return d >= _this2._midpoint;
+            });
+            var positivesDeviation = deviation(positives);
+            var isNegativeMax = negativesDeviation > positivesDeviation ? 1 : 0;
+            var isPositiveMax = positivesDeviation > negativesDeviation ? 1 : 0;
+            var negativeJenks = ckmeans(negatives, half + residual * isNegativeMax);
+            var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
+            jenks = negativeJenks.concat(positiveJenks);
+          } else {
+            jenks = ckmeans(data, buckets);
+          }
+
           ticks = arrayMerge(jenks.map(function (c, i) {
             return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]];
           }));
@@ -33939,24 +33996,31 @@
           if (!colors) {
             if (diverging) {
               colors = [this._colorMin, this._colorMid, this._colorMax];
-              var negatives = ticks.slice(0, buckets).filter(function (d, i) {
+
+              var _negatives = ticks.slice(0, buckets).filter(function (d, i) {
                 return d < _this2._midpoint && ticks[i + 1] <= _this2._midpoint;
               });
+
               var spanning = ticks.slice(0, buckets).filter(function (d, i) {
                 return d <= _this2._midpoint && ticks[i + 1] > _this2._midpoint;
               });
-              var positives = ticks.slice(0, buckets).filter(function (d, i) {
+
+              var _positives = ticks.slice(0, buckets).filter(function (d, i) {
                 return d > _this2._midpoint && ticks[i + 1] > _this2._midpoint;
               });
-              var negativeColors = negatives.map(function (d, i) {
-                return !i ? colors[0] : colorLighter(colors[0], i / negatives.length);
+
+              var negativeColors = _negatives.map(function (d, i) {
+                return !i ? colors[0] : colorLighter(colors[0], i / _negatives.length);
               });
+
               var spanningColors = spanning.map(function () {
                 return colors[1];
               });
-              var positiveColors = positives.map(function (d, i) {
-                return i === positives.length - 1 ? colors[2] : colorLighter(colors[2], 1 - (i + 1) / positives.length);
+
+              var positiveColors = _positives.map(function (d, i) {
+                return i === _positives.length - 1 ? colors[2] : colorLighter(colors[2], 1 - (i + 1) / _positives.length);
               });
+
               colors = negativeColors.concat(spanningColors).concat(positiveColors);
             } else {
               colors = range(0, this._buckets, 1).map(function (i) {
@@ -33974,18 +34038,18 @@
           var _buckets;
 
           if (diverging && !colors) {
-            var half = Math.floor(this._buckets / 2);
+            var _half = Math.floor(this._buckets / 2);
 
-            var _negativeColors = range(0, half, 1).map(function (i) {
-              return !i ? _this2._colorMin : colorLighter(_this2._colorMin, i / half);
+            var _negativeColors = range(0, _half, 1).map(function (i) {
+              return !i ? _this2._colorMin : colorLighter(_this2._colorMin, i / _half);
             });
 
             var _spanningColors = (this._buckets % 2 ? [0] : []).map(function () {
               return _this2._colorMid;
             });
 
-            var _positiveColors = range(0, half, 1).map(function (i) {
-              return !i ? _this2._colorMax : colorLighter(_this2._colorMax, i / half);
+            var _positiveColors = range(0, _half, 1).map(function (i) {
+              return !i ? _this2._colorMax : colorLighter(_this2._colorMax, i / _half);
             }).reverse();
 
             colors = _negativeColors.concat(_spanningColors).concat(_positiveColors);
@@ -34010,6 +34074,12 @@
               _buckets = range(0, 1 + _step / 2, _step).map(function (d) {
                 return quantile(allValues, d);
               });
+            } else if (diverging && this._color && this._centered) {
+              var negativeStep = (this._midpoint - domain[0]) / Math.floor(colors.length / 2);
+              var positiveStep = (domain[1] - this._midpoint) / Math.floor(colors.length / 2);
+              var negativeBuckets = range(domain[0], this._midpoint, negativeStep);
+              var positiveBuckets = range(this._midpoint, domain[1] + positiveStep / 2, positiveStep);
+              _buckets = negativeBuckets.concat(positiveBuckets);
             } else {
               var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
 
@@ -34020,30 +34090,34 @@
           if (this._scale === "buckets" || this._scale === "quantile") {
             ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
           } else if (this._scale === "log") {
-            var negativeBuckets = _buckets.filter(function (d) {
+            var _negativeBuckets = _buckets.filter(function (d) {
               return d < 0;
             });
 
-            if (negativeBuckets.length) {
-              var minVal = negativeBuckets[0];
-              var newNegativeBuckets = negativeBuckets.map(function (d) {
+            if (_negativeBuckets.length) {
+              var minVal = _negativeBuckets[0];
+
+              var newNegativeBuckets = _negativeBuckets.map(function (d) {
                 return -Math.pow(Math.abs(minVal), d / minVal);
               });
-              negativeBuckets.forEach(function (bucket, i) {
+
+              _negativeBuckets.forEach(function (bucket, i) {
                 _buckets[_buckets.indexOf(bucket)] = newNegativeBuckets[i];
               });
             }
 
-            var positiveBuckets = _buckets.filter(function (d) {
+            var _positiveBuckets = _buckets.filter(function (d) {
               return d > 0;
             });
 
-            if (positiveBuckets.length) {
-              var maxVal = positiveBuckets[positiveBuckets.length - 1];
-              var newPositiveBuckets = positiveBuckets.map(function (d) {
+            if (_positiveBuckets.length) {
+              var maxVal = _positiveBuckets[_positiveBuckets.length - 1];
+
+              var newPositiveBuckets = _positiveBuckets.map(function (d) {
                 return Math.pow(maxVal, d / maxVal);
               });
-              positiveBuckets.forEach(function (bucket, i) {
+
+              _positiveBuckets.forEach(function (bucket, i) {
                 _buckets[_buckets.indexOf(bucket)] = newPositiveBuckets[i];
               });
             }
@@ -34311,6 +34385,18 @@
       key: "bucketAxis",
       value: function bucketAxis(_) {
         return arguments.length ? (this._bucketAxis = _, this) : this._bucketAxis;
+      }
+      /**
+          @memberof ColorScale
+          @desc Determines whether or not to display a midpoint centered Axis. Does not apply to quantile scales.
+          @param {Boolean} [*value* = false]
+          @chainable
+      */
+
+    }, {
+      key: "centered",
+      value: function centered(_) {
+        return arguments.length ? (this._centered = _, this) : this._centered;
       }
       /**
           @memberof ColorScale
@@ -51461,14 +51547,14 @@
 
       var attr = shape === "Line" ? "stroke" : "fill";
       var value = _this._shapeConfig[shape] && _this._shapeConfig[shape][attr] ? _this._shapeConfig[shape][attr] : _this._shapeConfig[attr];
-      return typeof value === "function" ? value(d, i) : value;
+      return typeof value === "function" ? value.bind(_this)(d, i) : value;
     };
 
     var opacity = function opacity(d, i) {
       var shape = _this._shape(d, i);
 
       var value = _this._shapeConfig[shape] && _this._shapeConfig[shape].opacity ? _this._shapeConfig[shape].opacity : _this._shapeConfig.opacity;
-      return typeof value === "function" ? value(d, i) : value;
+      return typeof value === "function" ? value.bind(_this)(d, i) : value;
     };
 
     var fill = function fill(d, i) {
@@ -51515,7 +51601,7 @@
       return _this._hidden.includes(id) || _this._solo.length && !_this._solo.includes(id);
     };
 
-    this._legendClass.id(fill).align(wide ? "center" : position).direction(wide ? "row" : "column").duration(this._duration).data(legendData.length > this._legendCutoff || this._colorScale ? legendData : []).height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top)).locale(this._locale).parent(this).select(legendGroup).verticalAlign(!wide ? "middle" : position).width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right)).shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend")).config(this._legendConfig).shapeConfig({
+    this._legendClass.id(fill).align(wide ? "center" : position).direction(wide ? "row" : "column").duration(this._duration).data(legendData.length > this._legendCutoff || this._colorScale ? legendData : []).height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top)).locale(this._locale).parent(this).select(legendGroup).verticalAlign(!wide ? "middle" : position).width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right)).shapeConfig(configPrep.bind(this)(this._shapeConfig, "legend")).shapeConfig({
       fill: function fill(d, i) {
         return hidden(d, i) ? _this._hiddenColor(d, i) : color(d, i);
       },
@@ -51525,7 +51611,7 @@
         }
       },
       opacity: opacity
-    }).render();
+    }).config(this._legendConfig).render();
 
     if (!this._legendConfig.select && legendBounds.height) {
       if (wide) this._margin[position] += legendBounds.height + this._legendClass.padding() * 2;else this._margin[position] += legendBounds.width + this._legendClass.padding() * 2;

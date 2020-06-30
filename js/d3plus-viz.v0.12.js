@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.12.57
+  d3plus-viz v0.12.58
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1772,14 +1772,14 @@
 
       var attr = shape === "Line" ? "stroke" : "fill";
       var value = _this._shapeConfig[shape] && _this._shapeConfig[shape][attr] ? _this._shapeConfig[shape][attr] : _this._shapeConfig[attr];
-      return typeof value === "function" ? value(d, i) : value;
+      return typeof value === "function" ? value.bind(_this)(d, i) : value;
     };
 
     var opacity = function opacity(d, i) {
       var shape = _this._shape(d, i);
 
       var value = _this._shapeConfig[shape] && _this._shapeConfig[shape].opacity ? _this._shapeConfig[shape].opacity : _this._shapeConfig.opacity;
-      return typeof value === "function" ? value(d, i) : value;
+      return typeof value === "function" ? value.bind(_this)(d, i) : value;
     };
 
     var fill = function fill(d, i) {
@@ -1826,7 +1826,7 @@
       return _this._hidden.includes(id) || _this._solo.length && !_this._solo.includes(id);
     };
 
-    this._legendClass.id(fill).align(wide ? "center" : position).direction(wide ? "row" : "column").duration(this._duration).data(legendData.length > this._legendCutoff || this._colorScale ? legendData : []).height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top)).locale(this._locale).parent(this).select(legendGroup).verticalAlign(!wide ? "middle" : position).width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right)).shapeConfig(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "legend")).config(this._legendConfig).shapeConfig({
+    this._legendClass.id(fill).align(wide ? "center" : position).direction(wide ? "row" : "column").duration(this._duration).data(legendData.length > this._legendCutoff || this._colorScale ? legendData : []).height(wide ? this._height - (this._margin.bottom + this._margin.top) : this._height - (this._margin.bottom + this._margin.top + padding.bottom + padding.top)).locale(this._locale).parent(this).select(legendGroup).verticalAlign(!wide ? "middle" : position).width(wide ? this._width - (this._margin.left + this._margin.right + padding.left + padding.right) : this._width - (this._margin.left + this._margin.right)).shapeConfig(d3plusCommon.configPrep.bind(this)(this._shapeConfig, "legend")).shapeConfig({
       fill: function fill(d, i) {
         return hidden(d, i) ? _this._hiddenColor(d, i) : color(d, i);
       },
@@ -1836,7 +1836,7 @@
         }
       },
       opacity: opacity
-    }).render();
+    }).config(this._legendConfig).render();
 
     if (!this._legendConfig.select && legendBounds.height) {
       if (wide) this._margin[position] += legendBounds.height + this._legendClass.padding() * 2;else this._margin[position] += legendBounds.width + this._legendClass.padding() * 2;
