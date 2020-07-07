@@ -1,5 +1,5 @@
 /*
-  d3plus-export v0.3.18
+  d3plus-export v0.3.19
   Export methods for transforming and downloading SVG.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -40,7 +40,7 @@
 
 	// Thank's IE8 for his funny defineProperty
 	var descriptors = !fails(function () {
-	  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
+	  return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] != 7;
 	});
 
 	var nativePropertyIsEnumerable = {}.propertyIsEnumerable;
@@ -124,12 +124,12 @@
 	  return hasOwnProperty.call(it, key);
 	};
 
-	var document = global_1.document;
+	var document$1 = global_1.document;
 	// typeof document.createElement is 'object' in old IE
-	var EXISTS = isObject(document) && isObject(document.createElement);
+	var EXISTS = isObject(document$1) && isObject(document$1.createElement);
 
 	var documentCreateElement = function (it) {
-	  return EXISTS ? document.createElement(it) : {};
+	  return EXISTS ? document$1.createElement(it) : {};
 	};
 
 	// Thank's IE8 for his funny defineProperty
@@ -202,25 +202,30 @@
 
 	var sharedStore = store;
 
-	var shared = createCommonjsModule(function (module) {
-	(module.exports = function (key, value) {
-	  return sharedStore[key] || (sharedStore[key] = value !== undefined ? value : {});
-	})('versions', []).push({
-	  version: '3.4.7',
-	  mode:  'global',
-	  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
-	});
-	});
-
 	var functionToString = Function.toString;
 
-	var inspectSource = shared('inspectSource', function (it) {
-	  return functionToString.call(it);
-	});
+	// this helper broken in `3.4.1-3.4.4`, so we can't use `shared` helper
+	if (typeof sharedStore.inspectSource != 'function') {
+	  sharedStore.inspectSource = function (it) {
+	    return functionToString.call(it);
+	  };
+	}
+
+	var inspectSource = sharedStore.inspectSource;
 
 	var WeakMap = global_1.WeakMap;
 
 	var nativeWeakMap = typeof WeakMap === 'function' && /native code/.test(inspectSource(WeakMap));
+
+	var shared = createCommonjsModule(function (module) {
+	(module.exports = function (key, value) {
+	  return sharedStore[key] || (sharedStore[key] = value !== undefined ? value : {});
+	})('versions', []).push({
+	  version: '3.6.5',
+	  mode:  'global',
+	  copyright: '© 2020 Denis Pushkarev (zloirock.ru)'
+	});
+	});
 
 	var id = 0;
 	var postfix = Math.random();
@@ -532,7 +537,7 @@
 	};
 
 	// optional / simple context binding
-	var bindContext = function (fn, that, length) {
+	var functionBindContext = function (fn, that, length) {
 	  aFunction$1(fn);
 	  if (that === undefined) return fn;
 	  switch (length) {
@@ -576,11 +581,11 @@
 	  // eslint-disable-next-line no-undef
 	  && !Symbol.sham
 	  // eslint-disable-next-line no-undef
-	  && typeof Symbol() == 'symbol';
+	  && typeof Symbol.iterator == 'symbol';
 
 	var WellKnownSymbolsStore = shared('wks');
 	var Symbol$1 = global_1.Symbol;
-	var createWellKnownSymbol = useSymbolAsUid ? Symbol$1 : uid;
+	var createWellKnownSymbol = useSymbolAsUid ? Symbol$1 : Symbol$1 && Symbol$1.withoutSetter || uid;
 
 	var wellKnownSymbol = function (name) {
 	  if (!has(WellKnownSymbolsStore, name)) {
@@ -619,7 +624,7 @@
 	  return function ($this, callbackfn, that, specificCreate) {
 	    var O = toObject($this);
 	    var self = indexedObject(O);
-	    var boundFunction = bindContext(callbackfn, that, 3);
+	    var boundFunction = functionBindContext(callbackfn, that, 3);
 	    var length = toLength(self.length);
 	    var index = 0;
 	    var create = specificCreate || arraySpeciesCreate;
@@ -686,48 +691,76 @@
 
 	var html = getBuiltIn('document', 'documentElement');
 
+	var GT = '>';
+	var LT = '<';
+	var PROTOTYPE = 'prototype';
+	var SCRIPT = 'script';
 	var IE_PROTO = sharedKey('IE_PROTO');
 
-	var PROTOTYPE = 'prototype';
-	var Empty = function () { /* empty */ };
+	var EmptyConstructor = function () { /* empty */ };
+
+	var scriptTag = function (content) {
+	  return LT + SCRIPT + GT + content + LT + '/' + SCRIPT + GT;
+	};
+
+	// Create object with fake `null` prototype: use ActiveX Object with cleared prototype
+	var NullProtoObjectViaActiveX = function (activeXDocument) {
+	  activeXDocument.write(scriptTag(''));
+	  activeXDocument.close();
+	  var temp = activeXDocument.parentWindow.Object;
+	  activeXDocument = null; // avoid memory leak
+	  return temp;
+	};
 
 	// Create object with fake `null` prototype: use iframe Object with cleared prototype
-	var createDict = function () {
+	var NullProtoObjectViaIFrame = function () {
 	  // Thrash, waste and sodomy: IE GC bug
 	  var iframe = documentCreateElement('iframe');
-	  var length = enumBugKeys.length;
-	  var lt = '<';
-	  var script = 'script';
-	  var gt = '>';
-	  var js = 'java' + script + ':';
+	  var JS = 'java' + SCRIPT + ':';
 	  var iframeDocument;
 	  iframe.style.display = 'none';
 	  html.appendChild(iframe);
-	  iframe.src = String(js);
+	  // https://github.com/zloirock/core-js/issues/475
+	  iframe.src = String(JS);
 	  iframeDocument = iframe.contentWindow.document;
 	  iframeDocument.open();
-	  iframeDocument.write(lt + script + gt + 'document.F=Object' + lt + '/' + script + gt);
+	  iframeDocument.write(scriptTag('document.F=Object'));
 	  iframeDocument.close();
-	  createDict = iframeDocument.F;
-	  while (length--) delete createDict[PROTOTYPE][enumBugKeys[length]];
-	  return createDict();
+	  return iframeDocument.F;
 	};
+
+	// Check for document.domain and active x support
+	// No need to use active x approach when document.domain is not set
+	// see https://github.com/es-shims/es5-shim/issues/150
+	// variation of https://github.com/kitcambridge/es5-shim/commit/4f738ac066346
+	// avoid IE GC bug
+	var activeXDocument;
+	var NullProtoObject = function () {
+	  try {
+	    /* global ActiveXObject */
+	    activeXDocument = document.domain && new ActiveXObject('htmlfile');
+	  } catch (error) { /* ignore */ }
+	  NullProtoObject = activeXDocument ? NullProtoObjectViaActiveX(activeXDocument) : NullProtoObjectViaIFrame();
+	  var length = enumBugKeys.length;
+	  while (length--) delete NullProtoObject[PROTOTYPE][enumBugKeys[length]];
+	  return NullProtoObject();
+	};
+
+	hiddenKeys[IE_PROTO] = true;
 
 	// `Object.create` method
 	// https://tc39.github.io/ecma262/#sec-object.create
 	var objectCreate = Object.create || function create(O, Properties) {
 	  var result;
 	  if (O !== null) {
-	    Empty[PROTOTYPE] = anObject(O);
-	    result = new Empty();
-	    Empty[PROTOTYPE] = null;
+	    EmptyConstructor[PROTOTYPE] = anObject(O);
+	    result = new EmptyConstructor();
+	    EmptyConstructor[PROTOTYPE] = null;
 	    // add "__proto__" for Object.getPrototypeOf polyfill
 	    result[IE_PROTO] = O;
-	  } else result = createDict();
+	  } else result = NullProtoObject();
 	  return Properties === undefined ? result : objectDefineProperties(result, Properties);
 	};
-
-	hiddenKeys[IE_PROTO] = true;
 
 	var UNSCOPABLES = wellKnownSymbol('unscopables');
 	var ArrayPrototype = Array.prototype;
@@ -735,7 +768,10 @@
 	// Array.prototype[@@unscopables]
 	// https://tc39.github.io/ecma262/#sec-array.prototype-@@unscopables
 	if (ArrayPrototype[UNSCOPABLES] == undefined) {
-	  createNonEnumerableProperty(ArrayPrototype, UNSCOPABLES, objectCreate(null));
+	  objectDefineProperty.f(ArrayPrototype, UNSCOPABLES, {
+	    configurable: true,
+	    value: objectCreate(null)
+	  });
 	}
 
 	// add a key to Array.prototype[@@unscopables]
@@ -743,18 +779,45 @@
 	  ArrayPrototype[UNSCOPABLES][key] = true;
 	};
 
+	var defineProperty = Object.defineProperty;
+	var cache = {};
+
+	var thrower = function (it) { throw it; };
+
+	var arrayMethodUsesToLength = function (METHOD_NAME, options) {
+	  if (has(cache, METHOD_NAME)) return cache[METHOD_NAME];
+	  if (!options) options = {};
+	  var method = [][METHOD_NAME];
+	  var ACCESSORS = has(options, 'ACCESSORS') ? options.ACCESSORS : false;
+	  var argument0 = has(options, 0) ? options[0] : thrower;
+	  var argument1 = has(options, 1) ? options[1] : undefined;
+
+	  return cache[METHOD_NAME] = !!method && !fails(function () {
+	    if (ACCESSORS && !descriptors) return true;
+	    var O = { length: -1 };
+
+	    if (ACCESSORS) defineProperty(O, 1, { enumerable: true, get: thrower });
+	    else O[1] = 1;
+
+	    method.call(O, argument0, argument1);
+	  });
+	};
+
 	var $find = arrayIteration.find;
+
 
 
 	var FIND = 'find';
 	var SKIPS_HOLES = true;
+
+	var USES_TO_LENGTH = arrayMethodUsesToLength(FIND);
 
 	// Shouldn't skip holes
 	if (FIND in []) Array(1)[FIND](function () { SKIPS_HOLES = false; });
 
 	// `Array.prototype.find` method
 	// https://tc39.github.io/ecma262/#sec-array.prototype.find
-	_export({ target: 'Array', proto: true, forced: SKIPS_HOLES }, {
+	_export({ target: 'Array', proto: true, forced: SKIPS_HOLES || !USES_TO_LENGTH }, {
 	  find: function find(callbackfn /* , that = undefined */) {
 	    return $find(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
 	  }
@@ -766,9 +829,12 @@
 	var $includes = arrayIncludes.includes;
 
 
+
+	var USES_TO_LENGTH$1 = arrayMethodUsesToLength('indexOf', { ACCESSORS: true, 1: 0 });
+
 	// `Array.prototype.includes` method
 	// https://tc39.github.io/ecma262/#sec-array.prototype.includes
-	_export({ target: 'Array', proto: true }, {
+	_export({ target: 'Array', proto: true, forced: !USES_TO_LENGTH$1 }, {
 	  includes: function includes(el /* , fromIndex = 0 */) {
 	    return $includes(this, el, arguments.length > 1 ? arguments[1] : undefined);
 	  }
@@ -778,16 +844,16 @@
 	addToUnscopables('includes');
 
 	var nativeAssign = Object.assign;
-	var defineProperty = Object.defineProperty;
+	var defineProperty$1 = Object.defineProperty;
 
 	// `Object.assign` method
 	// https://tc39.github.io/ecma262/#sec-object.assign
 	var objectAssign = !nativeAssign || fails(function () {
 	  // should have correct order of operations (Edge bug)
-	  if (descriptors && nativeAssign({ b: 1 }, nativeAssign(defineProperty({}, 'a', {
+	  if (descriptors && nativeAssign({ b: 1 }, nativeAssign(defineProperty$1({}, 'a', {
 	    enumerable: true,
 	    get: function () {
-	      defineProperty(this, 'b', {
+	      defineProperty$1(this, 'b', {
 	        value: 3,
 	        enumerable: false
 	      });
@@ -898,42 +964,68 @@
 
 	if (typeof window !== "undefined") {
 	  (function () {
-	    var serializeXML = function (node, output) {
-	      var nodeType = node.nodeType;
-	      if (nodeType === 3) {
-	        output.push(node.textContent.replace(/&/, '&amp;').replace(/</, '&lt;').replace('>', '&gt;'));
-	      } else if (nodeType === 1) {
-	        output.push('<', node.tagName);
-	        if (node.hasAttributes()) {
-	          [].forEach.call(node.attributes, function(attrNode){
-	            output.push(' ', attrNode.item.name, '=\'', attrNode.item.value, '\'');
-	          });
-	        }
-	        if (node.hasChildNodes()) {
-	          output.push('>');
-	          [].forEach.call(node.childNodes, function(childNode){
-	            serializeXML(childNode, output);
-	          });
-	          output.push('</', node.tagName, '>');
-	        } else {
-	          output.push('/>');
-	        }
-	      } else if (nodeType == 8) {
-	        output.push('<!--', node.nodeValue, '-->');
+	    try {
+	      if (typeof SVGElement === 'undefined' || Boolean(SVGElement.prototype.innerHTML)) {
+	        return;
 	      }
-	    };
+	    } catch (e) {
+	        return;
+	    }
+
+	    function serializeNode (node) {
+	      switch (node.nodeType) {
+	        case 1:
+	          return serializeElementNode(node);
+	        case 3:
+	          return serializeTextNode(node);
+	        case 8:
+	          return serializeCommentNode(node);
+	      }
+	    }
+
+	    function serializeTextNode (node) {
+	        return node.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	    }
+
+	    function serializeCommentNode (node) {
+	        return '<!--' + node.nodeValue + '-->'
+	    }
+
+	    function serializeElementNode (node) {
+	        var output = '';
+
+	        output += '<' + node.tagName;
+
+	        if (node.hasAttributes()) {
+	            [].forEach.call(node.attributes, function(attrNode) {
+	                output += ' ' + attrNode.name + '="' + attrNode.value + '"';
+	            });
+	        }
+
+	        output += '>';
+
+	        if (node.hasChildNodes()) {
+	            [].forEach.call(node.childNodes, function(childNode) {
+	                output += serializeNode(childNode);
+	            });
+	        }
+
+	        output += '</' + node.tagName + '>';
+
+	        return output;
+	    }
 
 	    Object.defineProperty(SVGElement.prototype, 'innerHTML', {
 	      get: function () {
-	        var output = [];
-	        var childNode = this.firstChild;
-	        while (childNode) {
-	          serializeXML(childNode, output);
-	          childNode = childNode.nextSibling;
-	        }
-	        return output.join('');
+	        var output = '';
+
+	        [].forEach.call(this.childNodes, function(childNode) {
+	            output += serializeNode(childNode);
+	        });
+
+	        return output;
 	      },
-	      set: function (markupText) {
+	      set: function (markup) {
 	        while (this.firstChild) {
 	          this.removeChild(this.firstChild);
 	        }
@@ -942,15 +1034,16 @@
 	          var dXML = new DOMParser();
 	          dXML.async = false;
 
-	          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markupText + '</svg>';
+	          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markup + '</svg>';
 	          var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
 
-	          var childNode = svgDocElement.firstChild;
-	          while (childNode) {
-	            this.appendChild(this.ownerDocument.importNode(childNode, true));
-	            childNode = childNode.nextSibling;
-	          }
-	        } catch (e) {}      }
+	          [].forEach.call(svgDocElement.childNodes, function(childNode) {
+	              this.appendChild(this.ownerDocument.importNode(childNode, true));
+	          }.bind(this));
+	        } catch (e) {
+	            throw new Error('Error parsing markup string');
+	        }
+	      }
 	    });
 
 	    Object.defineProperty(SVGElement.prototype, 'innerSVG', {
@@ -973,11 +1066,11 @@
   (global = global || self, factory(global.d3plus = {}, global.html2canvas, global.canvg, global.d3Selection, null, global.fileSaver));
 }(this, (function (exports, html2canvas, canvg, d3Selection, canvasToBlob, fileSaver) { 'use strict';
 
-  html2canvas = html2canvas && html2canvas.hasOwnProperty('default') ? html2canvas['default'] : html2canvas;
-  canvg = canvg && canvg.hasOwnProperty('default') ? canvg['default'] : canvg;
+  html2canvas = html2canvas && Object.prototype.hasOwnProperty.call(html2canvas, 'default') ? html2canvas['default'] : html2canvas;
+  canvg = canvg && Object.prototype.hasOwnProperty.call(canvg, 'default') ? canvg['default'] : canvg;
 
   function _slicedToArray(arr, i) {
-    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
   }
 
   function _arrayWithHoles(arr) {
@@ -985,10 +1078,7 @@
   }
 
   function _iterableToArrayLimit(arr, i) {
-    if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
-      return;
-    }
-
+    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
     var _arr = [];
     var _n = true;
     var _d = false;
@@ -1014,8 +1104,25 @@
     return _arr;
   }
 
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
   function _nonIterableRest() {
-    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
   /**
