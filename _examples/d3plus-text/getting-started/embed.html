@@ -1,39 +1,43 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-text.v0.9.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Wrapping SVG Text | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-text.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {text: "Here is <i>some</i> sample text that has been <strong>wrapped</strong> using d3plus.textBox."},
-    {text: "...and here is a <b>second</b> sentence!"},
-    {text: "这是句3号。这也即使包装没有空格！"}
-  ];
+    <script>
 
-  new d3plus.TextBox()
-    .data(data)
-    .fontSize(16)
-    .width(200)
-    .x(function(d, i) { return i * 250; })
-    .render();
+      var data = [
+        {text: "Here is <i>some</i> sample text that has been <strong>wrapped</strong> using d3plus.textBox."},
+        {text: "...and here is a <b>second</b> sentence!"},
+        {text: "这是句3号。这也即使包装没有空格！"}
+      ];
 
-</script>
+      new d3plus.TextBox()
+        .data(data)
+        .fontSize(16)
+        .width(200)
+        .x(function(d, i) { return i * 250; })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>
