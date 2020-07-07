@@ -1,5 +1,5 @@
 /*
-  d3plus-dev v0.7.5
+  d3plus-dev v0.7.6
   A collection of scripts for developing D3plus modules.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -863,42 +863,68 @@
 
 	if (typeof window !== "undefined") {
 	  (function () {
-	    var serializeXML = function (node, output) {
-	      var nodeType = node.nodeType;
-	      if (nodeType === 3) {
-	        output.push(node.textContent.replace(/&/, '&amp;').replace(/</, '&lt;').replace('>', '&gt;'));
-	      } else if (nodeType === 1) {
-	        output.push('<', node.tagName);
-	        if (node.hasAttributes()) {
-	          [].forEach.call(node.attributes, function(attrNode){
-	            output.push(' ', attrNode.item.name, '=\'', attrNode.item.value, '\'');
-	          });
-	        }
-	        if (node.hasChildNodes()) {
-	          output.push('>');
-	          [].forEach.call(node.childNodes, function(childNode){
-	            serializeXML(childNode, output);
-	          });
-	          output.push('</', node.tagName, '>');
-	        } else {
-	          output.push('/>');
-	        }
-	      } else if (nodeType == 8) {
-	        output.push('<!--', node.nodeValue, '-->');
+	    try {
+	      if (typeof SVGElement === 'undefined' || Boolean(SVGElement.prototype.innerHTML)) {
+	        return;
 	      }
-	    };
+	    } catch (e) {
+	        return;
+	    }
+
+	    function serializeNode (node) {
+	      switch (node.nodeType) {
+	        case 1:
+	          return serializeElementNode(node);
+	        case 3:
+	          return serializeTextNode(node);
+	        case 8:
+	          return serializeCommentNode(node);
+	      }
+	    }
+
+	    function serializeTextNode (node) {
+	        return node.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	    }
+
+	    function serializeCommentNode (node) {
+	        return '<!--' + node.nodeValue + '-->'
+	    }
+
+	    function serializeElementNode (node) {
+	        var output = '';
+
+	        output += '<' + node.tagName;
+
+	        if (node.hasAttributes()) {
+	            [].forEach.call(node.attributes, function(attrNode) {
+	                output += ' ' + attrNode.name + '="' + attrNode.value + '"';
+	            });
+	        }
+
+	        output += '>';
+
+	        if (node.hasChildNodes()) {
+	            [].forEach.call(node.childNodes, function(childNode) {
+	                output += serializeNode(childNode);
+	            });
+	        }
+
+	        output += '</' + node.tagName + '>';
+
+	        return output;
+	    }
 
 	    Object.defineProperty(SVGElement.prototype, 'innerHTML', {
 	      get: function () {
-	        var output = [];
-	        var childNode = this.firstChild;
-	        while (childNode) {
-	          serializeXML(childNode, output);
-	          childNode = childNode.nextSibling;
-	        }
-	        return output.join('');
+	        var output = '';
+
+	        [].forEach.call(this.childNodes, function(childNode) {
+	            output += serializeNode(childNode);
+	        });
+
+	        return output;
 	      },
-	      set: function (markupText) {
+	      set: function (markup) {
 	        while (this.firstChild) {
 	          this.removeChild(this.firstChild);
 	        }
@@ -907,15 +933,16 @@
 	          var dXML = new DOMParser();
 	          dXML.async = false;
 
-	          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markupText + '</svg>';
+	          var sXML = '<svg xmlns=\'http://www.w3.org/2000/svg\' xmlns:xlink=\'http://www.w3.org/1999/xlink\'>' + markup + '</svg>';
 	          var svgDocElement = dXML.parseFromString(sXML, 'text/xml').documentElement;
 
-	          var childNode = svgDocElement.firstChild;
-	          while (childNode) {
-	            this.appendChild(this.ownerDocument.importNode(childNode, true));
-	            childNode = childNode.nextSibling;
-	          }
-	        } catch (e) {}      }
+	          [].forEach.call(svgDocElement.childNodes, function(childNode) {
+	              this.appendChild(this.ownerDocument.importNode(childNode, true));
+	          }.bind(this));
+	        } catch (e) {
+	            throw new Error('Error parsing markup string');
+	        }
+	      }
 	    });
 
 	    Object.defineProperty(SVGElement.prototype, 'innerSVG', {
