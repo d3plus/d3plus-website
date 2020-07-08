@@ -2,8 +2,8 @@
 title: Adding Labels to Line Plots
 width: 990
 height: 400
-time: 1591218352773
-date: June 03, 2020
+time: 1594235375255
+date: July 08, 2020
 ---
 
 # Adding Labels to Line Plots
