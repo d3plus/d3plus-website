@@ -1,36 +1,40 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-priestley.v0.3.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Simple Priestley Diagram | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-priestley.v0.4.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {id: "alpha",   start: 2004, end: 2007},
-    {id: "epsilon", start: 2007, end: 2012},
-    {id: "beta",    start: 2005, end: 2010},
-  ];
+    <script>
 
-  new d3plus.Priestley()
-    .data(data)
-    .render();
+      var data = [
+        {id: "alpha",   start: 2004, end: 2007},
+        {id: "epsilon", start: 2007, end: 2012},
+        {id: "beta",    start: 2005, end: 2010},
+      ];
 
-</script>
+      new d3plus.Priestley()
+        .data(data)
+        .render();
+
+    </script>
+
+  </body>
 
 </html>
