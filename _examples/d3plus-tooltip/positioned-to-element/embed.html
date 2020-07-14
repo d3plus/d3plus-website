@@ -1,44 +1,48 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-tooltip.v0.3.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Tooltip Anchored to an HTML Element | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-tooltip.v0.4.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-    #square {
-      background-color: red;
-      height: 25px;
-      width: 25px;
-      position: absolute;
-      left: 50%;
-      top: 50%;
-    }
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-  </style>
+      #square {
+        background-color: red;
+        height: 25px;
+        width: 25px;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+      }
 
-</head>
+    </style>
 
-<body>
+  </head>
 
-  <div id="square"></div>
+  <body>
 
-</body>
+    <div id="square"></div>
 
-<script>
+  
 
-  var tip = new d3plus.Tooltip()
-    .data([{title: "Test Tooltip"}])
-    .position("#square")
-    .render();
+    <script>
 
-</script>
+      var tip = new d3plus.Tooltip()
+        .data([{title: "Test Tooltip"}])
+        .position("#square")
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

@@ -1,39 +1,43 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-tooltip.v0.3.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Getting Started | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-tooltip.v0.4.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {"title": "D3plus Tooltip", "body": "Check out this cool table:", "x": 100, "y": 120, "label": "Position"}
-  ];
-  
-  new d3plus.Tooltip()
-    .data(data)
-    .thead(["Axis", function(d) { return d.label; }])
-    .tbody([
-      ["x", function(d) { return d.x; }],
-      ["y", function(d) { return d.y; }]
-    ])
-    .render();
+    <script>
 
-</script>
+      var data = [
+        {"title": "D3plus Tooltip", "body": "Check out this cool table:", "x": 100, "y": 120, "label": "Position"}
+      ];
+      
+      new d3plus.Tooltip()
+        .data(data)
+        .thead(["Axis", function(d) { return d.label; }])
+        .tbody([
+          ["x", function(d) { return d.x; }],
+          ["y", function(d) { return d.y; }]
+        ])
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

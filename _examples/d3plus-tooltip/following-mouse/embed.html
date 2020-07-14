@@ -1,41 +1,45 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-tooltip.v0.3.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Tooltip Following Mouse | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-tooltip.v0.4.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-    body {
-      background-color: #444;
-    }
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-  </style>
+      body {
+        background-color: #444;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var tip = new d3plus.Tooltip()
-      .data([{title: "Test Tooltip"}])
-      .position([window.innerWidth / 2, window.innerHeight / 2])
-      .render();
-  
-    window.addEventListener("mousemove", function(e) {
-      tip
-        .position([e.pageX, e.pageY])
-        .render();
-    });
+    <script>
 
-</script>
+      var tip = new d3plus.Tooltip()
+          .data([{title: "Test Tooltip"}])
+          .position([window.innerWidth / 2, window.innerHeight / 2])
+          .render();
+      
+        window.addEventListener("mousemove", function(e) {
+          tip
+            .position([e.pageX, e.pageY])
+            .render();
+        });
+
+    </script>
+
+  </body>
 
 </html>

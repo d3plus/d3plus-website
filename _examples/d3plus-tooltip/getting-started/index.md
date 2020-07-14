@@ -2,8 +2,8 @@
 title: Getting Started
 width: 205
 height: 135
-time: 1573253195437
-date: November 08, 2019
+time: 1594760480618
+date: July 14, 2020
 ---
 
 [width]: 205
