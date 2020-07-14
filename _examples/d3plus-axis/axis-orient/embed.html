@@ -1,32 +1,36 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-axis.v0.5.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Changing Axis Orientation | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-axis.v0.6.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var axis = new d3plus.Axis()
-    .orient("left")
-    .width(600)
-    .height(300)
-    .render();
+    <script>
 
-</script>
+      var axis = new d3plus.Axis()
+        .orient("left")
+        .width(600)
+        .height(300)
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

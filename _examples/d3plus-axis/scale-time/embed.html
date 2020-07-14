@@ -1,33 +1,37 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-axis.v0.5.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Axis w/ Time Scale | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-axis.v0.6.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var bottom = new d3plus.AxisBottom()
-    .domain([2002, 2004])
-    .scale("time")
-    .width(600)
-    .height(300)
-    .render();
+    <script>
 
-</script>
+      var bottom = new d3plus.AxisBottom()
+        .domain([2002, 2004])
+        .scale("time")
+        .width(600)
+        .height(300)
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

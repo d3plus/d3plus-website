@@ -1,40 +1,44 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-axis.v0.5.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Custom Axis Tick Formatting | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-axis.v0.6.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var dateRange = ["06/30/2015", "08/31/2016"];
-  
-  var bottom = new d3plus.AxisBottom()
-    .domain(dateRange)
-    .labels(dateRange)
-    .ticks(dateRange)
-    .tickFormat(function(ms) {
-      return new Date(ms).getFullYear();
-    })
-    .scale("time")
-    .width(600)
-    .height(300)
-    .render();
+    <script>
 
-</script>
+      var dateRange = ["06/30/2015", "08/31/2016"];
+      
+      var bottom = new d3plus.AxisBottom()
+        .domain(dateRange)
+        .labels(dateRange)
+        .ticks(dateRange)
+        .tickFormat(function(ms) {
+          return new Date(ms).getFullYear();
+        })
+        .scale("time")
+        .width(600)
+        .height(300)
+        .render();
+
+    </script>
+
+  </body>
 
 </html>
