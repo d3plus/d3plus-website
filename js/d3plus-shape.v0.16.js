@@ -1,5 +1,5 @@
 /*
-  d3plus-shape v0.16.15
+  d3plus-shape v0.16.16
   Fancy SVG shapes for visualizations
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1644,11 +1644,16 @@
             if (d.i !== void 0) i = d.i;
 
             if (d.nested && d.values) {
+              var calcPoint = function calcPoint(d, i) {
+                if (_this2._discrete === "x") return [_this2._x(d, i), cursor[1]];else if (_this2._discrete === "y") return [cursor[0], _this2._y(d, i)];else return [_this2._x(d, i), _this2._y(d, i)];
+              };
+
               var cursor = d3Selection.mouse(_this2._select.node()),
                   values = d.values.map(function (d) {
-                return pointDistance(cursor, [_this2._x(d, i), _this2._y(d, i)]);
+                return pointDistance(cursor, calcPoint(d, i));
               });
-              d = d.values[values.indexOf(d3Array.min(values))];
+              i = values.indexOf(d3Array.min(values));
+              d = d.values[i];
             }
 
             _this2._on[events[e]].bind(_this2)(d, i);
@@ -2151,6 +2156,18 @@
       key: "data",
       value: function data(_) {
         return arguments.length ? (this._data = _, this) : this._data;
+      }
+      /**
+          @memberof Shape
+          @desc Determines if either the X or Y position is discrete along a Line, which helps in determining the nearest data point on a line for a hit area event.
+          @param {String} *value*
+          @chainable
+      */
+
+    }, {
+      key: "discrete",
+      value: function discrete(_) {
+        return arguments.length ? (this._discrete = _, this) : this._discrete;
       }
       /**
           @memberof Shape
