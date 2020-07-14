@@ -1,42 +1,46 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-network.v0.5.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Simple Rings | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-network.v0.6.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var links = [
-      {"source": "alpha", "target": "beta"},
-      {"source": "alpha", "target": "gamma"},
-      {"source": "beta", "target": "delta"},
-      {"source": "beta", "target": "epsilon"},
-      {"source": "zeta", "target": "gamma"},
-      {"source": "theta", "target": "gamma"},
-      {"source": "eta", "target": "gamma"}
-    ];
-  
-    new d3plus.Rings()
-      .links(links)
-      .label(d => d.id)
-      .center("alpha")
-      .render();
+    <script>
 
-</script>
+      var links = [
+          {"source": "alpha", "target": "beta"},
+          {"source": "alpha", "target": "gamma"},
+          {"source": "beta", "target": "delta"},
+          {"source": "beta", "target": "epsilon"},
+          {"source": "zeta", "target": "gamma"},
+          {"source": "theta", "target": "gamma"},
+          {"source": "eta", "target": "gamma"}
+        ];
+      
+        new d3plus.Rings()
+          .links(links)
+          .label(d => d.id)
+          .center("alpha")
+          .render();
+
+    </script>
+
+  </body>
 
 </html>

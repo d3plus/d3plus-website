@@ -1,48 +1,52 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-network.v0.5.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Simple Network Graph | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-network.v0.6.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var nodes = [
-    {id: "alpha",   x: 1,   y: 1},
-    {id: "beta",    x: 2,   y: 1},
-    {id: "gamma",   x: 1,   y: 2},
-    {id: "epsilon", x: 3,   y: 2},
-    {id: "zeta",    x: 2.5, y: 1.5},
-    {id: "theta",   x: 2,   y: 2}
-  ];
+    <script>
 
-  var links = [
-    {source: 0, target: 1},
-    {source: 0, target: 2},
-    {source: 3, target: 4},
-    {source: 3, target: 5},
-    {source: 5, target: 0}
-  ];
+      var nodes = [
+        {id: "alpha",   x: 1,   y: 1},
+        {id: "beta",    x: 2,   y: 1},
+        {id: "gamma",   x: 1,   y: 2},
+        {id: "epsilon", x: 3,   y: 2},
+        {id: "zeta",    x: 2.5, y: 1.5},
+        {id: "theta",   x: 2,   y: 2}
+      ];
 
-  new d3plus.Network()
-    .links(links)
-    .nodes(nodes)
-    .render();
+      var links = [
+        {source: 0, target: 1},
+        {source: 0, target: 2},
+        {source: 3, target: 4},
+        {source: 3, target: 5},
+        {source: 5, target: 0}
+      ];
 
-</script>
+      new d3plus.Network()
+        .links(links)
+        .nodes(nodes)
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

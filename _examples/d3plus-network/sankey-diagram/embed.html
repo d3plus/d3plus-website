@@ -1,48 +1,52 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-network.v0.5.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Simple Sankey Diagram | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-network.v0.6.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var nodes = [
-    {id: "alpha"},
-    {id: "beta"},
-    {id: "gamma"},
-    {id: "epsilon"},
-    {id: "zeta"},
-    {id: "theta"}
-  ];
+    <script>
 
-  var links = [
-    {source: "alpha", target: "beta"},
-    {source: "alpha", target: "gamma"},
-    {source: "epsilon", target: "zeta"},
-    {source: "epsilon", target: "theta"},
-    {source: "theta", target: "alpha"}
-  ];
+      var nodes = [
+        {id: "alpha"},
+        {id: "beta"},
+        {id: "gamma"},
+        {id: "epsilon"},
+        {id: "zeta"},
+        {id: "theta"}
+      ];
 
-  new d3plus.Sankey()
-    .links(links)
-    .nodes(nodes)
-    .render();
+      var links = [
+        {source: "alpha", target: "beta"},
+        {source: "alpha", target: "gamma"},
+        {source: "epsilon", target: "zeta"},
+        {source: "epsilon", target: "theta"},
+        {source: "theta", target: "alpha"}
+      ];
 
-</script>
+      new d3plus.Sankey()
+        .links(links)
+        .nodes(nodes)
+        .render();
+
+    </script>
+
+  </body>
 
 </html>
