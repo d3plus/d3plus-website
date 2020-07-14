@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.13.0
+  d3plus-viz v0.13.1
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -52596,8 +52596,8 @@
         return this._groupBy = _.map(function (k) {
           if (typeof k === "function") return k;else {
             if (!_this4._aggs[k]) {
-              _this4._aggs[k] = function (a) {
-                var v = unique(a);
+              _this4._aggs[k] = function (a, c) {
+                var v = unique(a.map(c));
                 return v.length === 1 ? v[0] : v;
               };
             }
@@ -52995,8 +52995,8 @@
             this._time = accessor(_);
 
             if (!this._aggs[_]) {
-              this._aggs[_] = function (a) {
-                var v = unique(a);
+              this._aggs[_] = function (a, c) {
+                var v = unique(a.map(c));
                 return v.length === 1 ? v[0] : v;
               };
             }
