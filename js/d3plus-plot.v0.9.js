@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.9.0
+  d3plus-plot v0.9.1
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -3192,8 +3192,8 @@
             this._x = d3plusCommon.accessor(_);
 
             if (!this._aggs[_] && this._discrete === "x") {
-              this._aggs[_] = function (a) {
-                var v = Array.from(new Set(a));
+              this._aggs[_] = function (a, c) {
+                var v = Array.from(new Set(a.map(c)));
                 return v.length === 1 ? v[0] : v;
               };
             }
@@ -3216,8 +3216,8 @@
             this._x2 = d3plusCommon.accessor(_);
 
             if (!this._aggs[_] && this._discrete === "x") {
-              this._aggs[_] = function (a) {
-                var v = Array.from(new Set(a));
+              this._aggs[_] = function (a, c) {
+                var v = Array.from(new Set(a.map(c)));
                 return v.length === 1 ? v[0] : v;
               };
             }
@@ -3324,8 +3324,8 @@
             this._y = d3plusCommon.accessor(_);
 
             if (!this._aggs[_] && this._discrete === "y") {
-              this._aggs[_] = function (a) {
-                var v = Array.from(new Set(a));
+              this._aggs[_] = function (a, c) {
+                var v = Array.from(new Set(a.map(c)));
                 return v.length === 1 ? v[0] : v;
               };
             }
@@ -3348,8 +3348,8 @@
             this._y2 = d3plusCommon.accessor(_);
 
             if (!this._aggs[_] && this._discrete === "y2") {
-              this._aggs[_] = function (a) {
-                var v = Array.from(new Set(a));
+              this._aggs[_] = function (a, c) {
+                var v = Array.from(new Set(a.map(c)));
                 return v.length === 1 ? v[0] : v;
               };
             }
