@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.8.39
+  d3plus-plot v0.8.40
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1302,14 +1302,12 @@
   /** */
 
   function numericBuffer (axis, scale, value, size, range, domain, index, invert) {
-    // console.log("\n");
-    // console.log(invert ? "Y Axis" : "X Axis");
-    // console.log("Index:", index);
-    // console.log("Range", range);
     if (invert) {
       domain = domain.slice().reverse();
       range = range.slice().reverse();
     }
+
+    var logMod = Math.abs(Math.log(domain[1] - domain[0]) / 10);
 
     var needsBuffer = function needsBuffer() {
       var tempAxis = axis.copy();
@@ -1327,10 +1325,10 @@
         diverging = d[0] * d[1] < 0;
 
         if (diverging) {
-          var percentScale = scales.scaleLog().domain([1, Math.abs(d[index])]).range([0, 1]);
+          var percentScale = scales.scaleLog().domain([1e-6, Math.abs(d[index])]).range([0, 1]);
           var leftPercentage = percentScale(Math.abs(d[index ? 0 : 1]));
           var zero = leftPercentage / (leftPercentage + 1) * (r[1] - r[0]);
-          d = (index === 0 ? [d[0], 1] : [1, d[1]]).map(Math.abs);
+          d = (index === 0 ? [d[0], 1e-6] : [1e-6, d[1]]).map(Math.abs);
           r = index === 0 ? [r[0], r[0] + zero] : [r[0] + zero, r[1]];
         }
 
@@ -1342,28 +1340,30 @@
       var pixelValue;
 
       if (scale === "log") {
-        pixelValue = !diverging || value < 0 && !index || value > 0 && index ? tempAxis(Math.abs(value)) : tempRange[value < 0 ? 0 : 1];
+        pixelValue = diverging ? tempAxis(Math.abs(value)) : tempAxis(value);
       } else pixelValue = tempAxis(value);
 
       if (invert) {
         if (index === 0) outside = pixelValue + size > tempRange[index];else if (index === 1) outside = pixelValue - size < tempRange[index];
       } else {
         if (index === 0) outside = pixelValue - size < tempRange[index];else if (index === 1) outside = pixelValue + size > tempRange[index];
-      } // console.log("temp", pixelValue, size, tempAxis.domain(), tempRange);
-
+      }
 
       return outside;
     };
 
     if (axis.invert && needsBuffer()) {
       if (scale === "log") {
-        while (needsBuffer()) {
-          var mod = index === 0 ? -1 : 1;
-          domain[index] += domain[index] * 0.1 * mod;
+        var i = 0;
+
+        while (i < 10 && needsBuffer()) {
+          var mod = (index === 0 ? -1 : 1) * (domain[index] < 0 ? -1 : 1);
+          domain[index] += domain[index] * logMod * mod;
           axis.domain(invert ? domain.slice().reverse() : domain);
+          i++;
         }
       } else if (index === 0) {
-        var v = axis.invert(axis(value) + size * (invert ? 1 : -1)); // console.log("value", v, domain);
+        var v = axis.invert(axis(value) + size * (invert ? 1 : -1));
 
         if (v < domain[index]) {
           domain[index] = v;
@@ -2090,6 +2090,24 @@
           y2Scale = "Time";
         }
 
+        var autoScale = function autoScale(axis, fallback) {
+          var userScale = _this2["_".concat(axis, "Config")].scale;
+
+          if (userScale === "auto") {
+            if (_this2._discrete === axis) return fallback;
+            var values = data.map(function (d) {
+              return d[axis];
+            });
+            return d3Array.deviation(values) / d3Array.mean(values) > 3 ? "log" : "linear";
+          }
+
+          return userScale || fallback;
+        };
+
+        var yConfigScale = this._yConfigScale = autoScale("y", yScale).toLowerCase();
+        var y2ConfigScale = this._y2ConfigScale = autoScale("y2", y2Scale).toLowerCase();
+        var xConfigScale = this._xConfigScale = autoScale("x", xScale).toLowerCase();
+        var x2ConfigScale = this._x2ConfigScale = autoScale("x2", x2Scale).toLowerCase();
         domains = {
           x: xDomain,
           x2: x2Domain || xDomain,
@@ -2097,12 +2115,12 @@
           y2: y2Domain || yDomain
         };
         Object.keys(domains).forEach(function (axis) {
-          if (_this2["_".concat(axis, "Config")].scale === "log" && domains[axis].includes(0)) {
-            if (domains[axis][0] < domains[axis][1]) domains[axis][0] = d3Array.min(data.map(function (d) {
+          if (_this2["_".concat(axis, "ConfigScale")] === "log" && domains[axis].includes(0)) {
+            if (d3Array.min(domains[axis]) < 0) domains[axis][1] = d3Array.max(data.map(function (d) {
               return d[axis];
-            }).filter(Boolean));else domains[axis][1] = d3Array.max(data, function (d) {
+            }).filter(Boolean));else domains[axis][0] = d3Array.min(data.map(function (d) {
               return d[axis];
-            });
+            }).filter(Boolean));
           }
         });
         opps.forEach(function (opp) {
@@ -2127,25 +2145,6 @@
         }).entries(data).sort(function (a, b) {
           return _this2._shapeSort(a.key, b.key);
         });
-
-        var autoScale = function autoScale(axis, fallback) {
-          var userScale = _this2["_".concat(axis, "Config")].scale;
-
-          if (userScale === "auto") {
-            if (_this2._discrete === axis) return fallback;
-            var values = data.map(function (d) {
-              return d[axis];
-            });
-            return d3Array.deviation(values) / d3Array.mean(values) > 3 ? "log" : "linear";
-          }
-
-          return userScale || fallback;
-        };
-
-        var yConfigScale = autoScale("y", yScale).toLowerCase();
-        var y2ConfigScale = autoScale("y2", y2Scale).toLowerCase();
-        var xConfigScale = autoScale("x", xScale).toLowerCase();
-        var x2ConfigScale = autoScale("x2", x2Scale).toLowerCase();
         var oppScale = this._discrete === "x" ? yScale : xScale;
 
         if (oppScale !== "Point") {
@@ -2316,18 +2315,24 @@
             var fontWeightAccessor = lineLabelConfig.fontWeight !== undefined ? lineLabelConfig.fontWeight : testTextBox.fontWeight();
             var fontFamilyAccessor = lineLabelConfig.fontFamily !== undefined ? lineLabelConfig.fontFamily : testTextBox.fontFamily();
             var paddingAccessor = lineLabelConfig.padding !== undefined ? lineLabelConfig.padding : testTextBox.padding();
-            var labelWidths = lineData.map(function (d) {
-              var datum = d.values[0];
+            var labelFunction = userConfig.label || this._drawLabel;
+            var labelWidths = lineData.map(function (group) {
+              var d = group.values[group.values.length - 1];
+              var i;
 
-              var label = _this2._drawLabel(datum);
+              while (d.__d3plus__ && d.data) {
+                d = d.data;
+                i = d.i;
+              }
 
-              var fontSize = typeof fontSizeAccessor === "function" ? fontSizeAccessor(datum) : fontSizeAccessor;
-              var fontWeight = typeof fontWeightAccessor === "function" ? fontWeightAccessor(datum) : fontWeightAccessor;
-              var fontFamily = typeof fontFamilyAccessor === "function" ? fontFamilyAccessor(datum) : fontFamilyAccessor;
+              var label = typeof labelFunction === "function" ? labelFunction(d, i) : labelFunction;
+              var fontSize = typeof fontSizeAccessor === "function" ? fontSizeAccessor(d, i) : fontSizeAccessor;
+              var fontWeight = typeof fontWeightAccessor === "function" ? fontWeightAccessor(d, i) : fontWeightAccessor;
+              var fontFamily = typeof fontFamilyAccessor === "function" ? fontFamilyAccessor(d, i) : fontFamilyAccessor;
               if (fontFamily instanceof Array) fontFamily = fontFamily.map(function (f) {
                 return "'".concat(f, "'");
               }).join(", ");
-              var labelPadding = typeof paddingAccessor === "function" ? paddingAccessor(datum) : paddingAccessor;
+              var labelPadding = typeof paddingAccessor === "function" ? paddingAccessor(d, i) : paddingAccessor;
               var labelWidth = d3plusText.textWidth(label, {
                 "font-size": fontSize,
                 "font-family": fontFamily,
@@ -2453,10 +2458,10 @@
 
         _x2 = function x(d, _x) {
           if (_x === "x2") {
-            if (_this2._x2Config.scale === "log" && d === 0) d = x2Domain[0] < 0 ? _this2._x2Axis._d3Scale.domain()[1] : _this2._x2Axis._d3Scale.domain()[0];
+            if (x2ConfigScale === "log" && d === 0) d = x2Domain[0] < 0 ? _this2._x2Axis._d3Scale.domain()[1] : _this2._x2Axis._d3Scale.domain()[0];
             return _this2._x2Axis._getPosition.bind(_this2._x2Axis)(d);
           } else {
-            if (_this2._xConfig.scale === "log" && d === 0) d = xDomain[0] < 0 ? _this2._xAxis._d3Scale.domain()[1] : _this2._xAxis._d3Scale.domain()[0];
+            if (xConfigScale === "log" && d === 0) d = xDomain[0] < 0 ? _this2._xAxis._d3Scale.domain()[1] : _this2._xAxis._d3Scale.domain()[0];
             return _this2._xAxis._getPosition.bind(_this2._xAxis)(d);
           }
         };
@@ -2471,10 +2476,10 @@
 
         _y2 = function y(d, _y) {
           if (_y === "y2") {
-            if (_this2._y2Config.scale === "log" && d === 0) d = y2Domain[0] < 0 ? _this2._y2Axis._d3Scale.domain()[1] : _this2._y2Axis._d3Scale.domain()[0];
+            if (y2ConfigScale === "log" && d === 0) d = y2Domain[1] < 0 ? _this2._y2Axis._d3ScaleNegative.domain()[0] : _this2._y2Axis._d3Scale.domain()[1];
             return _this2._y2Axis._getPosition.bind(_this2._y2Axis)(d) - x2Height;
           } else {
-            if (_this2._yConfig.scale === "log" && d === 0) d = yDomain[0] < 0 ? _this2._yAxis._d3Scale.domain()[1] : _this2._yAxis._d3Scale.domain()[0];
+            if (yConfigScale === "log" && d === 0) d = yDomain[1] < 0 ? _this2._yAxis._d3ScaleNegative.domain()[0] : _this2._yAxis._d3Scale.domain()[1];
             return _this2._yAxis._getPosition.bind(_this2._yAxis)(d) - x2Height;
           }
         };
@@ -2519,6 +2524,7 @@
         if (yOffset) yOffset /= 2;
         var discrete = this._discrete || "x";
         var shapeConfig = {
+          discrete: this._discrete,
           duration: this._duration,
           label: function label(d) {
             return _this2._drawLabel(d.data, d.i);
@@ -2646,6 +2652,7 @@
             }
 
             s.config({
+              discrete: shapeConfig.discrete || "x",
               label: _this2._lineLabels ? _this2._drawLabel : false,
               labelBounds: _this2._lineLabels ? function (d, i, s) {
                 var _s$points$ = _slicedToArray(s.points[0], 2),
