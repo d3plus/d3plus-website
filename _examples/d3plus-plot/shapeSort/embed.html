@@ -1,66 +1,70 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Sorting Shapes on an X/Y Plot | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
-
-</head>
-
-<body></body>
-
-<script>
-
-  var data = [
-    {id: "alpha", time: 4, value: 240},
-    {id: "beta", time: 5, value: 120},
-    {id: "gamma", time: 6, value: 180},
-    {id: "delta", time: 4, value: 240},
-    {id: "delta", time: 5, value: 120},
-    {id: "delta", time: 6, value: 180}
-  ];
-
-  var chart = new d3plus.Plot()
-    .data(data)
-    .groupBy("id")
-    .x("time")
-    .y("value")
-
-  chart
-    .shape(function(d) {
-      if (d.id === "delta") {
-        return "Line";
+      body {
+        margin: 0;
+        overflow: hidden;
       }
-      else {
-        return "Circle";
-      }
-    });
 
-  var order = ["Circle", "Line"];
-  
-  chart
-    .shapeConfig({
-      Line: {
-        strokeLinecap: "round",
-        strokeWidth: 5
-      }
-    })
-    .shapeSort(function(a, b) {
-      return order.indexOf(a) - order.indexOf(b);
-    })
-    .sizeMin(20)
-    .render();
+    </style>
 
-</script>
+  </head>
+
+  <body>
+
+    <script>
+
+      var data = [
+        {id: "alpha", time: 4, value: 240},
+        {id: "beta", time: 5, value: 120},
+        {id: "gamma", time: 6, value: 180},
+        {id: "delta", time: 4, value: 240},
+        {id: "delta", time: 5, value: 120},
+        {id: "delta", time: 6, value: 180}
+      ];
+
+      var chart = new d3plus.Plot()
+        .data(data)
+        .groupBy("id")
+        .x("time")
+        .y("value")
+
+      chart
+        .shape(function(d) {
+          if (d.id === "delta") {
+            return "Line";
+          }
+          else {
+            return "Circle";
+          }
+        });
+
+      var order = ["Circle", "Line"];
+      
+      chart
+        .shapeConfig({
+          Line: {
+            strokeLinecap: "round",
+            strokeWidth: 5
+          }
+        })
+        .shapeSort(function(a, b) {
+          return order.indexOf(a) - order.indexOf(b);
+        })
+        .sizeMin(20)
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

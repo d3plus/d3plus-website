@@ -1,68 +1,72 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Line Plot Custom Color | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
-
-</head>
-
-<body></body>
-
-<script>
-
-  var myData = [
-    {fruit: "apple",  price: 5,  year: 2014},
-    {fruit: "banana", price: 4,  year: 2014},
-    {fruit: "cherry", price: 7,  year: 2014},
-    {fruit: "apple",  price: 7,  year: 2015},
-    {fruit: "banana", price: 6,  year: 2015},
-    {fruit: "cherry", price: 9,  year: 2015},
-    {fruit: "apple",  price: 10, year: 2016},
-    {fruit: "banana", price: 8,  year: 2016},
-    {fruit: "cherry", price: 5,  year: 2016},
-    {fruit: "apple",  price: 6,  year: 2017},
-    {fruit: "banana", price: 10, year: 2017},
-    {fruit: "cherry", price: 10, year: 2017},
-    {fruit: "apple",  price: 8,  year: 2018},
-    {fruit: "banana", price: 15, year: 2018},
-    {fruit: "cherry", price: 12, year: 2018}
-  ];
-  
-  // define colors as needed
-  function assignColor(d) {
-    if (d === "apple") return "green";
-    if (d === "banana") return "goldenrod";
-    if (d === "cherry") return "red";
-    return "grey";
-  }
-  
-  new d3plus.LinePlot()
-    .config({
-      data: myData,
-      groupBy: "fruit",
-      x: "year",
-      y: "price",
-      shapeConfig: {
-        Line: {
-          stroke: function(d) {
-            return assignColor(d.fruit);
-          }
-        }
+      body {
+        margin: 0;
+        overflow: hidden;
       }
-    })
-    .render();
 
-</script>
+    </style>
+
+  </head>
+
+  <body>
+
+    <script>
+
+      var myData = [
+        {fruit: "apple",  price: 5,  year: 2014},
+        {fruit: "banana", price: 4,  year: 2014},
+        {fruit: "cherry", price: 7,  year: 2014},
+        {fruit: "apple",  price: 7,  year: 2015},
+        {fruit: "banana", price: 6,  year: 2015},
+        {fruit: "cherry", price: 9,  year: 2015},
+        {fruit: "apple",  price: 10, year: 2016},
+        {fruit: "banana", price: 8,  year: 2016},
+        {fruit: "cherry", price: 5,  year: 2016},
+        {fruit: "apple",  price: 6,  year: 2017},
+        {fruit: "banana", price: 10, year: 2017},
+        {fruit: "cherry", price: 10, year: 2017},
+        {fruit: "apple",  price: 8,  year: 2018},
+        {fruit: "banana", price: 15, year: 2018},
+        {fruit: "cherry", price: 12, year: 2018}
+      ];
+      
+      // define colors as needed
+      function assignColor(d) {
+        if (d === "apple") return "green";
+        if (d === "banana") return "goldenrod";
+        if (d === "cherry") return "red";
+        return "grey";
+      }
+      
+      new d3plus.LinePlot()
+        .config({
+          data: myData,
+          groupBy: "fruit",
+          x: "year",
+          y: "price",
+          shapeConfig: {
+            Line: {
+              stroke: function(d) {
+                return assignColor(d.fruit);
+              }
+            }
+          }
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

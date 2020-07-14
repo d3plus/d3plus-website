@@ -1,51 +1,55 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Bump Chart | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {fruit: "apple", label: "Apple", year: 1, rank:  1},
-    {fruit: "apple", label: "Apple", year: 2, rank: 2},
-    {fruit: "apple", label: "Apple", year: 3, rank: 1},
-    {fruit: "banana", label: "Banana",  year: 1, rank: 2},
-    {fruit: "banana", label: "Banana",  year: 2, rank:  4},
-    {fruit: "banana", label: "Banana",  year: 3, rank: 3},
-    {fruit: "cherry", label: "Cherry", year: 1, rank:  4},
-    {fruit: "cherry", label: "Cherry", year: 2, rank: 3},
-    {fruit: "cherry", label: "Cherry", year: 3, rank: 2},
-    {fruit: "orange", label: "Orange",  year: 1, rank: 3},
-    {fruit: "orange", label: "Orange",  year: 2, rank:  1},
-    {fruit: "orange", label: "Orange",  year: 3, rank: 4}
-  ];
+    <script>
 
-  new d3plus.BumpChart()
-    .data(data)
-    .groupBy("fruit")
-    .label(function(d) {
-        return d.label;
-      })
-    .x("year")
-    .y("rank")
-    .render();
+      var data = [
+        {fruit: "apple", label: "Apple", year: 1, rank:  1},
+        {fruit: "apple", label: "Apple", year: 2, rank: 2},
+        {fruit: "apple", label: "Apple", year: 3, rank: 1},
+        {fruit: "banana", label: "Banana",  year: 1, rank: 2},
+        {fruit: "banana", label: "Banana",  year: 2, rank:  4},
+        {fruit: "banana", label: "Banana",  year: 3, rank: 3},
+        {fruit: "cherry", label: "Cherry", year: 1, rank:  4},
+        {fruit: "cherry", label: "Cherry", year: 2, rank: 3},
+        {fruit: "cherry", label: "Cherry", year: 3, rank: 2},
+        {fruit: "orange", label: "Orange",  year: 1, rank: 3},
+        {fruit: "orange", label: "Orange",  year: 2, rank:  1},
+        {fruit: "orange", label: "Orange",  year: 3, rank: 4}
+      ];
 
-</script>
+      new d3plus.BumpChart()
+        .data(data)
+        .groupBy("fruit")
+        .label(function(d) {
+            return d.label;
+          })
+        .x("year")
+        .y("rank")
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

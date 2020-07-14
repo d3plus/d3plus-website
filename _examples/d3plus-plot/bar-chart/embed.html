@@ -1,39 +1,43 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Bar Chart | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {id: "alpha", x: 4, y:  7},
-    {id: "alpha", x: 5, y: 25},
-    {id: "alpha", x: 6, y: 13},
-    {id: "beta",  x: 4, y: 17},
-    {id: "beta",  x: 5, y:  8},
-    {id: "beta",  x: 6, y: 13}
-  ];
+    <script>
 
-  new d3plus.BarChart()
-    .data(data)
-    .render();
+      var data = [
+        {id: "alpha", x: 4, y:  7},
+        {id: "alpha", x: 5, y: 25},
+        {id: "alpha", x: 6, y: 13},
+        {id: "beta",  x: 4, y: 17},
+        {id: "beta",  x: 5, y:  8},
+        {id: "beta",  x: 6, y: 13}
+      ];
 
-</script>
+      new d3plus.BarChart()
+        .data(data)
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

@@ -1,50 +1,54 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Radar Chart | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var myData = [
-    {id: "alpha", axis: "Central",    number: 170.992},
-    {id: "alpha", axis: "Kirkdale",   number: 40},
-    {id: "alpha", axis: "Kensington", number: 240},
-    {id: "alpha", axis: "Everton",    number: 90},
-    {id: "alpha", axis: "Picton",     number: 160},
-    {id: "alpha", axis: "Riverside",  number: 30},
-    {id: "beta",  axis: "Central",    number: 320},
-    {id: "beta",  axis: "Kirkdale",   number: 97.5},
-    {id: "beta",  axis: "Kensington", number: 40},
-    {id: "beta",  axis: "Everton",    number: 110},
-    {id: "beta",  axis: "Picton",     number: 40},
-    {id: "beta",  axis: "Riverside",  number: 110}
-  ];
-  
-  new d3plus.Radar()
-    .config({
-      data: myData,
-      groupBy: "id",
-      metric: "axis",
-      value: "number"
-    })
-    .render();
+    <script>
 
-</script>
+      var myData = [
+        {id: "alpha", axis: "Central",    number: 170.992},
+        {id: "alpha", axis: "Kirkdale",   number: 40},
+        {id: "alpha", axis: "Kensington", number: 240},
+        {id: "alpha", axis: "Everton",    number: 90},
+        {id: "alpha", axis: "Picton",     number: 160},
+        {id: "alpha", axis: "Riverside",  number: 30},
+        {id: "beta",  axis: "Central",    number: 320},
+        {id: "beta",  axis: "Kirkdale",   number: 97.5},
+        {id: "beta",  axis: "Kensington", number: 40},
+        {id: "beta",  axis: "Everton",    number: 110},
+        {id: "beta",  axis: "Picton",     number: 40},
+        {id: "beta",  axis: "Riverside",  number: 110}
+      ];
+      
+      new d3plus.Radar()
+        .config({
+          data: myData,
+          groupBy: "id",
+          metric: "axis",
+          value: "number"
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

@@ -1,40 +1,44 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Scatter Plot/Bubble Chart | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {id: "alpha", x: 4, y:  7, value: 240},
-    {id: "beta",  x: 5, y:  2, value: 120},
-    {id: "gamma", x: 6, y: 13, value: 180}
-  ];
+    <script>
 
-  new d3plus.Plot()
-    .data(data)
-    .groupBy("id")
-    .size("value")
-    .sizeMin(20)
-    .sizeMax(100)
-    .render();
+      var data = [
+        {id: "alpha", x: 4, y:  7, value: 240},
+        {id: "beta",  x: 5, y:  2, value: 120},
+        {id: "gamma", x: 6, y: 13, value: 180}
+      ];
 
-</script>
+      new d3plus.Plot()
+        .data(data)
+        .groupBy("id")
+        .size("value")
+        .sizeMin(20)
+        .sizeMax(100)
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

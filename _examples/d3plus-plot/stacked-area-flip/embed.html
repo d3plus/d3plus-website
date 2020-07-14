@@ -1,41 +1,45 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Horizontal Stacked Area Chart | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {id: "alpha", x:  7, y: 4},
-    {id: "alpha", x: 25, y: 5},
-    {id: "alpha", x: 13, y: 6},
-    {id: "beta",  x: 17, y: 4},
-    {id: "beta",  x:  8, y: 5},
-    {id: "beta",  x: 13, y: 6}
-  ];
+    <script>
 
-  new d3plus.StackedArea()
-    .data(data)
-    .groupBy("id")
-    .discrete("y")
-    .render();
+      var data = [
+        {id: "alpha", x:  7, y: 4},
+        {id: "alpha", x: 25, y: 5},
+        {id: "alpha", x: 13, y: 6},
+        {id: "beta",  x: 17, y: 4},
+        {id: "beta",  x:  8, y: 5},
+        {id: "beta",  x: 13, y: 6}
+      ];
 
-</script>
+      new d3plus.StackedArea()
+        .data(data)
+        .groupBy("id")
+        .discrete("y")
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

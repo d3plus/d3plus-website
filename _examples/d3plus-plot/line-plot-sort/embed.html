@@ -1,53 +1,57 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Line Plot Sorting | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
-
-</head>
-
-<body></body>
-
-<script>
-
-  var data = [
-    {id: "alpha", x: 4, y:  9},
-    {id: "alpha", x: 5, y: 17},
-    {id: "alpha", x: 6, y: 13},
-    {id: "beta",  x: 4, y: 17},
-    {id: "beta",  x: 5, y:  8},
-    {id: "beta",  x: 6, y: 13},
-    {id: "gamma",  x: 4, y: 14},
-    {id: "gamma",  x: 5, y:  9},
-    {id: "gamma",  x: 6, y: 11}
-  ];
-  
-  new d3plus.LinePlot()
-    .data(data)
-    .groupBy("id")
-    .shapeConfig({
-      Line: {
-        strokeLinecap: "round",
-        strokeWidth: 10
-      },
-      sort: function(a, b) {
-        if (a.id === "beta") return 1;
-        else return -1;
+      body {
+        margin: 0;
+        overflow: hidden;
       }
-    })
-    .render();
 
-</script>
+    </style>
+
+  </head>
+
+  <body>
+
+    <script>
+
+      var data = [
+        {id: "alpha", x: 4, y:  9},
+        {id: "alpha", x: 5, y: 17},
+        {id: "alpha", x: 6, y: 13},
+        {id: "beta",  x: 4, y: 17},
+        {id: "beta",  x: 5, y:  8},
+        {id: "beta",  x: 6, y: 13},
+        {id: "gamma",  x: 4, y: 14},
+        {id: "gamma",  x: 5, y:  9},
+        {id: "gamma",  x: 6, y: 11}
+      ];
+      
+      new d3plus.LinePlot()
+        .data(data)
+        .groupBy("id")
+        .shapeConfig({
+          Line: {
+            strokeLinecap: "round",
+            strokeWidth: 10
+          },
+          sort: function(a, b) {
+            if (a.id === "beta") return 1;
+            else return -1;
+          }
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

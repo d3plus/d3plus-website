@@ -1,58 +1,62 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Radar Chart Custom Labels | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
-
-</head>
-
-<body></body>
-
-<script>
-
-  var myData = [
-    {Geography: "Midwest Region",   sport: "Soccer",   total: 20},
-    {Geography: "West Region",      sport: "Soccer",   total: 10},
-    {Geography: "Southwest Region", sport: "Soccer",   total: 20},
-    {Geography: "Southeast Region", sport: "Soccer",   total: 20},
-    {Geography: "Northeast Region", sport: "Soccer",   total: 20},
-    {Geography: "Midwest Region",   sport: "Baseball", total: 15},
-    {Geography: "West Region",      sport: "Baseball", total: 21},
-    {Geography: "Southwest Region", sport: "Baseball", total: 10},
-    {Geography: "Southeast Region", sport: "Baseball", total: 15},
-    {Geography: "Northeast Region", sport: "Baseball", total: 12}
-  ];
-  
-  new d3plus.Radar()
-    .config({
-      data: myData,
-      groupBy: "sport",
-      metric: "Geography",
-      value: "total",
-      axisConfig: {
-        shapeConfig: {
-          labelConfig: {
-            fontColor: "green"
-          },
-          label: function(d) {
-            return d.Geography.replace("Region", "").trim();
-          }
-        }
+      body {
+        margin: 0;
+        overflow: hidden;
       }
-    })
-    .render();
 
-</script>
+    </style>
+
+  </head>
+
+  <body>
+
+    <script>
+
+      var myData = [
+        {Geography: "Midwest Region",   sport: "Soccer",   total: 20},
+        {Geography: "West Region",      sport: "Soccer",   total: 10},
+        {Geography: "Southwest Region", sport: "Soccer",   total: 20},
+        {Geography: "Southeast Region", sport: "Soccer",   total: 20},
+        {Geography: "Northeast Region", sport: "Soccer",   total: 20},
+        {Geography: "Midwest Region",   sport: "Baseball", total: 15},
+        {Geography: "West Region",      sport: "Baseball", total: 21},
+        {Geography: "Southwest Region", sport: "Baseball", total: 10},
+        {Geography: "Southeast Region", sport: "Baseball", total: 15},
+        {Geography: "Northeast Region", sport: "Baseball", total: 12}
+      ];
+      
+      new d3plus.Radar()
+        .config({
+          data: myData,
+          groupBy: "sport",
+          metric: "Geography",
+          value: "total",
+          axisConfig: {
+            shapeConfig: {
+              labelConfig: {
+                fontColor: "green"
+              },
+              label: function(d) {
+                return d.Geography.replace("Region", "").trim();
+              }
+            }
+          }
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

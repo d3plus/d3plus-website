@@ -1,48 +1,52 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Changing Grid Styles | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {id: "alpha", x: 4, y:  7},
-    {id: "beta",  x: 5, y:  2},
-    {id: "gamma", x: 6, y: 13}
-  ];
-  
-  new d3plus.Plot()
-    .data(data)
-    .groupBy("id")
-    .xConfig({
-      gridConfig:  {stroke: "#000"}
-    })
-    .yConfig({
-      barConfig:   {stroke: "red"},
-      gridConfig:  {stroke: "transparent"},
-      shapeConfig: {stroke: "red"}
-    })
-    .y2Config({
-      barConfig:   {stroke: "red"}
-    })
-    .render();
+    <script>
 
-</script>
+      var data = [
+        {id: "alpha", x: 4, y:  7},
+        {id: "beta",  x: 5, y:  2},
+        {id: "gamma", x: 6, y: 13}
+      ];
+      
+      new d3plus.Plot()
+        .data(data)
+        .groupBy("id")
+        .xConfig({
+          gridConfig:  {stroke: "#000"}
+        })
+        .yConfig({
+          barConfig:   {stroke: "red"},
+          gridConfig:  {stroke: "transparent"},
+          shapeConfig: {stroke: "red"}
+        })
+        .y2Config({
+          barConfig:   {stroke: "red"}
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

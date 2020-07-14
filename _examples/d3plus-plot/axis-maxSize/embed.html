@@ -1,46 +1,50 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Setting a Max Size for Axes | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
-
-</head>
-
-<body></body>
-
-<script>
-
-  var fruits = [
-    {group: "Apples", value: 10},
-    {group: "Bananas", value: 8},
-    {group: "Some fruit with a really long name", value: 12},
-    {group: "Oranges", value: 6}
-  ];
-  
-  new d3plus.BarChart()
-    .config({
-      data: fruits,
-      discrete: "y",
-      groupBy: "group",
-      x: "value",
-      y: "group",
-      yConfig: {
-        maxSize: 100
+      body {
+        margin: 0;
+        overflow: hidden;
       }
-    })
-    .render();
 
-</script>
+    </style>
+
+  </head>
+
+  <body>
+
+    <script>
+
+      var fruits = [
+        {group: "Apples", value: 10},
+        {group: "Bananas", value: 8},
+        {group: "Some fruit with a really long name", value: 12},
+        {group: "Oranges", value: 6}
+      ];
+      
+      new d3plus.BarChart()
+        .config({
+          data: fruits,
+          discrete: "y",
+          groupBy: "group",
+          x: "value",
+          y: "group",
+          yConfig: {
+            maxSize: 100
+          }
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

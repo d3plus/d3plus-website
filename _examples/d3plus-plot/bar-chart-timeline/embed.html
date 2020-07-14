@@ -1,54 +1,58 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Bar Chart Timeline | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var myData = [
-    {"Travel Time": "< 5 Minutes",     "Population Percentage": 5,  year: 2017},
-    {"Travel Time": "15 - 24 Minutes", "Population Percentage": 25, year: 2017},
-    {"Travel Time": "35 - 44 Minutes", "Population Percentage": 10, year: 2017},
-    {"Travel Time": "45 - 89 Minutes", "Population Percentage": 11, year: 2017},
-    {"Travel Time": "5 - 14 Minutes",  "Population Percentage": 19, year: 2017},
-    {"Travel Time": "90+ Minutes",     "Population Percentage": 15, year: 2017},
-    {"Travel Time": "25 - 34 Minutes", "Population Percentage": 15, year: 2017},
-    {"Travel Time": "< 5 Minutes",     "Population Percentage": 2,  year: 2018},
-    {"Travel Time": "15 - 24 Minutes", "Population Percentage": 30, year: 2018},
-    {"Travel Time": "35 - 44 Minutes", "Population Percentage": 7,  year: 2018},
-    {"Travel Time": "45 - 89 Minutes", "Population Percentage": 11, year: 2018},
-    {"Travel Time": "5 - 14 Minutes",  "Population Percentage": 20, year: 2018},
-    {"Travel Time": "90+ Minutes",     "Population Percentage": 5,  year: 2018},
-    {"Travel Time": "25 - 34 Minutes", "Population Percentage": 25, year: 2018}
-  ];
-  
-  new d3plus.BarChart()
-    .config({
-      data: myData,
-      groupBy: "Travel Time",
-      x: "Travel Time",
-      y: "Population Percentage",
-      time: "year",
-      legend: false
-    })
-    .render();
+    <script>
 
-</script>
+      var myData = [
+        {"Travel Time": "< 5 Minutes",     "Population Percentage": 5,  year: 2017},
+        {"Travel Time": "15 - 24 Minutes", "Population Percentage": 25, year: 2017},
+        {"Travel Time": "35 - 44 Minutes", "Population Percentage": 10, year: 2017},
+        {"Travel Time": "45 - 89 Minutes", "Population Percentage": 11, year: 2017},
+        {"Travel Time": "5 - 14 Minutes",  "Population Percentage": 19, year: 2017},
+        {"Travel Time": "90+ Minutes",     "Population Percentage": 15, year: 2017},
+        {"Travel Time": "25 - 34 Minutes", "Population Percentage": 15, year: 2017},
+        {"Travel Time": "< 5 Minutes",     "Population Percentage": 2,  year: 2018},
+        {"Travel Time": "15 - 24 Minutes", "Population Percentage": 30, year: 2018},
+        {"Travel Time": "35 - 44 Minutes", "Population Percentage": 7,  year: 2018},
+        {"Travel Time": "45 - 89 Minutes", "Population Percentage": 11, year: 2018},
+        {"Travel Time": "5 - 14 Minutes",  "Population Percentage": 20, year: 2018},
+        {"Travel Time": "90+ Minutes",     "Population Percentage": 5,  year: 2018},
+        {"Travel Time": "25 - 34 Minutes", "Population Percentage": 25, year: 2018}
+      ];
+      
+      new d3plus.BarChart()
+        .config({
+          data: myData,
+          groupBy: "Travel Time",
+          x: "Travel Time",
+          y: "Population Percentage",
+          time: "year",
+          legend: false
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

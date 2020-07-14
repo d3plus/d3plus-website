@@ -1,45 +1,49 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Changing the Stroke Width of a Line Plot | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
-
-</head>
-
-<body></body>
-
-<script>
-
-  var data = [
-    {id: "alpha", x: 4, y:  7},
-    {id: "alpha", x: 5, y: 25},
-    {id: "alpha", x: 6, y: 13},
-    {id: "beta",  x: 4, y: 17},
-    {id: "beta",  x: 5, y:  8},
-    {id: "beta",  x: 6, y: 13}
-  ];
-  
-  new d3plus.LinePlot()
-    .data(data)
-    .groupBy("id")
-    .shapeConfig({
-      Line: {
-        strokeWidth: 5
+      body {
+        margin: 0;
+        overflow: hidden;
       }
-    })
-    .render();
 
-</script>
+    </style>
+
+  </head>
+
+  <body>
+
+    <script>
+
+      var data = [
+        {id: "alpha", x: 4, y:  7},
+        {id: "alpha", x: 5, y: 25},
+        {id: "alpha", x: 6, y: 13},
+        {id: "beta",  x: 4, y: 17},
+        {id: "beta",  x: 5, y:  8},
+        {id: "beta",  x: 6, y: 13}
+      ];
+      
+      new d3plus.LinePlot()
+        .data(data)
+        .groupBy("id")
+        .shapeConfig({
+          Line: {
+            strokeWidth: 5
+          }
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

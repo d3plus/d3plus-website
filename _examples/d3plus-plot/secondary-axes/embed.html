@@ -1,44 +1,48 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Secondary Axes | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {id: "alpha", alphaX: 4, alphaY:  7},
-    {id: "alpha", alphaX: 5, alphaY: 25},
-    {id: "alpha", alphaX: 6, alphaY: 13},
-    {id: "beta",  betaX: 28, betaY: 700},
-    {id: "beta",  betaX: 33, betaY:  850},
-    {id: "beta",  betaX: 56, betaY: 900}
-  ];
+    <script>
 
-  new d3plus.LinePlot()
-    .data(data)
-    .groupBy("id")
-    .x("alphaX")
-    .x2("betaX")
-    .y("alphaY")
-    .y2("betaY")
-    .render();
+      var data = [
+        {id: "alpha", alphaX: 4, alphaY:  7},
+        {id: "alpha", alphaX: 5, alphaY: 25},
+        {id: "alpha", alphaX: 6, alphaY: 13},
+        {id: "beta",  betaX: 28, betaY: 700},
+        {id: "beta",  betaX: 33, betaY:  850},
+        {id: "beta",  betaX: 56, betaY: 900}
+      ];
 
-</script>
+      new d3plus.LinePlot()
+        .data(data)
+        .groupBy("id")
+        .x("alphaX")
+        .x2("betaX")
+        .y("alphaY")
+        .y2("betaY")
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

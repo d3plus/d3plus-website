@@ -1,53 +1,57 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-plot.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Confidence Interval | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {fruit: "apple", year: 1, amount:  50, moe: 2},
-    {fruit: "apple", year: 2, amount: 56, moe: 1},
-    {fruit: "apple", year: 3, amount: 58, moe: 1},
-    {fruit: "banana", year: 1, amount: 88, moe: 3},
-    {fruit: "banana", year: 2, amount:  90, moe: 4},
-    {fruit: "banana", year: 3, amount: 76, moe: 3}
-  ];
+    <script>
 
-  new d3plus.LinePlot()
-    .data(data)
-    .groupBy("fruit")
-    .x("year")
-    .y("amount")
-    .confidence([
-      function(d) {
-        return d.amount - d.moe
-      },
-      function(d) {
-        return d.amount + d.moe
-      },
-    ])
-    .confidenceConfig({
-      fillOpacity: 0.3
-    })
-    .render();
+      var data = [
+        {fruit: "apple", year: 1, amount:  50, moe: 2},
+        {fruit: "apple", year: 2, amount: 56, moe: 1},
+        {fruit: "apple", year: 3, amount: 58, moe: 1},
+        {fruit: "banana", year: 1, amount: 88, moe: 3},
+        {fruit: "banana", year: 2, amount:  90, moe: 4},
+        {fruit: "banana", year: 3, amount: 76, moe: 3}
+      ];
 
-</script>
+      new d3plus.LinePlot()
+        .data(data)
+        .groupBy("fruit")
+        .x("year")
+        .y("amount")
+        .confidence([
+          function(d) {
+            return d.amount - d.moe
+          },
+          function(d) {
+            return d.amount + d.moe
+          },
+        ])
+        .confidenceConfig({
+          fillOpacity: 0.3
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>
