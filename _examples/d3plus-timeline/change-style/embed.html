@@ -1,40 +1,44 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-timeline.v0.4.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Changing Styles | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-timeline.v0.5.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  new d3plus.Timeline()
-    .handleConfig({
-      fill: "red",
-      stroke: "black"
-    })
-    .buttonBehavior("ticks")
-    .shapeConfig({
-      height: 6,
-      fill: "red",
-      stroke: "blue",
-      width: 4
-    })
-    .render();
+    <script>
 
-</script>
+      new d3plus.Timeline()
+        .handleConfig({
+          fill: "red",
+          stroke: "black"
+        })
+        .buttonBehavior("ticks")
+        .shapeConfig({
+          height: 6,
+          fill: "red",
+          stroke: "blue",
+          width: 4
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>
