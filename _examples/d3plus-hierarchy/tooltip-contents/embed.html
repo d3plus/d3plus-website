@@ -1,68 +1,72 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Custom Tooltip Contents | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-    .tooltip-table {
-      width: 100%;
-    }
-    
-    .tooltip-table .data {
-      text-align: right;
-    }
-    
-    .tooltip-footer {
-      opacity: 0.5;
-    }
-
-  </style>
-
-</head>
-
-<body></body>
-
-<script>
-
-  var data = [
-    {id: "alpha", value: 29, year: 2010},
-    {id: "beta",  value: 10, year: 2010},
-    {id: "gamma", value: 2,  year: 2010},
-    {id: "delta", value: 29, year: 2010},
-    {id: "eta",   value: 25, year: 2010}
-  ];
-  
-  new d3plus.Treemap()
-    .data(data)
-    .groupBy("id")
-    .tooltipConfig({
-      body: function(d) {
-        var table = "<table class='tooltip-table'>";
-        table += "<tr><td class='title'>Year:</td><td class='data'>" + d.year + "</td></tr>";
-        table += "<tr><td class='title'>Value:</td><td class='data'>" + d.value + "</td></tr>";
-        table += "</table>";
-        return table;
-      },
-      footer: function(d) {
-        return "<sub class='tooltip-footer'>Data Collected in 2012</sub>";
-      },
-      title: function(d) {
-        var txt = d.id;
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();;
+      body {
+        margin: 0;
+        overflow: hidden;
       }
-    })
-    .sum("value")
-    .render();
 
-</script>
+      .tooltip-table {
+        width: 100%;
+      }
+      
+      .tooltip-table .data {
+        text-align: right;
+      }
+      
+      .tooltip-footer {
+        opacity: 0.5;
+      }
+
+    </style>
+
+  </head>
+
+  <body>
+
+    <script>
+
+      var data = [
+        {id: "alpha", value: 29, year: 2010},
+        {id: "beta",  value: 10, year: 2010},
+        {id: "gamma", value: 2,  year: 2010},
+        {id: "delta", value: 29, year: 2010},
+        {id: "eta",   value: 25, year: 2010}
+      ];
+      
+      new d3plus.Treemap()
+        .data(data)
+        .groupBy("id")
+        .tooltipConfig({
+          body: function(d) {
+            var table = "<table class='tooltip-table'>";
+            table += "<tr><td class='title'>Year:</td><td class='data'>" + d.year + "</td></tr>";
+            table += "<tr><td class='title'>Value:</td><td class='data'>" + d.value + "</td></tr>";
+            table += "</table>";
+            return table;
+          },
+          footer: function(d) {
+            return "<sub class='tooltip-footer'>Data Collected in 2012</sub>";
+          },
+          title: function(d) {
+            var txt = d.id;
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();;
+          }
+        })
+        .sum("value")
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

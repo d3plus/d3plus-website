@@ -1,45 +1,49 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Defining Custom Colors for a Visualization | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
-
-</head>
-
-<body></body>
-
-<script>
-
-  var data = [
-    {color: "cornflowerblue", parent: "Group 1", id: "alpha", value: 29},
-    {color: "cornflowerblue", parent: "Group 1", id: "beta", value: 10},
-    {color: "cornflowerblue", parent: "Group 1", id: "gamma", value: 2},
-    {color: "firebrick", parent: "Group 2", id: "delta", value: 29},
-    {color: "firebrick", parent: "Group 2", id: "eta", value: 25}
-  ];
-
-  new d3plus.Treemap()
-    .data(data)
-    .groupBy(["parent", "id"])
-    .shapeConfig({
-      fill: function(d) {
-        return d.color;
+      body {
+        margin: 0;
+        overflow: hidden;
       }
-    })
-    .sum("value")
-    .render();
 
-</script>
+    </style>
+
+  </head>
+
+  <body>
+
+    <script>
+
+      var data = [
+        {color: "cornflowerblue", parent: "Group 1", id: "alpha", value: 29},
+        {color: "cornflowerblue", parent: "Group 1", id: "beta", value: 10},
+        {color: "cornflowerblue", parent: "Group 1", id: "gamma", value: 2},
+        {color: "firebrick", parent: "Group 2", id: "delta", value: 29},
+        {color: "firebrick", parent: "Group 2", id: "eta", value: 25}
+      ];
+
+      new d3plus.Treemap()
+        .data(data)
+        .groupBy(["parent", "id"])
+        .shapeConfig({
+          fill: function(d) {
+            return d.color;
+          }
+        })
+        .sum("value")
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

@@ -1,44 +1,48 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Adding Background Images to Shapes | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {id: "alpha", value: 29, image: "https://datausa.io/images/attrs/thing_apple.png"},
-    {id: "beta",  value: 10, image: "https://datausa.io/images/attrs/thing_fish.png"},
-    {id: "gamma", value: 2,  image: "https://datausa.io/images/attrs/thing_tomato.png"}
-  ];
+    <script>
 
-  new d3plus.Treemap()
-    .data(data)
-    .groupBy("id")
-    .shapeConfig({
-      backgroundImage: function(d) {
-        return d.image;
-      },
-      label: false
-    })
-    .sum("value")
-    .render();
+      var data = [
+        {id: "alpha", value: 29, image: "https://datausa.io/images/attrs/thing_apple.png"},
+        {id: "beta",  value: 10, image: "https://datausa.io/images/attrs/thing_fish.png"},
+        {id: "gamma", value: 2,  image: "https://datausa.io/images/attrs/thing_tomato.png"}
+      ];
 
-</script>
+      new d3plus.Treemap()
+        .data(data)
+        .groupBy("id")
+        .shapeConfig({
+          backgroundImage: function(d) {
+            return d.image;
+          },
+          label: false
+        })
+        .sum("value")
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

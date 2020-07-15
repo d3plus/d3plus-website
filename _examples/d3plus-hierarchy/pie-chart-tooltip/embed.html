@@ -1,51 +1,55 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Pie Chart Tooltip | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
-
-</head>
-
-<body></body>
-
-<script>
-
-  var myData = [
-    {"Group": "Store", "Sub-Group": "Convenience Store", "Number of Food Stores": 100, year: 2018},
-    {"Group": "Store", "Sub-Group": "Grocery Store", "Number of Food Stores": 150, year: 2018},
-    {"Group": "Store", "Sub-Group": "Farmer's Market", "Number of Food Stores": 50, year: 2018},
-    {"Group": "Store", "Sub-Group": "Supercenters", "Number of Food Stores": 30, year: 2018},
-    {"Group": "Restaurant", "Sub-Group": "Fast-Food Restaurant", "Number of Food Stores": 60, year: 2018},
-    {"Group": "Restaurant", "Sub-Group": "Full-Service Restaurant", "Number of Food Stores": 120, year: 2018}
-  ];
-
-  new d3plus.Pie()
-    .config({
-      data: myData,
-      groupBy: ["Group", "Sub-Group"],
-      value: function(d) {
-        return d["Number of Food Stores"];
-      },
-      tooltipConfig: {
-        tbody: [
-          ["Total", function(d) { return d["Number of Food Stores"] }],
-          ["Year", function(d) { return d.year }]
-        ]
+      body {
+        margin: 0;
+        overflow: hidden;
       }
-    })
-    .render();
 
-</script>
+    </style>
+
+  </head>
+
+  <body>
+
+    <script>
+
+      var myData = [
+        {"Group": "Store", "Sub-Group": "Convenience Store", "Number of Food Stores": 100, year: 2018},
+        {"Group": "Store", "Sub-Group": "Grocery Store", "Number of Food Stores": 150, year: 2018},
+        {"Group": "Store", "Sub-Group": "Farmer's Market", "Number of Food Stores": 50, year: 2018},
+        {"Group": "Store", "Sub-Group": "Supercenters", "Number of Food Stores": 30, year: 2018},
+        {"Group": "Restaurant", "Sub-Group": "Fast-Food Restaurant", "Number of Food Stores": 60, year: 2018},
+        {"Group": "Restaurant", "Sub-Group": "Full-Service Restaurant", "Number of Food Stores": 120, year: 2018}
+      ];
+
+      new d3plus.Pie()
+        .config({
+          data: myData,
+          groupBy: ["Group", "Sub-Group"],
+          value: function(d) {
+            return d["Number of Food Stores"];
+          },
+          tooltipConfig: {
+            tbody: [
+              ["Total", function(d) { return d["Number of Food Stores"] }],
+              ["Year", function(d) { return d.year }]
+            ]
+          }
+        })
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

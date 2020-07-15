@@ -1,47 +1,51 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Rendering into a Specific DOM Container | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-    #viz {
-      height: 200px;
-      width: 500px;
-    }
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-  </style>
+      #viz {
+        height: 200px;
+        width: 500px;
+      }
 
-</head>
+    </style>
 
-<body>
+  </head>
 
-  <div id="viz"></div>
+  <body>
 
-</body>
+    <div id="viz"></div>
 
-<script>
-
-  var data = [
-    {id: "alpha", value: 29},
-    {id: "beta",  value: 10}
-  ];
   
-  new d3plus.Treemap()
-    .data(data)
-    .groupBy("id")
-    .select("#viz")
-    .sum("value")
-    .render();
 
-</script>
+    <script>
+
+      var data = [
+        {id: "alpha", value: 29},
+        {id: "beta",  value: 10}
+      ];
+      
+      new d3plus.Treemap()
+        .data(data)
+        .groupBy("id")
+        .select("#viz")
+        .sum("value")
+        .render();
+
+    </script>
+
+  </body>
 
 </html>

@@ -1,41 +1,45 @@
 <!doctype html>
 <html>
 
-<head>
+  <head>
 
-  <meta charset="utf-8">
-  <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
+    <meta charset="utf-8">
+    <title>Circle Packing Chart | D3plus</title>
 
-  <style>
+    <script src="https://d3plus.org/js/d3plus-hierarchy.v0.8.full.min.js"></script>
 
-    body {
-      margin: 0;
-      overflow: hidden;
-    }
+    <style>
 
-  </style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
 
-</head>
+    </style>
 
-<body></body>
+  </head>
 
-<script>
+  <body>
 
-  var data = [
-    {parent: "Group 1", id: "alpha", value: 29},
-    {parent: "Group 1", id: "beta", value: 10},
-    {parent: "Group 1", id: "gamma", value: 2},
-    {parent: "Group 2", id: "delta", value: 29},
-    {parent: "Group 2", id: "eta", value: 25}
-  ];
+    <script>
 
-  new d3plus.Pack()
-    .data(data)
-    .groupBy(["parent", "id"])
-    .sum("value")
-    .render();
-  
+      var data = [
+        {parent: "Group 1", id: "alpha", value: 29},
+        {parent: "Group 1", id: "beta", value: 10},
+        {parent: "Group 1", id: "gamma", value: 2},
+        {parent: "Group 2", id: "delta", value: 29},
+        {parent: "Group 2", id: "eta", value: 25}
+      ];
 
-</script>
+      new d3plus.Pack()
+        .data(data)
+        .groupBy(["parent", "id"])
+        .sum("value")
+        .render();
+      
+
+    </script>
+
+  </body>
 
 </html>
