@@ -1,6 +1,6 @@
 ---
 title: Simple Priestley Diagram
-width: 990
+width: 800
 height: 400
 time: 1594762921412
 date: July 14, 2020

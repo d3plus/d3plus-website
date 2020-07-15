@@ -1,6 +1,6 @@
 ---
 title: Removing Background Tiles from a Geomap
-width: 990
+width: 800
 height: 550
 time: 1594763114978
 date: July 14, 2020

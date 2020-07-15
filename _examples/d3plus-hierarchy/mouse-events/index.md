@@ -1,6 +1,6 @@
 ---
 title: Custom Mouse Events
-width: 990
+width: 800
 height: 400
 time: 1594825110289
 date: July 15, 2020

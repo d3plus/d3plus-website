@@ -1,6 +1,6 @@
 ---
 title: Force Directed Network
-width: 990
+width: 800
 height: 400
 time: 1594763677470
 date: July 14, 2020

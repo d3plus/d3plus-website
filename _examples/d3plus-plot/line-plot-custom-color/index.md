@@ -1,6 +1,6 @@
 ---
 title: Line Plot Custom Color
-width: 990
+width: 800
 height: 400
 time: 1594762776792
 date: July 14, 2020
