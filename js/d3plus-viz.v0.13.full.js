@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.13.1
+  d3plus-viz v0.13.2
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -50997,13 +50997,12 @@
       transition: this._transition,
       update: transform
     }).node();
-    var visible = typeof total === "number";
 
-    this._totalClass.data(visible ? [{
+    this._totalClass.data(total ? [{
       text: this._totalFormat(total)
     }] : []).locale(this._locale).select(group).width(this._width - (this._margin.left + this._margin.right + padding.left + padding.right)).config(this._totalConfig).render();
 
-    this._margin.top += visible ? group.getBBox().height + this._totalConfig.padding * 2 : 0;
+    this._margin.top += total ? group.getBBox().height + this._totalConfig.padding * 2 : 0;
   }
 
   /**
