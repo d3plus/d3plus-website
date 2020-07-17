@@ -2,8 +2,8 @@
 title: Bar Chart Axes Labels
 width: 800
 height: 400
-time: 1594762776792
-date: July 14, 2020
+time: 1595000168885
+date: July 17, 2020
 ---
 
 # Bar Chart Axes Labels
@@ -31,7 +31,7 @@ new d3plus.BarChart()
     xConfig: {
       title: "X - Axis",
       titleConfig: {
-        fontColor: "green"
+        fontColor: "green"  
       },
     },
     yConfig: {

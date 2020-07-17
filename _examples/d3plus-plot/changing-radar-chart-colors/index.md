@@ -2,13 +2,13 @@
 title: Changing Radar Chart Colors
 width: 800
 height: 400
-time: 1594762776792
-date: July 14, 2020
+time: 1595000168885
+date: July 17, 2020
 ---
 
 # Changing Radar Chart Colors
 
-A custom accessor function can be passed to the `fill` property of [shapeConfig](http://d3plus.org/docs/#Shape.fill) in order to set specific colors of a [Radar](http://d3plus.org/docs/#Radar) chart.
+A custom accessor function can be passed to the `fill` property of [shapeConfig](http://d3plus.org/docs/#Shape.fill) in order to set specific colors of a [Radar](http://d3plus.org/docs/#Radar) chart. 
 
 ```js
 var myData = [
