@@ -2,8 +2,8 @@
 title: Styling the Background of a Chart
 width: 800
 height: 400
-time: 1595000168885
-date: July 17, 2020
+time: 1595980077754
+date: July 28, 2020
 ---
 
 # Styling the Background of a Chart

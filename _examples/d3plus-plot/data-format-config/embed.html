@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+
+  <head>
+
+    <meta charset="utf-8">
+    <title>Returning Config based on Loaded Data | D3plus</title>
+
+    <script src="https://d3plus.org/js/d3plus-plot.v0.9.full.min.js"></script>
+
+    <style>
+
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+
+    </style>
+
+  </head>
+
+  <body>
+
+    <script>
+
+      var url = "https://datausa.io/api/data?measures=Total Population&drilldowns=Industry Sector&year=latest";
+      
+      new d3plus.BarChart()
+        .data(url, function(response) {
+      
+          var sortedData = response.data
+            .sort(function(a, b) {
+              return b["Total Population"] - a["Total Population"];
+            });
+      
+          var largest = sortedData[0];
+          var xMax = Math.max(largest["Total Population"], 50000000);
+      
+          var titleLine1 = "Largest Industry: " + largest["Industry Sector"];
+          var titleLine2 = sortedData.length + " Total Industry Sectors";
+      
+          return {
+            data: sortedData,
+            shapeConfig: {
+              fill: function(d) {
+                return d["ID Industry Sector"] === largest["ID Industry Sector"] ? "#ef6145" : "#b8c0d4";
+              }
+            },
+            title: titleLine1 + "\n" + titleLine2,
+            xConfig: {
+              domain: [0, xMax]
+            }
+          };
+      
+        })
+        .config({
+          discrete: "y",
+          groupBy: "Industry Sector",
+          legend: false,
+          shapeConfig: {
+            label: false
+          },
+          tooltipConfig: {
+            tbody: [
+              ["Total", function(d) { return d["Total Population"] }]
+            ]
+          },
+          x: "Total Population",
+          y: "Industry Sector",
+          yConfig: {
+            maxSize: 150
+          },
+          ySort: function(a, b) {
+            return a["Total Population"] - b["Total Population"];
+          }
+        })
+        .render();
+
+    </script>
+
+  </body>
+
+</html>
