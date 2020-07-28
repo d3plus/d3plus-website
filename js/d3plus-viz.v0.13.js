@@ -1,5 +1,5 @@
 /*
-  d3plus-viz v0.13.2
+  d3plus-viz v0.13.3
   Abstract ES6 class that drives d3plus visualizations.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1406,7 +1406,14 @@
           if (_this._cache) _this._lrucache.set("".concat(key, "_").concat(url), data);
 
           if (formatter) {
-            data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+            var formatterResponse = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+
+            if (key === "data" && !(formatterResponse instanceof Array)) {
+              data = formatterResponse.data;
+              delete formatterResponse.data;
+
+              _this.config(formatterResponse);
+            } else data = formatterResponse;
           } else if (key === "data") {
             data = concat(loaded, "data");
           }
@@ -1426,7 +1433,13 @@
       var data = loadedLength(loaded) === 1 ? loaded[0] : loaded;
 
       if (formatter) {
-        data = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+        var formatterResponse = formatter(loadedLength(loaded) === 1 ? loaded[0] : loaded);
+
+        if (key === "data" && !(formatterResponse instanceof Array)) {
+          data = formatterResponse.data;
+          delete formatterResponse.data;
+          this.config(formatterResponse);
+        } else data = formatterResponse;
       } else if (key === "data") {
         data = concat(loaded, "data");
       }
@@ -3414,6 +3427,7 @@
           @desc Sets the primary data array to be used when drawing the visualization. The value passed should be an *Array* of objects or a *String* representing a filepath or URL to be loaded. The following filetypes are supported: `csv`, `tsv`, `txt`, and `json`.
       If your data URL needs specific headers to be set, an Object with "url" and "headers" keys may also be passed.
       Additionally, a custom formatting function can be passed as a second argument to this method. This custom function will be passed the data that has been loaded, as long as there are no errors. This function should return the final array of obejcts to be used as the primary data array. For example, some JSON APIs return the headers split from the data values to save bandwidth. These would need be joined using a custom formatter.
+      If you would like to specify certain configuration options based on the yet-to-be-loaded data, you can also return a full `config` object from the data formatter (including the new `data` array as a key in the object).
       If *data* is not specified, this method returns the current primary data array, which defaults to an empty array (`[]`);
           @param {Array|String} *data* = []
           @param {Function} [*formatter*]
