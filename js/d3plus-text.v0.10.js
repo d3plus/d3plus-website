@@ -1,5 +1,5 @@
 /*
-  d3plus-text v0.10.0
+  d3plus-text v0.10.1
   A smart SVG text box with line wrapping and automatic font size scaling.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1809,7 +1809,7 @@
           return "d3plus-textBox-".concat(strip(d.id));
         }).call(rotate).merge(boxes);
         var rtl = detectRTL();
-        update.style("pointer-events", function (d) {
+        update.order().style("pointer-events", function (d) {
           return _this2._pointerEvents(d.data, d.i);
         }).each(function (d) {
           /**
