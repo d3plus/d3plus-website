@@ -1,5 +1,5 @@
 /*
-  d3plus-axis v0.6.1
+  d3plus-axis v0.6.2
   Beautiful javascript scales and axes.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -1474,9 +1474,7 @@
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
         var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
         var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
-
-        var sortedDomain = this._d3Scale.domain();
-
+        var sortedDomain = (this._d3Scale ? this._d3Scale.domain() : []).concat(this._d3ScaleNegative ? this._d3ScaleNegative.domain() : []);
         bar.call(d3plusCommon.attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(sortedDomain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(sortedDomain[sortedDomain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**
@@ -1778,13 +1776,12 @@
           labels = (this._labels ? this._scale === "time" ? this._labels.map(date) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
 
           if (this._scale === "log") {
-            var tens = labels.filter(function (t) {
-              return Math.abs(t).toString().charAt(0) === "1" && (_this3._d3Scale ? t !== -1 : t !== 1);
+            var tens = labels.filter(function (t, i) {
+              return !i || i === labels.length - 1 || Math.abs(t).toString().charAt(0) === "1" && (_this3._d3Scale ? t !== -1 : t !== 1);
             });
 
             if (tens.length > 2) {
               labels = tens;
-              ticks = tens;
             } else if (labels.length >= 10) {
               labels = labels.filter(function (t) {
                 return t % 5 === 0 || tickFormat(t).substr(-1) === "1";
