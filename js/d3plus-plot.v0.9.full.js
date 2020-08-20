@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.9.3
+  d3plus-plot v0.9.4
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -22950,7 +22950,7 @@
           return "d3plus-textBox-".concat(strip(d.id));
         }).call(rotate).merge(boxes);
         var rtl = detectRTL();
-        update.style("pointer-events", function (d) {
+        update.order().style("pointer-events", function (d) {
           return _this2._pointerEvents(d.data, d.i);
         }).each(function (d) {
           /**
@@ -29489,9 +29489,7 @@
             position = ["top", "left"].includes(this._orient) ? this._outerBounds[y] + this._outerBounds[height] - offset : this._outerBounds[y] + offset;
         var x1mod = this._scale === "band" ? this._d3Scale.step() - this._d3Scale.bandwidth() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
         var x2mod = this._scale === "band" ? this._d3Scale.step() : this._scale === "point" ? this._d3Scale.step() * this._d3Scale.padding() : 0;
-
-        var sortedDomain = this._d3Scale.domain();
-
+        var sortedDomain = (this._d3Scale ? this._d3Scale.domain() : []).concat(this._d3ScaleNegative ? this._d3ScaleNegative.domain() : []);
         bar.call(attrize, this._barConfig).attr("".concat(x, "1"), this._getPosition(sortedDomain[0]) - x1mod).attr("".concat(x, "2"), this._getPosition(sortedDomain[sortedDomain.length - 1]) + x2mod).attr("".concat(y, "1"), position).attr("".concat(y, "2"), position);
       }
       /**
@@ -29794,13 +29792,12 @@
           labels = (this._labels ? this._scale === "time" ? this._labels.map(date$2) : this._labels : (this._d3Scale ? this._d3Scale.ticks : this._d3ScaleNegative.ticks) ? this._getTicks() : ticks).slice();
 
           if (this._scale === "log") {
-            var tens = labels.filter(function (t) {
-              return Math.abs(t).toString().charAt(0) === "1" && (_this3._d3Scale ? t !== -1 : t !== 1);
+            var tens = labels.filter(function (t, i) {
+              return !i || i === labels.length - 1 || Math.abs(t).toString().charAt(0) === "1" && (_this3._d3Scale ? t !== -1 : t !== 1);
             });
 
             if (tens.length > 2) {
               labels = tens;
-              ticks = tens;
             } else if (labels.length >= 10) {
               labels = labels.filter(function (t) {
                 return t % 5 === 0 || tickFormat(t).substr(-1) === "1";
@@ -55413,6 +55410,12 @@
 
         var xRangeMax = undefined;
 
+        if (showX) {
+          this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, xRangeMax]).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).scale(xConfigScale).render();
+        }
+
+        var largestLabel;
+
         if (this._lineLabels) {
           var lineData = nest().key(function (d) {
             return d.id;
@@ -55429,6 +55432,17 @@
             var fontFamilyAccessor = lineLabelConfig.fontFamily !== undefined ? lineLabelConfig.fontFamily : testTextBox.fontFamily();
             var paddingAccessor = lineLabelConfig.padding !== undefined ? lineLabelConfig.padding : testTextBox.padding();
             var labelFunction = userConfig.label || this._drawLabel;
+
+            var xEstimate = function xEstimate(d) {
+              if (xConfigScale === "log" && d === 0) d = xDomain[0] < 0 ? _this2._xTest._d3Scale.domain()[1] : _this2._xTest._d3Scale.domain()[0];
+              return _this2._xTest._getPosition.bind(_this2._xTest)(d);
+            };
+
+            var maxX = max(lineData.map(function (group) {
+              return max(group.values.map(function (d) {
+                return xEstimate(d.x);
+              }));
+            }));
             var labelWidths = lineData.map(function (group) {
               var d = group.values[group.values.length - 1];
               var i;
@@ -55451,15 +55465,26 @@
                 "font-family": fontFamily,
                 "font-weight": fontWeight
               });
-              return labelWidth + labelPadding * 2;
+              var myMaxX = max(group.values.map(function (d) {
+                return xEstimate(d.x);
+              }));
+              return {
+                labelWidth: labelWidth + labelPadding * 2,
+                spaceNeeded: myMaxX - maxX + labelWidth + labelPadding * 2
+              };
             });
-            var largestLabel = max(labelWidths);
-            var labelSpace = min([largestLabel, width / 4]);
+            largestLabel = max(labelWidths.map(function (d) {
+              return d.labelWidth;
+            }));
+            var spaceNeeded = max(labelWidths.map(function (d) {
+              return d.spaceNeeded;
+            }));
+            var labelSpace = min([spaceNeeded, width / 4]);
             xRangeMax = width - labelSpace - this._margin.right;
           }
         }
 
-        if (showX) {
+        if (showX && xRangeMax) {
           this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, xRangeMax]).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).scale(xConfigScale).render();
         }
 
@@ -55780,7 +55805,7 @@
                 return {
                   x: lastX - firstX,
                   y: lastY - firstY - height / 2,
-                  width: _this2._padding.right,
+                  width: largestLabel,
                   height: height
                 };
               } : false

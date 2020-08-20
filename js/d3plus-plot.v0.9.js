@@ -1,5 +1,5 @@
 /*
-  d3plus-plot v0.9.3
+  d3plus-plot v0.9.4
   A reusable javascript x/y plot built on D3.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -2441,6 +2441,12 @@
 
         var xRangeMax = undefined;
 
+        if (showX) {
+          this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, xRangeMax]).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).scale(xConfigScale).render();
+        }
+
+        var largestLabel;
+
         if (this._lineLabels) {
           var lineData = d3Collection.nest().key(function (d) {
             return d.id;
@@ -2457,6 +2463,17 @@
             var fontFamilyAccessor = lineLabelConfig.fontFamily !== undefined ? lineLabelConfig.fontFamily : testTextBox.fontFamily();
             var paddingAccessor = lineLabelConfig.padding !== undefined ? lineLabelConfig.padding : testTextBox.padding();
             var labelFunction = userConfig.label || this._drawLabel;
+
+            var xEstimate = function xEstimate(d) {
+              if (xConfigScale === "log" && d === 0) d = xDomain[0] < 0 ? _this2._xTest._d3Scale.domain()[1] : _this2._xTest._d3Scale.domain()[0];
+              return _this2._xTest._getPosition.bind(_this2._xTest)(d);
+            };
+
+            var maxX = d3Array.max(lineData.map(function (group) {
+              return d3Array.max(group.values.map(function (d) {
+                return xEstimate(d.x);
+              }));
+            }));
             var labelWidths = lineData.map(function (group) {
               var d = group.values[group.values.length - 1];
               var i;
@@ -2479,15 +2496,26 @@
                 "font-family": fontFamily,
                 "font-weight": fontWeight
               });
-              return labelWidth + labelPadding * 2;
+              var myMaxX = d3Array.max(group.values.map(function (d) {
+                return xEstimate(d.x);
+              }));
+              return {
+                labelWidth: labelWidth + labelPadding * 2,
+                spaceNeeded: myMaxX - maxX + labelWidth + labelPadding * 2
+              };
             });
-            var largestLabel = d3Array.max(labelWidths);
-            var labelSpace = d3Array.min([largestLabel, width / 4]);
+            largestLabel = d3Array.max(labelWidths.map(function (d) {
+              return d.labelWidth;
+            }));
+            var spaceNeeded = d3Array.max(labelWidths.map(function (d) {
+              return d.spaceNeeded;
+            }));
+            var labelSpace = d3Array.min([spaceNeeded, width / 4]);
             xRangeMax = width - labelSpace - this._margin.right;
           }
         }
 
-        if (showX) {
+        if (showX && xRangeMax) {
           this._xTest.domain(xDomain).height(height).maxSize(height / 2).range([undefined, xRangeMax]).select(testGroup.node()).ticks(xTicks).width(width).config(xC).config(this._xConfig).scale(xConfigScale).render();
         }
 
@@ -2808,7 +2836,7 @@
                 return {
                   x: lastX - firstX,
                   y: lastY - firstY - height / 2,
-                  width: _this2._padding.right,
+                  width: largestLabel,
                   height: height
                 };
               } : false
