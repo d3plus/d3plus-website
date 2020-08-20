@@ -1,9 +1,9 @@
 ---
 title: Simple X/Y Plot
-width: 800
-height: 400
-time: 1595980077754
-date: July 28, 2020
+width: 0
+height: 0
+time: 1597951129754
+date: August 20, 2020
 ---
 
 # Simple X/Y Plot
