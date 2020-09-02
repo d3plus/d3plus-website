@@ -1,5 +1,5 @@
 /*
-  d3plus-legend v0.9.0
+  d3plus-legend v0.9.1
   An easy to use javascript chart legend.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
@@ -2109,6 +2109,28 @@
       _this._align = "middle";
       _this._buckets = 5;
       _this._bucketAxis = false;
+
+      _this._bucketFormat = function (tick, i, ticks, allValues) {
+        var format = _this._axisConfig.tickFormat ? _this._axisConfig.tickFormat : d3plusFormat.formatAbbreviate;
+        var next = ticks[i + 1];
+        var prev = i ? ticks[i - 1] : false;
+        var last = i === ticks.length - 1;
+
+        if (tick === next || last) {
+          var suffix = last && tick < d3Array.max(allValues) ? "+" : "";
+          return "".concat(format(tick)).concat(suffix);
+        } else {
+          var mod = next ? next / 100 : tick / 100;
+          var pow = mod >= 1 || mod <= -1 ? Math.round(mod).toString().length - 1 : mod.toString().split(".")[1].replace(/([1-9])[1-9].*$/, "$1").length * -1;
+          var ten = Math.pow(10, pow);
+          return prev === tick && i === 1 ? "".concat(format(d3Array.min([tick + ten, allValues.find(function (d) {
+            return d > tick && d < next;
+          })])), " - ").concat(format(next)) : "".concat(format(tick), " - ").concat(format(d3Array.max([next - ten, allValues.reverse().find(function (d) {
+            return d > tick && d < next;
+          })])));
+        }
+      };
+
       _this._centered = true;
       _this._colorMax = "#0C8040";
       _this._colorMid = "#f7f7f7";
@@ -2179,13 +2201,14 @@
         var negative = domain[0] < this._midpoint;
         var positive = domain[1] > this._midpoint;
         var diverging = negative && positive;
+        var numBuckets = this._buckets instanceof Array ? this._buckets.length : this._buckets;
         var colors = this._color,
             labels,
             ticks;
 
         if (colors && !(colors instanceof Array)) {
-          colors = d3Array.range(0, this._buckets, 1).map(function (i) {
-            return d3plusColor.colorLighter(colors, (i + 1) / _this2._buckets);
+          colors = d3Array.range(0, numBuckets, 1).map(function (i) {
+            return d3plusColor.colorLighter(colors, (i + 1) / numBuckets);
           }).reverse();
         }
 
@@ -2194,32 +2217,37 @@
             return d !== null && typeof d === "number";
           });
 
-          var buckets = d3Array.min([colors ? colors.length : this._buckets, data.length]);
+          var buckets = d3Array.min([colors ? colors.length : numBuckets, data.length]);
           var jenks = [];
 
-          if (diverging && this._centered) {
-            var half = Math.floor(buckets / 2);
-            var residual = buckets % 2;
-            var negatives = data.filter(function (d) {
-              return d < _this2._midpoint;
-            });
-            var negativesDeviation = d3Array.deviation(negatives);
-            var positives = data.concat(this._midpoint).filter(function (d) {
-              return d >= _this2._midpoint;
-            });
-            var positivesDeviation = d3Array.deviation(positives);
-            var isNegativeMax = negativesDeviation > positivesDeviation ? 1 : 0;
-            var isPositiveMax = positivesDeviation > negativesDeviation ? 1 : 0;
-            var negativeJenks = ckmeans(negatives, half + residual * isNegativeMax);
-            var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
-            jenks = negativeJenks.concat(positiveJenks);
+          if (this._buckets instanceof Array) {
+            ticks = this._buckets;
           } else {
-            jenks = ckmeans(data, buckets);
+            if (diverging && this._centered) {
+              var half = Math.floor(buckets / 2);
+              var residual = buckets % 2;
+              var negatives = data.filter(function (d) {
+                return d < _this2._midpoint;
+              });
+              var negativesDeviation = d3Array.deviation(negatives);
+              var positives = data.concat(this._midpoint).filter(function (d) {
+                return d >= _this2._midpoint;
+              });
+              var positivesDeviation = d3Array.deviation(positives);
+              var isNegativeMax = negativesDeviation > positivesDeviation ? 1 : 0;
+              var isPositiveMax = positivesDeviation > negativesDeviation ? 1 : 0;
+              var negativeJenks = ckmeans(negatives, half + residual * isNegativeMax);
+              var positiveJenks = ckmeans(positives, half + residual * isPositiveMax);
+              jenks = negativeJenks.concat(positiveJenks);
+            } else {
+              jenks = ckmeans(data, buckets);
+            }
+
+            ticks = jenks.map(function (c) {
+              return c[0];
+            });
           }
 
-          ticks = d3Array.merge(jenks.map(function (c, i) {
-            return i === jenks.length - 1 ? [c[0], c[c.length - 1]] : [c[0]];
-          }));
           var tickSet = new Set(ticks);
 
           if (ticks.length !== tickSet.size) {
@@ -2256,8 +2284,8 @@
 
               colors = negativeColors.concat(spanningColors).concat(positiveColors);
             } else {
-              colors = d3Array.range(0, this._buckets, 1).map(function (i) {
-                return d3plusColor.colorLighter(_this2._colorMax, i / _this2._buckets);
+              colors = d3Array.range(0, numBuckets, 1).map(function (i) {
+                return d3plusColor.colorLighter(_this2._colorMax, i / numBuckets);
               }).reverse();
             }
           }
@@ -2266,18 +2294,19 @@
             colors = colors.slice(buckets - data.length);
           }
 
-          this._colorScale = d3Scale.scaleThreshold().domain(ticks).range(["black"].concat(colors).concat(colors[colors.length - 1]));
+          colors = [colors[0]].concat(colors);
+          this._colorScale = d3Scale.scaleThreshold().domain(ticks).range(colors);
         } else {
-          var _buckets;
+          var _buckets = this._buckets instanceof Array ? this._buckets : undefined;
 
           if (diverging && !colors) {
-            var _half = Math.floor(this._buckets / 2);
+            var _half = Math.floor(numBuckets / 2);
 
             var _negativeColors = d3Array.range(0, _half, 1).map(function (i) {
               return !i ? _this2._colorMin : d3plusColor.colorLighter(_this2._colorMin, i / _half);
             });
 
-            var _spanningColors = (this._buckets % 2 ? [0] : []).map(function () {
+            var _spanningColors = (numBuckets % 2 ? [0] : []).map(function () {
               return _this2._colorMid;
             });
 
@@ -2286,14 +2315,17 @@
             }).reverse();
 
             colors = _negativeColors.concat(_spanningColors).concat(_positiveColors);
-            var step = (colors.length - 1) / 2;
-            _buckets = [domain[0], this._midpoint, domain[1]];
-            _buckets = d3Array.range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(d3Array.range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+
+            if (!_buckets) {
+              var step = (colors.length - 1) / 2;
+              _buckets = [domain[0], this._midpoint, domain[1]];
+              _buckets = d3Array.range(domain[0], this._midpoint, -(domain[0] - this._midpoint) / step).concat(d3Array.range(this._midpoint, domain[1], (domain[1] - this._midpoint) / step)).concat([domain[1]]);
+            }
           } else {
             if (!colors) {
               if (this._scale === "buckets" || this._scale === "quantile") {
-                colors = d3Array.range(0, this._buckets, 1).map(function (i) {
-                  return d3plusColor.colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / _this2._buckets);
+                colors = d3Array.range(0, numBuckets, 1).map(function (i) {
+                  return d3plusColor.colorLighter(negative ? _this2._colorMin : _this2._colorMax, i / numBuckets);
                 });
                 if (positive) colors = colors.reverse();
               } else {
@@ -2301,27 +2333,30 @@
               }
             }
 
-            if (this._scale === "quantile") {
-              var _step = 1 / (colors.length - 1);
+            if (!_buckets) {
+              if (this._scale === "quantile") {
+                var _step = 1 / (colors.length - 1);
 
-              _buckets = d3Array.range(0, 1 + _step / 2, _step).map(function (d) {
-                return d3Array.quantile(allValues, d);
-              });
-            } else if (diverging && this._color && this._centered) {
-              var negativeStep = (this._midpoint - domain[0]) / Math.floor(colors.length / 2);
-              var positiveStep = (domain[1] - this._midpoint) / Math.floor(colors.length / 2);
-              var negativeBuckets = d3Array.range(domain[0], this._midpoint, negativeStep);
-              var positiveBuckets = d3Array.range(this._midpoint, domain[1] + positiveStep / 2, positiveStep);
-              _buckets = negativeBuckets.concat(positiveBuckets);
-            } else {
-              var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
+                _buckets = d3Array.range(0, 1 + _step / 2, _step).map(function (d) {
+                  return d3Array.quantile(allValues, d);
+                });
+              } else if (diverging && this._color && this._centered) {
+                var negativeStep = (this._midpoint - domain[0]) / Math.floor(colors.length / 2);
+                var positiveStep = (domain[1] - this._midpoint) / Math.floor(colors.length / 2);
+                var negativeBuckets = d3Array.range(domain[0], this._midpoint, negativeStep);
+                var positiveBuckets = d3Array.range(this._midpoint, domain[1] + positiveStep / 2, positiveStep);
+                _buckets = negativeBuckets.concat(positiveBuckets);
+              } else {
+                var _step2 = (domain[1] - domain[0]) / (colors.length - 1);
 
-              _buckets = d3Array.range(domain[0], domain[1] + _step2 / 2, _step2);
+                _buckets = d3Array.range(domain[0], domain[1] + _step2 / 2, _step2);
+              }
             }
           }
 
           if (this._scale === "buckets" || this._scale === "quantile") {
-            ticks = _buckets.concat([_buckets[_buckets.length - 1]]);
+            ticks = _buckets;
+            colors = [colors[0]].concat(colors);
           } else if (this._scale === "log") {
             var _negativeBuckets = _buckets.filter(function (d) {
               return d < 0;
@@ -2358,7 +2393,7 @@
             if (_buckets.includes(0)) _buckets[_buckets.indexOf(0)] = 1;
           }
 
-          this._colorScale = d3Scale.scaleLinear().domain(_buckets).range(colors);
+          this._colorScale = (this._scale === "buckets" || this._scale === "quantile" ? d3Scale.scaleThreshold : d3Scale.scaleLinear)().domain(_buckets).range(colors);
         }
 
         var gradient = this._bucketAxis || !["buckets", "jenks", "quantile"].includes(this._scale);
@@ -2393,8 +2428,19 @@
             x: 0,
             y: 0
           };
+          var axisDomain = domain.slice();
+
+          if (this._bucketAxis) {
+            var last = axisDomain[axisDomain.length - 1];
+            var prev = axisDomain[axisDomain.length - 2];
+            var mod = last ? last / 10 : prev / 10;
+            var pow = mod >= 1 || mod <= -1 ? Math.round(mod).toString().length - 1 : mod.toString().split(".")[1].replace(/([1-9])[1-9].*$/, "$1").length * -1;
+            var ten = Math.pow(10, pow);
+            axisDomain[axisDomain.length - 1] = last + ten;
+          }
+
           var axisConfig = d3plusCommon.assign({
-            domain: horizontal ? domain : domain.reverse(),
+            domain: axisDomain,
             duration: this._duration,
             height: this._height,
             labels: labels || ticks,
@@ -2486,19 +2532,19 @@
           defsEnter.append("linearGradient").attr("id", "gradient-".concat(this._uuid));
           defs = defsEnter.merge(defs);
           defs.select("linearGradient").attr("".concat(x, "1"), horizontal ? "0%" : "100%").attr("".concat(x, "2"), horizontal ? "100%" : "0%").attr("".concat(y, "1"), "0%").attr("".concat(y, "2"), "0%");
-          var stops = defs.select("linearGradient").selectAll("stop").data(horizontal ? colors : colors);
+          var stops = defs.select("linearGradient").selectAll("stop").data(colors);
 
           var scaleDomain = this._colorScale.domain();
 
           var offsetScale = d3Scale.scaleLinear().domain(scaleRange).range(horizontal ? [0, 100] : [100, 0]);
           stops.enter().append("stop").merge(stops).attr("offset", function (d, i) {
-            return "".concat(offsetScale(axisScale(scaleDomain[i])), "%");
+            return "".concat(i <= scaleDomain.length - 1 ? offsetScale(axisScale(scaleDomain[i])) : 100, "%");
           }).attr("stop-color", String);
           /** determines the width of buckets */
 
           var bucketWidth = function bucketWidth(d, i) {
-            var w = Math.abs(axisScale(ticks[i + 1]) - axisScale(d));
-            return w || 2;
+            var next = ticks[i + 1] || axisDomain[axisDomain.length - 1];
+            return Math.abs(axisScale(next) - axisScale(d));
           };
 
           var rectConfig = d3plusCommon.assign((_assign = {
@@ -2510,7 +2556,7 @@
             return axisScale(d) + bucketWidth(d, i) / 2 - (["left", "right"].includes(_this2._orient) ? bucketWidth(d, i) : 0);
           } : scaleRange[0] + (scaleRange[1] - scaleRange[0]) / 2 + offsets[x]), _defineProperty(_assign, y, this._outerBounds[y] + (["top", "left"].includes(this._orient) ? axisBounds[height] : 0) + this._size / 2 + offsets[y]), _defineProperty(_assign, width, ticks ? bucketWidth : scaleRange[1] - scaleRange[0]), _defineProperty(_assign, height, this._size), _assign), this._rectConfig);
 
-          this._rectClass.data(ticks ? ticks.slice(0, ticks.length - 1) : [0]).id(function (d, i) {
+          this._rectClass.data(ticks || [0]).id(function (d, i) {
             return i;
           }).select(rectGroup.node()).config(rectConfig).render();
 
@@ -2528,16 +2574,13 @@
           d3plusCommon.elem("g.d3plus-ColorScale-axis", Object.assign({
             condition: gradient
           }, groupParams));
-          var format = this._axisConfig.tickFormat ? this._axisConfig.tickFormat : d3plusFormat.formatAbbreviate;
           var legendData = ticks.reduce(function (arr, tick, i) {
-            if (i !== ticks.length - 1) {
-              var next = ticks[i + 1];
-              arr.push({
-                color: colors[i],
-                id: tick === next ? "".concat(format(tick), "+") : "".concat(format(tick), " - ").concat(format(next))
-              });
-            }
+            var label = _this2._bucketFormat.bind(_this2)(tick, i, ticks, allValues);
 
+            arr.push({
+              color: colors[i + 1],
+              id: label
+            });
             return arr;
           }, []);
           var legendConfig = d3plusCommon.assign({
@@ -2597,8 +2640,8 @@
       }
       /**
           @memberof ColorScale
-          @desc The number of discrete buckets to create in a bucketed color scale. Will be overridden by any custom Array of colors passed to the `color` method.
-          @param {Number} [*value* = 5]
+          @desc The number of discrete buckets to create in a bucketed color scale. Will be overridden by any custom Array of colors passed to the `color` method. Optionally, users can supply an Array of values used to separate buckets, such as `[0, 10, 25, 50, 90]` for a percentage scale. This value would create 4 buckets, with each value representing the break point between each bucket (so 5 values makes 4 buckets).
+          @param {Number|Array} [*value* = 5]
           @chainable
       */
 
@@ -2618,6 +2661,18 @@
       key: "bucketAxis",
       value: function bucketAxis(_) {
         return arguments.length ? (this._bucketAxis = _, this) : this._bucketAxis;
+      }
+      /**
+          @memberof ColorScale
+          @desc A function for formatting the labels associated to each bucket in a bucket-type scale ("jenks", "quantile", etc). The function is passed four arguments: the start value of the current bucket, it's index in the full Array of buckets, the full Array of buckets, and an Array of every value present in the data used to construct the buckets. Keep in mind that the end value for the bucket is not actually the next bucket in the list, but includes every value up until that next bucket value (less than, but not equal to). By default, d3plus will make the end value slightly less than it's current value, so that it does not overlap with the start label for the next bucket.
+          @param {Function} [*value*]
+          @chainable
+      */
+
+    }, {
+      key: "bucketFormat",
+      value: function bucketFormat(_) {
+        return arguments.length ? (this._bucketFormat = _, this) : this._bucketFormat;
       }
       /**
           @memberof ColorScale
