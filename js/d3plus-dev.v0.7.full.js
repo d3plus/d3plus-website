@@ -1,7 +1,7 @@
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 /*
-  d3plus-dev v0.7.8
+  d3plus-dev v0.7.9
   A collection of scripts for developing D3plus modules.
   Copyright (c) 2020 D3plus - https://d3plus.org
   @license MIT
